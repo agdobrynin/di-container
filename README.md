@@ -1,13 +1,13 @@
-### Kaspi/DiContainer
+### DiContainer
 
-Kaspi/DiContainer легковесный — это контейнер внедрения зависимостей для PHP >= 8.2 с автоматическим связыванием зависимостей.
+Kaspi/container легковесный — это контейнер внедрения зависимостей для PHP >= 8.2 с автоматическим связыванием зависимостей.
 
 #### Установка
 
 Перед использованием установить через composer
 
 ```shell
-composer require kaspi/di-container
+composer require kaspi/container
 ```
 
 #### Как использовать
