@@ -7,7 +7,7 @@ Kaspi/container легковесный — это контейнер внедр�
 Перед использованием установить через composer
 
 ```shell
-composer require kaspi/container
+composer require kaspi/di-container
 ```
 
 #### Как использовать

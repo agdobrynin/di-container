@@ -1,5 +1,5 @@
 {
-    "name": "kaspi/container",
+    "name": "kaspi/di-container",
     "description": "Dependency injection container with autowired",
     "keywords": ["container","di","autowire", "autowiring", "psr-11"],
     "type": "library",
