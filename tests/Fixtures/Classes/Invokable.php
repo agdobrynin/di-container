@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Classes;
 
-readonly class Invokable
+class Invokable
 {
     public function __invoke(Db $db): array
     {

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Classes;
 
 use Tests\Fixtures\Classes\Interfaces\CacheTypeInterface;
 
-readonly class Db
+class Db
 {
     public function __construct(
         protected array $data,

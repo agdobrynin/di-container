@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Classes;
 
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 
-readonly class MethodWithDependencies
+class MethodWithDependencies
 {
     public function __construct(public EasyContainer $container) {}
 
