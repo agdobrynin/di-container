@@ -47,7 +47,7 @@ class AutowiredTest extends TestCase
             container: $container,
             id: \Tests\Fixtures\Classes\EasyContainer::class,
             method: 'has',
-            methodArgs: ['id' => 10]
+            methodArgs: ['id' => 'DependencyId']
         );
 
         $this->assertFalse($result);
