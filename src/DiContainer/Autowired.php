@@ -17,8 +17,11 @@ final class Autowired implements AutowiredInterface
         protected KeyGeneratorForNamedParameterInterface $keyGeneratorForNamedParameter
     ) {}
 
-    public function resolveInstance(ContainerInterface $container, callable|string $id, array $args = []): mixed
-    {
+    public function resolveInstance(
+        ContainerInterface $container,
+        callable|string $id,
+        array $args = []
+    ): mixed {
         try {
             if (\is_callable($id)) {
                 $functionReflector = new \ReflectionFunction($id);
