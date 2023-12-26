@@ -115,14 +115,14 @@ final class Autowired implements AutowiredInterface
                         ? $container->get($parameterId)
                         : $container->get($parameterName);
                 } catch (ContainerExceptionInterface) {
-                    if ($parameter->isDefaultValueAvailable()) {
-                        $dependencies[$parameterName] = $parameter->getDefaultValue();
-                    } else {
+                    if (!$parameter->isDefaultValueAvailable()) {
                         $message = "Unresolvable dependency [{$parameter}] in class [{$className}]";
                         $message .= " in container by id [{$parameterId}] or [{$parameterName}]";
 
                         throw new AutowiredException($message);
                     }
+
+                    $dependencies[$parameterName] = $parameter->getDefaultValue();
                 }
 
                 continue;
