@@ -9,7 +9,6 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Classes\EasyContainer;
 
 /**
  * @internal
@@ -48,7 +47,11 @@ class AutowiredTest extends TestCase
 
         (new Autowired(
             new KeyGeneratorForNamedParameter()
-        ))->callMethod(new DiContainer(), EasyContainer::class, 'store');
+        ))->callMethod(
+            new DiContainer(),
+            \Tests\Fixtures\Classes\EasyContainer::class,
+            'store'
+        );
     }
 
     public function testResolveMethodSimple(): void
@@ -57,7 +60,7 @@ class AutowiredTest extends TestCase
         $container = new DiContainer(autowire: $autowire);
         $result = $autowire->callMethod(
             container: $container,
-            id: EasyContainer::class,
+            id: \Tests\Fixtures\Classes\EasyContainer::class,
             method: 'has',
             methodArgs: ['id' => 'DependencyId']
         );
@@ -106,7 +109,7 @@ class AutowiredTest extends TestCase
 
     public function testDelimiterForParam(): void
     {
-        $container = new EasyContainer();
+        $container = new \Tests\Fixtures\Classes\EasyContainer();
         $container->instance[\Tests\Fixtures\Classes\Sum::class.'@@__construct@@init'] = 55;
 
         $sum = (new Autowired(
