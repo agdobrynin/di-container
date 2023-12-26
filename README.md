@@ -10,17 +10,26 @@ Kaspi/container — это легковесный контейнер внедр�
 composer require kaspi/di-container
 ```
 
-#### Простой пример использования
+#### Примеры использования
 Получение существующего класса и разрешение простых типов параметров в конструкторе:
 ```php
+// Объявление класса
+namespace App;
+
 class MyClass {
     public function __construct(public \PDO $pdo) {}
 }
+```
 
-// ...
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\Autowired;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
 
-$autowired = new \Kaspi\DiContainer\Autowired();
-$container = new \Kaspi\DiContainer\DiContainer(
+$keyGen = new KeyGeneratorForNamedParameter();
+$autowired = new Autowired($keyGen);
+$container = new DiContainer(
     config: [
         \PDO::class => [
             // в конструкторе класса \PDO
@@ -30,43 +39,60 @@ $container = new \Kaspi\DiContainer\DiContainer(
     ],
     autowire: $autowired
 );
-
-//...
+```
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\MyClass;
 
 /** @var MyClass $myClass */
 $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
+
 Получение класса по интерфейсу
 ```php
+// Объявление класса
+namespace App;
+
+use Psr\Log\LoggerInterface;
+
 class MyClass {
-    protected \Psr\Log\LoggerInterface $logger;
+    protected LoggerInterface $logger;
     
-    public function __construct(public \Psr\Log\LoggerInterface $logger) {
+    public function __construct(public LoggerInterface $logger) {
         $this->logger = $this->logger;
     }
     
-    public function logger(): \Psr\Log\LoggerInterface {
+    public function logger(): LoggerInterface {
         return $this->logger;
     }
 }
+```
 
-// ...
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\Autowired;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
+use Psr\Log\LoggerInterface;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
-$autowired = new \Kaspi\DiContainer\Autowired();
-$container = new \Kaspi\DiContainer\DiContainer(
-    config: [
-        \Psr\Log\LoggerInterface::class => static function () {
-            return (new \Monolog\Logger('my-logger'))
-                ->pushHandler(
-                    new Monolog\Handler\StreamHandler('/path/to/your.log', \Monolog\Level::Warning)
-                );
-        }
-    ],
-    autowire: $autowired
+$keyGen = new KeyGeneratorForNamedParameter();
+$autowired = new Autowired($keyGen);
+$container = new DiContainer(autowire: $autowired);
+
+$container->set(
+    LoggerInterface::class,
+    static fn () => (new Logger('my-logger'))
+            ->pushHandler(new StreamHandler('/path/to/your.log', \Monolog\Level::Warning));
+    }
 );
+```
 
-// ...
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\MyClass;
 
 /** @var MyClass $myClass */
 $myClass = $container->get(MyClass::class);
