@@ -8,16 +8,28 @@ use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes\EasyContainer;
 
 /**
  * @internal
+ *
+ * @covers \Kaspi\DiContainer\Autowired::__construct
+ * @covers \Kaspi\DiContainer\Autowired::callMethod
+ * @covers \Kaspi\DiContainer\Autowired::filterInputArgs
+ * @covers \Kaspi\DiContainer\Autowired::getKeyGeneratorForNamedParameter
+ * @covers \Kaspi\DiContainer\Autowired::resolveInstance
+ * @covers \Kaspi\DiContainer\Autowired::resolveParameters
+ * @covers \Kaspi\DiContainer\DiContainer::__construct
+ * @covers \Kaspi\DiContainer\DiContainer::get
+ * @covers \Kaspi\DiContainer\DiContainer::has
+ * @covers \Kaspi\DiContainer\DiContainer::parseConstructorArguments
+ * @covers \Kaspi\DiContainer\DiContainer::resolve
+ * @covers \Kaspi\DiContainer\DiContainer::set
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::__construct
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::id
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::idConstructor
  */
-#[CoversClass(DiContainer::class)]
-#[CoversClass(Autowired::class)]
-#[CoversClass(KeyGeneratorForNamedParameter::class)]
 class AutowiredTest extends TestCase
 {
     public function testClassNotExist(): void
@@ -36,7 +48,7 @@ class AutowiredTest extends TestCase
 
         (new Autowired(
             new KeyGeneratorForNamedParameter()
-        ))->callMethod(new DiContainer(), \Tests\Fixtures\Classes\EasyContainer::class, 'store');
+        ))->callMethod(new DiContainer(), EasyContainer::class, 'store');
     }
 
     public function testResolveMethodSimple(): void
@@ -45,7 +57,7 @@ class AutowiredTest extends TestCase
         $container = new DiContainer(autowire: $autowire);
         $result = $autowire->callMethod(
             container: $container,
-            id: \Tests\Fixtures\Classes\EasyContainer::class,
+            id: EasyContainer::class,
             method: 'has',
             methodArgs: ['id' => 'DependencyId']
         );

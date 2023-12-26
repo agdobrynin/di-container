@@ -1,0 +1,9 @@
+services:
+    php:
+        build:
+            dockerfile: Dockerfile
+            args:
+                GROUP_ID: 1000
+                USER_ID: 1000
+        volumes:
+            - '.:/var/www/html'

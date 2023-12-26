@@ -9,17 +9,28 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\KeyGeneratorForNamedParameterInterface;
 use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 /**
  * @internal
+ *
+ * @covers \Kaspi\DiContainer\Autowired::__construct
+ * @covers \Kaspi\DiContainer\Autowired::filterInputArgs
+ * @covers \Kaspi\DiContainer\Autowired::getKeyGeneratorForNamedParameter
+ * @covers \Kaspi\DiContainer\Autowired::resolveInstance
+ * @covers \Kaspi\DiContainer\Autowired::resolveParameters
+ * @covers \Kaspi\DiContainer\DiContainer::__construct
+ * @covers \Kaspi\DiContainer\DiContainer::get
+ * @covers \Kaspi\DiContainer\DiContainer::has
+ * @covers \Kaspi\DiContainer\DiContainer::parseConstructorArguments
+ * @covers \Kaspi\DiContainer\DiContainer::resolve
+ * @covers \Kaspi\DiContainer\DiContainer::set
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::__construct
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::id
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::idConstructor
  */
-#[CoversClass(DiContainer::class)]
-#[CoversClass(Autowired::class)]
-#[CoversClass(KeyGeneratorForNamedParameter::class)]
 class ContainerTest extends TestCase
 {
     protected ?KeyGeneratorForNamedParameterInterface $keyGeneratorForNameParameter = null;
