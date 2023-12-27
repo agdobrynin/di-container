@@ -298,11 +298,9 @@ class ContainerTest extends TestCase
 
     public function testNoConstructor(): void
     {
-        $instances = [
-            \Tests\Fixtures\Classes\NoConstructorAndInvokable::class,
-        ];
-        $autowire = new Autowired($this->keyGeneratorForNameParameter);
-        $container = new DiContainer($instances, $autowire);
+        $container = (new DiContainer(autowire: $this->autowire))
+            ->set(\Tests\Fixtures\Classes\NoConstructorAndInvokable::class);
+
         $result = $container->get(\Tests\Fixtures\Classes\NoConstructorAndInvokable::class);
 
         $this->assertEquals('abc', $result());
@@ -403,7 +401,7 @@ class ContainerTest extends TestCase
             ]
         );
 
-        $container = new DiContainer($definitions, new Autowired(new KeyGeneratorForNamedParameter()));
+        $container = new DiContainer($definitions, $this->autowire);
         $logger = $container->get(\Tests\Fixtures\Classes\Logger::class);
 
         $this->assertEquals('app-logger', $logger->name);
