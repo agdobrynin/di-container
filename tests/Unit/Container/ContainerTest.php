@@ -12,6 +12,8 @@ use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Tests\Fixtures\Classes;
+use Tests\Fixtures\Classes\Interfaces;
 
 /**
  * @internal
@@ -118,10 +120,10 @@ class ContainerTest extends TestCase
 
         $instances = [
             'all_records' => ['first', 'second'],
-            \Tests\Fixtures\Classes\Db::class => [
+            Classes\Db::class => [
                 'data' => '*all_records',
             ],
-            \Tests\Fixtures\Classes\Interfaces\CacheTypeInterface::class => \Tests\Fixtures\Classes\FileCache::class,
+            Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
         ];
 
         $container = new DiContainer(
@@ -129,31 +131,33 @@ class ContainerTest extends TestCase
             autowire: new Autowired(new KeyGeneratorForNamedParameter($paramsDelimiter)),
         );
 
-        $repository = $container->get(\Tests\Fixtures\Classes\UserRepository::class);
+        $repository = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('first, second', $repository->all());
         $this->assertNull($repository->db->store);
-        $this->assertTrue($container->has(\Tests\Fixtures\Classes\Db::class.'*__construct*data'));
+        $this->assertTrue($container->has(Classes\Db::class.'*__construct*data'));
     }
 
     public function testResolveByInterfaceWithNamedArgClassInstance(): void
     {
         $definitions = static function (): \Generator {
-            yield \Tests\Fixtures\Classes\Interfaces\CacheTypeInterface::class => \Tests\Fixtures\Classes\FileCache::class;
+            yield Interfaces\CacheTypeInterface::class => Classes\FileCache::class;
 
-            yield 'database' => static fn (\Tests\Fixtures\Classes\Interfaces\CacheTypeInterface $cache) => new \Tests\Fixtures\Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
+            yield 'database' => static function (Interfaces\CacheTypeInterface $cache): Classes\Db {
+                return new Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
+            };
 
-            yield \Tests\Fixtures\Classes\UserRepository::class => ['db' => '@database'];
+            yield Classes\UserRepository::class => ['db' => '@database'];
         };
 
         $container = new DiContainer(
             $definitions(),
             new Autowired(new KeyGeneratorForNamedParameter())
         );
-        $repo = $container->get(\Tests\Fixtures\Classes\UserRepository::class);
+        $repo = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('Lorem, Ipsum', $repo->all());
-        $this->assertInstanceOf(\Tests\Fixtures\Classes\FileCache::class, $repo->db->cache);
+        $this->assertInstanceOf(Classes\FileCache::class, $repo->db->cache);
     }
 
     public function testResolveByInterfaceWithNamedArgCallableFunction(): void
@@ -161,16 +165,16 @@ class ContainerTest extends TestCase
         $base = ['Lorem', 'Ipsum'];
 
         $definitions = static function () use ($base): \Generator {
-            yield 'database' => static fn () => new \Tests\Fixtures\Classes\Db($base);
+            yield 'database' => static fn () => new Classes\Db($base);
 
-            yield \Tests\Fixtures\Classes\UserRepository::class => ['db' => '@database'];
+            yield Classes\UserRepository::class => ['db' => '@database'];
         };
 
         $container = new DiContainer(
             $definitions(),
             new Autowired(new KeyGeneratorForNamedParameter())
         );
-        $repo = $container->get(\Tests\Fixtures\Classes\UserRepository::class);
+        $repo = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('Lorem, Ipsum', $repo->all());
     }
@@ -179,12 +183,12 @@ class ContainerTest extends TestCase
     {
         $container = (new DiContainer(autowire: $this->autowire))
             ->set(
-                \Tests\Fixtures\Classes\Db::class,
+                Classes\Db::class,
                 ['data' => [], 'store' => '/var/log'],
             )
         ;
 
-        $db = $container->get(\Tests\Fixtures\Classes\Db::class);
+        $db = $container->get(Classes\Db::class);
 
         $this->assertEmpty($db->all());
         $this->assertEquals('/var/log', $db->store);
@@ -194,14 +198,14 @@ class ContainerTest extends TestCase
     public function testByInterfaceWithParams(): void
     {
         $instances = [
-            \Tests\Fixtures\Classes\Interfaces\SumInterface::class => \Tests\Fixtures\Classes\Sum::class,
-            \Tests\Fixtures\Classes\Sum::class => [
+            Interfaces\SumInterface::class => Classes\Sum::class,
+            Classes\Sum::class => [
                 'init' => 50,
             ],
         ];
 
         $sum = (new DiContainer($instances, $this->autowire))
-            ->get(\Tests\Fixtures\Classes\Interfaces\SumInterface::class)
+            ->get(Interfaces\SumInterface::class)
         ;
 
         $this->assertEquals(60, $sum->add(10));
@@ -210,11 +214,11 @@ class ContainerTest extends TestCase
     public function testByInterfaceOnly(): void
     {
         $instances = [
-            \Tests\Fixtures\Classes\Interfaces\SumInterface::class => \Tests\Fixtures\Classes\Sum::class,
+            Interfaces\SumInterface::class => Classes\Sum::class,
         ];
 
         $sum = (new DiContainer($instances, $this->autowire))
-            ->get(\Tests\Fixtures\Classes\Interfaces\SumInterface::class)
+            ->get(Interfaces\SumInterface::class)
         ;
 
         $this->assertEquals('Init data 0', (string) $sum);
@@ -225,10 +229,10 @@ class ContainerTest extends TestCase
     {
         $sum = (new DiContainer(autowire: $this->autowire))
             ->set(
-                \Tests\Fixtures\Classes\Interfaces\SumInterface::class,
-                static fn () => new \Tests\Fixtures\Classes\Sum(100)
+                Interfaces\SumInterface::class,
+                static fn () => new Classes\Sum(100)
             )
-            ->get(\Tests\Fixtures\Classes\Interfaces\SumInterface::class)
+            ->get(Interfaces\SumInterface::class)
         ;
 
         $this->assertEquals('Init data 100', (string) $sum);
@@ -241,13 +245,10 @@ class ContainerTest extends TestCase
             new KeyGeneratorForNamedParameter('.')
         );
         $container = (new DiContainer(autowire: $autowire))
-            ->set(
-                \Tests\Fixtures\Classes\Sum::class,
-                ['init' => 200]
-            )
+            ->set(Classes\Sum::class, ['init' => 200])
         ;
 
-        $init = $container->get(\Tests\Fixtures\Classes\Sum::class.'.__construct.init');
+        $init = $container->get(Classes\Sum::class.'.__construct.init');
 
         $this->assertEquals(200, $init);
     }
@@ -258,14 +259,11 @@ class ContainerTest extends TestCase
             new KeyGeneratorForNamedParameter('!')
         );
         $container = (new DiContainer(autowire: $autowire))
-            ->set(
-                \Tests\Fixtures\Classes\Sum::class,
-                ['init' => 99]
-            )
+            ->set(Classes\Sum::class, ['init' => 99])
         ;
 
-        $this->assertTrue($container->has(\Tests\Fixtures\Classes\Sum::class.'!__construct!init'));
-        $this->assertEquals(99, $container->get(\Tests\Fixtures\Classes\Sum::class.'!__construct!init'));
+        $this->assertTrue($container->has(Classes\Sum::class.'!__construct!init'));
+        $this->assertEquals(99, $container->get(Classes\Sum::class.'!__construct!init'));
     }
 
     public function testResolveConstructorStringParameter(): void
@@ -275,12 +273,12 @@ class ContainerTest extends TestCase
             ->set('delay', 100)
         ;
 
-        $sendEmail = $container->get(\Tests\Fixtures\Classes\SendEmail::class);
+        $sendEmail = $container->get(Classes\SendEmail::class);
 
         $this->assertEquals('root@email.com', $sendEmail->adminEmail);
         $this->assertTrue($sendEmail->confirm);
 
-        $reportEmail = $container->get(\Tests\Fixtures\Classes\ReportEmail::class);
+        $reportEmail = $container->get(Classes\ReportEmail::class);
 
         $this->assertEquals('root@email.com', $reportEmail->adminEmail);
         $this->assertEquals(100, $reportEmail->delay);
@@ -289,19 +287,19 @@ class ContainerTest extends TestCase
 
     public function testException(): void
     {
-        $container = new DiContainer();
-
         $this->expectException(ContainerExceptionInterface::class);
 
+        $container = new DiContainer();
         $container->get('test');
     }
 
     public function testNoConstructor(): void
     {
         $container = (new DiContainer(autowire: $this->autowire))
-            ->set(\Tests\Fixtures\Classes\NoConstructorAndInvokable::class);
+            ->set(Classes\NoConstructorAndInvokable::class)
+        ;
 
-        $result = $container->get(\Tests\Fixtures\Classes\NoConstructorAndInvokable::class);
+        $result = $container->get(Classes\NoConstructorAndInvokable::class);
 
         $this->assertEquals('abc', $result());
     }
@@ -339,9 +337,7 @@ class ContainerTest extends TestCase
      */
     public function testBuildInObjectTypes(mixed $obj): void
     {
-        $container = (new DiContainer())
-            ->set('obj', $obj)
-        ;
+        $container = (new DiContainer())->set('obj', $obj);
 
         $this->assertSame($obj, $container->get('obj'));
     }
@@ -357,10 +353,10 @@ class ContainerTest extends TestCase
     public function testResolveWithoutConfig(): void
     {
         $instance = (new DiContainer(autowire: $this->autowire))
-            ->get(\Tests\Fixtures\Classes\CacheAll::class)
+            ->get(Classes\CacheAll::class)
         ;
 
-        $this->assertInstanceOf(\Tests\Fixtures\Classes\CacheAll::class, $instance);
+        $this->assertInstanceOf(Classes\CacheAll::class, $instance);
     }
 
     public function testContainerSetBuildInTypeAsArray(): void
@@ -375,11 +371,11 @@ class ContainerTest extends TestCase
     public function testClassWithSplClass(): void
     {
         $class = (new DiContainer(autowire: $this->autowire))
-            ->get(\Tests\Fixtures\Classes\ClassWithSplClass::class)
+            ->get(Classes\ClassWithSplClass::class)
         ;
 
         $this->assertInstanceOf(
-            \Tests\Fixtures\Classes\ClassWithSplClass::class,
+            Classes\ClassWithSplClass::class,
             $class
         );
         $this->assertInstanceOf(\SplQueue::class, $class->queue);
@@ -394,7 +390,7 @@ class ContainerTest extends TestCase
         $definitions = array_merge(
             $loggerConfig,
             [
-                \Tests\Fixtures\Classes\Logger::class => [
+                Classes\Logger::class => [
                     'name' => '@loggerName',
                     'file' => '@loggerFile',
                 ],
@@ -402,7 +398,7 @@ class ContainerTest extends TestCase
         );
 
         $container = new DiContainer($definitions, $this->autowire);
-        $logger = $container->get(\Tests\Fixtures\Classes\Logger::class);
+        $logger = $container->get(Classes\Logger::class);
 
         $this->assertEquals('app-logger', $logger->name);
         $this->assertEquals('/path/to/your.log', $logger->file);
