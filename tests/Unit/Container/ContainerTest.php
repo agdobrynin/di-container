@@ -235,6 +235,7 @@ class ContainerTest extends TestCase
             ->get(Interfaces\SumInterface::class)
         ;
 
+        $this->assertInstanceOf(Classes\Sum::class, $sum);
         $this->assertEquals('Init data 100', (string) $sum);
         $this->assertEquals(110, $sum->add(10));
     }
