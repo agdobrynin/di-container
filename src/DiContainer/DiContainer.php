@@ -124,11 +124,13 @@ class DiContainer implements DiContainerInterface
             throw new NotFoundContainerException("Unresolvable dependency [{$id}].");
         }
 
+        $definition = $this->definitions[$id] ?? $id;
+
         /** @var null|class-string<TClass> $abstract */
         $abstract = match (true) {
             \class_exists($id) => $id,
-            \interface_exists($id) => $this->definitions[$id] ?? $id,
-            isset($this->definitions[$id]) && \is_callable($this->definitions[$id]) => $this->definitions[$id],
+            \interface_exists($id) => $definition,
+            \is_callable($definition) => $definition,
             default => null
         };
 
