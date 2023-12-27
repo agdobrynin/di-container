@@ -137,6 +137,45 @@ class ContainerTest extends TestCase
         $this->assertTrue($container->has(\Tests\Fixtures\Classes\Db::class.'*__construct*data'));
     }
 
+    public function testResolveByInterfaceWithNamedArgClassInstance(): void
+    {
+        $definitions = static function (): \Generator {
+            yield \Tests\Fixtures\Classes\Interfaces\CacheTypeInterface::class => \Tests\Fixtures\Classes\FileCache::class;
+
+            yield 'database' => static fn (\Tests\Fixtures\Classes\Interfaces\CacheTypeInterface $cache) => new \Tests\Fixtures\Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
+
+            yield \Tests\Fixtures\Classes\UserRepository::class => ['db' => '@database'];
+        };
+
+        $container = new DiContainer(
+            $definitions(),
+            new Autowired(new KeyGeneratorForNamedParameter())
+        );
+        $repo = $container->get(\Tests\Fixtures\Classes\UserRepository::class);
+
+        $this->assertEquals('Lorem, Ipsum', $repo->all());
+        $this->assertInstanceOf(\Tests\Fixtures\Classes\FileCache::class, $repo->db->cache);
+    }
+
+    public function testResolveByInterfaceWithNamedArgCallableFunction(): void
+    {
+        $base = ['Lorem', 'Ipsum'];
+
+        $definitions = static function () use ($base): \Generator {
+            yield 'database' => static fn () => new \Tests\Fixtures\Classes\Db($base);
+
+            yield \Tests\Fixtures\Classes\UserRepository::class => ['db' => '@database'];
+        };
+
+        $container = new DiContainer(
+            $definitions(),
+            new Autowired(new KeyGeneratorForNamedParameter())
+        );
+        $repo = $container->get(\Tests\Fixtures\Classes\UserRepository::class);
+
+        $this->assertEquals('Lorem, Ipsum', $repo->all());
+    }
+
     public function testSetWithParseParams(): void
     {
         $container = (new DiContainer(autowire: $this->autowire))
