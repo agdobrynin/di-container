@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Exception\NotFoundContainerException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\KeyGeneratorForNamedParameterInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -22,6 +23,7 @@ class DiContainer implements DiContainerInterface
 {
     protected iterable $definitions = [];
     protected array $resolved = [];
+    protected ?KeyGeneratorForNamedParameterInterface $keyGenerator;
 
     /**
      * @param iterable<string, mixed> $definitions
@@ -32,6 +34,8 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
     ) {
+        $this->keyGenerator = $this->autowire?->getKeyGeneratorForNamedParameter();
+
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
             $this->set($key, $abstract);
@@ -69,7 +73,8 @@ class DiContainer implements DiContainerInterface
         }
 
         if (\is_iterable($abstract)
-            && $constructParams = $this->parseConstructorArguments($id, (array) $abstract)) {
+            && $constructParams = $this->parseConstructorArguments($id, (array) $abstract)
+        ) {
             $this->definitions = \array_merge($this->definitions, $constructParams);
         } else {
             $this->definitions[$id] = $abstract;
@@ -80,21 +85,17 @@ class DiContainer implements DiContainerInterface
 
     protected function parseConstructorArguments(string $id, array $params): ?array
     {
-        if ([] !== $params && \class_exists($id) && $this->autowire) {
+        if ([] !== $params && \class_exists($id) && $this->keyGenerator) {
             $newParams = [];
 
             foreach ($params as $argName => $argValue) {
-                $key = $this->autowire
-                    ->getKeyGeneratorForNamedParameter()
-                    ->idConstructor($id, $argName)
-                ;
+                $key = $this->keyGenerator->idConstructor($id, $argName);
 
-                if ($this->isGlobalArgumentForNamedParameter($argValue)) {
-                    $offset = strlen(
-                        $this->autowire
-                            ->getKeyGeneratorForNamedParameter()
-                            ->delimiter()
-                    );
+                if ($this->keyGenerator
+                    && \is_string($argValue)
+                    && \str_starts_with($argValue, $this->keyGenerator->delimiter())
+                ) {
+                    $offset = strlen($this->keyGenerator->delimiter());
                     $newParams[$key] = $this->get(substr($argValue, $offset));
                 } else {
                     $newParams[$key] = $argValue;
@@ -151,15 +152,5 @@ class DiContainer implements DiContainerInterface
         $this->resolved[$id] = $this->definitions[$id];
 
         return $this->resolved[$id];
-    }
-
-    protected function isGlobalArgumentForNamedParameter(mixed $argValue): bool
-    {
-        return $this->autowire
-            && \is_string($argValue)
-            && \str_starts_with(
-                $argValue,
-                $this->autowire->getKeyGeneratorForNamedParameter()->delimiter()
-            );
     }
 }
