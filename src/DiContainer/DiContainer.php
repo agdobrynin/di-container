@@ -41,7 +41,7 @@ class DiContainer implements DiContainerInterface
     /**
      * @param class-string<TClass>|string $id
      *
-     * @return ($id is class-string ? TClass: mixed)
+     * @return mixed|TClass
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
