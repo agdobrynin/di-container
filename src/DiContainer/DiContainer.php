@@ -20,26 +20,31 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class DiContainer implements DiContainerInterface
 {
-    protected array $config = [];
+    protected iterable $definitions = [];
     protected array $resolved = [];
 
     /**
-     * @param array<string,mixed> $config
+     * @param iterable<string, mixed> $definitions
+     *
+     * @throws ContainerExceptionInterface
      */
     public function __construct(
-        array $config = [],
+        iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
     ) {
-        foreach ($config as $id => $abstract) {
+        foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
             $this->set($key, $abstract);
         }
     }
 
     /**
-     * @param class-string<TClass> $id
+     * @param class-string<TClass>|string $id
      *
-     * @return mixed|TClass
+     * @return ($id is class-string ? TClass: mixed)
+     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function get(string $id): mixed
     {
@@ -48,7 +53,7 @@ class DiContainer implements DiContainerInterface
 
     public function has(string $id): bool
     {
-        return isset($this->config[$id])
+        return isset($this->definitions[$id])
             || \class_exists($id)
             || \interface_exists($id);
     }
@@ -59,21 +64,21 @@ class DiContainer implements DiContainerInterface
             $abstract = $id;
         }
 
-        if (isset($this->config[$id])) {
+        if (isset($this->definitions[$id])) {
             throw new ContainerException("Key [{$id}] already registered in container.");
         }
 
-        if (\is_array($abstract)
+        if (\is_iterable($abstract)
             && $constructParams = $this->parseConstructorArguments($id, $abstract)) {
-            $this->config = \array_merge($this->config, $constructParams);
+            $this->definitions = \array_merge($this->definitions, $constructParams);
         } else {
-            $this->config[$id] = $abstract;
+            $this->definitions[$id] = $abstract;
         }
 
         return $this;
     }
 
-    protected function parseConstructorArguments(string $id, array $params): ?array
+    protected function parseConstructorArguments(string $id, iterable $params): ?array
     {
         if ([] !== $params && \class_exists($id) && $this->autowire) {
             $newParams = [];
@@ -83,7 +88,17 @@ class DiContainer implements DiContainerInterface
                     ->getKeyGeneratorForNamedParameter()
                     ->idConstructor($id, $argName)
                 ;
-                $newParams[$key] = $argValue;
+
+                if ($this->isGlobalArgumentForNamedParameter($argValue)) {
+                    $offset = strlen(
+                        $this->autowire
+                            ->getKeyGeneratorForNamedParameter()
+                            ->delimiter()
+                    );
+                    $newParams[$key] = $this->get(substr($argValue, $offset));
+                } else {
+                    $newParams[$key] = $argValue;
+                }
             }
 
             return $newParams;
@@ -111,8 +126,8 @@ class DiContainer implements DiContainerInterface
         /** @var null|class-string<TClass> $abstract */
         $abstract = match (true) {
             \class_exists($id) => $id,
-            \interface_exists($id) => $this->config[$id] ?? $id,
-            isset($this->config[$id]) && \is_callable($this->config[$id]) => $this->config[$id],
+            \interface_exists($id) => $this->definitions[$id] ?? $id,
+            isset($this->definitions[$id]) && \is_callable($this->definitions[$id]) => $this->definitions[$id],
             default => null
         };
 
@@ -133,8 +148,18 @@ class DiContainer implements DiContainerInterface
             }
         }
 
-        $this->resolved[$id] = $this->config[$id];
+        $this->resolved[$id] = $this->definitions[$id];
 
         return $this->resolved[$id];
+    }
+
+    protected function isGlobalArgumentForNamedParameter(mixed $argValue): bool
+    {
+        return $this->autowire
+            && \is_string($argValue)
+            && \str_starts_with(
+                $argValue,
+                $this->autowire->getKeyGeneratorForNamedParameter()->delimiter()
+            );
     }
 }

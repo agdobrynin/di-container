@@ -9,8 +9,13 @@ use Kaspi\DiContainer\Interfaces\KeyGeneratorForNamedParameterInterface;
 final class KeyGeneratorForNamedParameter implements KeyGeneratorForNamedParameterInterface
 {
     public function __construct(
-        protected string $delimiterForNotationParamAndClass = '.'
+        protected string $delimiterForNotationParamAndClass = '@'
     ) {}
+
+    public function delimiter(): string
+    {
+        return $this->delimiterForNotationParamAndClass;
+    }
 
     public function id(string $className, string $methodName, string $argName): string
     {
