@@ -130,10 +130,13 @@ use Monolog\{Logger, Handler\StreamHandler, Level};
 $keyGen = new KeyGeneratorForNamedParameter();
 $container = new DiContainer(autowire: new Autowired($keyGen));
 
+$scontainer->set('loggerFile', '/path/to/your.log');
+$scontainer->set('loggerName', 'app-logger');
 $container->set(
     LoggerInterface::class,
-    static fn (string $loggerFile) => (new Logger('my-logger'))
-            ->pushHandler(new StreamHandler('/path/to/your.log'));
+    static function (string $loggerFile, string $loggerName) {
+        return (new Logger($loggerName))
+            ->pushHandler(new StreamHandler($loggerFile));
     }
 );
 ```
