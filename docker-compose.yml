@@ -3,7 +3,10 @@ services:
         build:
             dockerfile: Dockerfile
             args:
-                GROUP_ID: 1000
-                USER_ID: 1000
+                UID: 1000
+                GID: 1000
+        environment:
+            UID: 1000
+            GID: 1000
         volumes:
             - '.:/var/www/html'
