@@ -387,4 +387,27 @@ class ContainerTest extends TestCase
         );
         $this->assertInstanceOf(\SplQueue::class, $class->queue);
     }
+
+    public function testMultipleGlobalArguments(): void
+    {
+        $loggerConfig = [
+            'loggerFile' => '/path/to/your.log',
+            'loggerName' => 'app-logger',
+        ];
+        $definitions = array_merge(
+            $loggerConfig,
+            [
+                \Tests\Fixtures\Classes\Logger::class => [
+                    'name' => '@loggerName',
+                    'file' => '@loggerFile',
+                ],
+            ]
+        );
+
+        $container = new DiContainer($definitions, new Autowired(new KeyGeneratorForNamedParameter()));
+        $logger = $container->get(\Tests\Fixtures\Classes\Logger::class);
+
+        $this->assertEquals('app-logger', $logger->name);
+        $this->assertEquals('/path/to/your.log', $logger->file);
+    }
 }
