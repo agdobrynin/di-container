@@ -22,6 +22,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Kaspi\DiContainer\DiContainer::__construct
  * @covers \Kaspi\DiContainer\DiContainer::get
  * @covers \Kaspi\DiContainer\DiContainer::has
+ * @covers \Kaspi\DiContainer\DiContainer::isGlobalArgumentForNamedParameter
  * @covers \Kaspi\DiContainer\DiContainer::parseConstructorArguments
  * @covers \Kaspi\DiContainer\DiContainer::resolve
  * @covers \Kaspi\DiContainer\DiContainer::set

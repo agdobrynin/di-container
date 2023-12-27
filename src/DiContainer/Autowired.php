@@ -130,7 +130,9 @@ final class Autowired implements AutowiredInterface
 
             try {
                 if ($type = $parameter->getType()?->getName()) {
-                    $dependencies[$parameterName] = $container->get($type);
+                    $dependencies[$parameterName] = $container->has($parameterId)
+                        ? $container->get($parameterId)
+                        : $container->get($type);
                 } else {
                     throw new AutowiredException("Unknown type for [{$parameter}] in class [{$className}]");
                 }

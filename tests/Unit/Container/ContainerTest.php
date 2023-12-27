@@ -24,10 +24,12 @@ use Psr\Container\ContainerInterface;
  * @covers \Kaspi\DiContainer\DiContainer::__construct
  * @covers \Kaspi\DiContainer\DiContainer::get
  * @covers \Kaspi\DiContainer\DiContainer::has
+ * @covers \Kaspi\DiContainer\DiContainer::isGlobalArgumentForNamedParameter
  * @covers \Kaspi\DiContainer\DiContainer::parseConstructorArguments
  * @covers \Kaspi\DiContainer\DiContainer::resolve
  * @covers \Kaspi\DiContainer\DiContainer::set
  * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::__construct
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::delimiter
  * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::id
  * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::idConstructor
  */
@@ -92,7 +94,7 @@ class ContainerTest extends TestCase
         $container->get('test');
     }
 
-    public function testGetClosureWithParams(): void
+    public function testGetClosureWithGlobalParams(): void
     {
         $container = (new DiContainer(autowire: $this->autowire))
             ->set('myParams', 1)
@@ -112,17 +114,19 @@ class ContainerTest extends TestCase
 
     public function testClassResolve(): void
     {
+        // Delimiter for params name
+        $paramsDelimiter = '*';
+
         $instances = [
+            'all_records' => ['first', 'second'],
             \Tests\Fixtures\Classes\Db::class => [
-                'data' => ['first', 'second'],
+                'data' => '*all_records',
             ],
             \Tests\Fixtures\Classes\Interfaces\CacheTypeInterface::class => \Tests\Fixtures\Classes\FileCache::class,
         ];
-        // Delimiter for params name in class constructor
-        $paramsDelimiter = '@@';
 
         $container = new DiContainer(
-            config: $instances,
+            definitions: $instances,
             autowire: new Autowired(new KeyGeneratorForNamedParameter($paramsDelimiter)),
         );
 
@@ -130,7 +134,46 @@ class ContainerTest extends TestCase
 
         $this->assertEquals('first, second', $repository->all());
         $this->assertNull($repository->db->store);
-        $this->assertTrue($container->has(\Tests\Fixtures\Classes\Db::class.'@@__construct@@data'));
+        $this->assertTrue($container->has(\Tests\Fixtures\Classes\Db::class.'*__construct*data'));
+    }
+
+    public function testResolveByInterfaceWithNamedArgClassInstance(): void
+    {
+        $definitions = static function (): \Generator {
+            yield \Tests\Fixtures\Classes\Interfaces\CacheTypeInterface::class => \Tests\Fixtures\Classes\FileCache::class;
+
+            yield 'database' => static fn (\Tests\Fixtures\Classes\Interfaces\CacheTypeInterface $cache) => new \Tests\Fixtures\Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
+
+            yield \Tests\Fixtures\Classes\UserRepository::class => ['db' => '@database'];
+        };
+
+        $container = new DiContainer(
+            $definitions(),
+            new Autowired(new KeyGeneratorForNamedParameter())
+        );
+        $repo = $container->get(\Tests\Fixtures\Classes\UserRepository::class);
+
+        $this->assertEquals('Lorem, Ipsum', $repo->all());
+        $this->assertInstanceOf(\Tests\Fixtures\Classes\FileCache::class, $repo->db->cache);
+    }
+
+    public function testResolveByInterfaceWithNamedArgCallableFunction(): void
+    {
+        $base = ['Lorem', 'Ipsum'];
+
+        $definitions = static function () use ($base): \Generator {
+            yield 'database' => static fn () => new \Tests\Fixtures\Classes\Db($base);
+
+            yield \Tests\Fixtures\Classes\UserRepository::class => ['db' => '@database'];
+        };
+
+        $container = new DiContainer(
+            $definitions(),
+            new Autowired(new KeyGeneratorForNamedParameter())
+        );
+        $repo = $container->get(\Tests\Fixtures\Classes\UserRepository::class);
+
+        $this->assertEquals('Lorem, Ipsum', $repo->all());
     }
 
     public function testSetWithParseParams(): void
@@ -213,7 +256,7 @@ class ContainerTest extends TestCase
     public function testDelimiterForNotationParamAndClass(): void
     {
         $autowire = new Autowired(
-            new KeyGeneratorForNamedParameter('@')
+            new KeyGeneratorForNamedParameter('!')
         );
         $container = (new DiContainer(autowire: $autowire))
             ->set(
@@ -222,8 +265,8 @@ class ContainerTest extends TestCase
             )
         ;
 
-        $this->assertTrue($container->has(\Tests\Fixtures\Classes\Sum::class.'@__construct@init'));
-        $this->assertEquals(99, $container->get(\Tests\Fixtures\Classes\Sum::class.'@__construct@init'));
+        $this->assertTrue($container->has(\Tests\Fixtures\Classes\Sum::class.'!__construct!init'));
+        $this->assertEquals(99, $container->get(\Tests\Fixtures\Classes\Sum::class.'!__construct!init'));
     }
 
     public function testResolveConstructorStringParameter(): void
@@ -343,5 +386,28 @@ class ContainerTest extends TestCase
             $class
         );
         $this->assertInstanceOf(\SplQueue::class, $class->queue);
+    }
+
+    public function testMultipleGlobalArguments(): void
+    {
+        $loggerConfig = [
+            'loggerFile' => '/path/to/your.log',
+            'loggerName' => 'app-logger',
+        ];
+        $definitions = array_merge(
+            $loggerConfig,
+            [
+                \Tests\Fixtures\Classes\Logger::class => [
+                    'name' => '@loggerName',
+                    'file' => '@loggerFile',
+                ],
+            ]
+        );
+
+        $container = new DiContainer($definitions, new Autowired(new KeyGeneratorForNamedParameter()));
+        $logger = $container->get(\Tests\Fixtures\Classes\Logger::class);
+
+        $this->assertEquals('app-logger', $logger->name);
+        $this->assertEquals('/path/to/your.log', $logger->file);
     }
 }
