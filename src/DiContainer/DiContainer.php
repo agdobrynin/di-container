@@ -69,7 +69,7 @@ class DiContainer implements DiContainerInterface
         }
 
         if (\is_iterable($abstract)
-            && $constructParams = $this->parseConstructorArguments($id, $abstract)) {
+            && $constructParams = $this->parseConstructorArguments($id, (array) $abstract)) {
             $this->definitions = \array_merge($this->definitions, $constructParams);
         } else {
             $this->definitions[$id] = $abstract;
@@ -78,7 +78,7 @@ class DiContainer implements DiContainerInterface
         return $this;
     }
 
-    protected function parseConstructorArguments(string $id, iterable $params): ?array
+    protected function parseConstructorArguments(string $id, array $params): ?array
     {
         if ([] !== $params && \class_exists($id) && $this->autowire) {
             $newParams = [];
