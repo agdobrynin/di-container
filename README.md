@@ -23,23 +23,23 @@ class MyClass {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\Autowired;
-use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
+use Kaspi\DiContainer\{
+    Autowired, DiContainer, KeyGeneratorForNamedParameter
+};
 
 $keyGen = new KeyGeneratorForNamedParameter();
-$autowired = new Autowired($keyGen);
 $container = new DiContainer(
-    config: [
+    [
         \PDO::class => [
             // в конструкторе класса \PDO
             // аргумент с именем $dsn получит значение
             'dsn' => 'sqlite:/opt/databases/mydb.sq3'
         ];
     ],
-    autowire: $autowired
+    new Autowired($keyGen)
 );
 ```
+
 ```php
 // Получение данных из контейнера с автоматическим связыванием зависимостей
 use App\MyClass;
@@ -47,6 +47,56 @@ use App\MyClass;
 /** @var MyClass $myClass */
 $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
+```
+
+Использование именованного аргумента в объявлении:
+
+```php
+// Объявление класса
+namespace App;
+
+class MyUsers {
+    public function __construct(public array $users) {}
+}
+
+class MyEmployers {
+    public function __construct(public array $employers) {}
+}
+```
+
+```php
+// Определения для DiContainer
+use App\{MyUsers, MyEmployers};
+use Kaspi\DiContainer\{
+    Autowired, DiContainer, KeyGeneratorForNamedParameter
+};
+
+// Определение символа разделителя параметров для авто связывания
+// по умолчанию в конструкторе указан символ @
+$keyGen = new KeyGeneratorForNamedParameter();
+// определения для авто связывания
+// значение-ссылка начинается с символа указанного
+// в KeyGeneratorForNamedParameter - например "@data" будет искать
+// в контейнере ключ "data".
+$definitions = [
+    'data' => ['user1', 'user2'],
+    App\MyUsers::class => ['users' => '@data'],
+    App\MyEmployers::class => ['employers' => '@data'],
+};
+
+$container = new DiContainer($definitions, new Autowired($keyGen));
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\{MyUsers, MyEmployers};
+
+/** @var MyUsers::class $users */
+$users = $container->get(MyUsers::class);
+print implode(',' $users->users); // user1, user2
+/** @var MyEmployers::class $employers */
+$employers = $container->get(MyEmployers::class);
+print implode(',' $users->employers); // user1, user2
 ```
 
 Получение класса по интерфейсу
@@ -71,21 +121,19 @@ class MyClass {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\Autowired;
-use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
+use Kaspi\DiContainer\{
+    Autowired, DiContainer, KeyGeneratorForNamedParameter
+};
 use Psr\Log\LoggerInterface;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+use Monolog\{Logger, Handler\StreamHandler, Level};
 
 $keyGen = new KeyGeneratorForNamedParameter();
-$autowired = new Autowired($keyGen);
-$container = new DiContainer(autowire: $autowired);
+$container = new DiContainer(autowire: new Autowired($keyGen));
 
 $container->set(
     LoggerInterface::class,
-    static fn () => (new Logger('my-logger'))
-            ->pushHandler(new StreamHandler('/path/to/your.log', \Monolog\Level::Warning));
+    static fn (string $loggerFile) => (new Logger('my-logger'))
+            ->pushHandler(new StreamHandler('/path/to/your.log'));
     }
 );
 ```
