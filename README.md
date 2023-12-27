@@ -107,11 +107,7 @@ namespace App;
 use Psr\Log\LoggerInterface;
 
 class MyClass {
-    protected LoggerInterface $logger;
-    
-    public function __construct(public LoggerInterface $logger) {
-        $this->logger = $this->logger;
-    }
+    public function __construct(protected LoggerInterface $logger) {}
     
     public function logger(): LoggerInterface {
         return $this->logger;
