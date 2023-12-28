@@ -15,7 +15,6 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
- *
  * @template TClass of object
  */
 class DiContainer implements DiContainerInterface
@@ -63,7 +62,7 @@ class DiContainer implements DiContainerInterface
             || \interface_exists($id);
     }
 
-    public function set(string $id, mixed $abstract = null, ?array $arguments = null): self
+    public function set(string $id, mixed $abstract = null, ?array $arguments = null): static
     {
         if (null === $abstract) {
             $abstract = $id;
@@ -75,7 +74,7 @@ class DiContainer implements DiContainerInterface
 
         $args = match (true) {
             null !== $arguments => $arguments,
-            \is_iterable($abstract) => $abstract[self::ARGUMENTS] ?? null,
+            \is_iterable($abstract) => $abstract[static::ARGUMENTS] ?? null,
             default => null,
         };
 
