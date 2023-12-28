@@ -107,39 +107,24 @@ final class Autowired implements AutowiredInterface
                 ->id($className, $methodName, $parameterName)
             ;
 
-            $type = $parameter->getType();
-
-            if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
-                try {
-                    $dependencies[$parameterName] = $container->has($parameterId)
-                        ? $container->get($parameterId)
-                        : $container->get($parameterName);
-                } catch (ContainerExceptionInterface) {
-                    if (!$parameter->isDefaultValueAvailable()) {
-                        $message = "Unresolvable dependency [{$parameter}] in class [{$className}]";
-                        $message .= " in container by id [{$parameterId}] or [{$parameterName}]";
-
-                        throw new AutowiredException($message);
-                    }
-
-                    $dependencies[$parameterName] = $parameter->getDefaultValue();
-                }
-
-                continue;
-            }
+            $parameterType = $parameter->getType();
+            $isBuildIn = (!$parameterType instanceof \ReflectionNamedType)
+                || $parameterType->isBuiltin();
 
             try {
-                if ($type = $parameter->getType()?->getName()) {
-                    $dependencies[$parameterName] = $container->has($parameterId)
-                        ? $container->get($parameterId)
-                        : $container->get($type);
-                } else {
-                    throw new AutowiredException("Unknown type for [{$parameter}] in class [{$className}]");
-                }
+                $dependencies[$parameterName] = $container->has($parameterId)
+                    ? $container->get($parameterId)
+                    : $container->get(
+                        $isBuildIn
+                        ? $parameterName
+                        : $parameterType->getName()
+                    );
             } catch (ContainerExceptionInterface) {
-                if ($parameter->isDefaultValueAvailable()) {
-                    $dependencies[$parameterName] = $parameter->getDefaultValue();
+                if (!$parameter->isDefaultValueAvailable()) {
+                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$className}::{$methodName}]");
                 }
+
+                $dependencies[$parameterName] = $parameter->getDefaultValue();
             }
         }
 

@@ -89,29 +89,29 @@ class DiContainer implements DiContainerInterface
         return $this;
     }
 
-    protected function parseConstructorArguments(string $id, array $params): ?array
+    protected function parseConstructorArguments(string $id, array $params): array
     {
-        if ([] !== $params && \class_exists($id) && $this->keyGenerator) {
-            $newParams = [];
-
-            foreach ($params as $argName => $argValue) {
-                $key = $this->keyGenerator->idConstructor($id, $argName);
-
-                if ($this->keyGenerator
-                    && \is_string($argValue)
-                    && \str_starts_with($argValue, $this->keyGenerator->delimiter())
-                ) {
-                    $offset = strlen($this->keyGenerator->delimiter());
-                    $newParams[$key] = $this->get(substr($argValue, $offset));
-                } else {
-                    $newParams[$key] = $argValue;
-                }
-            }
-
-            return $newParams;
+        if (!\class_exists($id) || null === $this->keyGenerator) {
+            return [];
         }
 
-        return null;
+        $newParams = [];
+
+        foreach ($params as $argName => $argValue) {
+            $key = $this->keyGenerator->idConstructor($id, $argName);
+
+            if ($this->keyGenerator
+                && \is_string($argValue)
+                && \str_starts_with($argValue, $this->keyGenerator->delimiter())
+            ) {
+                $offset = strlen($this->keyGenerator->delimiter());
+                $newParams[$key] = $this->get(substr($argValue, $offset));
+            } else {
+                $newParams[$key] = $argValue;
+            }
+        }
+
+        return $newParams;
     }
 
     /**
