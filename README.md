@@ -33,7 +33,9 @@ $container = new DiContainer(
         \PDO::class => [
             // в конструкторе класса \PDO
             // аргумент с именем $dsn получит значение
-            'dsn' => 'sqlite:/opt/databases/mydb.sq3'
+            'arguments' => [
+                'dsn' => 'sqlite:/opt/databases/mydb.sq3',
+            ],
         ];
     ],
     new Autowired($keyGen)
@@ -80,8 +82,16 @@ $keyGen = new KeyGeneratorForNamedParameter();
 // в контейнере ключ "data".
 $definitions = [
     'data' => ['user1', 'user2'],
-    App\MyUsers::class => ['users' => '@data'],
-    App\MyEmployers::class => ['employers' => '@data'],
+    App\MyUsers::class => [
+        'arguments' => [
+            'users' => '@data',
+        ],
+    ],
+    App\MyEmployers::class => [
+        'arguments' => [
+            'employers' => '@data',
+        ],
+    ],
 };
 
 $container = new DiContainer($definitions, new Autowired($keyGen));
@@ -106,7 +116,7 @@ namespace App;
 
 use Psr\Log\LoggerInterface;
 
-class MyClass {
+class MyLogger {
     public function __construct(protected LoggerInterface $logger) {}
     
     public function logger(): LoggerInterface {
@@ -139,12 +149,48 @@ $container->set(
 
 ```php
 // Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\MyClass;
+use App\MyLogger;
 
 /** @var MyClass $myClass */
-$myClass = $container->get(MyClass::class);
+$myClass = $container->get(MyLogger::class);
 $myClass->logger()->debug('...');
 ```
+
+Ещё один пример получение класса по интерфейсу:
+
+```php
+// Объявление классов
+namespace App;
+
+interface ClassInterface {}
+
+class ClassFirst implements ClassInterface {
+    public function __construct(public string $file) {}
+}
+```
+
+```php
+// Определения для DiContainer
+use App\ClassFirst;
+use App\ClassInterface;
+use Kaspi\DiContainer\{
+    Autowired, DiContainer, KeyGeneratorForNamedParameter
+};
+
+$container = new DiContainer(autowire: new KeyGeneratorForNamedParameter());
+$container->set(ClassFirst::class, ['arguments' => ['file' => '/var/log/app.log']]);
+$container->set(ClassInterface::class, ClassFirst::class);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\ClassInterface;
+
+/** @var ClassFirst $myClass */
+$myClass = $container->get(ClassInterface::class);
+print $myClass->file; // /var/log/app.log
+```
+
 ##### Тесты
 Прогнать тесты без подсчета покрытия кода
 ```shell

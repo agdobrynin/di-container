@@ -121,7 +121,9 @@ class ContainerTest extends TestCase
         $instances = [
             'all_records' => ['first', 'second'],
             Classes\Db::class => [
-                'data' => '*all_records',
+                DiContainer::ARGUMENTS => [
+                    'data' => '*all_records',
+                ],
             ],
             Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
         ];
@@ -147,7 +149,9 @@ class ContainerTest extends TestCase
                 return new Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
             };
 
-            yield Classes\UserRepository::class => ['db' => '@database'];
+            yield Classes\UserRepository::class => [
+                DiContainer::ARGUMENTS => ['db' => '@database'],
+            ];
         };
 
         $container = new DiContainer(
@@ -167,7 +171,9 @@ class ContainerTest extends TestCase
         $definitions = static function () use ($base): \Generator {
             yield 'database' => static fn () => new Classes\Db($base);
 
-            yield Classes\UserRepository::class => ['db' => '@database'];
+            yield Classes\UserRepository::class => [
+                DiContainer::ARGUMENTS => ['db' => '@database'],
+            ];
         };
 
         $container = new DiContainer(
@@ -184,7 +190,12 @@ class ContainerTest extends TestCase
         $container = (new DiContainer(autowire: $this->autowire))
             ->set(
                 Classes\Db::class,
-                ['data' => [], 'store' => '/var/log'],
+                [
+                    DiContainer::ARGUMENTS => [
+                        'data' => [],
+                        'store' => '/var/log',
+                    ],
+                ],
             )
         ;
 
@@ -200,7 +211,9 @@ class ContainerTest extends TestCase
         $instances = [
             Interfaces\SumInterface::class => Classes\Sum::class,
             Classes\Sum::class => [
-                'init' => 50,
+                DiContainer::ARGUMENTS => [
+                    'init' => 50,
+                ],
             ],
         ];
 
@@ -246,7 +259,10 @@ class ContainerTest extends TestCase
             new KeyGeneratorForNamedParameter('.')
         );
         $container = (new DiContainer(autowire: $autowire))
-            ->set(Classes\Sum::class, ['init' => 200])
+            ->set(
+                id: Classes\Sum::class,
+                arguments: ['init' => 200]
+            )
         ;
 
         $init = $container->get(Classes\Sum::class.'.__construct.init');
@@ -260,7 +276,14 @@ class ContainerTest extends TestCase
             new KeyGeneratorForNamedParameter('!')
         );
         $container = (new DiContainer(autowire: $autowire))
-            ->set(Classes\Sum::class, ['init' => 99])
+            ->set(
+                Classes\Sum::class,
+                [
+                    DiContainer::ARGUMENTS => [
+                        'init' => 99,
+                    ],
+                ]
+            )
         ;
 
         $this->assertTrue($container->has(Classes\Sum::class.'!__construct!init'));
@@ -392,8 +415,10 @@ class ContainerTest extends TestCase
             $loggerConfig,
             [
                 Classes\Logger::class => [
-                    'name' => '@loggerName',
-                    'file' => '@loggerFile',
+                    DiContainer::ARGUMENTS => [
+                        'name' => '@loggerName',
+                        'file' => '@loggerFile',
+                    ],
                 ],
             ]
         );

@@ -78,7 +78,7 @@ class AutowiredTest extends TestCase
                 Interfaces\SumInterface::class,
                 Classes\Sum::class
             )
-            ->set(Classes\Sum::class, ['init' => 90])
+            ->set(id: Classes\Sum::class, arguments: ['init' => 90])
         ;
 
         $result = $autowire->callMethod(
@@ -130,8 +130,8 @@ class AutowiredTest extends TestCase
             new KeyGeneratorForNamedParameter('@@')
         );
         $container = (new DiContainer(autowire: $autowire))->set(
-            Classes\ClassWithParameterTypeAsObject::class,
-            ['asObject' => (object) ['name' => 'test']]
+            id: Classes\ClassWithParameterTypeAsObject::class,
+            arguments: ['asObject' => (object) ['name' => 'test']]
         );
 
         $class = $container->get(Classes\ClassWithParameterTypeAsObject::class);

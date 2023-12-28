@@ -21,6 +21,8 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class DiContainer implements DiContainerInterface
 {
+    public const ARGUMENTS = 'arguments';
+
     protected iterable $definitions = [];
     protected array $resolved = [];
     protected ?KeyGeneratorForNamedParameterInterface $keyGenerator;
@@ -62,7 +64,7 @@ class DiContainer implements DiContainerInterface
             || \interface_exists($id);
     }
 
-    public function set(string $id, mixed $abstract = null): self
+    public function set(string $id, mixed $abstract = null, ?array $arguments = null): self
     {
         if (null === $abstract) {
             $abstract = $id;
@@ -72,8 +74,14 @@ class DiContainer implements DiContainerInterface
             throw new ContainerException("Key [{$id}] already registered in container.");
         }
 
-        if (\is_iterable($abstract)
-            && $constructParams = $this->parseConstructorArguments($id, (array) $abstract)
+        $args = match (true) {
+            null !== $arguments => $arguments,
+            \is_iterable($abstract) => $abstract[self::ARGUMENTS] ?? null,
+            default => null,
+        };
+
+        if (\is_iterable($args)
+            && $constructParams = $this->parseConstructorArguments($id, (array) $args)
         ) {
             $this->definitions = \array_merge($this->definitions, $constructParams);
         } else {

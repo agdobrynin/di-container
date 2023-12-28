@@ -13,5 +13,5 @@ interface DiContainerInterface extends ContainerInterface
      *
      * @throws \Psr\Container\ContainerExceptionInterface
      */
-    public function set(string $id, mixed $abstract = null): self;
+    public function set(string $id, mixed $abstract = null, ?array $arguments = null): self;
 }
