@@ -15,7 +15,6 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
- * @internal
  *
  * @template TClass of object
  */
