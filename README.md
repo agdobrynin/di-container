@@ -103,10 +103,10 @@ use App\{MyUsers, MyEmployers};
 
 /** @var MyUsers::class $users */
 $users = $container->get(MyUsers::class);
-print implode(',' $users->users); // user1, user2
+print implode(',', $users->users); // user1, user2
 /** @var MyEmployers::class $employers */
 $employers = $container->get(MyEmployers::class);
-print implode(',' $users->employers); // user1, user2
+print implode(',', $employers->employers); // user1, user2
 ```
 
 Получение класса по интерфейсу
@@ -136,8 +136,8 @@ use Monolog\{Logger, Handler\StreamHandler, Level};
 $keyGen = new KeyGeneratorForNamedParameter();
 $container = new DiContainer(autowire: new Autowired($keyGen));
 
-$scontainer->set('loggerFile', '/path/to/your.log');
-$scontainer->set('loggerName', 'app-logger');
+$container->set('loggerFile', '/path/to/your.log');
+$container->set('loggerName', 'app-logger');
 $container->set(
     LoggerInterface::class,
     static function (string $loggerFile, string $loggerName) {
