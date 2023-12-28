@@ -137,9 +137,8 @@ class DiContainer implements DiContainerInterface
         /** @var null|class-string<TClass> $abstract */
         $abstract = match (true) {
             \class_exists($id) => $id,
-            \interface_exists($id) => $definition,
-            \is_callable($definition) => $definition,
-            default => null
+            \interface_exists($id) || \is_callable($definition) => $definition,
+            default => null,
         };
 
         if ($abstract) {
