@@ -429,4 +429,42 @@ class ContainerTest extends TestCase
         $this->assertEquals('app-logger', $logger->name);
         $this->assertEquals('/path/to/your.log', $logger->file);
     }
+
+    public function testParseConstructorArgumentWithoutAutowire(): void
+    {
+        $def = [
+            'Welcome' => [
+                'arguments' => [
+                    'name' => 'John',
+                ],
+            ],
+        ];
+
+        $container = new DiContainer($def);
+
+        $this->assertEquals([
+            'arguments' => [
+                'name' => 'John',
+            ],
+        ], $container->get('Welcome'));
+    }
+
+    public function testParseConstructorArgumentWithAutowire(): void
+    {
+        $def = [
+            'Welcome' => [
+                'arguments' => [
+                    'name' => 'John',
+                ],
+            ],
+        ];
+
+        $container = new DiContainer($def, $this->autowire);
+
+        $this->assertEquals([
+            'arguments' => [
+                'name' => 'John',
+            ],
+        ], $container->get('Welcome'));
+    }
 }

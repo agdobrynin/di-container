@@ -28,6 +28,7 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\DiContainer::resolve
  * @covers \Kaspi\DiContainer\DiContainer::set
  * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::__construct
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::delimiter
  * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::id
  * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::idConstructor
  */
@@ -124,7 +125,7 @@ class AutowiredTest extends TestCase
         $this->assertEquals(60, $sum->add(5));
     }
 
-    public function testUnknownTypeForParameter(): void
+    public function testObjectTypeForParameter(): void
     {
         $autowire = new Autowired(
             new KeyGeneratorForNamedParameter('@@')
@@ -138,5 +139,23 @@ class AutowiredTest extends TestCase
 
         $this->assertIsObject($class->asObject);
         $this->assertEquals('test', $class->asObject->name);
+    }
+
+    public function testResolveFilteredParameters(): void
+    {
+        $autowire = new Autowired(new KeyGeneratorForNamedParameter());
+        $def = [
+            Classes\Logger::class => [
+                'arguments' => [
+                    'file' => '/var/log/app.log',
+                ],
+            ],
+        ];
+        $c = (new DiContainer(definitions: $def, autowire: $autowire));
+
+        $class = $autowire->resolveInstance($c, Classes\Logger::class, ['name' => 'debug-log']);
+
+        $this->assertEquals('/var/log/app.log', $class->file);
+        $this->assertEquals('debug-log', $class->name);
     }
 }
