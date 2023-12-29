@@ -165,9 +165,6 @@ use App\ClassFirst;
 use App\ClassInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
-$keyGen = new KeyGeneratorForNamedParameter();
-$autowire = new Autowired($keyGen)
-$container = new DiContainer(autowire: $autowire, keyGenerator: $keyGen);
 $container = DiContainerFactory::make();
 $container->set(ClassFirst::class, ['arguments' => ['file' => '/var/log/app.log']]);
 $container->set(ClassInterface::class, ClassFirst::class);
