@@ -33,7 +33,9 @@ use Kaspi\DiContainer\DiContainerFactory;
 $container = DiContainerFactory::make(
     [
         \PDO::class => [
-            // в конструкторе класса \PDO
+            // ⚠ Ключ "arguments" является зарезервированным значением
+            // и служит для передачи значений в конструктор класса.
+            // Таким объявлением в конструкторе класса \PDO
             // аргумент с именем $dsn получит значение
             'arguments' => [
                 'dsn' => 'sqlite:/opt/databases/mydb.sq3',
@@ -171,7 +173,8 @@ use App\ClassInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
 $container = DiContainerFactory::make();
-$container->set(ClassFirst::class, ['arguments' => ['file' => '/var/log/app.log']]);
+// ⚠ параметр "arguments" метода "set" установить аргументы для конструктора.
+$container->set(ClassFirst::class, arguments: ['file' => '/var/log/app.log']);
 $container->set(ClassInterface::class, ClassFirst::class);
 ```
 
