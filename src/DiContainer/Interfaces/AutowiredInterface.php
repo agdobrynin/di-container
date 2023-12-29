@@ -15,7 +15,7 @@ use Psr\Container\ContainerInterface;
 interface AutowiredInterface
 {
     /**
-     * @param class-string<TypeResolveClassByAutowired> $id
+     * @param callable|class-string<TypeResolveClassByAutowired> $id
      *
      * @return mixed|TypeResolveClassByAutowired
      *
@@ -23,7 +23,7 @@ interface AutowiredInterface
      */
     public function resolveInstance(
         ContainerInterface $container,
-        string $id,
+        callable|string $id,
         array $args = []
     ): mixed;
 
