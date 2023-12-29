@@ -11,7 +11,6 @@ use PHPUnit\Framework\TestCase;
  *
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainer::get
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter
  */

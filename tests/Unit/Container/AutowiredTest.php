@@ -15,22 +15,9 @@ use Tests\Fixtures\Classes\Interfaces;
 /**
  * @internal
  *
- * @covers \Kaspi\DiContainer\Autowired::__construct
- * @covers \Kaspi\DiContainer\Autowired::callMethod
- * @covers \Kaspi\DiContainer\Autowired::filterInputArgs
- * @covers \Kaspi\DiContainer\Autowired::getKeyGeneratorForNamedParameter
- * @covers \Kaspi\DiContainer\Autowired::resolveInstance
- * @covers \Kaspi\DiContainer\Autowired::resolveParameters
- * @covers \Kaspi\DiContainer\DiContainer::__construct
- * @covers \Kaspi\DiContainer\DiContainer::get
- * @covers \Kaspi\DiContainer\DiContainer::has
- * @covers \Kaspi\DiContainer\DiContainer::parseConstructorArguments
- * @covers \Kaspi\DiContainer\DiContainer::resolve
- * @covers \Kaspi\DiContainer\DiContainer::set
- * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::__construct
- * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::delimiter
- * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::id
- * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter::idConstructor
+ * @covers \Kaspi\DiContainer\Autowired
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter
  */
 class AutowiredTest extends TestCase
 {
