@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kaspi\DiContainer\Interfaces;
+
+interface DiContainerFactoryInterface
+{
+    /**
+     * @param iterable<string, mixed> $definitions
+     * @param string $delimiterForNotationParamAndClass
+     *
+     * @throws \Psr\Container\ContainerExceptionInterface
+     */
+    public static function make(
+        iterable $definitions = [],
+        string $delimiterForNotationParamAndClass = '@'
+    ): DiContainerInterface;
+}
