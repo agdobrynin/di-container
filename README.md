@@ -28,6 +28,7 @@ use Kaspi\DiContainer\{
 };
 
 $keyGen = new KeyGeneratorForNamedParameter();
+$autowire = new Autowired($keyGen);
 $container = new DiContainer(
     [
         \PDO::class => [
@@ -38,7 +39,8 @@ $container = new DiContainer(
             ],
         ];
     ],
-    new Autowired($keyGen)
+    $autowire,
+    $keyGen
 );
 ```
 
@@ -76,6 +78,7 @@ use Kaspi\DiContainer\{
 // Определение символа разделителя параметров для авто связывания
 // по умолчанию в конструкторе указан символ @
 $keyGen = new KeyGeneratorForNamedParameter();
+$autowire = new Autowired($keyGen);
 // определения для авто связывания
 // значение-ссылка начинается с символа указанного
 // в KeyGeneratorForNamedParameter - например "@data" будет искать
@@ -94,7 +97,7 @@ $definitions = [
     ],
 };
 
-$container = new DiContainer($definitions, new Autowired($keyGen));
+$container = new DiContainer($definitions, $autowire, $keyGen);
 ```
 
 ```php
@@ -134,7 +137,8 @@ use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
 
 $keyGen = new KeyGeneratorForNamedParameter();
-$container = new DiContainer(autowire: new Autowired($keyGen));
+$autowire = new Autowired($keyGen);
+$container = new DiContainer(autowire: $autowire, keyGenerator: $keyGen);
 
 $container->set('loggerFile', '/path/to/your.log');
 $container->set('loggerName', 'app-logger');
@@ -176,8 +180,9 @@ use App\ClassInterface;
 use Kaspi\DiContainer\{
     Autowired, DiContainer, KeyGeneratorForNamedParameter
 };
-
-$container = new DiContainer(autowire: new KeyGeneratorForNamedParameter());
+$keyGen = new KeyGeneratorForNamedParameter();
+$autowire = new Autowired($keyGen)
+$container = new DiContainer(autowire: $autowire, keyGenerator: $keyGen);
 $container->set(ClassFirst::class, ['arguments' => ['file' => '/var/log/app.log']]);
 $container->set(ClassInterface::class, ClassFirst::class);
 ```
