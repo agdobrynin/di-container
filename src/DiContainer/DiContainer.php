@@ -22,8 +22,14 @@ class DiContainer implements DiContainerInterface
     public const ARGUMENTS = 'arguments';
 
     protected iterable $definitions = [];
+
+    /**
+     * Arguments for constructor of class.
+     *
+     * @var array|iterable<class-string, array>
+     */
+    protected iterable $argumentDefinitions = [];
     protected array $resolved = [];
-    protected ?KeyGeneratorForNamedParameterInterface $keyGenerator;
 
     /**
      * @param iterable<string, mixed> $definitions
@@ -33,9 +39,8 @@ class DiContainer implements DiContainerInterface
     public function __construct(
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
+        protected ?KeyGeneratorForNamedParameterInterface $keyGenerator = null,
     ) {
-        $this->keyGenerator = $this->autowire?->getKeyGeneratorForNamedParameter();
-
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
             $this->set($key, $abstract);
@@ -64,54 +69,21 @@ class DiContainer implements DiContainerInterface
 
     public function set(string $id, mixed $abstract = null, ?array $arguments = null): static
     {
-        if (null === $abstract) {
-            $abstract = $id;
-        }
-
         if (isset($this->definitions[$id])) {
             throw new ContainerException("Key [{$id}] already registered in container.");
         }
 
-        $args = match (true) {
-            null !== $arguments => $arguments,
-            \is_iterable($abstract) => $abstract[static::ARGUMENTS] ?? null,
-            default => null,
-        };
-
-        if (\is_iterable($args)
-            && $constructParams = $this->parseConstructorArguments($id, (array) $args)
-        ) {
-            $this->definitions = \array_merge($this->definitions, $constructParams);
-        } else {
-            $this->definitions[$id] = $abstract;
+        if (null === $abstract) {
+            $abstract = $id;
         }
+
+        if ($arguments) {
+            $this->argumentDefinitions[$id] = $arguments;
+        }
+
+        $this->definitions[$id] = $abstract;
 
         return $this;
-    }
-
-    protected function parseConstructorArguments(string $id, array $params): array
-    {
-        if (!\class_exists($id) || null === $this->keyGenerator) {
-            return [];
-        }
-
-        $newParams = [];
-
-        foreach ($params as $argName => $argValue) {
-            $key = $this->keyGenerator->idConstructor($id, $argName);
-
-            if ($this->keyGenerator
-                && \is_string($argValue)
-                && \str_starts_with($argValue, $this->keyGenerator->delimiter())
-            ) {
-                $offset = strlen($this->keyGenerator->delimiter());
-                $newParams[$key] = $this->get(substr($argValue, $offset));
-            } else {
-                $newParams[$key] = $argValue;
-            }
-        }
-
-        return $newParams;
     }
 
     /**
@@ -133,9 +105,19 @@ class DiContainer implements DiContainerInterface
         $definition = $this->definitions[$id] ?? $id;
 
         /** @var null|class-string<TClass> $abstract */
-        $abstract = match (true) {
-            \class_exists($id) => $id,
-            \interface_exists($id) || \is_callable($definition) => $definition,
+        [$abstract, $constructorArguments] = match (true) {
+            \class_exists($id) => [
+                $id,
+                $definition,
+            ],
+            \is_callable($definition) => [
+                $definition,
+                null,
+            ],
+            \interface_exists($id) => [
+                $definition,
+                \is_callable($definition) ? [] : ($this->definitions[$definition] ?? null),
+            ],
             default => null,
         };
 
@@ -143,6 +125,16 @@ class DiContainer implements DiContainerInterface
             try {
                 if (null === $this->autowire) {
                     throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
+                }
+
+                if (\is_string($abstract)) {
+                    $paramsDefinitions = $this->argumentDefinitions[$abstract]
+                        ?? $constructorArguments[self::ARGUMENTS]
+                        ?? [];
+                    $this->definitions = array_merge(
+                        $this->definitions,
+                        $this->parseConstructorArguments($abstract, $paramsDefinitions)
+                    );
                 }
 
                 $this->resolved[$id] = $this->autowire->resolveInstance($this, $abstract);
@@ -159,5 +151,30 @@ class DiContainer implements DiContainerInterface
         $this->resolved[$id] = $this->definitions[$id];
 
         return $this->resolved[$id];
+    }
+
+    protected function parseConstructorArguments(string $id, array $params): array
+    {
+        if (!\class_exists($id)) {
+            throw new ContainerException("Class [{$id}] not exist.");
+        }
+
+        $keyGen = $this->keyGenerator
+            ?: throw new ContainerException('Key generator not provide in constructor.');
+
+        $newParams = [];
+
+        foreach ($params as $argName => $argValue) {
+            $key = $keyGen->idConstructor($id, $argName);
+
+            if (\is_string($argValue) && \str_starts_with($argValue, $keyGen->delimiter())) {
+                $offset = strlen($keyGen->delimiter());
+                $newParams[$key] = $this->get(substr($argValue, $offset));
+            } else {
+                $newParams[$key] = $argValue;
+            }
+        }
+
+        return $newParams;
     }
 }

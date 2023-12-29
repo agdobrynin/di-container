@@ -23,12 +23,9 @@ class MyClass {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{
-    Autowired, DiContainer, KeyGeneratorForNamedParameter
-};
+use Kaspi\DiContainer\DiContainerFactory;
 
-$keyGen = new KeyGeneratorForNamedParameter();
-$container = new DiContainer(
+$container = DiContainerFactory::make(
     [
         \PDO::class => [
             // в конструкторе класса \PDO
@@ -37,8 +34,7 @@ $container = new DiContainer(
                 'dsn' => 'sqlite:/opt/databases/mydb.sq3',
             ],
         ];
-    ],
-    new Autowired($keyGen)
+    ]
 );
 ```
 
@@ -69,17 +65,14 @@ class MyEmployers {
 ```php
 // Определения для DiContainer
 use App\{MyUsers, MyEmployers};
-use Kaspi\DiContainer\{
-    Autowired, DiContainer, KeyGeneratorForNamedParameter
-};
+use Kaspi\DiContainer\DiContainerFactory;
 
 // Определение символа разделителя параметров для авто связывания
-// по умолчанию в конструкторе указан символ @
-$keyGen = new KeyGeneratorForNamedParameter();
-// определения для авто связывания
+// по умолчанию символ @
 // значение-ссылка начинается с символа указанного
 // в KeyGeneratorForNamedParameter - например "@data" будет искать
 // в контейнере ключ "data".
+
 $definitions = [
     'data' => ['user1', 'user2'],
     App\MyUsers::class => [
@@ -92,9 +85,10 @@ $definitions = [
             'employers' => '@data',
         ],
     ],
-};
-
-$container = new DiContainer($definitions, new Autowired($keyGen));
+];
+// по умолчанию символ разделитель @
+// указан в параметре "delimiterForNotationParamAndClass" метода 
+$container = DiContainerFactory::make($definitions);
 ```
 
 ```php
@@ -127,15 +121,11 @@ class MyLogger {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{
-    Autowired, DiContainer, KeyGeneratorForNamedParameter
-};
+use Kaspi\DiContainer\DiContainerFactory;
 use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
 
-$keyGen = new KeyGeneratorForNamedParameter();
-$container = new DiContainer(autowire: new Autowired($keyGen));
-
+$container = DiContainerFactory::make()
 $container->set('loggerFile', '/path/to/your.log');
 $container->set('loggerName', 'app-logger');
 $container->set(
@@ -173,11 +163,9 @@ class ClassFirst implements ClassInterface {
 // Определения для DiContainer
 use App\ClassFirst;
 use App\ClassInterface;
-use Kaspi\DiContainer\{
-    Autowired, DiContainer, KeyGeneratorForNamedParameter
-};
+use Kaspi\DiContainer\DiContainerFactory;
 
-$container = new DiContainer(autowire: new KeyGeneratorForNamedParameter());
+$container = DiContainerFactory::make();
 $container->set(ClassFirst::class, ['arguments' => ['file' => '/var/log/app.log']]);
 $container->set(ClassInterface::class, ClassFirst::class);
 ```
