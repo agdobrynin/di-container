@@ -145,15 +145,15 @@ class ContainerTest extends TestCase
     public function testResolveByInterfaceWithNamedArgClassInstance(): void
     {
         $definitions = static function (): \Generator {
-            yield Interfaces\CacheTypeInterface::class => Classes\FileCache::class;
+            yield Classes\UserRepository::class => [
+                DiContainer::ARGUMENTS => ['db' => '@database'],
+            ];
 
             yield 'database' => static function (Interfaces\CacheTypeInterface $cache): Classes\Db {
                 return new Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
             };
 
-            yield Classes\UserRepository::class => [
-                DiContainer::ARGUMENTS => ['db' => '@database'],
-            ];
+            yield Interfaces\CacheTypeInterface::class => Classes\FileCache::class;
         };
 
         $keyGen = new KeyGeneratorForNamedParameter();
