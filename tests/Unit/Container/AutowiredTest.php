@@ -155,4 +155,23 @@ class AutowiredTest extends TestCase
         $this->assertEquals('/var/log/app.log', $class->file);
         $this->assertEquals('debug-log', $class->name);
     }
+
+    public function testKeyGen(): void
+    {
+        $keyGen = new KeyGeneratorForNamedParameter();
+        $autowire = new Autowired($keyGen);
+
+        $this->assertSame($keyGen, $autowire->getKeyGeneratorForNamedParameter());
+    }
+
+    public function testIsInstantiable(): void
+    {
+        $keyGen = new KeyGeneratorForNamedParameter();
+        $autowire = new Autowired($keyGen);
+
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('class is not instantiable');
+
+        $autowire->resolveInstance(new DiContainer(), Classes\AbstractClass::class);
+    }
 }

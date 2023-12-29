@@ -20,7 +20,6 @@ use Tests\Fixtures\Classes\Interfaces;
  *
  * @covers \Kaspi\DiContainer\Autowired::__construct
  * @covers \Kaspi\DiContainer\Autowired::filterInputArgs
- * @covers \Kaspi\DiContainer\Autowired::getKeyGeneratorForNamedParameter
  * @covers \Kaspi\DiContainer\Autowired::resolveInstance
  * @covers \Kaspi\DiContainer\Autowired::resolveParameters
  * @covers \Kaspi\DiContainer\DiContainer::__construct
@@ -472,5 +471,16 @@ class ContainerTest extends TestCase
                 'name' => 'John',
             ],
         ], $container->get('Welcome'));
+    }
+
+    public function testParseConstructorArguments(): void
+    {
+        $container = new DiContainer(autowire: new Autowired(new KeyGeneratorForNamedParameter()));
+        $container->set(Classes\Logger::class, ['name' => 'log-app', 'file' => '/var/log/log.txt']);
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Key generator');
+
+        $container->get(Classes\Logger::class);
     }
 }
