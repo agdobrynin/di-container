@@ -94,7 +94,7 @@ $definitions = [
     ],
 ];
 // по умолчанию символ разделитель @
-// указан в параметре "delimiterForNotationParamAndClass" метода 
+// указан в параметре "linkContainerSymbol" метода 
 $container = DiContainerFactory::make($definitions);
 ```
 
