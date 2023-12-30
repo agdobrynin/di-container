@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -15,11 +17,11 @@ final class Autowired implements AutowiredInterface
 {
     public function resolveInstance(
         ContainerInterface $container,
-        callable|string $id,
+        \Closure|string $id,
         array $args = []
     ): mixed {
         try {
-            if (\is_callable($id)) {
+            if ($id instanceof \Closure) {
                 $instance = new \ReflectionFunction($id);
                 $instanceParameters = $instance->getParameters();
                 $resolvedArgs = \array_merge($this->resolveParameters(
@@ -99,15 +101,51 @@ final class Autowired implements AutowiredInterface
             $parameterTypeName = $parameterType->getName();
 
             try {
-                $dependencies[$parameterName] = match (true) {
-                    $container::class === $parameterTypeName,
-                    DiContainerInterface::class === $parameterTypeName => $container,
-                    default => $container->get(
-                        $isBuildIn
+                if ($container::class === $parameterTypeName
+                    || DiContainerInterface::class === $parameterTypeName) {
+                    $dependencies[$parameterName] = $container;
+
+                    continue;
+                }
+
+                if ($attribute = ($parameter->getAttributes(Inject::class)[0] ?? null)) {
+                    $inject = $attribute->newInstance();
+
+                    if (null === $inject->id) {
+                        $inject->id = $parameterTypeName;
+                    }
+
+                    if (!$isBuildIn) {
+                        array_walk($inject->arguments, static function (&$val) use ($container) {
+                            $val = $container->get($val);
+                        });
+
+                        $instanceId = $inject->id;
+                        $args = $inject->arguments;
+
+                        if (interface_exists($inject->id)) {
+                            if ($attribute = (new \ReflectionClass($inject->id))->getAttributes(Service::class)[0] ?? null) {
+                                $service = $attribute->newInstance();
+                                $instanceId = $service->id;
+                                $args = [];
+                            }
+                        }
+
+                        $dependencies[$parameterName] = $this->resolveInstance($container, $instanceId, $args);
+
+                        continue;
+                    }
+
+                    $dependencies[$parameterName] = $container->get($inject->id);
+
+                    continue;
+                }
+
+                $dependencies[$parameterName] = $container->get(
+                    $isBuildIn
                             ? $parameterName
                             : $parameterTypeName
-                    ),
-                };
+                );
             } catch (ContainerExceptionInterface) {
                 if (!$parameter->isDefaultValueAvailable()) {
                     throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$className}::{$methodName}]");

@@ -56,14 +56,16 @@ class DiContainer implements DiContainerInterface
      */
     public function get(string $id): mixed
     {
-        return $this->resolved[$id] ?? $this->resolve($id);
+        return $this->resolved[$this->parseLinkSymbol($id) ?: $id]
+            ?? $this->resolve($id);
     }
 
     public function has(string $id): bool
     {
         return isset($this->definitions[$id])
             || \class_exists($id)
-            || \interface_exists($id);
+            || \interface_exists($id)
+            || isset($this->definitions[$this->parseLinkSymbol($id)]);
     }
 
     public function set(string $id, mixed $abstract = null, ?array $arguments = null): static
@@ -101,26 +103,27 @@ class DiContainer implements DiContainerInterface
             throw new NotFoundContainerException("Unresolvable dependency [{$id}].");
         }
 
-        $definition = $this->definitions[$id] ?? $id;
-
-        /** @var null|class-string<TClass> $abstract */
-        [$abstract, $constructorArguments] = match (true) {
+        /** @var null|class-string<TClass> $definition */
+        [$definition, $definitionArguments] = match (true) {
             \class_exists($id) => [
                 $id,
-                $definition,
-            ],
-            \is_callable($definition) => [
-                $definition,
-                null,
+                $this->definitions[$id] ?? null,
             ],
             \interface_exists($id) => [
-                $definition,
-                \is_callable($definition) ? [] : ($this->definitions[$definition] ?? null),
+                $this->definitions[$id]
+                    ?? throw new ContainerException("No class defined for interface [{$id}]"),
+                \is_string($this->definitions[$id])
+                    ? $this->definitions[$this->definitions[$id]] ?? null
+                    : null,
+            ],
+            ($this->definitions[$id] ?? null) instanceof \Closure => [
+                $this->definitions[$id],
+                null,
             ],
             default => [null, null],
         };
 
-        if ($abstract) {
+        if ($definition) {
             try {
                 if (null === $this->autowire) {
                     throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
@@ -128,14 +131,17 @@ class DiContainer implements DiContainerInterface
 
                 $args = [];
 
-                if (\is_string($abstract)) {
-                    $paramsDefinitions = $this->argumentDefinitions[$abstract]
-                        ?? $constructorArguments[self::ARGUMENTS]
+                if (\is_string($definition)) {
+                    $paramsDefinitions = $this->argumentDefinitions[$definition]
+                        ?? $definitionArguments[self::ARGUMENTS]
                         ?? [];
-                    $args = $this->parseConstructorArguments($abstract, $paramsDefinitions);
+
+                    foreach ($paramsDefinitions as $argName => $argValue) {
+                        $args[$argName] = $this->getValueOrLinkSymbol($argValue);
+                    }
                 }
 
-                $this->resolved[$id] = $this->autowire->resolveInstance($this, $abstract, $args);
+                $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $args);
 
                 return $this->resolved[$id];
             } catch (AutowiredExceptionInterface $exception) {
@@ -146,35 +152,25 @@ class DiContainer implements DiContainerInterface
             }
         }
 
-        $this->resolved[$id] = $this->definitions[$id];
+        $this->resolved[$id] = $this->definitions[$this->parseLinkSymbol($id) ?: $id];
 
         return $this->resolved[$id];
     }
 
-    protected function parseConstructorArguments(string $id, array $params): array
+    protected function getValueOrLinkSymbol(mixed $value)
     {
-        if (!\class_exists($id)) {
-            throw new ContainerException("Class [{$id}] not exist.");
-        }
-
-        $newParams = [];
-
-        foreach ($params as $argName => $argValue) {
-            $newParams[$argName] = $this->parseLinkSymbol($argValue);
-        }
-
-        return $newParams;
-    }
-
-    protected function parseLinkSymbol(mixed $value)
-    {
-        if (\is_string($value)
-            && \str_starts_with($value, $this->linkContainerSymbol)) {
-            $key = substr($value, strlen($this->linkContainerSymbol));
-
-            return $this->parseLinkSymbol($this->get($key));
+        if ($key = $this->parseLinkSymbol($value)) {
+            return $this->getValueOrLinkSymbol($this->get($key));
         }
 
         return $value;
+    }
+
+    protected function parseLinkSymbol(mixed $value): ?string
+    {
+        return (\is_string($value)
+            && \str_starts_with($value, $this->linkContainerSymbol))
+            ? substr($value, strlen($this->linkContainerSymbol))
+            : null;
     }
 }
