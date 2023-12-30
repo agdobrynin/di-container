@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Exception\NotFoundContainerException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\KeyGeneratorForNamedParameterInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -39,7 +38,7 @@ class DiContainer implements DiContainerInterface
     public function __construct(
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
-        protected ?KeyGeneratorForNamedParameterInterface $keyGenerator = null,
+        protected string $linkContainerSymbol = '@',
     ) {
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
@@ -50,7 +49,7 @@ class DiContainer implements DiContainerInterface
     /**
      * @param class-string<TClass>|string $id
      *
-     * @return mixed|TClass
+     * @return TClass
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -118,7 +117,7 @@ class DiContainer implements DiContainerInterface
                 $definition,
                 \is_callable($definition) ? [] : ($this->definitions[$definition] ?? null),
             ],
-            default => null,
+            default => [null, null],
         };
 
         if ($abstract) {
@@ -127,17 +126,16 @@ class DiContainer implements DiContainerInterface
                     throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
                 }
 
+                $args = [];
+
                 if (\is_string($abstract)) {
                     $paramsDefinitions = $this->argumentDefinitions[$abstract]
                         ?? $constructorArguments[self::ARGUMENTS]
                         ?? [];
-                    $this->definitions = array_merge(
-                        $this->definitions,
-                        $this->parseConstructorArguments($abstract, $paramsDefinitions)
-                    );
+                    $args = $this->parseConstructorArguments($abstract, $paramsDefinitions);
                 }
 
-                $this->resolved[$id] = $this->autowire->resolveInstance($this, $abstract);
+                $this->resolved[$id] = $this->autowire->resolveInstance($this, $abstract, $args);
 
                 return $this->resolved[$id];
             } catch (AutowiredExceptionInterface $exception) {
@@ -159,19 +157,13 @@ class DiContainer implements DiContainerInterface
             throw new ContainerException("Class [{$id}] not exist.");
         }
 
-        $keyGen = $this->keyGenerator
-            ?: throw new ContainerException('Key generator not provide in constructor.');
-
         $newParams = [];
 
         foreach ($params as $argName => $argValue) {
-            $key = $keyGen->idConstructor($id, $argName);
-
-            if (\is_string($argValue) && \str_starts_with($argValue, $keyGen->delimiter())) {
-                $offset = strlen($keyGen->delimiter());
-                $newParams[$key] = $this->get(substr($argValue, $offset));
+            if (\is_string($argValue) && \str_starts_with($argValue, $this->linkContainerSymbol)) {
+                $newParams[$argName] = $this->get(substr($argValue, strlen($this->linkContainerSymbol)));
             } else {
-                $newParams[$key] = $argValue;
+                $newParams[$argName] = $argValue;
             }
         }
 
