@@ -425,4 +425,21 @@ class ContainerTest extends TestCase
 
         $container->get(Classes\Logger::class);
     }
+
+    public function testLinkSymbolByLinkSymbol(): void
+    {
+        $instances = [
+            'shared.user' => ['first', 'second'],
+            'all.records' => '@shared.user',
+            Classes\Db::class => [
+                DiContainer::ARGUMENTS => [
+                    'data' => '@all.records',
+                ],
+            ],
+        ];
+
+        $container = new DiContainer(definitions: $instances, autowire: $this->autowire);
+
+        $this->assertEquals(['first', 'second'], $container->get(Classes\Db::class)->all());
+    }
 }
