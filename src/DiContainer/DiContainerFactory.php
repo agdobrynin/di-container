@@ -10,12 +10,12 @@ class DiContainerFactory implements Interfaces\DiContainerFactoryInterface
 {
     public static function make(
         iterable $definitions = [],
-        string $delimiterForNotationParamAndClass = '@'
+        string $linkContainerSymbol = '@'
     ): DiContainerInterface {
         return new DiContainer(
             definitions: $definitions,
             autowire: new Autowired(),
-            linkContainerSymbol: $delimiterForNotationParamAndClass,
+            linkContainerSymbol: $linkContainerSymbol,
         );
     }
 }
