@@ -113,7 +113,7 @@ class ContainerTest extends TestCase
         $instances = [
             'all_records' => ['first', 'second'],
             Classes\Db::class => [
-                DiContainer::ARGUMENTS => [
+                'arguments' => [
                     'data' => '*all_records',
                 ],
             ],
@@ -136,7 +136,7 @@ class ContainerTest extends TestCase
     {
         $definitions = static function (): \Generator {
             yield Classes\UserRepository::class => [
-                DiContainer::ARGUMENTS => ['db' => '@database'],
+                'arguments' => ['db' => '@database'],
             ];
 
             yield 'database' => static function (Interfaces\CacheTypeInterface $cache): Classes\Db {
@@ -161,7 +161,7 @@ class ContainerTest extends TestCase
             yield 'database' => static fn () => new Classes\Db($base);
 
             yield Classes\UserRepository::class => [
-                DiContainer::ARGUMENTS => ['db' => '@database'],
+                'arguments' => ['db' => '@database'],
             ];
         };
 
@@ -177,7 +177,7 @@ class ContainerTest extends TestCase
             ->set(
                 Classes\Db::class,
                 [
-                    DiContainer::ARGUMENTS => [
+                    'arguments' => [
                         'data' => [],
                         'store' => '/var/log',
                     ],
@@ -197,7 +197,7 @@ class ContainerTest extends TestCase
         $instances = [
             Interfaces\SumInterface::class => Classes\Sum::class,
             Classes\Sum::class => [
-                DiContainer::ARGUMENTS => [
+                'arguments' => [
                     'init' => 50,
                 ],
             ],
@@ -363,7 +363,7 @@ class ContainerTest extends TestCase
             $loggerConfig,
             [
                 Classes\Logger::class => [
-                    DiContainer::ARGUMENTS => [
+                    'arguments' => [
                         'name' => '@logger.name',
                         'file' => '@logger.file',
                     ],
@@ -432,7 +432,7 @@ class ContainerTest extends TestCase
             'shared.user' => ['first', 'second'],
             'all.records' => '@shared.user',
             Classes\Db::class => [
-                DiContainer::ARGUMENTS => [
+                'arguments' => [
                     'data' => '@all.records',
                 ],
             ],
