@@ -6,17 +6,13 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\KeyGeneratorForNamedParameterInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 final class Autowired implements AutowiredInterface
 {
-    public function __construct(
-        protected KeyGeneratorForNamedParameterInterface $keyGeneratorForNamedParameter
-    ) {}
-
     public function resolveInstance(
         ContainerInterface $container,
         callable|string $id,
@@ -24,31 +20,29 @@ final class Autowired implements AutowiredInterface
     ): mixed {
         try {
             if (\is_callable($id)) {
-                $functionReflector = new \ReflectionFunction($id);
-                $functionArgs = $this->resolveParameters(
+                $instance = new \ReflectionFunction($id);
+                $instanceParameters = $instance->getParameters();
+                $resolvedArgs = \array_merge($this->resolveParameters(
                     $container,
-                    $this->filterInputArgs($functionReflector->getParameters(), $args)
-                );
+                    $this->filterInputArgs($instanceParameters, $args)
+                ), $args);
 
-                return $id(...array_merge($functionArgs, $args));
+                return $instance->invoke(...$resolvedArgs);
             }
 
-            $classReflector = new \ReflectionClass($id);
+            $instance = new \ReflectionClass($id);
 
-            if (!$classReflector->isInstantiable()) {
+            if (!$instance->isInstantiable()) {
                 throw new AutowiredException("The [{$id}] class is not instantiable");
             }
 
-            if ($constructReflector = $classReflector->getConstructor()) {
-                $constructorArgs = $this->resolveParameters(
-                    $container,
-                    $this->filterInputArgs($constructReflector->getParameters(), $args)
-                );
+            $instanceParameters = $instance->getConstructor()?->getParameters() ?? [];
+            $resolvedArgs = \array_merge($this->resolveParameters(
+                $container,
+                $this->filterInputArgs($instanceParameters, $args)
+            ), $args);
 
-                return $classReflector->newInstance(...\array_merge($constructorArgs, $args));
-            }
-
-            return $classReflector->newInstanceWithoutConstructor();
+            return $instance->newInstance(...$resolvedArgs);
         } catch (\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
@@ -85,11 +79,6 @@ final class Autowired implements AutowiredInterface
         }
     }
 
-    public function getKeyGeneratorForNamedParameter(): KeyGeneratorForNamedParameterInterface
-    {
-        return $this->keyGeneratorForNamedParameter;
-    }
-
     /**
      * @param \ReflectionParameter[] $parameters
      *
@@ -103,22 +92,22 @@ final class Autowired implements AutowiredInterface
             $className = $parameter->getDeclaringClass()?->getName() ?: 'Undefined class';
             $parameterName = $parameter->getName();
             $methodName = $parameter->getDeclaringFunction()->name;
-            $parameterId = $this->keyGeneratorForNamedParameter
-                ->id($className, $methodName, $parameterName)
-            ;
 
             $parameterType = $parameter->getType();
             $isBuildIn = (!$parameterType instanceof \ReflectionNamedType)
                 || $parameterType->isBuiltin();
+            $parameterTypeName = $parameterType->getName();
 
             try {
-                $dependencies[$parameterName] = $container->has($parameterId)
-                    ? $container->get($parameterId)
-                    : $container->get(
+                $dependencies[$parameterName] = match (true) {
+                    $container::class === $parameterTypeName,
+                    DiContainerInterface::class === $parameterTypeName => $container,
+                    default => $container->get(
                         $isBuildIn
-                        ? $parameterName
-                        : $parameterType->getName()
-                    );
+                            ? $parameterName
+                            : $parameterTypeName
+                    ),
+                };
             } catch (ContainerExceptionInterface) {
                 if (!$parameter->isDefaultValueAvailable()) {
                     throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$className}::{$methodName}]");

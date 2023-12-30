@@ -8,7 +8,6 @@ interface DiContainerFactoryInterface
 {
     /**
      * @param iterable<string, mixed> $definitions
-     * @param string $delimiterForNotationParamAndClass
      *
      * @throws \Psr\Container\ContainerExceptionInterface
      */

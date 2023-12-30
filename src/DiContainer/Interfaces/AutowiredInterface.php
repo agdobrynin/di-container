@@ -8,8 +8,6 @@ use Kaspi\DiContainer\Exception\AutowiredException;
 use Psr\Container\ContainerInterface;
 
 /**
- * @internal
- *
  * @template TypeResolveClassByAutowired of object
  */
 interface AutowiredInterface
@@ -39,6 +37,4 @@ interface AutowiredInterface
         array $constructorArgs = [],
         array $methodArgs = []
     ): mixed;
-
-    public function getKeyGeneratorForNamedParameter(): KeyGeneratorForNamedParameterInterface;
 }

@@ -7,8 +7,7 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
-use Kaspi\DiContainer\Interfaces\KeyGeneratorForNamedParameterInterface;
-use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -20,22 +19,18 @@ use Tests\Fixtures\Classes\Interfaces;
  *
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter
  */
 class ContainerTest extends TestCase
 {
-    protected ?KeyGeneratorForNamedParameterInterface $keyGeneratorForNameParameter = null;
     protected ?AutowiredInterface $autowire = null;
 
     protected function setUp(): void
     {
-        $this->keyGeneratorForNameParameter = new KeyGeneratorForNamedParameter();
-        $this->autowire = new Autowired($this->keyGeneratorForNameParameter);
+        $this->autowire = new Autowired();
     }
 
     protected function tearDown(): void
     {
-        $this->keyGeneratorForNameParameter = null;
         $this->autowire = null;
     }
 
@@ -101,11 +96,20 @@ class ContainerTest extends TestCase
         $this->assertEquals(15, $container->get('test'));
     }
 
-    public function testClassResolve(): void
+    public function testGetClosureWithParamsDiContainer(): void
     {
-        // Delimiter for params name
-        $paramsDelimiter = '*';
+        $container = new DiContainer([
+            'param.five' => 5,
+            'test' => static function (DiContainerInterface $container) {
+                return 10 + $container->get('param.five');
+            },
+        ], autowire: $this->autowire);
 
+        $this->assertEquals(15, $container->get('test'));
+    }
+
+    public function testClassResolveWithCustomLinkSymbol(): void
+    {
         $instances = [
             'all_records' => ['first', 'second'],
             Classes\Db::class => [
@@ -116,18 +120,16 @@ class ContainerTest extends TestCase
             Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
         ];
 
-        $keyGen = new KeyGeneratorForNamedParameter($paramsDelimiter);
         $container = new DiContainer(
             definitions: $instances,
-            autowire: new Autowired($keyGen),
-            keyGenerator: $keyGen
+            autowire: $this->autowire,
+            linkContainerSymbol: '*'
         );
 
         $repository = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('first, second', $repository->all());
         $this->assertNull($repository->db->store);
-        $this->assertTrue($container->has(Classes\Db::class.'*__construct*data'));
     }
 
     public function testResolveByInterfaceWithNamedArgClassInstance(): void
@@ -144,12 +146,7 @@ class ContainerTest extends TestCase
             yield Interfaces\CacheTypeInterface::class => Classes\FileCache::class;
         };
 
-        $keyGen = new KeyGeneratorForNamedParameter();
-        $container = new DiContainer(
-            $definitions(),
-            new Autowired($keyGen),
-            $keyGen
-        );
+        $container = new DiContainer($definitions(), $this->autowire);
         $repo = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('Lorem, Ipsum', $repo->all());
@@ -168,12 +165,7 @@ class ContainerTest extends TestCase
             ];
         };
 
-        $keyGen = new KeyGeneratorForNamedParameter();
-        $container = new DiContainer(
-            $definitions(),
-            new Autowired($keyGen),
-            $keyGen
-        );
+        $container = new DiContainer($definitions(), $this->autowire);
         $repo = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('Lorem, Ipsum', $repo->all());
@@ -181,7 +173,7 @@ class ContainerTest extends TestCase
 
     public function testSetWithParseParams(): void
     {
-        $container = (new DiContainer(autowire: $this->autowire, keyGenerator: $this->keyGeneratorForNameParameter))
+        $container = (new DiContainer(autowire: $this->autowire))
             ->set(
                 Classes\Db::class,
                 [
@@ -211,7 +203,7 @@ class ContainerTest extends TestCase
             ],
         ];
 
-        $sum = (new DiContainer($instances, $this->autowire, $this->keyGeneratorForNameParameter))
+        $sum = (new DiContainer($instances, $this->autowire))
             ->get(Interfaces\SumInterface::class)
         ;
 
@@ -224,9 +216,7 @@ class ContainerTest extends TestCase
             Interfaces\SumInterface::class => Classes\Sum::class,
         ];
 
-        $sum = (new DiContainer($instances, $this->autowire, $this->keyGeneratorForNameParameter))
-            ->get(Interfaces\SumInterface::class)
-        ;
+        $sum = (new DiContainer($instances, $this->autowire))->get(Interfaces\SumInterface::class);
 
         $this->assertEquals('Init data 0', (string) $sum);
         $this->assertEquals(10, $sum->add(10));
@@ -234,7 +224,7 @@ class ContainerTest extends TestCase
 
     public function testByInterfaceWithCallable(): void
     {
-        $sum = (new DiContainer(autowire: $this->autowire, keyGenerator: $this->keyGeneratorForNameParameter))
+        $sum = (new DiContainer(autowire: $this->autowire))
             ->set(
                 Interfaces\SumInterface::class,
                 static fn () => new Classes\Sum(100)
@@ -247,46 +237,9 @@ class ContainerTest extends TestCase
         $this->assertEquals(110, $sum->add(10));
     }
 
-    public function testResolveConstructorParametersNaming(): void
-    {
-        $keyGen = new KeyGeneratorForNamedParameter('.');
-        $autowire = new Autowired($keyGen);
-        $container = (new DiContainer(autowire: $autowire, keyGenerator: $keyGen))
-            ->set(
-                id: Classes\Sum::class,
-                arguments: ['init' => 200]
-            )
-        ;
-        $container->get(Classes\Sum::class);
-
-        $init = $container->get(Classes\Sum::class.'.__construct.init');
-
-        $this->assertEquals(200, $init);
-    }
-
-    public function testDelimiterForNotationParamAndClass(): void
-    {
-        $keyGen = new KeyGeneratorForNamedParameter('!');
-        $autowire = new Autowired($keyGen);
-        $container = (new DiContainer(autowire: $autowire, keyGenerator: $keyGen))
-            ->set(
-                Classes\Sum::class,
-                [
-                    DiContainer::ARGUMENTS => [
-                        'init' => 99,
-                    ],
-                ]
-            )
-        ;
-        $container->get(Classes\Sum::class);
-
-        $this->assertTrue($container->has(Classes\Sum::class.'!__construct!init'));
-        $this->assertEquals(99, $container->get(Classes\Sum::class.'!__construct!init'));
-    }
-
     public function testResolveConstructorStringParameter(): void
     {
-        $container = (new DiContainer(autowire: $this->autowire, keyGenerator: $this->keyGeneratorForNameParameter))
+        $container = (new DiContainer(autowire: $this->autowire))
             ->set('adminEmail', 'root@email.com')
             ->set('delay', 100)
         ;
@@ -313,7 +266,7 @@ class ContainerTest extends TestCase
 
     public function testNoConstructor(): void
     {
-        $container = (new DiContainer(autowire: $this->autowire, keyGenerator: $this->keyGeneratorForNameParameter))
+        $container = (new DiContainer(autowire: $this->autowire))
             ->set(Classes\NoConstructorAndInvokable::class)
         ;
 
@@ -326,6 +279,7 @@ class ContainerTest extends TestCase
     {
         $container = new DiContainer(['service' => 10]);
         $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('already registered');
 
         $container->set('service', 5);
     }
@@ -370,7 +324,7 @@ class ContainerTest extends TestCase
 
     public function testResolveWithoutConfig(): void
     {
-        $instance = (new DiContainer(autowire: $this->autowire, keyGenerator: $this->keyGeneratorForNameParameter))
+        $instance = (new DiContainer(autowire: $this->autowire))
             ->get(Classes\CacheAll::class)
         ;
 
@@ -388,7 +342,7 @@ class ContainerTest extends TestCase
 
     public function testClassWithSplClass(): void
     {
-        $class = (new DiContainer(autowire: $this->autowire, keyGenerator: $this->keyGeneratorForNameParameter))
+        $class = (new DiContainer(autowire: $this->autowire))
             ->get(Classes\ClassWithSplClass::class)
         ;
 
@@ -402,22 +356,22 @@ class ContainerTest extends TestCase
     public function testMultipleGlobalArguments(): void
     {
         $loggerConfig = [
-            'loggerFile' => '/path/to/your.log',
-            'loggerName' => 'app-logger',
+            'logger.file' => '/path/to/your.log',
+            'logger.name' => 'app-logger',
         ];
         $definitions = array_merge(
             $loggerConfig,
             [
                 Classes\Logger::class => [
                     DiContainer::ARGUMENTS => [
-                        'name' => '@loggerName',
-                        'file' => '@loggerFile',
+                        'name' => '@logger.name',
+                        'file' => '@logger.file',
                     ],
                 ],
             ]
         );
 
-        $container = new DiContainer($definitions, $this->autowire, $this->keyGeneratorForNameParameter);
+        $container = new DiContainer($definitions, $this->autowire);
         $logger = $container->get(Classes\Logger::class);
 
         $this->assertEquals('app-logger', $logger->name);
@@ -464,11 +418,10 @@ class ContainerTest extends TestCase
 
     public function testParseConstructorArguments(): void
     {
-        $container = new DiContainer(autowire: new Autowired(new KeyGeneratorForNamedParameter()));
+        $container = new DiContainer(autowire: $this->autowire);
         $container->set(Classes\Logger::class, ['name' => 'log-app', 'file' => '/var/log/log.txt']);
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Key generator');
 
         $container->get(Classes\Logger::class);
     }

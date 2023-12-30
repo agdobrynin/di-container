@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
@@ -12,7 +14,6 @@ use PHPUnit\Framework\TestCase;
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter
  */
 class DiContainerFactoryTest extends TestCase
 {

@@ -7,7 +7,6 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
-use Kaspi\DiContainer\KeyGeneratorForNamedParameter;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
@@ -17,7 +16,6 @@ use Tests\Fixtures\Classes\Interfaces;
  *
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\KeyGeneratorForNamedParameter
  */
 class AutowiredTest extends TestCase
 {
@@ -25,9 +23,7 @@ class AutowiredTest extends TestCase
     {
         $this->expectException(AutowiredExceptionInterface::class);
 
-        (new Autowired(
-            new KeyGeneratorForNamedParameter()
-        ))->resolveInstance(new DiContainer(), 'ClassTest');
+        (new Autowired())->resolveInstance(new DiContainer(), 'ClassTest');
     }
 
     public function testResolveNotExistMethod(): void
@@ -35,9 +31,7 @@ class AutowiredTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('EasyContainer::store() does not exist');
 
-        (new Autowired(
-            new KeyGeneratorForNamedParameter()
-        ))->callMethod(
+        (new Autowired())->callMethod(
             new DiContainer(),
             Classes\EasyContainer::class,
             'store'
@@ -46,9 +40,8 @@ class AutowiredTest extends TestCase
 
     public function testResolveMethodSimple(): void
     {
-        $keyGen = new KeyGeneratorForNamedParameter();
-        $autowire = new Autowired($keyGen);
-        $container = new DiContainer(autowire: $autowire, keyGenerator: $keyGen);
+        $autowire = new Autowired();
+        $container = new DiContainer(autowire: $autowire);
         $result = $autowire->callMethod(
             container: $container,
             id: Classes\EasyContainer::class,
@@ -61,9 +54,8 @@ class AutowiredTest extends TestCase
 
     public function testResolveMethodWithDependencies(): void
     {
-        $keyGen = new KeyGeneratorForNamedParameter();
-        $autowire = new Autowired($keyGen);
-        $container = (new DiContainer(autowire: $autowire, keyGenerator: $keyGen))
+        $autowire = new Autowired();
+        $container = (new DiContainer(autowire: $autowire))
             ->set(
                 Interfaces\SumInterface::class,
                 Classes\Sum::class
@@ -94,31 +86,12 @@ class AutowiredTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('Unresolvable dependency');
 
-        (new Autowired(
-            new KeyGeneratorForNamedParameter()
-        ))->resolveInstance($container, $class::class);
-    }
-
-    public function testDelimiterForParam(): void
-    {
-        $container = new Classes\EasyContainer();
-        $container->instance[Classes\Sum::class.'@@__construct@@init'] = 55;
-
-        $sum = (new Autowired(
-            new KeyGeneratorForNamedParameter('@@')
-        ))
-            ->resolveInstance($container, Classes\Sum::class)
-        ;
-
-        $this->assertInstanceOf(Classes\Sum::class, $sum);
-        $this->assertEquals(60, $sum->add(5));
+        (new Autowired())->resolveInstance($container, $class::class);
     }
 
     public function testObjectTypeForParameter(): void
     {
-        $keyGen = new KeyGeneratorForNamedParameter('@@');
-        $autowire = new Autowired($keyGen);
-        $container = (new DiContainer(autowire: $autowire, keyGenerator: $keyGen))->set(
+        $container = (new DiContainer(autowire: new Autowired()))->set(
             id: Classes\ClassWithParameterTypeAsObject::class,
             arguments: ['asObject' => (object) ['name' => 'test']]
         );
@@ -131,10 +104,9 @@ class AutowiredTest extends TestCase
 
     public function testResolveFilteredParameters(): void
     {
-        $keyGen = new KeyGeneratorForNamedParameter();
-        $autowire = new Autowired($keyGen);
+        $autowire = new Autowired();
         $class = $autowire->resolveInstance(
-            new DiContainer(autowire: $autowire, keyGenerator: $keyGen),
+            new DiContainer(autowire: $autowire),
             Classes\Logger::class,
             ['file' => '/var/log/app.log', 'name' => 'debug-log']
         );
@@ -143,18 +115,9 @@ class AutowiredTest extends TestCase
         $this->assertEquals('debug-log', $class->name);
     }
 
-    public function testKeyGen(): void
-    {
-        $keyGen = new KeyGeneratorForNamedParameter();
-        $autowire = new Autowired($keyGen);
-
-        $this->assertSame($keyGen, $autowire->getKeyGeneratorForNamedParameter());
-    }
-
     public function testIsInstantiable(): void
     {
-        $keyGen = new KeyGeneratorForNamedParameter();
-        $autowire = new Autowired($keyGen);
+        $autowire = new Autowired();
 
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('class is not instantiable');

@@ -129,17 +129,18 @@ class MyLogger {
 ```php
 // Определения для DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
 
 $container = DiContainerFactory::make()
-$container->set('loggerFile', '/path/to/your.log');
-$container->set('loggerName', 'app-logger');
+$container->set('logger.file', '/path/to/your.log');
+$container->set('logger.name', 'app-logger');
 $container->set(
     LoggerInterface::class,
-    static function (string $loggerFile, string $loggerName) {
-        return (new Logger($loggerName))
-            ->pushHandler(new StreamHandler($loggerFile));
+    static function (DiContainerInterface $c) {
+        return (new Logger($c->get('logger.name')))
+            ->pushHandler(new StreamHandler($c->get('logger.file')));
     }
 );
 ```
