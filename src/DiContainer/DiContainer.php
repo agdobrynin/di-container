@@ -160,8 +160,14 @@ class DiContainer implements DiContainerInterface
         $newParams = [];
 
         foreach ($params as $argName => $argValue) {
-            if (\is_string($argValue) && \str_starts_with($argValue, $this->linkContainerSymbol)) {
-                $newParams[$argName] = $this->get(substr($argValue, strlen($this->linkContainerSymbol)));
+            if (\is_string($argValue)
+                && \str_starts_with($argValue, $this->linkContainerSymbol)) {
+                $newParams[$argName] = $this->get(
+                    substr(
+                        $argValue,
+                        strlen($this->linkContainerSymbol)
+                    )
+                );
             } else {
                 $newParams[$argName] = $argValue;
             }
