@@ -91,9 +91,8 @@ final class Autowired implements AutowiredInterface
         $dependencies = [];
 
         foreach ($parameters as $parameter) {
-            $className = $parameter->getDeclaringClass()?->getName() ?: 'Undefined class';
+            $where = $parameter->getDeclaringClass().'::'.$parameter->getDeclaringFunction()->name;
             $parameterName = $parameter->getName();
-            $methodName = $parameter->getDeclaringFunction()->name;
 
             $parameterType = $parameter->getType();
             $isBuildIn = (!$parameterType instanceof \ReflectionNamedType)
@@ -150,7 +149,7 @@ final class Autowired implements AutowiredInterface
                 );
             } catch (ContainerExceptionInterface) {
                 if (!$parameter->isDefaultValueAvailable()) {
-                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$className}::{$methodName}]");
+                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]");
                 }
 
                 $dependencies[$parameterName] = $parameter->getDefaultValue();
