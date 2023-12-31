@@ -56,8 +56,7 @@ class DiContainer implements DiContainerInterface
      */
     public function get(string $id): mixed
     {
-        return $this->resolved[$this->parseLinkSymbol($id) ?: $id]
-            ?? $this->resolve($id);
+        return $this->resolved[$id] ?? $this->resolve($id);
     }
 
     public function has(string $id): bool
@@ -152,14 +151,21 @@ class DiContainer implements DiContainerInterface
             }
         }
 
-        $this->resolved[$id] = $this->definitions[$this->parseLinkSymbol($id) ?: $id];
+        $linkId = $this->parseLinkSymbol($id)
+            ?: $this->parseLinkSymbol($this->definitions[$id]);
+
+        if ($linkId) {
+            $this->resolved[$id] = $this->get($linkId);
+        } else {
+            $this->resolved[$id] = $this->definitions[$id];
+        }
 
         return $this->resolved[$id];
     }
 
-    protected function getValueOrLinkSymbol(mixed $value)
+    protected function getValueOrLinkSymbol(mixed $value): mixed
     {
-        if ($key = $this->parseLinkSymbol($value)) {
+        if (\is_string($value) && $key = $this->parseLinkSymbol($value)) {
             return $this->getValueOrLinkSymbol($this->get($key));
         }
 
@@ -168,8 +174,7 @@ class DiContainer implements DiContainerInterface
 
     protected function parseLinkSymbol(mixed $value): ?string
     {
-        return (\is_string($value)
-            && \str_starts_with($value, $this->linkContainerSymbol))
+        return (\is_string($value) && \str_starts_with($value, $this->linkContainerSymbol))
             ? substr($value, strlen($this->linkContainerSymbol))
             : null;
     }

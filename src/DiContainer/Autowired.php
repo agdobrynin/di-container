@@ -115,22 +115,25 @@ final class Autowired implements AutowiredInterface
                     }
 
                     if (!$isBuildIn) {
-                        array_walk($inject->arguments, static function (&$val) use ($container) {
-                            $val = $container->get($val);
-                        });
-
-                        $instanceId = $inject->id;
-                        $args = $inject->arguments;
-
-                        if (interface_exists($inject->id)) {
-                            if ($attribute = (new \ReflectionClass($inject->id))->getAttributes(Service::class)[0] ?? null) {
-                                $service = $attribute->newInstance();
-                                $instanceId = $service->id;
-                                $args = [];
-                            }
+                        foreach ($inject->arguments as $argName => $argValue) {
+                            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
+                                ? $container->get($argValue)
+                                : $argValue;
                         }
 
-                        $dependencies[$parameterName] = $this->resolveInstance($container, $instanceId, $args);
+                        if (interface_exists($inject->id)
+                            && $attribute = (new \ReflectionClass($inject->id))
+                                ->getAttributes(Service::class)[0] ?? null) {
+                            $service = $attribute->newInstance();
+                            $inject->id = $service->id;
+                            $inject->arguments = [];
+                        }
+
+                        $dependencies[$parameterName] = $this->resolveInstance(
+                            $container,
+                            $inject->id,
+                            $inject->arguments
+                        );
 
                         continue;
                     }

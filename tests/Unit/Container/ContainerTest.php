@@ -442,4 +442,16 @@ class ContainerTest extends TestCase
 
         $this->assertEquals(['first', 'second'], $container->get(Classes\Db::class)->all());
     }
+
+    public function testGetByLinkIdentifier(): void
+    {
+        $c = new DiContainer([
+            'main' => 'Main value',
+            'abc' => '@main',
+            'x' => '@abc',
+            'y' => '@x',
+        ]);
+
+        $this->assertEquals('Main value', $c->get('@x'));
+    }
 }

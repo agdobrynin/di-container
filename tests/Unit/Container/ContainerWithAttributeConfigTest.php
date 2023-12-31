@@ -7,6 +7,7 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes\InjectFailType;
+use Tests\Fixtures\Attributes\InjectSimpleArgument;
 use Tests\Fixtures\Attributes\Lorem;
 use Tests\Fixtures\Attributes\SimpleDb;
 use Tests\Fixtures\Attributes\SimpleDbInterface;
@@ -41,7 +42,8 @@ class ContainerWithAttributeConfigTest extends TestCase
     public function testInjectPslPdo(): void
     {
         $c = DiContainerFactory::make([
-            'db_dsn' => 'sqlite::memory:',
+            'sqlite_dsn' => 'sqlite::memory:',
+            'db_dsn' => '@sqlite_dsn',
             'config-table-name' => 'log',
         ]);
 
@@ -56,5 +58,15 @@ class ContainerWithAttributeConfigTest extends TestCase
         DiContainerFactory::make()
             ->get(InjectFailType::class)
         ;
+    }
+
+    public function testInjectWithSimpleArguments(): void
+    {
+        $c = DiContainerFactory::make();
+
+        $class = $c->get(InjectSimpleArgument::class);
+
+        $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $class->arrayIterator()->getArrayCopy());
+        $this->assertInstanceOf(\ArrayAccess::class, $class->arrayIterator());
     }
 }
