@@ -6,6 +6,7 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Attributes\InjectFailType;
 use Tests\Fixtures\Attributes\Lorem;
 use Tests\Fixtures\Attributes\SimpleDb;
 use Tests\Fixtures\Attributes\SimpleDbInterface;
@@ -45,5 +46,15 @@ class ContainerWithAttributeConfigTest extends TestCase
         ]);
 
         $this->assertInstanceOf(\PDO::class, $c->get(SimpleDb::class)->pdo);
+    }
+
+    public function testInjectFailType(): void
+    {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('must be of type SplQueue');
+
+        DiContainerFactory::make()
+            ->get(InjectFailType::class)
+        ;
     }
 }
