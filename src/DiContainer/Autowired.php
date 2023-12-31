@@ -98,21 +98,20 @@ final class Autowired implements AutowiredInterface
             $parameterType = $parameter->getType();
             $isBuildIn = (!$parameterType instanceof \ReflectionNamedType)
                 || $parameterType->isBuiltin();
-            $parameterTypeName = $parameterType->getName();
+
+            if (!$isBuildIn && ($container::class === $parameterType->getName()
+                    || DiContainerInterface::class === $parameterType->getName())) {
+                $dependencies[$parameterName] = $container;
+
+                continue;
+            }
 
             try {
-                if ($container::class === $parameterTypeName
-                    || DiContainerInterface::class === $parameterTypeName) {
-                    $dependencies[$parameterName] = $container;
-
-                    continue;
-                }
-
                 if ($attribute = ($parameter->getAttributes(Inject::class)[0] ?? null)) {
                     $inject = $attribute->newInstance();
 
                     if (null === $inject->id) {
-                        $inject->id = $parameterTypeName;
+                        $inject->id = $parameterType->getName();
                     }
 
                     if (!$isBuildIn) {
@@ -144,7 +143,7 @@ final class Autowired implements AutowiredInterface
                 $dependencies[$parameterName] = $container->get(
                     $isBuildIn
                             ? $parameterName
-                            : $parameterTypeName
+                            : $parameterType->getName()
                 );
             } catch (ContainerExceptionInterface) {
                 if (!$parameter->isDefaultValueAvailable()) {
