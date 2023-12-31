@@ -88,75 +88,79 @@ final class Autowired implements AutowiredInterface
      */
     private function resolveParameters(ContainerInterface $container, array $parameters): array
     {
-        $dependencies = [];
+        return array_reduce(
+            $parameters,
+            function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
+                $inject = $parameter->getAttributes(Inject::class)[0] ?? null;
+                $isBuildIn = $this->isBuiltinType($parameter);
 
-        foreach ($parameters as $parameter) {
-            $where = $parameter->getDeclaringClass().'::'.$parameter->getDeclaringFunction()->name;
-            $parameterName = $parameter->getName();
+                try {
+                    $value = match (true) {
+                        !$isBuildIn && $container::class === $parameter->getType()?->getName(),
+                        !$isBuildIn && DiContainerInterface::class === $parameter->getType()?->getName() => $container,
 
-            $parameterType = $parameter->getType();
-            $isBuildIn = (!$parameterType instanceof \ReflectionNamedType)
-                || $parameterType->isBuiltin();
+                        null !== $inject => $this->resolveByAttribute($container, $inject->newInstance(), $parameter),
 
-            if (!$isBuildIn && ($container::class === $parameterType->getName()
-                    || DiContainerInterface::class === $parameterType->getName())) {
-                $dependencies[$parameterName] = $container;
+                        $isBuildIn => $container->get($parameter->getName()),
 
-                continue;
-            }
+                        default => $container->get($parameter->getType()?->getName()),
+                    };
 
-            try {
-                if ($attribute = ($parameter->getAttributes(Inject::class)[0] ?? null)) {
-                    $inject = $attribute->newInstance();
+                    $dependencies[$parameter->getName()] = $value;
+                } catch (ContainerExceptionInterface) {
+                    if (!$parameter->isDefaultValueAvailable()) {
+                        $where = $parameter->getDeclaringClass().'::'.$parameter->getDeclaringFunction()->name;
 
-                    if (null === $inject->id) {
-                        $inject->id = $parameterType->getName();
+                        throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]");
                     }
 
-                    if (!$isBuildIn) {
-                        foreach ($inject->arguments as $argName => $argValue) {
-                            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                                ? $container->get($argValue)
-                                : $argValue;
-                        }
-
-                        if (interface_exists($inject->id)
-                            && $attribute = (new \ReflectionClass($inject->id))
-                                ->getAttributes(Service::class)[0] ?? null) {
-                            $service = $attribute->newInstance();
-                            $inject->id = $service->id;
-                            $inject->arguments = [];
-                        }
-
-                        $dependencies[$parameterName] = $this->resolveInstance(
-                            $container,
-                            $inject->id,
-                            $inject->arguments
-                        );
-
-                        continue;
-                    }
-
-                    $dependencies[$parameterName] = $container->get($inject->id);
-
-                    continue;
+                    $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
                 }
 
-                $dependencies[$parameterName] = $container->get(
-                    $isBuildIn
-                            ? $parameterName
-                            : $parameterType->getName()
-                );
-            } catch (ContainerExceptionInterface) {
-                if (!$parameter->isDefaultValueAvailable()) {
-                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]");
-                }
+                return $dependencies;
+            },
+            []
+        );
+    }
 
-                $dependencies[$parameterName] = $parameter->getDefaultValue();
-            }
+    private function isBuiltinType(\ReflectionParameter $parameter): bool
+    {
+        return (!$parameter->getType() instanceof \ReflectionNamedType)
+            || $parameter->getType()->isBuiltin();
+    }
+
+    private function resolveByAttribute(
+        ContainerInterface $container,
+        Inject $inject,
+        \ReflectionParameter $parameter
+    ): mixed {
+        if (null === $inject->id) {
+            $inject->id = $parameter->getType()?->getName();
         }
 
-        return $dependencies;
+        if ($this->isBuiltinType($parameter)) {
+            return $container->get($inject->id);
+        }
+
+        foreach ($inject->arguments as $argName => $argValue) {
+            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
+                ? $container->get($argValue)
+                : $argValue;
+        }
+
+        if (interface_exists($inject->id)
+            && $attribute = (new \ReflectionClass($inject->id))
+                ->getAttributes(Service::class)[0] ?? null) {
+            $service = $attribute->newInstance();
+            $inject->id = $service->id;
+            $inject->arguments = [];
+        }
+
+        return $this->resolveInstance(
+            $container,
+            $inject->id,
+            $inject->arguments
+        );
     }
 
     /**
