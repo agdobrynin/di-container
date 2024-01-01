@@ -1,8 +1,8 @@
-### DiContainer
+# DiContainer
 
 Kaspi/container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0 с автоматическим связыванием зависимостей.
 
-#### Установка
+## Установка
 
 Перед использованием установить через composer
 
@@ -10,11 +10,13 @@ Kaspi/container — это легковесный контейнер внедр�
 composer require kaspi/di-container
 ```
 
-#### Примеры использования
+### Примеры использования
 
-Простой пример использования доступен в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
+* Использованием kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
+* Примеры Использование [DiContainer]()
+* Примеры использования [DiContainer c PHP атрибутами]()
 
----
+#### Конфигурирование зависимостей вручную через определения в DiContainerFactory.
 
 Получение существующего класса и разрешение простых типов параметров в конструкторе:
 ```php
@@ -188,7 +190,142 @@ $myClass = $container->get(ClassInterface::class);
 print $myClass->file; // /var/log/app.log
 ```
 
-##### Тесты
+#### Конфигурирование DiContainer c PHP атрибутами для определений.
+
+Получение существующего класса и разрешение простых типов параметров в конструкторе:
+```php
+// Объявление класса
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+class MyClass {
+    public function __construct(
+        #[Inject(arguments: ['dsn' => 'pdo_dsn'])]
+        public \PDO $pdo
+    ) {}
+}
+```
+
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = DiContainerFactory::make(
+    ['pdo_dsn' => 'sqlite:/opt/databases/mydb.sq3']
+);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\MyClass;
+
+/** @var MyClass $myClass */
+$myClass = $container->get(MyClass::class);
+$myClass->pdo->query('...')
+```
+
+Использование именованного аргумента в объявлении:
+
+```php
+// Объявление класса
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+class MyUsers {
+    public function __construct(
+        #[Inject('users_data')]
+        public array $users
+    ) {}
+}
+
+class MyEmployers {
+    public function __construct(
+        #[Inject('users_data')]
+        public array $employers
+    ) {}
+}
+```
+
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definitions = [
+    'users_data' => ['user1', 'user2'],
+];
+
+$container = DiContainerFactory::make($definitions);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\{MyUsers, MyEmployers};
+
+/** @var MyUsers::class $users */
+$users = $container->get(MyUsers::class);
+print implode(',', $users->users); // user1, user2
+/** @var MyEmployers::class $employers */
+$employers = $container->get(MyEmployers::class);
+print implode(',', $employers->employers); // user1, user2
+```
+
+Получение по интерфейсу:
+
+```php
+// Объявление классов
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\Service;
+
+#[Service(ClassImplement::class)]
+interface CustomLoggerInterface {
+    public function loggerFile(): string;
+}
+
+class CustomLogger implements CustomLoggerInterface {
+    public function __construct(
+        #[Inject('logger_file')]
+        protected string $file,
+    ) {}
+    
+    public function loggerFile(): string {
+        return $this->file;
+    }
+}
+
+// ...
+
+class MyLogger {
+    public function __construct(
+        #[Inject]
+        public CustomLoggerInterface $customLogger
+    ) {}
+}
+```
+
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = DiContainerFactory::make([
+    'logger_file' => '/var/log/app.log'
+]);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\MyLogger;
+
+/** @var MyLogger $myClass */
+$myClass = $container->get(MyLogger::class);
+print $myClass->customLogger->loggerFile(); // /var/log/app.log
+```
+
+
+## Тесты
 Прогнать тесты без подсчета покрытия кода
 ```shell
 composer test
@@ -198,7 +335,7 @@ composer test
 ./vendor/bin/phpunit
 ```
 
-##### Code style
+## Code style
 Для приведения кода к стандартам используем php-cs-fixer который объявлен 
 в dev зависимости composer-а
 
@@ -206,7 +343,7 @@ composer test
 composer fixer
 ``` 
 
-#### Использование Docker образа с PHP 8.0
+## Использование Docker образа с PHP 8.0
 
 Собрать контейнер
 ```shell
