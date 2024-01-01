@@ -93,6 +93,7 @@ final class Autowired implements AutowiredInterface
             function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
                 $inject = $parameter->getAttributes(Inject::class)[0] ?? null;
                 $isBuildIn = $this->isBuiltinType($parameter);
+                $parameterType = $parameter->getType();
 
                 try {
                     $value = match (true) {
@@ -104,10 +105,10 @@ final class Autowired implements AutowiredInterface
 
                         $isBuildIn => $container->get($parameter->getName()),
 
-                        $container::class === $parameter->getType()?->getName(),
-                        DiContainerInterface::class === $parameter->getType()?->getName() => $container,
+                        $container::class === $parameterType?->getName(),
+                        DiContainerInterface::class === $parameterType?->getName() => $container,
 
-                        default => $container->get($parameter->getType()?->getName()),
+                        default => $container->get($parameterType?->getName()),
                     };
 
                     $dependencies[$parameter->getName()] = $value;
