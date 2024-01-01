@@ -6,6 +6,9 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @template T of object
+ */
 interface DiContainerInterface extends ContainerInterface
 {
     /**
@@ -14,4 +17,11 @@ interface DiContainerInterface extends ContainerInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      */
     public function set(string $id, mixed $abstract = null, ?array $arguments = null): static;
+
+    /**
+     * @param class-string<T>|string $id
+     *
+     * @return T
+     */
+    public function get(string $id): mixed;
 }
