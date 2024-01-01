@@ -84,7 +84,7 @@ final class Autowired implements AutowiredInterface
     /**
      * @param \ReflectionParameter[] $parameters
      *
-     * @throws AutowiredException
+     * @throws \ReflectionException
      */
     private function resolveParameters(ContainerInterface $container, array $parameters): array
     {
