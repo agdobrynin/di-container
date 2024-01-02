@@ -91,7 +91,7 @@ final class Autowired implements AutowiredInterface
         return array_reduce(
             $parameters,
             function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
-                $inject = Inject::resolve($parameter);
+                $inject = Inject::makeFromReflection($parameter);
                 $isBuildIn = $this->isBuiltinType($parameter);
                 $parameterType = $parameter->getType();
 

@@ -9,7 +9,7 @@ final class Inject
 {
     public function __construct(public ?string $id = null, public array $arguments = []) {}
 
-    public static function resolve(\ReflectionParameter $parameter): ?self
+    public static function makeFromReflection(\ReflectionParameter $parameter): ?self
     {
         if ($attribute = $parameter->getAttributes(self::class)[0] ?? null) {
             $inject = $attribute->newInstance();
