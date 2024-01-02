@@ -77,11 +77,10 @@ class MyEmployers {
 use App\{MyUsers, MyEmployers};
 use Kaspi\DiContainer\DiContainerFactory;
 
-// Определение символа разделителя параметров для авто связывания
-// по умолчанию символ @
-// значение-ссылка начинается с символа указанного
-// в KeyGeneratorForNamedParameter - например "@data" будет искать
-// в контейнере ключ "data".
+// В конструкторе DiContainer - параметр "linkContainerSymbol"
+// определяет значение-ссылку для авто связывания аргументов -
+// по умолчанию символ "@"
+// Например "@data" будет искать в контейнере ключ "data".
 
 $definitions = [
     'data' => ['user1', 'user2'],
