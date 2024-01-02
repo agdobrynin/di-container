@@ -169,7 +169,9 @@ class DiContainer implements DiContainerInterface
             return $this->getValueOrLinkSymbol($this->get($key));
         }
 
-        return $value;
+        return \is_string($value) && $this->has($value)
+            ? $this->get($value)
+            : $value;
     }
 
     protected function parseLinkSymbol(mixed $value): ?string
