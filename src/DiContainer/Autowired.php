@@ -97,11 +97,9 @@ final class Autowired implements AutowiredInterface
 
                 try {
                     $value = match (true) {
-                        $inject && $isBuildIn => $container->get($inject->id),
+                        $isBuildIn => $container->get($inject?->id ?: $parameter->getName()),
 
-                        $inject && !$isBuildIn => $this->resolveByAttribute($container, $inject),
-
-                        $isBuildIn => $container->get($parameter->getName()),
+                        !$isBuildIn && $inject => $this->resolveByAttribute($container, $inject),
 
                         $container::class === $parameterType?->getName(),
                         DiContainerInterface::class === $parameterType?->getName() => $container,
