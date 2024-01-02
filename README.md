@@ -77,26 +77,23 @@ class MyEmployers {
 use App\{MyUsers, MyEmployers};
 use Kaspi\DiContainer\DiContainerFactory;
 
-// В конструкторе DiContainer - параметр "linkContainerSymbol"
-// определяет значение-ссылку для авто связывания аргументов -
-// по умолчанию символ "@"
-// Например "@data" будет искать в контейнере ключ "data".
+// В объявлении arguments->users = "data"
+// будет искать в контейнере ключ "data".
 
 $definitions = [
     'data' => ['user1', 'user2'],
     App\MyUsers::class => [
         'arguments' => [
-            'users' => '@data',
+            'users' => 'data',
         ],
     ],
     App\MyEmployers::class => [
         'arguments' => [
-            'employers' => '@data',
+            'employers' => 'data',
         ],
     ],
 ];
-// по умолчанию символ разделитель @
-// указан в параметре "linkContainerSymbol" метода 
+
 $container = DiContainerFactory::make($definitions);
 ```
 
@@ -111,6 +108,51 @@ print implode(',', $users->users); // user1, user2
 $employers = $container->get(MyEmployers::class);
 print implode(',', $employers->employers); // user1, user2
 ```
+
+Использование именованного аргумента в объявлении со ссылкой на другой id контейнера:
+
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+
+// В конструкторе DiContainer - параметр "linkContainerSymbol"
+// определяет значение-ссылку для авто связывания аргументов -
+// по умолчанию символ "@"
+
+$container = DiContainerFactory::make(
+    [
+        // основной id в контейнере
+        'sqlite-home' => 'sqlite:/opt/databases/mydb.sq3',
+        //.....
+        // Id в контейнере содержащий ссылку на id контейнера = "sqlite-home"
+        'sqlite-test' => '@sqlite-home',
+        \PDO::class => [
+            'arguments' => [
+                'dsn' => 'sqlite-test',
+            ],
+        ];
+    ]
+);
+```
+
+```php
+// Объявление класса
+namespace App;
+
+class MyClass {
+    public function __construct(public \PDO $pdo) {}
+}
+
+// ....
+
+/** @var MyClass $myClass */
+$myClass = $container->get(MyClass::class);
+// в конструктор MyClass будет вызван с определением
+// new MyClass(
+//      pdo: new \PDO(dsn: 'sqlite:/opt/databases/mydb.sq3') 
+// );
+```
+
 
 Получение класса по интерфейсу
 ```php

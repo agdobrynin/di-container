@@ -162,7 +162,7 @@ class ContainerTest extends TestCase
             yield 'database' => static fn () => new Classes\Db($base);
 
             yield Classes\UserRepository::class => [
-                'arguments' => ['db' => '@database'],
+                'arguments' => ['db' => 'database'],
             ];
         };
 
@@ -365,7 +365,9 @@ class ContainerTest extends TestCase
             [
                 Classes\Logger::class => [
                     'arguments' => [
-                        'name' => '@logger.name',
+                        // get by container-id
+                        'name' => 'logger.name',
+                        // get by container link
                         'file' => '@logger.file',
                     ],
                 ],
@@ -406,6 +408,12 @@ class ContainerTest extends TestCase
                     'name' => 'John',
                 ],
             ],
+            Classes\Names::class => [
+                'arguments' => [
+                    'place' => 'In the city',
+                    'names' => ['Ivan', 'Piter'],
+                ],
+            ],
         ];
 
         $container = new DiContainer($def, $this->autowire);
@@ -415,6 +423,9 @@ class ContainerTest extends TestCase
                 'name' => 'John',
             ],
         ], $container->get('Welcome'));
+
+        $this->assertEquals(['Ivan', 'Piter'], $container->get(Classes\Names::class)->names);
+        $this->assertEquals('In the city', $container->get(Classes\Names::class)->place);
     }
 
     public function testParseConstructorArguments(): void
