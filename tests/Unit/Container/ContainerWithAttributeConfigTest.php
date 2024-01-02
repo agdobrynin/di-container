@@ -16,6 +16,7 @@ use Tests\Fixtures\Attributes\SimpleDbInterface;
  * @internal
  *
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\Inject::resolve
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
@@ -26,7 +27,7 @@ class ContainerWithAttributeConfigTest extends TestCase
     public function testGetServiceByInterface(): void
     {
         $c = DiContainerFactory::make([
-            'db_dsn' => 'sqlite::memory:',
+            'shared.data' => ['php', 'js'],
             'config-table-name' => 'log',
         ]);
 
@@ -37,17 +38,22 @@ class ContainerWithAttributeConfigTest extends TestCase
         $this->assertInstanceOf(SimpleDbInterface::class, $l->simpleDb);
         $this->assertEquals('insert Ivan into table log', $l->simpleDb->insert('Ivan'));
         $this->assertEquals(['name' => 'Piter', 'table' => 'log'], $l->simpleDb->select('Piter'));
+
+        $this->assertEquals(['php', 'js'], $l->simpleDb->data->getArrayCopy());
     }
 
-    public function testInjectPslPdo(): void
+    public function testInjectSimpleDataByLink(): void
     {
         $c = DiContainerFactory::make([
-            'sqlite_dsn' => 'sqlite::memory:',
-            'db_dsn' => '@sqlite_dsn',
+            'data' => ['one', 'second'],
+            'shared.data' => '@data',
             'config-table-name' => 'log',
         ]);
 
-        $this->assertInstanceOf(\PDO::class, $c->get(SimpleDb::class)->pdo);
+        $class = $c->get(SimpleDb::class);
+
+        $this->assertInstanceOf(\ArrayIterator::class, $class->data);
+        $this->assertEquals(['one', 'second'], $class->data->getArrayCopy());
     }
 
     public function testInjectFailType(): void

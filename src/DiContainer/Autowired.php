@@ -91,17 +91,15 @@ final class Autowired implements AutowiredInterface
         return array_reduce(
             $parameters,
             function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
-                $inject = $parameter->getAttributes(Inject::class)[0] ?? null;
+                $inject = Inject::resolve($parameter);
                 $isBuildIn = $this->isBuiltinType($parameter);
                 $parameterType = $parameter->getType();
 
                 try {
                     $value = match (true) {
-                        null !== $inject => $this->resolveByAttribute(
-                            $container,
-                            $inject->newInstance(),
-                            $parameter
-                        ),
+                        $inject && $isBuildIn => $container->get($inject->id),
+
+                        $inject && !$isBuildIn => $this->resolveByAttribute($container, $inject),
 
                         $isBuildIn => $container->get($parameter->getName()),
 
@@ -134,19 +132,8 @@ final class Autowired implements AutowiredInterface
             || $parameter->getType()->isBuiltin();
     }
 
-    private function resolveByAttribute(
-        ContainerInterface $container,
-        Inject $inject,
-        \ReflectionParameter $parameter
-    ): mixed {
-        if (null === $inject->id) {
-            $inject->id = $parameter->getType()?->getName();
-        }
-
-        if ($this->isBuiltinType($parameter)) {
-            return $container->get($inject->id);
-        }
-
+    private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
+    {
         foreach ($inject->arguments as $argName => $argValue) {
             $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
                 ? $container->get($argValue)

@@ -9,8 +9,8 @@ use Kaspi\DiContainer\Attributes\Inject;
 class SimpleDb implements SimpleDbInterface
 {
     public function __construct(
-        #[Inject(arguments: ['dsn' => 'db_dsn'])]
-        public \PDO $pdo,
+        #[Inject(arguments: ['array' => 'shared.data'])]
+        public \ArrayIterator $data,
         #[Inject('config-table-name')]
         public string $tableName,
     ) {}
