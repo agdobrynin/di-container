@@ -284,7 +284,7 @@ namespace App;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 
-#[Service(ClassImplement::class)]
+#[Service(CustomLogger::class)]
 interface CustomLoggerInterface {
     public function loggerFile(): string;
 }
