@@ -63,8 +63,7 @@ class DiContainer implements DiContainerInterface
     {
         return isset($this->definitions[$id])
             || \class_exists($id)
-            || \interface_exists($id)
-            || isset($this->definitions[$this->parseLinkSymbol($id)]);
+            || \interface_exists($id);
     }
 
     public function set(string $id, mixed $abstract = null, ?array $arguments = null): static

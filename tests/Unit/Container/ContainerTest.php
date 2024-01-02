@@ -464,6 +464,6 @@ class ContainerTest extends TestCase
             'y' => '@x',
         ]);
 
-        $this->assertEquals('Main value', $c->get('@x'));
+        $this->assertEquals('Main value', $c->get('y'));
     }
 }
