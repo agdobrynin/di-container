@@ -39,7 +39,14 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
         protected string $linkContainerSymbol = '@',
+        protected string $delimiterLevelSymbol = '.',
     ) {
+        if ($linkContainerSymbol === $delimiterLevelSymbol) {
+            throw new ContainerException(
+                "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterLevelSymbol}]"
+            );
+        }
+
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
             $this->set($key, $abstract);
