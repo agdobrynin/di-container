@@ -27,7 +27,7 @@ class ContainerWithAttributeConfigTest extends TestCase
     public function testGetServiceByInterface(): void
     {
         $c = DiContainerFactory::make([
-            'shared.data' => ['php', 'js'],
+            'shared-data' => ['php', 'js'],
             'config-table-name' => 'log',
         ]);
 
@@ -46,7 +46,7 @@ class ContainerWithAttributeConfigTest extends TestCase
     {
         $c = DiContainerFactory::make([
             'data' => ['one', 'second'],
-            'shared.data' => '@data',
+            'shared-data' => '@data',
             'config-table-name' => 'log',
         ]);
 
