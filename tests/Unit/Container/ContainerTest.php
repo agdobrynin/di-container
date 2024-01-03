@@ -99,9 +99,9 @@ class ContainerTest extends TestCase
     public function testGetClosureWithParamsDiContainer(): void
     {
         $container = new DiContainer([
-            'param.five' => 5,
+            'param_five' => 5,
             'test' => static function (ContainerInterface $container) {
-                return 10 + $container->get('param.five');
+                return 10 + $container->get('param_five');
             },
         ], autowire: $this->autowire);
 
@@ -356,8 +356,8 @@ class ContainerTest extends TestCase
     public function testMultipleGlobalArguments(): void
     {
         $loggerConfig = [
-            'logger.file' => '/path/to/your.log',
-            'logger.name' => 'app-logger',
+            'logger_file' => '/path/to/your.log',
+            'logger_name' => 'app-logger',
         ];
         $definitions = array_merge(
             $loggerConfig,
@@ -365,9 +365,9 @@ class ContainerTest extends TestCase
                 Classes\Logger::class => [
                     'arguments' => [
                         // get by container-id
-                        'name' => 'logger.name',
+                        'name' => 'logger_name',
                         // get by container link
-                        'file' => '@logger.file',
+                        'file' => '@logger_file',
                     ],
                 ],
             ]
@@ -440,11 +440,11 @@ class ContainerTest extends TestCase
     public function testLinkSymbolByLinkSymbol(): void
     {
         $instances = [
-            'shared.user' => ['first', 'second'],
-            'all.records' => '@shared.user',
+            'shared_user' => ['first', 'second'],
+            'all_records' => '@shared_user',
             Classes\Db::class => [
                 'arguments' => [
-                    'data' => '@all.records',
+                    'data' => '@all_records',
                 ],
             ],
         ];
