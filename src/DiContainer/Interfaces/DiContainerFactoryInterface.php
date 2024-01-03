@@ -13,6 +13,7 @@ interface DiContainerFactoryInterface
      */
     public static function make(
         iterable $definitions = [],
-        string $linkContainerSymbol = '@'
+        string $linkContainerSymbol = '@',
+        $delimiterLevelSymbol = '.'
     ): DiContainerInterface;
 }

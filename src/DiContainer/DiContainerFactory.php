@@ -11,12 +11,14 @@ class DiContainerFactory implements DiContainerFactoryInterface
 {
     public static function make(
         iterable $definitions = [],
-        string $linkContainerSymbol = '@'
+        string $linkContainerSymbol = '@',
+        $delimiterLevelSymbol = '.'
     ): DiContainerInterface {
         return new DiContainer(
             definitions: $definitions,
             autowire: new Autowired(),
             linkContainerSymbol: $linkContainerSymbol,
+            delimiterLevelSymbol: $delimiterLevelSymbol,
         );
     }
 }
