@@ -126,7 +126,7 @@ final class Autowired implements AutowiredInterface
 
     private function isBuiltinType(\ReflectionParameter $parameter): bool
     {
-        return (!$parameter->getType() instanceof \ReflectionNamedType)
+        return !($parameter->getType() instanceof \ReflectionNamedType)
             || $parameter->getType()->isBuiltin();
     }
 
