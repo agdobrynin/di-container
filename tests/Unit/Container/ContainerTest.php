@@ -357,7 +357,8 @@ class ContainerTest extends TestCase
     {
         $loggerConfig = [
             'logger_file' => '/path/to/your.log',
-            'logger_name' => 'app-logger',
+            'logger_name_my_app' => 'app-logger',
+            'local_file' => '@logger_file',
         ];
         $definitions = array_merge(
             $loggerConfig,
@@ -365,9 +366,9 @@ class ContainerTest extends TestCase
                 Classes\Logger::class => [
                     'arguments' => [
                         // get by container-id
-                        'name' => 'logger_name',
+                        'name' => 'logger_name_my_app',
                         // get by container link
-                        'file' => '@logger_file',
+                        'file' => 'local_file',
                     ],
                 ],
             ]
