@@ -8,7 +8,6 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -101,8 +100,7 @@ final class Autowired implements AutowiredInterface
 
                         !$isBuildIn && $inject => $this->resolveByAttribute($container, $inject),
 
-                        $container::class === $parameterType?->getName(),
-                        DiContainerInterface::class === $parameterType?->getName() => $container,
+                        ContainerInterface::class === $parameterType?->getName() => $container,
 
                         default => $container->get($parameterType?->getName()),
                     };

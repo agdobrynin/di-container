@@ -7,7 +7,6 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -101,7 +100,7 @@ class ContainerTest extends TestCase
     {
         $container = new DiContainer([
             'param.five' => 5,
-            'test' => static function (DiContainerInterface $container) {
+            'test' => static function (ContainerInterface $container) {
                 return 10 + $container->get('param.five');
             },
         ], autowire: $this->autowire);
