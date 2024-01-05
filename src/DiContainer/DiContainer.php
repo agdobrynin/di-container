@@ -29,7 +29,6 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $argumentDefinitions = [];
     protected array $resolved = [];
-    protected string $delimiterArrayAccessSymbol;
 
     /**
      * @param iterable<string, mixed> $definitions
@@ -40,15 +39,13 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
         protected string $linkContainerSymbol = '@',
-        string $delimiterArrayAccessSymbol = '.',
+        protected string $delimiterArrayAccessSymbol = '.',
     ) {
         if ($linkContainerSymbol === $delimiterArrayAccessSymbol) {
             throw new ContainerException(
                 "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterArrayAccessSymbol}]"
             );
         }
-
-        $this->delimiterArrayAccessSymbol = $delimiterArrayAccessSymbol;
 
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
@@ -188,7 +185,7 @@ class DiContainer implements DiContainerInterface
     {
         $segments = $this->definitions;
 
-        foreach (explode($this->delimiterArrayAccessSymbol, $path) as $segment) {
+        foreach (\explode($this->delimiterArrayAccessSymbol, $path) as $segment) {
             if (isset($segments[$segment]) && \is_array($segments)) {
                 $segments = $segments[$segment];
             } else {
@@ -202,14 +199,14 @@ class DiContainer implements DiContainerInterface
     protected function parseLinkSymbol(mixed $value): ?string
     {
         return (\is_string($value) && \str_starts_with($value, $this->linkContainerSymbol))
-            ? substr($value, strlen($this->linkContainerSymbol))
+            ? substr($value, \strlen($this->linkContainerSymbol))
             : null;
     }
 
     protected function isArrayAccess(mixed $id): bool
     {
-        $delimiter = preg_quote($this->delimiterArrayAccessSymbol, null);
+        $delimiter = \preg_quote($this->delimiterArrayAccessSymbol, null);
 
-        return \is_string($id) && preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
+        return \is_string($id) && \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }
 }
