@@ -10,8 +10,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Tests\Fixtures\Classes\Names;
-use Tests\Fixtures\Classes\ReportEmail;
+use Tests\Fixtures\Classes;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -37,13 +36,13 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             'search_site' => 'https://www.google.com',
             'report' => [
                 'reportEmail' => static function (ContainerInterface $container) {
-                    return new ReportEmail($container->get('emails.admin'), 0);
+                    return new Classes\ReportEmail($container->get('emails.admin'), 0);
                 },
             ],
 
             // ... more other definitions
 
-            Names::class => [
+            Classes\Names::class => [
                 'arguments' => [
                     'names' => 'app.users',
                     'place' => 'app.city',
@@ -55,7 +54,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
 
         $container = DiContainerFactory::make($def);
 
-        $class = $container->get(Names::class);
+        $class = $container->get(Classes\Names::class);
 
         $this->assertEquals(['Ivan', 'Piter'], $class->names);
         $this->assertEquals('Washington', $class->place);
@@ -72,7 +71,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             ],
             // ... more other definitions
 
-            Names::class => [
+            Classes\Names::class => [
                 'arguments' => [
                     'names' => 'app.users',
                 ],
@@ -84,7 +83,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessage('array notation key [app.users]');
 
-        $container->get(Names::class);
+        $container->get(Classes\Names::class);
     }
 
     public function testDelimiterSymbolsMustBeDifferent(): void
@@ -92,6 +91,43 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('Delimiters symbols must be different');
 
-        new DiContainer(linkContainerSymbol: '.', delimiterArrayAccessSymbol: '.');
+        new DiContainer(linkContainerSymbol: '.', delimiterAccessArrayNotationSymbol: '.');
+    }
+
+    public function testOtherClassByArrayNotated(): void
+    {
+        $def = [
+            'app' => [
+                'admin' => [
+                    'email' => 'admin@mail.com',
+                ],
+                'logger' => [
+                    'instance' => Classes\Logger::class,
+                    'file' => '/var/logs/app.log',
+                    'name' => 'main-logger',
+                ],
+            ],
+            Classes\Logger::class => [
+                'arguments' => [
+                    'name' => 'app.logger.name',
+                    'file' => 'app.logger.file',
+                ],
+            ],
+            Classes\SendEmail::class => [
+                'arguments' => [
+                    'adminEmail' => 'app.admin.email',
+                    'logger' => 'app.logger.instance',
+                ],
+            ],
+        ];
+
+        $container = DiContainerFactory::make($def);
+
+        $class = $container->get(Classes\SendEmail::class);
+
+        $this->assertInstanceOf(Classes\Logger::class, $class->logger);
+        $this->assertEquals('/var/logs/app.log', $class->logger->file);
+        $this->assertEquals('main-logger', $class->logger->name);
+        $this->assertEquals('admin@mail.com', $class->adminEmail);
     }
 }

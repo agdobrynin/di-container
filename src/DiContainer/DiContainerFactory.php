@@ -12,13 +12,13 @@ class DiContainerFactory implements DiContainerFactoryInterface
     public static function make(
         iterable $definitions = [],
         string $linkContainerSymbol = '@',
-        string $delimiterArrayAccessSymbol = '.'
+        string $delimiterAccessArrayNotationSymbol = '.'
     ): DiContainerInterface {
         return new DiContainer(
             definitions: $definitions,
             autowire: new Autowired(),
             linkContainerSymbol: $linkContainerSymbol,
-            delimiterArrayAccessSymbol: $delimiterArrayAccessSymbol,
+            delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol,
         );
     }
 }

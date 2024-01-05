@@ -7,8 +7,7 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
-use Tests\Fixtures\Attributes\NamesWithInject;
-use Tests\Fixtures\Attributes\SimpleDbInterface;
+use Tests\Fixtures;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -37,12 +36,12 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
             'config-table-name' => 'sure-table',
         ]);
 
-        $class = $c->get(NamesWithInject::class);
+        $class = $c->get(Fixtures\Attributes\NamesWithInject::class);
 
         $this->assertEquals(['ivan', 'piter'], $class->names);
         $this->assertEquals('Washington', $class->place);
         $this->assertEquals('https://google.com', $class->site);
-        $this->assertInstanceOf(SimpleDbInterface::class, $class->simpleDb);
+        $this->assertInstanceOf(Fixtures\Attributes\SimpleDbInterface::class, $class->simpleDb);
         $this->assertEquals(['name' => 'ivan', 'table' => 'sure-table'], $class->simpleDb->select('ivan'));
         $this->assertEquals('insert piter into table sure-table', $class->simpleDb->insert('piter'));
     }
@@ -62,6 +61,43 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('Unresolvable dependency');
 
-        $c->get(NamesWithInject::class);
+        $c->get(Fixtures\Attributes\NamesWithInject::class);
+    }
+
+    public function testInjectOtherClassByArrayNotated(): void
+    {
+        $def = [
+            'app' => [
+                'emails' => [
+                    'admin' => 'admin@email.com',
+                ],
+                'logger' => Fixtures\Attributes\Logger::class,
+                'logger_file' => '/var/logs/app.log',
+            ],
+        ];
+
+        $container = DiContainerFactory::make($def);
+
+        $class = $container->get(Fixtures\Attributes\SendEmail::class);
+
+        $this->assertEquals('/var/logs/app.log', $class->logger->file);
+        $this->assertEquals('admin@email.com', $class->adminEmail);
+    }
+
+    public function testInjectOtherClassByArrayNotatedNotFound(): void
+    {
+        $def = [
+            'app' => [
+                'emails' => [
+                    'admin' => 'admin@email.com',
+                ],
+            ],
+        ];
+
+        $container = DiContainerFactory::make($def);
+
+        $this->expectException(ContainerExceptionInterface::class);
+
+        $container->get(Fixtures\Attributes\SendEmail::class);
     }
 }

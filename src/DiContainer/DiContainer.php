@@ -39,11 +39,11 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
         protected string $linkContainerSymbol = '@',
-        protected string $delimiterArrayAccessSymbol = '.',
+        protected string $delimiterAccessArrayNotationSymbol = '.',
     ) {
-        if ($linkContainerSymbol === $delimiterArrayAccessSymbol) {
+        if ($linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
             throw new ContainerException(
-                "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterArrayAccessSymbol}]"
+                "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterAccessArrayNotationSymbol}]"
             );
         }
 
@@ -67,7 +67,7 @@ class DiContainer implements DiContainerInterface
             return $this->resolved[$id];
         }
 
-        if (!isset($this->definitions[$id]) && $this->isArrayNotation($id)) {
+        if (!isset($this->definitions[$id]) && $this->isAccessArrayNotation($id)) {
             $this->definitions[$id] = $this->getArrayNotation($id);
 
             return $this->resolve($id);
@@ -180,7 +180,7 @@ class DiContainer implements DiContainerInterface
             return $this->getValue($this->get($key));
         }
 
-        return \is_string($value) && ($this->has($value) || $this->isArrayNotation($value))
+        return \is_string($value) && ($this->has($value) || $this->isAccessArrayNotation($value))
             ? $this->get($value)
             : $value;
     }
@@ -192,9 +192,9 @@ class DiContainer implements DiContainerInterface
             : null;
     }
 
-    protected function isArrayNotation(mixed $id): bool
+    protected function isAccessArrayNotation(mixed $id): bool
     {
-        $delimiter = \preg_quote($this->delimiterArrayAccessSymbol, null);
+        $delimiter = \preg_quote($this->delimiterAccessArrayNotationSymbol, null);
 
         return \is_string($id) && \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }
@@ -202,7 +202,7 @@ class DiContainer implements DiContainerInterface
     protected function getArrayNotation(string $path): mixed
     {
         return array_reduce(
-            \explode($this->delimiterArrayAccessSymbol, $path),
+            \explode($this->delimiterAccessArrayNotationSymbol, $path),
             static function (mixed $segments, string $segment) use ($path) {
                 return isset($segments[$segment]) && \is_array($segments)
                     ? $segments[$segment]

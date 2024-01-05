@@ -11,10 +11,12 @@ composer require kaspi/di-container
 ### Примеры использования
 
 * Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
-* Примеры использования [DiContainer](#Конфигурирование)
-* Примеры использования [DiContainer c PHP атрибутами](#PHP-attributes)
+* Примеры использования [DiContainer со стандартным конфигурированием](#DiContainer-со-стандартным-конфигурированием).
+* Примеры использования [DiContainer c PHP атрибутами](#DiContainer-c-PHP-атрибутами).
+* Конфигурация DiContainer [с использованием нотаций по массиву](#Access-array-delimiter-notation).
 
-#### Конфигурирование
+#### DiContainer со стандартным конфигурированием
+
 Через определения зависимостей вручную в DiContainer.
 
 Получение существующего класса и разрешение встроенных типов параметров в конструкторе:
@@ -262,7 +264,7 @@ $myClass = $container->get(ClassInterface::class);
 print $myClass->file; // /var/log/app.log
 ```
 
-#### PHP-attributes
+#### DiContainer c PHP атрибутами
 
 Конфигурирование DiContainer c PHP атрибутами для определений.
 
@@ -397,6 +399,126 @@ use App\MyLogger;
 /** @var MyLogger $myClass */
 $myClass = $container->get(MyLogger::class);
 print $myClass->customLogger->loggerFile(); // /var/log/app.log
+```
+#### Access array delimiter notation
+
+Доступ к "контейнер-id" с вложенными определениям.
+
+По-умолчанию символ разделитель `.`
+
+Произвольный символ разделитель можно определить
+
+* `Kaspi\DiContainer\DiContainer::__construct` аргумент `$delimiterAccessArrayNotationSymbol` 
+* `Kaspi\DiContainer\DiContainerFactory::make` аргумент `$delimiterAccessArrayNotationSymbol`
+
+
+###### Access-array-delimiter-notation определение на базе ручного конфигурирования
+
+```php
+// Определения для DiContainer
+$definitions = [
+    'app' => [
+        'admin' => [
+            'email' =>'admin@mail.com',
+        ],
+        'logger' => App\Logger::class,
+        'logger_file' => '/var/app.log',
+    ],
+    App\Logger::class => [
+        'arguments' => [
+            'file' => 'app.logger_file'
+        ],
+    ],
+    App\SendEmail::class => [
+        'arguments' => [
+            'from' => 'app.admin.email',
+            'logger' => 'app.logger',
+        ],
+    ],
+];
+
+$container = DiContainerFactory::make($definitions);
+```
+```php
+// Объявление классов
+namespace App;
+
+interface LoggerInterface {}
+
+class Logger implements LoggerInterface {
+    public function __construct(
+        public string $file
+    ) {}
+}
+
+class SendEmail {
+    public function __construct(
+        public string $from,
+        public LoggerInterface $logger,
+    ) {}
+}
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\SendEmail;
+
+/** @var SendEmail $myClass */
+$sendEmail = $container->get(SendEmail::class);
+print $sendEmail->from; // admin@mail.com
+print $sendEmail->logger->file; // /var/app.log
+```
+
+###### Access-array-delimiter-notation - определения на основе PHP атрибутов.
+
+```php
+// Определения для DiContainer
+$definitions = [
+    'app' => [
+        'admin' => [
+            'email' =>'admin@mail.com',
+        ],
+        'logger' => App\Logger::class,
+        'logger_file' => '/var/app.log',
+    ],
+];
+
+$container = DiContainerFactory::make($definitions);
+```
+
+```php
+// Объявление классов
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+interface LoggerInterface {}
+
+class Logger implements LoggerInterface {
+    public function __construct(
+        #[Inject('app.logger_file')]
+        public string $file
+    ) {}
+}
+
+class SendEmail {
+    public function __construct(
+        #[Inject('app.admin.email')]
+        public string $from,
+        #[Inject('app.logger')]
+        public LoggerInterface $logger,
+    ) {}
+}
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\SendEmail;
+
+/** @var SendEmail $myClass */
+$sendEmail = $container->get(SendEmail::class);
+print $sendEmail->from; // admin@mail.com
+print $sendEmail->logger->file; // /var/app.log
 ```
 
 
