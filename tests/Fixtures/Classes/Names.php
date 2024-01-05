@@ -6,5 +6,10 @@ namespace Tests\Fixtures\Classes;
 
 class Names
 {
-    public function __construct(public array $names, public string $place) {}
+    public function __construct(
+        public array $names,
+        public string $place,
+        public ?string $site = null,
+        public ?ReportEmail $reportEmail = null,
+    ) {}
 }

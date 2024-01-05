@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\Service;
 #[Service(SimpleDb::class)]
 interface SimpleDbInterface
 {
-    public function insert(string $name);
+    public function insert(string $name): string;
 
     public function select(string $name): array;
 }

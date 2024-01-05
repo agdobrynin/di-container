@@ -106,11 +106,14 @@ final class Autowired implements AutowiredInterface
                     };
 
                     $dependencies[$parameter->getName()] = $value;
-                } catch (ContainerExceptionInterface) {
+                } catch (ContainerExceptionInterface $exception) {
                     if (!$parameter->isDefaultValueAvailable()) {
-                        $where = $parameter->getDeclaringClass().'::'.$parameter->getDeclaringFunction()->name;
+                        $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
 
-                        throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]");
+                        throw new AutowiredException(
+                            message: "Unresolvable dependency [{$parameter}] in [{$where}].",
+                            previous: $exception,
+                        );
                     }
 
                     $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
@@ -130,18 +133,18 @@ final class Autowired implements AutowiredInterface
 
     private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
     {
-        foreach ($inject->arguments as $argName => $argValue) {
-            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                ? $container->get($argValue)
-                : $argValue;
-        }
-
         if (interface_exists($inject->id)
             && $attribute = (new \ReflectionClass($inject->id))
                 ->getAttributes(Service::class)[0] ?? null) {
             $service = $attribute->newInstance();
             $inject->id = $service->id;
             $inject->arguments = [];
+        } else {
+            foreach ($inject->arguments as $argName => $argValue) {
+                if (\is_string($argValue)) {
+                    $inject->arguments[$argName] = $container->get($argValue);
+                }
+            }
         }
 
         return $this->resolveInstance(

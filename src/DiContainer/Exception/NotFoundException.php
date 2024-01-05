@@ -6,4 +6,4 @@ namespace Kaspi\DiContainer\Exception;
 
 use Psr\Container\NotFoundExceptionInterface;
 
-class NotFoundContainerException extends \RuntimeException implements NotFoundExceptionInterface {}
+class NotFoundException extends \RuntimeException implements NotFoundExceptionInterface {}

@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\ContainerException;
-use Kaspi\DiContainer\Exception\NotFoundContainerException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
@@ -39,7 +39,14 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
         protected string $linkContainerSymbol = '@',
+        protected string $delimiterArrayAccessSymbol = '.',
     ) {
+        if ($linkContainerSymbol === $delimiterArrayAccessSymbol) {
+            throw new ContainerException(
+                "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterArrayAccessSymbol}]"
+            );
+        }
+
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
             $this->set($key, $abstract);
@@ -56,7 +63,17 @@ class DiContainer implements DiContainerInterface
      */
     public function get(string $id): mixed
     {
-        return $this->resolved[$id] ?? $this->resolve($id);
+        if (isset($this->resolved[$id])) {
+            return $this->resolved[$id];
+        }
+
+        if (!isset($this->definitions[$id]) && $this->isArrayNotation($id)) {
+            $this->definitions[$id] = $this->getArrayNotation($id);
+
+            return $this->resolve($id);
+        }
+
+        return $this->resolve($id);
     }
 
     public function has(string $id): bool
@@ -98,7 +115,7 @@ class DiContainer implements DiContainerInterface
     protected function resolve(string $id): mixed
     {
         if (!$this->has($id)) {
-            throw new NotFoundContainerException("Unresolvable dependency [{$id}].");
+            throw new NotFoundException("Unresolvable dependency [{$id}].");
         }
 
         /** @var null|class-string<TClass> $definition */
@@ -135,7 +152,7 @@ class DiContainer implements DiContainerInterface
                         ?? [];
 
                     foreach ($paramsDefinitions as $argName => $argValue) {
-                        $args[$argName] = $this->getValueOrLinkSymbol($argValue);
+                        $args[$argName] = $this->getValue($argValue);
                     }
                 }
 
@@ -150,25 +167,20 @@ class DiContainer implements DiContainerInterface
             }
         }
 
-        $linkId = $this->parseLinkSymbol($id)
-            ?: $this->parseLinkSymbol($this->definitions[$id]);
-
-        if ($linkId) {
-            $this->resolved[$id] = $this->get($linkId);
-        } else {
-            $this->resolved[$id] = $this->definitions[$id];
-        }
+        $this->resolved[$id] = isset($this->definitions[$id]) && $this->definitions[$id] === $id
+        ? $id
+        : $this->getValue($this->definitions[$id]);
 
         return $this->resolved[$id];
     }
 
-    protected function getValueOrLinkSymbol(mixed $value): mixed
+    protected function getValue(mixed $value): mixed
     {
         if (\is_string($value) && $key = $this->parseLinkSymbol($value)) {
-            return $this->getValueOrLinkSymbol($this->get($key));
+            return $this->getValue($this->get($key));
         }
 
-        return \is_string($value) && $this->has($value)
+        return \is_string($value) && ($this->has($value) || $this->isArrayNotation($value))
             ? $this->get($value)
             : $value;
     }
@@ -176,7 +188,27 @@ class DiContainer implements DiContainerInterface
     protected function parseLinkSymbol(mixed $value): ?string
     {
         return (\is_string($value) && \str_starts_with($value, $this->linkContainerSymbol))
-            ? substr($value, strlen($this->linkContainerSymbol))
+            ? substr($value, \strlen($this->linkContainerSymbol))
             : null;
+    }
+
+    protected function isArrayNotation(mixed $id): bool
+    {
+        $delimiter = \preg_quote($this->delimiterArrayAccessSymbol, null);
+
+        return \is_string($id) && \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
+    }
+
+    protected function getArrayNotation(string $path): mixed
+    {
+        return array_reduce(
+            \explode($this->delimiterArrayAccessSymbol, $path),
+            static function (mixed $segments, string $segment) use ($path) {
+                return isset($segments[$segment]) && \is_array($segments)
+                    ? $segments[$segment]
+                    : throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
+            },
+            $this->definitions
+        );
     }
 }
