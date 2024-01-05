@@ -133,18 +133,18 @@ final class Autowired implements AutowiredInterface
 
     private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
     {
-        foreach ($inject->arguments as $argName => $argValue) {
-            if (\is_string($argValue)) {
-                $inject->arguments[$argName] = $container->get($argValue);
-            }
-        }
-
         if (interface_exists($inject->id)
             && $attribute = (new \ReflectionClass($inject->id))
                 ->getAttributes(Service::class)[0] ?? null) {
             $service = $attribute->newInstance();
             $inject->id = $service->id;
             $inject->arguments = [];
+        } else {
+            foreach ($inject->arguments as $argName => $argValue) {
+                if (\is_string($argValue)) {
+                    $inject->arguments[$argName] = $container->get($argValue);
+                }
+            }
         }
 
         return $this->resolveInstance(
