@@ -10,5 +10,6 @@ class Names
         public array $names,
         public string $place,
         public ?string $site = null,
+        public ?ReportEmail $reportEmail = null,
     ) {}
 }

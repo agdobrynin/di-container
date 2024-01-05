@@ -7,7 +7,8 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
-use Tests\Fixtures\Classes\NamesWithInject;
+use Tests\Fixtures\Attributes\NamesWithInject;
+use Tests\Fixtures\Attributes\SimpleDbInterface;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -32,6 +33,8 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
                     'search' => 'https://google.com',
                 ],
             ],
+            'shared-data' => ['abc'],
+            'config-table-name' => 'sure-table',
         ]);
 
         $class = $c->get(NamesWithInject::class);
@@ -39,6 +42,9 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
         $this->assertEquals(['ivan', 'piter'], $class->names);
         $this->assertEquals('Washington', $class->place);
         $this->assertEquals('https://google.com', $class->site);
+        $this->assertInstanceOf(SimpleDbInterface::class, $class->simpleDb);
+        $this->assertEquals(['name' => 'ivan', 'table' => 'sure-table'], $class->simpleDb->select('ivan'));
+        $this->assertEquals('insert piter into table sure-table', $class->simpleDb->insert('piter'));
     }
 
     public function testGetParametersByDelimiterSymbolWrongKey(): void

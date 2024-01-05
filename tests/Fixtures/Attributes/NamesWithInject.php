@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Classes;
+namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Inject;
 
@@ -13,6 +13,8 @@ class NamesWithInject
         public array $names,
         #[Inject('app.city')]
         public string $place,
+        #[Inject]
+        public SimpleDbInterface $simpleDb,
         #[Inject('app.sites.search')]
         public ?string $site = null,
     ) {}
