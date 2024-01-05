@@ -91,7 +91,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('Delimiters symbols must be different');
 
-        new DiContainer(linkContainerSymbol: '.', delimiterArrayAccessSymbol: '.');
+        new DiContainer(linkContainerSymbol: '.', delimiterAccessArrayNotationSymbol: '.');
     }
 
     public function testOtherClassByArrayNotated(): void
