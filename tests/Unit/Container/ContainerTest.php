@@ -69,7 +69,7 @@ class ContainerTest extends TestCase
     public function testAutowiredOff(): void
     {
         $container = (new DiContainer())
-            ->set('test', fn () => time())
+            ->set('test', fn () => \time())
         ;
 
         $this->expectException(ContainerExceptionInterface::class);
@@ -294,13 +294,13 @@ class ContainerTest extends TestCase
             'obj' => new class() {
                 public function time()
                 {
-                    return time();
+                    return \time();
                 }
             },
         ];
 
         yield 'resource' => [
-            'obj' => tmpfile(),
+            'obj' => \tmpfile(),
         ];
     }
 
@@ -360,7 +360,7 @@ class ContainerTest extends TestCase
             'logger_name_my_app' => 'app-logger',
             'local_file' => '@logger_file',
         ];
-        $definitions = array_merge(
+        $definitions = \array_merge(
             $loggerConfig,
             [
                 Classes\Logger::class => [

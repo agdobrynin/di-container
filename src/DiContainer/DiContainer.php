@@ -188,7 +188,7 @@ class DiContainer implements DiContainerInterface
     protected function parseLinkSymbol(mixed $value): ?string
     {
         return (\is_string($value) && \str_starts_with($value, $this->linkContainerSymbol))
-            ? substr($value, \strlen($this->linkContainerSymbol))
+            ? \substr($value, \strlen($this->linkContainerSymbol))
             : null;
     }
 
@@ -201,7 +201,7 @@ class DiContainer implements DiContainerInterface
 
     protected function getArrayNotation(string $path): mixed
     {
-        return array_reduce(
+        return \array_reduce(
             \explode($this->delimiterAccessArrayNotationSymbol, $path),
             static function (mixed $segments, string $segment) use ($path) {
                 return isset($segments[$segment]) && \is_array($segments)

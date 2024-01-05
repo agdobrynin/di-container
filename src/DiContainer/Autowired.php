@@ -88,7 +88,7 @@ final class Autowired implements AutowiredInterface
      */
     private function resolveParameters(ContainerInterface $container, array $parameters): array
     {
-        return array_reduce(
+        return \array_reduce(
             $parameters,
             function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
                 $inject = Inject::makeFromReflection($parameter);
@@ -134,7 +134,7 @@ final class Autowired implements AutowiredInterface
 
     private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
     {
-        if (interface_exists($inject->id)
+        if (\interface_exists($inject->id)
             && $attribute = (new \ReflectionClass($inject->id))
                 ->getAttributes(Service::class)[0] ?? null) {
             return $this->resolveInstance($container, $attribute->newInstance()->id);

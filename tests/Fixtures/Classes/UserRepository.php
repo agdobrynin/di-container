@@ -10,6 +10,6 @@ class UserRepository
 
     public function all(): string
     {
-        return implode(', ', $this->db->all());
+        return \implode(', ', $this->db->all());
     }
 }
