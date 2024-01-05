@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 final class Autowired implements AutowiredInterface
 {
@@ -136,22 +137,23 @@ final class Autowired implements AutowiredInterface
         if (interface_exists($inject->id)
             && $attribute = (new \ReflectionClass($inject->id))
                 ->getAttributes(Service::class)[0] ?? null) {
-            $service = $attribute->newInstance();
-            $inject->id = $service->id;
-            $inject->arguments = [];
-        } else {
-            foreach ($inject->arguments as $argName => $argValue) {
-                if (\is_string($argValue)) {
-                    $inject->arguments[$argName] = $container->get($argValue);
-                }
+            return $this->resolveInstance($container, $attribute->newInstance()->id);
+        }
+
+        if (!$container->has($inject->id)) {
+            try {
+                return $container->get($inject->id);
+            } catch (NotFoundExceptionInterface) {
             }
         }
 
-        return $this->resolveInstance(
-            $container,
-            $inject->id,
-            $inject->arguments
-        );
+        foreach ($inject->arguments as $argName => $argValue) {
+            if (\is_string($argValue)) {
+                $inject->arguments[$argName] = $container->get($argValue);
+            }
+        }
+
+        return $this->resolveInstance($container, $inject->id, $inject->arguments);
     }
 
     /**
