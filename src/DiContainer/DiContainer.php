@@ -185,21 +185,6 @@ class DiContainer implements DiContainerInterface
             : $value;
     }
 
-    protected function getArrayAccess(string $path): mixed
-    {
-        $segments = $this->definitions;
-
-        foreach (\explode($this->delimiterArrayAccessSymbol, $path) as $segment) {
-            if (isset($segments[$segment]) && \is_array($segments)) {
-                $segments = $segments[$segment];
-            } else {
-                throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
-            }
-        }
-
-        return $segments;
-    }
-
     protected function parseLinkSymbol(mixed $value): ?string
     {
         return (\is_string($value) && \str_starts_with($value, $this->linkContainerSymbol))
@@ -212,5 +197,18 @@ class DiContainer implements DiContainerInterface
         $delimiter = \preg_quote($this->delimiterArrayAccessSymbol, null);
 
         return \is_string($id) && \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
+    }
+
+    protected function getArrayAccess(string $path): mixed
+    {
+        return array_reduce(
+            \explode($this->delimiterArrayAccessSymbol, $path),
+            static function (mixed $segments, string $segment) use ($path) {
+                return isset($segments[$segment]) && \is_array($segments)
+                    ? $segments[$segment]
+                    : throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
+            },
+            $this->definitions
+        );
     }
 }
