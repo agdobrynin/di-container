@@ -67,8 +67,8 @@ class DiContainer implements DiContainerInterface
             return $this->resolved[$id];
         }
 
-        if (!isset($this->definitions[$id]) && $this->isArrayAccess($id)) {
-            $this->definitions[$id] = $this->getArrayAccess($id);
+        if (!isset($this->definitions[$id]) && $this->isArrayNotation($id)) {
+            $this->definitions[$id] = $this->getArrayNotation($id);
 
             return $this->resolve($id);
         }
@@ -180,7 +180,7 @@ class DiContainer implements DiContainerInterface
             return $this->getValue($this->get($key));
         }
 
-        return \is_string($value) && ($this->has($value) || $this->isArrayAccess($value))
+        return \is_string($value) && ($this->has($value) || $this->isArrayNotation($value))
             ? $this->get($value)
             : $value;
     }
@@ -192,14 +192,14 @@ class DiContainer implements DiContainerInterface
             : null;
     }
 
-    protected function isArrayAccess(mixed $id): bool
+    protected function isArrayNotation(mixed $id): bool
     {
         $delimiter = \preg_quote($this->delimiterArrayAccessSymbol, null);
 
         return \is_string($id) && \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }
 
-    protected function getArrayAccess(string $path): mixed
+    protected function getArrayNotation(string $path): mixed
     {
         return array_reduce(
             \explode($this->delimiterArrayAccessSymbol, $path),
