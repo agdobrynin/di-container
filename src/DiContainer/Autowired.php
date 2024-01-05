@@ -137,7 +137,6 @@ final class Autowired implements AutowiredInterface
         foreach ($inject->arguments as $argName => $argValue) {
             $inject->arguments[$argName] = $argValue;
 
-            // TODO Think about right way resolve is simple value or container id.
             try {
                 if (\is_string($argValue)) {
                     $inject->arguments[$argName] = $container->get($argValue);

@@ -63,7 +63,17 @@ class DiContainer implements DiContainerInterface
      */
     public function get(string $id): mixed
     {
-        return $this->resolved[$id] ?? $this->resolve($id);
+        if (isset($this->resolved[$id])) {
+            return $this->resolved[$id];
+        }
+
+        if (!isset($this->definitions[$id]) && $this->isArrayAccess($id)) {
+            $this->definitions[$id] = $this->getArrayAccess($id);
+
+            return $this->resolve($id);
+        }
+
+        return $this->resolve($id);
     }
 
     public function has(string $id): bool
@@ -104,7 +114,7 @@ class DiContainer implements DiContainerInterface
      */
     protected function resolve(string $id): mixed
     {
-        if (!$this->has($id) && !$this->isArrayAccess($id)) {
+        if (!$this->has($id)) {
             throw new NotFoundException("Unresolvable dependency [{$id}].");
         }
 
@@ -142,9 +152,7 @@ class DiContainer implements DiContainerInterface
                         ?? [];
 
                     foreach ($paramsDefinitions as $argName => $argValue) {
-                        $args[$argName] = $this->isArrayAccess($argValue)
-                            ? $this->getArrayAccess($argValue)
-                            : $this->getValue($argValue);
+                        $args[$argName] = $this->getValue($argValue);
                     }
                 }
 
@@ -159,13 +167,9 @@ class DiContainer implements DiContainerInterface
             }
         }
 
-        if ($this->isArrayAccess($id)) {
-            $this->resolved[$id] = $this->getArrayAccess($id);
-        } else {
-            $this->resolved[$id] = isset($this->definitions[$id]) && $this->definitions[$id] === $id
-            ? $id
-            : $this->getValue($this->definitions[$id]);
-        }
+        $this->resolved[$id] = isset($this->definitions[$id]) && $this->definitions[$id] === $id
+        ? $id
+        : $this->getValue($this->definitions[$id]);
 
         return $this->resolved[$id];
     }
@@ -176,7 +180,7 @@ class DiContainer implements DiContainerInterface
             return $this->getValue($this->get($key));
         }
 
-        return \is_string($value) && $this->has($value)
+        return \is_string($value) && ($this->has($value) || $this->isArrayAccess($value))
             ? $this->get($value)
             : $value;
     }
