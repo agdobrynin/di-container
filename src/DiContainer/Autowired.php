@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 final class Autowired implements AutowiredInterface
 {
@@ -106,11 +107,14 @@ final class Autowired implements AutowiredInterface
                     };
 
                     $dependencies[$parameter->getName()] = $value;
-                } catch (ContainerExceptionInterface) {
+                } catch (ContainerExceptionInterface $exception) {
                     if (!$parameter->isDefaultValueAvailable()) {
-                        $where = $parameter->getDeclaringClass().'::'.$parameter->getDeclaringFunction()->name;
+                        $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
 
-                        throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]");
+                        throw new AutowiredException(
+                            message: "Unresolvable dependency [{$parameter}] in [{$where}].",
+                            previous: $exception,
+                        );
                     }
 
                     $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
@@ -131,9 +135,15 @@ final class Autowired implements AutowiredInterface
     private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
     {
         foreach ($inject->arguments as $argName => $argValue) {
-            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                ? $container->get($argValue)
-                : $argValue;
+            $inject->arguments[$argName] = $argValue;
+
+            // TODO Think about right way resolve is simple value or container id.
+            try {
+                if (\is_string($argValue)) {
+                    $inject->arguments[$argName] = $container->get($argValue);
+                }
+            } catch (NotFoundExceptionInterface) {
+            }
         }
 
         if (interface_exists($inject->id)
