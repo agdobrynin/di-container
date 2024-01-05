@@ -12,6 +12,11 @@ return (new PhpCsFixer\Config())
         '@PhpCsFixer' => true,
         'declare_strict_types' => true,
         'php_unit_test_class_requires_covers' => false,
+        'native_function_invocation' => [
+            'include' => ['@all'],
+            'scope' => 'all',
+        ],
     ])
     ->setRiskyAllowed(true)
-    ->setFinder($finder);
+    ->setFinder($finder)
+;
