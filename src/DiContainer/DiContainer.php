@@ -207,22 +207,22 @@ class DiContainer implements DiContainerInterface
 
     protected function resolveArrayNotation(string $path): bool
     {
-        if ($this->isAccessArrayNotation($path)) {
-            if (!isset($this->definitions[$path])) {
-                $this->definitions[$path] = \array_reduce(
-                    \explode($this->delimiterAccessArrayNotationSymbol, $path),
-                    static function (mixed $segments, string $segment) use ($path) {
-                        return isset($segments[$segment]) && \is_array($segments)
-                            ? $segments[$segment]
-                            : throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
-                    },
-                    $this->definitions
-                );
-            }
-
-            return true;
+        if (!$this->isAccessArrayNotation($path)) {
+            return false;
         }
 
-        return false;
+        if (!isset($this->definitions[$path])) {
+            $this->definitions[$path] = \array_reduce(
+                \explode($this->delimiterAccessArrayNotationSymbol, $path),
+                static function (mixed $segments, string $segment) use ($path) {
+                    return isset($segments[$segment]) && \is_array($segments)
+                        ? $segments[$segment]
+                        : throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
+                },
+                $this->definitions
+            );
+        }
+
+        return true;
     }
 }
