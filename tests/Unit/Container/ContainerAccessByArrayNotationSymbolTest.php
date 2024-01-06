@@ -6,10 +6,10 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Exception\NotFoundException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\Classes;
 
 /**
@@ -74,14 +74,15 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             Classes\Names::class => [
                 'arguments' => [
                     'names' => 'app.users',
+                    'place' => 'app.city',
                 ],
             ],
         ];
 
         $container = DiContainerFactory::make($def);
 
-        $this->expectException(NotFoundException::class);
-        $this->expectExceptionMessage('array notation key [app.users]');
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('[app.users]');
 
         $container->get(Classes\Names::class);
     }

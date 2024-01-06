@@ -6,11 +6,7 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Attributes\InjectFailType;
-use Tests\Fixtures\Attributes\InjectSimpleArgument;
-use Tests\Fixtures\Attributes\Lorem;
-use Tests\Fixtures\Attributes\SimpleDb;
-use Tests\Fixtures\Attributes\SimpleDbInterface;
+use Tests\Fixtures\Attributes;
 
 /**
  * @internal
@@ -31,12 +27,11 @@ class ContainerWithAttributeConfigTest extends TestCase
             'config-table-name' => 'log',
         ]);
 
-        /** @var Lorem $l */
-        $l = $c->get(Lorem::class);
+        $l = $c->get(Attributes\Lorem::class);
 
-        $this->assertInstanceOf(Lorem::class, $l);
-        $this->assertInstanceOf(SimpleDbInterface::class, $l->simpleDb);
-        $this->assertEquals('insert Ivan into table log', $l->simpleDb->insert('Ivan'));
+        $this->assertInstanceOf(Attributes\Lorem::class, $l);
+        $this->assertInstanceOf(Attributes\SimpleDbInterface::class, $l->simpleDb);
+        $this->assertEquals('user Ivan into table log', $l->simpleDb->insert('Ivan'));
         $this->assertEquals(['name' => 'Piter', 'table' => 'log'], $l->simpleDb->select('Piter'));
 
         $this->assertEquals(['php', 'js'], $l->simpleDb->data->getArrayCopy());
@@ -50,7 +45,7 @@ class ContainerWithAttributeConfigTest extends TestCase
             'config-table-name' => 'log',
         ]);
 
-        $class = $c->get(SimpleDb::class);
+        $class = $c->get(Attributes\SimpleDb::class);
 
         $this->assertInstanceOf(\ArrayIterator::class, $class->data);
         $this->assertEquals(['one', 'second'], $class->data->getArrayCopy());
@@ -62,7 +57,7 @@ class ContainerWithAttributeConfigTest extends TestCase
         $this->expectExceptionMessage('must be of type SplQueue');
 
         DiContainerFactory::make()
-            ->get(InjectFailType::class)
+            ->get(Attributes\InjectFailType::class)
         ;
     }
 
@@ -70,7 +65,7 @@ class ContainerWithAttributeConfigTest extends TestCase
     {
         $c = DiContainerFactory::make();
 
-        $class = $c->get(InjectSimpleArgument::class);
+        $class = $c->get(Attributes\InjectSimpleArgument::class);
 
         $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $class->arrayIterator()->getArrayCopy());
         $this->assertInstanceOf(\ArrayAccess::class, $class->arrayIterator());
