@@ -12,6 +12,6 @@ class SendEmail
         #[Inject('app.emails.admin')]
         public string $adminEmail,
         #[Inject('app.logger')]
-        public Logger $logger
+        public Logger $logger,
     ) {}
 }

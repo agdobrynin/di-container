@@ -17,7 +17,7 @@ class SimpleDb implements SimpleDbInterface
 
     public function insert(string $name): string
     {
-        return "insert {$name} into table {$this->tableName}";
+        return "user {$name} into table {$this->tableName}";
     }
 
     public function select(string $name): array

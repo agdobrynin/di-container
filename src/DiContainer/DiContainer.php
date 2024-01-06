@@ -67,10 +67,8 @@ class DiContainer implements DiContainerInterface
             return $this->resolved[$id];
         }
 
-        if (!isset($this->definitions[$id]) && $this->isAccessArrayNotation($id)) {
-            $this->definitions[$id] = $this->getArrayNotation($id);
-
-            return $this->resolve($id);
+        if ($this->isAccessArrayNotation($id)) {
+            $this->resolveArrayNotation($id);
         }
 
         return $this->resolve($id);
@@ -80,7 +78,8 @@ class DiContainer implements DiContainerInterface
     {
         return isset($this->definitions[$id])
             || \class_exists($id)
-            || \interface_exists($id);
+            || \interface_exists($id)
+            || $this->hasArrayNotation($id);
     }
 
     public function set(string $id, mixed $abstract = null, ?array $arguments = null): static
@@ -192,23 +191,39 @@ class DiContainer implements DiContainerInterface
             : null;
     }
 
-    protected function isAccessArrayNotation(mixed $id): bool
+    protected function isAccessArrayNotation(string $id): bool
     {
         $delimiter = \preg_quote($this->delimiterAccessArrayNotationSymbol, null);
 
-        return \is_string($id) && \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
+        return (bool) \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }
 
-    protected function getArrayNotation(string $path): mixed
+    protected function hasArrayNotation(string $id): bool
     {
-        return \array_reduce(
-            \explode($this->delimiterAccessArrayNotationSymbol, $path),
-            static function (mixed $segments, string $segment) use ($path) {
-                return isset($segments[$segment]) && \is_array($segments)
-                    ? $segments[$segment]
-                    : throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
-            },
-            $this->definitions
-        );
+        if ($this->isAccessArrayNotation($id)) {
+            try {
+                $this->resolveArrayNotation($id);
+
+                return true;
+            } catch (NotFoundException) {
+            }
+        }
+
+        return false;
+    }
+
+    protected function resolveArrayNotation(string $path): void
+    {
+        if (!isset($this->definitions[$path])) {
+            $this->definitions[$path] = \array_reduce(
+                \explode($this->delimiterAccessArrayNotationSymbol, $path),
+                static function (mixed $segments, string $segment) use ($path) {
+                    return isset($segments[$segment]) && \is_array($segments)
+                        ? $segments[$segment]
+                        : throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
+                },
+                $this->definitions
+            );
+        }
     }
 }

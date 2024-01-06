@@ -43,7 +43,7 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
         $this->assertEquals('https://google.com', $class->site);
         $this->assertInstanceOf(Fixtures\Attributes\SimpleDbInterface::class, $class->simpleDb);
         $this->assertEquals(['name' => 'ivan', 'table' => 'sure-table'], $class->simpleDb->select('ivan'));
-        $this->assertEquals('insert piter into table sure-table', $class->simpleDb->insert('piter'));
+        $this->assertEquals('user piter into table sure-table', $class->simpleDb->insert('piter'));
     }
 
     public function testGetParametersByDelimiterSymbolWrongKey(): void
