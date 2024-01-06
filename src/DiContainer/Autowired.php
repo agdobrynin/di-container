@@ -144,10 +144,8 @@ final class Autowired implements AutowiredInterface
         }
 
         foreach ($inject->arguments as $argName => $argValue) {
-            if (\is_string($argValue)) {
-                $inject->arguments[$argName] = $container->has($argValue)
-                    ? $container->get($argValue)
-                    : $argValue;
+            if (\is_string($argValue) && $container->has($argValue)) {
+                $inject->arguments[$argName] = $container->get($argValue);
             } else {
                 $inject->arguments[$argName] = $argValue;
             }
