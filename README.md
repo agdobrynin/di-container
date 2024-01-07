@@ -532,6 +532,16 @@ composer test
 ./vendor/bin/phpunit
 ```
 
+## Статический анализ кода
+
+Для статического анализа используем пакет [Phan](https://github.com/phan/phan).
+
+Запуск без PHP расширения [PHP AST](https://github.com/nikic/php-ast)
+
+```shell
+./vendor/bin/phan --allow-polyfill-parser
+```
+
 ## Code style
 Для приведения кода к стандартам используем php-cs-fixer который объявлен 
 в dev зависимости composer-а
@@ -555,6 +565,12 @@ docker-compose run --rm php composer install
 docker-compose run --rm php vendor/bin/phpunit
 ```
 ⛑ pезультаты будут в папке `.coverage-html`
+
+Статический анализ кода Phan (_static analyzer for PHP_)
+
+```shell
+docker-compose run --rm php vendor/bin/phan
+```
 
 Можно работать в shell оболочке в docker контейнере:
 ```shell
