@@ -13,9 +13,10 @@ final class Inject
     {
         if ($attribute = $parameter->getAttributes(self::class)[0] ?? null) {
             $inject = $attribute->newInstance();
+            $type = $parameter->getType();
 
-            if (null === $inject->id) {
-                $inject->id = $parameter->getType()?->getName();
+            if (null === $inject->id && $type instanceof \ReflectionNamedType) {
+                $inject->id = $type->getName();
             }
 
             return $inject;
