@@ -61,6 +61,15 @@ class ContainerWithAttributeConfigTest extends TestCase
         ;
     }
 
+    public function testInjectSplClass(): void
+    {
+        $class = DiContainerFactory::make()
+            ->get(Attributes\InjectSplClass::class)
+        ;
+
+        $this->assertInstanceOf(\SplQueue::class, $class->queue);
+    }
+
     public function testInjectWithSimpleArguments(): void
     {
         $c = DiContainerFactory::make();
