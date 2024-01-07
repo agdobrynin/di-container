@@ -14,7 +14,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
- * @template TClass of object
+ * @template T of object
  */
 class DiContainer implements DiContainerInterface
 {
@@ -31,7 +31,7 @@ class DiContainer implements DiContainerInterface
     protected array $resolved = [];
 
     /**
-     * @param iterable<string, mixed> $definitions
+     * @param iterable<class-string|string, mixed|T> $definitions
      *
      * @throws ContainerExceptionInterface
      */
@@ -39,7 +39,7 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?AutowiredInterface $autowire = null,
         protected string $linkContainerSymbol = '@',
-        protected string $delimiterAccessArrayNotationSymbol = '.',
+        protected string $delimiterAccessArrayNotationSymbol = '.'
     ) {
         if ($linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
             throw new ContainerException(
@@ -54,9 +54,9 @@ class DiContainer implements DiContainerInterface
     }
 
     /**
-     * @param class-string<TClass>|string $id
+     * @param class-string<T>|string $id
      *
-     * @return TClass
+     * @return T
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -102,9 +102,9 @@ class DiContainer implements DiContainerInterface
     /**
      * Resolve dependencies.
      *
-     * @param class-string<TClass> $id
+     * @param class-string<T> $id
      *
-     * @return mixed|TClass
+     * @return mixed|T
      *
      * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
      * @throws ContainerExceptionInterface error while retrieving the entry
@@ -159,6 +159,7 @@ class DiContainer implements DiContainerInterface
             } catch (AutowiredExceptionInterface $exception) {
                 throw new ContainerException(
                     message: $exception->getMessage(),
+                    code: $exception->getCode(),
                     previous: $exception->getPrevious()
                 );
             }
@@ -191,7 +192,7 @@ class DiContainer implements DiContainerInterface
 
     protected function isAccessArrayNotation(string $id): bool
     {
-        $delimiter = \preg_quote($this->delimiterAccessArrayNotationSymbol, null);
+        $delimiter = \preg_quote($this->delimiterAccessArrayNotationSymbol, '/');
 
         return (bool) \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }

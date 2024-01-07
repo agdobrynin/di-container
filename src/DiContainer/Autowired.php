@@ -47,7 +47,8 @@ final class Autowired implements AutowiredInterface
         } catch (\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
-                previous: $exception->getPrevious()
+                code: $exception->getCode(),
+                previous: $exception->getPrevious(),
             );
         }
     }
@@ -75,7 +76,8 @@ final class Autowired implements AutowiredInterface
         } catch (AutowiredExceptionInterface|\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
-                previous: $exception->getPrevious()
+                code: $exception->getCode(),
+                previous: $exception->getPrevious(),
             );
         }
     }
@@ -91,27 +93,33 @@ final class Autowired implements AutowiredInterface
             $parameters,
             function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
                 $inject = Inject::makeFromReflection($parameter);
-                $isBuildIn = $this->isBuiltinType($parameter);
                 $parameterType = $parameter->getType();
 
                 try {
+                    if (!$parameterType instanceof \ReflectionNamedType) {
+                        throw new AutowiredException(
+                            "Unsupported parameter type [{$parameterType}] for [{$parameter->name}]"
+                        );
+                    }
+
                     $value = match (true) {
-                        $isBuildIn => $container->get($inject?->id ?: $parameter->getName()),
+                        $parameterType->isBuiltin() => $container->get($inject?->id ?: $parameter->getName()),
 
-                        !$isBuildIn && $inject => $this->resolveByAttribute($container, $inject),
+                        !$parameterType->isBuiltin() && $inject => $this->resolveByAttribute($container, $inject),
 
-                        ContainerInterface::class === $parameterType?->getName() => $container,
+                        ContainerInterface::class === $parameterType->getName() => $container,
 
-                        default => $container->get($parameterType?->getName()),
+                        default => $container->get($parameterType->getName()),
                     };
 
                     $dependencies[$parameter->getName()] = $value;
-                } catch (ContainerExceptionInterface $exception) {
+                } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
                     if (!$parameter->isDefaultValueAvailable()) {
                         $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
 
                         throw new AutowiredException(
                             message: "Unresolvable dependency [{$parameter}] in [{$where}].",
+                            code: $exception->getCode(),
                             previous: $exception,
                         );
                     }
@@ -123,12 +131,6 @@ final class Autowired implements AutowiredInterface
             },
             []
         );
-    }
-
-    private function isBuiltinType(\ReflectionParameter $parameter): bool
-    {
-        return !($parameter->getType() instanceof \ReflectionNamedType)
-            || $parameter->getType()->isBuiltin();
     }
 
     private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
