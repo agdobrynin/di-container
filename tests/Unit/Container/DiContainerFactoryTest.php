@@ -19,7 +19,7 @@ class DiContainerFactoryTest extends TestCase
 {
     public function testFactory(): void
     {
-        $c = DiContainerFactory::make();
+        $c = (new DiContainerFactory())->make();
 
         $this->assertInstanceOf(DiContainerInterface::class, $c);
     }

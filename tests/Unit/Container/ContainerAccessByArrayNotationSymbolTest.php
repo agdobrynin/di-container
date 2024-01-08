@@ -52,7 +52,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             ],
         ];
 
-        $container = DiContainerFactory::make($def);
+        $container = (new DiContainerFactory())->make($def);
 
         $class = $container->get(Classes\Names::class);
 
@@ -79,7 +79,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             ],
         ];
 
-        $container = DiContainerFactory::make($def);
+        $container = (new DiContainerFactory())->make($def);
 
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('[app.users]');
@@ -122,7 +122,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             ],
         ];
 
-        $container = DiContainerFactory::make($def);
+        $container = (new DiContainerFactory())->make($def);
 
         $class = $container->get(Classes\SendEmail::class);
 

@@ -22,7 +22,7 @@ class ContainerWithAttributeConfigTest extends TestCase
 {
     public function testGetServiceByInterface(): void
     {
-        $c = DiContainerFactory::make([
+        $c = (new DiContainerFactory())->make([
             'shared-data' => ['php', 'js'],
             'config-table-name' => 'log',
         ]);
@@ -39,7 +39,7 @@ class ContainerWithAttributeConfigTest extends TestCase
 
     public function testInjectSimpleDataByLink(): void
     {
-        $c = DiContainerFactory::make([
+        $c = (new DiContainerFactory())->make([
             'data' => ['one', 'second'],
             'shared-data' => '@data',
             'config-table-name' => 'log',
@@ -56,14 +56,14 @@ class ContainerWithAttributeConfigTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('must be of type SplQueue');
 
-        DiContainerFactory::make()
+        (new DiContainerFactory())->make()
             ->get(Attributes\InjectFailType::class)
         ;
     }
 
     public function testInjectSplClass(): void
     {
-        $class = DiContainerFactory::make()
+        $class = (new DiContainerFactory())->make()
             ->get(Attributes\InjectSplClass::class)
         ;
 
@@ -72,7 +72,7 @@ class ContainerWithAttributeConfigTest extends TestCase
 
     public function testInjectWithSimpleArguments(): void
     {
-        $c = DiContainerFactory::make();
+        $c = (new DiContainerFactory())->make();
 
         $class = $c->get(Attributes\InjectSimpleArgument::class);
 

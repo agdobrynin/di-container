@@ -8,6 +8,17 @@ Kaspi/di-container — это легковесный контейнер внед
 composer require kaspi/di-container
 ```
 
+#### Миграция с версии 1.0.x к версии 1.1.x
+
+Новая сигнатура интерфейса `DiContainerFactoryInterface` для метод `make`:
+
+```php
+// Для версий 1.0.x
+$container = DiContainerFactory::make($definitions);
+// Для версий 1.1.х и выше
+$container = (new DiContainerFactory())->make($definitions);
+```
+
 ### Примеры использования
 
 * Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
@@ -24,7 +35,7 @@ composer require kaspi/di-container
 // Определения для DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
-$container = DiContainerFactory::make(
+$container = (new DiContainerFactory())->make(
     [
         \PDO::class => [
             // ⚠ Ключ "arguments" является зарезервированным значением
@@ -94,7 +105,7 @@ $definitions = [
     ],
 ];
 
-$container = DiContainerFactory::make($definitions);
+$container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
@@ -119,7 +130,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 // определяет значение-ссылку для авто связывания аргументов -
 // по умолчанию символ "@"
 
-$container = DiContainerFactory::make(
+$container = (new DiContainerFactory())->make(
     [
         // основной id в контейнере
         'sqlite-home' => 'sqlite:/opt/databases/mydb.sq3',
@@ -170,7 +181,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 
 // При разрешении аргументов конструктора можно в качестве id контейнера
 // использовать имя аргумента в конструкторе
-$container = DiContainerFactory::make(
+$container = (new DiContainerFactory())->make(
     [
         'listOfUsers' => [
             'John',
@@ -211,7 +222,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
 
-$container = DiContainerFactory::make([
+$container = (new DiContainerFactory())->make([
     'logger.file' => '/path/to/your.log',
     'logger.name' => 'app-logger',
     LoggerInterface::class =>, static function (ContainerInterface $c) {
@@ -249,7 +260,7 @@ use App\ClassFirst;
 use App\ClassInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
-$container = DiContainerFactory::make();
+$container = (new DiContainerFactory())->make();
 // ⚠ параметр "arguments" метода "set" установить аргументы для конструктора.
 $container->set(ClassFirst::class, arguments: ['file' => '/var/log/app.log']);
 $container->set(ClassInterface::class, ClassFirst::class);
@@ -287,7 +298,7 @@ class MyClass {
 // Определения для DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
-$container = DiContainerFactory::make(
+$container = (new DiContainerFactory())->make(
     ['pdo_dsn' => 'sqlite:/opt/databases/mydb.sq3']
 );
 ```
@@ -333,7 +344,7 @@ $definitions = [
     'users_data' => ['user1', 'user2'],
 ];
 
-$container = DiContainerFactory::make($definitions);
+$container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
@@ -387,7 +398,7 @@ class MyLogger {
 // Определения для DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
-$container = DiContainerFactory::make([
+$container = (new DiContainerFactory())->make([
     'logger_file' => '/var/log/app.log'
 ]);
 ```
