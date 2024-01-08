@@ -13,7 +13,7 @@ interface DiContainerFactoryInterface
      *
      * @throws ContainerExceptionInterface
      */
-    public static function make(
+    public function make(
         iterable $definitions = [],
         string $linkContainerSymbol = '@',
         string $delimiterAccessArrayNotationSymbol = '.'

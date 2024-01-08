@@ -21,7 +21,7 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
 {
     public function testGetParametersByDelimiterSymbol(): void
     {
-        $c = DiContainerFactory::make([
+        $c = (new DiContainerFactory())->make([
             'app' => [
                 'users' => [
                     'ivan',
@@ -48,7 +48,7 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
 
     public function testGetParametersByDelimiterSymbolWrongKey(): void
     {
-        $c = DiContainerFactory::make([
+        $c = (new DiContainerFactory())->make([
             'app' => [
                 'users_wrong_key' => [
                     'ivan',
@@ -76,7 +76,7 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
             ],
         ];
 
-        $container = DiContainerFactory::make($def);
+        $container = (new DiContainerFactory())->make($def);
 
         $class = $container->get(Fixtures\Attributes\SendEmail::class);
 
@@ -94,7 +94,7 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
             ],
         ];
 
-        $container = DiContainerFactory::make($def);
+        $container = (new DiContainerFactory())->make($def);
 
         $this->expectException(ContainerExceptionInterface::class);
 

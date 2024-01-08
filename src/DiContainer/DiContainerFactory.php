@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 class DiContainerFactory implements DiContainerFactoryInterface
 {
-    public static function make(
+    public function make(
         iterable $definitions = [],
         string $linkContainerSymbol = '@',
         string $delimiterAccessArrayNotationSymbol = '.'
