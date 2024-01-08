@@ -1,12 +1,9 @@
 services:
     php:
+        container_name: ${PHP_IMAGE:-php:8.0-cli-alpine}
         build:
             dockerfile: Dockerfile
             args:
-                UID: 1000
-                GID: 1000
-        environment:
-            UID: 1000
-            GID: 1000
+                PHP_IMAGE: ${PHP_IMAGE:-php:8.0-cli-alpine}
         volumes:
             - '.:/var/www/html'
