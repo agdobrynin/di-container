@@ -141,7 +141,7 @@ final class Autowired implements AutowiredInterface
             return $this->resolveInstance($container, $attribute->newInstance()->id);
         }
 
-        if (!\class_exists($inject->id) && !($inject->id instanceof \Closure)) {
+        if (!\class_exists($inject->id)) {
             return $container->get($inject->id);
         }
 
