@@ -1,7 +1,5 @@
 # DiContainer
 
-[README in english language](https://github.com/agdobrynin/di-container/README-EN.md)
-
 Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0 с автоматическим связыванием зависимостей.
 
 ## Установка
