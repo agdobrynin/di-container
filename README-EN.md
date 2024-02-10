@@ -1,49 +1,48 @@
 # DiContainer
 
-[README in english language](https://github.com/agdobrynin/di-container/README-EN.md)
+[README in russian language](https://github.com/agdobrynin/di-container/README.md)
 
-Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0 с автоматическим связыванием зависимостей.
 
-## Установка
+**Kaspi/di-container** is a lightweight dependency injection container for PHP >= 8.0 with automatic dependency bundling.
+## Install
 
 ```shell
 composer require kaspi/di-container
 ```
 
-#### Миграция с версии 1.0.x к версии 1.1.x
+#### Migration from version 1.0.x to 1.1.x
 
-Новая сигнатура интерфейса `DiContainerFactoryInterface` для метод `make`:
-
+New interface signature `DiContainerFactoryInterface` for the `make` method:
 ```php
-// Для версий 1.0.x
+// For version 1.0.x
 $container = DiContainerFactory::make($definitions);
-// Для версий 1.1.х и выше
+// For versions 1.1.x and higher
 $container = (new DiContainerFactory())->make($definitions);
 ```
 
-### Примеры использования
+### Examples of using
 
-* Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
-* Примеры использования [DiContainer со стандартным конфигурированием](#DiContainer-со-стандартным-конфигурированием).
-* Примеры использования [DiContainer c PHP атрибутами](#DiContainer-c-PHP-атрибутами).
-* Конфигурация DiContainer [с использованием нотаций по массиву](#Access-array-delimiter-notation).
+* Using the kaspi/di-container package in [the repository](https://github.com/agdobrynin/di-container-examples) 🦄
+* Examples of use [DiContainer with standard configuration](#dicontainer-with-standard-configuration).
+* Examples of using [DiContainer with PHP attributes](#dicontainer-with-php-attributes).
+* DiContainer Configuration [using array notation](#Access-array-delimiter-notation).
 
-#### DiContainer со стандартным конфигурированием
+#### DiContainer with standard configuration
 
-Через определения зависимостей вручную в DiContainer.
+Through manual dependency definitions in DiContainer.
 
-Получение существующего класса и разрешение встроенных типов параметров в конструкторе:
+Getting an existing class and allowing built-in parameter types in the constructor:
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
 $container = (new DiContainerFactory())->make(
     [
         \PDO::class => [
-            // ⚠ Ключ "arguments" является зарезервированным значением
-            // и служит для передачи значений в конструктор класса.
-            // Таким объявлением в конструкторе класса \PDO
-            // аргумент с именем $dsn получит значение
+             // ⚠ The "arguments" key is a reserved value
+             // and serves to pass values to the class constructor.
+             // With this declaration in the constructor of the class \PDO
+             // argument named $dsn will receive the value
             'arguments' => [
                 'dsn' => 'sqlite:/opt/databases/mydb.sq3',
             ],
@@ -53,7 +52,7 @@ $container = (new DiContainerFactory())->make(
 ```
 
 ```php
-// Объявление класса
+// Class declaration
 namespace App;
 
 class MyClass {
@@ -62,7 +61,7 @@ class MyClass {
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\MyClass;
 
 /** @var MyClass $myClass */
@@ -70,10 +69,10 @@ $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
 
-Разрешение встроенных (простых) типов аргументов в объявлении:
+Autowiring built-in (simple) argument types in a declaration:
 
 ```php
-// Объявление класса
+// Class definition
 namespace App;
 
 class MyUsers {
@@ -86,12 +85,12 @@ class MyEmployers {
 ```
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use App\{MyUsers, MyEmployers};
 use Kaspi\DiContainer\DiContainerFactory;
 
-// В объявлении arguments->users = "data"
-// будет искать в контейнере ключ "data".
+// In the declaration arguments->users = "data"
+// will look for the "data" key in the container.
 
 $definitions = [
     'data' => ['user1', 'user2'],
@@ -111,7 +110,7 @@ $container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from the container with automatic dependency binding
 use App\{MyUsers, MyEmployers};
 
 /** @var MyUsers::class $users */
@@ -122,22 +121,21 @@ $employers = $container->get(MyEmployers::class);
 print implode(',', $employers->employers); // user1, user2
 ```
 
-Разрешение встроенных (простых) типов аргументов в объявлении со ссылкой на другой id контейнера:
-
+Autowirung (simple) argument types in a declaration with a reference to another container id:
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
-// В конструкторе DiContainer - параметр "linkContainerSymbol"
-// определяет значение-ссылку для авто связывания аргументов -
-// по умолчанию символ "@"
+// In the DiContainer constructor - the "linkContainerSymbol" parameter
+// defines a reference value for autowiring arguments -
+// default symbol is "@"
 
 $container = (new DiContainerFactory())->make(
     [
-        // основной id в контейнере
+        // main id in the container
         'sqlite-home' => 'sqlite:/opt/databases/mydb.sq3',
         //.....
-        // Id в контейнере содержащий ссылку на id контейнера = "sqlite-home"
+        // Id in the container containing a link to the container id = "sqlite-home"
         'sqlite-test' => '@sqlite-home',
         \PDO::class => [
             'arguments' => [
@@ -149,7 +147,7 @@ $container = (new DiContainerFactory())->make(
 ```
 
 ```php
-// Объявление класса
+// Class declaration
 namespace App;
 
 class MyClass {
@@ -160,16 +158,16 @@ class MyClass {
 
 /** @var MyClass $myClass */
 $myClass = $container->get(MyClass::class);
-// в конструктор MyClass будет вызван с определением
+// in the MyClass constructor will be called with the definition
 // new MyClass(
 //      pdo: new \PDO(dsn: 'sqlite:/opt/databases/mydb.sq3') 
 // );
 ```
 
-Разрешение типов аргументов в конструкторе по имени аргумента:
+Autowiring in a constructor by argument name:
 
 ```php
-// Объявление класса
+// Class declaration
 namespace App;
 
 class MyUsers {
@@ -178,22 +176,19 @@ class MyUsers {
 ```
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
-// При разрешении аргументов конструктора можно в качестве id контейнера
-// использовать имя аргумента в конструкторе
 $container = (new DiContainerFactory())->make(
     [
-        'listOfUsers' => [
-            'John',
-            'Arnold',
-        ];
+        
+        'listOfUsers' => // argument name
+            ['John', 'Arnold'];
     ]
 );
 ```
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\MyUsers;
 
 /** @var MyUsers::class $users */
@@ -201,9 +196,9 @@ $users = $container->get(MyUsers::class);
 print implode(',', $users->users); // John, Arnold
 ```
 
-Получение класса по интерфейсу
+Autowiring a class by interface
 ```php
-// Объявление класса
+// Class declaration
 namespace App;
 
 use Psr\Log\LoggerInterface;
@@ -218,7 +213,7 @@ class MyLogger {
 ```
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -235,7 +230,7 @@ $container = (new DiContainerFactory())->make([
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\MyLogger;
 
 /** @var MyClass $myClass */
@@ -243,10 +238,10 @@ $myClass = $container->get(MyLogger::class);
 $myClass->logger()->debug('...');
 ```
 
-Ещё один пример получение класса по интерфейсу:
+Another example of getting a class by interface:
 
 ```php
-// Объявление классов
+// Class Declaration
 namespace App;
 
 interface ClassInterface {}
@@ -257,19 +252,19 @@ class ClassFirst implements ClassInterface {
 ```
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use App\ClassFirst;
 use App\ClassInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
 $container = (new DiContainerFactory())->make();
-// ⚠ параметр "arguments" метода "set" установить аргументы для конструктора.
+// ⚠ The "arguments" parameter of the "set" method sets the arguments for the constructor.
 $container->set(ClassFirst::class, arguments: ['file' => '/var/log/app.log']);
 $container->set(ClassInterface::class, ClassFirst::class);
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\ClassInterface;
 
 /** @var ClassFirst $myClass */
@@ -277,13 +272,13 @@ $myClass = $container->get(ClassInterface::class);
 print $myClass->file; // /var/log/app.log
 ```
 
-#### DiContainer c PHP атрибутами
+#### DiContainer with PHP attributes
 
-Конфигурирование DiContainer c PHP атрибутами для определений.
+Configuring DiContainer with PHP attributes for definitions.
 
-Получение существующего класса и разрешение простых типов параметров в конструкторе:
+Getting an existing class and allowing simple parameter types in the constructor:
 ```php
-// Объявление класса
+// Class declaration
 namespace App;
 
 use Kaspi\DiContainer\Attributes\Inject;
@@ -297,7 +292,7 @@ class MyClass {
 ```
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
 $container = (new DiContainerFactory())->make(
@@ -306,7 +301,7 @@ $container = (new DiContainerFactory())->make(
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\MyClass;
 
 /** @var MyClass $myClass */
@@ -314,11 +309,11 @@ $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
 
-Использование Inject атрибута на простых (встроенных) типах для  
-получения данных из контейнера, где ключ "users_data" определен в контейнере:
+Using the Inject attribute on simple (built-in) types for
+getting data from a container where the key "users_data" is defined in the container:
 
 ```php
-// Объявление класса
+// Class declaration
 namespace App;
 
 use Kaspi\DiContainer\Attributes\Inject;
@@ -339,7 +334,7 @@ class MyEmployers {
 ```
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
 $definitions = [
@@ -350,7 +345,7 @@ $container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\{MyUsers, MyEmployers};
 
 /** @var MyUsers::class $users */
@@ -361,10 +356,10 @@ $employers = $container->get(MyEmployers::class);
 print implode(',', $employers->employers); // user1, user2
 ```
 
-Получение по интерфейсу:
+Resolving class via interface:
 
 ```php
-// Объявление классов
+// Class Declaration
 namespace App;
 
 use Kaspi\DiContainer\Attributes\Inject;
@@ -397,7 +392,7 @@ class MyLogger {
 ```
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
 
 $container = (new DiContainerFactory())->make([
@@ -406,7 +401,7 @@ $container = (new DiContainerFactory())->make([
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\MyLogger;
 
 /** @var MyLogger $myClass */
@@ -415,20 +410,20 @@ print $myClass->customLogger->loggerFile(); // /var/log/app.log
 ```
 #### Access array delimiter notation
 
-Доступ к "контейнер-id" с вложенными определениям.
+Access "container-id" with nested definitions.
 
-По-умолчанию символ разделитель `.`
+The default delimiter character is `.`
 
-Произвольный символ разделитель можно определить
+An arbitrary delimiter character can be defined in:
 
-* `Kaspi\DiContainer\DiContainer::__construct` аргумент `$delimiterAccessArrayNotationSymbol` 
-* `Kaspi\DiContainer\DiContainerFactory::make` аргумент `$delimiterAccessArrayNotationSymbol`
+* `Kaspi\DiContainer\DiContainer::__construct` argument `$delimiterAccessArrayNotationSymbol`
+* `Kaspi\DiContainer\DiContainerFactory::make` argument `$delimiterAccessArrayNotationSymbol`
 
 
-###### Access-array-delimiter-notation определение на базе ручного конфигурирования
+###### Access-array-delimiter-notation definition based on manual configuration
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 $definitions = [
     'app' => [
         'admin' => [
@@ -453,7 +448,7 @@ $definitions = [
 $container = DiContainerFactory::make($definitions);
 ```
 ```php
-// Объявление классов
+// Class Declaration
 namespace App;
 
 interface LoggerInterface {}
@@ -473,7 +468,7 @@ class SendEmail {
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\SendEmail;
 
 /** @var SendEmail $myClass */
@@ -482,10 +477,10 @@ print $sendEmail->from; // admin@mail.com
 print $sendEmail->logger->file; // /var/app.log
 ```
 
-###### Access-array-delimiter-notation - определения на основе PHP атрибутов.
+###### Access-array-delimiter-notation - definitions based on PHP attributes.
 
 ```php
-// Определения для DiContainer
+// Definitions for DiContainer
 $definitions = [
     'app' => [
         'admin' => [
@@ -500,7 +495,7 @@ $container = DiContainerFactory::make($definitions);
 ```
 
 ```php
-// Объявление классов
+// Class Declaration
 namespace App;
 
 use Kaspi\DiContainer\Attributes\Inject;
@@ -525,7 +520,7 @@ class SendEmail {
 ```
 
 ```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// Retrieving data from a container with automatic dependency binding
 use App\SendEmail;
 
 /** @var SendEmail $myClass */
@@ -536,59 +531,59 @@ print $sendEmail->logger->file; // /var/app.log
 
 
 ## Тесты
-Прогнать тесты без подсчета покрытия кода
+Run test without code coverage
 ```shell
 composer test
 ```
-Запуск тестов с проверкой покрытия кода тестами
+Run test with code coverage
 ```shell
 ./vendor/bin/phpunit
 ```
 
-## Статический анализ кода
+## Static code analysis
 
-Для статического анализа используем пакет [Phan](https://github.com/phan/phan).
+For static analysis we use the package [Phan](https://github.com/phan/phan).
 
-Запуск без PHP расширения [PHP AST](https://github.com/nikic/php-ast)
+Running without PHP extension [PHP AST](https://github.com/nikic/php-ast)
 
 ```shell
 ./vendor/bin/phan --allow-polyfill-parser
 ```
 
 ## Code style
-Для приведения кода к стандартам используем php-cs-fixer который объявлен 
-в dev зависимости composer-а
+
+Code styling by `php-cs-fixer`
 
 ```shell
 composer fixer
 ``` 
 
-## Использование Docker образа с PHP 8.0, 8.1, 8.2, 8.3
+## Using Docker image with PHP 8.0, 8.1, 8.2, 8.3
 
-Указать образ с версией PHP можно в файле `.env` в ключе `PHP_IMAGE`. 
-По умолчанию контейнер собирается с образом `php:8.0-cli-alpine`.
+You can specify the image with the PHP version in the `.env` file in the `PHP_IMAGE` key.
+By default, the container is built with the `php:8.0-cli-alpine` image.
 
-Собрать контейнер
+Build container
 ```shell
 docker-compose build
 ```
-Установить зависимости php composer-а:
+Install php dependencies via composer:
 ```shell
 docker-compose run --rm php composer install
 ```
-Прогнать тесты с отчетом о покрытии кода
+Run tests with code coverage
 ```shell
 docker-compose run --rm php vendor/bin/phpunit
 ```
-⛑ pезультаты будут в папке `.coverage-html`
+⛑ the results will be in the `.coverage-html` folder
 
-Статический анализ кода Phan (_static analyzer for PHP_)
+Static code analysis Phan
 
 ```shell
 docker-compose run --rm php vendor/bin/phan
 ```
 
-Можно работать в shell оболочке в docker контейнере:
+Run shell in docker container:
 ```shell
 docker-compose run --rm php sh
 ```
