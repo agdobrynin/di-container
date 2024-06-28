@@ -11,17 +11,19 @@ final class Inject
 
     public static function makeFromReflection(\ReflectionParameter $parameter): ?self
     {
-        if ($attribute = $parameter->getAttributes(self::class)[0] ?? null) {
-            $inject = $attribute->newInstance();
-            $type = $parameter->getType();
+        $attributes = $parameter->getAttributes(self::class);
 
-            if (null === $inject->id && $type instanceof \ReflectionNamedType) {
-                $inject->id = $type->getName();
-            }
-
-            return $inject;
+        if ([] === $attributes) {
+            return null;
         }
 
-        return null;
+        $inject = $attributes[0]->newInstance();
+        $type = $parameter->getType();
+
+        if (null === $inject->id && $type instanceof \ReflectionNamedType) {
+            $inject->id = $type->getName();
+        }
+
+        return $inject;
     }
 }
