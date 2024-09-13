@@ -275,6 +275,42 @@ $myClass = $container->get(ClassInterface::class);
 print $myClass->file; // /var/log/app.log
 ```
 
+🎭 Использование метода `__invoke` класса для разрешения зависимости в контейнере:
+
+```php
+// Объявление класса
+namespace App;
+
+class SomeDependency { }
+
+class Invokable {
+    public function __invoke(SomeDependency $dependency) {}
+}
+```
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+use Psr\Container\ContainerInterface;
+
+$container = (new DiContainerFactory(
+    definitions: [
+        App\Invokable::class => static function (
+            ContainerInterface $c,
+            App\Invokable $invokable
+        ) {
+            return $invokable($c->get(App\SomeDependency::class))
+        }
+    ]
+))->make();
+```
+
+```php
+// Получение данных из контейнера
+use App\Invokable;
+
+/** @var Invokable $res */
+$result = $container->get(App\Invokable::class);
+```
 #### DiContainer c PHP атрибутами
 
 Конфигурирование DiContainer c PHP атрибутами для определений.
