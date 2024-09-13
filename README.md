@@ -275,7 +275,7 @@ $myClass = $container->get(ClassInterface::class);
 print $myClass->file; // /var/log/app.log
 ```
 
-🎭 Использование метода `__invoke` класса для разрешения зависимости в контейнере:
+🎭 Использование анонимной функции разрешения зависимости в контейнере:
 
 ```php
 // Объявление класса
@@ -283,8 +283,14 @@ namespace App;
 
 class SomeDependency { }
 
+//
 class Invokable {
-    public function __invoke(SomeDependency $dependency) {}
+    public function __invoke(SomeDependency $dependency): SomeDependency
+    {
+        // do something here with $dependency
+        
+        return $result;
+    }
 }
 ```
 ```php
@@ -311,6 +317,65 @@ use App\Invokable;
 /** @var Invokable $res */
 $result = $container->get(App\Invokable::class);
 ```
+
+🧭 Использование метода класса для разрешения зависимости в контейнере на основе конфигурации:
+
+```php
+// Объявление класса
+namespace App;
+
+class SomeDependency { }
+
+enum EnumEnv: string {
+    case Host = 'host';
+    case Stage = 'stage';
+}
+
+class MainBuilder {
+    public function make(
+        SomeDependency $dependency,
+        EnumEnv $env
+    ): mixed {
+       // Do something here
+       
+       return $result;
+    }
+}
+```
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainer;
+use Psr\Container\ContainerInterface;
+
+$definitions = [
+    App\MainBuilder::class => [
+        DiContainer::METHOD => [
+            DiContainer::METHOD_NAME => 'make',
+            DiContainer::ARGUMENTS => [
+                // параметр dependency можно опустить
+                // так как DiContainer постарается автоматически
+                // разрешить недостающую зависимость в конфигурации
+                // в момент получения класса.
+                'dependency' => App\SomeDependency::class,
+                'env' => \getenv('where') ? EnumEnv::Host : EnumEnv::Stage
+            ],
+        ],       
+    ],
+];
+
+$container = (new DiContainerFactory(
+    definitions: $definitions 
+))->make();
+```
+
+```php
+// Получение данных из контейнера
+/** @var MainBuilder $res */
+$result = $container->get(App\MainBuilder::class);
+```
+
+
 #### DiContainer c PHP атрибутами
 
 Конфигурирование DiContainer c PHP атрибутами для определений.
