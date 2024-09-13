@@ -18,12 +18,10 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class DiContainer implements DiContainerInterface
 {
-    public const ARGUMENTS = 'arguments';
-
     protected iterable $definitions = [];
 
     /**
-     * Arguments for constructor of class.
+     * Arguments for a constructor of class.
      *
      * @var array|iterable<class-string, array>
      */
@@ -115,7 +113,7 @@ class DiContainer implements DiContainerInterface
             throw new NotFoundException("Unresolvable dependency [{$id}].");
         }
 
-        /** @var null|class-string<TClass> $definition */
+        /** @var null|class-string<TClass>|\Closure $definition */
         [$definition, $definitionArguments] = match (true) {
             \class_exists($id) => [
                 $id,
@@ -141,21 +139,46 @@ class DiContainer implements DiContainerInterface
                     throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
                 }
 
-                $args = [];
+                $constructorArgs = [];
 
                 if (\is_string($definition)) {
+                    if ($definitionArguments instanceof \Closure) {
+                        $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition);
+
+                        return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definitionArguments);
+                    }
+
                     $paramsDefinitions = $this->argumentDefinitions[$definition]
-                        ?? $definitionArguments[self::ARGUMENTS]
+                        ?? $definitionArguments[DiContainerInterface::ARGUMENTS]
                         ?? [];
 
                     foreach ($paramsDefinitions as $argName => $argValue) {
-                        $args[$argName] = $this->getValue($argValue);
+                        $constructorArgs[$argName] = $this->getValue($argValue);
+                    }
+
+                    $methodCall = $definitionArguments[DiContainerInterface::METHOD][DiContainerInterface::METHOD_NAME] ?? null;
+
+                    if (\is_string($methodCall)) {
+                        \method_exists($definition, $methodCall)
+                            || throw new ContainerException("Method [{$methodCall}] not defined in [{$definition}].");
+
+                        $methodArgs = [];
+
+                        foreach ($definitionArguments[DiContainerInterface::METHOD][DiContainerInterface::ARGUMENTS] ?? [] as $argName => $argValue) {
+                            $methodArgs[$argName] = $this->getValue($argValue);
+                        }
+
+                        return $this->resolved[$id] = $this->autowire->callMethod(
+                            $this,
+                            $definition,
+                            $methodCall,
+                            $constructorArgs,
+                            $methodArgs,
+                        );
                     }
                 }
 
-                $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $args);
-
-                return $this->resolved[$id];
+                return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $constructorArgs);
             } catch (AutowiredExceptionInterface $exception) {
                 throw new ContainerException(
                     message: $exception->getMessage(),

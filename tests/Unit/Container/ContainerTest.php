@@ -7,6 +7,7 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -465,5 +466,70 @@ class ContainerTest extends TestCase
         ]);
 
         $this->assertEquals('Main value', $c->get('y'));
+    }
+
+    public function testInvokable(): void
+    {
+        $c = new DiContainer([
+            'db' => [
+                'rows' => ['Ivan', 'Piter'],
+            ],
+            Classes\Db::class => [
+                'arguments' => [
+                    'data' => 'db.rows',
+                ],
+            ],
+            Classes\Invokable::class => [
+                DiContainerInterface::METHOD => [
+                    DiContainerInterface::METHOD_NAME => '__invoke',
+                ],
+            ],
+            Classes\NoConstructorAndInvokable::class => static function (
+                ContainerInterface $container,
+                Classes\NoConstructorAndInvokable $invokable
+            ): string {
+                return \sprintf('%s|names: %s', $invokable(), \implode(', ', $container->get('db.rows')));
+            },
+        ], $this->autowire);
+
+        $this->assertEquals(['Ivan', 'Piter'], $c->get(Classes\Invokable::class));
+        $this->assertEquals('abc|names: Ivan, Piter', $c->get(Classes\NoConstructorAndInvokable::class));
+    }
+
+    public function testMethodNotDefinedInDefinition(): void
+    {
+        $c = new DiContainer([
+            Classes\Invokable::class => [
+                DiContainerInterface::METHOD => [
+                    DiContainerInterface::METHOD_NAME => 'woops',
+                ],
+            ],
+        ], $this->autowire);
+
+        $this->expectExceptionMessage('Method [woops] not defined in [Tests\Fixtures\Classes\Invokable]');
+
+        $c->get(Classes\Invokable::class);
+    }
+
+    public function testMethodWithParams(): void
+    {
+        $c = new DiContainer([
+            Interfaces\SumInterface::class => Classes\Sum::class,
+            Classes\Sum::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'init' => 10,
+                ],
+            ],
+            Classes\MethodWithDependencies::class => [
+                DiContainerInterface::METHOD => [
+                    DiContainerInterface::METHOD_NAME => 'view',
+                    DiContainerInterface::ARGUMENTS => [
+                        'value' => 20,
+                    ],
+                ],
+            ],
+        ], $this->autowire);
+
+        $this->assertEquals(30, $c->get(Classes\MethodWithDependencies::class));
     }
 }

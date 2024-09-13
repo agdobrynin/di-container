@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Classes;
 
-use Tests\Fixtures\Classes;
-
-class Sum implements \Stringable, Classes\Interfaces\SumInterface
+class Sum implements \Stringable, Interfaces\SumInterface
 {
     public function __construct(protected int $init = 0) {}
 

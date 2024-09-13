@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
+use Kaspi\DiContainer\Autowired;
+use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\AutowiredInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes;
 
@@ -78,5 +82,70 @@ class ContainerWithAttributeConfigTest extends TestCase
 
         $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $class->arrayIterator()->getArrayCopy());
         $this->assertInstanceOf(\ArrayAccess::class, $class->arrayIterator());
+    }
+
+    public static function containerDefinitions(): \Generator
+    {
+        yield 'with default value from definitions' => [
+            'definitions' => [
+                'shared-data' => ['abc', 'efj'],
+                'config-table-name' => 'cococo',
+                'app' => [
+                    'logger_file' => '/var/log/app.log',
+                    'defaultName' => 'Piter',
+                ],
+            ],
+            'expect' => 'I log to [/var/log/app.log] with data [user Piter into table cococo]',
+        ];
+
+        yield 'with value as argument' => [
+            'definitions' => [
+                'shared-data' => ['abc', 'efj'],
+                'config-table-name' => 'cococo',
+                'app' => [
+                    'logger_file' => '/var/log/app.log',
+                    'defaultName' => 'Piter',
+                ],
+            ],
+            'expect' => 'I log to [/var/log/app.log] with data [user Vasiliy into table cococo]',
+            'methodArgs' => [
+                'userName' => 'Vasiliy',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider containerDefinitions
+     */
+    public function testMethodResolve(array $definitions, string $expect, array $methodArgs = []): void
+    {
+        $a = new Autowired();
+        $c = (new DiContainer(definitions: $definitions, autowire: $a))
+            ->set(AutowiredInterface::class, Autowired::class)
+        ;
+
+        $res = $c->get(AutowiredInterface::class)
+            ->callMethod($c, Attributes\Lorem::class, 'doIt', [], $methodArgs)
+        ;
+
+        $this->assertEquals($expect, $res);
+    }
+
+    public function testMethodNotFound(): void
+    {
+        $a = new Autowired();
+        $c = (new DiContainer(definitions: [
+            'shared-data' => ['abc', 'efj'],
+            'config-table-name' => 'cococo',
+        ], autowire: $a))
+            ->set(AutowiredInterface::class, Autowired::class)
+        ;
+
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('notExistMethod() does not exist');
+
+        $c->get(AutowiredInterface::class)
+            ->callMethod($c, Attributes\Lorem::class, 'notExistMethod')
+        ;
     }
 }
