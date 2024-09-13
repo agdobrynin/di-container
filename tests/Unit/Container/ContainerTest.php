@@ -7,6 +7,7 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -479,8 +480,8 @@ class ContainerTest extends TestCase
                 ],
             ],
             Classes\Invokable::class => [
-                DiContainer::METHOD => [
-                    DiContainer::METHOD_NAME => '__invoke',
+                DiContainerInterface::METHOD => [
+                    DiContainerInterface::METHOD_NAME => '__invoke',
                 ],
             ],
             Classes\NoConstructorAndInvokable::class => static function (
@@ -499,8 +500,8 @@ class ContainerTest extends TestCase
     {
         $c = new DiContainer([
             Classes\Invokable::class => [
-                DiContainer::METHOD => [
-                    DiContainer::METHOD_NAME => 'woops',
+                DiContainerInterface::METHOD => [
+                    DiContainerInterface::METHOD_NAME => 'woops',
                 ],
             ],
         ], $this->autowire);
@@ -515,14 +516,14 @@ class ContainerTest extends TestCase
         $c = new DiContainer([
             Interfaces\SumInterface::class => Classes\Sum::class,
             Classes\Sum::class => [
-                DiContainer::ARGUMENTS => [
+                DiContainerInterface::ARGUMENTS => [
                     'init' => 10,
                 ],
             ],
             Classes\MethodWithDependencies::class => [
-                DiContainer::METHOD => [
-                    DiContainer::METHOD_NAME => 'view',
-                    DiContainer::ARGUMENTS => [
+                DiContainerInterface::METHOD => [
+                    DiContainerInterface::METHOD_NAME => 'view',
+                    DiContainerInterface::ARGUMENTS => [
                         'value' => 20,
                     ],
                 ],

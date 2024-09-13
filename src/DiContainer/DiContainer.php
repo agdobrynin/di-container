@@ -18,10 +18,6 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class DiContainer implements DiContainerInterface
 {
-    public const ARGUMENTS = 'arguments';
-    public const METHOD = 'method';
-    public const METHOD_NAME = 'name';
-
     protected iterable $definitions = [];
 
     /**
@@ -153,14 +149,14 @@ class DiContainer implements DiContainerInterface
                     }
 
                     $paramsDefinitions = $this->argumentDefinitions[$definition]
-                        ?? $definitionArguments[self::ARGUMENTS]
+                        ?? $definitionArguments[DiContainerInterface::ARGUMENTS]
                         ?? [];
 
                     foreach ($paramsDefinitions as $argName => $argValue) {
                         $constructorArgs[$argName] = $this->getValue($argValue);
                     }
 
-                    $methodCall = $definitionArguments[self::METHOD][self::METHOD_NAME] ?? null;
+                    $methodCall = $definitionArguments[DiContainerInterface::METHOD][DiContainerInterface::METHOD_NAME] ?? null;
 
                     if (\is_string($methodCall)) {
                         \method_exists($definition, $methodCall)
@@ -168,7 +164,7 @@ class DiContainer implements DiContainerInterface
 
                         $methodArgs = [];
 
-                        foreach ($definitionArguments[self::METHOD][self::ARGUMENTS] ?? [] as $argName => $argValue) {
+                        foreach ($definitionArguments[DiContainerInterface::METHOD][DiContainerInterface::ARGUMENTS] ?? [] as $argName => $argValue) {
                             $methodArgs[$argName] = $this->getValue($argValue);
                         }
 
