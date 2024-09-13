@@ -342,17 +342,16 @@ class MainBuilder {
     }
 }
 ```
+
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiContainer;
-use Psr\Container\ContainerInterface;
+use Kaspi\DiContainer\DiContainerFactory;use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 $definitions = [
     App\MainBuilder::class => [
-        DiContainer::METHOD => [
-            DiContainer::METHOD_NAME => 'make',
-            DiContainer::ARGUMENTS => [
+        DiContainerInterface::METHOD => [
+            DiContainerInterface::METHOD_NAME => 'make',
+            DiContainerInterface::ARGUMENTS => [
                 // параметр dependency можно опустить
                 // так как DiContainer постарается автоматически
                 // разрешить недостающую зависимость в конфигурации
