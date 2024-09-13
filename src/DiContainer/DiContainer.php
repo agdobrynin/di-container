@@ -20,12 +20,12 @@ class DiContainer implements DiContainerInterface
 {
     public const ARGUMENTS = 'arguments';
     public const METHOD = 'method';
-    public const METHOD_KEY = 'name';
+    public const METHOD_NAME = 'name';
 
     protected iterable $definitions = [];
 
     /**
-     * Arguments for constructor of class.
+     * Arguments for a constructor of class.
      *
      * @var array|iterable<class-string, array>
      */
@@ -117,7 +117,7 @@ class DiContainer implements DiContainerInterface
             throw new NotFoundException("Unresolvable dependency [{$id}].");
         }
 
-        /** @var null|class-string<TClass> $definition */
+        /** @var null|class-string<TClass>|\Closure $definition */
         [$definition, $definitionArguments] = match (true) {
             \class_exists($id) => [
                 $id,
@@ -159,24 +159,27 @@ class DiContainer implements DiContainerInterface
                     foreach ($paramsDefinitions as $argName => $argValue) {
                         $constructorArgs[$argName] = $this->getValue($argValue);
                     }
-                }
 
-                $methodCall = $definitionArguments[self::METHOD][self::METHOD_KEY] ?? null;
+                    $methodCall = $definitionArguments[self::METHOD][self::METHOD_NAME] ?? null;
 
-                if (\is_string($methodCall) && \method_exists($definition, $methodCall)) {
-                    $methodArgs = [];
+                    if (\is_string($methodCall)) {
+                        \method_exists($definition, $methodCall)
+                            || throw new ContainerException("Method [{$methodCall}] not defined in [{$definition}].");
 
-                    foreach ($definitionArguments[self::METHOD][self::ARGUMENTS] ?? [] as $argName => $argValue) {
-                        $methodArgs[$argName] = $this->getValue($argValue);
+                        $methodArgs = [];
+
+                        foreach ($definitionArguments[self::METHOD][self::ARGUMENTS] ?? [] as $argName => $argValue) {
+                            $methodArgs[$argName] = $this->getValue($argValue);
+                        }
+
+                        return $this->resolved[$id] = $this->autowire->callMethod(
+                            $this,
+                            $definition,
+                            $methodCall,
+                            $constructorArgs,
+                            $methodArgs,
+                        );
                     }
-
-                    return $this->resolved[$id] = $this->autowire->callMethod(
-                        $this,
-                        $definition,
-                        $methodCall,
-                        $constructorArgs,
-                        $methodArgs,
-                    );
                 }
 
                 return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $constructorArgs);

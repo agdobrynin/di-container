@@ -480,17 +480,55 @@ class ContainerTest extends TestCase
             ],
             Classes\Invokable::class => [
                 DiContainer::METHOD => [
-                    DiContainer::METHOD_KEY => '__invoke',
-                    DiContainer::ARGUMENTS => [
-                        'db' => Classes\Db::class,
-                    ],
+                    DiContainer::METHOD_NAME => '__invoke',
                 ],
             ],
-            //            Classes\Invokable::class => static function (ContainerInterface $container, Classes\Invokable $invokable) {
-            //                return $invokable($container->get(Classes\Db::class));
-            //            },
+            Classes\NoConstructorAndInvokable::class => static function (
+                ContainerInterface $container,
+                Classes\NoConstructorAndInvokable $invokable
+            ): string {
+                return \sprintf('%s|names: %s', $invokable(), \implode(', ', $container->get('db.rows')));
+            },
         ], $this->autowire);
 
         $this->assertEquals(['Ivan', 'Piter'], $c->get(Classes\Invokable::class));
+        $this->assertEquals('abc|names: Ivan, Piter', $c->get(Classes\NoConstructorAndInvokable::class));
+    }
+
+    public function testMethodNotDefinedInDefinition(): void
+    {
+        $c = new DiContainer([
+            Classes\Invokable::class => [
+                DiContainer::METHOD => [
+                    DiContainer::METHOD_NAME => 'woops',
+                ],
+            ],
+        ], $this->autowire);
+
+        $this->expectExceptionMessage('Method [woops] not defined in [Tests\Fixtures\Classes\Invokable]');
+
+        $c->get(Classes\Invokable::class);
+    }
+
+    public function testMethodWithParams(): void
+    {
+        $c = new DiContainer([
+            Interfaces\SumInterface::class => Classes\Sum::class,
+            Classes\Sum::class => [
+                DiContainer::ARGUMENTS => [
+                    'init' => 10,
+                ],
+            ],
+            Classes\MethodWithDependencies::class => [
+                DiContainer::METHOD => [
+                    DiContainer::METHOD_NAME => 'view',
+                    DiContainer::ARGUMENTS => [
+                        'value' => 20,
+                    ],
+                ],
+            ],
+        ], $this->autowire);
+
+        $this->assertEquals(30, $c->get(Classes\MethodWithDependencies::class));
     }
 }
