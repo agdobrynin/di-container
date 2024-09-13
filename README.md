@@ -139,7 +139,7 @@ $container = (new DiContainerFactory())->make(
         'sqlite-test' => '@sqlite-home',
         \PDO::class => [
             'arguments' => [
-                'dsn' => 'sqlite-test',
+                'dsn' => '@sqlite-test',
             ],
         ];
     ]
@@ -537,13 +537,13 @@ $definitions = [
     ],
     App\Logger::class => [
         'arguments' => [
-            'file' => 'app.logger_file'
+            'file' => '@app.logger_file'
         ],
     ],
     App\SendEmail::class => [
         'arguments' => [
-            'from' => 'app.admin.email',
-            'logger' => 'app.logger',
+            'from' => '@app.admin.email',
+            'logger' => '@app.logger',
         ],
     ],
 ];
@@ -607,16 +607,16 @@ interface LoggerInterface {}
 
 class Logger implements LoggerInterface {
     public function __construct(
-        #[Inject('app.logger_file')]
+        #[Inject('@app.logger_file')]
         public string $file
     ) {}
 }
 
 class SendEmail {
     public function __construct(
-        #[Inject('app.admin.email')]
+        #[Inject('@app.admin.email')]
         public string $from,
-        #[Inject('app.logger')]
+        #[Inject('@app.logger')]
         public LoggerInterface $logger,
     ) {}
 }
