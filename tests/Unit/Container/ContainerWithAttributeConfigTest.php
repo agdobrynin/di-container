@@ -87,7 +87,6 @@ class ContainerWithAttributeConfigTest extends TestCase
     {
         yield 'with default value from definitions' => [
             'definitions' => [
-                AutowiredInterface::class => Autowired::class,
                 'shared-data' => ['abc', 'efj'],
                 'config-table-name' => 'cococo',
                 'app' => [
@@ -100,7 +99,6 @@ class ContainerWithAttributeConfigTest extends TestCase
 
         yield 'with value as argument' => [
             'definitions' => [
-                AutowiredInterface::class => Autowired::class,
                 'shared-data' => ['abc', 'efj'],
                 'config-table-name' => 'cococo',
                 'app' => [
@@ -109,7 +107,9 @@ class ContainerWithAttributeConfigTest extends TestCase
                 ],
             ],
             'expect' => 'I log to [/var/log/app.log] with data [user Vasiliy into table cococo]',
-            'methodArgs' => ['userName' => 'Vasiliy'],
+            'methodArgs' => [
+                'userName' => 'Vasiliy',
+            ],
         ];
     }
 
@@ -119,7 +119,9 @@ class ContainerWithAttributeConfigTest extends TestCase
     public function testMethodResolve(array $definitions, string $expect, array $methodArgs = []): void
     {
         $a = new Autowired();
-        $c = new DiContainer(definitions: $definitions, autowire: $a);
+        $c = (new DiContainer(definitions: $definitions, autowire: $a))
+            ->set(AutowiredInterface::class, Autowired::class)
+        ;
 
         $res = $c->get(AutowiredInterface::class)
             ->callMethod($c, Attributes\Lorem::class, 'doIt', [], $methodArgs)
