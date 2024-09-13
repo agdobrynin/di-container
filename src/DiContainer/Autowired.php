@@ -28,7 +28,7 @@ final class Autowired implements AutowiredInterface
                     $this->filterInputArgs($instanceParameters, $args)
                 ), $args);
 
-                return $instance->invoke(...$resolvedArgs);
+                return $instance->invokeArgs($resolvedArgs);
             }
 
             $instance = new \ReflectionClass($id);
@@ -43,7 +43,7 @@ final class Autowired implements AutowiredInterface
                 $this->filterInputArgs($instanceParameters, $args)
             ), $args);
 
-            return $instance->newInstance(...$resolvedArgs);
+            return $instance->newInstanceArgs($resolvedArgs);
         } catch (\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
@@ -64,15 +64,12 @@ final class Autowired implements AutowiredInterface
             $instance = $this->resolveInstance($container, $id, $constructorArgs);
             $classReflector = new \ReflectionClass($instance);
             $methodReflector = $classReflector->getMethod($method);
-            $args = $this->resolveParameters(
+            $resolvedArgs = \array_merge($this->resolveParameters(
                 $container,
                 $this->filterInputArgs($methodReflector->getParameters(), $methodArgs)
-            );
+            ), $methodArgs);
 
-            return $methodReflector->invoke(
-                $instance,
-                ...\array_merge($args, $methodArgs)
-            );
+            return $methodReflector->invokeArgs($instance, $resolvedArgs);
         } catch (AutowiredExceptionInterface|\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
