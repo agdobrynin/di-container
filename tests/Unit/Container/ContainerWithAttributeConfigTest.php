@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes;
 
@@ -128,5 +129,23 @@ class ContainerWithAttributeConfigTest extends TestCase
         ;
 
         $this->assertEquals($expect, $res);
+    }
+
+    public function testMethodNotFound(): void
+    {
+        $a = new Autowired();
+        $c = (new DiContainer(definitions: [
+            'shared-data' => ['abc', 'efj'],
+            'config-table-name' => 'cococo',
+        ], autowire: $a))
+            ->set(AutowiredInterface::class, Autowired::class)
+        ;
+
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('notExistMethod() does not exist');
+
+        $c->get(AutowiredInterface::class)
+            ->callMethod($c, Attributes\Lorem::class, 'notExistMethod')
+        ;
     }
 }
