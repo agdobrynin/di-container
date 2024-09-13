@@ -466,4 +466,31 @@ class ContainerTest extends TestCase
 
         $this->assertEquals('Main value', $c->get('y'));
     }
+
+    public function testInvokable(): void
+    {
+        $c = new DiContainer([
+            'db' => [
+                'rows' => ['Ivan', 'Piter'],
+            ],
+            Classes\Db::class => [
+                'arguments' => [
+                    'data' => 'db.rows',
+                ],
+            ],
+            Classes\Invokable::class => [
+                DiContainer::METHOD => [
+                    DiContainer::METHOD_KEY => '__invoke',
+                    DiContainer::ARGUMENTS => [
+                        'db' => Classes\Db::class,
+                    ],
+                ],
+            ],
+            //            Classes\Invokable::class => static function (ContainerInterface $container, Classes\Invokable $invokable) {
+            //                return $invokable($container->get(Classes\Db::class));
+            //            },
+        ], $this->autowire);
+
+        $this->assertEquals(['Ivan', 'Piter'], $c->get(Classes\Invokable::class));
+    }
 }

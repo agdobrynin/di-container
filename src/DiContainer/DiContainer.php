@@ -19,6 +19,8 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface
 {
     public const ARGUMENTS = 'arguments';
+    public const METHOD = 'method';
+    public const METHOD_KEY = 'name';
 
     protected iterable $definitions = [];
 
@@ -141,21 +143,43 @@ class DiContainer implements DiContainerInterface
                     throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
                 }
 
-                $args = [];
+                $constructorArgs = [];
 
                 if (\is_string($definition)) {
+                    if ($definitionArguments instanceof \Closure) {
+                        $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition);
+
+                        return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definitionArguments);
+                    }
+
                     $paramsDefinitions = $this->argumentDefinitions[$definition]
                         ?? $definitionArguments[self::ARGUMENTS]
                         ?? [];
 
                     foreach ($paramsDefinitions as $argName => $argValue) {
-                        $args[$argName] = $this->getValue($argValue);
+                        $constructorArgs[$argName] = $this->getValue($argValue);
                     }
                 }
 
-                $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $args);
+                $methodCall = $definitionArguments[self::METHOD][self::METHOD_KEY] ?? null;
 
-                return $this->resolved[$id];
+                if (\is_string($methodCall) && \method_exists($definition, $methodCall)) {
+                    $methodArgs = [];
+
+                    foreach ($definitionArguments[self::METHOD][self::ARGUMENTS] ?? [] as $argName => $argValue) {
+                        $methodArgs[$argName] = $this->getValue($argValue);
+                    }
+
+                    return $this->resolved[$id] = $this->autowire->callMethod(
+                        $this,
+                        $definition,
+                        $methodCall,
+                        $constructorArgs,
+                        $methodArgs,
+                    );
+                }
+
+                return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $constructorArgs);
             } catch (AutowiredExceptionInterface $exception) {
                 throw new ContainerException(
                     message: $exception->getMessage(),
