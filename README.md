@@ -34,6 +34,7 @@ $container = (new DiContainerFactory())->make($definitions);
 ```php
 // Определения для DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 $container = (new DiContainerFactory())->make(
     [
@@ -42,7 +43,8 @@ $container = (new DiContainerFactory())->make(
             // и служит для передачи значений в конструктор класса.
             // Таким объявлением в конструкторе класса \PDO
             // аргумент с именем $dsn получит значение
-            'arguments' => [
+            // DiContainerInterface::ARGUMENTS = 'arguments'
+            DiContainerInterface::ARGUMENTS => [
                 'dsn' => 'sqlite:/opt/databases/mydb.sq3',
             ],
         ];
@@ -87,19 +89,23 @@ class MyEmployers {
 // Определения для DiContainer
 use App\{MyUsers, MyEmployers};
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 // В объявлении arguments->users = "data"
 // будет искать в контейнере ключ "data".
 
 $definitions = [
     'data' => ['user1', 'user2'],
+    
+    // ... more definitions
+    
     App\MyUsers::class => [
-        'arguments' => [
+        DiContainerInterface::ARGUMENTS => [
             'users' => 'data',
         ],
     ],
     App\MyEmployers::class => [
-        'arguments' => [
+        DiContainerInterface::ARGUMENTS => [
             'employers' => 'data',
         ],
     ],
@@ -125,21 +131,18 @@ print implode(',', $employers->employers); // user1, user2
 ```php
 // Определения для DiContainer
 use Kaspi\DiContainer\DiContainerFactory;
-
-// В конструкторе DiContainer - параметр "linkContainerSymbol"
-// определяет значение-ссылку для авто связывания аргументов -
-// по умолчанию символ "@"
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 $container = (new DiContainerFactory())->make(
     [
         // основной id в контейнере
-        'sqlite-home' => 'sqlite:/opt/databases/mydb.sq3',
+        'sqlite-current-dsn' => 'sqlite:/opt/databases/mydb.sq3',
         //.....
         // Id в контейнере содержащий ссылку на id контейнера = "sqlite-home"
-        'sqlite-test' => '@sqlite-home',
+        'sqlite-dsn' => '@sqlite-current-dsn',
         \PDO::class => [
-            'arguments' => [
-                'dsn' => '@sqlite-test',
+            DiContainerInterface::ARGUMENTS => [
+                'dsn' => '@sqlite-dsn',
             ],
         ];
     ]
@@ -223,11 +226,11 @@ use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
 
 $container = (new DiContainerFactory())->make([
-    'logger.file' => '/path/to/your.log',
-    'logger.name' => 'app-logger',
+    'logger_file' => '/path/to/your.log',
+    'logger_name' => 'app-logger',
     LoggerInterface::class =>, static function (ContainerInterface $c) {
-        return (new Logger($c->get('logger.name')))
-            ->pushHandler(new StreamHandler($c->get('logger.file')));
+        return (new Logger($c->get('logger_name')))
+            ->pushHandler(new StreamHandler($c->get('logger_file')));
     }
 ])
 ```
@@ -317,6 +320,9 @@ use App\Invokable;
 /** @var Invokable $res */
 $result = $container->get(App\Invokable::class);
 ```
+> результатом разрешения зависимости в контейнере станет вызов метода `__invoke`
+> класса `App\Invokable::class` с параметрами. При последущем вызове
+> из контейнера станет уже выполенный выше код.
 
 🧭 Использование метода класса для разрешения зависимости в контейнере на основе конфигурации:
 
@@ -373,6 +379,9 @@ $container = (new DiContainerFactory(
 /** @var MainBuilder $res */
 $result = $container->get(App\MainBuilder::class);
 ```
+> результатом разрешения зависимости в контейнере станет вызов метода
+> класса `App\MainBuilder::make` с параметрами. При последущем вызове
+> из контейнера станет уже выполенный выше код.
 
 
 #### DiContainer c PHP атрибутами
@@ -527,6 +536,8 @@ print $myClass->customLogger->loggerFile(); // /var/log/app.log
 
 ```php
 // Определения для DiContainer
+use \Kaspi\DiContainer\Interfaces\DiContainerInterface;
+
 $definitions = [
     'app' => [
         'admin' => [
@@ -536,12 +547,12 @@ $definitions = [
         'logger_file' => '/var/app.log',
     ],
     App\Logger::class => [
-        'arguments' => [
+        DiContainerInterface::ARGUMENTS => [
             'file' => '@app.logger_file'
         ],
     ],
     App\SendEmail::class => [
-        'arguments' => [
+        DiContainerInterface::ARGUMENTS => [
             'from' => '@app.admin.email',
             'logger' => '@app.logger',
         ],
