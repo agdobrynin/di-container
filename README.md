@@ -134,7 +134,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 // В конструкторе DiContainer - параметр "linkContainerSymbol"
-// определяет символ с которго начиается и закончивается строка и будет
+// определяет символ с которого начинается строка и будет
 // обработана как ссылка на "id" контейнера
 // по умолчанию символ "@"
 
@@ -144,10 +144,10 @@ $container = (new DiContainerFactory())->make(
         'sqlite-current-dsn' => 'sqlite:/opt/databases/mydb.sq3',
         //.....
         // Id в контейнере содержащий ссылку на id контейнера = "sqlite-home"
-        'sqlite-dsn' => '@sqlite-current-dsn@',
+        'sqlite-dsn' => '@sqlite-current-dsn',
         \PDO::class => [
             DiContainerInterface::ARGUMENTS => [
-                'dsn' => '@sqlite-dsn@',
+                'dsn' => '@sqlite-dsn',
             ],
         ];
     ]
@@ -549,7 +549,7 @@ print $myClass->customLogger->loggerFile(); // /var/log/app.log
             ],
         ],
         // ... more definitions
-        'container-id' => '@a.b.c@'
+        'container-id' => '@a.b.c'
     ]
 ```
 
@@ -569,13 +569,13 @@ $definitions = [
     ],
     App\Logger::class => [
         DiContainerInterface::ARGUMENTS => [
-            'file' => '@app.logger_file@'
+            'file' => '@app.logger_file'
         ],
     ],
     App\SendEmail::class => [
         DiContainerInterface::ARGUMENTS => [
-            'from' => '@app.admin.email@',
-            'logger' => '@app.logger@',
+            'from' => '@app.admin.email',
+            'logger' => '@app.logger',
         ],
     ],
 ];
@@ -639,16 +639,16 @@ interface LoggerInterface {}
 
 class Logger implements LoggerInterface {
     public function __construct(
-        #[Inject('@app.logger_file@')]
+        #[Inject('@app.logger_file')]
         public string $file
     ) {}
 }
 
 class SendEmail {
     public function __construct(
-        #[Inject('@app.admin.email@')]
+        #[Inject('@app.admin.email')]
         public string $from,
-        #[Inject('@app.logger@')]
+        #[Inject('@app.logger')]
         public LoggerInterface $logger,
     ) {}
 }
