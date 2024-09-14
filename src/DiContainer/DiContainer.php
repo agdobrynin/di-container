@@ -197,7 +197,9 @@ class DiContainer implements DiContainerInterface
 
     protected function getValue(mixed $value): mixed
     {
-        if (\is_string($value) && $key = $this->parseLinkSymbol($value)) {
+        if (\is_string($value)
+            && !$this->isAccessArrayNotation($value)
+            && $key = $this->parseLinkSymbol($value)) {
             return $this->getValue($this->resolve($key));
         }
 
@@ -216,8 +218,9 @@ class DiContainer implements DiContainerInterface
     protected function isAccessArrayNotation(string $id): bool
     {
         $delimiter = \preg_quote($this->delimiterAccessArrayNotationSymbol, '/');
+        $link = \preg_quote($this->linkContainerSymbol, '/');
 
-        return (bool) \preg_match('/^((?:\w+'.$delimiter.')+)\w+$/u', $id);
+        return (bool) \preg_match('/^'.$link.'((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }
 
     protected function hasArrayNotation(string $id): bool
@@ -229,19 +232,20 @@ class DiContainer implements DiContainerInterface
         }
     }
 
-    protected function resolveArrayNotation(string $path): bool
+    protected function resolveArrayNotation(string $id): bool
     {
-        if (!$this->isAccessArrayNotation($path)) {
+        if (!$this->isAccessArrayNotation($id)) {
             return false;
         }
 
-        if (!isset($this->definitions[$path])) {
-            $this->definitions[$path] = \array_reduce(
+        if (!isset($this->definitions[$id])) {
+            $path = $this->parseLinkSymbol($id);
+            $this->definitions[$id] = \array_reduce(
                 \explode($this->delimiterAccessArrayNotationSymbol, $path),
-                static function (mixed $segments, string $segment) use ($path) {
+                static function (mixed $segments, string $segment) use ($id) {
                     return isset($segments[$segment]) && \is_array($segments)
                         ? $segments[$segment]
-                        : throw new NotFoundException("Unresolvable dependency: array notation key [{$path}]");
+                        : throw new NotFoundException("Unresolvable dependency: array notation key [{$id}]");
                 },
                 $this->definitions
             );

@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 class Logger
 {
     public function __construct(
-        #[Inject('app.logger_file')]
+        #[Inject('@app.logger_file')]
         public string $file
     ) {}
 }
