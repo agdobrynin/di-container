@@ -133,6 +133,11 @@ print implode(',', $employers->employers); // user1, user2
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
+// В конструкторе DiContainer - параметр "linkContainerSymbol"
+// определяет символ с которго начиается строка и будет
+// обработана как ссылка на "id" контейнера
+// по умолчанию символ "@"
+
 $container = (new DiContainerFactory())->make(
     [
         // основной id в контейнере
