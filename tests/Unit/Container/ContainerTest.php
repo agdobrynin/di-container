@@ -478,7 +478,7 @@ class ContainerTest extends TestCase
             ],
             Classes\Db::class => [
                 'arguments' => [
-                    'data' => 'db.rows',
+                    'data' => '@db.rows',
                 ],
             ],
             Classes\Invokable::class => [
@@ -490,7 +490,7 @@ class ContainerTest extends TestCase
                 ContainerInterface $container,
                 Classes\NoConstructorAndInvokable $invokable
             ): string {
-                return \sprintf('%s|names: %s', $invokable(), \implode(', ', $container->get('db.rows')));
+                return \sprintf('%s|names: %s', $invokable(), \implode(', ', $container->get('@db.rows')));
             },
         ], $this->autowire);
 

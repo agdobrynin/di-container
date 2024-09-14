@@ -36,7 +36,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             'search_site' => 'https://www.google.com',
             'report' => [
                 'reportEmail' => static function (ContainerInterface $container) {
-                    return new Classes\ReportEmail($container->get('emails.admin'), 0);
+                    return new Classes\ReportEmail($container->get('@emails.admin'), 0);
                 },
             ],
 
@@ -44,10 +44,10 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
 
             Classes\Names::class => [
                 'arguments' => [
-                    'names' => 'app.users',
-                    'place' => 'app.city',
+                    'names' => '@app.users',
+                    'place' => '@app.city',
                     'site' => 'search_site',
-                    'reportEmail' => 'report.reportEmail',
+                    'reportEmail' => '@report.reportEmail',
                 ],
             ],
         ];
@@ -73,8 +73,8 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
 
             Classes\Names::class => [
                 'arguments' => [
-                    'names' => 'app.users',
-                    'place' => 'app.city',
+                    'names' => '@app.users',
+                    'place' => '@app.city',
                 ],
             ],
         ];
@@ -82,7 +82,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $container = (new DiContainerFactory())->make($def);
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('[app.users]');
+        $this->expectExceptionMessage('[@app.users]');
 
         $container->get(Classes\Names::class);
     }

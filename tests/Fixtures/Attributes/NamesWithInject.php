@@ -9,13 +9,13 @@ use Kaspi\DiContainer\Attributes\Inject;
 class NamesWithInject
 {
     public function __construct(
-        #[Inject('app.users')]
+        #[Inject('@app.users')]
         public array $names,
-        #[Inject('app.city')]
+        #[Inject('@app.city')]
         public string $place,
         #[Inject]
         public SimpleDbInterface $simpleDb,
-        #[Inject('app.sites.search')]
+        #[Inject('@app.sites.search')]
         public ?string $site = null,
     ) {}
 }

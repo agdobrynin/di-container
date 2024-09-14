@@ -9,9 +9,9 @@ use Kaspi\DiContainer\Attributes\Inject;
 class SendEmail
 {
     public function __construct(
-        #[Inject('app.emails.admin')]
+        #[Inject('@app.emails.admin')]
         public string $adminEmail,
-        #[Inject('app.logger')]
+        #[Inject('@app.logger')]
         public Logger $logger,
     ) {}
 }

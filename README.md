@@ -134,7 +134,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 // В конструкторе DiContainer - параметр "linkContainerSymbol"
-// определяет символ с которго начиается строка и будет
+// определяет символ с которого начинается строка и будет
 // обработана как ссылка на "id" контейнера
 // по умолчанию символ "@"
 
@@ -529,13 +529,29 @@ print $myClass->customLogger->loggerFile(); // /var/log/app.log
 
 Доступ к "контейнер-id" с вложенными определениям.
 
-По-умолчанию символ разделитель `.`
+Такая ссылка определяется в связке с определением `"linkContainerSymbol"` и `"delimiterAccessArrayNotationSymbol"`
 
 Произвольный символ разделитель можно определить
 
-* `Kaspi\DiContainer\DiContainer::__construct` аргумент `$delimiterAccessArrayNotationSymbol` 
+* `Kaspi\DiContainer\DiContainer::__construct` аргумент `$delimiterAccessArrayNotationSymbol`
 * `Kaspi\DiContainer\DiContainerFactory::make` аргумент `$delimiterAccessArrayNotationSymbol`
 
+
+> по-умолчанию 
+>   * "linkContainerSymbol" = "@"
+>   * "delimiterAccessArrayNotationSymbol" = "."
+
+```php
+    return [
+        'a' => [
+            'b' => [
+                'c' => 'value of definition'
+            ],
+        ],
+        // ... more definitions
+        'container-id' => '@a.b.c'
+    ]
+```
 
 ###### Access-array-delimiter-notation определение на базе ручного конфигурирования
 
