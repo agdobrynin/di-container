@@ -279,6 +279,7 @@ class ContainerTest extends TestCase
     public function testExistId(): void
     {
         $container = new DiContainer(['service' => 10]);
+
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('already registered');
 
@@ -359,7 +360,7 @@ class ContainerTest extends TestCase
         $loggerConfig = [
             'logger_file' => '/path/to/your.log',
             'logger_name_my_app' => 'app-logger',
-            'local_file' => '@logger_file',
+            'local_file' => 'logger_file',
         ];
         $definitions = \array_merge(
             $loggerConfig,
@@ -435,6 +436,7 @@ class ContainerTest extends TestCase
         $container->set(Classes\Logger::class, ['name' => 'log-app', 'file' => '/var/log/log.txt']);
 
         $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/^Unresolvable dependency.*Logger::__construct/');
 
         $container->get(Classes\Logger::class);
     }

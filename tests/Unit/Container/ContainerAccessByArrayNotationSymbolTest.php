@@ -110,14 +110,14 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
             ],
             Classes\Logger::class => [
                 'arguments' => [
-                    'name' => 'app.logger.name',
-                    'file' => 'app.logger.file',
+                    'name' => '@app.logger.name',
+                    'file' => '@app.logger.file',
                 ],
             ],
             Classes\SendEmail::class => [
                 'arguments' => [
-                    'adminEmail' => 'app.admin.email',
-                    'logger' => 'app.logger.instance',
+                    'adminEmail' => '@app.admin.email',
+                    'logger' => '@app.logger.instance',
                 ],
             ],
         ];
