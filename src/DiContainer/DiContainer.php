@@ -65,7 +65,7 @@ class DiContainer implements DiContainerInterface
             return $this->resolved[$id];
         }
 
-        $this->resolveArrayNotation($id);
+        $this->makeDefinitionForArrayNotation($id);
 
         return $this->resolve($id);
     }
@@ -226,20 +226,20 @@ class DiContainer implements DiContainerInterface
     protected function hasArrayNotation(string $id): bool
     {
         try {
-            return $this->resolveArrayNotation($id);
+            return $this->makeDefinitionForArrayNotation($id);
         } catch (NotFoundException) {
             return false;
         }
     }
 
-    protected function resolveArrayNotation(string $id): bool
+    protected function makeDefinitionForArrayNotation(string $id): bool
     {
         if (!$this->isAccessArrayNotation($id)) {
             return false;
         }
 
         if (!isset($this->definitions[$id])) {
-            $path = $this->parseLinkSymbol($id);
+            $path = \substr($id, \strlen($this->linkContainerSymbol));
             $this->definitions[$id] = \array_reduce(
                 \explode($this->delimiterAccessArrayNotationSymbol, $path),
                 static function (mixed $segments, string $segment) use ($id) {
