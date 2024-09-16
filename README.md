@@ -393,6 +393,12 @@ $result = $container->get(App\MainBuilder::class);
 
 Конфигурирование DiContainer c PHP атрибутами для определений.
 
+Доступные атрибуты:
+- **Inject** - внедрение зависимости в аргументы конструктора класса, аргументы метода класса.
+- **Service** - определение для интерфейса какой класс будет вызван и разрешен в контейнере для данного интерфейса.
+- **Factory** - Фабрика для разрешения зависимостей - класс, аргументы конструктора и аргументы метода класса.
+Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\FactoryInterface`
+
 Получение существующего класса и разрешение простых типов параметров в конструкторе:
 
 ```php
@@ -427,7 +433,7 @@ $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
 
-Использование Inject атрибута на простых (встроенных) типах для  
+Использование **Inject** атрибута на простых (встроенных) типах для  
 получения данных из контейнера, где ключ "users_data" определен в контейнере:
 
 ```php
@@ -474,7 +480,7 @@ $employers = $container->get(MyEmployers::class);
 print implode(',', $employers->employers); // user1, user2
 ```
 
-Получение по интерфейсу:
+Получение по интерфейсу с использованием атрибута **Service**:
 
 ```php
 // Объявление классов
@@ -526,6 +532,98 @@ use App\MyLogger;
 $myClass = $container->get(MyLogger::class);
 print $myClass->customLogger->loggerFile(); // /var/log/app.log
 ```
+
+Использование атрибута **Factory** для разрешения класса
+
+```php
+// Определение класса
+namespace App;
+
+#[Factory(\App\Factory\FactorySuperClass::class)]
+class SuperClass
+{
+    public function __construct(public string $name, public int $age) {}
+}
+```
+
+```php
+// определение фабрики
+namespace App\Factory;
+
+use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Psr\Container\ContainerInterface;
+
+class FactorySuperClass implements FactoryInterface
+{
+    public function __invoke(ContainerInterface $container): App\SuperClass
+    {
+        return new App\SuperClass('Piter', 22);
+    }
+}
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\SuperClass;
+
+/** @var SuperClass $myClass */
+$myClass = $container->get(SuperClass::class);
+print $myClass->name; // Piter
+print $myClass->age; // 22
+```
+
+Так же можно использовать атрибут **Factory** для аргументов конструктора или методов класса:
+
+```php
+// определение класса
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Factory;
+
+class ClassWithFactoryArgument
+{
+    public function __construct(
+        #[Factory(FactoryClassWithFactoryArgument::class)]
+        public \ArrayIterator $arrayObject
+    ) {}
+}
+```
+```php
+// Фабрика класса
+namespace App;
+
+use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Psr\Container\ContainerInterface;
+
+class FactoryClassWithFactoryArgument implements FactoryInterface
+{
+    public function __invoke(ContainerInterface $container): \ArrayIterator
+    {
+        return new \ArrayIterator(
+            $container->has('names') ? $container->get('names') : []
+        );
+    }
+}
+```
+
+```php
+// Определение для контейнера
+$container = (new DiContainerFactory())->make(
+    [
+        'names' => ['Ivan', 'Piter', 'Vasiliy']
+    ]
+);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\ClassWithFactoryArgument;
+
+/** @var ClassWithFactoryArgument $myClass */
+$myClass = $container->get(ClassWithFactoryArgument::class);
+$myClass->arrayObject->getArrayCopy(); // массив ['Ivan', 'Piter', 'Vasiliy']
+```
+
 #### Access array delimiter notation
 
 Доступ к "контейнер-id" с вложенными определениям.
