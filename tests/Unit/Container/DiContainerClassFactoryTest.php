@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes\ClassWithFactoryArgument;
 use Tests\Fixtures\Attributes\ClassWithFiledFactory;
+use Tests\Fixtures\Attributes\ClassWithFiledFactoryOnProperty;
 use Tests\Fixtures\Attributes\SuperClass;
 
 /**
@@ -44,6 +45,17 @@ class DiContainerClassFactoryTest extends TestCase
         $res = (new Autowired())->callMethod($c, SuperClass::class, 'getArray');
 
         $this->assertEquals(['Hello', 'World'], $res);
+    }
+
+
+    public function testCallMethodWithArgumentWithWrongFactory(): void
+    {
+        $c = (new DiContainerFactory())->make();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("must be a 'Kaspi\\DiContainer\\Interfaces\\FactoryInterface' interface");
+
+        (new Autowired())->callMethod($c, ClassWithFiledFactoryOnProperty::class, 'make');
     }
 
     public function testFactoryForConstructorProperty(): void
