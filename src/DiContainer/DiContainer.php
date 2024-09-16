@@ -143,8 +143,6 @@ class DiContainer implements DiContainerInterface
 
                 if (\is_string($definition)) {
                     if ($definitionArguments instanceof \Closure) {
-                        $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition);
-
                         return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definitionArguments);
                     }
 
