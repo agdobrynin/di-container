@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Kaspi\DiContainer\Attributes\Factory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredException;
@@ -35,6 +36,10 @@ final class Autowired implements AutowiredInterface
 
             if (!$instance->isInstantiable()) {
                 throw new AutowiredException("The [{$id}] class is not instantiable");
+            }
+
+            if ($factory = Factory::makeFromReflection($instance)) {
+                return $container->get($factory->id)($container);
             }
 
             $instanceParameters = $instance->getConstructor()?->getParameters() ?? [];
@@ -89,7 +94,6 @@ final class Autowired implements AutowiredInterface
         return \array_reduce(
             $parameters,
             function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
-                $inject = Inject::makeFromReflection($parameter);
                 $parameterType = $parameter->getType();
 
                 try {
@@ -99,10 +103,18 @@ final class Autowired implements AutowiredInterface
                         );
                     }
 
+                    if ($factory = Factory::makeFromReflection($parameter)) {
+                        $dependencies[$parameter->getName()] = $container->get($factory->id)($container);
+
+                        return $dependencies;
+                    }
+
+                    $inject = Inject::makeFromReflection($parameter);
+
                     $value = match (true) {
                         $parameterType->isBuiltin() => $container->get($inject?->id ?: $parameter->getName()),
 
-                        !$parameterType->isBuiltin() && $inject => $this->resolveByAttribute($container, $inject),
+                        !$parameterType->isBuiltin() && $inject => $this->resolveParameterByInjectAttribute($container, $inject),
 
                         ContainerInterface::class === $parameterType->getName() => $container,
 
@@ -130,7 +142,7 @@ final class Autowired implements AutowiredInterface
         );
     }
 
-    private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
+    private function resolveParameterByInjectAttribute(ContainerInterface $container, Inject $inject): mixed
     {
         if (\interface_exists($inject->id)
             && $attribute = (new \ReflectionClass($inject->id))

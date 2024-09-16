@@ -15,6 +15,7 @@ use Tests\Fixtures\Attributes;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\Attributes\Factory
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
  * @covers \Kaspi\DiContainer\Attributes\Service

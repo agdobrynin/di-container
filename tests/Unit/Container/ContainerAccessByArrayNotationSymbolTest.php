@@ -13,6 +13,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\Classes;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\Factory
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
