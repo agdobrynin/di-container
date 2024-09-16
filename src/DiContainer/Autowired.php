@@ -114,7 +114,7 @@ final class Autowired implements AutowiredInterface
                     $value = match (true) {
                         $parameterType->isBuiltin() => $container->get($inject?->id ?: $parameter->getName()),
 
-                        !$parameterType->isBuiltin() && $inject => $this->resolveByAttribute($container, $inject),
+                        !$parameterType->isBuiltin() && $inject => $this->resolveParameterByInjectAttribute($container, $inject),
 
                         ContainerInterface::class === $parameterType->getName() => $container,
 
@@ -142,7 +142,7 @@ final class Autowired implements AutowiredInterface
         );
     }
 
-    private function resolveByAttribute(ContainerInterface $container, Inject $inject): mixed
+    private function resolveParameterByInjectAttribute(ContainerInterface $container, Inject $inject): mixed
     {
         if (\interface_exists($inject->id)
             && $attribute = (new \ReflectionClass($inject->id))
