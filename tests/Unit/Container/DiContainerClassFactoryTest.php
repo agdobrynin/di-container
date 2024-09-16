@@ -35,4 +35,6 @@ class DiContainerClassFactoryTest extends TestCase
 
         (new DiContainerFactory())->make()->get(ClassWithFiledFactory::class);
     }
+
+    public function testCallMethodWithArgumentWithFactory(): void {}
 }
