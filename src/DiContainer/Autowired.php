@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Kaspi\DiContainer\Attributes\Factory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredException;
@@ -89,7 +90,6 @@ final class Autowired implements AutowiredInterface
         return \array_reduce(
             $parameters,
             function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
-                $inject = Inject::makeFromReflection($parameter);
                 $parameterType = $parameter->getType();
 
                 try {
@@ -98,6 +98,14 @@ final class Autowired implements AutowiredInterface
                             "Unsupported parameter type [{$parameterType}] for [{$parameter->name}]"
                         );
                     }
+
+                    if ($factory = Factory::makeFromReflection($parameter)) {
+                        $dependencies[$parameter->getName()] = $container->get($factory->id)($container);
+
+                        return $dependencies;
+                    }
+
+                    $inject = Inject::makeFromReflection($parameter);
 
                     $value = match (true) {
                         $parameterType->isBuiltin() => $container->get($inject?->id ?: $parameter->getName()),

@@ -82,6 +82,7 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
 
         $this->assertEquals('/var/logs/app.log', $class->logger->file);
         $this->assertEquals('admin@email.com', $class->adminEmail);
+        $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $class->fromFactory);
     }
 
     public function testInjectOtherClassByArrayNotatedNotFound(): void
