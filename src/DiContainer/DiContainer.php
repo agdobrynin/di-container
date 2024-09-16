@@ -155,27 +155,6 @@ class DiContainer implements DiContainerInterface
                     foreach ($paramsDefinitions as $argName => $argValue) {
                         $constructorArgs[$argName] = $this->getValue($argValue);
                     }
-
-                    $methodCall = $definitionArguments[DiContainerInterface::METHOD][DiContainerInterface::METHOD_NAME] ?? null;
-
-                    if (\is_string($methodCall)) {
-                        \method_exists($definition, $methodCall)
-                            || throw new ContainerException("Method [{$methodCall}] not defined in [{$definition}].");
-
-                        $methodArgs = [];
-
-                        foreach ($definitionArguments[DiContainerInterface::METHOD][DiContainerInterface::ARGUMENTS] ?? [] as $argName => $argValue) {
-                            $methodArgs[$argName] = $this->getValue($argValue);
-                        }
-
-                        return $this->resolved[$id] = $this->autowire->callMethod(
-                            $this,
-                            $definition,
-                            $methodCall,
-                            $constructorArgs,
-                            $methodArgs,
-                        );
-                    }
                 }
 
                 return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $constructorArgs);
