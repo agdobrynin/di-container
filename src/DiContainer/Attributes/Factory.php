@@ -11,8 +11,9 @@ final class Factory
 {
     /**
      * @param class-string<FactoryInterface> $id
+     * @param array                          $arguments Class constructor arguments
      */
-    public function __construct(public string $id)
+    public function __construct(public string $id, public array $arguments = [])
     {
         \is_a($this->id, FactoryInterface::class, true)
             || throw new \InvalidArgumentException("Parameter '{$this->id}' must be a '".FactoryInterface::class."' interface");

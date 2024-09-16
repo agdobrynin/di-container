@@ -100,7 +100,11 @@ final class Autowired implements AutowiredInterface
                     }
 
                     if ($factory = Factory::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $container->get($factory->id)($container);
+                        $dependencies[$parameter->getName()] = $this->resolveInstance(
+                            $container,
+                            $factory->id,
+                            $factory->arguments
+                        )($container);
 
                         return $dependencies;
                     }
