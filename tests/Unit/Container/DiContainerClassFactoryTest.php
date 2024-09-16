@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
+use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes\ClassWithFiledFactory;
@@ -36,5 +37,11 @@ class DiContainerClassFactoryTest extends TestCase
         (new DiContainerFactory())->make()->get(ClassWithFiledFactory::class);
     }
 
-    public function testCallMethodWithArgumentWithFactory(): void {}
+    public function testCallMethodWithArgumentWithFactory(): void
+    {
+        $c = (new DiContainerFactory())->make();
+        $res = (new Autowired())->callMethod($c, SuperClass::class, 'getArray');
+
+        $this->assertEquals(['Hello', 'World'], $res);
+    }
 }

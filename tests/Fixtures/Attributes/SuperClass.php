@@ -10,4 +10,11 @@ use Kaspi\DiContainer\Attributes\Factory;
 class SuperClass
 {
     public function __construct(public string $name, public int $age) {}
+
+    public function getArray(
+        #[Factory(FirstArrayIteratorFactory::class)]
+        \ArrayIterator $arrayIterator
+    ): array {
+        return $arrayIterator->getArrayCopy();
+    }
 }
