@@ -47,6 +47,7 @@ class DiContainerClassFactoryTest extends TestCase
         $this->assertEquals(['Hello', 'World'], $res);
     }
 
+
     public function testCallMethodWithArgumentWithWrongFactory(): void
     {
         $c = (new DiContainerFactory())->make();
