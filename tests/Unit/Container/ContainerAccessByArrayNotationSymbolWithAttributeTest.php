@@ -10,6 +10,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\Factory
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
@@ -100,13 +101,5 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
 
         $container->get(Fixtures\Attributes\SendEmail::class);
-    }
-
-    public function testFactoryByClass(): void
-    {
-        $class = (new DiContainerFactory())->make()->get(Fixtures\Attributes\SuperClass::class);
-
-        $this->assertEquals('Piter', $class->name);
-        $this->assertEquals(22, $class->age);
     }
 }

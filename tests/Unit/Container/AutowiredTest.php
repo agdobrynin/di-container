@@ -14,6 +14,7 @@ use Tests\Fixtures\Classes\Interfaces;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\Attributes\Factory
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
