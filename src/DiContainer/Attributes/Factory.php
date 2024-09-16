@@ -12,8 +12,9 @@ final class Factory
 {
     /**
      * @param class-string<FactoryInterface> $id
+     * @param array                          $arguments Class constructor arguments
      */
-    public function __construct(public string $id, public array $constructorArguments = [])
+    public function __construct(public string $id, public array $arguments = [])
     {
         \is_a($this->id, FactoryInterface::class, true)
             or throw new AutowiredException("Factory attribute '{$this->id}' must be a ".FactoryInterface::class);
