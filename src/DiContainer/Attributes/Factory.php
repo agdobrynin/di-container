@@ -19,7 +19,7 @@ final class Factory
             || throw new \InvalidArgumentException("Parameter '{$this->id}' must be a '".FactoryInterface::class."' interface");
     }
 
-    public static function makeFromReflection(\ReflectionParameter $parameter): ?self
+    public static function makeFromReflection(\ReflectionClass|\ReflectionParameter $parameter): ?self
     {
         $attributes = $parameter->getAttributes(self::class);
 

@@ -101,4 +101,12 @@ class ContainerAccessByArrayNotationSymbolWithAttributeTest extends TestCase
 
         $container->get(Fixtures\Attributes\SendEmail::class);
     }
+
+    public function testFactoryByClass(): void
+    {
+        $class = (new DiContainerFactory())->make()->get(Fixtures\Attributes\SuperClass::class);
+
+        $this->assertEquals('Piter', $class->name);
+        $this->assertEquals(22, $class->age);
+    }
 }
