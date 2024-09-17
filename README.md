@@ -283,6 +283,48 @@ $myClass = $container->get(ClassInterface::class);
 print $myClass->file; // /var/log/app.log
 ```
 
+🧙‍♂️ **Разрешение зависимости в контейнере с помощью фабрики**.
+
+Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\FactoryInterface`.
+
+```php
+// Объявления классов
+namespace App;
+
+use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Psr\Container\ContainerInterface;
+
+class  MyClass {
+    public function __construct(private Db $db) {}
+    // ...
+}
+
+// ....
+
+class FactoryMyClass implements FactoryInterface {
+    public function __invoke(ContainerInterface $container): MyClass
+    {
+        return new MyClass(new Db(...));
+    }    
+}
+```
+
+```php
+// определения для контейнера
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definitions = [
+    App\MyClass::class => App\FactoryMyClass::class
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+$container->get(App\MyClass::class); // instance of App\MyClass
+```
+
 #### DiContainer c PHP атрибутами
 
 Конфигурирование DiContainer c PHP атрибутами для определений.
@@ -538,12 +580,16 @@ $myClass->arrayObject->getArrayCopy(); // массив ['Ivan', 'Piter', 'Vasili
     return [
         'a' => [
             'b' => [
-                'c' => 'value of definition'
+                'c' => 'Hello world'
             ],
         ],
         // ... more definitions
         'container-id' => '@a.b.c'
-    ]
+    ];
+
+// ... 
+
+print $contaier->get('container-id'); // Hello world
 ```
 
 ###### Access-array-delimiter-notation определение на базе ручного конфигурирования
