@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Classes;
 
-use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
 
-class DbFactory implements FactoryInterface
+class DbDiFactory implements DiFactoryInterface
 {
     public function __construct(private FileCache $fileCache) {}
 

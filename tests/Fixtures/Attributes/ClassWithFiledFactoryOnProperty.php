@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Factory;
+use Kaspi\DiContainer\Attributes\DiFactory;
 
 class ClassWithFiledFactoryOnProperty
 {
     public function make(
-        #[Factory(Lorem::class)]
+        #[DiFactory(Lorem::class)]
         Lorem $lorem
     ): void {}
 }

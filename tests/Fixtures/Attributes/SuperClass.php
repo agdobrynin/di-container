@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Factory;
+use Kaspi\DiContainer\Attributes\DiFactory;
 
-#[Factory(FactorySuperClass::class)]
+#[DiFactory(DiFactorySuperClass::class)]
 class SuperClass
 {
     public function __construct(public string $name, public int $age) {}
 
     public function getArray(
-        #[Factory(FirstArrayIteratorFactory::class)]
+        #[DiFactory(FirstArrayIteratorDiFactory::class)]
         \ArrayIterator $arrayIterator
     ): array {
         return $arrayIterator->getArrayCopy();

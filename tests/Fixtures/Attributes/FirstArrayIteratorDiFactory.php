@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
 
-class FirstArrayIteratorFactory implements FactoryInterface
+class FirstArrayIteratorDiFactory implements DiFactoryInterface
 {
     public function __invoke(ContainerInterface $container): \ArrayIterator
     {

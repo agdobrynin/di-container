@@ -285,13 +285,13 @@ print $myClass->file; // /var/log/app.log
 
 🧙‍♂️ **Разрешение зависимости в контейнере с помощью фабрики**.
 
-Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\FactoryInterface`.
+Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
 
 ```php
 // Объявления классов
 namespace App;
 
-use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
 
 class  MyClass {
@@ -301,7 +301,7 @@ class  MyClass {
 
 // ....
 
-class FactoryMyClass implements FactoryInterface {
+class FactoryMyClass implements DiFactoryInterface {
     public function __invoke(ContainerInterface $container): MyClass
     {
         return new MyClass(new Db(...));
@@ -333,7 +333,7 @@ $container->get(App\MyClass::class); // instance of App\MyClass
 - **Inject** - внедрение зависимости в аргументы конструктора класса, аргументы метода класса.
 - **Service** - определение для интерфейса какой класс будет вызван и разрешен в контейнере для данного интерфейса.
 - **Factory** - Фабрика для разрешения зависимостей - класс, аргументы конструктора и аргументы метода класса.
-Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\FactoryInterface`
+Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
 
 Получение существующего класса и разрешение простых типов параметров в конструкторе:
 
@@ -486,10 +486,10 @@ class SuperClass
 // определение фабрики
 namespace App\Factory;
 
-use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
 
-class FactorySuperClass implements FactoryInterface
+class FactorySuperClass implements DiFactoryInterface
 {
     public function __invoke(ContainerInterface $container): App\SuperClass
     {
@@ -514,24 +514,25 @@ print $myClass->age; // 22
 // определение класса
 namespace App;
 
-use Kaspi\DiContainer\Attributes\Factory;
+use Kaspi\DiContainer\Attributes\DiFactory;
 
 class ClassWithFactoryArgument
 {
     public function __construct(
-        #[Factory(FactoryClassWithFactoryArgument::class)]
+        #[DiFactory(FactoryClassWithFactoryArgument::class)]
         public \ArrayIterator $arrayObject
     ) {}
 }
 ```
+
 ```php
 // Фабрика класса
 namespace App;
 
-use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
 
-class FactoryClassWithFactoryArgument implements FactoryInterface
+class FactoryClassWithFactoryArgument implements DiFactoryInterface
 {
     public function __invoke(ContainerInterface $container): \ArrayIterator
     {

@@ -17,7 +17,7 @@ use Tests\Fixtures\Classes\Interfaces;
 /**
  * @internal
  *
- * @covers \Kaspi\DiContainer\Attributes\Factory
+ * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
@@ -484,7 +484,7 @@ class ContainerTest extends TestCase
     public function testDefinitionAsFactory(): void
     {
         $c = (new DiContainerFactory())->make([
-            Classes\Db::class => Classes\DbFactory::class,
+            Classes\Db::class => Classes\DbDiFactory::class,
         ]);
 
         $db = $c->get(Classes\Db::class);
@@ -501,7 +501,7 @@ class ContainerTest extends TestCase
         ]);
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage("Definition argument 'Tests\\Fixtures\\Classes\\FileCache' must be a 'Kaspi\\DiContainer\\Interfaces\\FactoryInterface' interface");
+        $this->expectExceptionMessage("Definition argument 'Tests\\Fixtures\\Classes\\FileCache' must be a 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
 
         $c->get(Classes\Db::class);
     }

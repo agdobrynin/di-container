@@ -10,7 +10,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -151,9 +151,9 @@ class DiContainer implements DiContainerInterface
                         && $definition !== $definitionArguments
                         && \class_exists($definition)
                         && \class_exists($definitionArguments)) {
-                        return \is_a($definitionArguments, FactoryInterface::class, true)
+                        return \is_a($definitionArguments, DiFactoryInterface::class, true)
                             ? $this->resolved[$id] = $this->get($definitionArguments)($this)
-                            : throw new ContainerException("Definition argument '{$definitionArguments}' must be a '".FactoryInterface::class."' interface");
+                            : throw new ContainerException("Definition argument '{$definitionArguments}' must be a '".DiFactoryInterface::class."' interface");
                     }
 
                     $paramsDefinitions = $this->argumentDefinitions[$definition]

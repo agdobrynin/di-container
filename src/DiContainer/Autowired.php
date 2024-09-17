@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Kaspi\DiContainer\Attributes\Factory;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredException;
@@ -38,7 +38,7 @@ final class Autowired implements AutowiredInterface
                 throw new AutowiredException("The [{$id}] class is not instantiable");
             }
 
-            if ($factory = Factory::makeFromReflection($instance)) {
+            if ($factory = DiFactory::makeFromReflection($instance)) {
                 return $container->get($factory->id)($container);
             }
 
@@ -103,7 +103,7 @@ final class Autowired implements AutowiredInterface
                         );
                     }
 
-                    if ($factory = Factory::makeFromReflection($parameter)) {
+                    if ($factory = DiFactory::makeFromReflection($parameter)) {
                         $dependencies[$parameter->getName()] = $container->get($factory->id)($container);
 
                         return $dependencies;
