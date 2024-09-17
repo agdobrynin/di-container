@@ -184,15 +184,16 @@ class DiContainer implements DiContainerInterface
 
     protected function getValue(mixed $value): mixed
     {
-        $isArrayNotation = $this->isAccessArrayNotation($value);
+        $isStringValue = \is_string($value);
+        $isArrayNotation = $isStringValue && $this->isAccessArrayNotation($value);
 
-        if (\is_string($value)
+        if ($isStringValue
             && !$isArrayNotation
             && $key = $this->parseLinkSymbol($value)) {
             return $this->getValue($this->resolve($key));
         }
 
-        return \is_string($value) && ($this->has($value) || $isArrayNotation)
+        return $isStringValue && ($this->has($value) || $isArrayNotation)
             ? $this->resolve($value)
             : $value;
     }
