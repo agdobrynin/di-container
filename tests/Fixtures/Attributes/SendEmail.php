@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Factory;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 
 class SendEmail
@@ -14,7 +14,7 @@ class SendEmail
         public string $adminEmail,
         #[Inject('@app.logger')]
         public Logger $logger,
-        #[Factory(FactoryObject::class)]
+        #[DiFactory(DiFactoryObject::class)]
         public ?array $fromFactory = null,
     ) {}
 }

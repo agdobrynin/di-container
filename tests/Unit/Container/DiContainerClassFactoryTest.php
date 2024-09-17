@@ -13,7 +13,7 @@ use Tests\Fixtures\Attributes\ClassWithFiledFactoryOnProperty;
 use Tests\Fixtures\Attributes\SuperClass;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Factory
+ * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
@@ -34,7 +34,7 @@ class DiContainerClassFactoryTest extends TestCase
     public function testFactoryByClassWithInvalidClass(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("must be a 'Kaspi\\DiContainer\\Interfaces\\FactoryInterface' interface");
+        $this->expectExceptionMessage("must be a 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
 
         (new DiContainerFactory())->make()->get(ClassWithFiledFactory::class);
     }
@@ -52,7 +52,7 @@ class DiContainerClassFactoryTest extends TestCase
         $c = (new DiContainerFactory())->make();
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("must be a 'Kaspi\\DiContainer\\Interfaces\\FactoryInterface' interface");
+        $this->expectExceptionMessage("must be a 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
 
         (new Autowired())->callMethod($c, ClassWithFiledFactoryOnProperty::class, 'make');
     }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Inject;
-use Kaspi\DiContainer\Interfaces\FactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
 
-final class FactoryObject implements FactoryInterface
+final class DiFactoryObject implements DiFactoryInterface
 {
     public function __construct(
         #[Inject]

@@ -10,7 +10,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Factory
+ * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer

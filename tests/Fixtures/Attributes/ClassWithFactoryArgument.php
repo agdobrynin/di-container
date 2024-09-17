@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Factory;
+use Kaspi\DiContainer\Attributes\DiFactory;
 
 class ClassWithFactoryArgument
 {
     public function __construct(
-        #[Factory(FactoryClassWithFactoryArgument::class)]
+        #[DiFactory(FactoryClassWithDiFactoryArgument::class)]
         public \ArrayIterator $arrayObject
     ) {}
 }
