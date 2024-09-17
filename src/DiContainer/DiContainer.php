@@ -9,8 +9,8 @@ use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
