@@ -192,9 +192,9 @@ class DiContainer implements DiContainerInterface
             : $value;
     }
 
-    protected function parseLinkSymbol(mixed $value): ?string
+    protected function parseLinkSymbol(string $value): ?string
     {
-        return (\is_string($value) && \str_starts_with($value, $this->linkContainerSymbol))
+        return (\str_starts_with($value, $this->linkContainerSymbol))
             ? \substr($value, \strlen($this->linkContainerSymbol))
             : null;
     }
