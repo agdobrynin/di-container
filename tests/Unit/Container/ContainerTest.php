@@ -493,4 +493,16 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $db->cache);
         $this->assertEquals('::file::', $db->cache->driver());
     }
+
+    public function testDefinitionAsFactoryWrong(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            Classes\Db::class => Classes\FileCache::class,
+        ]);
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage("Definition argument 'Tests\\Fixtures\\Classes\\FileCache' must be a 'Kaspi\\DiContainer\\Interfaces\\FactoryInterface' interface");
+
+        $c->get(Classes\Db::class);
+    }
 }
