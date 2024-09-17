@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -142,6 +143,10 @@ class DiContainer implements DiContainerInterface
                 $constructorArgs = [];
 
                 if (\is_string($definition)) {
+                    if (\is_a($definitionArguments, FactoryInterface::class, true)) {
+                        return $this->resolved[$id] = $this->get($definitionArguments)($this);
+                    }
+
                     if ($definitionArguments instanceof \Closure) {
                         return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definitionArguments);
                     }

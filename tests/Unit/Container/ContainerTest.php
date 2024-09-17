@@ -480,4 +480,17 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(Classes\CacheAll::class, $c->get(Classes\CacheAll::class));
     }
+
+    public function testDefinitionAsFactory(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            Classes\Db::class => Classes\DbFactory::class,
+        ]);
+
+        $db = $c->get(Classes\Db::class);
+
+        $this->assertEquals(['one', 'two'], $db->all());
+        $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $db->cache);
+        $this->assertEquals('::file::', $db->cache->driver());
+    }
 }
