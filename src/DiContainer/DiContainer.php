@@ -62,13 +62,7 @@ class DiContainer implements DiContainerInterface
      */
     public function get(string $id): mixed
     {
-        if (isset($this->resolved[$id])) {
-            return $this->resolved[$id];
-        }
-
-        $this->makeDefinitionForArrayNotation($id);
-
-        return $this->resolve($id);
+        return $this->resolved[$id] ?? $this->resolve($id);
     }
 
     public function has(string $id): bool
