@@ -176,14 +176,14 @@ final class Autowired implements AutowiredInterface
 
     /**
      * @param \ReflectionParameter[] $parameters
-     * @param array<string,mixed>    $args
+     * @param array<string,mixed>    $inputArgs
      *
      * @return \ReflectionParameter[]
      */
-    private function filterInputArgs(array $parameters, array $args): array
+    private function filterInputArgs(array $parameters, array $inputArgs): array
     {
-        return [] === $args
+        return [] === $inputArgs
             ? $parameters
-            : \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($args[$parameter->name]));
+            : \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]));
     }
 }
