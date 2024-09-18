@@ -77,19 +77,19 @@ final class Autowired implements AutowiredInterface
 
     /**
      * @param \ReflectionParameter[] $instanceParameters
-     * @param array<string,mixed>    $args
+     * @param array<string,mixed>    $inputArgs
      *
      * @throws \ReflectionException
      */
-    private function resolveArguments(ContainerInterface $container, array $instanceParameters, array $args): array
+    private function resolveArguments(ContainerInterface $container, array $instanceParameters, array $inputArgs): array
     {
         return match (true) {
             [] === $instanceParameters => [],
-            [] === $args => $this->resolveParameters($container, $instanceParameters),
+            [] === $inputArgs => $this->resolveParameters($container, $instanceParameters),
             default => \array_merge($this->resolveParameters(
                 $container,
-                $this->filterInputArgs($instanceParameters, $args)
-            ), $args),
+                $this->filterInputArgs($instanceParameters, $inputArgs)
+            ), $inputArgs),
         };
     }
 
