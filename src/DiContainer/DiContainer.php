@@ -181,13 +181,15 @@ class DiContainer implements DiContainerInterface
         $isStringValue = \is_string($value);
         $isArrayNotationValue = $isStringValue && $this->isAccessArrayNotation($value);
 
-        if ($isStringValue
-            && !$isArrayNotationValue
-            && $key = $this->parseLinkSymbol($value)) {
+        if ($isArrayNotationValue && $this->makeDefinitionForArrayNotation($value)) {
+            return $this->get($value);
+        }
+
+        if ($isStringValue && $key = $this->parseLinkSymbol($value)) {
             return $this->getValue($this->resolve($key));
         }
 
-        return $isStringValue && ($this->has($value) || $isArrayNotationValue)
+        return $isStringValue && $this->has($value)
             ? $this->resolve($value)
             : $value;
     }
@@ -218,10 +220,6 @@ class DiContainer implements DiContainerInterface
 
     protected function makeDefinitionForArrayNotation(string $id): bool
     {
-        if (!$this->isAccessArrayNotation($id)) {
-            return false;
-        }
-
         if (!isset($this->definitions[$id])) {
             $path = \substr($id, \strlen($this->linkContainerSymbol));
             $this->definitions[$id] = \array_reduce(
