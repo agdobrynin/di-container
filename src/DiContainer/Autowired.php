@@ -24,10 +24,7 @@ final class Autowired implements AutowiredInterface
             if ($id instanceof \Closure) {
                 $instance = new \ReflectionFunction($id);
                 $instanceParameters = $instance->getParameters();
-                $resolvedArgs = \array_merge($this->resolveParameters(
-                    $container,
-                    $this->filterInputArgs($instanceParameters, $args)
-                ), $args);
+                $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
 
                 return $instance->invokeArgs($resolvedArgs);
             }
@@ -43,10 +40,7 @@ final class Autowired implements AutowiredInterface
             }
 
             $instanceParameters = $instance->getConstructor()?->getParameters() ?? [];
-            $resolvedArgs = \array_merge($this->resolveParameters(
-                $container,
-                $this->filterInputArgs($instanceParameters, $args)
-            ), $args);
+            $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
 
             return $instance->newInstanceArgs($resolvedArgs);
         } catch (\ReflectionException $exception) {
@@ -69,10 +63,7 @@ final class Autowired implements AutowiredInterface
             $instance = $this->resolveInstance($container, $id, $constructorArgs);
             $classReflector = new \ReflectionClass($instance);
             $methodReflector = $classReflector->getMethod($method);
-            $resolvedArgs = \array_merge($this->resolveParameters(
-                $container,
-                $this->filterInputArgs($methodReflector->getParameters(), $methodArgs)
-            ), $methodArgs);
+            $resolvedArgs = $this->resolveArguments($container, $methodReflector->getParameters(), $methodArgs);
 
             return $methodReflector->invokeArgs($instance, $resolvedArgs);
         } catch (AutowiredExceptionInterface|\ReflectionException $exception) {
@@ -82,6 +73,24 @@ final class Autowired implements AutowiredInterface
                 previous: $exception->getPrevious(),
             );
         }
+    }
+
+    /**
+     * @param \ReflectionParameter[] $instanceParameters
+     * @param array<string,mixed>    $args
+     *
+     * @throws \ReflectionException
+     */
+    private function resolveArguments(ContainerInterface $container, array $instanceParameters, array $args): array
+    {
+        return match (true) {
+            [] === $instanceParameters => [],
+            [] === $args => $this->resolveParameters($container, $instanceParameters),
+            default => \array_merge($this->resolveParameters(
+                $container,
+                $this->filterInputArgs($instanceParameters, $args)
+            ), $args),
+        };
     }
 
     /**
@@ -167,14 +176,14 @@ final class Autowired implements AutowiredInterface
 
     /**
      * @param \ReflectionParameter[] $parameters
+     * @param array<string,mixed>    $args
      *
      * @return \ReflectionParameter[]
      */
     private function filterInputArgs(array $parameters, array $args): array
     {
-        return \array_filter(
-            $parameters,
-            static fn (\ReflectionParameter $parameter) => !\array_key_exists($parameter->name, $args)
-        );
+        return [] === $args
+            ? $parameters
+            : \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($args[$parameter->name]));
     }
 }
