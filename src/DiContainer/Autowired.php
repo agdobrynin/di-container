@@ -84,11 +84,11 @@ final class Autowired implements AutowiredInterface
     private function resolveArguments(ContainerInterface $container, array $instanceParameters, array $inputArgs): array
     {
         return match (true) {
-            [] === $instanceParameters => [],
+            [] === $instanceParameters => $inputArgs,
             [] === $inputArgs => $this->resolveParameters($container, $instanceParameters),
             default => \array_merge($this->resolveParameters(
                 $container,
-                $this->filterInputArgs($instanceParameters, $inputArgs)
+                \array_filter($instanceParameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]))
             ), $inputArgs),
         };
     }
@@ -172,18 +172,5 @@ final class Autowired implements AutowiredInterface
         }
 
         return $this->resolveInstance($container, $inject->id, $inject->arguments);
-    }
-
-    /**
-     * @param \ReflectionParameter[] $parameters
-     * @param array<string,mixed>    $inputArgs
-     *
-     * @return \ReflectionParameter[]
-     */
-    private function filterInputArgs(array $parameters, array $inputArgs): array
-    {
-        return [] === $inputArgs
-            ? $parameters
-            : \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]));
     }
 }
