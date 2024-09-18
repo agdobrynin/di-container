@@ -186,11 +186,11 @@ class DiContainer implements DiContainerInterface
         }
 
         if ($isStringValue && $key = $this->parseLinkSymbol($value)) {
-            return $this->getValue($this->resolve($key));
+            return $this->getValue($this->get($key));
         }
 
         return $isStringValue && $this->has($value)
-            ? $this->resolve($value)
+            ? $this->get($value)
             : $value;
     }
 
