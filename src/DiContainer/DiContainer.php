@@ -68,6 +68,7 @@ class DiContainer implements DiContainerInterface
     public function has(string $id): bool
     {
         return isset($this->definitions[$id])
+            || isset($this->resolved[$id])
             || \class_exists($id)
             || \interface_exists($id)
             || $this->hasArrayNotation($id);
