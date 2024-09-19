@@ -147,7 +147,7 @@ class DiContainer implements DiContainerInterface
                         && \class_exists($definitionArguments)) {
                         return \is_a($definitionArguments, DiFactoryInterface::class, true)
                             ? $this->resolved[$id] = $this->get($definitionArguments)($this)
-                            : throw new ContainerException("Definition argument '{$definitionArguments}' must be a '".DiFactoryInterface::class."' interface");
+                            : throw new ContainerException("Definition argument '{$definitionArguments}' must be implement '".DiFactoryInterface::class."' interface");
                     }
 
                     $paramsDefinitions = $this->argumentDefinitions[$definition]
