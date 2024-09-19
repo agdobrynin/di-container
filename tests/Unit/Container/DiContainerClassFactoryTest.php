@@ -34,7 +34,7 @@ class DiContainerClassFactoryTest extends TestCase
     public function testFactoryByClassWithInvalidClass(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("must be a 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
+        $this->expectExceptionMessage("must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface'");
 
         (new DiContainerFactory())->make()->get(ClassWithFiledFactory::class);
     }
@@ -52,7 +52,7 @@ class DiContainerClassFactoryTest extends TestCase
         $c = (new DiContainerFactory())->make();
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("must be a 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
+        $this->expectExceptionMessage("must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface'");
 
         (new Autowired())->callMethod($c, ClassWithFiledFactoryOnProperty::class, 'make');
     }

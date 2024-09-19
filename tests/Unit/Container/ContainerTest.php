@@ -501,7 +501,7 @@ class ContainerTest extends TestCase
         ]);
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage("Definition argument 'Tests\\Fixtures\\Classes\\FileCache' must be a 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
+        $this->expectExceptionMessage("Definition argument 'Tests\\Fixtures\\Classes\\FileCache' must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
 
         $c->get(Classes\Db::class);
     }
