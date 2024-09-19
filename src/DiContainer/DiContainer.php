@@ -144,7 +144,6 @@ class DiContainer implements DiContainerInterface
 
                     if (\is_string($definitionArguments)
                         && $definition !== $definitionArguments
-                        && \class_exists($definition)
                         && \class_exists($definitionArguments)) {
                         return \is_a($definitionArguments, DiFactoryInterface::class, true)
                             ? $this->resolved[$id] = $this->get($definitionArguments)($this)
