@@ -6,10 +6,11 @@ namespace Tests\Fixtures\Classes;
 
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
+use Tests\Fixtures\Classes\Interfaces\SumInterface;
 
-class SumInterfaceDiFactory implements DiFactoryInterface
+class SumInterfaceFactory implements DiFactoryInterface
 {
-    public function __invoke(ContainerInterface $container): Sum
+    public function __invoke(ContainerInterface $container): SumInterface
     {
         return new Sum();
     }
