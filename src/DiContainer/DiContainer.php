@@ -50,8 +50,7 @@ class DiContainer implements DiContainerInterface
 
         $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
 
-        $this->accessArrayNotationRegularExpression = '/^'.
-            \preg_quote($this->linkContainerSymbol, '/').
+        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($this->linkContainerSymbol, '/').
             '((?:\w+'.\preg_quote($this->delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
 
         foreach ($definitions as $id => $abstract) {
