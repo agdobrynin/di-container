@@ -28,6 +28,8 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $argumentDefinitions = [];
     protected array $resolved = [];
+    protected int $linkContainerSymbolLength;
+    protected string $accessArrayNotationRegularExpression;
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -45,6 +47,12 @@ class DiContainer implements DiContainerInterface
                 "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterAccessArrayNotationSymbol}]"
             );
         }
+
+        $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
+
+        $this->accessArrayNotationRegularExpression = '/^'.
+            \preg_quote($this->linkContainerSymbol, '/').
+            '((?:\w+'.\preg_quote($this->delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
 
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
@@ -179,7 +187,8 @@ class DiContainer implements DiContainerInterface
     protected function getValue(mixed $value): mixed
     {
         $isStringValue = \is_string($value);
-        $isArrayNotationValue = $isStringValue && $this->isAccessArrayNotation($value);
+        $isArrayNotationValue = $isStringValue
+            && \preg_match($this->accessArrayNotationRegularExpression, $value);
 
         if ($isArrayNotationValue && $this->makeDefinitionForArrayNotation($value)) {
             return $this->get($value);
@@ -197,22 +206,15 @@ class DiContainer implements DiContainerInterface
     protected function parseLinkSymbol(string $value): ?string
     {
         return (\str_starts_with($value, $this->linkContainerSymbol))
-            ? \substr($value, \strlen($this->linkContainerSymbol))
+            ? \substr($value, $this->linkContainerSymbolLength)
             : null;
-    }
-
-    protected function isAccessArrayNotation(string $id): bool
-    {
-        $delimiter = \preg_quote($this->delimiterAccessArrayNotationSymbol, '/');
-        $link = \preg_quote($this->linkContainerSymbol, '/');
-
-        return (bool) \preg_match('/^'.$link.'((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }
 
     protected function hasArrayNotation(string $id): bool
     {
         try {
-            return $this->makeDefinitionForArrayNotation($id);
+            return \preg_match($this->accessArrayNotationRegularExpression, $id)
+                && $this->makeDefinitionForArrayNotation($id);
         } catch (NotFoundException) {
             return false;
         }
@@ -221,7 +223,7 @@ class DiContainer implements DiContainerInterface
     protected function makeDefinitionForArrayNotation(string $id): bool
     {
         if (!isset($this->definitions[$id])) {
-            $path = \substr($id, \strlen($this->linkContainerSymbol));
+            $path = \substr($id, $this->linkContainerSymbolLength);
             $this->definitions[$id] = \array_reduce(
                 \explode($this->delimiterAccessArrayNotationSymbol, $path),
                 static function (mixed $segments, string $segment) use ($id) {
