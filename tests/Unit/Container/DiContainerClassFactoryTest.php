@@ -75,7 +75,7 @@ class DiContainerClassFactoryTest extends TestCase
     public function testInterfaceByFactory(): void
     {
         $c = (new DiContainerFactory())->make([
-            SumInterface::class => SumDiFactoryForInterface::class
+            SumInterface::class => SumDiFactoryForInterface::class,
         ]);
 
         // See in class SumDiFactoryForInterface where init value 10.
