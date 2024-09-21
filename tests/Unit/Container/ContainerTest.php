@@ -81,6 +81,18 @@ class ContainerTest extends TestCase
         $container->get('test');
     }
 
+    public function testAutowiredOffForClass(): void
+    {
+        $container = (new DiContainer())
+            ->set(Classes\RedisCache::class)
+        ;
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('autowire');
+
+        $container->get(Classes\RedisCache::class);
+    }
+
     public function testGetClosureWithGlobalParams(): void
     {
         $container = (new DiContainer(autowire: $this->autowire))
