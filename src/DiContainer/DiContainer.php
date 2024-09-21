@@ -133,11 +133,9 @@ class DiContainer implements DiContainerInterface
             }
 
             if (\interface_exists($id)) {
-                if (\is_string($definition)) {
-                    return $this->resolved[$id] = $this->get($definition);
-                }
-
-                throw new ContainerException("Not found definition for interface [{$id}]");
+                return $this->resolved[$id] = \is_string($definition)
+                    ? $this->get($definition)
+                    : throw new ContainerException("Not found definition for interface [{$id}]");
             }
         } catch (AutowiredExceptionInterface $exception) {
             throw new ContainerException(
