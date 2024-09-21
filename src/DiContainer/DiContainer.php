@@ -116,71 +116,42 @@ class DiContainer implements DiContainerInterface
             throw new NotFoundException("Unresolvable dependency [{$id}].");
         }
 
-        /** @var null|class-string<TClass>|\Closure $definition */
-        [$definition, $definitionArguments] = match (true) {
-            \class_exists($id) => [
-                $id,
-                $this->definitions[$id] ?? null,
-            ],
-            \interface_exists($id) => [
-                $this->definitions[$id]
-                    ?? throw new ContainerException("No class defined for interface [{$id}]"),
-                \is_string($this->definitions[$id])
-                    ? $this->definitions[$this->definitions[$id]] ?? null
-                    : null,
-            ],
-            ($this->definitions[$id] ?? null) instanceof \Closure => [
-                $this->definitions[$id],
-                null,
-            ],
-            default => [null, null],
-        };
+        $definition = $this->definitions[$id] ?? null;
 
-        if ($definition) {
-            try {
-                if (null === $this->autowire) {
-                    throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
-                }
-
-                $constructorArgs = [];
-
-                if (\is_string($definition)) {
-                    if ($definitionArguments instanceof \Closure) {
-                        return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definitionArguments);
-                    }
-
-                    if (\is_string($definitionArguments)
-                        && $definition !== $definitionArguments
-                        && \class_exists($definitionArguments)) {
-                        return \is_a($definitionArguments, DiFactoryInterface::class, true)
-                            ? $this->resolved[$id] = $this->get($definitionArguments)($this)
-                            : throw new ContainerException("Definition argument '{$definitionArguments}' must be implement '".DiFactoryInterface::class."' interface");
-                    }
-
-                    $paramsDefinitions = $this->argumentDefinitions[$definition]
-                        ?? $definitionArguments[DiContainerInterface::ARGUMENTS]
-                        ?? [];
-
-                    foreach ($paramsDefinitions as $argName => $argValue) {
-                        $constructorArgs[$argName] = $this->getValue($argValue);
-                    }
-                }
-
-                return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $constructorArgs);
-            } catch (AutowiredExceptionInterface $exception) {
-                throw new ContainerException(
-                    message: $exception->getMessage(),
-                    code: $exception->getCode(),
-                    previous: $exception->getPrevious()
-                );
+        try {
+            if ($definition instanceof \Closure) {
+                return $this->resolved[$id] = $this->autowire?->resolveInstance($this, $definition)
+                    ?? throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
             }
+
+            if (\class_exists($id)) {
+                return $this->resolved[$id] = \is_a($definition, DiFactoryInterface::class, true)
+                    ? $this->resolveInstanceByClassId($definition)($this)
+                    : $this->resolveInstanceByClassId($id);
+            }
+
+            if (\interface_exists($id)) {
+                if (\is_string($definition)) {
+                    return $this->resolved[$id] = \is_a($definition, DiFactoryInterface::class, true)
+                        ? $this->resolveInstanceByClassId($definition)($this)
+                        : $this->get($definition);
+                }
+
+                throw new ContainerException("Not found definition for interface [{$id}]");
+            }
+        } catch (AutowiredExceptionInterface $exception) {
+            throw new ContainerException(
+                message: $exception->getMessage(),
+                code: $exception->getCode(),
+                previous: $exception->getPrevious()
+            );
         }
 
-        $this->resolved[$id] = isset($this->definitions[$id]) && $this->definitions[$id] === $id
-        ? $id
-        : $this->getValue($this->definitions[$id]);
-
-        return $this->resolved[$id];
+        return $this->resolved[$id] = match (true) {
+            $definition === $id => $id,
+            null === $definition => null,
+            default => $this->getValue($definition),
+        };
     }
 
     protected function getValue(mixed $value): mixed
@@ -235,5 +206,26 @@ class DiContainer implements DiContainerInterface
         }
 
         return true;
+    }
+
+    protected function resolveInstanceByClassId(string $id): mixed
+    {
+        if (null === $this->autowire) {
+            throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
+        }
+
+        $constructorDefinedArgs = $this->argumentDefinitions[$id]
+            ?? $this->definitions[$id][DiContainerInterface::ARGUMENTS]
+            ?? [];
+
+        $constructorArgs = [];
+
+        if ([] !== $constructorDefinedArgs) {
+            foreach ($constructorDefinedArgs as $argName => $argValue) {
+                $constructorArgs[$argName] = $this->getValue($argValue);
+            }
+        }
+
+        return $this->autowire->resolveInstance($this, $id, $constructorArgs);
     }
 }
