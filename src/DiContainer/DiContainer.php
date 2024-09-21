@@ -124,17 +124,17 @@ class DiContainer implements DiContainerInterface
                     ?? throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
             }
 
+            if (\is_a($definition, DiFactoryInterface::class, true)) {
+                return $this->resolved[$id] = $this->resolveInstanceByClassId($definition)($this);
+            }
+
             if (\class_exists($id)) {
-                return $this->resolved[$id] = \is_a($definition, DiFactoryInterface::class, true)
-                    ? $this->resolveInstanceByClassId($definition)($this)
-                    : $this->resolveInstanceByClassId($id);
+                return $this->resolved[$id] = $this->resolveInstanceByClassId($id);
             }
 
             if (\interface_exists($id)) {
                 if (\is_string($definition)) {
-                    return $this->resolved[$id] = \is_a($definition, DiFactoryInterface::class, true)
-                        ? $this->resolveInstanceByClassId($definition)($this)
-                        : $this->get($definition);
+                    return $this->resolved[$id] = $this->get($definition);
                 }
 
                 throw new ContainerException("Not found definition for interface [{$id}]");
