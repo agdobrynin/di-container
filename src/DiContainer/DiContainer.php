@@ -124,7 +124,7 @@ class DiContainer implements DiContainerInterface
                     ?? throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
             }
 
-            if (\is_a($definition, DiFactoryInterface::class, true)) {
+            if (\is_string($definition) && \is_a($definition, DiFactoryInterface::class, true)) {
                 return $this->resolved[$id] = $this->resolveInstanceByClassId($definition)($this);
             }
 
