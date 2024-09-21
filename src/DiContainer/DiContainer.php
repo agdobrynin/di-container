@@ -28,8 +28,8 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $argumentDefinitions = [];
     protected array $resolved = [];
-    protected int $linkContainerSymbolLength;
-    protected string $accessArrayNotationRegularExpression;
+    protected ?int $linkContainerSymbolLength;
+    protected ?string $accessArrayNotationRegularExpression;
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -48,10 +48,11 @@ class DiContainer implements DiContainerInterface
             );
         }
 
-        $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
+        $this->linkContainerSymbolLength = \strlen($linkContainerSymbol) ?: null;
 
-        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($this->linkContainerSymbol, '/').
-            '((?:\w+'.\preg_quote($this->delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
+        $this->accessArrayNotationRegularExpression = $this->linkContainerSymbolLength && $delimiterAccessArrayNotationSymbol
+            ? '/^'.\preg_quote($linkContainerSymbol, '/').'((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u'
+            : null;
 
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
