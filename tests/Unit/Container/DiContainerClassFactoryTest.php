@@ -11,6 +11,9 @@ use Tests\Fixtures\Attributes\ClassWithFactoryArgument;
 use Tests\Fixtures\Attributes\ClassWithFiledFactory;
 use Tests\Fixtures\Attributes\ClassWithFiledFactoryOnProperty;
 use Tests\Fixtures\Attributes\SuperClass;
+use Tests\Fixtures\Classes\Interfaces\SumInterface;
+use Tests\Fixtures\Classes\Sum;
+use Tests\Fixtures\Classes\SumDiFactoryForInterface;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -67,5 +70,17 @@ class DiContainerClassFactoryTest extends TestCase
             ['Ivan', 'Piter', 'Vasiliy'],
             $c->get(ClassWithFactoryArgument::class)->arrayObject->getArrayCopy()
         );
+    }
+
+    public function testInterfaceByFactory(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            SumInterface::class => SumDiFactoryForInterface::class
+        ]);
+
+        // See in class SumDiFactoryForInterface where init value 10.
+        $this->assertInstanceOf(SumInterface::class, $c->get(SumInterface::class));
+        $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));
+        $this->assertEquals(20, $c->get(SumInterface::class)->add(10));
     }
 }

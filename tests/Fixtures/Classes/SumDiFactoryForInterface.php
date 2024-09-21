@@ -8,10 +8,10 @@ use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 
-class SumInterfaceByDiFactory implements DiFactoryInterface
+class SumDiFactoryForInterface implements DiFactoryInterface
 {
     public function __invoke(ContainerInterface $container): SumInterface
     {
-        return new Sum();
+        return new Sum(10);
     }
 }
