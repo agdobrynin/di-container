@@ -156,7 +156,8 @@ class DiContainer implements DiContainerInterface
     protected function getValue(mixed $value): mixed
     {
         $isStringValue = \is_string($value);
-        $isArrayNotationValue = $isStringValue
+        $isArrayNotationValue = $this->accessArrayNotationRegularExpression
+            && $isStringValue
             && \preg_match($this->accessArrayNotationRegularExpression, $value);
 
         if ($isArrayNotationValue && $this->makeDefinitionForArrayNotation($value)) {
@@ -174,7 +175,7 @@ class DiContainer implements DiContainerInterface
 
     protected function parseLinkSymbol(string $value): ?string
     {
-        return (\str_starts_with($value, $this->linkContainerSymbol))
+        return $this->linkContainerSymbolLength && (\str_starts_with($value, $this->linkContainerSymbol))
             ? \substr($value, $this->linkContainerSymbolLength)
             : null;
     }
@@ -182,7 +183,8 @@ class DiContainer implements DiContainerInterface
     protected function hasArrayNotation(string $id): bool
     {
         try {
-            return \preg_match($this->accessArrayNotationRegularExpression, $id)
+            return $this->accessArrayNotationRegularExpression
+                && \preg_match($this->accessArrayNotationRegularExpression, $id)
                 && $this->makeDefinitionForArrayNotation($id);
         } catch (NotFoundException) {
             return false;
