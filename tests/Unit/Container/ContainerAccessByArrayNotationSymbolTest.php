@@ -83,7 +83,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $container = (new DiContainerFactory())->make($def);
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('[@app.users]');
+        $this->expectExceptionMessage('Unresolvable dependency: array notation key [@app.users]');
 
         $container->get(Classes\Names::class);
     }

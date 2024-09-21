@@ -15,7 +15,7 @@ final class DiFactory
     public function __construct(public string $id)
     {
         \is_a($this->id, DiFactoryInterface::class, true)
-            || throw new \InvalidArgumentException("Parameter '{$this->id}' must be a '".DiFactoryInterface::class."' interface");
+            || throw new \InvalidArgumentException("Parameter '{$this->id}' must be implement '".DiFactoryInterface::class."' interface");
     }
 
     public static function makeFromReflection(\ReflectionClass|\ReflectionParameter $parameter): ?self

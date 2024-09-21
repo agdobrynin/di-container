@@ -9,8 +9,8 @@ use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -28,6 +28,8 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $argumentDefinitions = [];
     protected array $resolved = [];
+    protected int $linkContainerSymbolLength;
+    protected string $accessArrayNotationRegularExpression;
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -46,6 +48,11 @@ class DiContainer implements DiContainerInterface
             );
         }
 
+        $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
+
+        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($this->linkContainerSymbol, '/').
+            '((?:\w+'.\preg_quote($this->delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
+
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
             $this->set($key, $abstract);
@@ -62,18 +69,13 @@ class DiContainer implements DiContainerInterface
      */
     public function get(string $id): mixed
     {
-        if (isset($this->resolved[$id])) {
-            return $this->resolved[$id];
-        }
-
-        $this->makeDefinitionForArrayNotation($id);
-
-        return $this->resolve($id);
+        return $this->resolved[$id] ?? $this->resolve($id);
     }
 
     public function has(string $id): bool
     {
         return isset($this->definitions[$id])
+            || isset($this->resolved[$id])
             || \class_exists($id)
             || \interface_exists($id)
             || $this->hasArrayNotation($id);
@@ -114,106 +116,73 @@ class DiContainer implements DiContainerInterface
             throw new NotFoundException("Unresolvable dependency [{$id}].");
         }
 
-        /** @var null|class-string<TClass>|\Closure $definition */
-        [$definition, $definitionArguments] = match (true) {
-            \class_exists($id) => [
-                $id,
-                $this->definitions[$id] ?? null,
-            ],
-            \interface_exists($id) => [
-                $this->definitions[$id]
-                    ?? throw new ContainerException("No class defined for interface [{$id}]"),
-                \is_string($this->definitions[$id])
-                    ? $this->definitions[$this->definitions[$id]] ?? null
-                    : null,
-            ],
-            ($this->definitions[$id] ?? null) instanceof \Closure => [
-                $this->definitions[$id],
-                null,
-            ],
-            default => [null, null],
-        };
+        $definition = $this->definitions[$id] ?? null;
 
-        if ($definition) {
-            try {
-                if (null === $this->autowire) {
-                    throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
-                }
-
-                $constructorArgs = [];
-
-                if (\is_string($definition)) {
-                    if ($definitionArguments instanceof \Closure) {
-                        return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definitionArguments);
-                    }
-
-                    if (\is_string($definitionArguments)
-                        && $definition !== $definitionArguments
-                        && \class_exists($definition)
-                        && \class_exists($definitionArguments)) {
-                        return \is_a($definitionArguments, DiFactoryInterface::class, true)
-                            ? $this->resolved[$id] = $this->get($definitionArguments)($this)
-                            : throw new ContainerException("Definition argument '{$definitionArguments}' must be a '".DiFactoryInterface::class."' interface");
-                    }
-
-                    $paramsDefinitions = $this->argumentDefinitions[$definition]
-                        ?? $definitionArguments[DiContainerInterface::ARGUMENTS]
-                        ?? [];
-
-                    foreach ($paramsDefinitions as $argName => $argValue) {
-                        $constructorArgs[$argName] = $this->getValue($argValue);
-                    }
-                }
-
-                return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition, $constructorArgs);
-            } catch (AutowiredExceptionInterface $exception) {
-                throw new ContainerException(
-                    message: $exception->getMessage(),
-                    code: $exception->getCode(),
-                    previous: $exception->getPrevious()
-                );
+        try {
+            if ($definition instanceof \Closure) {
+                return $this->resolved[$id] = $this->autowire?->resolveInstance($this, $definition)
+                    ?? throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
             }
+
+            if (\is_string($definition) && \is_a($definition, DiFactoryInterface::class, true)) {
+                return $this->resolved[$id] = $this->resolveInstanceByClassId($definition)($this);
+            }
+
+            if (\class_exists($id)) {
+                return $this->resolved[$id] = $this->resolveInstanceByClassId($id);
+            }
+
+            if (\interface_exists($id)) {
+                return $this->resolved[$id] = \is_string($definition)
+                    ? $this->get($definition)
+                    : throw new ContainerException("Not found definition for interface [{$id}]");
+            }
+        } catch (AutowiredExceptionInterface $exception) {
+            throw new ContainerException(
+                message: $exception->getMessage(),
+                code: $exception->getCode(),
+                previous: $exception->getPrevious()
+            );
         }
 
-        $this->resolved[$id] = isset($this->definitions[$id]) && $this->definitions[$id] === $id
-        ? $id
-        : $this->getValue($this->definitions[$id]);
-
-        return $this->resolved[$id];
+        return $this->resolved[$id] = match (true) {
+            $definition === $id => $id,
+            null === $definition => null,
+            default => $this->getValue($definition),
+        };
     }
 
     protected function getValue(mixed $value): mixed
     {
-        if (\is_string($value)
-            && !$this->isAccessArrayNotation($value)
-            && $key = $this->parseLinkSymbol($value)) {
-            return $this->getValue($this->resolve($key));
+        $isStringValue = \is_string($value);
+        $isArrayNotationValue = $isStringValue
+            && \preg_match($this->accessArrayNotationRegularExpression, $value);
+
+        if ($isArrayNotationValue && $this->makeDefinitionForArrayNotation($value)) {
+            return $this->get($value);
         }
 
-        return \is_string($value) && ($this->has($value) || $this->isAccessArrayNotation($value))
-            ? $this->resolve($value)
+        if ($isStringValue && $key = $this->parseLinkSymbol($value)) {
+            return $this->getValue($this->get($key));
+        }
+
+        return $isStringValue && $this->has($value)
+            ? $this->get($value)
             : $value;
     }
 
-    protected function parseLinkSymbol(mixed $value): ?string
+    protected function parseLinkSymbol(string $value): ?string
     {
-        return (\is_string($value) && \str_starts_with($value, $this->linkContainerSymbol))
-            ? \substr($value, \strlen($this->linkContainerSymbol))
+        return (\str_starts_with($value, $this->linkContainerSymbol))
+            ? \substr($value, $this->linkContainerSymbolLength)
             : null;
-    }
-
-    protected function isAccessArrayNotation(string $id): bool
-    {
-        $delimiter = \preg_quote($this->delimiterAccessArrayNotationSymbol, '/');
-        $link = \preg_quote($this->linkContainerSymbol, '/');
-
-        return (bool) \preg_match('/^'.$link.'((?:\w+'.$delimiter.')+)\w+$/u', $id);
     }
 
     protected function hasArrayNotation(string $id): bool
     {
         try {
-            return $this->makeDefinitionForArrayNotation($id);
+            return \preg_match($this->accessArrayNotationRegularExpression, $id)
+                && $this->makeDefinitionForArrayNotation($id);
         } catch (NotFoundException) {
             return false;
         }
@@ -221,12 +190,8 @@ class DiContainer implements DiContainerInterface
 
     protected function makeDefinitionForArrayNotation(string $id): bool
     {
-        if (!$this->isAccessArrayNotation($id)) {
-            return false;
-        }
-
         if (!isset($this->definitions[$id])) {
-            $path = \substr($id, \strlen($this->linkContainerSymbol));
+            $path = \substr($id, $this->linkContainerSymbolLength);
             $this->definitions[$id] = \array_reduce(
                 \explode($this->delimiterAccessArrayNotationSymbol, $path),
                 static function (mixed $segments, string $segment) use ($id) {
@@ -239,5 +204,26 @@ class DiContainer implements DiContainerInterface
         }
 
         return true;
+    }
+
+    protected function resolveInstanceByClassId(string $id): mixed
+    {
+        if (null === $this->autowire) {
+            throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
+        }
+
+        $constructorDefinedArgs = $this->argumentDefinitions[$id]
+            ?? $this->definitions[$id][DiContainerInterface::ARGUMENTS]
+            ?? [];
+
+        $constructorArgs = [];
+
+        if ([] !== $constructorDefinedArgs) {
+            foreach ($constructorDefinedArgs as $argName => $argValue) {
+                $constructorArgs[$argName] = $this->getValue($argValue);
+            }
+        }
+
+        return $this->autowire->resolveInstance($this, $id, $constructorArgs);
     }
 }
