@@ -9,8 +9,12 @@ use Psr\Container\ContainerInterface;
 
 interface ContainerCompilerInterface
 {
+    public function resource(array $resources): ContainerCompilerInterface;
+
+    public function exclude(array $excludes): ContainerCompilerInterface;
+
     /**
      * @throws ContainerExceptionInterface
      */
-    public function build(): ContainerInterface;
+    public function compile(): ContainerInterface;
 }
