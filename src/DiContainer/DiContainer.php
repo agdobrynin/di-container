@@ -42,7 +42,8 @@ class DiContainer implements DiContainerInterface
         protected string $linkContainerSymbol = '@',
         protected string $delimiterAccessArrayNotationSymbol = '.'
     ) {
-        if ($linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
+        if ($linkContainerSymbol && $this->delimiterAccessArrayNotationSymbol
+            && $linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
             throw new ContainerException(
                 "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterAccessArrayNotationSymbol}]"
             );
