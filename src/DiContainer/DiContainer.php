@@ -42,6 +42,9 @@ class DiContainer implements DiContainerInterface
         protected string $linkContainerSymbol = '@',
         protected string $delimiterAccessArrayNotationSymbol = '.'
     ) {
+        '' !== $linkContainerSymbol || throw new ContainerException('Link container symbol cannot be empty.');
+        '' !== $delimiterAccessArrayNotationSymbol || throw new ContainerException('Delimiter access container symbol cannot be empty.');
+
         if ($linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
             throw new ContainerException(
                 "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterAccessArrayNotationSymbol}]"
@@ -50,8 +53,8 @@ class DiContainer implements DiContainerInterface
 
         $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
 
-        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($this->linkContainerSymbol, '/').
-            '((?:\w+'.\preg_quote($this->delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
+        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($linkContainerSymbol, '/').
+            '((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
 
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;

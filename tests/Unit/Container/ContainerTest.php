@@ -505,4 +505,30 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $db->cache);
         $this->assertEquals('::file::', $db->cache->driver());
     }
+
+    public function dataProviderConstructorException(): \Generator
+    {
+        yield 'symbols empty' => [
+            'linkContainerSymbol' => '', 'delimiterAccessArrayNotationSymbol' => '', 'msg' => 'symbol cannot be empty',
+        ];
+
+        yield 'delimiter access array notation symbol empty' => [
+            'linkContainerSymbol' => '@', 'delimiterAccessArrayNotationSymbol' => '', 'msg' => 'symbol cannot be empty',
+        ];
+
+        yield 'symbols must be diff' => [
+            'linkContainerSymbol' => '.', 'delimiterAccessArrayNotationSymbol' => '.', 'msg' => 'Delimiters symbols must be different',
+        ];
+    }
+
+    /**
+     * @dataProvider dataProviderConstructorException
+     */
+    public function testConstructorException(string $linkContainerSymbol, string $delimiterAccessArrayNotationSymbol, string $msg): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage($msg);
+
+        new DiContainer(linkContainerSymbol: $linkContainerSymbol, delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol);
+    }
 }
