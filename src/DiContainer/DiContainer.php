@@ -28,8 +28,8 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $argumentDefinitions = [];
     protected array $resolved = [];
-    protected ?int $linkContainerSymbolLength;
-    protected ?string $accessArrayNotationRegularExpression;
+    protected int $linkContainerSymbolLength;
+    protected string $accessArrayNotationRegularExpression;
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -42,18 +42,24 @@ class DiContainer implements DiContainerInterface
         protected string $linkContainerSymbol = '@',
         protected string $delimiterAccessArrayNotationSymbol = '.'
     ) {
-        if ($linkContainerSymbol && $this->delimiterAccessArrayNotationSymbol
-            && $linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
+        if (empty($linkContainerSymbol)) {
+            throw new ContainerException('Link container symbol cannot be empty.');
+        }
+
+        if (empty($delimiterAccessArrayNotationSymbol)) {
+            throw new ContainerException('Delimiter access container symbol cannot be empty.');
+        }
+
+        if ($linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
             throw new ContainerException(
                 "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterAccessArrayNotationSymbol}]"
             );
         }
 
-        $this->linkContainerSymbolLength = \strlen($linkContainerSymbol) ?: null;
+        $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
 
-        $this->accessArrayNotationRegularExpression = $this->linkContainerSymbolLength && $delimiterAccessArrayNotationSymbol
-            ? '/^'.\preg_quote($linkContainerSymbol, '/').'((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u'
-            : null;
+        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($linkContainerSymbol, '/')
+            .'((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
 
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
@@ -157,9 +163,7 @@ class DiContainer implements DiContainerInterface
     protected function getValue(mixed $value): mixed
     {
         $isStringValue = \is_string($value);
-        $isArrayNotationValue = $this->accessArrayNotationRegularExpression
-            && $isStringValue
-            && \preg_match($this->accessArrayNotationRegularExpression, $value);
+        $isArrayNotationValue = $isStringValue && \preg_match($this->accessArrayNotationRegularExpression, $value);
 
         if ($isArrayNotationValue && $this->makeDefinitionForArrayNotation($value)) {
             return $this->get($value);
@@ -176,7 +180,7 @@ class DiContainer implements DiContainerInterface
 
     protected function parseLinkSymbol(string $value): ?string
     {
-        return $this->linkContainerSymbolLength && (\str_starts_with($value, $this->linkContainerSymbol))
+        return (\str_starts_with($value, $this->linkContainerSymbol))
             ? \substr($value, $this->linkContainerSymbolLength)
             : null;
     }
@@ -184,8 +188,7 @@ class DiContainer implements DiContainerInterface
     protected function hasArrayNotation(string $id): bool
     {
         try {
-            return $this->accessArrayNotationRegularExpression
-                && \preg_match($this->accessArrayNotationRegularExpression, $id)
+            return \preg_match($this->accessArrayNotationRegularExpression, $id)
                 && $this->makeDefinitionForArrayNotation($id);
         } catch (NotFoundException) {
             return false;
