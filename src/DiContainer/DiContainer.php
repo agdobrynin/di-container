@@ -53,8 +53,8 @@ class DiContainer implements DiContainerInterface
 
         $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
 
-        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($linkContainerSymbol, '/')
-            .'((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
+        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($linkContainerSymbol, '/').
+            '((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
 
         foreach ($definitions as $id => $abstract) {
             $key = \is_string($id) ? $id : $abstract;
@@ -158,7 +158,8 @@ class DiContainer implements DiContainerInterface
     protected function getValue(mixed $value): mixed
     {
         $isStringValue = \is_string($value);
-        $isArrayNotationValue = $isStringValue && \preg_match($this->accessArrayNotationRegularExpression, $value);
+        $isArrayNotationValue = $isStringValue
+            && \preg_match($this->accessArrayNotationRegularExpression, $value);
 
         if ($isArrayNotationValue && $this->makeDefinitionForArrayNotation($value)) {
             return $this->get($value);
