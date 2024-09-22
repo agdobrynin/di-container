@@ -42,8 +42,8 @@ class DiContainer implements DiContainerInterface
         protected string $linkContainerSymbol = '@',
         protected string $delimiterAccessArrayNotationSymbol = '.'
     ) {
-        !empty($linkContainerSymbol) || throw new ContainerException('Link container symbol cannot be empty.');
-        !empty($delimiterAccessArrayNotationSymbol) || throw new ContainerException('Delimiter access container symbol cannot be empty.');
+        '' !== $linkContainerSymbol || throw new ContainerException('Link container symbol cannot be empty.');
+        '' !== $delimiterAccessArrayNotationSymbol || throw new ContainerException('Delimiter access container symbol cannot be empty.');
 
         if ($linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
             throw new ContainerException(
