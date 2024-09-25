@@ -28,8 +28,8 @@ final class Autowired implements AutowiredInterface
                 $reflectionFunction = $this->reflectionClasses[$hash]
                     ?? $this->reflectionClasses[$hash] = new \ReflectionFunction($id);
 
-                $instanceParameters = $reflectionFunction->getParameters();
-                $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
+                $parameters = $reflectionFunction->getParameters();
+                $resolvedArgs = $this->resolveArguments($container, $parameters, $args);
 
                 return $reflectionFunction->invokeArgs($resolvedArgs);
             }
@@ -44,8 +44,8 @@ final class Autowired implements AutowiredInterface
                 return $container->get($factory->id)($container);
             }
 
-            $instanceParameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
-            $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
+            $parameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
+            $resolvedArgs = $this->resolveArguments($container, $parameters, $args);
 
             return $reflectionClass->newInstanceArgs($resolvedArgs);
         } catch (\ReflectionException $exception) {
@@ -87,19 +87,19 @@ final class Autowired implements AutowiredInterface
     }
 
     /**
-     * @param \ReflectionParameter[] $instanceParameters
+     * @param \ReflectionParameter[] $parameters
      * @param array<string,mixed>    $inputArgs
      *
      * @throws \ReflectionException
      */
-    private function resolveArguments(ContainerInterface $container, array $instanceParameters, array $inputArgs): array
+    private function resolveArguments(ContainerInterface $container, array $parameters, array $inputArgs): array
     {
         return match (true) {
-            [] === $instanceParameters => $inputArgs,
-            [] === $inputArgs => $this->resolveParameters($container, $instanceParameters),
+            [] === $parameters => $inputArgs,
+            [] === $inputArgs => $this->resolveParameters($container, $parameters),
             default => \array_merge($this->resolveParameters(
                 $container,
-                \array_filter($instanceParameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]))
+                \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]))
             ), $inputArgs),
         };
     }
