@@ -15,6 +15,8 @@ use Psr\Container\ContainerInterface;
 
 final class Autowired implements AutowiredInterface
 {
+    private array $reflectionClasses = [];
+
     public function resolveInstance(
         ContainerInterface $container,
         \Closure|string $id,
@@ -22,27 +24,30 @@ final class Autowired implements AutowiredInterface
     ): mixed {
         try {
             if ($id instanceof \Closure) {
-                $instance = new \ReflectionFunction($id);
-                $instanceParameters = $instance->getParameters();
+                $hash = \spl_object_hash($id);
+                $reflectionFunction = $this->reflectionClasses[$hash]
+                    ?? $this->reflectionClasses[$hash] = new \ReflectionFunction($id);
+
+                $instanceParameters = $reflectionFunction->getParameters();
                 $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
 
-                return $instance->invokeArgs($resolvedArgs);
+                return $reflectionFunction->invokeArgs($resolvedArgs);
             }
 
-            $instance = new \ReflectionClass($id);
+            $reflectionClass = $this->cachedReflectionClass($id);
 
-            if (!$instance->isInstantiable()) {
+            if (!$reflectionClass->isInstantiable()) {
                 throw new AutowiredException("The [{$id}] class is not instantiable");
             }
 
-            if ($factory = DiFactory::makeFromReflection($instance)) {
+            if ($factory = DiFactory::makeFromReflection($reflectionClass)) {
                 return $container->get($factory->id)($container);
             }
 
-            $instanceParameters = $instance->getConstructor()?->getParameters() ?? [];
+            $instanceParameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
             $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
 
-            return $instance->newInstanceArgs($resolvedArgs);
+            return $reflectionClass->newInstanceArgs($resolvedArgs);
         } catch (\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
@@ -60,12 +65,18 @@ final class Autowired implements AutowiredInterface
         array $methodArgs = []
     ): mixed {
         try {
-            $instance = $this->resolveInstance($container, $id, $constructorArgs);
-            $classReflector = new \ReflectionClass($instance);
+            $classReflector = $this->cachedReflectionClass($id);
             $methodReflector = $classReflector->getMethod($method);
             $resolvedArgs = $this->resolveArguments($container, $methodReflector->getParameters(), $methodArgs);
 
-            return $methodReflector->invokeArgs($instance, $resolvedArgs);
+            if ($methodReflector->isStatic()) {
+                return $methodReflector->invokeArgs(null, $resolvedArgs);
+            }
+
+            return $methodReflector->invokeArgs(
+                $this->resolveInstance($container, $id, $constructorArgs),
+                $resolvedArgs
+            );
         } catch (AutowiredExceptionInterface|\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
@@ -153,10 +164,12 @@ final class Autowired implements AutowiredInterface
 
     private function resolveParameterByInjectAttribute(ContainerInterface $container, Inject $inject): mixed
     {
-        if (\interface_exists($inject->id)
-            && $attribute = (new \ReflectionClass($inject->id))
-                ->getAttributes(Service::class)[0] ?? null) {
-            return $this->resolveInstance($container, $attribute->newInstance()->id);
+        if (\interface_exists($inject->id)) {
+            $reflectionClass = $this->cachedReflectionClass($inject->id);
+
+            if ($attribute = $reflectionClass->getAttributes(Service::class)[0] ?? null) {
+                return $this->resolveInstance($container, $attribute->newInstance()->id);
+            }
         }
 
         if (!\class_exists($inject->id)) {
@@ -172,5 +185,11 @@ final class Autowired implements AutowiredInterface
         }
 
         return $this->resolveInstance($container, $inject->id, $inject->arguments);
+    }
+
+    private function cachedReflectionClass(string $class): \ReflectionClass
+    {
+        return $this->reflectionClasses[$class]
+            ?? $this->reflectionClasses[$class] = new \ReflectionClass($class);
     }
 }
