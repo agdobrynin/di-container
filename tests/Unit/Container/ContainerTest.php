@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Tests\Fixtures\Attributes\FactoryClassWithDiFactoryArgument;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
 
@@ -95,12 +96,16 @@ class ContainerTest extends TestCase
 
     public function testGetClosureWithGlobalParams(): void
     {
+        $fn = static fn (int $myParams) => 10 + $myParams;
+
         $container = (new DiContainer(autowire: $this->autowire))
             ->set('myParams', 1)
-            ->set('test', fn (int $myParams) => 10 + $myParams)
+            ->set('test', $fn)
+            ->set('test2', FactoryClassWithDiFactoryArgument::class)
         ;
 
         $this->assertEquals(11, $container->get('test'));
+        $this->assertCount(0, $container->get('test2'));
     }
 
     public function testGetClosureWithParamsDefaultValue(): void

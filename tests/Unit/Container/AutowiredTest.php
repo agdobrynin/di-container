@@ -126,4 +126,12 @@ class AutowiredTest extends TestCase
 
         $autowire->resolveInstance(new DiContainer(), Classes\AbstractClass::class);
     }
+
+    public function testCallStaticMethod()
+    {
+        $a = new Autowired();
+        $r = $a->callMethod(new DiContainer(), Classes\ClassWithStaticMethod::class, 'talk');
+
+        $this->assertEquals('Hello!', $r);
+    }
 }

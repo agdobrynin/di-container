@@ -7,6 +7,9 @@ namespace Kaspi\DiContainer\Attributes;
 #[\Attribute(\Attribute::TARGET_PARAMETER)]
 final class Inject
 {
+    /**
+     * @param null|class-string|string $id Container id
+     */
     public function __construct(public ?string $id = null, public array $arguments = []) {}
 
     public static function makeFromReflection(\ReflectionParameter $parameter): ?self

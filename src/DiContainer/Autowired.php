@@ -22,27 +22,26 @@ final class Autowired implements AutowiredInterface
     ): mixed {
         try {
             if ($id instanceof \Closure) {
-                $instance = new \ReflectionFunction($id);
-                $instanceParameters = $instance->getParameters();
-                $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
+                $reflectionFunction = new \ReflectionFunction($id);
+                $resolvedArgs = $this->resolveArguments($container, $reflectionFunction->getParameters(), $args);
 
-                return $instance->invokeArgs($resolvedArgs);
+                return $reflectionFunction->invokeArgs($resolvedArgs);
             }
 
-            $instance = new \ReflectionClass($id);
+            $reflectionClass = new \ReflectionClass($id);
 
-            if (!$instance->isInstantiable()) {
+            if (!$reflectionClass->isInstantiable()) {
                 throw new AutowiredException("The [{$id}] class is not instantiable");
             }
 
-            if ($factory = DiFactory::makeFromReflection($instance)) {
+            if ($factory = DiFactory::makeFromReflection($reflectionClass)) {
                 return $container->get($factory->id)($container);
             }
 
-            $instanceParameters = $instance->getConstructor()?->getParameters() ?? [];
-            $resolvedArgs = $this->resolveArguments($container, $instanceParameters, $args);
+            $parameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
+            $resolvedArgs = $this->resolveArguments($container, $parameters, $args);
 
-            return $instance->newInstanceArgs($resolvedArgs);
+            return $reflectionClass->newInstanceArgs($resolvedArgs);
         } catch (\ReflectionException $exception) {
             throw new AutowiredException(
                 message: $exception->getMessage(),
@@ -60,10 +59,14 @@ final class Autowired implements AutowiredInterface
         array $methodArgs = []
     ): mixed {
         try {
-            $instance = $this->resolveInstance($container, $id, $constructorArgs);
-            $classReflector = new \ReflectionClass($instance);
-            $methodReflector = $classReflector->getMethod($method);
+            $methodReflector = (new \ReflectionClass($id))->getMethod($method);
             $resolvedArgs = $this->resolveArguments($container, $methodReflector->getParameters(), $methodArgs);
+
+            if ($methodReflector->isStatic()) {
+                return $methodReflector->invokeArgs(null, $resolvedArgs);
+            }
+
+            $instance = $this->resolveInstance($container, $id, $constructorArgs);
 
             return $methodReflector->invokeArgs($instance, $resolvedArgs);
         } catch (AutowiredExceptionInterface|\ReflectionException $exception) {
@@ -76,19 +79,19 @@ final class Autowired implements AutowiredInterface
     }
 
     /**
-     * @param \ReflectionParameter[] $instanceParameters
+     * @param \ReflectionParameter[] $parameters
      * @param array<string,mixed>    $inputArgs
      *
      * @throws \ReflectionException
      */
-    private function resolveArguments(ContainerInterface $container, array $instanceParameters, array $inputArgs): array
+    private function resolveArguments(ContainerInterface $container, array $parameters, array $inputArgs): array
     {
         return match (true) {
-            [] === $instanceParameters => $inputArgs,
-            [] === $inputArgs => $this->resolveParameters($container, $instanceParameters),
+            [] === $parameters => $inputArgs,
+            [] === $inputArgs => $this->resolveParameters($container, $parameters),
             default => \array_merge($this->resolveParameters(
                 $container,
-                \array_filter($instanceParameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]))
+                \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]))
             ), $inputArgs),
         };
     }
@@ -153,24 +156,23 @@ final class Autowired implements AutowiredInterface
 
     private function resolveParameterByInjectAttribute(ContainerInterface $container, Inject $inject): mixed
     {
-        if (\interface_exists($inject->id)
-            && $attribute = (new \ReflectionClass($inject->id))
-                ->getAttributes(Service::class)[0] ?? null) {
+        $id = $inject->id ?: throw new AutowiredException('Wrong Inject attribute. Got: '.\var_export($inject, true));
+
+        if (\interface_exists($id)
+            && ($attribute = (new \ReflectionClass($id))->getAttributes(Service::class)[0] ?? null)) {
             return $this->resolveInstance($container, $attribute->newInstance()->id);
         }
 
-        if (!\class_exists($inject->id)) {
-            return $container->get($inject->id);
+        if (!\class_exists($id)) {
+            return $container->get($id);
         }
 
         foreach ($inject->arguments as $argName => $argValue) {
-            if (\is_string($argValue) && $container->has($argValue)) {
-                $inject->arguments[$argName] = $container->get($argValue);
-            } else {
-                $inject->arguments[$argName] = $argValue;
-            }
+            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
+                ? $container->get($argValue)
+                : $argValue;
         }
 
-        return $this->resolveInstance($container, $inject->id, $inject->arguments);
+        return $this->resolveInstance($container, $id, $inject->arguments);
     }
 }
