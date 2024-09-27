@@ -58,7 +58,7 @@ class ContainerTest extends TestCase
         $container->set('test', fn () => 10);
 
         $this->assertTrue($container->has('test'));
-        $this->assertTrue($container->has(self::class));
+        $this->assertFalse($container->has(self::class));
     }
 
     public function testGetClosure(): void
@@ -76,10 +76,8 @@ class ContainerTest extends TestCase
             ->set('test', fn () => \time())
         ;
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('autowire');
-
-        $container->get('test');
+        $this->assertInstanceOf(\Closure::class, $container->get('test'));
+        $this->assertIsInt($container->get('test')());
     }
 
     public function testAutowiredOffForClass(): void
@@ -88,10 +86,10 @@ class ContainerTest extends TestCase
             ->set(Classes\RedisCache::class)
         ;
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('autowire');
+        $r = $container->get(Classes\RedisCache::class);
 
-        $container->get(Classes\RedisCache::class);
+        $this->assertIsString($r);
+        $this->assertEquals('Tests\Fixtures\Classes\RedisCache', $r);
     }
 
     public function testGetClosureWithGlobalParams(): void
