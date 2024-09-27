@@ -18,8 +18,10 @@ final class Inject
             $inject = $attribute->newInstance();
             $type = $parameter->getType();
 
-            if (null === $inject->id && $type instanceof \ReflectionNamedType) {
-                $inject->id = $type->getName();
+            if (null === $inject->id) {
+                $inject->id = $type instanceof \ReflectionNamedType
+                    ? $type->getName()
+                    : throw new \InvalidArgumentException("Unsupported type '{$type}' for parameter '{$parameter}'");
             }
 
             return $inject;
