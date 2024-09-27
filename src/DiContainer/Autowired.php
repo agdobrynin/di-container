@@ -36,7 +36,7 @@ final class Autowired implements AutowiredInterface
                 throw new AutowiredException("The [{$id}] class is not instantiable");
             }
 
-            if ($factory = DiFactory::makeFromReflection($reflectionClass)) {
+            if ($this->useAttribute && $factory = DiFactory::makeFromReflection($reflectionClass)) {
                 return $container->get($factory->id)($container);
             }
 
@@ -117,13 +117,13 @@ final class Autowired implements AutowiredInterface
                         );
                     }
 
-                    if ($factory = DiFactory::makeFromReflection($parameter)) {
+                    if ($this->useAttribute && $factory = DiFactory::makeFromReflection($parameter)) {
                         $dependencies[$parameter->getName()] = $container->get($factory->id)($container);
 
                         return $dependencies;
                     }
 
-                    if ($inject = Inject::makeFromReflection($parameter)) {
+                    if ($this->useAttribute && $inject = Inject::makeFromReflection($parameter)) {
                         $dependencies[$parameter->getName()] = $parameterType->isBuiltin()
                             ? $container->get($inject->id)
                             : $this->resolveParameterByInjectAttribute($container, $inject);
