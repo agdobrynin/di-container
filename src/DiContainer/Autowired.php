@@ -15,6 +15,8 @@ use Psr\Container\ContainerInterface;
 
 final class Autowired implements AutowiredInterface
 {
+    public function __construct(private bool $useAttribute = true, private bool $useDiFactory = true) {}
+
     public function resolveInstance(
         ContainerInterface $container,
         \Closure|string $id,
