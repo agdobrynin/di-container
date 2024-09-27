@@ -20,13 +20,6 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface
 {
     protected iterable $definitions = [];
-
-    /**
-     * Arguments for a constructor of class.
-     *
-     * @var array|iterable<class-string, array>
-     */
-    protected iterable $argumentDefinitions = [];
     protected array $resolved = [];
     protected int $linkContainerSymbolLength;
     protected string $accessArrayNotationRegularExpression;
@@ -94,11 +87,11 @@ class DiContainer implements DiContainerInterface
             $abstract = $id;
         }
 
-        if ($arguments) {
-            $this->argumentDefinitions[$id] = $arguments;
-        }
-
         $this->definitions[$id] = $abstract;
+
+        if ($arguments) {
+            $this->definitions[$id] = [$this->definitions[$id]] + [DiContainerInterface::ARGUMENTS => $arguments];
+        }
 
         return $this;
     }
@@ -215,9 +208,7 @@ class DiContainer implements DiContainerInterface
             throw new AutowiredException("Unable instantiate id [{$id}] by autowire.");
         }
 
-        $constructorDefinedArgs = $this->argumentDefinitions[$id]
-            ?? $this->definitions[$id][DiContainerInterface::ARGUMENTS]
-            ?? [];
+        $constructorDefinedArgs = $this->definitions[$id][DiContainerInterface::ARGUMENTS] ?? [];
 
         $constructorArgs = [];
 
