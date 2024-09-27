@@ -123,15 +123,17 @@ final class Autowired implements AutowiredInterface
                         return $dependencies;
                     }
 
-                    $inject = Inject::makeFromReflection($parameter);
+                    if ($inject = Inject::makeFromReflection($parameter)) {
+                        $dependencies[$parameter->getName()] = $parameterType->isBuiltin()
+                            ? $container->get($inject->id)
+                            : $this->resolveParameterByInjectAttribute($container, $inject);
+
+                        return $dependencies;
+                    }
 
                     $value = match (true) {
-                        $parameterType->isBuiltin() => $container->get($inject?->id ?: $parameter->getName()),
-
-                        !$parameterType->isBuiltin() && $inject => $this->resolveParameterByInjectAttribute($container, $inject),
-
+                        $parameterType->isBuiltin() => $container->get($parameter->getName()),
                         ContainerInterface::class === $parameterType->getName() => $container,
-
                         default => $container->get($parameterType->getName()),
                     };
 
@@ -158,15 +160,12 @@ final class Autowired implements AutowiredInterface
 
     private function resolveParameterByInjectAttribute(ContainerInterface $container, Inject $inject): mixed
     {
-        $id = $inject->id ?: throw new AutowiredException('Wrong Inject attribute. Got: '.\var_export($inject, true));
-
-        if (\interface_exists($id)
-            && ($attribute = (new \ReflectionClass($id))->getAttributes(Service::class)[0] ?? null)) {
-            return $this->resolveInstance($container, $attribute->newInstance()->id);
+        if (\interface_exists($inject->id) && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
+            return $this->resolveInstance($container, $service->id, $service->arguments);
         }
 
-        if (!\class_exists($id)) {
-            return $container->get($id);
+        if (!\class_exists($inject->id)) {
+            return $container->get($inject->id);
         }
 
         foreach ($inject->arguments as $argName => $argValue) {
@@ -175,6 +174,6 @@ final class Autowired implements AutowiredInterface
                 : $argValue;
         }
 
-        return $this->resolveInstance($container, $id, $inject->arguments);
+        return $this->resolveInstance($container, $inject->id, $inject->arguments);
     }
 }
