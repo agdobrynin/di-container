@@ -15,7 +15,7 @@ use Tests\Fixtures;
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerFactory
- * "@covers \Kaspi\DiContainer\Attributes\Service
+ * @covers \Kaspi\DiContainer\Attributes\Service
  *
  * @internal
  */
