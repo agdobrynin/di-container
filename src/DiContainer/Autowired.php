@@ -30,11 +30,8 @@ final class Autowired implements AutowiredInterface
                 return $reflectionFunction->invokeArgs($resolvedArgs);
             }
 
-            $reflectionClass = new \ReflectionClass($id);
-
-            if (!$reflectionClass->isInstantiable()) {
-                throw new AutowiredException("The [{$id}] class is not instantiable");
-            }
+            ($reflectionClass = new \ReflectionClass($id))->isInstantiable()
+                || throw new AutowiredException("The [{$id}] class is not instantiable");
 
             if ($this->useAttribute && $factory = DiFactory::makeFromReflection($reflectionClass)) {
                 return $container->get($factory->id)($container);
@@ -118,15 +115,42 @@ final class Autowired implements AutowiredInterface
                     }
 
                     if ($this->useAttribute && $factory = DiFactory::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $container->get($factory->id)($container);
+                        $dependencies[$parameter->getName()] = $this->resolveInstance(
+                            $container,
+                            $factory->id,
+                            $factory->arguments
+                        )($container);
 
                         return $dependencies;
                     }
 
                     if ($this->useAttribute && $inject = Inject::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $parameterType->isBuiltin()
-                            ? $container->get($inject->id)
-                            : $this->resolveParameterByInjectAttribute($container, $inject);
+                        $isInterface = \interface_exists($inject->id);
+                        $isClass = \class_exists($inject->id);
+
+                        if ($parameterType->isBuiltin() || !$isInterface && !$isClass) {
+                            $dependencies[$parameter->getName()] = $container->get($inject->id);
+
+                            return $dependencies;
+                        }
+
+                        if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
+                            $dependencies[$parameter->getName()] = $this->resolveInstance($container, $service->id, $service->arguments);
+
+                            return $dependencies;
+                        }
+
+                        foreach ($inject->arguments as $argName => $argValue) {
+                            if (\is_string($argValue) && $container->has($argValue)) {
+                                $inject->arguments[$argName] = \class_exists($argValue)
+                                    ? $this->resolveInstance($container, $argValue)
+                                    : $container->get($argValue);
+                            } else {
+                                $inject->arguments[$argName] = $argValue;
+                            }
+                        }
+
+                        $dependencies[$parameter->getName()] = $this->resolveInstance($container, $inject->id, $inject->arguments);
 
                         return $dependencies;
                     }
@@ -156,24 +180,5 @@ final class Autowired implements AutowiredInterface
             },
             []
         );
-    }
-
-    private function resolveParameterByInjectAttribute(ContainerInterface $container, Inject $inject): mixed
-    {
-        if (\interface_exists($inject->id) && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
-            return $this->resolveInstance($container, $service->id, $service->arguments);
-        }
-
-        if (!\class_exists($inject->id)) {
-            return $container->get($inject->id);
-        }
-
-        foreach ($inject->arguments as $argName => $argValue) {
-            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                ? $container->get($argValue)
-                : $argValue;
-        }
-
-        return $this->resolveInstance($container, $inject->id, $inject->arguments);
     }
 }
