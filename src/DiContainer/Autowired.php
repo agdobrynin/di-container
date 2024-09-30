@@ -91,13 +91,12 @@ final class Autowired implements AutowiredInterface
      */
     private function resolveArguments(ContainerInterface $container, array $parameters, array $inputArgs): array
     {
+        $filter = static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]);
+
         return match (true) {
             [] === $parameters => $inputArgs,
             [] === $inputArgs => $this->resolveParameters($container, $parameters),
-            default => \array_merge($this->resolveParameters(
-                $container,
-                \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]))
-            ), $inputArgs),
+            default => $this->resolveParameters($container, \array_filter($parameters, $filter)) + $inputArgs,
         };
     }
 
