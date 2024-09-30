@@ -147,13 +147,8 @@ final class Autowired implements AutowiredInterface
                         }
 
                         foreach ($inject->arguments as $argName => $argValue) {
-                            if (\is_string($argValue) && $container->has($argValue)) {
-                                $inject->arguments[$argName] = \class_exists($argValue)
-                                    ? $this->resolveInstance($container, $argValue)
-                                    : $container->get($argValue);
-                            } else {
-                                $inject->arguments[$argName] = $argValue;
-                            }
+                            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
+                            ? $container->get($argValue) : $argValue;
                         }
 
                         $dependencies[$parameter->getName()] = $this->resolveInstance($container, $inject->id, $inject->arguments);
