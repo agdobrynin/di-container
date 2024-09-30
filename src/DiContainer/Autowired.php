@@ -131,27 +131,7 @@ final class Autowired implements AutowiredInterface
                     }
 
                     if ($this->useAttribute && $inject = Inject::makeFromReflection($parameter)) {
-                        $isInterface = \interface_exists($inject->id);
-                        $isClass = \class_exists($inject->id);
-
-                        if ($parameterType->isBuiltin() || !$isInterface && !$isClass) {
-                            $dependencies[$parameter->getName()] = $container->get($inject->id);
-
-                            return $dependencies;
-                        }
-
-                        if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
-                            $dependencies[$parameter->getName()] = $this->resolveInstance($container, $service->id, $service->arguments);
-
-                            return $dependencies;
-                        }
-
-                        foreach ($inject->arguments as $argName => $argValue) {
-                            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                            ? $container->get($argValue) : $argValue;
-                        }
-
-                        $dependencies[$parameter->getName()] = $this->resolveInstance($container, $inject->id, $inject->arguments);
+                        $dependencies[$parameter->getName()] = $this->resolveParameterByInject($container, $inject, $parameterType);
 
                         return $dependencies;
                     }
@@ -163,6 +143,8 @@ final class Autowired implements AutowiredInterface
                     };
 
                     $dependencies[$parameter->getName()] = $value;
+
+                    return $dependencies;
                 } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
                     if (!$parameter->isDefaultValueAvailable()) {
                         $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
@@ -175,11 +157,32 @@ final class Autowired implements AutowiredInterface
                     }
 
                     $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
-                }
 
-                return $dependencies;
+                    return $dependencies;
+                }
             },
             []
         );
+    }
+
+    private function resolveParameterByInject(ContainerInterface $container, $inject, \ReflectionNamedType $parameterType): mixed
+    {
+        $isInterface = \interface_exists($inject->id);
+        $isClass = \class_exists($inject->id);
+
+        if ((!$isInterface && !$isClass) || $parameterType->isBuiltin()) {
+            return $container->get($inject->id);
+        }
+
+        if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
+            return $this->resolveInstance($container, $service->id, $service->arguments);
+        }
+
+        foreach ($inject->arguments as $argName => $argValue) {
+            $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
+                ? $container->get($argValue) : $argValue;
+        }
+
+        return $this->resolveInstance($container, $inject->id, $inject->arguments);
     }
 }
