@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\AutowiredInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
@@ -20,8 +20,7 @@ class DiContainer implements DiContainerInterface
 {
     protected iterable $definitions = [];
     protected array $resolved = [];
-    protected int $linkContainerSymbolLength;
-    protected string $accessArrayNotationRegularExpression;
+    protected ?int $linkContainerSymbolLength = null;
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -30,27 +29,15 @@ class DiContainer implements DiContainerInterface
      */
     public function __construct(
         iterable $definitions = [],
-        protected ?AutowiredInterface $autowire = null,
-        protected string $linkContainerSymbol = '@',
-        protected string $delimiterAccessArrayNotationSymbol = '.'
+        protected ?DiContainerConfigInterface $config = null
     ) {
-        '' !== $linkContainerSymbol || throw new ContainerException('Link container symbol cannot be empty.');
-        '' !== $delimiterAccessArrayNotationSymbol || throw new ContainerException('Delimiter access container symbol cannot be empty.');
-
-        if ($linkContainerSymbol === $delimiterAccessArrayNotationSymbol) {
-            throw new ContainerException(
-                "Delimiters symbols must be different. Got link container symbol [{$linkContainerSymbol}], delimiter level symbol [{$delimiterAccessArrayNotationSymbol}]"
-            );
+        if ($s = $this->config?->getLinkContainerSymbol()) {
+            $this->linkContainerSymbolLength = \strlen($s);
         }
 
-        $this->linkContainerSymbolLength = \strlen($linkContainerSymbol);
-
-        $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($linkContainerSymbol, '/').
-            '((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
-
-        foreach ($definitions as $id => $abstract) {
-            $key = \is_string($id) ? $id : $abstract;
-            $this->set($key, $abstract);
+        foreach ($definitions as $id => $definition) {
+            $key = \is_string($id) ? $id : $definition;
+            $this->set($key, $definition);
         }
     }
 
@@ -71,21 +58,21 @@ class DiContainer implements DiContainerInterface
     {
         return isset($this->definitions[$id])
             || isset($this->resolved[$id])
-            || ($this->autowire && (\class_exists($id) || \interface_exists($id)))
-            || $this->hasArrayNotation($id);
+            || $this->hasClassOrInterface($id)
+            || ($this->config?->isUseArrayNotationDefinition() && $this->hasArrayNotation($id));
     }
 
-    public function set(string $id, mixed $abstract = null, ?array $arguments = null): static
+    public function set(string $id, mixed $definition = null, ?array $arguments = null): static
     {
         if (isset($this->definitions[$id])) {
             throw new ContainerException("Key [{$id}] already registered in container.");
         }
 
-        if (null === $abstract) {
-            $abstract = $id;
+        if (null === $definition) {
+            $definition = $id;
         }
 
-        $this->definitions[$id] = $abstract;
+        $this->definitions[$id] = $definition;
 
         if ($arguments) {
             $this->definitions[$id] = [$this->definitions[$id]] + [DiContainerInterface::ARGUMENTS => $arguments];
@@ -112,23 +99,30 @@ class DiContainer implements DiContainerInterface
 
         $definition = $this->definitions[$id] ?? null;
 
-        if ($this->autowire) {
+        if (null !== $this->config?->getAutowire()) {
             try {
                 if ($definition instanceof \Closure) {
-                    return $this->resolved[$id] = $this->autowire->resolveInstance($this, $definition);
+                    return $this->resolved[$id] = $this->config->getAutowire()
+                        ->resolveInstance($this, $definition)
+                    ;
                 }
 
                 if (\is_string($definition) && \is_a($definition, DiFactoryInterface::class, true)) {
-                    return $this->resolved[$id] = $this->resolveInstanceByClassId($definition)($this);
+                    return $this->resolved[$id] = $this->config->getAutowire()
+                        ->resolveInstance($this, $definition, $this->resolveArgs($definition))($this)
+                    ;
                 }
 
                 if (\class_exists($id)) {
-                    return $this->resolved[$id] = $this->resolveInstanceByClassId($id);
+                    return $this->resolved[$id] = $this->config->getAutowire()
+                        ->resolveInstance($this, $id, $this->resolveArgs($id))
+                    ;
                 }
 
                 if (\interface_exists($id)) {
                     return $this->resolved[$id] = \is_string($definition)
-                        ? $this->resolveInstanceByClassId($definition)
+                        ? $this->config->getAutowire()
+                            ->resolveInstance($this, $definition, $this->resolveArgs($definition))
                         : throw new ContainerException("Not found definition for interface [{$id}]");
                 }
             } catch (AutowiredExceptionInterface $exception) {
@@ -149,34 +143,28 @@ class DiContainer implements DiContainerInterface
 
     protected function getValue(mixed $value): mixed
     {
-        $isStringValue = \is_string($value);
-        $isArrayNotationValue = $isStringValue
-            && \preg_match($this->accessArrayNotationRegularExpression, $value);
+        if (!\is_string($value)) {
+            return $value;
+        }
 
-        if ($isArrayNotationValue && $this->makeDefinitionForArrayNotation($value)) {
+        if ($this->config?->isUseArrayNotationDefinition()
+            && $this->config?->isArrayNotationSyntaxSyntax($value)
+            && $this->makeDefinitionForArrayNotation($value)) {
             return $this->get($value);
         }
 
-        if ($isStringValue && $key = $this->parseLinkSymbol($value)) {
+        if ($this->config?->isUseLinkContainerDefinition()
+            && $key = $this->config?->getKeyFromLinkContainerSymbol($value)) {
             return $this->getValue($this->get($key));
         }
 
-        return $isStringValue && $this->has($value)
-            ? $this->get($value)
-            : $value;
-    }
-
-    protected function parseLinkSymbol(string $value): ?string
-    {
-        return (\str_starts_with($value, $this->linkContainerSymbol))
-            ? \substr($value, $this->linkContainerSymbolLength)
-            : null;
+        return $this->has($value) ? $this->get($value) : $value;
     }
 
     protected function hasArrayNotation(string $id): bool
     {
         try {
-            return \preg_match($this->accessArrayNotationRegularExpression, $id)
+            return $this->config?->isArrayNotationSyntaxSyntax($id)
                 && $this->makeDefinitionForArrayNotation($id);
         } catch (NotFoundException) {
             return false;
@@ -186,9 +174,13 @@ class DiContainer implements DiContainerInterface
     protected function makeDefinitionForArrayNotation(string $id): bool
     {
         if (!isset($this->definitions[$id])) {
-            $path = \substr($id, $this->linkContainerSymbolLength);
+            $symbolNotation = $this->config?->getDelimiterAccessArrayNotationSymbol()
+                ?? throw new ContainerException('Delimiter access array notation symbol not defined'); // @codeCoverageIgnore
+            $offset = $this->linkContainerSymbolLength
+                ?? throw new ContainerException('Link container symbol not defined'); // @codeCoverageIgnore
+            $path = \explode($symbolNotation, \substr($id, $offset));
             $this->definitions[$id] = \array_reduce(
-                \explode($this->delimiterAccessArrayNotationSymbol, $path),
+                $path,
                 static function (mixed $segments, string $segment) use ($id) {
                     return isset($segments[$segment]) && \is_array($segments)
                         ? $segments[$segment]
@@ -196,21 +188,28 @@ class DiContainer implements DiContainerInterface
                 },
                 $this->definitions
             );
+
+            return true;
         }
 
         return true;
     }
 
-    protected function resolveInstanceByClassId(string $id): mixed
+    protected function resolveArgs(string $id): array
     {
-        $constructorArgs = $this->definitions[$id][DiContainerInterface::ARGUMENTS] ?? [];
-
-        if ([] !== $constructorArgs) {
+        if ($constructorArgs = $this->definitions[$id][DiContainerInterface::ARGUMENTS] ?? []) {
             foreach ($constructorArgs as $argName => $argValue) {
                 $constructorArgs[$argName] = $this->getValue($argValue);
             }
         }
 
-        return $this->autowire->resolveInstance($this, $id, $constructorArgs);
+        return $constructorArgs;
+    }
+
+    protected function hasClassOrInterface(string $id): bool
+    {
+        return $this->config?->isUseZeroConfigurationDefinition()
+            && null !== $this->config?->getAutowire()
+            && (\class_exists($id) || \interface_exists($id));
     }
 }

@@ -37,11 +37,11 @@ interface DiContainerInterface extends ContainerInterface
     public const ARGUMENTS = 'arguments';
 
     /**
-     * @param null|mixed|object $abstract
+     * @param null|mixed|object $definition
      *
      * @throws ContainerExceptionInterface
      */
-    public function set(string $id, mixed $abstract = null, ?array $arguments = null): static;
+    public function set(string $id, mixed $definition = null, ?array $arguments = null): static;
 
     /**
      * @param class-string<T>|string $id

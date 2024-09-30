@@ -14,11 +14,15 @@ class DiContainerFactory implements DiContainerFactoryInterface
         string $linkContainerSymbol = '@',
         string $delimiterAccessArrayNotationSymbol = '.'
     ): DiContainerInterface {
+        $config = new DiContainerConfig(
+            autowire: new Autowired(useAttribute: true),
+            linkContainerSymbol: $linkContainerSymbol,
+            delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol
+        );
+
         return new DiContainer(
             definitions: $definitions,
-            autowire: new Autowired(),
-            linkContainerSymbol: $linkContainerSymbol,
-            delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol,
+            config: $config,
         );
     }
 }

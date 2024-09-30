@@ -6,6 +6,7 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes;
@@ -18,14 +19,16 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  */
 class AutowiredTest extends TestCase
 {
     public function testClassNotExist(): void
     {
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('ClassTest');
+        $autowired = new Autowired();
 
-        (new Autowired())->resolveInstance(new DiContainer(), 'ClassTest');
+        $autowired->resolveInstance(new DiContainer(config: new DiContainerConfig($autowired)), 'ClassTest');
     }
 
     public function testResolveNotExistMethod(): void
@@ -43,7 +46,7 @@ class AutowiredTest extends TestCase
     public function testResolveMethodSimple(): void
     {
         $autowire = new Autowired();
-        $container = new DiContainer(autowire: $autowire);
+        $container = new DiContainer(config: new DiContainerConfig(new Autowired()));
         $result = $autowire->callMethod(
             container: $container,
             id: Classes\EasyContainer::class,
@@ -57,7 +60,8 @@ class AutowiredTest extends TestCase
     public function testResolveMethodWithDependencies(): void
     {
         $autowire = new Autowired();
-        $container = (new DiContainer(autowire: $autowire))
+        $config = new DiContainerConfig($autowire);
+        $container = (new DiContainer(config: $config))
             ->set(
                 Interfaces\SumInterface::class,
                 Classes\Sum::class
@@ -83,7 +87,9 @@ class AutowiredTest extends TestCase
             public function __construct(int $val) {}
         };
 
-        $container = (new DiContainer())->set($class::class);
+        $autowire = new Autowired();
+        $config = new DiContainerConfig($autowire);
+        $container = (new DiContainer(config: $config))->set($class::class);
 
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('Unresolvable dependency');
@@ -93,7 +99,7 @@ class AutowiredTest extends TestCase
 
     public function testObjectTypeForParameter(): void
     {
-        $container = (new DiContainer(autowire: new Autowired()))->set(
+        $container = (new DiContainer(config: new DiContainerConfig(new Autowired())))->set(
             id: Classes\ClassWithParameterTypeAsObject::class,
             arguments: ['asObject' => (object) ['name' => 'test']]
         );
@@ -108,7 +114,7 @@ class AutowiredTest extends TestCase
     {
         $autowire = new Autowired();
         $class = $autowire->resolveInstance(
-            new DiContainer(autowire: $autowire),
+            new DiContainer(config: new DiContainerConfig($autowire)),
             Classes\Logger::class,
             ['file' => '/var/log/app.log', 'name' => 'debug-log']
         );

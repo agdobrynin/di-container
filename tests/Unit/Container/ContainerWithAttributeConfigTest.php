@@ -6,6 +6,7 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
@@ -21,6 +22,7 @@ use Tests\Fixtures\Attributes;
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  */
 class ContainerWithAttributeConfigTest extends TestCase
@@ -120,8 +122,7 @@ class ContainerWithAttributeConfigTest extends TestCase
      */
     public function testMethodResolve(array $definitions, string $expect, array $methodArgs = []): void
     {
-        $a = new Autowired();
-        $c = (new DiContainer(definitions: $definitions, autowire: $a))
+        $c = (new DiContainer(definitions: $definitions, config: new DiContainerConfig(new Autowired())))
             ->set(AutowiredInterface::class, Autowired::class)
         ;
 
@@ -134,17 +135,18 @@ class ContainerWithAttributeConfigTest extends TestCase
 
     public function testMethodNotFound(): void
     {
-        $a = new Autowired();
-        $c = (new DiContainer(definitions: [
-            'shared-data' => ['abc', 'efj'],
-            'config-table-name' => 'cococo',
-        ], autowire: $a))
+        $c = (new DiContainer(
+            definitions: [
+                'shared-data' => ['abc', 'efj'],
+                'config-table-name' => 'cococo',
+            ],
+            config: new DiContainerConfig(new Autowired())
+        ))
             ->set(AutowiredInterface::class, Autowired::class)
         ;
 
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('notExistMethod() does not exist');
-
         $c->get(AutowiredInterface::class)
             ->callMethod($c, Attributes\Lorem::class, 'notExistMethod')
         ;
