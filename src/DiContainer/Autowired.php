@@ -35,7 +35,7 @@ final class Autowired implements AutowiredInterface
 
             if ($this->useAttribute && $factory = DiFactory::makeFromReflection($reflectionClass)) {
                 ($factoryClass = new \ReflectionClass($factory->id))->isInstantiable()
-                || throw new AutowiredException("The [{$id}] class is not instantiable");
+                    || throw new AutowiredException("The [{$id}] class is not instantiable");
 
                 $parameters = $factoryClass->getConstructor()?->getParameters() ?? [];
                 $resolvedArgs = $this->resolveArguments($container, $parameters, $factory->arguments);
