@@ -6,6 +6,7 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +23,7 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
  */
 class ContainerTest extends TestCase
@@ -31,11 +33,13 @@ class ContainerTest extends TestCase
     protected function setUp(): void
     {
         $this->autowire = new Autowired();
+        $this->diContainerConfig = new DiContainerConfig(new Autowired());
     }
 
     protected function tearDown(): void
     {
         $this->autowire = null;
+        $this->diContainerConfig = null;
     }
 
     public function testImplementContainerPsr(): void
@@ -63,7 +67,7 @@ class ContainerTest extends TestCase
 
     public function testGetClosure(): void
     {
-        $container = new DiContainer(autowire: $this->autowire);
+        $container = new DiContainer(config: $this->diContainerConfig);
         $i = 1;
         $container->set('test', fn () => 10 + $i);
 
@@ -73,7 +77,7 @@ class ContainerTest extends TestCase
     public function testAutowiredOff(): void
     {
         $container = (new DiContainer())
-            ->set('test', fn () => \time())
+            ->set('test', static fn () => \time())
         ;
 
         $this->assertInstanceOf(\Closure::class, $container->get('test'));
@@ -96,7 +100,7 @@ class ContainerTest extends TestCase
     {
         $fn = static fn (int $myParams) => 10 + $myParams;
 
-        $container = (new DiContainer(autowire: $this->autowire))
+        $container = (new DiContainer(config: $this->diContainerConfig))
             ->set('myParams', 1)
             ->set('test', $fn)
             ->set('test2', FactoryClassWithDiFactoryArgument::class)
@@ -108,7 +112,7 @@ class ContainerTest extends TestCase
 
     public function testGetClosureWithParamsDefaultValue(): void
     {
-        $container = new DiContainer(autowire: $this->autowire);
+        $container = (new DiContainer(config: $this->diContainerConfig));
         $container->set('test', fn (int $myParams = 5) => 10 + $myParams);
 
         $this->assertEquals(15, $container->get('test'));
@@ -121,14 +125,14 @@ class ContainerTest extends TestCase
             'test' => static function (ContainerInterface $container) {
                 return 10 + $container->get('param_five');
             },
-        ], autowire: $this->autowire);
+        ], config: $this->diContainerConfig);
 
         $this->assertEquals(15, $container->get('test'));
     }
 
     public function testClassResolveWithCustomLinkSymbol(): void
     {
-        $instances = [
+        $definitions = [
             'all_records' => ['first', 'second'],
             Classes\Db::class => [
                 'arguments' => [
@@ -138,11 +142,8 @@ class ContainerTest extends TestCase
             Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
         ];
 
-        $container = new DiContainer(
-            definitions: $instances,
-            autowire: $this->autowire,
-            linkContainerSymbol: '*'
-        );
+        $config = new DiContainerConfig(autowire: $this->autowire, linkContainerSymbol: '*');
+        $container = new DiContainer(definitions: $definitions, config: $config);
 
         $repository = $container->get(Classes\UserRepository::class);
 
@@ -164,7 +165,7 @@ class ContainerTest extends TestCase
             yield Interfaces\CacheTypeInterface::class => Classes\FileCache::class;
         };
 
-        $container = new DiContainer($definitions(), $this->autowire);
+        $container = new DiContainer($definitions(), $this->diContainerConfig);
         $repo = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('Lorem, Ipsum', $repo->all());
@@ -183,7 +184,7 @@ class ContainerTest extends TestCase
             ];
         };
 
-        $container = new DiContainer($definitions(), $this->autowire);
+        $container = new DiContainer($definitions(), $this->diContainerConfig);
         $repo = $container->get(Classes\UserRepository::class);
 
         $this->assertEquals('Lorem, Ipsum', $repo->all());
@@ -191,7 +192,7 @@ class ContainerTest extends TestCase
 
     public function testSetWithParseParams(): void
     {
-        $container = (new DiContainer(autowire: $this->autowire))
+        $container = (new DiContainer(config: $this->diContainerConfig))
             ->set(
                 Classes\Db::class,
                 [
@@ -212,7 +213,7 @@ class ContainerTest extends TestCase
 
     public function testByInterfaceWithParams(): void
     {
-        $instances = [
+        $definitions = [
             Interfaces\SumInterface::class => Classes\Sum::class,
             Classes\Sum::class => [
                 'arguments' => [
@@ -221,7 +222,7 @@ class ContainerTest extends TestCase
             ],
         ];
 
-        $sum = (new DiContainer($instances, $this->autowire))
+        $sum = (new DiContainer($definitions, $this->diContainerConfig))
             ->get(Interfaces\SumInterface::class)
         ;
 
@@ -234,7 +235,7 @@ class ContainerTest extends TestCase
             Interfaces\SumInterface::class => Classes\Sum::class,
         ];
 
-        $sum = (new DiContainer($instances, $this->autowire))->get(Interfaces\SumInterface::class);
+        $sum = (new DiContainer($instances, $this->diContainerConfig))->get(Interfaces\SumInterface::class);
 
         $this->assertEquals('Init data 0', (string) $sum);
         $this->assertEquals(10, $sum->add(10));
@@ -242,7 +243,7 @@ class ContainerTest extends TestCase
 
     public function testByInterfaceWithCallable(): void
     {
-        $sum = (new DiContainer(autowire: $this->autowire))
+        $sum = (new DiContainer(config: $this->diContainerConfig))
             ->set(
                 Interfaces\SumInterface::class,
                 static fn () => new Classes\Sum(100)
@@ -257,7 +258,7 @@ class ContainerTest extends TestCase
 
     public function testResolveConstructorStringParameter(): void
     {
-        $container = (new DiContainer(autowire: $this->autowire))
+        $container = (new DiContainer(config: $this->diContainerConfig))
             ->set('adminEmail', 'root@email.com')
             ->set('delay', 100)
         ;
@@ -284,7 +285,7 @@ class ContainerTest extends TestCase
 
     public function testNoConstructor(): void
     {
-        $container = (new DiContainer(autowire: $this->autowire))
+        $container = (new DiContainer(config: $this->diContainerConfig))
             ->set(Classes\NoConstructorAndInvokable::class)
         ;
 
@@ -343,7 +344,7 @@ class ContainerTest extends TestCase
 
     public function testResolveWithoutConfig(): void
     {
-        $instance = (new DiContainer(autowire: $this->autowire))
+        $instance = (new DiContainer(config: $this->diContainerConfig))
             ->get(Classes\CacheAll::class)
         ;
 
@@ -352,7 +353,7 @@ class ContainerTest extends TestCase
 
     public function testContainerSetBuildInTypeAsArray(): void
     {
-        $container = (new DiContainer(autowire: $this->autowire))
+        $container = (new DiContainer(config: $this->diContainerConfig))
             ->set('data', ['one', 'two'])
         ;
 
@@ -361,7 +362,7 @@ class ContainerTest extends TestCase
 
     public function testClassWithSplClass(): void
     {
-        $class = (new DiContainer(autowire: $this->autowire))
+        $class = (new DiContainer(config: $this->diContainerConfig))
             ->get(Classes\ClassWithSplClass::class)
         ;
 
@@ -393,7 +394,7 @@ class ContainerTest extends TestCase
             ]
         );
 
-        $container = new DiContainer($definitions, $this->autowire);
+        $container = new DiContainer($definitions, config: $this->diContainerConfig);
         $logger = $container->get(Classes\Logger::class);
 
         $this->assertEquals('app-logger', $logger->name);
@@ -435,7 +436,7 @@ class ContainerTest extends TestCase
             ],
         ];
 
-        $container = new DiContainer($def, $this->autowire);
+        $container = new DiContainer(definitions: $def, config: $this->diContainerConfig);
 
         $this->assertEquals([
             'arguments' => [
@@ -449,7 +450,7 @@ class ContainerTest extends TestCase
 
     public function testParseConstructorArguments(): void
     {
-        $container = new DiContainer(autowire: $this->autowire);
+        $container = new DiContainer(config: $this->diContainerConfig);
         $container->set(Classes\Logger::class, ['name' => 'log-app', 'file' => '/var/log/log.txt']);
 
         $this->expectException(ContainerExceptionInterface::class);
@@ -470,19 +471,22 @@ class ContainerTest extends TestCase
             ],
         ];
 
-        $container = new DiContainer(definitions: $instances, autowire: $this->autowire);
+        $container = new DiContainer(definitions: $instances, config: $this->diContainerConfig);
 
         $this->assertEquals(['first', 'second'], $container->get(Classes\Db::class)->all());
     }
 
     public function testGetByLinkIdentifier(): void
     {
-        $c = new DiContainer([
-            'main' => 'Main value',
-            'abc' => '@main',
-            'x' => '@abc',
-            'y' => '@x',
-        ]);
+        $c = new DiContainer(
+            definitions: [
+                'main' => 'Main value',
+                'abc' => '@main',
+                'x' => '@abc',
+                'y' => '@x',
+            ],
+            config: $this->diContainerConfig
+        );
 
         $this->assertEquals('Main value', $c->get('y'));
     }
@@ -507,31 +511,5 @@ class ContainerTest extends TestCase
         $this->assertEquals(['one', 'two'], $db->all());
         $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $db->cache);
         $this->assertEquals('::file::', $db->cache->driver());
-    }
-
-    public function dataProviderConstructorException(): \Generator
-    {
-        yield 'symbols empty' => [
-            'linkContainerSymbol' => '', 'delimiterAccessArrayNotationSymbol' => '', 'msg' => 'symbol cannot be empty',
-        ];
-
-        yield 'delimiter access array notation symbol empty' => [
-            'linkContainerSymbol' => '@', 'delimiterAccessArrayNotationSymbol' => '', 'msg' => 'symbol cannot be empty',
-        ];
-
-        yield 'symbols must be diff' => [
-            'linkContainerSymbol' => '.', 'delimiterAccessArrayNotationSymbol' => '.', 'msg' => 'Delimiters symbols must be different',
-        ];
-    }
-
-    /**
-     * @dataProvider dataProviderConstructorException
-     */
-    public function testConstructorException(string $linkContainerSymbol, string $delimiterAccessArrayNotationSymbol, string $msg): void
-    {
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage($msg);
-
-        new DiContainer(linkContainerSymbol: $linkContainerSymbol, delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol);
     }
 }

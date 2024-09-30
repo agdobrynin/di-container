@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  */
 class DiContainerFactoryTest extends TestCase

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
-use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\Classes;
@@ -17,6 +15,7 @@ use Tests\Fixtures\Classes;
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  *
  * @internal
@@ -51,6 +50,11 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
                     'reportEmail' => '@report.reportEmail',
                 ],
             ],
+            Classes\Db::class => [
+                'arguments' => [
+                    'data' => '@app.users',
+                ],
+            ],
         ];
 
         $container = (new DiContainerFactory())->make($def);
@@ -61,6 +65,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $this->assertEquals('Washington', $class->place);
         $this->assertEquals('https://www.google.com', $class->site);
         $this->assertEquals('admin<admin@mail.com>', $class->reportEmail->emailWith());
+        $this->assertEquals(['Ivan', 'Piter'], $container->get(Classes\Db::class)->all());
     }
 
     public function testUnresolvedArrayAccessParam(): void
@@ -86,14 +91,6 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $this->expectExceptionMessage('Unresolvable dependency: array notation key [@app.users]');
 
         $container->get(Classes\Names::class);
-    }
-
-    public function testDelimiterSymbolsMustBeDifferent(): void
-    {
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Delimiters symbols must be different');
-
-        new DiContainer(linkContainerSymbol: '.', delimiterAccessArrayNotationSymbol: '.');
     }
 
     public function testOtherClassByArrayNotated(): void
