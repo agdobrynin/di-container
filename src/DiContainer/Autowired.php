@@ -108,61 +108,57 @@ final class Autowired implements AutowiredInterface
      */
     private function resolveParameters(ContainerInterface $container, array $parameters): array
     {
-        return \array_reduce(
-            $parameters,
-            function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
-                $parameterType = $parameter->getType();
+        $dependencies = [];
 
-                try {
-                    if (!$parameterType instanceof \ReflectionNamedType) {
-                        throw new AutowiredException(
-                            "Unsupported parameter type [{$parameterType}] for [{$parameter->name}]"
-                        );
-                    }
+        foreach ($parameters as $parameter) {
+            $parameterType = $parameter->getType();
 
-                    if ($this->useAttribute && $factory = DiFactory::makeFromReflection($parameter)) {
+            try {
+                if (!$parameterType instanceof \ReflectionNamedType) {
+                    throw new AutowiredException(
+                        "Unsupported parameter type [{$parameterType}] for [{$parameter->name}]"
+                    );
+                }
+
+                if ($this->useAttribute) {
+                    if ($factory = DiFactory::makeFromReflection($parameter)) {
                         $dependencies[$parameter->getName()] = $this->resolveInstance(
                             $container,
                             $factory->id,
                             $factory->arguments
                         )($container);
 
-                        return $dependencies;
+                        continue;
                     }
 
-                    if ($this->useAttribute && $inject = Inject::makeFromReflection($parameter)) {
+                    if ($inject = Inject::makeFromReflection($parameter)) {
                         $dependencies[$parameter->getName()] = $this->resolveParameterByInject($container, $inject, $parameterType);
 
-                        return $dependencies;
+                        continue;
                     }
-
-                    $value = match (true) {
-                        $parameterType->isBuiltin() => $container->get($parameter->getName()),
-                        ContainerInterface::class === $parameterType->getName() => $container,
-                        default => $container->get($parameterType->getName()),
-                    };
-
-                    $dependencies[$parameter->getName()] = $value;
-
-                    return $dependencies;
-                } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
-                    if (!$parameter->isDefaultValueAvailable()) {
-                        $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
-
-                        throw new AutowiredException(
-                            message: "Unresolvable dependency [{$parameter}] in [{$where}].",
-                            code: $exception->getCode(),
-                            previous: $exception,
-                        );
-                    }
-
-                    $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
-
-                    return $dependencies;
                 }
-            },
-            []
-        );
+
+                $dependencies[$parameter->getName()] = match (true) {
+                    $parameterType->isBuiltin() => $container->get($parameter->getName()),
+                    ContainerInterface::class === $parameterType->getName() => $container,
+                    default => $container->get($parameterType->getName()),
+                };
+            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
+                if (!$parameter->isDefaultValueAvailable()) {
+                    $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
+
+                    throw new AutowiredException(
+                        message: "Unresolvable dependency [{$parameter}] in [{$where}].",
+                        code: $exception->getCode(),
+                        previous: $exception,
+                    );
+                }
+
+                $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
+            }
+        }
+
+        return $dependencies;
     }
 
     private function resolveParameterByInject(ContainerInterface $container, $inject, \ReflectionNamedType $parameterType): mixed
