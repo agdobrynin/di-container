@@ -160,7 +160,7 @@ final class Autowired implements AutowiredInterface
         return $dependencies;
     }
 
-    private function resolveParameterByInject(ContainerInterface $container, $inject, \ReflectionNamedType $parameterType): mixed
+    private function resolveParameterByInject(ContainerInterface $container, Inject $inject, \ReflectionNamedType $parameterType): mixed
     {
         $isInterface = \interface_exists($inject->id);
         $isClass = \class_exists($inject->id);
