@@ -85,14 +85,12 @@ $diConfig = new \Kaspi\DiContainer\DiContainerConfig(
 $container = new \Kaspi\DiContainer\DiContainer(config: $diConfig);
 ```
 
-###### Аргументы конфигурации:
+#### Аргументы конфигурации для `\Kaspi\DiContainer\DiContainerConfig` и значения по умолчанию:
 
-| Аргумент                                      | Описание                                                                                                                                                               | Значение поумолчанию |
-|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
-| `?AutowiredInterface $autowire`               | Авторазрешение зависимостей в контейнере, если значение `null` то авторазрешение отключено.                                                                            | `null`               |
-| `?string $linkContainerSymbol`                | Строка (символ) определяющий ссылку на id другого контейнера, если значение `null` то функционал отключен.                                                             | `@`                  |
-| `?string $delimiterAccessArrayNotationSymbol` | Строка (символ) определяющий Доступ к "контейнер-id" с вложенными определениям. Работает только вместе с `$linkContainerSymbol`                                        | `.`                  |
-| `bool $useZeroConfigurationDefinition`        | "**zero configuration for dependency definitions**" ненужно объявлять каждую зависимость. Класс или интерфейс существуют и может быть запрошен по "PSR-4 auto loading" | `true`               |
+- `?AutowiredInterface $autowire = null` : Автоматическое связывание значений для конструктора или метода на основе типа аргумента (auto resolving), если `null` то авторазрешение отключено.
+- `?string $linkContainerSymbol = '@'` : Строка (символ) определяющий шаблон как ссылку другой контейнер, если значение `null` то функционал отключен.
+- `?string $delimiterAccessArrayNotationSymbol = '.'` : Строка (символ) определяющий шаблон как доступ к "контейнер-id" с вложенными определениям. Работает только вместе с `$linkContainerSymbol`.
+- `bool $useZeroConfigurationDefinition = true` : "zero configuration for dependency definitions" ненужно объявлять каждую зависимость. Класс или интерфейс существуют и может быть запрошен по "PSR-4 auto loading".
 
 ### Примеры использования
 
