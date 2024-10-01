@@ -198,37 +198,4 @@ class DiContainerConfigTest extends TestCase
             (new DiContainerConfig(...$args))->isArrayNotationSyntaxSyntax($key)
         );
     }
-
-    public function dataProviderIsDefaultShareDefinition(): \Generator
-    {
-        yield 'default values' => [
-            'args' => [],
-            'expect' => false,
-        ];
-
-        yield 'enabled' => [
-            'args' => [
-                'defaultShareDefinition' => true,
-            ],
-            'expect' => true,
-        ];
-
-        yield 'disabled' => [
-            'args' => [
-                'defaultShareDefinition' => false,
-            ],
-            'expect' => false,
-        ];
-    }
-
-    /**
-     * @dataProvider dataProviderIsDefaultShareDefinition
-     */
-    public function testIsDefaultShareDefinition(array $args, bool $expect): void
-    {
-        $this->assertEquals(
-            $expect,
-            (new DiContainerConfig(...$args))->isDefaultShareDefinition()
-        );
-    }
 }
