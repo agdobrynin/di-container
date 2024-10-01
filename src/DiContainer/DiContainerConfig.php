@@ -17,7 +17,6 @@ final class DiContainerConfig implements DiContainerConfigInterface
         private ?AutowiredInterface $autowire = null,
         private ?string $linkContainerSymbol = '@',
         private ?string $delimiterAccessArrayNotationSymbol = '.',
-        private bool $defaultShareDefinition = false,
         private bool $useZeroConfigurationDefinition = true,
     ) {
         '' !== $linkContainerSymbol || throw new DiContainerConfigException('Link container symbol cannot be empty.');
@@ -80,10 +79,5 @@ final class DiContainerConfig implements DiContainerConfigInterface
     public function isUseArrayNotationDefinition(): bool
     {
         return null !== $this->linkContainerSymbol && null !== $this->delimiterAccessArrayNotationSymbol;
-    }
-
-    public function isDefaultShareDefinition(): bool
-    {
-        return $this->defaultShareDefinition;
     }
 }

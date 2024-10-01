@@ -30,14 +30,17 @@ final class Autowired implements AutowiredInterface
                 return $reflectionFunction->invokeArgs($resolvedArgs);
             }
 
-            $reflectionClass = new \ReflectionClass($id);
-
-            if (!$reflectionClass->isInstantiable()) {
-                throw new AutowiredException("The [{$id}] class is not instantiable");
-            }
+            ($reflectionClass = new \ReflectionClass($id))->isInstantiable()
+                || throw new AutowiredException("The [{$id}] class is not instantiable");
 
             if ($this->useAttribute && $factory = DiFactory::makeFromReflection($reflectionClass)) {
-                return $container->get($factory->id)($container);
+                ($factoryClass = new \ReflectionClass($factory->id))->isInstantiable()
+                    || throw new AutowiredException("The [{$id}] class is not instantiable");
+
+                $parameters = $factoryClass->getConstructor()?->getParameters() ?? [];
+                $resolvedArgs = $this->resolveArguments($container, $parameters, $factory->arguments);
+
+                return $factoryClass->newInstanceArgs($resolvedArgs)($container);
             }
 
             $parameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
@@ -88,13 +91,12 @@ final class Autowired implements AutowiredInterface
      */
     private function resolveArguments(ContainerInterface $container, array $parameters, array $inputArgs): array
     {
+        $filter = static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]);
+
         return match (true) {
             [] === $parameters => $inputArgs,
             [] === $inputArgs => $this->resolveParameters($container, $parameters),
-            default => \array_merge($this->resolveParameters(
-                $container,
-                \array_filter($parameters, static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]))
-            ), $inputArgs),
+            default => $this->resolveParameters($container, \array_filter($parameters, $filter)) + $inputArgs,
         };
     }
 
@@ -105,73 +107,75 @@ final class Autowired implements AutowiredInterface
      */
     private function resolveParameters(ContainerInterface $container, array $parameters): array
     {
-        return \array_reduce(
-            $parameters,
-            function (array $dependencies, \ReflectionParameter $parameter) use ($container) {
-                $parameterType = $parameter->getType();
+        $dependencies = [];
 
-                try {
-                    if (!$parameterType instanceof \ReflectionNamedType) {
-                        throw new AutowiredException(
-                            "Unsupported parameter type [{$parameterType}] for [{$parameter->name}]"
-                        );
-                    }
+        foreach ($parameters as $parameter) {
+            $parameterType = $parameter->getType();
 
-                    if ($this->useAttribute && $factory = DiFactory::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $container->get($factory->id)($container);
-
-                        return $dependencies;
-                    }
-
-                    if ($this->useAttribute && $inject = Inject::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $parameterType->isBuiltin()
-                            ? $container->get($inject->id)
-                            : $this->resolveParameterByInjectAttribute($container, $inject);
-
-                        return $dependencies;
-                    }
-
-                    $value = match (true) {
-                        $parameterType->isBuiltin() => $container->get($parameter->getName()),
-                        ContainerInterface::class === $parameterType->getName() => $container,
-                        default => $container->get($parameterType->getName()),
-                    };
-
-                    $dependencies[$parameter->getName()] = $value;
-                } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
-                    if (!$parameter->isDefaultValueAvailable()) {
-                        $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
-
-                        throw new AutowiredException(
-                            message: "Unresolvable dependency [{$parameter}] in [{$where}].",
-                            code: $exception->getCode(),
-                            previous: $exception,
-                        );
-                    }
-
-                    $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
+            try {
+                if (!$parameterType instanceof \ReflectionNamedType) {
+                    throw new AutowiredException(
+                        "Unsupported parameter type [{$parameterType}] for [{$parameter->name}]"
+                    );
                 }
 
-                return $dependencies;
-            },
-            []
-        );
-    }
+                if ($this->useAttribute) {
+                    if ($factory = DiFactory::makeFromReflection($parameter)) {
+                        $dependencies[$parameter->getName()] = $this->resolveInstance(
+                            $container,
+                            $factory->id,
+                            $factory->arguments
+                        )($container);
 
-    private function resolveParameterByInjectAttribute(ContainerInterface $container, Inject $inject): mixed
-    {
-        if (\interface_exists($inject->id) && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
-            return $this->resolveInstance($container, $service->id, $service->arguments);
+                        continue;
+                    }
+
+                    if ($inject = Inject::makeFromReflection($parameter)) {
+                        $dependencies[$parameter->getName()] = $this->resolveParameterByInject($container, $inject, $parameterType);
+
+                        continue;
+                    }
+                }
+
+                $dependencies[$parameter->getName()] = match (true) {
+                    $parameterType->isBuiltin() => $container->get($parameter->getName()),
+                    ContainerInterface::class === $parameterType->getName() => $container,
+                    default => $container->get($parameterType->getName()),
+                };
+            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
+                if (!$parameter->isDefaultValueAvailable()) {
+                    $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
+
+                    throw new AutowiredException(
+                        message: "Unresolvable dependency [{$parameter}] in [{$where}].",
+                        code: $exception->getCode(),
+                        previous: $exception,
+                    );
+                }
+
+                $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
+            }
         }
 
-        if (!\class_exists($inject->id)) {
+        return $dependencies;
+    }
+
+    private function resolveParameterByInject(ContainerInterface $container, Inject $inject, \ReflectionNamedType $parameterType): mixed
+    {
+        $isInterface = \interface_exists($inject->id);
+        $isClass = \class_exists($inject->id);
+
+        if ((!$isInterface && !$isClass) || $parameterType->isBuiltin()) {
             return $container->get($inject->id);
+        }
+
+        if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
+            return $this->resolveInstance($container, $service->id, $service->arguments);
         }
 
         foreach ($inject->arguments as $argName => $argValue) {
             $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                ? $container->get($argValue)
-                : $argValue;
+                ? $container->get($argValue) : $argValue;
         }
 
         return $this->resolveInstance($container, $inject->id, $inject->arguments);

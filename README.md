@@ -1,14 +1,47 @@
 # DiContainer
 
-Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0 с автоматическим связыванием зависимостей.
+Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0 с автоматическим связыванием.
 
-## Установка
+#### Установка
 
 ```shell
 composer require kaspi/di-container
 ```
+#### Особенности
 
-#### Миграция с версии 1.0.x к версии 1.1.x
+- Поддержка "**zero configuration for dependency definitions**" - когда ненужно объявлять зависимость если класс существуют и может быть запрошен по "PSR-4 auto loading"
+- Поддержка **Php-атрибутов** для конфигурирования сервисов в контейнере.
+- Поддержка ссылок на другие определения - [Link definition](#использование-ссылок-на-контейнер-id-в-определениях).
+- Поддержка доступа к "контейнер-id" с вложенными определениям - [Access array delimiter notation](#access-array-delimiter-notation).
+
+#### Быстрый старт
+```php
+// определение контейнера с настройкой "zero configuration for dependency definitions"
+// когда ненужно объявлять зависимость если класс существуют
+// и может быть запрошен по "PSR-4 auto loading"
+$container = (new \Kaspi\DiContainer\DiContainerFactory())->make();
+```
+```php
+// определение класса
+namespace App\Controllers\Post;
+
+use App\Services\Mail;
+use App\Models\Post;
+
+class  Post {
+    public function __construct(private Mail $mail, private Post $post){}
+    
+    public function send(): bool {
+        $this->mail->subject('Publication success')->body('Post <'.$post->title.'> was published.');
+    }
+}
+```
+```php
+// получить класс Post с внедренными сервисами Mail, Post и выполнить метод "send"
+$container->get(App\Controllers\Post::class)->send();
+```
+
+#### Миграция с версии 1.0.x к 1.1.x
 
 Новая сигнатура интерфейса `DiContainerFactoryInterface` для метод `make`:
 
@@ -17,23 +50,63 @@ composer require kaspi/di-container
 $container = DiContainerFactory::make($definitions);
 // Для версий 1.1.х и выше
 $container = (new DiContainerFactory())->make($definitions);
+``` 
+
+* Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
+* [Конфигурирование Autowired](#Конфигурирование-Autowired)
+* [Конфигурирование DiContainer](#конфигурирование-dicontainer)
+
+### Конфигурирование Autowired
+
+Компонент **Autowired** предназначен для автоматического разрешения зависимостей на основе
+контейнера реализующего интерфейс - `Psr\Container\ContainerInterface`.
+
+По умолчанию разрешение зависимостей работает на основе [php-определений](#DiContainer-с-конфигурированием-на-основе-php-определений) и на php-атрибутах в классах и интерфейсах кода.
+
+Доступность [php-атрибутов](#DiContainer-c-конфигурированием-через-PHP-атрибуты) определяется параметром в конструкторе:
+
+```php
+// Отключить проверку php-атрибутов для разрешения зависимостей.
+$autowire = new \Kaspi\DiContainer\Autowired(useAttribute: false);
 ```
+
+* по умолчанию параметр `useAttribute` = `true`.
+
+### Конфигурирование DiContainer
+
+Для конфигурирования параметров используется класс:
+
+```php
+// Конфиг с включённым авто разрешением сервисов
+$diConfig = new \Kaspi\DiContainer\DiContainerConfig(
+    autowire: new \Kaspi\DiContainer\Autowired()
+);
+
+$container = new \Kaspi\DiContainer\DiContainer(config: $diConfig);
+```
+
+###### Аргументы конфигурации:
+
+| Аргумент                                      | Описание                                                                                                                                                               | Значение поумолчанию |
+|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
+| `?AutowiredInterface $autowire`               | Авторазрешение зависимостей в контейнере, если значение `null` то авторазрешение отключено.                                                                            | `null`               |
+| `?string $linkContainerSymbol`                | Строка (символ) определяющий ссылку на id другого контейнера, если значение `null` то функционал отключен.                                                             | `@`                  |
+| `?string $delimiterAccessArrayNotationSymbol` | Строка (символ) определяющий Доступ к "контейнер-id" с вложенными определениям. Работает только вместе с `$linkContainerSymbol`                                        | `.`                  |
+| `bool $useZeroConfigurationDefinition`        | "**zero configuration for dependency definitions**" ненужно объявлять каждую зависимость. Класс или интерфейс существуют и может быть запрошен по "PSR-4 auto loading" | `true`               |
 
 ### Примеры использования
 
-* Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
+------------------------------------
 * Примеры использования [DiContainer с конфигурированием на основе php-определений](#DiContainer-с-конфигурированием-на-основе-php-определений).
 * Примеры использования [DiContainer c конфигурированием через PHP атрибуты](#DiContainer-c-конфигурированием-через-PHP-атрибуты).
 * Конфигурация DiContainer [с использованием нотаций по массиву](#Access-array-delimiter-notation).
-* [Конфигурирование Autowired](#Конфигурирование-Autowired)
 
-#### DiContainer с конфигурированием на основе php-определений
+### DiContainer с конфигурированием на основе php-определений
 
 Получение существующего класса и разрешение встроенных типов параметров в конструкторе:
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\Autowired;
-use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 $definitions = [
@@ -50,7 +123,9 @@ $definitions = [
     ];
 
 $autowire = new Autowired(useAttribute: false);
-$container = new DiContainer(definitions: $definitions, autowire: $autowire);
+$config = new DiContainerConfig(autowire: $autowire);
+
+$container = new DiContainer(definitions: $definitions, config: $config);
 ```
 
 ```php
@@ -89,8 +164,7 @@ class MyEmployers {
 ```php
 // Определения для DiContainer
 use App\{MyUsers, MyEmployers};
-use Kaspi\DiContainer\Autowired;
-use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 // В объявлении arguments->users = "data"
@@ -113,7 +187,8 @@ $definitions = [
     ],
 ];
 
-$container = new DiContainer(definitions: $definitions, autowire: new Autowired());
+$config = new DiContainerConfig(autowire: new Autowired()); 
+$container = new DiContainer(definitions: $definitions, config: $config);
 ```
 
 ```php
@@ -128,18 +203,19 @@ $employers = $container->get(MyEmployers::class);
 print implode(',', $employers->employers); // user1, user2
 ```
 
+###### Использование ссылок на контейнер-id в определениях.
+
 Разрешение встроенных (простых) типов аргументов в объявлении со ссылкой на другой id контейнера:
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\Autowired;
-use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
-// В конструкторе DiContainer - параметр "linkContainerSymbol"
-// определяет символ с которого начинается строка и будет
+// В конструкторе DiContainerConfig - параметр "linkContainerSymbol"
+// определяет строку (символ) с которого начинается определение и будет
 // обработана как ссылка на "id" контейнера
-// по умолчанию символ "@"
+// по-умолчанию символ "@"
 
 $definitions = [
         // основной id в контейнере
@@ -154,7 +230,8 @@ $definitions = [
         ];
     ];
 
-$container = new DiContainer(definitions: $definitions, autowire: new Autowired());
+$config = new DiContainerConfig(new Autowired());
+$container = new DiContainer(definitions: $definitions, config: $config);
 ```
 
 ```php
@@ -175,7 +252,7 @@ $myClass = $container->get(MyClass::class);
 // );
 ```
 
-Разрешение типов аргументов в конструкторе по имени аргумента:
+Разрешение типов аргументов в конструкторе по имени:
 
 ```php
 // Объявление класса
@@ -228,8 +305,7 @@ class MyLogger {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\Autowired;
-use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
@@ -245,7 +321,7 @@ $definitions = [
 
 $container = new DiContainer(
     definitions: $definitions,
-    autowire: new Autowired(useAttribute: false)
+    config: new DiContainerConfig(autowire: new Autowired(useAttribute: false))
 );
 ```
 
@@ -275,9 +351,13 @@ class ClassFirst implements ClassInterface {
 // Определения для DiContainer
 use App\ClassFirst;
 use App\ClassInterface;
-use Kaspi\DiContainer\{Autowired, DiContainer};
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 
-$container = new DiContainer(autowire: new Autowired(useAttribute: false));
+$container = new DiContainer(
+    config: new DiContainerConfig(
+        autowire: new Autowired(useAttribute: false)
+    )
+);
 
 // ⚠ параметр "arguments" метода "set" установить аргументы для конструктора.
 $container->set(ClassFirst::class, arguments: ['file' => '/var/log/app.log']);
@@ -321,7 +401,7 @@ class FactoryMyClass implements DiFactoryInterface {
 
 ```php
 // определения для контейнера
-use Kaspi\DiContainer\{Autowired, DiContainer};
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 
 $definitions = [
     App\MyClass::class => App\FactoryMyClass::class
@@ -329,7 +409,9 @@ $definitions = [
 
 $container = new DiContainer(
     definitions: $definitions,
-    autowire: new Autowired(useAttribute: false)
+    config: new DiContainerConfig(
+        autowire: new Autowired(useAttribute: false)
+    )
 );
 ```
 
@@ -372,11 +454,13 @@ class MyClass {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired, DiContainer};
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 
 $container = new DiContainer(
     definitions: ['pdo_dsn' => 'sqlite:/opt/databases/mydb.sq3'],
-    autowire: new Autowired(useAttribute: true) 
+    config: new DiContainerConfig(
+        autowire: new Autowired(useAttribute: true)
+    ) 
 );
 ```
 
@@ -415,7 +499,7 @@ class MyEmployers {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired, DiContainer};
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 
 $definitions = [
     'users_data' => ['user1', 'user2'],
@@ -423,7 +507,9 @@ $definitions = [
 
 $container = new DiContainer(
     definitions: $definitions,
-    autowire: new Autowired(useAttribute: true) 
+    config: new DiContainerConfig(
+        autowire: new Autowired(useAttribute: true)
+    ) 
 );
 ```
 
@@ -476,11 +562,13 @@ class MyLogger {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired ,DiContainer};
+use Kaspi\DiContainer\{Autowired ,DiContainer, DiContainerConfig};
 
 $container = new DiContainer(
     definitions: ['logger_file' => '/var/log/app.log'],
-    autowire: new Autowired(useAttribute: true) 
+    config: new DiContainerConfig(
+        autowire: new Autowired(useAttribute: true)
+    ) 
 );
 ```
 
@@ -569,13 +657,15 @@ class FactoryClassWithFactoryArgument implements DiFactoryInterface
 
 ```php
 // Определение для контейнера
-use Kaspi\DiContainer\{Autowired, DiContainer};
+use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
 
 $container = new DiContainer(
     definitions: [
         'names' => ['Ivan', 'Piter', 'Vasiliy']
     ],
-    autowire: new Autowired(useAttribute: true) 
+    config: new DiContainerConfig(
+        autowire: new Autowired(useAttribute: true) 
+    )
 );
 ```
 
@@ -593,16 +683,17 @@ $myClass->arrayObject->getArrayCopy(); // массив ['Ivan', 'Piter', 'Vasili
 Доступ к "контейнер-id" с вложенными определениям.
 
 Такая ссылка определяется в связке с определением `"linkContainerSymbol"` и `"delimiterAccessArrayNotationSymbol"`
+в конструкторе класса `\Kaspi\DiContainer\DiContainerConfig`
 
 Произвольный символ разделитель можно определить
 
-* `Kaspi\DiContainer\DiContainer::__construct` аргумент `$delimiterAccessArrayNotationSymbol`
+* `Kaspi\DiContainer\DiContainerConfig::__construct` аргумент `$delimiterAccessArrayNotationSymbol`
 * `Kaspi\DiContainer\DiContainerFactory::make` аргумент `$delimiterAccessArrayNotationSymbol`
 
 
 > по-умолчанию 
->   * "linkContainerSymbol" = "@"
->   * "delimiterAccessArrayNotationSymbol" = "."
+>   * $linkContainerSymbol = "@"
+>   * $delimiterAccessArrayNotationSymbol = "."
 
 ```php
     return [
@@ -625,6 +716,7 @@ print $contaier->get('container-id'); // Hello world
 ```php
 // Определения для DiContainer
 use \Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use \Kaspi\DiContainer\DiContainerFactory;
 
 $definitions = [
     'app' => [
@@ -647,7 +739,7 @@ $definitions = [
     ],
 ];
 
-$container = DiContainerFactory::make($definitions);
+$container = (new DiContainerFactory())->make($definitions);
 ```
 ```php
 // Объявление классов
@@ -693,7 +785,7 @@ $definitions = [
     ],
 ];
 
-$container = DiContainerFactory::make($definitions);
+$container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
@@ -730,23 +822,6 @@ $sendEmail = $container->get(SendEmail::class);
 print $sendEmail->from; // admin@mail.com
 print $sendEmail->logger->file; // /var/app.log
 ```
-
-#### Конфигурирование Autowired
-
-Компонент **Autowired** предназначен для автоматического разрешения зависимостей на основе
-контейнера реализующего интерфейс - `Psr\Container\ContainerInterface`.
-
-По умолчанию разрешение зависимостей работает на основе [php-определений](#DiContainer-с-конфигурированием-на-основе-php-определений) и на php-атрибутах в классах и интерфейсах кода.
-
-Доступность [php-атрибутов](#DiContainer-c-конфигурированием-через-PHP-атрибуты) определяется параметром в конструкторе:
-
-```php
-// Отключить проверку php-атрибутов для разрешения зависимостей.
-$autowire = new \Kaspi\DiContainer\Autowired(useAttribute: false);
-$container = new \Kaspi\DiContainer\DiContainer(autowire: $autowire)
-```
-
-* по умолчанию параметр `useAttribute` = `true`.
 
 ## Тесты
 Прогнать тесты без подсчета покрытия кода

@@ -267,6 +267,7 @@ class ContainerTest extends TestCase
 
         $this->assertEquals('root@email.com', $sendEmail->adminEmail);
         $this->assertTrue($sendEmail->confirm);
+        $this->assertNull($sendEmail->logger);
 
         $reportEmail = $container->get(Classes\ReportEmail::class);
 
