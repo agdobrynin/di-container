@@ -17,7 +17,8 @@ class DiContainerFactory implements DiContainerFactoryInterface
         $config = new DiContainerConfig(
             autowire: new Autowired(useAttribute: true),
             linkContainerSymbol: $linkContainerSymbol,
-            delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol
+            delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol,
+            useZeroConfigurationDefinition: true,
         );
 
         return new DiContainer(
