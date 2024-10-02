@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
@@ -65,7 +66,7 @@ class DiContainer implements DiContainerInterface
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static
     {
         if (isset($this->definitions[$id])) {
-            throw new ContainerException("Key [{$id}] already registered in container.");
+            throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
         }
 
         if (null === $definition) {
