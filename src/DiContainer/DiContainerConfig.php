@@ -18,6 +18,7 @@ final class DiContainerConfig implements DiContainerConfigInterface
         private ?string $linkContainerSymbol = '@',
         private ?string $delimiterAccessArrayNotationSymbol = '.',
         private bool $useZeroConfigurationDefinition = true,
+        private bool $isSharedServiceDefault = false,
     ) {
         '' !== $linkContainerSymbol || throw new DiContainerConfigException('Link container symbol cannot be empty.');
         '' !== $delimiterAccessArrayNotationSymbol || throw new DiContainerConfigException('Delimiter access container symbol cannot be empty.');
@@ -36,6 +37,11 @@ final class DiContainerConfig implements DiContainerConfigInterface
             $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($linkContainerSymbol, '/').
                 '((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
         }
+    }
+
+    public function isSharedServiceDefault(): bool
+    {
+        return $this->isSharedServiceDefault;
     }
 
     public function isUseZeroConfigurationDefinition(): bool
