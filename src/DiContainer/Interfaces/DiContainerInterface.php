@@ -35,13 +35,14 @@ interface DiContainerInterface extends ContainerInterface
      * ```
      */
     public const ARGUMENTS = 'arguments';
+    public const SHARED = 'shared';
 
     /**
      * @param null|mixed|object $definition
      *
      * @throws ContainerExceptionInterface
      */
-    public function set(string $id, mixed $definition = null, ?array $arguments = null): static;
+    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static;
 
     /**
      * @param class-string<T>|string $id

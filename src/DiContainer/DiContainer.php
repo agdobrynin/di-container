@@ -62,7 +62,7 @@ class DiContainer implements DiContainerInterface
             || ($this->config?->isUseArrayNotationDefinition() && $this->hasArrayNotation($id));
     }
 
-    public function set(string $id, mixed $definition = null, ?array $arguments = null): static
+    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static
     {
         if (isset($this->definitions[$id])) {
             throw new ContainerException("Key [{$id}] already registered in container.");
