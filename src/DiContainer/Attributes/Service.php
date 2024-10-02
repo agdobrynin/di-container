@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Attributes;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final class Service
 {
-    public function __construct(public string $id, public array $arguments = []) {}
+    public function __construct(public string $id, public array $arguments = [], public bool $isShared = false) {}
 
     public static function makeFromReflection(\ReflectionClass $parameter): ?self
     {

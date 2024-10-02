@@ -10,7 +10,7 @@ final class Inject
     /**
      * @param null|class-string|string $id Container id
      */
-    public function __construct(public ?string $id = null, public array $arguments = []) {}
+    public function __construct(public ?string $id = null, public array $arguments = [], public bool $isShared = false) {}
 
     public static function makeFromReflection(\ReflectionParameter $parameter): ?self
     {
