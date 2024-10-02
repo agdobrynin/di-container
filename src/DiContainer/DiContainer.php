@@ -109,22 +109,28 @@ class DiContainer implements DiContainerInterface
                 }
 
                 if (\is_string($definition) && \is_a($definition, DiFactoryInterface::class, true)) {
-                    return $this->resolved[$id] = $this->config->getAutowire()
+                    $instance = $this->config->getAutowire()
                         ->resolveInstance($this, $definition, $this->resolveArgs($definition))($this)
                     ;
+
+                    return $this->isShared($definition) ? $this->resolved[$id] = $instance : $instance;
                 }
 
                 if (\class_exists($id)) {
-                    return $this->resolved[$id] = $this->config->getAutowire()
+                    $instance = $this->config->getAutowire()
                         ->resolveInstance($this, $id, $this->resolveArgs($id))
                     ;
+
+                    return $this->isShared($id) ? $this->resolved[$id] = $instance : $instance;
                 }
 
                 if (\interface_exists($id)) {
-                    return $this->resolved[$id] = \is_string($definition)
+                    $instance = \is_string($definition)
                         ? $this->config->getAutowire()
                             ->resolveInstance($this, $definition, $this->resolveArgs($definition))
                         : throw new ContainerException("Not found definition for interface [{$id}]");
+
+                    return $this->isShared($definition) ? $this->resolved[$id] = $instance : $instance;
                 }
             } catch (AutowiredExceptionInterface $exception) {
                 throw new ContainerException(
@@ -212,5 +218,12 @@ class DiContainer implements DiContainerInterface
         return $this->config?->isUseZeroConfigurationDefinition()
             && null !== $this->config?->getAutowire()
             && (\class_exists($id) || \interface_exists($id));
+    }
+
+    protected function isShared(string $id): bool
+    {
+        return $this->definitions[$id][DiContainerInterface::SHARED]
+            ?? $this->config?->isSharedServiceDefault()
+            ?? false;
     }
 }
