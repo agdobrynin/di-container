@@ -145,11 +145,9 @@ class DiContainer implements DiContainerInterface
             }
         }
 
-        return $this->resolved[$id] = match (true) {
-            $definition === $id => $id,
-            null === $definition => null,
-            default => $this->getValue($definition),
-        };
+        return $this->resolved[$id] = $definition === $id
+            ? $id
+            : $this->getValue($definition);
     }
 
     protected function getValue(mixed $value): mixed
