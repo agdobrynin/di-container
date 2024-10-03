@@ -20,6 +20,11 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface
 {
     protected iterable $definitions = [];
+
+    /**
+     * @var DiContainerDefinition[]
+     */
+    protected iterable $definitionCache = [];
     protected array $resolved = [];
     protected ?int $linkContainerSymbolLength = null;
 
@@ -105,36 +110,44 @@ class DiContainer implements DiContainerInterface
         $definition = $this->definitions[$id] ?? null;
 
         if (null !== $this->config?->getAutowire()) {
+            $diDefinition = $this->makeDefinition($id, $definition);
+
             try {
-                if ($definition instanceof \Closure) {
-                    return $this->resolved[$id] = $this->config->getAutowire()
-                        ->resolveInstance($this, $definition)
-                    ;
-                }
-
-                if (\is_string($definition) && \is_a($definition, DiFactoryInterface::class, true)) {
+                if ($diDefinition->definition instanceof \Closure) {
                     $instance = $this->config->getAutowire()
-                        ->resolveInstance($this, $definition, $this->resolveArgs($definition))($this)
+                        ->resolveInstance($this, $diDefinition->definition, $diDefinition->arguments)
                     ;
 
-                    return $this->isShared($definition) ? $this->resolved[$id] = $instance : $instance;
+                    return $diDefinition->shared
+                        ? $this->resolved[$id] = $instance
+                        : $instance;
                 }
 
-                if (\class_exists($id)) {
+                if (\is_string($diDefinition->definition)
+                    && \is_a($diDefinition->definition, DiFactoryInterface::class, true)) {
                     $instance = $this->config->getAutowire()
-                        ->resolveInstance($this, $id, $this->resolveArgs($id))
+                        ->resolveInstance($this, $diDefinition->definition, $this->resolveArgs($diDefinition->arguments))($this)
                     ;
 
-                    return $this->isShared($id) ? $this->resolved[$id] = $instance : $instance;
+                    return $diDefinition->shared
+                        ? $this->resolved[$id] = $instance
+                        : $instance;
                 }
 
-                if (\interface_exists($id)) {
-                    $instance = \is_string($definition)
-                        ? $this->config->getAutowire()
-                            ->resolveInstance($this, $definition, $this->resolveArgs($definition))
+                if (\class_exists($diDefinition->id)) {
+                    $instance = $this->config->getAutowire()
+                        ->resolveInstance($this, $diDefinition->id, $this->resolveArgs($diDefinition->arguments))
+                    ;
+
+                    return $diDefinition->shared ? $this->resolved[$id] = $instance : $instance;
+                }
+
+                if (\interface_exists($diDefinition->id)) {
+                    $instance = \is_string($diDefinition->definition)
+                        ? $this->get($diDefinition->definition)
                         : throw new ContainerException("Not found definition for interface [{$id}]");
 
-                    return $this->isShared($definition) ? $this->resolved[$id] = $instance : $instance;
+                    return $diDefinition->shared ? $this->resolved[$id] = $instance : $instance;
                 }
             } catch (AutowiredExceptionInterface $exception) {
                 throw new ContainerException(
@@ -204,12 +217,10 @@ class DiContainer implements DiContainerInterface
         return true;
     }
 
-    protected function resolveArgs(string $id): array
+    protected function resolveArgs(array $constructorArgs): array
     {
-        if ($constructorArgs = $this->definitions[$id][DiContainerInterface::ARGUMENTS] ?? []) {
-            foreach ($constructorArgs as $argName => $argValue) {
-                $constructorArgs[$argName] = $this->getValue($argValue);
-            }
+        foreach ($constructorArgs as $argName => $argValue) {
+            $constructorArgs[$argName] = $this->getValue($argValue);
         }
 
         return $constructorArgs;
@@ -227,5 +238,35 @@ class DiContainer implements DiContainerInterface
         return $this->definitions[$id][DiContainerInterface::SHARED]
             ?? $this->config?->isSharedServiceDefault()
             ?? false;
+    }
+
+    protected function makeDefinition(string $id, mixed $rawDefinition): DiContainerDefinition
+    {
+        if (!isset($this->definitionCache[$id])) {
+            if ($rawDefinition instanceof \Closure) {
+                return $this->definitionCache[$id] = new DiContainerDefinition(
+                    id: $id,
+                    definition: $rawDefinition,
+                    shared: $this->config?->isSharedServiceDefault() ?? false
+                );
+            }
+
+            if (\is_array($rawDefinition)) {
+                return $this->definitionCache[$id] = new DiContainerDefinition(
+                    id: $id,
+                    definition: $rawDefinition[0] ?? $id,
+                    shared: $rawDefinition[DiContainerInterface::SHARED] ?? $this->config?->isSharedServiceDefault() ?? false,
+                    arguments: $rawDefinition[DiContainerInterface::ARGUMENTS] ?? []
+                );
+            }
+
+            return $this->definitionCache[$id] = new DiContainerDefinition(
+                id: $id,
+                definition: $rawDefinition,
+                shared: $this->config?->isSharedServiceDefault() ?? false
+            );
+        }
+
+        return $this->definitionCache[$id];
     }
 }
