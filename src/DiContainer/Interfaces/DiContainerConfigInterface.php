@@ -23,4 +23,6 @@ interface DiContainerConfigInterface
     public function isArrayNotationSyntaxSyntax(string $value): bool;
 
     public function isUseArrayNotationDefinition(): bool;
+
+    public function isUseAttribute(): bool;
 }
