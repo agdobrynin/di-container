@@ -254,28 +254,22 @@ class DiContainer implements DiContainerInterface
     protected function makeDefinition(string $id, mixed $rawDefinition): DiContainerDefinition
     {
         if (!isset($this->definitionCache[$id])) {
+            $sharedDefault = $this->config?->isSharedServiceDefault() ?? false;
+
             if ($rawDefinition instanceof \Closure) {
-                return $this->definitionCache[$id] = new DiContainerDefinition(
-                    id: $id,
-                    definition: $rawDefinition,
-                    shared: $this->config?->isSharedServiceDefault() ?? false
-                );
+                return $this->definitionCache[$id] = new DiContainerDefinition($id, $rawDefinition, $sharedDefault);
             }
 
             if (\is_array($rawDefinition)) {
                 return $this->definitionCache[$id] = new DiContainerDefinition(
-                    id: $id,
-                    definition: $rawDefinition[0] ?? $id,
-                    shared: $rawDefinition[DiContainerInterface::SHARED] ?? $this->config?->isSharedServiceDefault() ?? false,
-                    arguments: $rawDefinition[DiContainerInterface::ARGUMENTS] ?? []
+                    $id,
+                    $rawDefinition[0] ?? $id,
+                    $rawDefinition[DiContainerInterface::SHARED] ?? $sharedDefault,
+                    $rawDefinition[DiContainerInterface::ARGUMENTS] ?? []
                 );
             }
 
-            return $this->definitionCache[$id] = new DiContainerDefinition(
-                id: $id,
-                definition: $rawDefinition,
-                shared: $this->config?->isSharedServiceDefault() ?? false
-            );
+            return $this->definitionCache[$id] = new DiContainerDefinition($id, $rawDefinition, $sharedDefault);
         }
 
         return $this->definitionCache[$id];
