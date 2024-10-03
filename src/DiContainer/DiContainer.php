@@ -233,13 +233,6 @@ class DiContainer implements DiContainerInterface
             && (\class_exists($id) || \interface_exists($id));
     }
 
-    protected function isShared(string $id): bool
-    {
-        return $this->definitions[$id][DiContainerInterface::SHARED]
-            ?? $this->config?->isSharedServiceDefault()
-            ?? false;
-    }
-
     protected function makeDefinition(string $id, mixed $rawDefinition): DiContainerDefinition
     {
         if (!isset($this->definitionCache[$id])) {

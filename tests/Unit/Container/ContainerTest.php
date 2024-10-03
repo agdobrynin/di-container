@@ -24,6 +24,7 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
  */
 class ContainerTest extends TestCase
