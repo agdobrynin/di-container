@@ -65,7 +65,9 @@ class DiContainer implements DiContainerInterface
         return isset($this->definitions[$id])
             || isset($this->resolved[$id])
             || $this->hasClassOrInterface($id)
-            || ($this->config?->isUseArrayNotationDefinition() && $this->hasArrayNotation($id));
+            || (
+                $this->config?->isUseArrayNotationDefinition()
+                && $this->hasArrayNotation($id));
     }
 
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static
@@ -139,7 +141,9 @@ class DiContainer implements DiContainerInterface
                         ->resolveInstance($this, $diDefinition->id, $this->resolveArgs($diDefinition->arguments))
                     ;
 
-                    return $diDefinition->shared ? $this->resolved[$id] = $instance : $instance;
+                    return $diDefinition->shared
+                        ? $this->resolved[$id] = $instance
+                        : $instance;
                 }
 
                 if (\interface_exists($diDefinition->id)) {
@@ -147,7 +151,9 @@ class DiContainer implements DiContainerInterface
                         ? $this->get($diDefinition->definition)
                         : throw new ContainerException("Not found definition for interface [{$id}]");
 
-                    return $diDefinition->shared ? $this->resolved[$id] = $instance : $instance;
+                    return $diDefinition->shared
+                        ? $this->resolved[$id] = $instance
+                        : $instance;
                 }
             } catch (AutowiredExceptionInterface $exception) {
                 throw new ContainerException(
