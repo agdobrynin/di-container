@@ -148,10 +148,20 @@ class DiContainer implements DiContainerInterface
                 }
 
                 if (\interface_exists($diDefinition->id)) {
-                    // @todo resolve with argument $diDefinition->arguments ?
-                    $instance = \is_string($diDefinition->definition) && $diDefinition->id !== $diDefinition->definition
-                        ? $this->get($diDefinition->definition)
-                        : throw new ContainerException("Not found definition for interface [{$id}]");
+                    if (null === $diDefinition->definition) {
+                        throw new ContainerException("Not found definition for interface [{$id}]");
+                    }
+
+                    if (isset($this->definitions[$diDefinition->definition])) { // merge argument definition
+                        $diDefinition->arguments += $this->makeDefinition(
+                            $diDefinition->definition,
+                            $this->definitions[$diDefinition->definition]
+                        )->arguments;
+                    }
+
+                    $instance = $this->config->getAutowire()
+                        ->resolveInstance($this, $diDefinition->definition, $this->resolveArgs($diDefinition->arguments))
+                    ;
 
                     return $diDefinition->shared
                         ? $this->resolved[$id] = $instance
