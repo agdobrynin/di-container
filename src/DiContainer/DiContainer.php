@@ -67,7 +67,8 @@ class DiContainer implements DiContainerInterface
             || $this->hasClassOrInterface($id)
             || (
                 $this->config?->isUseArrayNotationDefinition()
-                && $this->hasArrayNotation($id));
+                && $this->hasArrayNotation($id)
+            );
     }
 
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static
