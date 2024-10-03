@@ -15,6 +15,8 @@ use Psr\Container\ContainerInterface;
 
 final class Autowired implements AutowiredInterface
 {
+    private iterable $sharedInstanceByAttribute = [];
+
     public function __construct(private bool $useAttribute = true) {}
 
     public function resolveInstance(
@@ -34,13 +36,20 @@ final class Autowired implements AutowiredInterface
                 || throw new AutowiredException("The [{$id}] class is not instantiable");
 
             if ($this->useAttribute && $factory = DiFactory::makeFromReflection($reflectionClass)) {
+                if ($factory->isShared && isset($this->sharedInstanceByAttribute[$factory->id])) {
+                    return $this->sharedInstanceByAttribute[$factory->id];
+                }
+
                 ($factoryClass = new \ReflectionClass($factory->id))->isInstantiable()
                     || throw new AutowiredException("The [{$id}] class is not instantiable");
 
                 $parameters = $factoryClass->getConstructor()?->getParameters() ?? [];
                 $resolvedArgs = $this->resolveArguments($container, $parameters, $factory->arguments);
+                $instance = $factoryClass->newInstanceArgs($resolvedArgs)($container);
 
-                return $factoryClass->newInstanceArgs($resolvedArgs)($container);
+                return $factory->isShared ?
+                    $this->sharedInstanceByAttribute[$factory->id] = $instance
+                    : $instance;
             }
 
             $parameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
@@ -121,11 +130,16 @@ final class Autowired implements AutowiredInterface
 
                 if ($this->useAttribute) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $this->resolveInstance(
-                            $container,
-                            $factory->id,
-                            $factory->arguments
-                        )($container);
+                        if ($factory->isShared && isset($this->sharedInstanceByAttribute[$factory->id])) {
+                            $dependencies[$parameter->getName()] = $this->sharedInstanceByAttribute[$factory->id];
+
+                            continue;
+                        }
+
+                        $instance = $this->resolveInstance($container, $factory->id, $factory->arguments)($container);
+                        $dependencies[$parameter->getName()] = $factory->isShared
+                            ? $this->sharedInstanceByAttribute[$factory->id] = $instance
+                            : $instance;
 
                         continue;
                     }
@@ -170,7 +184,15 @@ final class Autowired implements AutowiredInterface
         }
 
         if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
-            return $this->resolveInstance($container, $service->id, $service->arguments);
+            if ($service->isShared && isset($this->sharedInstanceByAttribute[$service->id])) {
+                return $this->sharedInstanceByAttribute[$service->id];
+            }
+
+            $instance = $this->resolveInstance($container, $service->id, $service->arguments);
+
+            return $service->isShared
+                ? $this->sharedInstanceByAttribute[$service->id] = $instance
+                : $instance;
         }
 
         foreach ($inject->arguments as $argName => $argValue) {
