@@ -6,7 +6,7 @@ namespace Tests\Unit\Container;
 
 use PHPUnit\Framework\TestCase;
 
-class ContainerSharedAttributesTest extends TestCase
-{
-
-}
+/**
+ * @internal
+ */
+class ContainerSharedAttributesTest extends TestCase {}

@@ -127,7 +127,7 @@ class ContainerSharedDefinitionTest extends TestCase
             FileCache::class => [
                 static fn () => new FileCache(),
                 DiContainerInterface::SHARED => true,
-            ]
+            ],
         ];
 
         $c = new DiContainer(
@@ -146,7 +146,7 @@ class ContainerSharedDefinitionTest extends TestCase
             FileCache::class => [
                 static fn () => new FileCache(),
                 DiContainerInterface::SHARED => false,
-            ]
+            ],
         ];
 
         $c = new DiContainer(
@@ -238,7 +238,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             SumInterface::class => [
                 Sum::class,
-                DiContainerInterface::SHARED => false // service not shared!
+                DiContainerInterface::SHARED => false, // service not shared!
             ],
         ];
 
@@ -258,7 +258,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             SumInterface::class => [
                 Sum::class,
-                DiContainerInterface::SHARED => true // service shared!
+                DiContainerInterface::SHARED => true, // service shared!
             ],
         ];
 

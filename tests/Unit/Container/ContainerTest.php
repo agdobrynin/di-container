@@ -215,19 +215,23 @@ class ContainerTest extends TestCase
     public function testByInterfaceWithParams(): void
     {
         $definitions = [
-            Interfaces\SumInterface::class => Classes\Sum::class,
-            Classes\Sum::class => [
+            Interfaces\SumInterface::class => [
+                Classes\Sum::class,
                 'arguments' => [
                     'init' => 50,
                 ],
             ],
+            Classes\Sum::class => [
+                'arguments' => [
+                    'init' => 10,
+                ],
+            ],
         ];
 
-        $sum = (new DiContainer($definitions, $this->diContainerConfig))
-            ->get(Interfaces\SumInterface::class)
-        ;
+        $c = new DiContainer($definitions, $this->diContainerConfig);
 
-        $this->assertEquals(60, $sum->add(10));
+        $this->assertEquals(60, $c->get(Interfaces\SumInterface::class)->add(10));
+        $this->assertEquals(20, $c->get(Classes\Sum::class)->add(10));
     }
 
     public function testByInterfaceOnly(): void
