@@ -143,7 +143,7 @@ class DiContainer implements DiContainerInterface
                 }
 
                 if (\interface_exists($diDefinition->id)) {
-                    $instance = \is_string($diDefinition->definition)
+                    $instance = \is_string($diDefinition->definition) && $diDefinition->id !== $diDefinition->definition
                         ? $this->get($diDefinition->definition)
                         : throw new ContainerException("Not found definition for interface [{$id}]");
 
