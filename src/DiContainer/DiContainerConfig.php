@@ -31,6 +31,10 @@ final class DiContainerConfig implements DiContainerConfigInterface
             );
         }
 
+        if (null === $autowire && $useAttribute) {
+            throw new DiContainerConfigException('Cannot use php-attribute without Autowire.');
+        }
+
         $this->linkContainerSymbolLength = $linkContainerSymbol ? \strlen($linkContainerSymbol) : null;
 
         if (null !== $this->linkContainerSymbolLength

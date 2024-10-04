@@ -19,6 +19,8 @@ class DiContainerFactory implements DiContainerFactoryInterface
             linkContainerSymbol: $linkContainerSymbol,
             delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol,
             useZeroConfigurationDefinition: true,
+            isSharedServiceDefault: false,
+            useAttribute: true
         );
 
         return new DiContainer(
