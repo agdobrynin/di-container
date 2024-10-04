@@ -70,7 +70,7 @@ class DiContainerConfigTest extends TestCase
      */
     public function testContainerConfigSymbols(array $args, ?string $linkContainerSymbol, bool $isUseLinkContainerDefinition, ?string $delimiterAccessArrayNotationSymbol, bool $isUseArrayNotationDefinition): void
     {
-        $conf = new DiContainerConfig(...$args);
+        $conf = new DiContainerConfig(...[...$args, 'useAttribute' => false]);
 
         $this->assertEquals($linkContainerSymbol, $conf->getLinkContainerSymbol());
         $this->assertEquals($isUseLinkContainerDefinition, $conf->isUseLinkContainerDefinition());
@@ -105,7 +105,7 @@ class DiContainerConfigTest extends TestCase
      */
     public function testGetKeyFromLinkContainerSymbol(?string $linkContainerSymbol, string $key, ?string $expect): void
     {
-        $config = new DiContainerConfig(linkContainerSymbol: $linkContainerSymbol);
+        $config = new DiContainerConfig(linkContainerSymbol: $linkContainerSymbol, useAttribute: false);
 
         $this->assertEquals($expect, $config->getKeyFromLinkContainerSymbol($key));
     }
@@ -124,18 +124,20 @@ class DiContainerConfigTest extends TestCase
      */
     public function testIsUseZeroConfigurationDefinition(null|bool $value, bool $expect): void
     {
-        $conf = null === $value ? new DiContainerConfig() : new DiContainerConfig(useZeroConfigurationDefinition: $value);
+        $conf = null === $value
+            ? new DiContainerConfig(useAttribute: false)
+            : new DiContainerConfig(useZeroConfigurationDefinition: $value, useAttribute: false);
 
         $this->assertEquals($expect, $conf->isUseZeroConfigurationDefinition());
     }
 
     public function dataProviderAutowire(): \Generator
     {
-        yield 'default value' => [null, []];
+        yield 'default value' => [null, ['useAttribute' => false]];
 
         yield 'set available' => [new Autowired(), ['autowire' => new Autowired()]];
 
-        yield 'set force null' => [null, ['autowire' => null]];
+        yield 'set force null' => [null, ['autowire' => null, 'useAttribute' => false]];
     }
 
     /**
@@ -195,7 +197,7 @@ class DiContainerConfigTest extends TestCase
     {
         $this->assertEquals(
             $expect,
-            (new DiContainerConfig(...$args))->isArrayNotationSyntaxSyntax($key)
+            (new DiContainerConfig(...[...$args, 'autowire' => new Autowired()]))->isArrayNotationSyntaxSyntax($key)
         );
     }
 }
