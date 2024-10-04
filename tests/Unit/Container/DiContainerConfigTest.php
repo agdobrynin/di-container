@@ -70,7 +70,8 @@ class DiContainerConfigTest extends TestCase
      */
     public function testContainerConfigSymbols(array $args, ?string $linkContainerSymbol, bool $isUseLinkContainerDefinition, ?string $delimiterAccessArrayNotationSymbol, bool $isUseArrayNotationDefinition): void
     {
-        $conf = new DiContainerConfig(...[...$args, 'useAttribute' => false]);
+        $newArgs = \array_merge($args, ['useAttribute' => false]);
+        $conf = new DiContainerConfig(...$newArgs);
 
         $this->assertEquals($linkContainerSymbol, $conf->getLinkContainerSymbol());
         $this->assertEquals($isUseLinkContainerDefinition, $conf->isUseLinkContainerDefinition());
@@ -195,9 +196,10 @@ class DiContainerConfigTest extends TestCase
      */
     public function testIsArrayNotationSyntaxSyntax(array $args, string $key, bool $expect): void
     {
+        $newArgs = \array_merge($args, ['autowire' => new Autowired()]);
         $this->assertEquals(
             $expect,
-            (new DiContainerConfig(...[...$args, 'autowire' => new Autowired()]))->isArrayNotationSyntaxSyntax($key)
+            (new DiContainerConfig(...$newArgs))->isArrayNotationSyntaxSyntax($key)
         );
     }
 }

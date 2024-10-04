@@ -51,6 +51,7 @@ class ContainerSharedAttributesTest extends TestCase
             $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator()
         );
     }
+
     public function testSharedByServiceAttributeDefault(): void
     {
         $c = (new DiContainerFactory())->make();
