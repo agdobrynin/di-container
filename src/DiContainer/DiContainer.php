@@ -84,11 +84,15 @@ class DiContainer implements DiContainerInterface
         $this->definitions[$id] = $definition;
 
         if ($arguments) {
-            $this->definitions[$id] = [$this->definitions[$id]] + [DiContainerInterface::ARGUMENTS => $arguments];
+            if (\is_array($this->definitions[$id])) {
+                $arguments = $arguments + $this->definitions[$id][DiContainerInterface::ARGUMENTS] ?? [];
+            }
+
+            $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::ARGUMENTS => $arguments];
         }
 
         if (null !== $shared) {
-            $this->definitions[$id] = [$this->definitions[$id]] + [DiContainerInterface::SHARED => $shared];
+            $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::SHARED => $shared];
         }
 
         return $this;

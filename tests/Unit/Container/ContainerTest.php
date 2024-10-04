@@ -212,6 +212,30 @@ class ContainerTest extends TestCase
         $this->assertNull($db->cache);
     }
 
+    public function testSetWithReplaceArguments(): void
+    {
+        $container = (new DiContainer(config: $this->diContainerConfig))
+            ->set(
+                id: Classes\Db::class,
+                definition: [
+                    'arguments' => [
+                        'data' => [],
+                        'store' => '/var/log',
+                    ],
+                ],
+                arguments: [
+                    'store' => '/var/new_log',
+                ],
+            )
+        ;
+
+        $db = $container->get(Classes\Db::class);
+
+        $this->assertEmpty($db->all());
+        $this->assertEquals('/var/new_log', $db->store);
+        $this->assertNull($db->cache);
+    }
+
     public function testByInterfaceWithParams(): void
     {
         $definitions = [
