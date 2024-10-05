@@ -14,9 +14,9 @@ final class DiContainerConfig implements DiContainerConfigInterface
     private ?string $accessArrayNotationRegularExpression = null;
 
     public function __construct(
-        private ?AutowiredInterface $autowire = null,
         private ?string $linkContainerSymbol = '@',
         private ?string $delimiterAccessArrayNotationSymbol = '.',
+        private bool $useAutowire = true,
         private bool $useZeroConfigurationDefinition = true,
         private bool $isSharedServiceDefault = false,
         private bool $useAttribute = true,
@@ -31,7 +31,7 @@ final class DiContainerConfig implements DiContainerConfigInterface
             );
         }
 
-        if (null === $autowire && $useAttribute) {
+        if (false === $this->useAutowire && $useAttribute) {
             throw new DiContainerConfigException('Cannot use php-attribute without Autowire.');
         }
 
@@ -42,6 +42,11 @@ final class DiContainerConfig implements DiContainerConfigInterface
             $this->accessArrayNotationRegularExpression = '/^'.\preg_quote($linkContainerSymbol, '/').
                 '((?:\w+'.\preg_quote($delimiterAccessArrayNotationSymbol, '/').')+)\w+$/u';
         }
+    }
+
+    public function isUseAutowire(): bool
+    {
+        return $this->useAutowire;
     }
 
     public function isSharedServiceDefault(): bool

@@ -6,6 +6,8 @@ namespace Kaspi\DiContainer\Interfaces;
 
 interface DiContainerConfigInterface
 {
+    public function isUseAutowire(): bool;
+
     public function isSharedServiceDefault(): bool;
 
     public function isUseZeroConfigurationDefinition(): bool;

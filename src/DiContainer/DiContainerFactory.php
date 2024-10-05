@@ -15,9 +15,9 @@ class DiContainerFactory implements DiContainerFactoryInterface
         string $delimiterAccessArrayNotationSymbol = '.'
     ): DiContainerInterface {
         $config = new DiContainerConfig(
-            autowire: new Autowired(useAttribute: true),
             linkContainerSymbol: $linkContainerSymbol,
             delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol,
+            useAutowire: true,
             useZeroConfigurationDefinition: true,
             isSharedServiceDefault: false,
             useAttribute: true

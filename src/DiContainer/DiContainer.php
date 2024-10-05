@@ -125,7 +125,7 @@ class DiContainer implements DiContainerInterface
 
         $definition = $this->definitions[$id] ?? null;
 
-        if (null !== $this->config?->getAutowire()) {
+        if ($this->config?->isUseAutowire()) {
             $diDefinition = $this->makeDefinition($id, $definition);
 
             try {
@@ -261,8 +261,8 @@ class DiContainer implements DiContainerInterface
 
     protected function hasClassOrInterface(string $id): bool
     {
-        return $this->config?->isUseZeroConfigurationDefinition()
-            && null !== $this->config?->getAutowire()
+        return $this->config?->isUseAutowire()
+            && $this->config?->isUseZeroConfigurationDefinition()
             && (\class_exists($id) || \interface_exists($id));
     }
 
