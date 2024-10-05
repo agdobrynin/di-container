@@ -12,8 +12,6 @@ interface DiContainerConfigInterface
 
     public function isUseZeroConfigurationDefinition(): bool;
 
-    public function getAutowire(): ?AutowiredInterface;
-
     public function getLinkContainerSymbol(): ?string;
 
     public function isUseLinkContainerDefinition(): bool;

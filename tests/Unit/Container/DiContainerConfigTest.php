@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
-use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiContainerConfigExceptionInterface;
 use PHPUnit\Framework\TestCase;
@@ -132,26 +131,6 @@ class DiContainerConfigTest extends TestCase
         $this->assertEquals($expect, $conf->isUseZeroConfigurationDefinition());
     }
 
-    public function dataProviderAutowire(): \Generator
-    {
-        yield 'default value' => [null, ['useAttribute' => false]];
-
-        yield 'set available' => [new Autowired(), ['autowire' => new Autowired()]];
-
-        yield 'set force null' => [null, ['autowire' => null, 'useAttribute' => false]];
-    }
-
-    /**
-     * @dataProvider dataProviderAutowire
-     *
-     * @param mixed $expect
-     */
-    public function testAutowire($expect, array $autowired): void
-    {
-        $conf = new DiContainerConfig(...$autowired);
-        $this->assertEquals($expect, $conf->getAutowire());
-    }
-
     public function dataProviderIsArrayNotationSyntaxSyntax(): \Generator
     {
         yield 'default values' => [
@@ -196,7 +175,7 @@ class DiContainerConfigTest extends TestCase
      */
     public function testIsArrayNotationSyntaxSyntax(array $args, string $key, bool $expect): void
     {
-        $newArgs = \array_merge($args, ['autowire' => new Autowired()]);
+        $newArgs = \array_merge($args);
         $this->assertEquals(
             $expect,
             (new DiContainerConfig(...$newArgs))->isArrayNotationSyntaxSyntax($key)

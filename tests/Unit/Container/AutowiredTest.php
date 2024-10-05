@@ -29,7 +29,7 @@ class AutowiredTest extends TestCase
         $this->expectExceptionMessage('ClassTest');
         $autowired = new Autowired();
 
-        $autowired->resolveInstance(new DiContainer(config: new DiContainerConfig($autowired)), 'ClassTest');
+        $autowired->resolveInstance(new DiContainer(config: new DiContainerConfig()), 'ClassTest');
     }
 
     public function testResolveNotExistMethod(): void
@@ -47,7 +47,7 @@ class AutowiredTest extends TestCase
     public function testResolveMethodSimple(): void
     {
         $autowire = new Autowired();
-        $container = new DiContainer(config: new DiContainerConfig(new Autowired()));
+        $container = new DiContainer(config: new DiContainerConfig());
         $result = $autowire->callMethod(
             container: $container,
             id: Classes\EasyContainer::class,
@@ -61,7 +61,7 @@ class AutowiredTest extends TestCase
     public function testResolveMethodWithDependencies(): void
     {
         $autowire = new Autowired();
-        $config = new DiContainerConfig($autowire);
+        $config = new DiContainerConfig();
         $container = (new DiContainer(config: $config))
             ->set(
                 Interfaces\SumInterface::class,
@@ -88,9 +88,7 @@ class AutowiredTest extends TestCase
             public function __construct(int $val) {}
         };
 
-        $autowire = new Autowired();
-        $config = new DiContainerConfig($autowire);
-        $container = (new DiContainer(config: $config))->set($class::class);
+        $container = (new DiContainer(config: new DiContainerConfig()))->set($class::class);
 
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('Unresolvable dependency');
@@ -100,7 +98,7 @@ class AutowiredTest extends TestCase
 
     public function testObjectTypeForParameter(): void
     {
-        $container = (new DiContainer(config: new DiContainerConfig(new Autowired())))->set(
+        $container = (new DiContainer(config: new DiContainerConfig()))->set(
             id: Classes\ClassWithParameterTypeAsObject::class,
             arguments: ['asObject' => (object) ['name' => 'test']]
         );
@@ -115,7 +113,7 @@ class AutowiredTest extends TestCase
     {
         $autowire = new Autowired();
         $class = $autowire->resolveInstance(
-            new DiContainer(config: new DiContainerConfig($autowire)),
+            new DiContainer(config: new DiContainerConfig()),
             Classes\Logger::class,
             ['file' => '/var/log/app.log', 'name' => 'debug-log']
         );

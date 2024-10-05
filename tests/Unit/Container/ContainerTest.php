@@ -34,7 +34,7 @@ class ContainerTest extends TestCase
     protected function setUp(): void
     {
         $this->autowire = new Autowired();
-        $this->diContainerConfig = new DiContainerConfig(new Autowired());
+        $this->diContainerConfig = new DiContainerConfig();
     }
 
     protected function tearDown(): void
@@ -143,7 +143,7 @@ class ContainerTest extends TestCase
             Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
         ];
 
-        $config = new DiContainerConfig(autowire: $this->autowire, linkContainerSymbol: '*');
+        $config = new DiContainerConfig(linkContainerSymbol: '*');
         $container = new DiContainer(definitions: $definitions, config: $config);
 
         $repository = $container->get(Classes\UserRepository::class);

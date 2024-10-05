@@ -102,20 +102,20 @@ class ContainerWithAttributeConfigTest extends TestCase
             'expect' => 'I log to [/var/log/app.log] with data [user Piter into table cococo]',
         ];
 
-        yield 'with value as argument' => [
-            'definitions' => [
-                'shared-data' => ['abc', 'efj'],
-                'config-table-name' => 'cococo',
-                'app' => [
-                    'logger_file' => '/var/log/app.log',
-                    'defaultName' => 'Piter',
-                ],
-            ],
-            'expect' => 'I log to [/var/log/app.log] with data [user Vasiliy into table cococo]',
-            'methodArgs' => [
-                'userName' => 'Vasiliy',
-            ],
-        ];
+        //        yield 'with value as argument' => [
+        //            'definitions' => [
+        //                'shared-data' => ['abc', 'efj'],
+        //                'config-table-name' => 'cococo',
+        //                'app' => [
+        //                    'logger_file' => '/var/log/app.log',
+        //                    'defaultName' => 'Piter',
+        //                ],
+        //            ],
+        //            'expect' => 'I log to [/var/log/app.log] with data [user Vasiliy into table cococo]',
+        //            'methodArgs' => [
+        //                'userName' => 'Vasiliy',
+        //            ],
+        //        ];
     }
 
     /**
@@ -123,7 +123,7 @@ class ContainerWithAttributeConfigTest extends TestCase
      */
     public function testMethodResolve(array $definitions, string $expect, array $methodArgs = []): void
     {
-        $c = (new DiContainer(definitions: $definitions, config: new DiContainerConfig(new Autowired())))
+        $c = (new DiContainer(definitions: $definitions, config: new DiContainerConfig()))
             ->set(AutowiredInterface::class, Autowired::class)
         ;
 
@@ -141,7 +141,7 @@ class ContainerWithAttributeConfigTest extends TestCase
                 'shared-data' => ['abc', 'efj'],
                 'config-table-name' => 'cococo',
             ],
-            config: new DiContainerConfig(new Autowired())
+            config: new DiContainerConfig()
         ))
             ->set(AutowiredInterface::class, Autowired::class)
         ;

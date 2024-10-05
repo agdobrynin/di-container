@@ -8,19 +8,17 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredException;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Interfaces\AutowiredInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 final class Autowired implements AutowiredInterface
 {
-    private iterable $sharedInstanceByAttribute = [];
-
-    public function __construct(private bool $useAttribute = true) {}
-
     public function resolveInstance(
-        ContainerInterface $container,
+        DiContainerInterface $container,
         \Closure|string $id,
         array $args = []
     ): mixed {
@@ -35,16 +33,13 @@ final class Autowired implements AutowiredInterface
             ($reflectionClass = new \ReflectionClass($id))->isInstantiable()
                 || throw new AutowiredException("The [{$id}] class is not instantiable");
 
-            if ($this->useAttribute && $factory = DiFactory::makeFromReflection($reflectionClass)) {
-                return $this->sharedInstanceByAttribute($factory->id, $factory->isShared, function () use ($factory, $id, $container) {
-                    ($factoryClass = new \ReflectionClass($factory->id))->isInstantiable()
-                    || throw new AutowiredException("The [{$id}] class is not instantiable");
+            if ($factory = DiFactory::makeFromReflection($reflectionClass)) {
+                try {
+                    $container->set($id, $factory->id, $factory->arguments, $factory->isShared);
+                } catch (ContainerAlreadyRegisteredException) {
+                }
 
-                    $parameters = $factoryClass->getConstructor()?->getParameters() ?? [];
-                    $resolvedArgs = $this->resolveArguments($container, $parameters, $factory->arguments);
-
-                    return $factoryClass->newInstanceArgs($resolvedArgs)($container);
-                });
+                return $container->get($id)($container);
             }
 
             $parameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
@@ -61,7 +56,7 @@ final class Autowired implements AutowiredInterface
     }
 
     public function callMethod(
-        ContainerInterface $container,
+        DiContainerInterface $container,
         string $id,
         string $method,
         array $constructorArgs = [],
@@ -93,7 +88,7 @@ final class Autowired implements AutowiredInterface
      *
      * @throws \ReflectionException
      */
-    private function resolveArguments(ContainerInterface $container, array $parameters, array $inputArgs): array
+    private function resolveArguments(DiContainerInterface $container, array $parameters, array $inputArgs): array
     {
         $filter = static fn (\ReflectionParameter $parameter) => !isset($inputArgs[$parameter->name]);
 
@@ -109,7 +104,7 @@ final class Autowired implements AutowiredInterface
      *
      * @throws \ReflectionException
      */
-    private function resolveParameters(ContainerInterface $container, array $parameters): array
+    private function resolveParameters(DiContainerInterface $container, array $parameters): array
     {
         $dependencies = [];
 
@@ -123,20 +118,44 @@ final class Autowired implements AutowiredInterface
                     );
                 }
 
-                if ($this->useAttribute) {
-                    if ($factory = DiFactory::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $this->sharedInstanceByAttribute($factory->id, $factory->isShared, function () use ($factory, $container) {
-                            return $this->resolveInstance($container, $factory->id, $factory->arguments)($container);
-                        });
+                if ($factory = DiFactory::makeFromReflection($parameter)) {
+                    try {
+                        $container->set($factory->id, $factory->id, $factory->arguments, $factory->isShared);
+                    } catch (ContainerAlreadyRegisteredException) {
+                    }
+
+                    $dependencies[$parameter->getName()] = $container->get($factory->id);
+
+                    continue;
+                }
+
+                if ($inject = Inject::makeFromReflection($parameter)) {
+                    $isInterface = \interface_exists($inject->id);
+                    $isClass = \class_exists($inject->id);
+
+                    if ((!$isInterface && !$isClass) || $parameterType->isBuiltin()) {
+                        $dependencies[$parameter->getName()] = $container->get($inject->id);
 
                         continue;
                     }
 
-                    if ($inject = Inject::makeFromReflection($parameter)) {
-                        $dependencies[$parameter->getName()] = $this->resolveParameterByInject($container, $inject, $parameterType);
+                    if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
+                        try {
+                            $container->set($inject->id, $service->id, $service->arguments, $service->isShared);
+                        } catch (ContainerAlreadyRegisteredException) {
+                        }
+
+                        $dependencies[$parameter->getName()] = $container->get($inject->id);
 
                         continue;
                     }
+
+                    foreach ($inject->arguments as $argName => $argValue) {
+                        $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
+                            ? $container->get($argValue) : $argValue;
+                    }
+
+                    $dependencies[$parameter->getName()] = $this->resolveInstance($container, $inject->id, $inject->arguments);
                 }
 
                 $dependencies[$parameter->getName()] = match (true) {
@@ -160,41 +179,5 @@ final class Autowired implements AutowiredInterface
         }
 
         return $dependencies;
-    }
-
-    private function resolveParameterByInject(ContainerInterface $container, Inject $inject, \ReflectionNamedType $parameterType): mixed
-    {
-        $isInterface = \interface_exists($inject->id);
-        $isClass = \class_exists($inject->id);
-
-        if ((!$isInterface && !$isClass) || $parameterType->isBuiltin()) {
-            return $container->get($inject->id);
-        }
-
-        if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
-            return $this->sharedInstanceByAttribute($service->id, $inject->isShared, function () use ($service, $container) {
-                return $this->resolveInstance($container, $service->id, $service->arguments);
-            });
-        }
-
-        return $this->sharedInstanceByAttribute($inject->id, $inject->isShared, function () use ($inject, $container) {
-            foreach ($inject->arguments as $argName => $argValue) {
-                $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                    ? $container->get($argValue) : $argValue;
-            }
-
-            return $this->resolveInstance($container, $inject->id, $inject->arguments);
-        });
-    }
-
-    private function sharedInstanceByAttribute(string $id, bool $isShared, callable $resolver): mixed
-    {
-        if ($isShared && isset($this->sharedInstanceByAttribute[$id])) {
-            return $this->sharedInstanceByAttribute[$id];
-        }
-
-        return $isShared
-            ? $this->sharedInstanceByAttribute[$id] = $resolver()
-            : $resolver();
     }
 }

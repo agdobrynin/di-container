@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
-use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
@@ -61,10 +60,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionFalseByConfig(): void
     {
         $c = new DiContainer(
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-                isSharedServiceDefault: false
-            )
+            config: new DiContainerConfig(isSharedServiceDefault: false)
         );
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
@@ -73,10 +69,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionTrueByConfig(): void
     {
         $c = new DiContainer(
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-                isSharedServiceDefault: true
-            )
+            config: new DiContainerConfig(isSharedServiceDefault: true)
         );
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
@@ -85,9 +78,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionBySetMethodDefault(): void
     {
         $c = new DiContainer(
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $c->set(id: FileCache::class);
@@ -98,9 +89,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionBySetMethodFalse(): void
     {
         $c = new DiContainer(
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $c->set(id: FileCache::class, shared: false);
@@ -111,9 +100,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionBySetMethodTrue(): void
     {
         $c = new DiContainer(
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $c->set(id: FileCache::class, shared: true);
@@ -132,9 +119,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
@@ -151,9 +136,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
@@ -167,9 +150,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertEquals(['one', 'two'], $c->get(Db::class)->all());
@@ -187,9 +168,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertEquals(['one', 'two'], $c->get(Db::class)->all());
@@ -207,9 +186,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertEquals(['one', 'two'], $c->get(Db::class)->all());
@@ -224,9 +201,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));
@@ -244,9 +219,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));
@@ -264,9 +237,7 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $c = new DiContainer(
             definitions: $definition,
-            config: new DiContainerConfig(
-                autowire: new Autowired(),
-            )
+            config: new DiContainerConfig()
         );
 
         $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
-use Psr\Container\ContainerInterface;
 
 /**
  * @template TypeResolveClassByAutowired of object
@@ -20,7 +19,7 @@ interface AutowiredInterface
      * @throws AutowiredException
      */
     public function resolveInstance(
-        ContainerInterface $container,
+        DiContainerInterface $container,
         \Closure|string $id,
         array $args = []
     ): mixed;
@@ -31,7 +30,7 @@ interface AutowiredInterface
      * @throws AutowiredException
      */
     public function callMethod(
-        ContainerInterface $container,
+        DiContainerInterface $container,
         string $id,
         string $method,
         array $constructorArgs = [],

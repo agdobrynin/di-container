@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
-use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes\ClassWithFactoryArgument;
 use Tests\Fixtures\Attributes\ClassWithFiledFactory;
-use Tests\Fixtures\Attributes\ClassWithFiledFactoryOnProperty;
 use Tests\Fixtures\Attributes\SuperClass;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 use Tests\Fixtures\Classes\Sum;
@@ -42,24 +40,6 @@ class DiContainerClassFactoryTest extends TestCase
         $this->expectExceptionMessage("must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface'");
 
         (new DiContainerFactory())->make()->get(ClassWithFiledFactory::class);
-    }
-
-    public function testCallMethodWithArgumentWithFactory(): void
-    {
-        $c = (new DiContainerFactory())->make();
-        $res = (new Autowired())->callMethod($c, SuperClass::class, 'getArray');
-
-        $this->assertEquals(['Hello', 'World'], $res);
-    }
-
-    public function testCallMethodWithArgumentWithWrongFactory(): void
-    {
-        $c = (new DiContainerFactory())->make();
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface'");
-
-        (new Autowired())->callMethod($c, ClassWithFiledFactoryOnProperty::class, 'make');
     }
 
     public function testFactoryForConstructorProperty(): void
