@@ -551,4 +551,14 @@ class ContainerTest extends TestCase
 
         (new DiContainerFactory())->make()->get(Classes\AbstractClass::class);
     }
+
+    public function testResolveInterfaceFail(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Class "ok" does not exist');
+
+        (new DiContainerFactory())->make([
+            Classes\Interfaces\SumInterface::class => 'ok'
+        ])->get(Classes\Interfaces\SumInterface::class);
+    }
 }
