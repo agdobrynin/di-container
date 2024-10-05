@@ -549,6 +549,6 @@ class ContainerTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('class is not instantiable');
 
-        (new DiContainerFactory)->make()->get(Classes\AbstractClass::class);
+        (new DiContainerFactory())->make()->get(Classes\AbstractClass::class);
     }
 }

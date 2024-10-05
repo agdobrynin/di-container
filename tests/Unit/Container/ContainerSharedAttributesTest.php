@@ -96,4 +96,16 @@ class ContainerSharedAttributesTest extends TestCase
             $c->get(Attributes\SimpleInterfaceSharedTrue::class)
         );
     }
+
+    public function testClassByDiFactoryIsSharedTrue(): void
+    {
+        $c = (new DiContainerFactory())->make();
+
+        $this->assertSame(
+            $c->get(Attributes\FlyClass::class),
+            $c->get(Attributes\FlyClass::class)
+        );
+
+        $this->assertInstanceOf(Attributes\FlyClass::class, $c->get(Attributes\FlyClass::class));
+    }
 }
