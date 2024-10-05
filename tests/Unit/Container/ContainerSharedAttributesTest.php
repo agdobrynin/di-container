@@ -86,7 +86,7 @@ class ContainerSharedAttributesTest extends TestCase
     {
         $c = (new DiContainerFactory())->make();
 
-        $this->assertNotSame(
+        $this->assertSame(
             $c->get(Attributes\SimpleInterfaceSharedTrue::class),
             $c->get(Attributes\SimpleInterfaceSharedTrue::class)
         );
