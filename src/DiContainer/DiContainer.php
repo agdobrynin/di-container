@@ -189,7 +189,7 @@ class DiContainer implements DiContainerInterface
                         ? $this->resolved[$id] = $instance
                         : $instance;
                 }
-            } catch (AutowiredExceptionInterface $e) {
+            } catch (AutowiredExceptionInterface|\ReflectionException $e) {
                 throw new ContainerException($e->getMessage(), $e->getCode(), $e->getPrevious());
             }
         }
@@ -346,9 +346,8 @@ class DiContainer implements DiContainerInterface
 
                     if ($inject = Inject::makeFromReflection($parameter)) {
                         $isInterface = \interface_exists($inject->id);
-                        $isClass = \class_exists($inject->id);
 
-                        if ((!$isInterface && !$isClass) || $parameterType->isBuiltin()) {
+                        if ((!$isInterface && !\class_exists($inject->id)) || $parameterType->isBuiltin()) {
                             $dependencies[$parameter->getName()] = $this->get($inject->id);
 
                             continue;
@@ -389,6 +388,8 @@ class DiContainer implements DiContainerInterface
                 }
 
                 $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
+            } catch (\ReflectionException $e) {
+                throw new AutowiredException($e->getMessage(), $e->getCode(), $e);
             }
         }
 
