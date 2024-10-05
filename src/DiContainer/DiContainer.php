@@ -48,7 +48,7 @@ class DiContainer implements DiContainerInterface
 
         foreach ($definitions as $id => $definition) {
             $key = \is_string($id) ? $id : $definition;
-            $this->set($key, $definition);
+            $this->set(id: $key, definition: $definition);
         }
     }
 
@@ -154,7 +154,6 @@ class DiContainer implements DiContainerInterface
                         return $factory->isShared
                             ? $this->resolved[$id] = $factoryInstance
                             : $factoryInstance;
-
                     }
 
                     $instance = $this->resolveInstance($diDefinition->id, $diDefinition->arguments);
@@ -190,12 +189,8 @@ class DiContainer implements DiContainerInterface
                         ? $this->resolved[$id] = $instance
                         : $instance;
                 }
-            } catch (AutowiredExceptionInterface $exception) {
-                throw new ContainerException(
-                    message: $exception->getMessage(),
-                    code: $exception->getCode(),
-                    previous: $exception->getPrevious()
-                );
+            } catch (AutowiredExceptionInterface $e) {
+                throw new ContainerException($e->getMessage(), $e->getCode(), $e->getPrevious());
             }
         }
 
@@ -309,12 +304,8 @@ class DiContainer implements DiContainerInterface
             $resolvedArgs = $this->resolveInstanceArguments($parameters, $arguments);
 
             return $reflectionClass->newInstanceArgs($resolvedArgs);
-        } catch (\ReflectionException $exception) {
-            throw new AutowiredException(
-                message: $exception->getMessage(),
-                code: $exception->getCode(),
-                previous: $exception->getPrevious(),
-            );
+        } catch (\ReflectionException $e) {
+            throw new AutowiredException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
     }
 
@@ -390,15 +381,11 @@ class DiContainer implements DiContainerInterface
                     ContainerInterface::class === $parameterType->getName() => $this,
                     default => $this->get($parameterType->getName()),
                 };
-            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
+            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 if (!$parameter->isDefaultValueAvailable()) {
                     $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
 
-                    throw new AutowiredException(
-                        message: "Unresolvable dependency [{$parameter}] in [{$where}].",
-                        code: $exception->getCode(),
-                        previous: $exception,
-                    );
+                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}].", $e->getCode(), $e);
                 }
 
                 $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
