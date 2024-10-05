@@ -21,6 +21,7 @@ use Tests\Fixtures\Classes\Interfaces;
  *
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
+ * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
