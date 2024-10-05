@@ -8,6 +8,8 @@ use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes\ClassWithFactoryArgument;
 use Tests\Fixtures\Attributes\ClassWithFiledFactory;
+use Tests\Fixtures\Attributes\FlyClass;
+use Tests\Fixtures\Attributes\FlyWIthFlay;
 use Tests\Fixtures\Attributes\SuperClass;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 use Tests\Fixtures\Classes\Sum;
@@ -64,5 +66,15 @@ class DiContainerClassFactoryTest extends TestCase
         $this->assertInstanceOf(SumInterface::class, $c->get(SumInterface::class));
         $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));
         $this->assertEquals(20, $c->get(SumInterface::class)->add(10));
+    }
+
+    public function testTwoParamsWithOneType(): void
+    {
+        $c = (new DiContainerFactory)->make();
+        $class = $c->get(FlyWIthFlay::class);
+
+        $this->assertNotSame($class->fly1, $class->fly2);
+        $this->assertInstanceOf(FlyClass::class, $class->fly1);
+        $this->assertInstanceOf(FlyClass::class, $class->fly2);
     }
 }

@@ -6,7 +6,9 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Attributes;
+use Tests\Fixtures\Attributes\SimpleServiceSharedDefault;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -107,5 +109,28 @@ class ContainerSharedAttributesTest extends TestCase
         );
 
         $this->assertInstanceOf(Attributes\FlyClass::class, $c->get(Attributes\FlyClass::class));
+    }
+
+
+    public function testResolveTowInterfacesWithDefaultSHared(): void
+    {
+        $c = (new DiContainerFactory)->make();
+        $class = $c->get(Attributes\SimpleServiceWithTwoInterfacesDefault::class);
+
+        $this->assertNotSame($class->service1, $class->service2);
+        $this->assertInstanceOf(Attributes\SimpleInterfaceSharedDefault::class, $class->service1);
+        $this->assertInstanceOf(Attributes\SimpleInterfaceSharedDefault::class, $class->service1);
+        $this->assertInstanceOf(Attributes\SimpleServiceSharedDefault::class, $class->service1);
+        $this->assertInstanceOf(Attributes\SimpleServiceSharedDefault::class, $class->service2);
+    }
+
+    public function testResolveInterfaceWithFiled(): void
+    {
+        $c = (new DiContainerFactory)->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Unresolvable dependency');
+
+        $c->get(Attributes\SimpleServiceWithFailInject::class);
     }
 }
