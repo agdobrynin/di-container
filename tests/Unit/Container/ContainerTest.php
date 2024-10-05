@@ -543,4 +543,12 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $db->cache);
         $this->assertEquals('::file::', $db->cache->driver());
     }
+
+    public function testAbstractClassInNotInstantiable(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('class is not instantiable');
+
+        (new DiContainerFactory)->make()->get(Classes\AbstractClass::class);
+    }
 }
