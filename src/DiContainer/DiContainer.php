@@ -149,16 +149,15 @@ class DiContainer implements DiContainerInterface
                 if (\class_exists($diDefinition->id)) {
                     if ($this->config->isUseAttribute()
                         && $factory = DiFactory::makeFromReflection(new \ReflectionClass($diDefinition->id))) {
-                        $diDefinition->id = $factory->id;
-                        $diDefinition->arguments = $factory->arguments;
-                        $diDefinition->shared = $factory->isShared;
+                        $factoryInstance = $this->resolveInstance($factory->id, $factory->arguments)($this);
+
+                        return $factory->isShared
+                            ? $this->resolved[$id] = $factoryInstance
+                            : $factoryInstance;
+
                     }
 
                     $instance = $this->resolveInstance($diDefinition->id, $diDefinition->arguments);
-
-                    if ($instance instanceof DiFactoryInterface) {
-                        $instance = $instance($this);
-                    }
 
                     return $diDefinition->shared
                         ? $this->resolved[$id] = $instance
