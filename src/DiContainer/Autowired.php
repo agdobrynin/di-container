@@ -46,12 +46,8 @@ final class Autowired implements AutowiredInterface
             $resolvedArgs = $this->resolveArguments($container, $parameters, $args);
 
             return $reflectionClass->newInstanceArgs($resolvedArgs);
-        } catch (\ReflectionException $exception) {
-            throw new AutowiredException(
-                message: $exception->getMessage(),
-                code: $exception->getCode(),
-                previous: $exception->getPrevious(),
-            );
+        } catch (\ReflectionException $e) {
+            throw new AutowiredException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
     }
 
@@ -73,12 +69,8 @@ final class Autowired implements AutowiredInterface
             $instance = $this->resolveInstance($container, $id, $constructorArgs);
 
             return $methodReflector->invokeArgs($instance, $resolvedArgs);
-        } catch (AutowiredExceptionInterface|\ReflectionException $exception) {
-            throw new AutowiredException(
-                message: $exception->getMessage(),
-                code: $exception->getCode(),
-                previous: $exception->getPrevious(),
-            );
+        } catch (AutowiredExceptionInterface|\ReflectionException $e) {
+            throw new AutowiredException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
     }
 
@@ -152,10 +144,13 @@ final class Autowired implements AutowiredInterface
 
                     foreach ($inject->arguments as $argName => $argValue) {
                         $inject->arguments[$argName] = \is_string($argValue) && $container->has($argValue)
-                            ? $container->get($argValue) : $argValue;
+                            ? $container->get($argValue)
+                            : $argValue;
                     }
 
-                    $dependencies[$parameter->getName()] = $this->resolveInstance($container, $inject->id, $inject->arguments);
+                    $dependencies[$parameter->getName()] = $this
+                        ->resolveInstance($container, $inject->id, $inject->arguments)
+                    ;
                 }
 
                 $dependencies[$parameter->getName()] = match (true) {
@@ -163,15 +158,11 @@ final class Autowired implements AutowiredInterface
                     ContainerInterface::class === $parameterType->getName() => $container,
                     default => $container->get($parameterType->getName()),
                 };
-            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $exception) {
+            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 if (!$parameter->isDefaultValueAvailable()) {
                     $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
 
-                    throw new AutowiredException(
-                        message: "Unresolvable dependency [{$parameter}] in [{$where}].",
-                        code: $exception->getCode(),
-                        previous: $exception,
-                    );
+                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}].", $e->getCode(), $e);
                 }
 
                 $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
