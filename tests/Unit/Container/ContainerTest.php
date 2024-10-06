@@ -76,9 +76,9 @@ class ContainerTest extends TestCase
         $this->assertEquals(11, $container->get('test'));
     }
 
-    public function testAutowiredOff(): void
+    public function testAutowiredOff1(): void
     {
-        $container = (new DiContainer())
+        $container = (new DiContainer(config: new DiContainerConfig(useAutowire: false, useAttribute: false)))
             ->set('test', static fn () => \time())
         ;
 
