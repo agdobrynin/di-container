@@ -109,6 +109,8 @@ class DiContainer implements DiContainerInterface
 
     public function call(array|callable|string $callable, array $arguments = []): mixed
     {
+        // [$classInstance, 'method'] || \Closure || function (function name as string)
+        // if string what is it?
         throw new ContainerException('Not implemented yet!');
     }
 
