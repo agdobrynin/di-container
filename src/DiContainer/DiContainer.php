@@ -114,11 +114,21 @@ class DiContainer implements DiContainerInterface
         // is_callable - $container->call([$instance, 'index'], ['param' => 'Name'])
         // is_callable - $container->call('function')
         // is_callable - $container->call($instance) - instance implement __invoke
+        // is_callable - $container->call(static function(ContainerInterface $c) {...}, ['c' => $c])
         // --- check ---
         // $container->call([Controller::class, 'index'], ['param' => 'Name'])
         // $container->call(Controller::class) -- !! method_exists(Controller::class,'__invoke')
-        // if string what is it?
-        // is_array($callable) && is_string($callable[0])
+        // -------------------------------------------------
+        // Container::call() can call any callable, that means:
+        // - closures
+        // - functions
+        // - object methods and static methods
+        // - invokable objects (objects that implement __invoke())
+        //
+        // Additionally you can call:
+        // name of invokable classes: $container->call('My\CallableClass')
+        // object methods (give the class name, not an object): $container->call(['MyClass', 'someMethod'])
+
         throw new ContainerException('Not implemented yet!');
     }
 
