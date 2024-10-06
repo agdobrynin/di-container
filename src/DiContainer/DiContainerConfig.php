@@ -17,8 +17,8 @@ final class DiContainerConfig implements DiContainerConfigInterface
         private ?string $delimiterAccessArrayNotationSymbol = '.',
         private bool $useAutowire = true,
         private bool $useZeroConfigurationDefinition = true,
-        private bool $isSharedServiceDefault = false,
         private bool $useAttribute = true,
+        private bool $isSharedServiceDefault = false,
     ) {
         '' !== $linkContainerSymbol || throw new DiContainerConfigException('Link container symbol cannot be empty.');
         '' !== $delimiterAccessArrayNotationSymbol || throw new DiContainerConfigException('Delimiter access container symbol cannot be empty.');

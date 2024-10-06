@@ -19,8 +19,8 @@ class DiContainerFactory implements DiContainerFactoryInterface
             delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol,
             useAutowire: true,
             useZeroConfigurationDefinition: true,
-            isSharedServiceDefault: false,
-            useAttribute: true
+            useAttribute: true,
+            isSharedServiceDefault: false
         );
 
         return new DiContainer(
