@@ -53,7 +53,7 @@ final class Autowired implements AutowiredInterface
 
     public function callMethod(
         DiContainerInterface $container,
-        string $id,
+        string|object $id,
         string $method,
         array $constructorArgs = [],
         array $methodArgs = []
@@ -66,7 +66,9 @@ final class Autowired implements AutowiredInterface
                 return $methodReflector->invokeArgs(null, $resolvedArgs);
             }
 
-            $instance = $this->resolveInstance($container, $id, $constructorArgs);
+            $instance = \is_string($id)
+                ? $this->resolveInstance($container, $id, $constructorArgs)
+                : $id;
 
             return $methodReflector->invokeArgs($instance, $resolvedArgs);
         } catch (AutowiredExceptionInterface|\ReflectionException $e) {

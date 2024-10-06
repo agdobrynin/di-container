@@ -31,7 +31,7 @@ interface AutowiredInterface
      */
     public function callMethod(
         DiContainerInterface $container,
-        string $id,
+        string|object $id,
         string $method,
         array $constructorArgs = [],
         array $methodArgs = []
