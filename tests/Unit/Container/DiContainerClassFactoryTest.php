@@ -70,7 +70,7 @@ class DiContainerClassFactoryTest extends TestCase
 
     public function testTwoParamsWithOneType(): void
     {
-        $c = (new DiContainerFactory)->make();
+        $c = (new DiContainerFactory())->make();
         $class = $c->get(FlyWIthFlay::class);
 
         $this->assertNotSame($class->fly1, $class->fly2);

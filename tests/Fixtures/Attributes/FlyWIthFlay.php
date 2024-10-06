@@ -13,7 +13,5 @@ class FlyWIthFlay
         public FlyClass $fly1,
         #[DiFactory(FlyClassByDiFactory::class, isShared: false)]
         public FlyClass $fly2,
-    )
-    {
-    }
+    ) {}
 }
