@@ -61,7 +61,7 @@ class ContainerTest extends TestCase
     public function testHasMethodIsTrue(): void
     {
         $container = new DiContainer();
-        $container->set('test', fn () => 10);
+        $container->set('test', static fn () => 10);
 
         $this->assertTrue($container->has('test'));
         $this->assertFalse($container->has(self::class));
@@ -71,7 +71,7 @@ class ContainerTest extends TestCase
     {
         $container = new DiContainer(config: $this->diContainerConfig);
         $i = 1;
-        $container->set('test', fn () => 10 + $i);
+        $container->set('test', static fn () => 10 + $i);
 
         $this->assertEquals(11, $container->get('test'));
     }
@@ -115,7 +115,7 @@ class ContainerTest extends TestCase
     public function testGetClosureWithParamsDefaultValue(): void
     {
         $container = (new DiContainer(config: $this->diContainerConfig));
-        $container->set('test', fn (int $myParams = 5) => 10 + $myParams);
+        $container->set('test', static fn (int $myParams = 5) => 10 + $myParams);
 
         $this->assertEquals(15, $container->get('test'));
     }
@@ -525,7 +525,7 @@ class ContainerTest extends TestCase
     public function testDefinitionArgAsClosure(): void
     {
         $c = (new DiContainerFactory())->make([
-            Classes\CacheAll::class => fn () => new Classes\CacheAll(new Classes\FileCache(), new Classes\RedisCache()),
+            Classes\CacheAll::class => static fn () => new Classes\CacheAll(new Classes\FileCache(), new Classes\RedisCache()),
         ]);
 
         $this->assertInstanceOf(Classes\CacheAll::class, $c->get(Classes\CacheAll::class));

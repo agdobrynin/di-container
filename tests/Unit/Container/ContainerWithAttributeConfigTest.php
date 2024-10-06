@@ -32,15 +32,15 @@ class ContainerWithAttributeConfigTest extends TestCase
     {
         $c = (new DiContainerFactory())->make([
             'shared-data' => ['php', 'js'],
-            'config-table-name' => 'log',
+            'config-table-name' => 'logs',
         ]);
 
         $l = $c->get(Attributes\Lorem::class);
 
         $this->assertInstanceOf(Attributes\Lorem::class, $l);
         $this->assertInstanceOf(Attributes\SimpleDbInterface::class, $l->simpleDb);
-        $this->assertEquals('user Ivan into table log', $l->simpleDb->insert('Ivan'));
-        $this->assertEquals(['name' => 'Piter', 'table' => 'log'], $l->simpleDb->select('Piter'));
+        $this->assertEquals('user Ivan into table logs', $l->simpleDb->insert('Ivan'));
+        $this->assertEquals(['name' => 'Piter', 'table' => 'logs'], $l->simpleDb->select('Piter'));
 
         $this->assertEquals(['php', 'js'], $l->simpleDb->data->getArrayCopy());
     }
@@ -50,7 +50,7 @@ class ContainerWithAttributeConfigTest extends TestCase
         $c = (new DiContainerFactory())->make([
             'data' => ['one', 'second'],
             'shared-data' => '@data',
-            'config-table-name' => 'log',
+            'config-table-name' => 'logs',
         ]);
 
         $class = $c->get(Attributes\SimpleDb::class);
