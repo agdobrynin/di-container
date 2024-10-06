@@ -110,7 +110,15 @@ class DiContainer implements DiContainerInterface
     public function call(array|callable|string $callable, array $arguments = []): mixed
     {
         // [$classInstance, 'method'] || \Closure || function (function name as string)
+        // ------------------------------------
+        // is_callable - $container->call([$instance, 'index'], ['param' => 'Name'])
+        // is_callable - $container->call('function')
+        // is_callable - $container->call($instance) - instance implement __invoke
+        // --- check ---
+        // $container->call([Controller::class, 'index'], ['param' => 'Name'])
+        // $container->call(Controller::class) -- !! method_exists(Controller::class,'__invoke')
         // if string what is it?
+        // is_array($callable) && is_string($callable[0])
         throw new ContainerException('Not implemented yet!');
     }
 
