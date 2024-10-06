@@ -107,13 +107,13 @@ class DiContainer implements DiContainerInterface
         return $this;
     }
 
-    public function call(array|callable|string $callable, array $arguments = []): mixed
+    public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         // [$classInstance, 'method'] || \Closure || function (function name as string)
         // ------------------------------------
-        // is_callable - $container->call([$instance, 'index'], ['param' => 'Name'])
+        // is_callable - $container->call([$object, 'index'], ['param' => 'Name'])
         // is_callable - $container->call('function')
-        // is_callable - $container->call($instance) - instance implement __invoke
+        // is_callable - $container->call($object) - has __invoke
         // is_callable - $container->call(static function(ContainerInterface $c) {...}, ['c' => $c])
         // --- check ---
         // $container->call([Controller::class, 'index'], ['param' => 'Name'])
