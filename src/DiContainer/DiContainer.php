@@ -107,6 +107,11 @@ class DiContainer implements DiContainerInterface
         return $this;
     }
 
+    public function call(array|callable|string $callable, array $arguments = []): mixed
+    {
+        throw new ContainerException('Not implemented yet!');
+    }
+
     /**
      * Resolve dependencies.
      *
