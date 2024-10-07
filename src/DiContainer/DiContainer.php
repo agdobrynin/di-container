@@ -109,25 +109,16 @@ class DiContainer implements DiContainerInterface
 
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
-        // [$classInstance, 'method'] || \Closure || function (function name as string)
-        // ------------------------------------
-        // is_callable - $container->call([$object, 'index'], ['param' => 'Name'])
-        // is_callable - $container->call('function')
-        // is_callable - $container->call($object) - has __invoke
-        // is_callable - $container->call(static function(ContainerInterface $c) {...}, ['c' => $c])
-        // --- check ---
-        // $container->call([Controller::class, 'index'], ['param' => 'Name'])
-        // $container->call(Controller::class) -- !! method_exists(Controller::class,'__invoke')
-        // -------------------------------------------------
-        // Container::call() can call any callable, that means:
-        // - closures
-        // - functions
-        // - object methods and static methods
-        // - invokable objects (objects that implement __invoke())
-        //
-        // Additionally you can call:
-        // name of invokable classes: $container->call('My\CallableClass')
-        // object methods (give the class name, not an object): $container->call(['MyClass', 'someMethod'])
+        try {
+            if (\is_callable($definition)) {
+                $parameters = ParametersFromCallableDefinition::make($definition);
+                $resolvedArgs = $this->resolveInstanceArguments($parameters, $arguments);
+
+                return \call_user_func_array($definition, $resolvedArgs);
+            }
+        } catch (AutowiredExceptionInterface|\ReflectionException $e) {
+            throw new ContainerException($e->getMessage(), $e->getCode(), $e);
+        }
 
         throw new ContainerException('Not implemented yet!');
     }
