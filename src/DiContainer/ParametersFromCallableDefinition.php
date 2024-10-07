@@ -19,9 +19,7 @@ class ParametersFromCallableDefinition
         }
 
         if (\is_string($definition) && \strpos($definition, '::') > 0) {
-            return (new \ReflectionMethod(
-                ...\explode('::', $definition, 2)
-            ))->getParameters();
+            return (new \ReflectionMethod($definition))->getParameters();
         }
 
         if (\is_array($definition)) {
