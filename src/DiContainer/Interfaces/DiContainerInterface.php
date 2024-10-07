@@ -45,7 +45,7 @@ interface DiContainerInterface extends ContainerInterface
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static;
 
     /**
-     * @param <class-string, string>[]|class-string|string|callable $definition
+     * @param <class-string|object, string|null>[]|class-string|string|callable $definition
      *
      * @throws ContainerExceptionInterface
      */
