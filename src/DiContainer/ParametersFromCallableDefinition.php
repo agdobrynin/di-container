@@ -18,8 +18,10 @@ class ParametersFromCallableDefinition
             return (new \ReflectionFunction($definition))->getParameters();
         }
 
-        if (\is_string($definition) && $def = \explode('::', $definition, 2)) {
-            return (new \ReflectionMethod($def[0], $def[1]))->getParameters();
+        if (\is_string($definition) && \strpos($definition, '::') > 0) {
+            return (new \ReflectionMethod(
+                ...\explode('::', $definition, 2)
+            ))->getParameters();
         }
 
         if (\is_array($definition)) {
