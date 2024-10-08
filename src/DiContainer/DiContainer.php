@@ -111,32 +111,10 @@ class DiContainer implements DiContainerInterface
     {
         try {
             if (!\is_callable($definition)) {
-                $definition = match (true) {
-                    \is_array($definition) => [
-                        $definition[0] ?? throw new ContainerException('Wrong parameter for definition at index 0. Got: '.\var_export($definition, true)),
-                        $definition[1] ?? throw new ContainerException('Wrong parameter for definition at index 1. Got: '.\var_export($definition, true)),
-                    ],
-                    \strpos($definition, '::') > 0 => \explode('::', $definition, 2),
-                    default => [$definition, '__invoke'],
-                };
-
-                if (\is_string($definition[0])) {
-                    $definition[0] = $this->get($definition[0]);
-                }
-
-                if (!\is_callable($definition)) {
-                    throw new ContainerException('Definition is not callable. Got: '.\var_export($definition, true));
-                }
+                $definition = DefinitionAsCallable::makeFromAbstract($definition, $this);
             }
 
-            $parameters = match (true) {
-                $definition instanceof \Closure => (new \ReflectionFunction($definition))->getParameters(),
-                \is_string($definition) && \function_exists($definition) => (new \ReflectionFunction($definition))->getParameters(),
-                \is_string($definition) && \strpos($definition, '::') > 0 => (new \ReflectionMethod($definition))->getParameters(),
-                \is_array($definition) => (new \ReflectionMethod($definition[0], $definition[1]))->getParameters(),
-                default => (new \ReflectionMethod($definition, '__invoke'))->getParameters(),
-            };
-
+            $parameters = DefinitionAsCallable::reflectParameters($definition);
             $resolvedArgs = $this->resolveInstanceArguments($parameters, []);
 
             return \call_user_func_array($definition, $arguments + $resolvedArgs);
