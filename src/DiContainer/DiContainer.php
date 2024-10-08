@@ -115,7 +115,11 @@ class DiContainer implements DiContainerInterface
             }
 
             $parameters = DefinitionAsCallable::reflectParameters($definition);
-            $resolvedArgs = $this->resolveInstanceArguments($parameters, []);
+            $needToResolve = \array_filter(
+                $parameters,
+                static fn (\ReflectionParameter $parameter) => !isset($arguments[$parameter->getName()])
+            );
+            $resolvedArgs = $this->resolveInstanceArguments($needToResolve, []);
 
             return \call_user_func_array($definition, $arguments + $resolvedArgs);
         } catch (AutowiredExceptionInterface|\ReflectionException $e) {
