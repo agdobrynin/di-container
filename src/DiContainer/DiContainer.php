@@ -110,17 +110,32 @@ class DiContainer implements DiContainerInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            if (\is_callable($definition)) {
-                $parameters = ParametersFromCallableDefinition::make($definition);
-                $resolvedArgs = $this->resolveInstanceArguments($parameters, $arguments);
+            if (!\is_callable($definition)) {
+                $definition = match (true) {
+                    \is_array($definition) => [$definition[0], $definition[1]],
+                    \strpos($definition, '::') > 0 => \explode('::', $definition, 2),
+                    default => [$definition, '__invoke'],
+                };
 
-                return \call_user_func_array($definition, $resolvedArgs);
+                if (\is_string($definition[0])) {
+                    $definition[0] = $this->get($definition[0]);
+                }
             }
+
+            $parameters = match (true) {
+                $definition instanceof \Closure => (new \ReflectionFunction($definition))->getParameters(),
+                \is_string($definition) && \function_exists($definition) => (new \ReflectionFunction($definition))->getParameters(),
+                \is_string($definition) && \strpos($definition, '::') > 0 => (new \ReflectionMethod($definition))->getParameters(),
+                \is_array($definition) => (new \ReflectionMethod($definition[0], $definition[1]))->getParameters(),
+                default => (new \ReflectionMethod($definition, '__invoke'))->getParameters(),
+            };
+
+            $resolvedArgs = $this->resolveInstanceArguments($parameters, $arguments);
+
+            return \call_user_func_array($definition, $resolvedArgs);
         } catch (AutowiredExceptionInterface|\ReflectionException $e) {
             throw new ContainerException($e->getMessage(), $e->getCode(), $e);
         }
-
-        throw new ContainerException('Not implemented yet!');
     }
 
     /**
