@@ -259,8 +259,6 @@ class DiContainer implements DiContainerInterface
                 },
                 $this->definitions
             );
-
-            return true;
         }
 
         return true;
