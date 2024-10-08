@@ -175,7 +175,7 @@ class ContainerTest extends TestCase
             yield 'database' => static fn () => new Classes\Db($base);
 
             yield Classes\UserRepository::class => [
-                'arguments' => ['db' => 'database'],
+                'arguments' => ['db' => '@database'],
             ];
         };
 
@@ -410,9 +410,9 @@ class ContainerTest extends TestCase
                 Classes\Logger::class => [
                     'arguments' => [
                         // get by container-id
-                        'name' => 'logger_name_my_app',
+                        'name' => '@logger_name_my_app',
                         // get by container link
-                        'file' => 'local_file',
+                        'file' => '@local_file',
                     ],
                 ],
             ]

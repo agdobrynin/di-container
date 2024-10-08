@@ -23,6 +23,21 @@ use Tests\Fixtures\Classes;
  */
 class ContainerAccessByArrayNotationSymbolTest extends TestCase
 {
+    public function testContainerAccessByArrayNotationSymbol(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'a' => [
+                'b' => [
+                    'c' => 'my value',
+                ],
+            ],
+        ]);
+
+        $this->assertEquals('my value', $container->get('@a.b.c'));
+        $this->assertEquals(['c' => 'my value'], $container->get('@a.b'));
+        $this->assertEquals(['b' => ['c' => 'my value']], $container->get('a'));
+    }
+
     public function testAccessForSimpleArray(): void
     {
         $def = [
@@ -47,7 +62,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
                 'arguments' => [
                     'names' => '@app.users',
                     'place' => '@app.city',
-                    'site' => 'search_site',
+                    'site' => '@search_site',
                     'reportEmail' => '@report.reportEmail',
                 ],
             ],
@@ -61,7 +76,6 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $container = (new DiContainerFactory())->make($def);
 
         $class = $container->get(Classes\Names::class);
-
         $this->assertEquals(['Ivan', 'Piter'], $class->names);
         $this->assertEquals('Washington', $class->place);
         $this->assertEquals('https://www.google.com', $class->site);
@@ -89,7 +103,7 @@ class ContainerAccessByArrayNotationSymbolTest extends TestCase
         $container = (new DiContainerFactory())->make($def);
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Unresolvable dependency: array notation key [@app.users]');
+        $this->expectExceptionMessage('Unresolvable dependency [@app.users]');
 
         $container->get(Classes\Names::class);
     }

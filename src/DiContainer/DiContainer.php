@@ -225,14 +225,7 @@ class DiContainer implements DiContainerInterface
             return $value;
         }
 
-        if ($this->config?->isUseArrayNotationDefinition()
-            && $this->config?->isArrayNotationSyntaxSyntax($value)
-            && $this->makeDefinitionForArrayNotation($value)) {
-            return $this->get($value);
-        }
-
-        if ($this->config?->isUseLinkContainerDefinition()
-            && $key = $this->config?->getKeyFromLinkContainerSymbol($value)) {
+        if ($key = $this->config?->getKeyFromLinkContainerSymbol($value)) {
             return $this->getValue($this->get($key));
         }
 
@@ -259,10 +252,10 @@ class DiContainer implements DiContainerInterface
             $path = \explode($symbolNotation, \substr($id, $offset));
             $this->definitions[$id] = \array_reduce(
                 $path,
-                static function (mixed $segments, string $segment) use ($id) {
+                static function (mixed $segments, string $segment) {
                     return isset($segments[$segment]) && \is_array($segments)
                         ? $segments[$segment]
-                        : throw new NotFoundException("Unresolvable dependency: array notation key [{$id}]");
+                        : throw new NotFoundException();
                 },
                 $this->definitions
             );
@@ -338,7 +331,7 @@ class DiContainer implements DiContainerInterface
 
         foreach ($parameters as $parameter) {
             if (isset($arguments[$parameter->name])) {
-                $dependencies[$parameter->name] = $this->getValue($arguments[$parameter->name]);
+                $dependencies[$parameter->name] = $this->getPredefinedArgument($arguments[$parameter->name]);
 
                 continue;
             }
@@ -414,5 +407,20 @@ class DiContainer implements DiContainerInterface
         }
 
         return $dependencies;
+    }
+
+    protected function getPredefinedArgument(mixed $argument): mixed
+    {
+        if (\is_string($argument)) {
+            if ($this->config?->isArrayNotationSyntaxSyntax($argument)) {
+                return $this->get($argument);
+            }
+
+            if ($key = $this->config?->getKeyFromLinkContainerSymbol($argument)) {
+                return $this->get($key);
+            }
+        }
+
+        return $argument;
     }
 }
