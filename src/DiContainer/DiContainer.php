@@ -112,13 +112,20 @@ class DiContainer implements DiContainerInterface
         try {
             if (!\is_callable($definition)) {
                 $definition = match (true) {
-                    \is_array($definition) => [$definition[0], $definition[1]],
+                    \is_array($definition) => [
+                        $definition[0] ?? throw new ContainerException('Wrong parameter for definition at index 0. Got: '.\var_export($definition, true)),
+                        $definition[1] ?? throw new ContainerException('Wrong parameter for definition at index 1. Got: '.\var_export($definition, true)),
+                    ],
                     \strpos($definition, '::') > 0 => \explode('::', $definition, 2),
                     default => [$definition, '__invoke'],
                 };
 
                 if (\is_string($definition[0])) {
                     $definition[0] = $this->get($definition[0]);
+                }
+
+                if (!\is_callable($definition)) {
+                    throw new ContainerException('Definition is not callable. Got: '.\var_export($definition, true));
                 }
             }
 
