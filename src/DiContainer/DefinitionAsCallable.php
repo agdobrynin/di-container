@@ -11,14 +11,14 @@ final class DefinitionAsCallable
 {
     public static function makeFromAbstract(array|string $definition, ContainerInterface $container): callable
     {
-        $definition = self::parseDefinition($definition);
+        $def = self::parseDefinition($definition);
 
-        if (\is_string($definition[0])) {
-            $definition[0] = $container->get($definition[0]);
+        if (\is_string($def[0])) {
+            $def[0] = $container->get($def[0]);
         }
 
-        return \is_callable($definition)
-            ? $definition
+        return \is_callable($def)
+            ? $def
             : throw new ContainerException('Definition is not callable. Got: '.\var_export($definition, true));
     }
 
