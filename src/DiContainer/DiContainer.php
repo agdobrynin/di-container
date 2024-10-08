@@ -130,9 +130,9 @@ class DiContainer implements DiContainerInterface
                 default => (new \ReflectionMethod($definition, '__invoke'))->getParameters(),
             };
 
-            $resolvedArgs = $this->resolveInstanceArguments($parameters, $arguments);
+            $resolvedArgs = $this->resolveInstanceArguments($parameters, []);
 
-            return \call_user_func_array($definition, $resolvedArgs);
+            return \call_user_func_array($definition, $arguments + $resolvedArgs);
         } catch (AutowiredExceptionInterface|\ReflectionException $e) {
             throw new ContainerException($e->getMessage(), $e->getCode(), $e);
         }
