@@ -181,4 +181,11 @@ class DiContainerConfigTest extends TestCase
             (new DiContainerConfig(...$newArgs))->isArrayNotationSyntaxSyntax($key)
         );
     }
+
+    public function testUsePhpAttributeWithoutAutowire(): void
+    {
+        $this->expectException(DiContainerConfigExceptionInterface::class);
+
+        new DiContainerConfig(useAutowire: false, useAttribute: true);
+    }
 }
