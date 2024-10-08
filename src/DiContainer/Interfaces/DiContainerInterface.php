@@ -30,6 +30,8 @@ interface DiContainerInterface extends ContainerInterface
      *              DiContainerInterface::ARGUMENTS => [
      *                   'initValue' => 100
      *              ],
+     *              // Make service as shared (public)
+     *              DiContainerInterface::SHARED => true,
      *         ],
      *      ];
      * ```
