@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
-use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -22,7 +20,6 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
  * @covers \Kaspi\DiContainer\Attributes\Service
- * @covers \Kaspi\DiContainer\Autowired
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerDefinition
@@ -30,17 +27,13 @@ use Tests\Fixtures\Classes\Interfaces;
  */
 class ContainerTest extends TestCase
 {
-    protected ?AutowiredInterface $autowire = null;
-
     protected function setUp(): void
     {
-        $this->autowire = new Autowired();
         $this->diContainerConfig = new DiContainerConfig();
     }
 
     protected function tearDown(): void
     {
-        $this->autowire = null;
         $this->diContainerConfig = null;
     }
 
