@@ -39,20 +39,20 @@ final class DefinitionAsCallable
      */
     public static function reflectParameters(callable $definition): array
     {
-        if ($definition instanceof \Closure) {
-            return (new \ReflectionFunction($definition))->getParameters();
-        }
-
-        if (\is_string($definition) && \function_exists($definition)) {
-            return (new \ReflectionFunction($definition))->getParameters();
+        if (\is_array($definition)) {
+            return (new \ReflectionMethod($definition[0], $definition[1]))->getParameters();
         }
 
         if (\is_string($definition) && \strpos($definition, '::') > 0) {
             return (new \ReflectionMethod($definition))->getParameters();
         }
 
-        if (\is_array($definition)) {
-            return (new \ReflectionMethod($definition[0], $definition[1]))->getParameters();
+        if ($definition instanceof \Closure) {
+            return (new \ReflectionFunction($definition))->getParameters();
+        }
+
+        if (\is_string($definition) && \function_exists($definition)) {
+            return (new \ReflectionFunction($definition))->getParameters();
         }
 
         return (new \ReflectionMethod($definition, '__invoke'))->getParameters();
