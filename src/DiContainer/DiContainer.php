@@ -32,7 +32,6 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $definitionCache = [];
     protected array $resolved = [];
-    protected ?int $linkContainerSymbolLength = null;
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -43,10 +42,6 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?DiContainerConfigInterface $config = null
     ) {
-        if ($s = $this->config?->getReferenceContainerSymbol()) {
-            $this->linkContainerSymbolLength = \strlen($s);
-        }
-
         foreach ($definitions as $id => $definition) {
             $key = \is_string($id) ? $id : $definition;
             $this->set(id: $key, definition: $definition);

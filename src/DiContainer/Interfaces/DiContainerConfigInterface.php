@@ -12,8 +12,6 @@ interface DiContainerConfigInterface
 
     public function isUseZeroConfigurationDefinition(): bool;
 
-    public function getReferenceContainerSymbol(): string;
-
     public function getReferenceToContainer(string $value): ?string;
 
     public function isUseAttribute(): bool;

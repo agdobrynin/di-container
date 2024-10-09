@@ -42,11 +42,6 @@ final class DiContainerConfig implements DiContainerConfigInterface
         return $this->useZeroConfigurationDefinition;
     }
 
-    public function getReferenceContainerSymbol(): string
-    {
-        return $this->referenceContainerSymbol;
-    }
-
     public function getReferenceToContainer(string $value): ?string
     {
         return $this->referenceContainerSymbol && (\str_starts_with($value, $this->referenceContainerSymbol))
