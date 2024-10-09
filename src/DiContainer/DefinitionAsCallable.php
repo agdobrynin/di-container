@@ -69,9 +69,10 @@ final class DefinitionAsCallable
             return [$definition[0], $definition[1]];
         }
 
-        return match (true) {
-            \strpos($definition, '::') > 0 => \explode('::', $definition, 2),
-            default => [$definition, '__invoke'],
-        };
+        if (\strpos($definition, '::') > 0) {
+            return \explode('::', $definition, 2);
+        }
+
+        return [$definition, '__invoke'];
     }
 }
