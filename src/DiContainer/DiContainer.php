@@ -394,13 +394,14 @@ class DiContainer implements DiContainerInterface
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 if (!$parameter->isDefaultValueAvailable()) {
                     $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
+                    $reason = $e->getMessage();
 
-                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}].", $e->getCode(), $e);
+                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]. Reason: {$reason}", $e->getCode(), $e);
                 }
 
                 $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
-            } catch (\ReflectionException $e) {
-                throw new AutowiredException($e->getMessage(), $e->getCode(), $e);
+            } catch (\ReflectionException $e) { // @codeCoverageIgnore
+                throw new AutowiredException($e->getMessage(), $e->getCode(), $e); // @codeCoverageIgnore
             }
         }
 
