@@ -14,11 +14,11 @@ class DiContainerFactory implements DiContainerFactoryInterface
         string $referenceContainerSymbol = '@',
     ): DiContainerInterface {
         $config = new DiContainerConfig(
-            referenceContainerSymbol: $referenceContainerSymbol,
             useAutowire: true,
             useZeroConfigurationDefinition: true,
             useAttribute: true,
-            isSharedServiceDefault: false
+            isSharedServiceDefault: false,
+            referenceContainerSymbol: $referenceContainerSymbol
         );
 
         return new DiContainer(

@@ -43,7 +43,7 @@ class DiContainerConfigTest extends TestCase
      */
     public function testGetReferenceToContainer(string $referenceContainerSymbol, string $key, ?string $expect): void
     {
-        $config = new DiContainerConfig(referenceContainerSymbol: $referenceContainerSymbol, useAttribute: false);
+        $config = new DiContainerConfig(referenceContainerSymbol: $referenceContainerSymbol);
 
         $this->assertEquals($expect, $config->getReferenceToContainer($key));
     }
@@ -63,8 +63,8 @@ class DiContainerConfigTest extends TestCase
     public function testIsUseZeroConfigurationDefinition(null|bool $value, bool $expect): void
     {
         $conf = null === $value
-            ? new DiContainerConfig(useAttribute: false)
-            : new DiContainerConfig(useZeroConfigurationDefinition: $value, useAttribute: false);
+            ? new DiContainerConfig()
+            : new DiContainerConfig(useZeroConfigurationDefinition: $value);
 
         $this->assertEquals($expect, $conf->isUseZeroConfigurationDefinition());
     }

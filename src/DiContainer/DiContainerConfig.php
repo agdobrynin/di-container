@@ -12,11 +12,11 @@ final class DiContainerConfig implements DiContainerConfigInterface
     private int $referenceContainerSymbolLength;
 
     public function __construct(
-        private string $referenceContainerSymbol = '@',
         private bool $useAutowire = true,
         private bool $useZeroConfigurationDefinition = true,
         private bool $useAttribute = true,
         private bool $isSharedServiceDefault = false,
+        private string $referenceContainerSymbol = '@',
     ) {
         '' !== $referenceContainerSymbol || throw new DiContainerConfigException('Reference to container symbol cannot be empty.');
 
