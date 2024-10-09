@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
+use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInjectedServiceInConstructor;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInvokeAndInjectedServiceInConstructor;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithStaticMethod;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\SimpleService;
@@ -82,5 +83,37 @@ class ContainerMethodCallTest extends TestCase
         ;
 
         $this->assertEquals('Aloha Noa 🕶', $res);
+    }
+
+    public function testClassWithMethodAsString(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            SimpleService::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'name' => 'Jimmy',
+                ],
+            ],
+        ]);
+
+        $definition = 'Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInjectedServiceInConstructor::sayHello';
+        $res = $container->call($definition, ['greeting' => 'Hi']);
+
+        $this->assertEquals('Hi Jimmy', $res);
+    }
+
+    public function testClassWithMethodAsArray(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            SimpleService::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'name' => 'Jimmy',
+                ],
+            ],
+        ]);
+
+        $definition = [ClassInjectedServiceInConstructor::class, 'sayHello'];
+        $res = $container->call($definition, ['greeting' => 'Hi']);
+
+        $this->assertEquals('Hi Jimmy', $res);
     }
 }
