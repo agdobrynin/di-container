@@ -33,7 +33,8 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
         $callable = DefinitionAsCallable::makeFromAbstract($definition, $container);
 
         $this->assertIsCallable($callable);
-        $this->assertEquals('Hello Piter!', $callable());
+        $this->assertEquals('Hello Piter!', \call_user_func($callable));
+        $this->assertEquals('Hello Ivan!', \call_user_func_array($callable, ['name' => 'Ivan']));
     }
 
     public function testInvokeClassAsInstance(): void

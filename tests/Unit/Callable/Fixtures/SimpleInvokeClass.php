@@ -8,9 +8,9 @@ class SimpleInvokeClass
 {
     public function __construct(public string $name) {}
 
-    public function __invoke(): string
+    public function __invoke(?string $name = null): string
     {
-        return 'Hello '.$this->name.'!';
+        return 'Hello '.($name ?: $this->name).'!';
     }
 
     public function hello(): string
