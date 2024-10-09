@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionCallableExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -122,7 +123,7 @@ class DiContainer implements DiContainerInterface
             $resolvedArgs = $this->resolveInstanceArguments($needToResolve, []);
 
             return \call_user_func_array($definition, $arguments + $resolvedArgs);
-        } catch (AutowiredExceptionInterface|\ReflectionException $e) {
+        } catch (AutowiredExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface|\ReflectionException $e) {
             throw new ContainerException($e->getMessage(), $e->getCode(), $e);
         }
     }

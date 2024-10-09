@@ -17,9 +17,13 @@ final class DefinitionAsCallable
      */
     public static function makeFromAbstract(array|string $definition, ContainerInterface $container): callable
     {
+        if (\is_callable($definition)) {
+            return $definition;
+        }
+
         $def = self::parseDefinition($definition);
 
-        if (\is_string($def[0]) && !\is_callable($def[0])) {
+        if (\is_string($def[0])) {
             $def[0] = $container->get($def[0]);
         }
 
