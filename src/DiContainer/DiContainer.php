@@ -340,7 +340,7 @@ class DiContainer implements DiContainerInterface
             try {
                 if (!$parameterType instanceof \ReflectionNamedType) {
                     throw new AutowiredException(
-                        "Unsupported parameter type [{$parameterType}] for [{$parameter->name}]"
+                        'Unsupported parameter type ['.($parameterType ?: 'no type')."] for name [{$parameter->name}]"
                     );
                 }
 
@@ -394,7 +394,10 @@ class DiContainer implements DiContainerInterface
                 };
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 if (!$parameter->isDefaultValueAvailable()) {
-                    $where = $parameter->getDeclaringClass()->name.'::'.$parameter->getDeclaringFunction()->name;
+                    $declaredClass = $parameter->getDeclaringClass()
+                        ? $parameter->getDeclaringClass()->name.'::'
+                        : '';
+                    $where = $declaredClass.$parameter->getDeclaringFunction()->name;
                     $reason = $e->getMessage();
 
                     throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]. Reason: {$reason}", $e->getCode(), $e);
