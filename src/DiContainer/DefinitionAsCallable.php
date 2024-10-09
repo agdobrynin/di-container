@@ -4,22 +4,28 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\DefinitionCallableException;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionCallableExceptionInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 final class DefinitionAsCallable
 {
+    /**
+     * @throws ContainerExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface
+     */
     public static function makeFromAbstract(array|string $definition, ContainerInterface $container): callable
     {
         $def = self::parseDefinition($definition);
 
-        if (\is_string($def[0])) {
+        if (\is_string($def[0]) && !\is_callable($def[0])) {
             $def[0] = $container->get($def[0]);
         }
 
         return \is_callable($def)
             ? $def
-            : throw new ContainerException('Definition is not callable. Got: '.\var_export($definition, true));
+            : throw new DefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
     }
 
     /**
@@ -52,7 +58,7 @@ final class DefinitionAsCallable
     {
         if (\is_array($definition)) {
             isset($definition[0], $definition[1])
-                || throw new ContainerException(
+                || throw new DefinitionCallableException(
                     'Wrong parameter for parse definition. Got: '.\var_export($definition, true)
                 );
 
