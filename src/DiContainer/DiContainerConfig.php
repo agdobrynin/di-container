@@ -44,7 +44,7 @@ final class DiContainerConfig implements DiContainerConfigInterface
 
     public function getReferenceToContainer(string $value): ?string
     {
-        return $this->referenceContainerSymbol && (\str_starts_with($value, $this->referenceContainerSymbol))
+        return \str_starts_with($value, $this->referenceContainerSymbol)
             ? \substr($value, $this->referenceContainerSymbolLength)
             : null;
     }
