@@ -43,7 +43,7 @@ class DiContainer implements DiContainerInterface
         iterable $definitions = [],
         protected ?DiContainerConfigInterface $config = null
     ) {
-        if ($s = $this->config?->getLinkContainerSymbol()) {
+        if ($s = $this->config?->getReferenceContainerSymbol()) {
             $this->linkContainerSymbolLength = \strlen($s);
         }
 
@@ -70,11 +70,7 @@ class DiContainer implements DiContainerInterface
     {
         return isset($this->definitions[$id])
             || isset($this->resolved[$id])
-            || $this->hasClassOrInterface($id)
-            || (
-                $this->config?->isUseArrayNotationDefinition()
-                && $this->hasArrayNotation($id)
-            );
+            || $this->hasClassOrInterface($id);
     }
 
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static
@@ -226,43 +222,11 @@ class DiContainer implements DiContainerInterface
             return $value;
         }
 
-        if ($key = $this->config?->getKeyFromLinkContainerSymbol($value)) {
-            return $this->getValue($this->get($key));
+        if ($id = $this->config?->getReferenceToContainer($value)) {
+            return $this->get($id);
         }
 
         return $this->has($value) ? $this->get($value) : $value;
-    }
-
-    protected function hasArrayNotation(string $id): bool
-    {
-        try {
-            return $this->config?->isArrayNotationSyntaxSyntax($id)
-                && $this->makeDefinitionForArrayNotation($id);
-        } catch (NotFoundException) {
-            return false;
-        }
-    }
-
-    protected function makeDefinitionForArrayNotation(string $id): bool
-    {
-        if (!isset($this->definitions[$id])) {
-            $symbolNotation = $this->config?->getDelimiterAccessArrayNotationSymbol()
-                ?? throw new ContainerException('Delimiter access array notation symbol not defined'); // @codeCoverageIgnore
-            $offset = $this->linkContainerSymbolLength
-                ?? throw new ContainerException('Link container symbol not defined'); // @codeCoverageIgnore
-            $path = \explode($symbolNotation, \substr($id, $offset));
-            $this->definitions[$id] = \array_reduce(
-                $path,
-                static function (mixed $segments, string $segment) {
-                    return isset($segments[$segment]) && \is_array($segments)
-                        ? $segments[$segment]
-                        : throw new NotFoundException();
-                },
-                $this->definitions
-            );
-        }
-
-        return true;
     }
 
     protected function hasClassOrInterface(string $id): bool
@@ -330,7 +294,7 @@ class DiContainer implements DiContainerInterface
 
         foreach ($parameters as $parameter) {
             if (isset($arguments[$parameter->name])) {
-                $dependencies[$parameter->name] = $this->getPredefinedArgument($arguments[$parameter->name]);
+                $dependencies[$parameter->name] = $this->getValue($arguments[$parameter->name]);
 
                 continue;
             }
@@ -410,20 +374,5 @@ class DiContainer implements DiContainerInterface
         }
 
         return $dependencies;
-    }
-
-    protected function getPredefinedArgument(mixed $argument): mixed
-    {
-        if (\is_string($argument)) {
-            if ($this->config?->isArrayNotationSyntaxSyntax($argument)) {
-                return $this->get($argument);
-            }
-
-            if ($key = $this->config?->getKeyFromLinkContainerSymbol($argument)) {
-                return $this->get($key);
-            }
-        }
-
-        return $argument;
     }
 }

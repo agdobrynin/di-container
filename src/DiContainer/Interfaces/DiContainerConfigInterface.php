@@ -12,17 +12,9 @@ interface DiContainerConfigInterface
 
     public function isUseZeroConfigurationDefinition(): bool;
 
-    public function getLinkContainerSymbol(): ?string;
+    public function getReferenceContainerSymbol(): string;
 
-    public function isUseLinkContainerDefinition(): bool;
-
-    public function getKeyFromLinkContainerSymbol(string $value): ?string;
-
-    public function getDelimiterAccessArrayNotationSymbol(): ?string;
-
-    public function isArrayNotationSyntaxSyntax(string $value): bool;
-
-    public function isUseArrayNotationDefinition(): bool;
+    public function getReferenceToContainer(string $value): ?string;
 
     public function isUseAttribute(): bool;
 }

@@ -11,12 +11,10 @@ class DiContainerFactory implements DiContainerFactoryInterface
 {
     public function make(
         iterable $definitions = [],
-        string $linkContainerSymbol = '@',
-        string $delimiterAccessArrayNotationSymbol = '.'
+        string $referenceContainerSymbol = '@',
     ): DiContainerInterface {
         $config = new DiContainerConfig(
-            linkContainerSymbol: $linkContainerSymbol,
-            delimiterAccessArrayNotationSymbol: $delimiterAccessArrayNotationSymbol,
+            referenceContainerSymbol: $referenceContainerSymbol,
             useAutowire: true,
             useZeroConfigurationDefinition: true,
             useAttribute: true,

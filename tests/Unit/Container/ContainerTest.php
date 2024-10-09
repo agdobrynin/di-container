@@ -137,7 +137,7 @@ class ContainerTest extends TestCase
             Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
         ];
 
-        $config = new DiContainerConfig(linkContainerSymbol: '*');
+        $config = new DiContainerConfig(referenceContainerSymbol: '*');
         $container = new DiContainer(definitions: $definitions, config: $config);
 
         $repository = $container->get(Classes\UserRepository::class);
