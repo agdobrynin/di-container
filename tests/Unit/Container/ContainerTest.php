@@ -402,7 +402,7 @@ class ContainerTest extends TestCase
         $loggerConfig = [
             'logger_file' => '/path/to/your.log',
             'logger_name_my_app' => 'app-logger',
-            'local_file' => 'logger_file',
+            'local_file' => '@logger_file',
         ];
         $definitions = \array_merge(
             $loggerConfig,

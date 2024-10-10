@@ -213,15 +213,12 @@ class DiContainer implements DiContainerInterface
 
     protected function getValue(mixed $value): mixed
     {
-        if (!\is_string($value)) {
-            return $value;
-        }
-
-        if ($id = $this->config?->getReferenceToContainer($value)) {
+        if (\is_string($value)
+            && $id = $this->config?->getReferenceToContainer($value)) {
             return $this->get($id);
         }
 
-        return $this->has($value) ? $this->get($value) : $value;
+        return $value;
     }
 
     protected function hasClassOrInterface(string $id): bool
