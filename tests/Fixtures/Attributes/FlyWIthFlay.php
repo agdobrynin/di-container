@@ -9,9 +9,9 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 class FlyWIthFlay
 {
     public function __construct(
-        #[DiFactory(FlyClassByDiFactory::class, isShared: false)]
+        #[DiFactory(FlyClassByDiFactory::class, isSingleton: false)]
         public FlyClass $fly1,
-        #[DiFactory(FlyClassByDiFactory::class, isShared: false)]
+        #[DiFactory(FlyClassByDiFactory::class, isSingleton: false)]
         public FlyClass $fly2,
     ) {}
 }

@@ -8,6 +8,6 @@ use Kaspi\DiContainer\Attributes\Service;
 
 #[Service(
     id: SimpleServiceSharedTrue::class,
-    isShared: true
+    isSingleton: true
 )]
 interface SimpleInterfaceSharedTrue {}

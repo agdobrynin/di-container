@@ -6,5 +6,5 @@ namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 
-#[DiFactory(id: FlyClassByDiFactory::class, isShared: true)]
+#[DiFactory(id: FlyClassByDiFactory::class, isSingleton: true)]
 class FlyClass {}

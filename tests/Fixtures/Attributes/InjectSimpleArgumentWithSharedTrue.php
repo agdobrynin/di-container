@@ -11,7 +11,7 @@ class InjectSimpleArgumentWithSharedTrue
     public function __construct(
         #[Inject(
             arguments: ['array' => ['first' => '🥇', 'second' => '🥈']],
-            isShared: true
+            isSingleton: true
         )]
         protected \ArrayIterator $arrayIterator,
     ) {}

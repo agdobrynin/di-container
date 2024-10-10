@@ -12,7 +12,7 @@ final class DiFactory
     /**
      * @param class-string<DiFactoryInterface> $id
      */
-    public function __construct(public string $id, public array $arguments = [], public bool $isShared = false)
+    public function __construct(public string $id, public array $arguments = [], public bool $isSingleton = false)
     {
         \is_a($this->id, DiFactoryInterface::class, true)
             || throw new \InvalidArgumentException("Parameter '{$this->id}' must be implement '".DiFactoryInterface::class."' interface");

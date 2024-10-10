@@ -68,7 +68,7 @@ class DiContainer implements DiContainerInterface
             || $this->hasClassOrInterface($id);
     }
 
-    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $shared = null): static
+    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static
     {
         if (isset($this->definitions[$id])) {
             throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
@@ -88,11 +88,11 @@ class DiContainer implements DiContainerInterface
             $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::ARGUMENTS => $arguments];
         }
 
-        if (null !== $shared) {
+        if (null !== $isSingleton) {
             if (\is_array($this->definitions[$id])) {
-                $this->definitions[$id] += [DiContainerInterface::SHARED => $shared];
+                $this->definitions[$id] += [DiContainerInterface::SINGLETON => $isSingleton];
             } else {
-                $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::SHARED => $shared];
+                $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::SINGLETON => $isSingleton];
             }
         }
 
@@ -163,7 +163,7 @@ class DiContainer implements DiContainerInterface
                         && $factory = DiFactory::makeFromReflection(new \ReflectionClass($diDefinition->id))) {
                         $factoryInstance = $this->resolveInstance($factory->id, $factory->arguments)($this);
 
-                        return $factory->isShared
+                        return $factory->isSingleton
                             ? $this->resolved[$id] = $factoryInstance
                             : $factoryInstance;
                     }
@@ -181,7 +181,7 @@ class DiContainer implements DiContainerInterface
                         && $service = Service::makeFromReflection(new \ReflectionClass($diDefinition->id))) {
                         $diDefinition->definition = $service->id;
                         $diDefinition->arguments = $service->arguments;
-                        $diDefinition->shared = $service->isShared;
+                        $diDefinition->shared = $service->isSingleton;
                     }
 
                     if (null === $diDefinition->definition) {
@@ -244,7 +244,7 @@ class DiContainer implements DiContainerInterface
                 return $this->definitionCache[$id] = new DiContainerDefinition(
                     $id,
                     $rawDefinition[0] ?? $id,
-                    $rawDefinition[DiContainerInterface::SHARED] ?? $sharedDefault,
+                    $rawDefinition[DiContainerInterface::SINGLETON] ?? $sharedDefault,
                     $rawDefinition[DiContainerInterface::ARGUMENTS] ?? []
                 );
             }
@@ -306,7 +306,7 @@ class DiContainer implements DiContainerInterface
                 if ($this->config->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
                         try {
-                            $this->set(id: $factory->id, arguments: $factory->arguments, shared: $factory->isShared);
+                            $this->set(id: $factory->id, arguments: $factory->arguments, isSingleton: $factory->isSingleton);
                         } catch (ContainerAlreadyRegisteredException) {
                         }
 
@@ -326,7 +326,7 @@ class DiContainer implements DiContainerInterface
 
                         if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
                             try {
-                                $this->set(id: $inject->id, definition: $service->id, arguments: $service->arguments, shared: $service->isShared);
+                                $this->set(id: $inject->id, definition: $service->id, arguments: $service->arguments, isSingleton: $service->isSingleton);
                             } catch (ContainerAlreadyRegisteredException) {
                             }
 
@@ -336,7 +336,7 @@ class DiContainer implements DiContainerInterface
                         }
 
                         try {
-                            $this->set(id: $inject->id, arguments: $inject->arguments, shared: $inject->isShared);
+                            $this->set(id: $inject->id, arguments: $inject->arguments, isSingleton: $inject->isSingleton);
                         } catch (ContainerAlreadyRegisteredException) {
                         }
 

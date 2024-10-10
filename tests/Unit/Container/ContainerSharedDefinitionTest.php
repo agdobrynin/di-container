@@ -38,7 +38,7 @@ class ContainerSharedDefinitionTest extends TestCase
     {
         $c = (new DiContainerFactory())->make([
             FileCache::class => [
-                DiContainerInterface::SHARED => false,
+                DiContainerInterface::SINGLETON => false,
             ],
         ]);
 
@@ -49,7 +49,7 @@ class ContainerSharedDefinitionTest extends TestCase
     {
         $c = (new DiContainerFactory())->make([
             FileCache::class => [
-                DiContainerInterface::SHARED => true,
+                DiContainerInterface::SINGLETON => true,
             ],
         ]);
 
@@ -91,7 +91,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, shared: false);
+        $c->set(id: FileCache::class, isSingleton: false);
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -102,7 +102,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, shared: true);
+        $c->set(id: FileCache::class, isSingleton: true);
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -112,7 +112,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             FileCache::class => [
                 static fn () => new FileCache(),
-                DiContainerInterface::SHARED => true,
+                DiContainerInterface::SINGLETON => true,
             ],
         ];
 
@@ -129,7 +129,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             FileCache::class => [
                 static fn () => new FileCache(),
-                DiContainerInterface::SHARED => false,
+                DiContainerInterface::SINGLETON => false,
             ],
         ];
 
@@ -161,7 +161,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             Db::class => [
                 DbDiFactory::class,
-                DiContainerInterface::SHARED => false,
+                DiContainerInterface::SINGLETON => false,
             ],
         ];
 
@@ -179,7 +179,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             Db::class => [
                 DbDiFactory::class,
-                DiContainerInterface::SHARED => true,
+                DiContainerInterface::SINGLETON => true,
             ],
         ];
 
@@ -212,7 +212,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             SumInterface::class => [
                 Sum::class,
-                DiContainerInterface::SHARED => false, // service not shared!
+                DiContainerInterface::SINGLETON => false, // service not shared!
             ],
         ];
 
@@ -230,7 +230,7 @@ class ContainerSharedDefinitionTest extends TestCase
         $definition = [
             SumInterface::class => [
                 Sum::class,
-                DiContainerInterface::SHARED => true, // service shared!
+                DiContainerInterface::SINGLETON => true, // service shared!
             ],
         ];
 

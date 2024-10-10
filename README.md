@@ -81,6 +81,7 @@ $container = (new \Kaspi\DiContainer\DiContainerFactory())->make(definitions: []
 ### DiContainer с конфигурированием на основе php-определений
 
 Получение существующего класса и разрешение встроенных типов параметров в конструкторе:
+
 ```php
 // Определения для DiContainer
 use Kaspi\DiContainer\{DiContainer, DiContainerConfig};
@@ -98,7 +99,7 @@ $definitions = [
             ],
             // Сервис будет создан как Singleton - в течении
             // жизненного цикла контейнера. 
-            DiContainerInterface::SHARED => true,
+            DiContainerInterface::SINGLETON => true,
         ];
     ];
 
@@ -386,7 +387,7 @@ $container->get(App\MyClass::class); // instance of App\MyClass
 #[\Kaspi\DiContainer\Attributes\Inject(
     id: '', // определение зависимости
     arguments: [], // аргументы конструктора для зависимости
-    isShared: false,  // сервис создаётся как Singleton
+    isSingleton: false,  // сервис создаётся как Singleton
 )]
 ```
 
@@ -522,7 +523,7 @@ print implode(',', $company->staffs->users); // user3, user4
 #[\Kaspi\DiContainer\Attributes\Service(
     id: '', // Класс реализующий интерфейс
     arguments: [], // аргументы конструктора для зависимости
-    isShared: false,  // сервис создаётся как Singleton
+    isSingleton: false,  // сервис создаётся как Singleton
 )]
 ```
 
@@ -583,7 +584,7 @@ print $myClass->customLogger->loggerFile(); // /var/log/app.log
 #[\Kaspi\DiContainer\Attributes\Service(
     id: '', // Класс реализующий интерфейс Kaspi\DiContainer\Interfaces\DiFactoryInterface
     arguments: [], // аргументы конструктора для зависимости
-    isShared: false,  // сервис создаётся как Singleton
+    isSingleton: false,  // сервис создаётся как Singleton
 )]
 ```
 
