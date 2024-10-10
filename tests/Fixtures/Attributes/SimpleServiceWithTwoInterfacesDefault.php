@@ -6,10 +6,12 @@ namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Inject;
 
-class Lorem
+class SimpleServiceWithTwoInterfacesDefault
 {
     public function __construct(
         #[Inject]
-        public SimpleDbInterface $simpleDb
+        public SimpleInterfaceSharedDefault $service1,
+        #[Inject]
+        public SimpleInterfaceSharedDefault $service2,
     ) {}
 }

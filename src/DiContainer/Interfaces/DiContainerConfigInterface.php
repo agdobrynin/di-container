@@ -6,19 +6,13 @@ namespace Kaspi\DiContainer\Interfaces;
 
 interface DiContainerConfigInterface
 {
+    public function isUseAutowire(): bool;
+
+    public function isSingletonServiceDefault(): bool;
+
     public function isUseZeroConfigurationDefinition(): bool;
 
-    public function getAutowire(): ?AutowiredInterface;
+    public function getReferenceToContainer(string $value): ?string;
 
-    public function getLinkContainerSymbol(): ?string;
-
-    public function isUseLinkContainerDefinition(): bool;
-
-    public function getKeyFromLinkContainerSymbol(string $value): ?string;
-
-    public function getDelimiterAccessArrayNotationSymbol(): ?string;
-
-    public function isArrayNotationSyntaxSyntax(string $value): bool;
-
-    public function isUseArrayNotationDefinition(): bool;
+    public function isUseAttribute(): bool;
 }
