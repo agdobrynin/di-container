@@ -15,7 +15,7 @@ composer require kaspi/di-container
 
 #### Быстрый старт
 ```php
-// определение контейнера с настройкой "zero configuration for dependency definitions"
+// определение контейнера с настройкой "zero configuration for dependency inject"
 // когда ненужно объявлять зависимость если класс существуют
 // и может быть запрошен по "PSR-4 auto loading"
 $container = (new \Kaspi\DiContainer\DiContainerFactory())->make();
