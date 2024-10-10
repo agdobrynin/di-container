@@ -146,4 +146,12 @@ class ContainerMethodCallTest extends TestCase
 
         $this->assertEquals('Hello Jimmy 🎉', $res);
     }
+
+    public function testCallMethodWithDependencyWithInject(): void
+    {
+        $container = (new DiContainerFactory())->make();
+        $res = $container->call([ClassWithMethodWithDependency::class, 'sayHello'], ['icon' => '👓']);
+
+        $this->assertEquals('Aloha Piter 👓', $res);
+    }
 }
