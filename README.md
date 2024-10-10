@@ -10,7 +10,7 @@ composer require kaspi/di-container
 #### Особенности
 
 - **Autowiring** - контейнер автоматически создаёт и внедряет зависимости.
-- Поддержка "**zero configuration for dependency definitions**" - когда ненужно объявлять зависимость если класс существуют и может быть запрошен по "PSR-4 auto loading"
+- Поддержка "**zero configuration for dependency injection**" - когда ненужно объявлять зависимость если класс существуют и может быть запрошен по "PSR-4 auto loading"
 - Поддержка **Php-атрибутов** для конфигурирования сервисов в контейнере.
 
 #### Быстрый старт
