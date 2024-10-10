@@ -708,7 +708,9 @@ $container->call(App\MyClassWithInvokeMethod::class);
 ```
 - класс с методом
 ```php
-$container->call([App\MyClass::class, 'someMethod'])
+$container->call([App\MyClass::class, 'someMethod']);
+$container->call(App\MyClass::class.'::someMethod');
+$container->call('App\MyClass::someMethod');
 ```
 
 Дополнительно метод может передавать в `call`:
