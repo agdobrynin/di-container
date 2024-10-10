@@ -60,7 +60,7 @@ $diConfig = new \Kaspi\DiContainer\DiContainerConfig(
     useAttribute: true,
     // Сервис (объект) будет создаваться заново при разрешении зависимости
     // если знание true, то объект будет создан как Singleton.
-    isSharedServiceDefault: false,
+    isSingletonServiceDefault: false,
     // Строка (символ) определяющий шаблон как ссылку другой контейнер
     referenceContainerSymbol: '@',
 );
