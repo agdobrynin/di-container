@@ -122,12 +122,13 @@ class ContainerMethodCallTest extends TestCase
     public function testResolveParamsInFunction(): void
     {
         $container = (new DiContainerFactory())->make();
-
-        $res = $container->call(static function (\ArrayIterator $iterator): \ArrayIterator {
+        $action = static function (\ArrayIterator $iterator): \ArrayIterator {
             $iterator->append('Hello');
 
             return $iterator;
-        });
+        };
+
+        $res = $container->call($action);
 
         $this->assertInstanceOf(\Iterator::class, $res);
         $this->assertCount(1, $res);
