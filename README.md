@@ -717,10 +717,45 @@ $container->call('App\MyClass::someMethod');
 - агрументы по имени
 - внедрять зависимости через autowiring
 
-аргументы метода
+аргументы метода:
 ```php
 call(array|callable|string $definition, array $arguments = [])
 ```
+Абстрактный пример с контроллером:
+```php
+// определение класса
+namespace App\Controllers;
+
+use App\Service\ServiceOne;
+
+class  Post {
+    public function __construct(private ServiceOne $serviceOne) {}
+    
+    public function store(string $name) {
+        $this->serviceOne->save($name);
+        
+        return 'The name '.$name.' saved!';
+    }
+}
+```
+
+```php
+// определение контейнера
+namespace App;
+
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make();
+```
+```php
+// вызов контроллера с автоматическим разрешением зависимостей и передачей аргументов
+print $container->call(
+    ['App\Controllers\Post', 'store'],
+    [$_POST] // $_POST содержит ['name' => 'Ivan']
+);
+```
+результат
+`The name Ivan saved!`
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода
