@@ -77,7 +77,6 @@ $container = (new \Kaspi\DiContainer\DiContainerFactory())->make(definitions: []
 ------------------------------------
 * Примеры использования [DiContainer с конфигурированием на основе php-определений](#DiContainer-с-конфигурированием-на-основе-php-определений).
 * Примеры использования [DiContainer c конфигурированием через PHP атрибуты](#DiContainer-c-конфигурированием-через-PHP-атрибуты).
-* Конфигурация DiContainer [с использованием нотаций по массиву](#Access-array-delimiter-notation).
 
 ### DiContainer с конфигурированием на основе php-определений
 
@@ -436,7 +435,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 class MyUsers {
     public function __construct(
         // ссылка на контейнер с определением
-        #[Inject('users_data')]
+        #[Inject('@users_data')]
         public array $users
     ) {}
 }
@@ -444,7 +443,7 @@ class MyUsers {
 class MyEmployers {
     public function __construct(
         // ссылка на контейнер с определением
-        #[Inject('users_data')]
+        #[Inject('@users_data')]
         public array $employers
     ) {}
 }
@@ -541,7 +540,7 @@ interface CustomLoggerInterface {
 
 class CustomLogger implements CustomLoggerInterface {
     public function __construct(
-        #[Inject('logger_file')]
+        #[Inject('@logger_file')]
         protected string $file,
     ) {}
     
