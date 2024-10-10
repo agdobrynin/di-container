@@ -6,7 +6,7 @@ namespace Tests\Unit\Container\ContainerMethodCall\Fixtures;
 
 class ClassInvokeAndInjectedServiceInConstructor
 {
-    public function __construct(private SimpleService $service) {}
+    public function __construct(private NameService $service) {}
 
     public function __invoke(string $greeting): string
     {

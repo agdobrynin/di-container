@@ -10,8 +10,10 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInjectedServiceInConstructor;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInvokeAndInjectedServiceInConstructor;
+use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithMethodWithDependency;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithStaticMethod;
-use Tests\Unit\Container\ContainerMethodCall\Fixtures\SimpleService;
+use Tests\Unit\Container\ContainerMethodCall\Fixtures\GreetingService;
+use Tests\Unit\Container\ContainerMethodCall\Fixtures\NameService;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -73,7 +75,7 @@ class ContainerMethodCallTest extends TestCase
     public function testClassWithInvokeMethod(): void
     {
         $res = (new DiContainerFactory())->make([
-            SimpleService::class => [
+            NameService::class => [
                 DiContainerInterface::ARGUMENTS => [
                     'name' => 'Noa',
                 ],
@@ -88,7 +90,7 @@ class ContainerMethodCallTest extends TestCase
     public function testClassWithMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleService::class => [
+            NameService::class => [
                 DiContainerInterface::ARGUMENTS => [
                     'name' => 'Jimmy',
                 ],
@@ -104,7 +106,7 @@ class ContainerMethodCallTest extends TestCase
     public function testClassWithMethodAsArray(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleService::class => [
+            NameService::class => [
                 DiContainerInterface::ARGUMENTS => [
                     'name' => 'Jimmy',
                 ],
@@ -130,5 +132,17 @@ class ContainerMethodCallTest extends TestCase
         $this->assertInstanceOf(\Iterator::class, $res);
         $this->assertCount(1, $res);
         $this->assertEquals('x:i:0;a:1:{i:0;s:5:"Hello";};m:a:0:{}', $res->serialize());
+    }
+
+    public function testCallMethodWithDependency(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            NameService::class => [DiContainerInterface::ARGUMENTS => ['name' => 'Jimmy']],
+            GreetingService::class => [DiContainerInterface::ARGUMENTS => ['greeting' => 'Hello']],
+        ]);
+
+        $res = $container->call([ClassWithMethodWithDependency::class, 'sayHello'], ['icon' => '🎉']);
+
+        $this->assertEquals('Hello Jimmy 🎉', $res);
     }
 }

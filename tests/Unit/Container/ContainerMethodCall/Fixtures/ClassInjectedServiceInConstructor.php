@@ -6,7 +6,7 @@ namespace Tests\Unit\Container\ContainerMethodCall\Fixtures;
 
 class ClassInjectedServiceInConstructor
 {
-    public function __construct(private SimpleService $service) {}
+    public function __construct(private NameService $service) {}
 
     public function sayHello(string $greeting): string
     {
