@@ -221,9 +221,7 @@ class DiContainer implements DiContainerInterface
             return $this->get($id);
         }
 
-        return $this->has($value)
-            ? $this->get($value)
-            : $value;
+        return $value;
     }
 
     protected function hasClassOrInterface(string $id): bool
@@ -321,7 +319,7 @@ class DiContainer implements DiContainerInterface
                         $isInterface = \interface_exists($inject->id);
 
                         if ((!$isInterface && !\class_exists($inject->id)) || $parameterType->isBuiltin()) {
-                            $dependencies[$parameter->getName()] = $this->getValue($inject->id);
+                            $dependencies[$parameter->getName()] = $this->get($inject->id);
 
                             continue;
                         }
@@ -332,7 +330,7 @@ class DiContainer implements DiContainerInterface
                             } catch (ContainerAlreadyRegisteredException) {
                             }
 
-                            $dependencies[$parameter->getName()] = $this->getValue($inject->id);
+                            $dependencies[$parameter->getName()] = $this->get($inject->id);
 
                             continue;
                         }
@@ -342,7 +340,7 @@ class DiContainer implements DiContainerInterface
                         } catch (ContainerAlreadyRegisteredException) {
                         }
 
-                        $dependencies[$parameter->getName()] = $this->getValue($inject->id);
+                        $dependencies[$parameter->getName()] = $this->get($inject->id);
 
                         continue;
                     }
