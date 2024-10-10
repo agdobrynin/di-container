@@ -59,7 +59,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionFalseByConfig(): void
     {
         $c = new DiContainer(
-            config: new DiContainerConfig(isSharedServiceDefault: false)
+            config: new DiContainerConfig(isSingletonServiceDefault: false)
         );
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
@@ -68,7 +68,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionTrueByConfig(): void
     {
         $c = new DiContainer(
-            config: new DiContainerConfig(isSharedServiceDefault: true)
+            config: new DiContainerConfig(isSingletonServiceDefault: true)
         );
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));

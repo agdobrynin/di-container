@@ -8,7 +8,7 @@ interface DiContainerConfigInterface
 {
     public function isUseAutowire(): bool;
 
-    public function isSharedServiceDefault(): bool;
+    public function isSingletonServiceDefault(): bool;
 
     public function isUseZeroConfigurationDefinition(): bool;
 

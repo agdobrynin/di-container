@@ -234,7 +234,7 @@ class DiContainer implements DiContainerInterface
     protected function makeDefinition(string $id, mixed $rawDefinition): DiContainerDefinition
     {
         if (!isset($this->definitionCache[$id])) {
-            $sharedDefault = $this->config?->isSharedServiceDefault() ?? false;
+            $sharedDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
             if ($rawDefinition instanceof \Closure) {
                 return $this->definitionCache[$id] = new DiContainerDefinition($id, $rawDefinition, $sharedDefault);

@@ -17,7 +17,7 @@ class DiContainerFactory implements DiContainerFactoryInterface
             useAutowire: true,
             useZeroConfigurationDefinition: true,
             useAttribute: true,
-            isSharedServiceDefault: false,
+            isSingletonServiceDefault: false,
             referenceContainerSymbol: $referenceContainerSymbol
         );
 

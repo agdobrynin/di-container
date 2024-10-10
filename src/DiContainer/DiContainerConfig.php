@@ -15,7 +15,7 @@ final class DiContainerConfig implements DiContainerConfigInterface
         private bool $useAutowire = true,
         private bool $useZeroConfigurationDefinition = true,
         private bool $useAttribute = true,
-        private bool $isSharedServiceDefault = false,
+        private bool $isSingletonServiceDefault = false,
         private string $referenceContainerSymbol = '@',
     ) {
         '' !== $referenceContainerSymbol || throw new DiContainerConfigException('Reference to container symbol cannot be empty.');
@@ -32,9 +32,9 @@ final class DiContainerConfig implements DiContainerConfigInterface
         return $this->useAutowire;
     }
 
-    public function isSharedServiceDefault(): bool
+    public function isSingletonServiceDefault(): bool
     {
-        return $this->isSharedServiceDefault;
+        return $this->isSingletonServiceDefault;
     }
 
     public function isUseZeroConfigurationDefinition(): bool
