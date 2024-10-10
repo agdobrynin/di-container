@@ -9,16 +9,14 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 class DiContainerFactory implements DiContainerFactoryInterface
 {
-    public function make(
-        iterable $definitions = [],
-        string $referenceContainerSymbol = '@',
-    ): DiContainerInterface {
+    public function make(iterable $definitions = []): DiContainerInterface
+    {
         $config = new DiContainerConfig(
             useAutowire: true,
             useZeroConfigurationDefinition: true,
             useAttribute: true,
             isSingletonServiceDefault: false,
-            referenceContainerSymbol: $referenceContainerSymbol
+            referenceContainerSymbol: '@'
         );
 
         return new DiContainer(

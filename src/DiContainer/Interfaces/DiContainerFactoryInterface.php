@@ -15,6 +15,5 @@ interface DiContainerFactoryInterface
      */
     public function make(
         iterable $definitions = [],
-        string $referenceContainerSymbol = '@'
     ): DiContainerInterface;
 }
