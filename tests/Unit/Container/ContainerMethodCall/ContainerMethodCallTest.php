@@ -116,4 +116,19 @@ class ContainerMethodCallTest extends TestCase
 
         $this->assertEquals('Hi Jimmy', $res);
     }
+
+    public function testResolveParamsInFunction(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $res = $container->call(static function (\ArrayIterator $iterator): \ArrayIterator {
+            $iterator->append('Hello');
+
+            return $iterator;
+        });
+
+        $this->assertInstanceOf(\Iterator::class, $res);
+        $this->assertCount(1, $res);
+        $this->assertEquals('x:i:0;a:1:{i:0;s:5:"Hello";};m:a:0:{}', $res->serialize());
+    }
 }
