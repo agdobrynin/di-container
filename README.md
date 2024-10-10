@@ -58,7 +58,8 @@ $diConfig = new \Kaspi\DiContainer\DiContainerConfig(
     useZeroConfigurationDefinition: true,
     // Использовать Php-атрибуты для объявления зависимостей.
     useAttribute: true,
-    // Сервис (объект) будет создаваться заново при разрешении зависимости.
+    // Сервис (объект) будет создаваться заново при разрешении зависимости
+    // если знание true, то объект будет создан как Singleton.
     isSharedServiceDefault: false,
     // Строка (символ) определяющий шаблон как ссылку другой контейнер
     referenceContainerSymbol: '@',
@@ -83,7 +84,7 @@ $container = (new \Kaspi\DiContainer\DiContainerFactory())->make(definitions: []
 Получение существующего класса и разрешение встроенных типов параметров в конструкторе:
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\{DiContainer, DiContainerConfig};
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 $definitions = [
@@ -96,12 +97,13 @@ $definitions = [
             DiContainerInterface::ARGUMENTS => [
                 'dsn' => 'sqlite:/opt/databases/mydb.sq3',
             ],
+            // Сервис будет создан как Singleton - в течении
+            // жизненного цикла контейнера. 
+            DiContainerInterface::SHARED => true,
         ];
     ];
 
-$autowire = new Autowired(useAttribute: false);
-$config = new DiContainerConfig(autowire: $autowire);
-
+$config = new DiContainerConfig();
 $container = new DiContainer(definitions: $definitions, config: $config);
 ```
 
@@ -122,113 +124,6 @@ use App\MyClass;
 $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
-
-Разрешение встроенных (простых) типов аргументов в объявлении:
-
-```php
-// Объявление класса
-namespace App;
-
-class MyUsers {
-    public function __construct(public array $users) {}
-}
-
-class MyEmployers {
-    public function __construct(public array $employers) {}
-}
-```
-
-```php
-// Определения для DiContainer
-use App\{MyUsers, MyEmployers};
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-
-// В объявлении arguments->users = "data"
-// будет искать в контейнере ключ "data".
-
-$definitions = [
-    'data' => ['user1', 'user2'],
-    
-    // ... more definitions
-    
-    App\MyUsers::class => [
-        DiContainerInterface::ARGUMENTS => [
-            'users' => 'data',
-        ],
-    ],
-    App\MyEmployers::class => [
-        DiContainerInterface::ARGUMENTS => [
-            'employers' => 'data',
-        ],
-    ],
-];
-
-$config = new DiContainerConfig(autowire: new Autowired()); 
-$container = new DiContainer(definitions: $definitions, config: $config);
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\{MyUsers, MyEmployers};
-
-/** @var MyUsers::class $users */
-$users = $container->get(MyUsers::class);
-print implode(',', $users->users); // user1, user2
-/** @var MyEmployers::class $employers */
-$employers = $container->get(MyEmployers::class);
-print implode(',', $employers->employers); // user1, user2
-```
-
-###### Использование ссылок на контейнер-id в определениях.
-
-Разрешение встроенных (простых) типов аргументов в объявлении со ссылкой на другой id контейнера:
-
-```php
-// Определения для DiContainer
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-
-// В конструкторе DiContainerConfig - параметр "linkContainerSymbol"
-// определяет строку (символ) с которого начинается определение и будет
-// обработана как ссылка на "id" контейнера
-// по-умолчанию символ "@"
-
-$definitions = [
-        // основной id в контейнере
-        'sqlite-current-dsn' => 'sqlite:/opt/databases/mydb.sq3',
-        //.....
-        // Id в контейнере содержащий ссылку на id контейнера = "sqlite-home"
-        'sqlite-dsn' => '@sqlite-current-dsn',
-        \PDO::class => [
-            DiContainerInterface::ARGUMENTS => [
-                'dsn' => '@sqlite-dsn',
-            ],
-        ];
-    ];
-
-$config = new DiContainerConfig(new Autowired());
-$container = new DiContainer(definitions: $definitions, config: $config);
-```
-
-```php
-// Объявление класса
-namespace App;
-
-class MyClass {
-    public function __construct(public \PDO $pdo) {}
-}
-
-// ....
-
-/** @var MyClass $myClass */
-$myClass = $container->get(MyClass::class);
-// в конструктор MyClass будет вызван с определением
-// new MyClass(
-//      pdo: new \PDO(dsn: 'sqlite:/opt/databases/mydb.sq3') 
-// );
-```
-
 Разрешение типов аргументов в конструкторе по имени:
 
 ```php
@@ -264,7 +159,74 @@ $users = $container->get(MyUsers::class);
 print implode(',', $users->users); // John, Arnold
 ```
 
-Получение класса по интерфейсу
+#### Внедрение значений зависимостей аргументов по контейнер-id в определениях.
+
+Для внедрения зависимостей в аргуемнты испольузется синтаксис `@container-id` - 
+где строка начинающаяся с символа `@` будет означать ссылку на другое определение
+в контейнере, а часть `container-id` определение в контейнере.
+
+Разрешение простых (builtin) типов аргументов в объявлении:
+
+```php
+// Объявление класса
+namespace App;
+
+class MyUsers {
+    public function __construct(public array $users) {}
+}
+
+class MyEmployers {
+    public function __construct(public array $employers) {}
+}
+```
+
+```php
+// Определения для DiContainer
+use App\{MyUsers, MyEmployers};
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+
+// В объявлении arguments->users = "@data"
+// будет искать в контейнере определение "data".
+
+$definitions = [
+    'data' => ['user1', 'user2'],
+    
+    // ... more definitions
+    
+    App\MyUsers::class => [
+        DiContainerInterface::ARGUMENTS => [
+            // внедрение зависимости аргумента по ссылке на контейнер-id
+            'users' => '@data',
+        ],
+    ],
+    App\MyEmployers::class => [
+        DiContainerInterface::ARGUMENTS => [
+            // внедрение зависимости аргумента по ссылке на контейнер-id
+            'employers' => '@data',
+        ],
+    ],
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\{MyUsers, MyEmployers};
+
+/** @var MyUsers::class $users */
+$users = $container->get(MyUsers::class);
+print implode(',', $users->users); // user1, user2
+/** @var MyEmployers::class $employers */
+$employers = $container->get(MyEmployers::class);
+print implode(',', $employers->employers); // user1, user2
+```
+
+#### Получение класса по интерфейсу
+
+Получение через функцию обратного вызова (`\Closure`):
+
 ```php
 // Объявление класса
 namespace App;
@@ -282,7 +244,7 @@ class MyLogger {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\DiContainerFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
@@ -296,10 +258,7 @@ $definitions = [
     }
 ];
 
-$container = new DiContainer(
-    definitions: $definitions,
-    config: new DiContainerConfig(autowire: new Autowired(useAttribute: false))
-);
+$container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
@@ -311,7 +270,7 @@ $myClass = $container->get(MyLogger::class);
 $myClass->logger()->debug('...');
 ```
 
-Ещё один пример получение класса по интерфейсу:
+Получение интерфейса через объявления контейнера:
 
 ```php
 // Объявление классов
@@ -328,17 +287,19 @@ class ClassFirst implements ClassInterface {
 // Определения для DiContainer
 use App\ClassFirst;
 use App\ClassInterface;
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
-$container = new DiContainer(
-    config: new DiContainerConfig(
-        autowire: new Autowired(useAttribute: false)
-    )
-);
+$definition = [
+    ClassInterface::class => [
+        ClassFirst::class,
+        DiContainerInterface::ARGUMENTS => [
+            'file' => '/var/log/app.log',
+        ]
+    ],
+];
 
-// ⚠ параметр "arguments" метода "set" установить аргументы для конструктора.
-$container->set(ClassFirst::class, arguments: ['file' => '/var/log/app.log']);
-$container->set(ClassInterface::class, ClassFirst::class);
+$container = (new DiContainerFactory()->make($definition);
 ```
 
 ```php
@@ -349,8 +310,28 @@ use App\ClassInterface;
 $myClass = $container->get(ClassInterface::class);
 print $myClass->file; // /var/log/app.log
 ```
+Отдельное определение для класса и приявязка определенияинтерфейса к реализациия для примера выше:
 
-🧙‍♂️ **Разрешение зависимости в контейнере с помощью фабрики**.
+```php
+// Определения для DiContainer - отдельно класс и реализации.
+use App\ClassFirst;
+use App\ClassInterface;
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+
+$definition = [
+    ClassFirst::class => [
+        DiContainerInterface::ARGUMENTS => [
+            'file' => '/var/log/app.log',
+        ],    
+    ],
+    ClassInterface::class => ClassFirst::class,
+];
+
+$container = (new DiContainerFactory()->make($definition);
+```
+
+#### 🧙‍♂️ Разрешение зависимости в контейнере с помощью фабрики.
 
 Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
 
@@ -369,8 +350,7 @@ class  MyClass {
 // ....
 
 class FactoryMyClass implements DiFactoryInterface {
-    public function __invoke(ContainerInterface $container): MyClass
-    {
+    public function __invoke(ContainerInterface $container): MyClass {
         return new MyClass(new Db(...));
     }    
 }
@@ -378,18 +358,13 @@ class FactoryMyClass implements DiFactoryInterface {
 
 ```php
 // определения для контейнера
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\DiContainerFactory;
 
 $definitions = [
     App\MyClass::class => App\FactoryMyClass::class
 ];
 
-$container = new DiContainer(
-    definitions: $definitions,
-    config: new DiContainerConfig(
-        autowire: new Autowired(useAttribute: false)
-    )
-);
+$container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
@@ -397,20 +372,23 @@ $container = new DiContainer(
 $container->get(App\MyClass::class); // instance of App\MyClass
 ```
 
-#### DiContainer c конфигурированием через PHP атрибуты
+#### 🔑 DiContainer c конфигурированием через PHP атрибуты
 
-Конфигурирование DiContainer c PHP атрибутами для определений.
+[В конфигурации контейнера](#конфигурирование-dicontainer) по умолчанию параметр `useAttribute` включён.
 
 Доступные атрибуты:
 - **Inject** - внедрение зависимости в аргументы конструктор или методы класса.
 - **Service** - определение для интерфейса какой класс будет вызван и разрешен в контейнере.
-- **Factory** - Фабрика для разрешения зависимостей.
-Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
- 
-[В классе Autowired](#Конфигурирование-Autowired) по умолчанию параметр `useAttribute` включен:
+- **DiFactory** - Фабрика для разрешения зависимостей. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
+
+##### Inject
 
 ```php
-new \Kaspi\DiContainer\Autowired(useAttribute: true);
+#[\Kaspi\DiContainer\Attributes\Inject(
+    id: '', // определение зависимости
+    arguments: [], // аргументы конструктора для зависимости
+    isShared: false,  // сервис создаётся как Singleton
+)]
 ```
 
 Получение существующего класса и разрешение простых типов параметров в конструкторе:
@@ -423,7 +401,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 
 class MyClass {
     public function __construct(
-        #[Inject(arguments: ['dsn' => 'pdo_dsn'])]
+        #[Inject(arguments: ['dsn' => '@pdo_dsn'])]
         public \PDO $pdo
     ) {}
 }
@@ -431,14 +409,11 @@ class MyClass {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\DiContainerFactory;
 
-$container = new DiContainer(
-    definitions: ['pdo_dsn' => 'sqlite:/opt/databases/mydb.sq3'],
-    config: new DiContainerConfig(
-        autowire: new Autowired(useAttribute: true)
-    ) 
-);
+$definitions = ['pdo_dsn' => 'sqlite:/opt/databases/mydb.sq3'];
+
+$container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
@@ -450,8 +425,7 @@ $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
 
-Использование **Inject** атрибута на простых (встроенных) типах для  
-получения данных из контейнера, где ключ "users_data" определен в контейнере:
+Использование **Inject** атрибута на простых (встроенных) типах для получения данных из контейнера:
 
 ```php
 // Объявление класса
@@ -461,6 +435,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 
 class MyUsers {
     public function __construct(
+        // ссылка на контейнер с определением
         #[Inject('users_data')]
         public array $users
     ) {}
@@ -468,6 +443,7 @@ class MyUsers {
 
 class MyEmployers {
     public function __construct(
+        // ссылка на контейнер с определением
         #[Inject('users_data')]
         public array $employers
     ) {}
@@ -476,18 +452,13 @@ class MyEmployers {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\DiContainerFactory;
 
 $definitions = [
     'users_data' => ['user1', 'user2'],
 ];
 
-$container = new DiContainer(
-    definitions: $definitions,
-    config: new DiContainerConfig(
-        autowire: new Autowired(useAttribute: true)
-    ) 
-);
+$container = (new DiContainerFactory())->make($definitions);
 ```
 
 ```php
@@ -497,12 +468,64 @@ use App\{MyUsers, MyEmployers};
 /** @var MyUsers::class $users */
 $users = $container->get(MyUsers::class);
 print implode(',', $users->users); // user1, user2
+
 /** @var MyEmployers::class $employers */
 $employers = $container->get(MyEmployers::class);
 print implode(',', $employers->employers); // user1, user2
 ```
 
-Получение по интерфейсу с использованием атрибута **Service**:
+Внедрение типизированных аргументов через атрибут **Inject**:
+
+```php
+// Объявление класса
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+class MyUsers {
+    public function __construct(public array $users) {}
+}
+
+class MyCompany {
+    public function __construct(
+        #[Inject(arguments: ['users' => '@users_bosses'])]
+        public MyUsers $bosses,
+        #[Inject(arguments: ['users' => '@users_staffs'])]
+        public MyUsers $staffs,
+    ) {}
+}
+```
+
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definitions = [
+    'users_bosses' => ['user1', 'user2'],
+    'users_staffs' => ['user3', 'user3'],
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+```
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\MyCompany;
+
+/** @var MyCompany::class $company */
+$company = $container->get(MyCompany::class);
+print implode(',', $company->bosses->users); // user1, user2
+print implode(',', $company->staffs->users); // user3, user4
+```
+
+##### Service
+
+```php
+#[\Kaspi\DiContainer\Attributes\Service(
+    id: '', // Класс реализующий интерфейс
+    arguments: [], // аргументы конструктора для зависимости
+    isShared: false,  // сервис создаётся как Singleton
+)]
+```
 
 ```php
 // Объявление классов
@@ -539,13 +562,10 @@ class MyLogger {
 
 ```php
 // Определения для DiContainer
-use Kaspi\DiContainer\{Autowired ,DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\DiContainerFactory;
 
-$container = new DiContainer(
-    definitions: ['logger_file' => '/var/log/app.log'],
-    config: new DiContainerConfig(
-        autowire: new Autowired(useAttribute: true)
-    ) 
+$container = (new DiContainerFactory())->make(
+    definitions: ['logger_file' => '/var/log/app.log']
 );
 ```
 
@@ -558,13 +578,21 @@ $myClass = $container->get(MyLogger::class);
 print $myClass->customLogger->loggerFile(); // /var/log/app.log
 ```
 
-Использование атрибута **Factory** для разрешения класса
+##### DiFactory
+
+```php
+#[\Kaspi\DiContainer\Attributes\Service(
+    id: '', // Класс реализующий интерфейс Kaspi\DiContainer\Interfaces\DiFactoryInterface
+    arguments: [], // аргументы конструктора для зависимости
+    isShared: false,  // сервис создаётся как Singleton
+)]
+```
 
 ```php
 // Определение класса
 namespace App;
 
-#[Factory(\App\Factory\FactorySuperClass::class)]
+#[Factory(App\Factory\FactorySuperClass::class)]
 class SuperClass
 {
     public function __construct(public string $name, public int $age) {}
@@ -634,15 +662,12 @@ class FactoryClassWithFactoryArgument implements DiFactoryInterface
 
 ```php
 // Определение для контейнера
-use Kaspi\DiContainer\{Autowired, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\DiContainerFactory;
 
-$container = new DiContainer(
+$container = (new DiContainerFactory())->make(
     definitions: [
         'names' => ['Ivan', 'Piter', 'Vasiliy']
-    ],
-    config: new DiContainerConfig(
-        autowire: new Autowired(useAttribute: true) 
-    )
+    ]
 );
 ```
 
@@ -653,151 +678,6 @@ use App\ClassWithFactoryArgument;
 /** @var ClassWithFactoryArgument $myClass */
 $myClass = $container->get(ClassWithFactoryArgument::class);
 $myClass->arrayObject->getArrayCopy(); // массив ['Ivan', 'Piter', 'Vasiliy']
-```
-
-#### Access array delimiter notation
-
-Доступ к "контейнер-id" с вложенными определениям.
-
-Такая ссылка определяется в связке с определением `"linkContainerSymbol"` и `"delimiterAccessArrayNotationSymbol"`
-в конструкторе класса `\Kaspi\DiContainer\DiContainerConfig`
-
-Произвольный символ разделитель можно определить
-
-* `Kaspi\DiContainer\DiContainerConfig::__construct` аргумент `$delimiterAccessArrayNotationSymbol`
-* `Kaspi\DiContainer\DiContainerFactory::make` аргумент `$delimiterAccessArrayNotationSymbol`
-
-
-> по-умолчанию 
->   * $linkContainerSymbol = "@"
->   * $delimiterAccessArrayNotationSymbol = "."
-
-```php
-    return [
-        'a' => [
-            'b' => [
-                'c' => 'Hello world'
-            ],
-        ],
-        // ... more definitions
-        'container-id' => '@a.b.c'
-    ];
-
-// ... 
-
-print $contaier->get('container-id'); // Hello world
-```
-
-###### Access-array-delimiter-notation определение на базе ручного конфигурирования
-
-```php
-// Определения для DiContainer
-use \Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use \Kaspi\DiContainer\DiContainerFactory;
-
-$definitions = [
-    'app' => [
-        'admin' => [
-            'email' =>'admin@mail.com',
-        ],
-        'logger' => App\Logger::class,
-        'logger_file' => '/var/app.log',
-    ],
-    App\Logger::class => [
-        DiContainerInterface::ARGUMENTS => [
-            'file' => '@app.logger_file'
-        ],
-    ],
-    App\SendEmail::class => [
-        DiContainerInterface::ARGUMENTS => [
-            'from' => '@app.admin.email',
-            'logger' => '@app.logger',
-        ],
-    ],
-];
-
-$container = (new DiContainerFactory())->make($definitions);
-```
-```php
-// Объявление классов
-namespace App;
-
-interface LoggerInterface {}
-
-class Logger implements LoggerInterface {
-    public function __construct(
-        public string $file
-    ) {}
-}
-
-class SendEmail {
-    public function __construct(
-        public string $from,
-        public LoggerInterface $logger,
-    ) {}
-}
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\SendEmail;
-
-/** @var SendEmail $myClass */
-$sendEmail = $container->get(SendEmail::class);
-print $sendEmail->from; // admin@mail.com
-print $sendEmail->logger->file; // /var/app.log
-```
-
-###### Access-array-delimiter-notation - определения на основе PHP атрибутов.
-
-```php
-// Определения для DiContainer
-$definitions = [
-    'app' => [
-        'admin' => [
-            'email' =>'admin@mail.com',
-        ],
-        'logger' => App\Logger::class,
-        'logger_file' => '/var/app.log',
-    ],
-];
-
-$container = (new DiContainerFactory())->make($definitions);
-```
-
-```php
-// Объявление классов
-namespace App;
-
-use Kaspi\DiContainer\Attributes\Inject;
-
-interface LoggerInterface {}
-
-class Logger implements LoggerInterface {
-    public function __construct(
-        #[Inject('@app.logger_file')]
-        public string $file
-    ) {}
-}
-
-class SendEmail {
-    public function __construct(
-        #[Inject('@app.admin.email')]
-        public string $from,
-        #[Inject('@app.logger')]
-        public LoggerInterface $logger,
-    ) {}
-}
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\SendEmail;
-
-/** @var SendEmail $myClass */
-$sendEmail = $container->get(SendEmail::class);
-print $sendEmail->from; // admin@mail.com
-print $sendEmail->logger->file; // /var/app.log
 ```
 
 ## Тесты
