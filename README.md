@@ -38,10 +38,19 @@ class  Post {
 ```
 ```php
 // получить класс Post с внедренными сервисами Mail, Post и выполнить метод "send"
-$container->get(App\Controllers\Post::class)->send();
+$post = $container->get(App\Controllers\Post::class);
+$post->send();
+```
+Фактически `DiContainer` выполнит следующие действия:
+
+```php
+$post = new App\Controllers\Post(
+    new App\Services\Mail(),
+    new App\Models\Post()
+);
 ```
 
-* Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
+Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
 
 ### Конфигурирование DiContainer
 
