@@ -319,7 +319,7 @@ class DiContainer implements DiContainerInterface
                         $isInterface = \interface_exists($inject->id);
 
                         if ((!$isInterface && !\class_exists($inject->id)) || $parameterType->isBuiltin()) {
-                            $dependencies[$parameter->getName()] = $this->get($inject->id);
+                            $dependencies[$parameter->getName()] = $this->getValue($inject->id);
 
                             continue;
                         }
