@@ -7,6 +7,7 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes;
+use Tests\Fixtures\Attributes\SendEmail;
 
 /**
  * @internal
@@ -80,5 +81,15 @@ class ContainerWithAttributeConfigTest extends TestCase
 
         $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $class->arrayIterator()->getArrayCopy());
         $this->assertInstanceOf(\ArrayAccess::class, $class->arrayIterator());
+    }
+
+    public function testInjectSimpleArgumentAndFactory(): void
+    {
+        $c = (new DiContainerFactory())->make(['emails.admin' => 'ivan@mail.com']);
+
+        $sendMail = $c->get(SendEmail::class);
+
+        $this->assertEquals('ivan@mail.com', $sendMail->adminEmail);
+        $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $sendMail->fromFactory);
     }
 }
