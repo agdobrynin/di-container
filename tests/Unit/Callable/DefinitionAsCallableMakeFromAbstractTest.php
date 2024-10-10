@@ -115,4 +115,13 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
         $this->assertIsCallable($callable);
         $this->assertEquals('I am foo static', \call_user_func_array($callable, []));
     }
+
+    public function testDefinitionAsArrayWithObjects(): void
+    {
+        $this->expectException(DefinitionCallableExceptionInterface::class);
+        $this->expectExceptionMessage('Definition is not callable');
+
+        $definition = [new \stdClass(), new \stdClass()];
+        DefinitionAsCallable::makeFromAbstract($definition, (new DiContainerFactory())->make());
+    }
 }
