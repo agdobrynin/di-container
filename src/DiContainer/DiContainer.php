@@ -213,12 +213,17 @@ class DiContainer implements DiContainerInterface
 
     protected function getValue(mixed $value): mixed
     {
-        if (\is_string($value)
-            && $id = $this->config?->getReferenceToContainer($value)) {
+        if (!\is_string($value)) {
+            return $value;
+        }
+
+        if ($id = $this->config?->getReferenceToContainer($value)) {
             return $this->get($id);
         }
 
-        return $value;
+        return $this->has($value)
+            ? $this->get($value)
+            : $value;
     }
 
     protected function hasClassOrInterface(string $id): bool
@@ -316,7 +321,7 @@ class DiContainer implements DiContainerInterface
                         $isInterface = \interface_exists($inject->id);
 
                         if ((!$isInterface && !\class_exists($inject->id)) || $parameterType->isBuiltin()) {
-                            $dependencies[$parameter->getName()] = $this->get($inject->id);
+                            $dependencies[$parameter->getName()] = $this->getValue($inject->id);
 
                             continue;
                         }
@@ -327,7 +332,7 @@ class DiContainer implements DiContainerInterface
                             } catch (ContainerAlreadyRegisteredException) {
                             }
 
-                            $dependencies[$parameter->getName()] = $this->get($inject->id);
+                            $dependencies[$parameter->getName()] = $this->getValue($inject->id);
 
                             continue;
                         }
@@ -337,7 +342,7 @@ class DiContainer implements DiContainerInterface
                         } catch (ContainerAlreadyRegisteredException) {
                         }
 
-                        $dependencies[$parameter->getName()] = $this->get($inject->id);
+                        $dependencies[$parameter->getName()] = $this->getValue($inject->id);
 
                         continue;
                     }
