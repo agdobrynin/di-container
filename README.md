@@ -713,9 +713,9 @@ $container->call(App\MyClass::class.'::someMethod');
 $container->call('App\MyClass::someMethod');
 ```
 
-Дополнительно метод может передавать в `call`:
-- агрументы по имени
-- внедрять зависимости через autowiring
+Дополнительно `call` может:
+- принимать агрументы по имени для подстановки в callable вызов
+- внедрять зависимости через autowiring при вызове
 
 аргументы метода:
 ```php
@@ -756,6 +756,28 @@ print $container->call(
 ```
 результат
 `The name Ivan saved!`
+
+Абстрактный пример с `autowiring` и подстановкой дополнительных параметров при вызове функции:
+
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+// определение контейнера
+$container = (new DiContainerFactory())->make();
+
+// ... more code ...
+
+// определение callback с типизированным параметром
+$helperOne = static function(App\Service\ServiceOne $service, string $name) {
+        $service->save($name);
+        
+        return 'The name '.$name.' saved!';
+};
+
+// ... more code ...
+
+// вызов callback с autowiring
+print $container->call($helperOne, ['name' => 'Vasiliy']); // The name Vasiliy saved! 
+```
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода
