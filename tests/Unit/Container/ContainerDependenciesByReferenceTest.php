@@ -58,15 +58,15 @@ class ContainerDependenciesByReferenceTest extends TestCase
         $container = (new DiContainerFactory())->make([
             'inject1' => [
                 \ArrayIterator::class,
-                DiContainerInterface::ARGUMENTS => ['array' => ['one', 'two']]
+                DiContainerInterface::ARGUMENTS => ['array' => ['one', 'two']],
             ],
             'inject2' => [
                 \ArrayIterator::class,
-                DiContainerInterface::ARGUMENTS => ['array' => ['tree', 'four']]
-            ]
+                DiContainerInterface::ARGUMENTS => ['array' => ['three', 'four']],
+            ],
         ]);
 
         $this->assertEquals(['one', 'two'], $container->get(TowClassesWithInjectByReferenceA::class)->iterator->getArrayCopy());
-        $this->assertEquals(['tree', 'four'], $container->get(TowClassesWithInjectByReferenceB::class)->iterator->getArrayCopy());
+        $this->assertEquals(['three', 'four'], $container->get(TowClassesWithInjectByReferenceB::class)->iterator->getArrayCopy());
     }
 }
