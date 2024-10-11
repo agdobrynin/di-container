@@ -28,7 +28,7 @@ class DiContainer implements DiContainerInterface
     protected iterable $definitions = [];
 
     /**
-     * @var DiContainerDefinition[]
+     * @var <string, DiContainerDefinition|null>[]
      */
     protected iterable $definitionCache = [];
     protected array $resolved = [];
@@ -138,78 +138,22 @@ class DiContainer implements DiContainerInterface
 
         $definition = $this->definitions[$id] ?? null;
 
-        if ($this->config?->isUseAutowire()) {
-            $diDefinition = $this->makeDefinition($id, $definition);
+        try {
+            if ($this->config?->isUseAutowire()
+                && $diDefinition = $this->autowireDefinition($id, $definition)) {
+                $object = ($o = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments)) instanceof DiFactoryInterface
+                    ? $o($this)
+                    : $o;
 
-            try {
-                if ($diDefinition->definition instanceof \Closure) {
-                    $instance = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments);
-
-                    return $diDefinition->isSingleton
-                        ? $this->resolved[$id] = $instance
-                        : $instance;
-                }
-
-                if (\is_string($diDefinition->definition)
-                    && \is_a($diDefinition->definition, DiFactoryInterface::class, true)) {
-                    $instance = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments)($this);
-
-                    return $diDefinition->isSingleton
-                        ? $this->resolved[$id] = $instance
-                        : $instance;
-                }
-
-                if (\class_exists($diDefinition->id)) {
-                    if ($this->config->isUseAttribute()
-                        && $factory = DiFactory::makeFromReflection(new \ReflectionClass($diDefinition->id))) {
-                        $factoryInstance = $this->resolveInstance($factory->id, $factory->arguments)($this);
-
-                        return $factory->isSingleton
-                            ? $this->resolved[$id] = $factoryInstance
-                            : $factoryInstance;
-                    }
-
-                    $instance = $this->resolveInstance($diDefinition->id, $diDefinition->arguments);
-
-                    return $diDefinition->isSingleton
-                        ? $this->resolved[$id] = $instance
-                        : $instance;
-                }
-
-                if (\interface_exists($diDefinition->id)) {
-                    if (null === $diDefinition->definition
-                        && $this->config?->isUseAttribute()
-                        && $service = Service::makeFromReflection(new \ReflectionClass($diDefinition->id))) {
-                        $diDefinition->definition = $service->id;
-                        $diDefinition->arguments = $service->arguments;
-                        $diDefinition->isSingleton = $service->isSingleton;
-                    }
-
-                    if (null === $diDefinition->definition) {
-                        throw new ContainerException("Not found definition for interface [{$id}]");
-                    }
-
-                    if (isset($this->definitions[$diDefinition->definition])) { // merge argument definition
-                        $diDefinition->arguments += $this->makeDefinition(
-                            $diDefinition->definition,
-                            $this->definitions[$diDefinition->definition]
-                        )->arguments;
-                    }
-
-                    $instance = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments);
-
-                    return $diDefinition->isSingleton
-                        ? $this->resolved[$id] = $instance
-                        : $instance;
-                }
-            } catch (AutowiredExceptionInterface|\ReflectionException $e) {
-                throw new ContainerException($e->getMessage(), $e->getCode(), $e->getPrevious());
+                return $diDefinition->isSingleton
+                    ? $this->resolved[$id] = $object
+                    : $object;
             }
+        } catch (AutowiredExceptionInterface|\ReflectionException $e) {
+            throw new ContainerException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
 
-        return $this->resolved[$id] = $definition === $id
-            ? $id
-            : $this->getValue($definition);
+        return $this->getValue($definition);
     }
 
     protected function getValue(mixed $value): mixed
@@ -232,25 +176,47 @@ class DiContainer implements DiContainerInterface
             && (\class_exists($id) || \interface_exists($id));
     }
 
-    protected function makeDefinition(string $id, mixed $rawDefinition): DiContainerDefinition
+    protected function autowireDefinition(string $id, mixed $rawDefinition): ?DiContainerDefinition
     {
         if (!isset($this->definitionCache[$id])) {
-            $sharedDefault = $this->config?->isSingletonServiceDefault() ?? false;
+            $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
+            if (null === $rawDefinition) {
+                if (\class_exists($id)) {
+                    return $this->definitionCache[$id] = $this->config?->isUseAttribute() && ($factory = DiFactory::makeFromReflection(new \ReflectionClass($id)))
+                        ? new DiContainerDefinition($id, $factory->id, $factory->isSingleton, $factory->arguments)
+                        : new DiContainerDefinition($id, $id, $isSingletonDefault, []);
+                }
 
-            if ($rawDefinition instanceof \Closure) {
-                return $this->definitionCache[$id] = new DiContainerDefinition($id, $rawDefinition, $sharedDefault);
+                if (\interface_exists($id) && $this->config?->isUseAttribute()
+                    && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
+                    return $this->definitionCache[$id] = new DiContainerDefinition($id, $service->id, $service->isSingleton, $service->arguments);
+                }
             }
 
             if (\is_array($rawDefinition)) {
-                return $this->definitionCache[$id] = new DiContainerDefinition(
-                    $id,
-                    $rawDefinition[0] ?? $id,
-                    $rawDefinition[DiContainerInterface::SINGLETON] ?? $sharedDefault,
-                    $rawDefinition[DiContainerInterface::ARGUMENTS] ?? []
-                );
+                $definition = $rawDefinition[0] ?? $id;
+                $isSingleton = $rawDefinition[DiContainerInterface::SINGLETON] ?? $isSingletonDefault;
+                $arguments = $rawDefinition[DiContainerInterface::ARGUMENTS] ?? [];
+            } else {
+                $definition = $rawDefinition;
+                $isSingleton = $isSingletonDefault;
+                $arguments = [];
             }
 
-            return $this->definitionCache[$id] = new DiContainerDefinition($id, $rawDefinition, $sharedDefault);
+            if ($definition instanceof \Closure) {
+                return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
+            }
+
+            if (\is_string($definition) && (\class_exists($definition) || \interface_exists($id))) {
+                if ($this->config?->isUseAttribute()
+                    && $factory = DiFactory::makeFromReflection(new \ReflectionClass($definition))) {
+                    return $this->definitionCache[$id] = new DiContainerDefinition($id, $factory->id, $factory->isSingleton, $factory->arguments);
+                }
+
+                return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
+            }
+
+            return $this->definitionCache[$id] = null;
         }
 
         return $this->definitionCache[$id];
