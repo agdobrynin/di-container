@@ -83,9 +83,10 @@ class DiContainer implements DiContainerInterface
         if ($arguments) {
             if (\is_array($this->definitions[$id])) {
                 $arguments = $arguments + $this->definitions[$id][DiContainerInterface::ARGUMENTS] ?? [];
+                $this->definitions[$id] = [DiContainerInterface::ARGUMENTS => $arguments] + $this->definitions[$id];
+            } else {
+                $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::ARGUMENTS => $arguments];
             }
-
-            $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::ARGUMENTS => $arguments];
         }
 
         if (null !== $isSingleton) {
