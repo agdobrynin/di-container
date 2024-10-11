@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Inject;
 
-class ClassWithInjectByAttributeTowServicesOneType
+class ClassWithInjectByAttributeTowServicesOneTypeSingletonFalse
 {
     public function __construct(
         #[Inject(arguments: ['array' => ['one', 'two']], isSingleton: false)]

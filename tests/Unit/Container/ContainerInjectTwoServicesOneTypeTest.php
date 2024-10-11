@@ -6,7 +6,7 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Attributes\ClassWithInjectByAttributeTowServicesOneType;
+use Tests\Fixtures\Attributes\ClassWithInjectByAttributeTowServicesOneTypeSingletonFalse;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -24,7 +24,7 @@ class ContainerInjectTwoServicesOneTypeTest extends TestCase
     {
         $container = (new DiContainerFactory())->make();
 
-        $class = $container->get(ClassWithInjectByAttributeTowServicesOneType::class);
+        $class = $container->get(ClassWithInjectByAttributeTowServicesOneTypeSingletonFalse::class);
 
         $this->assertEquals(['one', 'two'], $class->iterator1->getArrayCopy());
         $this->assertEquals(['three', 'four'], $class->iterator2->getArrayCopy());
