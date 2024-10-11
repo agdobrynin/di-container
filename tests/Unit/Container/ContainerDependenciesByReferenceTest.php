@@ -21,7 +21,7 @@ use Tests\Fixtures\Classes\DependenciesByReference;
  */
 class ContainerDependenciesByReferenceTest extends TestCase
 {
-    public function ztestContainerDependenciesByReference(): void
+    public function testContainerDependenciesByReference(): void
     {
         $container = (new DiContainerFactory())->make([
             'iterator1' => [
@@ -44,7 +44,10 @@ class ContainerDependenciesByReferenceTest extends TestCase
             ],
         ]);
 
-        $this->assertEquals(['one', 'two', 'three'], $container->get(DependenciesByReference::class)->dependencies1->getArrayCopy());
-        $this->assertEquals(['four', 'five', 'six'], $container->get(DependenciesByReference::class)->dependencies2->getArrayCopy());
+        $class = $container->get(DependenciesByReference::class);
+
+        $this->assertEquals(['one', 'two', 'three'], $class->dependencies1->getArrayCopy());
+        $this->assertEquals(['four', 'five', 'six'], $class->dependencies2->getArrayCopy());
+        $this->assertNotSame($class->dependencies1, $class->dependencies2);
     }
 }
