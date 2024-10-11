@@ -7,8 +7,8 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Attributes\TowClassesWithInjectA;
-use Tests\Fixtures\Attributes\TowClassesWithInjectB;
+use Tests\Fixtures\Attributes\TowClassesWithInjectByReferenceA;
+use Tests\Fixtures\Attributes\TowClassesWithInjectByReferenceB;
 use Tests\Fixtures\Classes\DependenciesByReference;
 
 /**
@@ -55,9 +55,18 @@ class ContainerDependenciesByReferenceTest extends TestCase
 
     public function testDependenciesAbc(): void
     {
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerFactory())->make([
+            'inject1' => [
+                \ArrayIterator::class,
+                DiContainerInterface::ARGUMENTS => ['array' => ['one', 'two']]
+            ],
+            'inject2' => [
+                \ArrayIterator::class,
+                DiContainerInterface::ARGUMENTS => ['array' => ['tree', 'four']]
+            ]
+        ]);
 
-        $this->assertEquals(['one', 'two'], $container->get(TowClassesWithInjectA::class)->iterator->getArrayCopy());
-        $this->assertEquals(['tree', 'four'], $container->get(TowClassesWithInjectB::class)->iterator->getArrayCopy());
+        $this->assertEquals(['one', 'two'], $container->get(TowClassesWithInjectByReferenceA::class)->iterator->getArrayCopy());
+        $this->assertEquals(['tree', 'four'], $container->get(TowClassesWithInjectByReferenceB::class)->iterator->getArrayCopy());
     }
 }
