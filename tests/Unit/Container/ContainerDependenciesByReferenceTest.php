@@ -7,6 +7,8 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Attributes\TowClassesWithInjectA;
+use Tests\Fixtures\Attributes\TowClassesWithInjectB;
 use Tests\Fixtures\Classes\DependenciesByReference;
 
 /**
@@ -49,5 +51,13 @@ class ContainerDependenciesByReferenceTest extends TestCase
         $this->assertEquals(['one', 'two', 'three'], $class->dependencies1->getArrayCopy());
         $this->assertEquals(['four', 'five', 'six'], $class->dependencies2->getArrayCopy());
         $this->assertNotSame($class->dependencies1, $class->dependencies2);
+    }
+
+    public function testDependenciesAbc(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->assertEquals(['one', 'two'], $container->get(TowClassesWithInjectA::class)->iterator->getArrayCopy());
+        $this->assertEquals(['tree', 'four'], $container->get(TowClassesWithInjectB::class)->iterator->getArrayCopy());
     }
 }
