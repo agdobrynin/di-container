@@ -145,7 +145,7 @@ class DiContainer implements DiContainerInterface
                 if ($diDefinition->definition instanceof \Closure) {
                     $instance = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments);
 
-                    return $diDefinition->shared
+                    return $diDefinition->isSingleton
                         ? $this->resolved[$id] = $instance
                         : $instance;
                 }
@@ -154,7 +154,7 @@ class DiContainer implements DiContainerInterface
                     && \is_a($diDefinition->definition, DiFactoryInterface::class, true)) {
                     $instance = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments)($this);
 
-                    return $diDefinition->shared
+                    return $diDefinition->isSingleton
                         ? $this->resolved[$id] = $instance
                         : $instance;
                 }
@@ -171,7 +171,7 @@ class DiContainer implements DiContainerInterface
 
                     $instance = $this->resolveInstance($diDefinition->id, $diDefinition->arguments);
 
-                    return $diDefinition->shared
+                    return $diDefinition->isSingleton
                         ? $this->resolved[$id] = $instance
                         : $instance;
                 }
@@ -182,7 +182,7 @@ class DiContainer implements DiContainerInterface
                         && $service = Service::makeFromReflection(new \ReflectionClass($diDefinition->id))) {
                         $diDefinition->definition = $service->id;
                         $diDefinition->arguments = $service->arguments;
-                        $diDefinition->shared = $service->isSingleton;
+                        $diDefinition->isSingleton = $service->isSingleton;
                     }
 
                     if (null === $diDefinition->definition) {
@@ -198,7 +198,7 @@ class DiContainer implements DiContainerInterface
 
                     $instance = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments);
 
-                    return $diDefinition->shared
+                    return $diDefinition->isSingleton
                         ? $this->resolved[$id] = $instance
                         : $instance;
                 }
