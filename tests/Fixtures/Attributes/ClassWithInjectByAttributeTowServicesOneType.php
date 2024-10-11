@@ -9,9 +9,9 @@ use Kaspi\DiContainer\Attributes\Inject;
 class ClassWithInjectByAttributeTowServicesOneType
 {
     public function __construct(
-        #[Inject(arguments: ['array' => ['one', 'two']])]
+        #[Inject(arguments: ['array' => ['one', 'two']], isSingleton: false)]
         public \ArrayIterator $iterator1,
-        #[Inject(arguments: ['array' => ['three', 'four']])]
+        #[Inject(arguments: ['array' => ['three', 'four']], isSingleton: false)]
         public \ArrayIterator $iterator2,
     ) {}
 }
