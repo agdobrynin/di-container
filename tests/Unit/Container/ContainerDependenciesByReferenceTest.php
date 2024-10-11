@@ -10,6 +10,13 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes\DependenciesByReference;
 
 /**
+ * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiContainerDefinition
+ * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\DiFactory
+ *
  * @internal
  */
 class ContainerDependenciesByReferenceTest extends TestCase
