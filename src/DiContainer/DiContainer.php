@@ -208,11 +208,6 @@ class DiContainer implements DiContainerInterface
             }
 
             if (\is_string($definition) && (\class_exists($definition) || \interface_exists($id))) {
-                if ($this->config?->isUseAttribute()
-                    && $factory = DiFactory::makeFromReflection(new \ReflectionClass($definition))) {
-                    return $this->definitionCache[$id] = new DiContainerDefinition($id, $factory->id, $factory->isSingleton, $factory->arguments);
-                }
-
                 return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
             }
 
