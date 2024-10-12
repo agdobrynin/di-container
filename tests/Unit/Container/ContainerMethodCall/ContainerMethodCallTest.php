@@ -11,6 +11,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInjectedServiceInConstructor;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInvokeAndInjectedServiceInConstructor;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithMethodWithDependency;
+use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithMethodWithDependencyByAttribute;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithStaticMethod;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\GreetingService;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\NameService;
@@ -150,7 +151,7 @@ class ContainerMethodCallTest extends TestCase
     public function testCallMethodWithDependencyWithInject(): void
     {
         $container = (new DiContainerFactory())->make();
-        $res = $container->call([ClassWithMethodWithDependency::class, 'sayHello'], ['icon' => '👓']);
+        $res = $container->call([ClassWithMethodWithDependencyByAttribute::class, 'sayHello'], ['icon' => '👓']);
 
         $this->assertEquals('Aloha Piter 👓', $res);
     }
