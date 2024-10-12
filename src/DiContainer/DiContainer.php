@@ -90,11 +90,9 @@ class DiContainer implements DiContainerInterface
         }
 
         if (null !== $isSingleton) {
-            if (\is_array($this->definitions[$id])) {
-                $this->definitions[$id] += [DiContainerInterface::SINGLETON => $isSingleton];
-            } else {
-                $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::SINGLETON => $isSingleton];
-            }
+            $this->definitions[$id] = \is_array($this->definitions[$id])
+                ? [DiContainerInterface::SINGLETON => $isSingleton] + $this->definitions[$id]
+                : [0 => $this->definitions[$id], DiContainerInterface::SINGLETON => $isSingleton];
         }
 
         return $this;
