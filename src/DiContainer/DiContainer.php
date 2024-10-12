@@ -165,6 +165,7 @@ class DiContainer implements DiContainerInterface
     {
         if (!isset($this->definitionCache[$id])) {
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
+
             if (null === $rawDefinition) {
                 if (\class_exists($id)) {
                     return $this->definitionCache[$id] = $this->config?->isUseAttribute() && ($factory = DiFactory::makeFromReflection(new \ReflectionClass($id)))

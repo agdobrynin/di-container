@@ -46,8 +46,8 @@ class ContainerSharedAttributesTest extends TestCase
         $o->append('🎈');
 
         $this->assertEquals(
-            ['🥇', '🥉','🎈'],
-            array_values((array) $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator())
+            ['🥇', '🥉', '🎈'],
+            \array_values((array) $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator())
         );
     }
 
