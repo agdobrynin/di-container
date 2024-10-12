@@ -49,10 +49,16 @@ class ContainerCallbackDefinitionTest extends TestCase
                 static fn () => new \ArrayIterator(['i1']),
                 DiContainerInterface::SINGLETON => true,
             ],
+            'callback2' => [
+                static fn () => new \ArrayIterator(['i2']),
+            ],
+            'callback3' => fn () => new \ArrayIterator(['i3']),
         ];
 
         $container = (new DiContainerFactory())->make($def);
         $this->assertSame($container->get('callback'), $container->get('callback'));
+        $this->assertNotSame($container->get('callback2'), $container->get('callback2'));
+        $this->assertNotSame($container->get('callback3'), $container->get('callback3'));
     }
 
     public function testCallbackDefinitionSingletonDefaultTrueButDefinitionSingletonFalse(): void
