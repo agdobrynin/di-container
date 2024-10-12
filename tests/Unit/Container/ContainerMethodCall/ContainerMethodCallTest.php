@@ -156,4 +156,43 @@ class ContainerMethodCallTest extends TestCase
 
         $this->assertEquals('Aloha Piter 👓', $res);
     }
+
+    public function testUseInjectForParameter(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'inject1' => [
+                \ArrayObject::class,
+                DiContainerInterface::ARGUMENTS => [
+                    'array' => ['i1', 'i2'],
+                ],
+            ],
+        ]);
+
+        $res = $container->call(static function (
+            #[Inject('@inject1')]
+            \ArrayObject $arrayObject
+        ) {
+            return $arrayObject;
+        });
+
+        $this->assertEquals(['i1', 'i2'], (array) $res);
+    }
+
+    public function testInjectTwoArgOneType(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $res = $container->call(static function (
+            #[Inject(arguments: ['array' => ['e1']])]
+            \ArrayIterator $iterator1,
+            #[Inject(arguments: ['array' => ['e2']])]
+            \ArrayIterator $iterator2,
+        ) {
+            return [$iterator1, $iterator2];
+        });
+
+        $this->assertNotSame($res[0], $res[1]);
+        $this->assertEquals(['e1'], (array) $res[0]);
+        $this->assertEquals(['e2'], (array) $res[1]);
+    }
 }
