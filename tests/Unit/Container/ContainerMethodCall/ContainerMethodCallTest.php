@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container\ContainerMethodCall;
 
+use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
@@ -123,8 +124,8 @@ class ContainerMethodCallTest extends TestCase
     public function testResolveParamsInFunction(): void
     {
         $container = (new DiContainerFactory())->make();
-        $action = static function (\ArrayIterator $iterator): \ArrayIterator {
-            $iterator->append('Hello');
+        $action = static function (#[Inject(arguments: ['array' => ['Hello']])] \ArrayIterator $iterator): \ArrayIterator {
+            $iterator->append('World');
 
             return $iterator;
         };
@@ -132,8 +133,8 @@ class ContainerMethodCallTest extends TestCase
         $res = $container->call($action);
 
         $this->assertInstanceOf(\Iterator::class, $res);
-        $this->assertCount(1, $res);
-        $this->assertEquals('x:i:0;a:1:{i:0;s:5:"Hello";};m:a:0:{}', $res->serialize());
+        $this->assertCount(2, $res);
+        $this->assertEquals('x:i:0;a:2:{i:0;s:5:"Hello";i:1;s:5:"World";};m:a:0:{}', $res->serialize());
     }
 
     public function testCallMethodWithDependency(): void

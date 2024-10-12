@@ -51,6 +51,11 @@ class ContainerSharedAttributesTest extends TestCase
             $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator(),
             $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator()
         );
+
+        $r1 = $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator()->getArrayCopy();
+        $r2 = $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator()->getArrayCopy();
+
+        $this->assertNotEquals($r1, $r2);
     }
 
     public function testSharedByServiceAttributeDefault(): void
