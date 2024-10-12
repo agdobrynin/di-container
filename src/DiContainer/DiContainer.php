@@ -280,7 +280,12 @@ class DiContainer implements DiContainerInterface
                             continue;
                         }
 
-                        if ($isInterface && $service = Service::makeFromReflection(new \ReflectionClass($inject->id))) {
+                        if ($isInterface) {
+                            $service = Service::makeFromReflection(new \ReflectionClass($inject->id))
+                                ?: throw new AutowiredException(
+                                    "The interface [$inject->id] is not defined via the php-attribute like #[Service]."
+                                );
+
                             try {
                                 $this->set(id: $inject->id, definition: $service->id, arguments: $service->arguments, isSingleton: $service->isSingleton);
                             } catch (ContainerAlreadyRegisteredException) {
