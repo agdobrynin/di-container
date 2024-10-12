@@ -41,6 +41,14 @@ class ContainerSharedAttributesTest extends TestCase
             $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator(),
             $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator()
         );
+
+        $o = $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator();
+        $o->append('🎈');
+
+        $this->assertEquals(
+            ['🥇', '🥉','🎈'],
+            array_values((array) $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator())
+        );
     }
 
     public function testSharedByAttributesFalse(): void
@@ -52,10 +60,10 @@ class ContainerSharedAttributesTest extends TestCase
             $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator()
         );
 
-        $r1 = $c->get(Attributes\InjectSimpleArgumentWithSharedTrue::class)->arrayIterator()->getArrayCopy();
-        $r2 = $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator()->getArrayCopy();
+        $r1 = $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator();
+        $r2 = $c->get(Attributes\InjectSimpleArgumentWithSharedFalse::class)->arrayIterator();
 
-        $this->assertNotEquals($r1, $r2);
+        $this->assertEquals((array) $r1, (array) $r2);
     }
 
     public function testSharedByServiceAttributeDefault(): void
