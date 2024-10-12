@@ -53,7 +53,7 @@ class ContainerDependenciesByReferenceTest extends TestCase
         $this->assertNotSame($class->dependencies1, $class->dependencies2);
     }
 
-    public function testDependenciesAbc(): void
+    public function testContainerDependenciesByReferenceByAttribute(): void
     {
         $container = (new DiContainerFactory())->make([
             'inject1' => [
