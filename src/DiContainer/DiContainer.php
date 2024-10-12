@@ -120,13 +120,6 @@ class DiContainer implements DiContainerInterface
 
     /**
      * Resolve dependencies.
-     *
-     * @param class-string<T> $id
-     *
-     * @return mixed|T
-     *
-     * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
-     * @throws ContainerExceptionInterface error while retrieving the entry
      */
     protected function resolve(string $id): mixed
     {
@@ -259,12 +252,8 @@ class DiContainer implements DiContainerInterface
 
                 if ($this->config->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
-                        try {
-                            $this->set(id: $factory->id, arguments: $factory->arguments, isSingleton: $factory->isSingleton);
-                        } catch (ContainerAlreadyRegisteredException) {
-                        }
-
-                        $dependencies[$parameter->getName()] = $this->get($factory->id);
+                        $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton);
+                        $dependencies[$parameter->getName()] = $this->get($dependencyKey);
 
                         continue;
                     }
@@ -281,25 +270,16 @@ class DiContainer implements DiContainerInterface
                         if ($isInterface) {
                             $service = Service::makeFromReflection(new \ReflectionClass($inject->id))
                                 ?: throw new AutowiredException(
-                                    "The interface [$inject->id] is not defined via the php-attribute like #[Service]."
+                                    "The interface [{$inject->id}] is not defined via the php-attribute like #[Service]."
                                 );
-
-                            try {
-                                $this->set(id: $inject->id, definition: $service->id, arguments: $service->arguments, isSingleton: $service->isSingleton);
-                            } catch (ContainerAlreadyRegisteredException) {
-                            }
-
-                            $dependencies[$parameter->getName()] = $this->get($inject->id);
+                            $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
+                            $dependencies[$parameter->getName()] = $this->get($dependencyKey);
 
                             continue;
                         }
 
-                        try {
-                            $this->set(id: $inject->id, arguments: $inject->arguments, isSingleton: $inject->isSingleton);
-                        } catch (ContainerAlreadyRegisteredException) {
-                        }
-
-                        $dependencies[$parameter->getName()] = $this->get($inject->id);
+                        $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton);
+                        $dependencies[$parameter->getName()] = $this->get($dependencyKey);
 
                         continue;
                     }
@@ -313,9 +293,9 @@ class DiContainer implements DiContainerInterface
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 if (!$parameter->isDefaultValueAvailable()) {
                     $declaredClass = $parameter->getDeclaringClass()
-                        ? $parameter->getDeclaringClass()->name.'::'
+                        ? $parameter->getDeclaringClass()->getName().'::'
                         : '';
-                    $where = $declaredClass.$parameter->getDeclaringFunction()->name;
+                    $where = $declaredClass.$parameter->getDeclaringFunction()->getName();
                     $reason = $e->getMessage();
 
                     throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]. Reason: {$reason}", $e->getCode(), $e);
@@ -328,5 +308,19 @@ class DiContainer implements DiContainerInterface
         }
 
         return $dependencies;
+    }
+
+    protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton): string
+    {
+        $fnName = $parameter->getDeclaringFunction();
+        $target = $parameter->getDeclaringClass()?->getName() ?: $fnName->getName().$fnName->getStartLine();
+        $dependencyKey = $target.'::'.$fnName->getName().'::'.$parameter->getType().':'.$parameter->getPosition();
+
+        try {
+            $this->set(id: $dependencyKey, definition: $definition, arguments: $arguments, isSingleton: $isSingleton);
+        } catch (ContainerAlreadyRegisteredException) {
+        }
+
+        return $dependencyKey;
     }
 }
