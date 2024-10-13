@@ -6,10 +6,10 @@ namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 
-class ClassWithFiledFactoryOnProperty
+class DiFactoryOnPropertyFailWithDefaultValue
 {
-    public function make(
+    public function __construct(
         #[DiFactory(Lorem::class)]
-        Lorem $lorem
-    ): void {}
+        public array $simpleArray = []
+    ) {}
 }

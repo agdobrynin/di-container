@@ -30,18 +30,28 @@ interface DiContainerInterface extends ContainerInterface
      *              DiContainerInterface::ARGUMENTS => [
      *                   'initValue' => 100
      *              ],
+     *              // Make service as shared (public)
+     *              DiContainerInterface::SINGLETON => true,
      *         ],
      *      ];
      * ```
      */
     public const ARGUMENTS = 'arguments';
+    public const SINGLETON = 'singleton';
 
     /**
      * @param null|mixed|object $definition
      *
      * @throws ContainerExceptionInterface
      */
-    public function set(string $id, mixed $definition = null, ?array $arguments = null): static;
+    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static;
+
+    /**
+     * @param <class-string, string|null>[]|class-string|string|callable $definition
+     *
+     * @throws ContainerExceptionInterface
+     */
+    public function call(array|callable|string $definition, array $arguments = []): mixed;
 
     /**
      * @param class-string<T>|string $id

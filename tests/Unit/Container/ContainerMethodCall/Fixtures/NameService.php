@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Attributes;
+namespace Tests\Unit\Container\ContainerMethodCall\Fixtures;
 
-final class SimpleClass
+class NameService
 {
     public function __construct(public string $name) {}
 }

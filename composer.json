@@ -21,7 +21,11 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "tests/Unit/Callable/Fixtures/function.php",
+            "tests/Unit/Container/ContainerMethodCall/Fixtures/function.php"
+        ]
     },
     "authors": [
         {

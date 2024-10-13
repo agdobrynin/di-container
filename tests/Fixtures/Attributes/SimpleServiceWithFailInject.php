@@ -6,10 +6,10 @@ namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Inject;
 
-class Logger
+class SimpleServiceWithFailInject
 {
     public function __construct(
-        #[Inject('@app.logger_file')]
-        public string $file
+        #[Inject]
+        public FreeInterface $service1,
     ) {}
 }

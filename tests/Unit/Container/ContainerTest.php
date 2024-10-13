@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container;
 
-use Kaspi\DiContainer\Autowired;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\AutowiredInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -21,24 +19,21 @@ use Tests\Fixtures\Classes\Interfaces;
  *
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
- * @covers \Kaspi\DiContainer\Autowired
+ * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
  */
 class ContainerTest extends TestCase
 {
-    protected ?AutowiredInterface $autowire = null;
-
     protected function setUp(): void
     {
-        $this->autowire = new Autowired();
-        $this->diContainerConfig = new DiContainerConfig(new Autowired());
+        $this->diContainerConfig = new DiContainerConfig();
     }
 
     protected function tearDown(): void
     {
-        $this->autowire = null;
         $this->diContainerConfig = null;
     }
 
@@ -59,7 +54,7 @@ class ContainerTest extends TestCase
     public function testHasMethodIsTrue(): void
     {
         $container = new DiContainer();
-        $container->set('test', fn () => 10);
+        $container->set('test', static fn () => 10);
 
         $this->assertTrue($container->has('test'));
         $this->assertFalse($container->has(self::class));
@@ -69,14 +64,14 @@ class ContainerTest extends TestCase
     {
         $container = new DiContainer(config: $this->diContainerConfig);
         $i = 1;
-        $container->set('test', fn () => 10 + $i);
+        $container->set('test', static fn () => 10 + $i);
 
         $this->assertEquals(11, $container->get('test'));
     }
 
-    public function testAutowiredOff(): void
+    public function testAutowiredOff1(): void
     {
-        $container = (new DiContainer())
+        $container = (new DiContainer(config: new DiContainerConfig(useAutowire: false, useAttribute: false)))
             ->set('test', static fn () => \time())
         ;
 
@@ -113,7 +108,7 @@ class ContainerTest extends TestCase
     public function testGetClosureWithParamsDefaultValue(): void
     {
         $container = (new DiContainer(config: $this->diContainerConfig));
-        $container->set('test', fn (int $myParams = 5) => 10 + $myParams);
+        $container->set('test', static fn (int $myParams = 5) => 10 + $myParams);
 
         $this->assertEquals(15, $container->get('test'));
     }
@@ -142,7 +137,7 @@ class ContainerTest extends TestCase
             Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
         ];
 
-        $config = new DiContainerConfig(autowire: $this->autowire, linkContainerSymbol: '*');
+        $config = new DiContainerConfig(referenceContainerSymbol: '*');
         $container = new DiContainer(definitions: $definitions, config: $config);
 
         $repository = $container->get(Classes\UserRepository::class);
@@ -180,7 +175,7 @@ class ContainerTest extends TestCase
             yield 'database' => static fn () => new Classes\Db($base);
 
             yield Classes\UserRepository::class => [
-                'arguments' => ['db' => 'database'],
+                'arguments' => ['db' => '@database'],
             ];
         };
 
@@ -211,22 +206,50 @@ class ContainerTest extends TestCase
         $this->assertNull($db->cache);
     }
 
+    public function testSetWithReplaceArguments(): void
+    {
+        $container = (new DiContainer(config: $this->diContainerConfig))
+            ->set(
+                id: Classes\Db::class,
+                definition: [
+                    'arguments' => [
+                        'data' => [],
+                        'store' => '/var/log',
+                    ],
+                ],
+                arguments: [
+                    'store' => '/var/new_log',
+                ],
+            )
+        ;
+
+        $db = $container->get(Classes\Db::class);
+
+        $this->assertEmpty($db->all());
+        $this->assertEquals('/var/new_log', $db->store);
+        $this->assertNull($db->cache);
+    }
+
     public function testByInterfaceWithParams(): void
     {
         $definitions = [
-            Interfaces\SumInterface::class => Classes\Sum::class,
-            Classes\Sum::class => [
+            Interfaces\SumInterface::class => [
+                Classes\Sum::class,
                 'arguments' => [
                     'init' => 50,
                 ],
             ],
+            Classes\Sum::class => [
+                'arguments' => [
+                    'init' => 10,
+                ],
+            ],
         ];
 
-        $sum = (new DiContainer($definitions, $this->diContainerConfig))
-            ->get(Interfaces\SumInterface::class)
-        ;
+        $c = new DiContainer($definitions, $this->diContainerConfig);
 
-        $this->assertEquals(60, $sum->add(10));
+        $this->assertEquals(60, $c->get(Interfaces\SumInterface::class)->add(10));
+        $this->assertEquals(20, $c->get(Classes\Sum::class)->add(10));
     }
 
     public function testByInterfaceOnly(): void
@@ -379,7 +402,7 @@ class ContainerTest extends TestCase
         $loggerConfig = [
             'logger_file' => '/path/to/your.log',
             'logger_name_my_app' => 'app-logger',
-            'local_file' => 'logger_file',
+            'local_file' => '@logger_file',
         ];
         $definitions = \array_merge(
             $loggerConfig,
@@ -387,9 +410,9 @@ class ContainerTest extends TestCase
                 Classes\Logger::class => [
                     'arguments' => [
                         // get by container-id
-                        'name' => 'logger_name_my_app',
+                        'name' => '@logger_name_my_app',
                         // get by container link
-                        'file' => 'local_file',
+                        'file' => '@local_file',
                     ],
                 ],
             ]
@@ -495,7 +518,7 @@ class ContainerTest extends TestCase
     public function testDefinitionArgAsClosure(): void
     {
         $c = (new DiContainerFactory())->make([
-            Classes\CacheAll::class => fn () => new Classes\CacheAll(new Classes\FileCache(), new Classes\RedisCache()),
+            Classes\CacheAll::class => static fn () => new Classes\CacheAll(new Classes\FileCache(), new Classes\RedisCache()),
         ]);
 
         $this->assertInstanceOf(Classes\CacheAll::class, $c->get(Classes\CacheAll::class));
@@ -512,5 +535,23 @@ class ContainerTest extends TestCase
         $this->assertEquals(['one', 'two'], $db->all());
         $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $db->cache);
         $this->assertEquals('::file::', $db->cache->driver());
+    }
+
+    public function testAbstractClassInNotInstantiable(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('class is not instantiable');
+
+        (new DiContainerFactory())->make()->get(Classes\AbstractClass::class);
+    }
+
+    public function testResolveInterfaceFail(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Class "ok" does not exist');
+
+        (new DiContainerFactory())->make([
+            Interfaces\SumInterface::class => 'ok',
+        ])->get(Interfaces\SumInterface::class);
     }
 }
