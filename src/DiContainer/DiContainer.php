@@ -247,9 +247,7 @@ class DiContainer implements DiContainerInterface
 
             try {
                 if (!$parameterType instanceof \ReflectionNamedType) {
-                    throw new AutowiredException(
-                        'Unsupported parameter type ['.($parameterType ?: 'no type')."] for name [{$parameter->name}]"
-                    );
+                    throw new AutowiredException('Unsupported parameter type ['.($parameterType ?: 'no type').'].');
                 }
 
                 if ($this->config->isUseAttribute()) {
@@ -294,13 +292,12 @@ class DiContainer implements DiContainerInterface
                 };
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 if (!$parameter->isDefaultValueAvailable()) {
-                    $declaredClass = $parameter->getDeclaringClass()
-                        ? $parameter->getDeclaringClass()->getName().'::'
-                        : '';
-                    $where = $declaredClass.$parameter->getDeclaringFunction()->getName();
-                    $reason = $e->getMessage();
+                    $declaredClass = $parameter->getDeclaringClass() ? $parameter->getDeclaringClass()->getName().'::' : '';
+                    $where = $declaredClass.$parameter->getDeclaringFunction()->getName().', parameter position #'.$parameter->getPosition();
+                    $messageParameter = "The parameter \"{$parameter->getName()}\" in {$where}";
+                    $message = "Unresolvable dependency. {$messageParameter}. Reason: {$e->getMessage()}";
 
-                    throw new AutowiredException("Unresolvable dependency [{$parameter}] in [{$where}]. Reason: {$reason}", $e->getCode(), $e);
+                    throw new AutowiredException($message, $e->getCode(), $e);
                 }
 
                 $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
