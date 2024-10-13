@@ -34,8 +34,6 @@ final class DefinitionAsCallable
 
     /**
      * @return \ReflectionParameter[]
-     *
-     * @throws \ReflectionException
      */
     public static function reflectParameters(callable $definition): array
     {

@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
@@ -113,7 +114,7 @@ class DiContainer implements DiContainerInterface
             $resolvedArgs = $this->resolveInstanceArguments($needToResolve, []);
 
             return \call_user_func_array($definition, $arguments + $resolvedArgs);
-        } catch (AutowiredExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface|\ReflectionException $e) {
+        } catch (AutowiredExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface $e) {
             throw new ContainerException($e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -140,7 +141,7 @@ class DiContainer implements DiContainerInterface
                     ? $this->resolved[$id] = $object
                     : $object;
             }
-        } catch (AutowiredExceptionInterface|\ReflectionException $e) {
+        } catch (AutowiredExceptionInterface $e) {
             throw new ContainerException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
 
@@ -291,7 +292,7 @@ class DiContainer implements DiContainerInterface
                     default => $this->get($parameterType->getName()),
                 };
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
-                if (!$parameter->isDefaultValueAvailable()) {
+                if ($e instanceof AutowiredAttributeException || !$parameter->isDefaultValueAvailable()) {
                     $declaredClass = $parameter->getDeclaringClass() ? $parameter->getDeclaringClass()->getName().'::' : '';
                     $where = $declaredClass.$parameter->getDeclaringFunction()->getName().', parameter position #'.$parameter->getPosition();
                     $messageParameter = "The parameter \"{$parameter->getName()}\" in {$where}";
@@ -301,8 +302,6 @@ class DiContainer implements DiContainerInterface
                 }
 
                 $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
-            } catch (\ReflectionException $e) { // @codeCoverageIgnore
-                throw new AutowiredException($e->getMessage(), $e->getCode(), $e); // @codeCoverageIgnore
             }
         }
 
