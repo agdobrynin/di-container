@@ -6,8 +6,11 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Attributes\ClassWithFactoryArgument;
 use Tests\Fixtures\Attributes\ClassWithFiledFactory;
+use Tests\Fixtures\Attributes\DiFactoryOnPropertyFail;
+use Tests\Fixtures\Attributes\DiFactoryOnPropertyFailWithDefaultValue;
 use Tests\Fixtures\Attributes\FlyClass;
 use Tests\Fixtures\Attributes\FlyWIthFlay;
 use Tests\Fixtures\Attributes\SuperClass;
@@ -37,7 +40,7 @@ class DiContainerClassFactoryTest extends TestCase
 
     public function testFactoryByClassWithInvalidClass(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage("must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface'");
 
         (new DiContainerFactory())->make()->get(ClassWithFiledFactory::class);
@@ -75,5 +78,21 @@ class DiContainerClassFactoryTest extends TestCase
         $this->assertNotSame($class->fly1, $class->fly2);
         $this->assertInstanceOf(FlyClass::class, $class->fly1);
         $this->assertInstanceOf(FlyClass::class, $class->fly2);
+    }
+
+    public function testDiFactoryForProperty(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage("must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
+
+        (new DiContainerFactory())->make()->get(DiFactoryOnPropertyFail::class);
+    }
+
+    public function testDiFactoryForPropertyWithDefaultValue(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage("must be implement 'Kaspi\\DiContainer\\Interfaces\\DiFactoryInterface' interface");
+
+        (new DiContainerFactory())->make()->get(DiFactoryOnPropertyFailWithDefaultValue::class);
     }
 }
