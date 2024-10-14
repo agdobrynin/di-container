@@ -15,7 +15,7 @@ final class DefinitionAsCallable
     /**
      * @throws ContainerExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface
      */
-    public static function makeFromAbstract(array|string $definition, ContainerInterface $container): callable
+    public static function makeFromAbstract(array|callable|string $definition, ContainerInterface $container): callable
     {
         if (\is_callable($definition)) {
             return $definition;

@@ -102,9 +102,7 @@ class DiContainer implements DiContainerInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            if (!\is_callable($definition)) {
-                $definition = DefinitionAsCallable::makeFromAbstract($definition, $this);
-            }
+            $definition = DefinitionAsCallable::makeFromAbstract($definition, $this);
 
             $parameters = DefinitionAsCallable::reflectParameters($definition);
             $needToResolve = \array_filter(
