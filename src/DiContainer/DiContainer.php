@@ -166,6 +166,7 @@ class DiContainer implements DiContainerInterface
     {
         if (!isset($this->definitionCache[$id])) {
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
+            $isIdInterface = \interface_exists($id);
 
             if (null === $rawDefinition) {
                 if (\class_exists($id)) {
@@ -175,7 +176,7 @@ class DiContainer implements DiContainerInterface
                             : new DiContainerDefinition($id, $id, $isSingletonDefault, []);
                 }
 
-                if (\interface_exists($id) && $this->config?->isUseAttribute()
+                if ($isIdInterface && $this->config?->isUseAttribute()
                     && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
                     return $this->definitionCache[$id] = new DiContainerDefinition($id, $service->id, $service->isSingleton, $service->arguments);
                 }
@@ -195,7 +196,11 @@ class DiContainer implements DiContainerInterface
                 return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
             }
 
-            if (\is_string($definition) && (\class_exists($definition) || \interface_exists($id))) {
+            if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
+                if ($isIdInterface && [] === $arguments && isset($this->definitions[$definition])) {
+                    $arguments = $this->autowireDefinition($definition, $this->definitions[$definition])->arguments;
+                }
+
                 return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
             }
 
