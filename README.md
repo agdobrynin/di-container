@@ -82,6 +82,14 @@ $container = new \Kaspi\DiContainer\DiContainer(config: $diConfig);
 $container = (new \Kaspi\DiContainer\DiContainerFactory())->make(definitions: []);
 ```
 
+⚙ При попытке автоматически разрешить:
+
+- `$container->get(Psr\Container\ContainerInterface::class);`
+- `$container->get(Kaspi\DiContainer\DiContainer::class);`
+- `$container->get(Kaspi\DiContainer\Interfaces\DiContainerInterface::class);`
+
+| будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
+
 ### Примеры использования
 
 ------------------------------------
