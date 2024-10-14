@@ -144,6 +144,7 @@ class ContainerTest extends TestCase
 
         $this->assertEquals('first, second', $repository->all());
         $this->assertNull($repository->db->store);
+        $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $repository->db->cache);
     }
 
     public function testResolveByInterfaceWithNamedArgClassInstance(): void
@@ -250,6 +251,22 @@ class ContainerTest extends TestCase
 
         $this->assertEquals(60, $c->get(Interfaces\SumInterface::class)->add(10));
         $this->assertEquals(20, $c->get(Classes\Sum::class)->add(10));
+    }
+
+    public function testByInterfaceByClassAndClassWithParams(): void
+    {
+        $definitions = [
+            Interfaces\SumInterface::class => Classes\Sum::class,
+            Classes\Sum::class => [
+                'arguments' => [
+                    'init' => 10,
+                ],
+            ],
+        ];
+
+        $c = new DiContainer($definitions, $this->diContainerConfig);
+
+        $this->assertEquals(20, $c->get(Interfaces\SumInterface::class)->add(10));
     }
 
     public function testByInterfaceOnly(): void
