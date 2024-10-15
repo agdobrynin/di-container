@@ -27,6 +27,8 @@ use Tests\Fixtures\Classes\Interfaces;
  */
 class ContainerTest extends TestCase
 {
+    protected ?DiContainerConfig $diContainerConfig = null;
+
     protected function setUp(): void
     {
         $this->diContainerConfig = new DiContainerConfig();
