@@ -60,7 +60,7 @@ class DiContainerConfigTest extends TestCase
     /**
      * @dataProvider dataProviderUseZeroConfigurationDefinition
      */
-    public function testIsUseZeroConfigurationDefinition(null|bool $value, bool $expect): void
+    public function testIsUseZeroConfigurationDefinition(?bool $value, bool $expect): void
     {
         $conf = null === $value
             ? new DiContainerConfig()

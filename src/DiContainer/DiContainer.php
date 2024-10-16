@@ -195,8 +195,8 @@ class DiContainer implements DiContainerInterface
             }
 
             if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
-                if ($isIdInterface && [] === $arguments && isset($this->definitions[$definition])) {
-                    $arguments = $this->autowireDefinition($definition, $this->definitions[$definition])->arguments;
+                if ($isIdInterface && [] === $arguments && isset($this->definitions[$definition][DiContainerInterface::ARGUMENTS])) {
+                    $arguments += $this->definitions[$definition][DiContainerInterface::ARGUMENTS];
                 }
 
                 return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
