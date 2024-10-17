@@ -8,7 +8,7 @@ use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 // @phan-suppress-next-line PhanUnreferencedFunction
-function diDefinition(mixed $definition = null, array $arguments = [], ?bool $isSingleton = null): array
+function diDefinition(mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): array
 {
     return (
         ($definition ? [0 => $definition] : [])
