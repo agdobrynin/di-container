@@ -6,8 +6,13 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiContainerConfigExceptionInterface;
 
-// @phan-suppress-next-line PhanUnreferencedFunction
+/**
+ * @phan-suppress PhanUnreferencedFunction
+ *
+ * @throws DiContainerConfigExceptionInterface
+ */
 function diDefinition(?string $containerKey = null, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): array
 {
     $prepareDefinition = (
