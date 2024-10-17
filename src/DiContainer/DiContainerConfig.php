@@ -24,7 +24,7 @@ final class DiContainerConfig implements DiContainerConfigInterface
             throw new DiContainerConfigException('Cannot use php-attribute without Autowire.');
         }
 
-        $this->referenceContainerSymbolLength = $referenceContainerSymbol ? \strlen($referenceContainerSymbol) : null;
+        $this->referenceContainerSymbolLength = \strlen($referenceContainerSymbol);
     }
 
     public function isUseAutowire(): bool

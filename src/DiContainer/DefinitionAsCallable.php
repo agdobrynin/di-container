@@ -53,6 +53,7 @@ final class DefinitionAsCallable
             return (new \ReflectionFunction($definition))->getParameters();
         }
 
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
         return (new \ReflectionMethod($definition, '__invoke'))->getParameters();
     }
 

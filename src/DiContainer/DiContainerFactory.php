@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer;
 use Kaspi\DiContainer\Interfaces\DiContainerFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
-class DiContainerFactory implements DiContainerFactoryInterface
+class DiContainerFactory implements DiContainerFactoryInterface // @phan-suppress-current-line PhanUnreferencedClass
 {
     public function make(iterable $definitions = []): DiContainerInterface
     {
