@@ -162,7 +162,7 @@ return [
     // If true, check to make sure the return type declared
     // in the doc-block (if any) matches the return type
     // declared in the method signature.
-    'check_docblock_signature_return_type_match' => false,
+    'check_docblock_signature_return_type_match' => true,
 
     // This setting maps case-insensitive strings to union types.
     //
