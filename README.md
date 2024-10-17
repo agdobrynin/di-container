@@ -382,6 +382,56 @@ $container = (new DiContainerFactory())->make($definitions);
 $container->get(App\MyClass::class); // instance of App\MyClass
 ```
 
+#### Функция-хэлпер для удобства конфигурирования контейнера:
+
+```php
+Kaspi\DiContainer\diDefinition(?string $containerKey = null, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): array
+```
+
+Пример использования хэлпера для конфигурирования:
+```php
+// объявления классов
+namespace App;
+
+interface SumInterface {}
+
+class Sum {
+    public function __construct(public int $init) {}
+}
+```
+```php
+// Определения контейнера
+use Kaspi\DiContainer\diDefinition;
+
+$definition = [
+    App\SumInterface::class => diDefinition(definition: App\Sum::class, arguments: ['init' => 50]),
+    App\Sum::class => diDefinition(arguments: ['init' => 10], isSingleton: true),
+];
+
+$c = (new DiContainerFactory())->make($definition);
+// ... вызова определения
+print $c->get(App\SumInterface::class)->init; // 50
+print $c->get(App\Sum::class)->init; // 10
+```
+альтернативное объявление определений:
+```php
+use \Kaspi\DiContainer\diDefinition;
+
+$definition1 = diDefinition(
+    containerKey: App\SumInterface::class,
+    definition: App\Sum::class,
+    arguments: ['init' => 50]
+);
+
+$definition2 = diDefinition(
+    containerKey: App\Sum::class,
+    arguments: ['init' => 10],
+    isSingleton: true  
+);
+
+$c = (new DiContainerFactory())->make($definition1 + $definition2);
+```
+
 #### 🔑 DiContainer c конфигурированием через PHP атрибуты
 
 [В конфигурации контейнера](#конфигурирование-dicontainer) по умолчанию параметр `useAttribute` включён.

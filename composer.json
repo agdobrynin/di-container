@@ -16,7 +16,10 @@
     "autoload": {
         "psr-4": {
             "Kaspi\\DiContainer\\": "src/DiContainer/"
-        }
+        },
+        "files": [
+            "src/DiContainer/function.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
