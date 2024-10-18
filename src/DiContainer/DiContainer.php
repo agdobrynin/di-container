@@ -29,9 +29,9 @@ class DiContainer implements DiContainerInterface
     protected iterable $definitions = [];
 
     /**
-     * @var <string, DiContainerDefinition|null>[]
+     * @var iterable<string, null|DiContainerDefinition>
      */
-    protected iterable $definitionCache = [];
+    protected iterable $diAutowireDefinition = [];
     protected array $resolved = [];
 
     /**
@@ -130,13 +130,13 @@ class DiContainer implements DiContainerInterface
 
         try {
             if ($this->config?->isUseAutowire()
-                && $diDefinition = $this->autowireDefinition($id, $definition)) {
-                $object = ($o = $this->resolveInstance($diDefinition->definition, $diDefinition->arguments)) instanceof DiFactoryInterface
+                && $diAutowireDefinition = $this->autowireDefinition($id, $definition)) {
+                $object = ($o = $this->resolveInstance($diAutowireDefinition->definition, $diAutowireDefinition->arguments)) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
 
-                return $diDefinition->isSingleton
-                    ? $this->resolved[$diDefinition->id] = $object
+                return $diAutowireDefinition->isSingleton
+                    ? $this->resolved[$diAutowireDefinition->id] = $object
                     : $object;
             }
         } catch (AutowiredExceptionInterface $e) {
@@ -162,13 +162,13 @@ class DiContainer implements DiContainerInterface
 
     protected function autowireDefinition(string $id, mixed $rawDefinition): ?DiContainerDefinition
     {
-        if (!isset($this->definitionCache[$id])) {
+        if (!isset($this->diAutowireDefinition[$id])) {
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
             $isIdInterface = \interface_exists($id);
 
             if (null === $rawDefinition) {
                 if (\class_exists($id)) {
-                    return $this->definitionCache[$id] = $this->config?->isUseAttribute()
+                    return $this->diAutowireDefinition[$id] = $this->config?->isUseAttribute()
                         && ($factory = DiFactory::makeFromReflection(new \ReflectionClass($id)))
                             ? new DiContainerDefinition($id, $factory->id, $factory->isSingleton, $factory->arguments)
                             : new DiContainerDefinition($id, $id, $isSingletonDefault, []);
@@ -176,7 +176,7 @@ class DiContainer implements DiContainerInterface
 
                 if ($isIdInterface && $this->config?->isUseAttribute()
                     && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
-                    return $this->definitionCache[$id] = new DiContainerDefinition($id, $service->id, $service->isSingleton, $service->arguments);
+                    return $this->diAutowireDefinition[$id] = new DiContainerDefinition($id, $service->id, $service->isSingleton, $service->arguments);
                 }
             }
 
@@ -191,7 +191,7 @@ class DiContainer implements DiContainerInterface
             }
 
             if ($definition instanceof \Closure) {
-                return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
+                return $this->diAutowireDefinition[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
             }
 
             if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
@@ -199,13 +199,13 @@ class DiContainer implements DiContainerInterface
                     $arguments += (array) $this->definitions[$definition][DiContainerInterface::ARGUMENTS];
                 }
 
-                return $this->definitionCache[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
+                return $this->diAutowireDefinition[$id] = new DiContainerDefinition($id, $definition, $isSingleton, $arguments);
             }
 
-            return $this->definitionCache[$id] = null;
+            return $this->diAutowireDefinition[$id] = null;
         }
 
-        return $this->definitionCache[$id];
+        return $this->diAutowireDefinition[$id];
     }
 
     /**

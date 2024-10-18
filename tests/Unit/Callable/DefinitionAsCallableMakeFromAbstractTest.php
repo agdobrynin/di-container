@@ -77,7 +77,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
     public function testWrongDefinitionArray(): void
     {
         $this->expectException(DefinitionCallableExceptionInterface::class);
-        $this->expectExceptionMessage('Wrong parameter for parse definition');
+        $this->expectExceptionMessage('When the definition is an array');
 
         DefinitionAsCallable::makeFromAbstract(
             [],
@@ -88,10 +88,21 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
     public function testWrongDefinitionIsNotCallable(): void
     {
         $this->expectException(DefinitionCallableExceptionInterface::class);
-        $this->expectExceptionMessage('Wrong parameter for parse definition');
+        $this->expectExceptionMessage('When the definition is an array');
 
         DefinitionAsCallable::makeFromAbstract(
-            [],
+            [self::class],
+            (new DiContainerFactory())->make()
+        );
+    }
+
+    public function testWrongDefinitionIsArrayWithNulls(): void
+    {
+        $this->expectException(DefinitionCallableExceptionInterface::class);
+        $this->expectExceptionMessage('When the definition is an array');
+
+        DefinitionAsCallable::makeFromAbstract(
+            [null, null],
             (new DiContainerFactory())->make()
         );
     }
