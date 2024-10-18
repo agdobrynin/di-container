@@ -62,7 +62,7 @@ final class DefinitionAsCallable
         if (\is_array($definition)) {
             isset($definition[0], $definition[1])
                 || throw new DefinitionCallableException(
-                    'Wrong parameter for parse definition. Got: '.\var_export($definition, true)
+                    'When the definition is an array, two array elements must be provided. Got: '.\var_export($definition, true)
                 );
 
             return [$definition[0], $definition[1]];
