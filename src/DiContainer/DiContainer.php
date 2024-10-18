@@ -131,7 +131,9 @@ class DiContainer implements DiContainerInterface
         $definition = $this->definitions[$id] ?? null;
 
         if (isset($this->resolvingDependencies[$id])) {
-            throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.\implode(' -> ', \array_keys((array) $this->resolvingDependencies)));
+            $callPath = \implode(' -> ', \array_keys((array) $this->resolvingDependencies));
+
+            throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);
         }
 
         $this->resolvingDependencies[$id] = true;
