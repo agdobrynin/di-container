@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
+use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
@@ -32,7 +33,8 @@ class DiContainer implements DiContainerInterface
      * @var iterable<string, null|DiContainerDefinition>
      */
     protected iterable $diAutowireDefinition = [];
-    protected array $resolved = [];
+    protected iterable $resolved = [];
+    protected iterable $resolvingDependencies = [];
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -128,6 +130,14 @@ class DiContainer implements DiContainerInterface
 
         $definition = $this->definitions[$id] ?? null;
 
+        if (isset($this->resolvingDependencies[$id])) {
+            $callPath = \implode(' -> ', \array_keys((array) $this->resolvingDependencies));
+
+            throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);
+        }
+
+        $this->resolvingDependencies[$id] = true;
+
         try {
             if ($this->config?->isUseAutowire()
                 && $diAutowireDefinition = $this->autowireDefinition($id, $definition)) {
@@ -139,11 +149,13 @@ class DiContainer implements DiContainerInterface
                     ? $this->resolved[$diAutowireDefinition->id] = $object
                     : $object;
             }
+
+            return $this->getValue($definition);
         } catch (AutowiredExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
+        } finally {
+            unset($this->resolvingDependencies[$id]);
         }
-
-        return $this->getValue($definition);
     }
 
     protected function getValue(mixed $value): mixed
@@ -295,6 +307,8 @@ class DiContainer implements DiContainerInterface
                     ContainerInterface::class === $parameterType->getName() => $this,
                     default => $this->get($parameterType->getName()),
                 };
+            } catch (CallCircularDependency $e) {
+                throw $e;
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 if ($e instanceof AutowiredAttributeException || !$parameter->isDefaultValueAvailable()) {
                     $declaredClass = $parameter->getDeclaringClass()?->getName() ?: '';
