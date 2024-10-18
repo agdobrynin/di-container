@@ -9,19 +9,20 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Container\CallCircularDependency\Fixtures\CircularClass;
+use Tests\Unit\Container\CallCircularDependency\Fixtures\CircularClassByInject;
 use Tests\Unit\Container\CallCircularDependency\Fixtures\CircularClassByInterface;
 use Tests\Unit\Container\CallCircularDependency\Fixtures\FirstClass;
-
-use function Kaspi\DiContainer\diDefinition;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DefinitionAsCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\diDefinition
  *
  * @internal
  */
@@ -76,8 +77,17 @@ class CallCircularDependencyTest extends TestCase
 
     public function testCircularDependencyClassByInterface(): void
     {
-        //        (new DiContainerFactory())->make([
-        //            diDefinition(CircularClassByInterface::class, FirstClass::class)
-        //        ])->get(CircularClass::class);
+        $this->expectException(CallCircularDependency::class);
+
+        (new DiContainerFactory())->make(
+            [CircularClassByInterface::class => FirstClass::class]
+        )->get(CircularClass::class);
+    }
+
+    public function testCircularDependencyClassByInterfaceWithInject(): void
+    {
+        $this->expectException(CallCircularDependency::class);
+
+        (new DiContainerFactory())->make()->get(CircularClassByInject::class);
     }
 }

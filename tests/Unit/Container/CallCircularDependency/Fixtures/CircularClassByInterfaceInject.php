@@ -6,5 +6,5 @@ namespace Tests\Unit\Container\CallCircularDependency\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Service;
 
-#[Service(CircularClassByInject::class)]
+#[Service(FirstClass::class)]
 interface CircularClassByInterfaceInject {}
