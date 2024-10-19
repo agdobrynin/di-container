@@ -8,7 +8,7 @@ namespace Kaspi\DiContainer\Attributes;
 final class Service
 {
     /**
-     * @param class-string|string $id
+     * @param class-string|string $id class name or container reference
      */
     public function __construct(public string $id, public array $arguments = [], public bool $isSingleton = false) {}
 
