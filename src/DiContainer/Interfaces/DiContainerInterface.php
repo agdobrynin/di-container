@@ -40,7 +40,8 @@ interface DiContainerInterface extends ContainerInterface
     public const SINGLETON = 'singleton';
 
     /**
-     * @param null|mixed|object $definition
+     * @param class-string|string $id
+     * @param null|mixed|object   $definition
      *
      * @throws ContainerExceptionInterface
      */
