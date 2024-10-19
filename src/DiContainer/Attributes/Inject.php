@@ -8,7 +8,7 @@ namespace Kaspi\DiContainer\Attributes;
 final class Inject
 {
     /**
-     * @param null|class-string|string $id Container id
+     * @param null|class-string|string $id class name or container reference
      */
     public function __construct(public ?string $id = null, public array $arguments = [], public bool $isSingleton = false) {}
 

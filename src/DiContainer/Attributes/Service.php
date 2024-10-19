@@ -7,6 +7,9 @@ namespace Kaspi\DiContainer\Attributes;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final class Service
 {
+    /**
+     * @param class-string|string $id class name or container reference
+     */
     public function __construct(public string $id, public array $arguments = [], public bool $isSingleton = false) {}
 
     public static function makeFromReflection(\ReflectionClass $parameter): ?self
