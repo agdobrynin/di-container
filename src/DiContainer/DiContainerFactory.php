@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Interfaces\DiContainerFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Psr\Container\ContainerInterface;
 
 class DiContainerFactory implements DiContainerFactoryInterface // @phan-suppress-current-line PhanUnreferencedClass
 {
@@ -19,9 +20,6 @@ class DiContainerFactory implements DiContainerFactoryInterface // @phan-suppres
             referenceContainerSymbol: '@'
         );
 
-        return new DiContainer(
-            definitions: $definitions,
-            config: $config,
-        );
+        return ($c = new DiContainer($definitions, $config))->set(ContainerInterface::class, $c);
     }
 }

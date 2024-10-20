@@ -183,6 +183,8 @@ class DiContainer implements DiContainerInterface
                     && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
                     return $this->diAutowireDefinition[$id] = new DiContainerDefinition($id, $service->id, $service->isSingleton, $service->arguments);
                 }
+
+                throw new NotFoundException('Definition not found for '.$id);
             }
 
             if (\is_array($rawDefinition)) {
