@@ -68,7 +68,7 @@ class DiContainer implements DiContainerInterface
     {
         return isset($this->definitions[$id])
             || isset($this->resolved[$id])
-            || $this->hasClassOrInterface($id);
+            || ($this->config?->isUseZeroConfigurationDefinition() && (\class_exists($id) || \interface_exists($id)));
     }
 
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static
@@ -163,12 +163,6 @@ class DiContainer implements DiContainerInterface
         return \is_string($value) && ($id = $this->config?->getReferenceToContainer($value))
             ? $this->get($id)
             : $value;
-    }
-
-    protected function hasClassOrInterface(string $id): bool
-    {
-        return $this->config?->isUseZeroConfigurationDefinition()
-            && (\class_exists($id) || \interface_exists($id));
     }
 
     protected function autowireDefinition(string $id, mixed $rawDefinition): ?DiContainerDefinition
