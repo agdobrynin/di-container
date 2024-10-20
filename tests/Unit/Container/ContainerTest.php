@@ -7,9 +7,11 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\Attributes\FactoryClassWithDiFactoryArgument;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
@@ -572,5 +574,20 @@ class ContainerTest extends TestCase
         (new DiContainerFactory())->make([
             Interfaces\SumInterface::class => 'ok',
         ])->get(Interfaces\SumInterface::class);
+    }
+
+    public function testGetContainerInterfaceWithoutDefinition(): void
+    {
+        $this->expectException(NotFoundExceptionInterface::class);
+
+        (new DiContainer(config: $this->diContainerConfig))->get(ContainerInterface::class);
+    }
+
+    public function testGetContainerInterfaceWithDefinitionInDiContainerFactory(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->assertInstanceOf(ContainerInterface::class, $container->get(ContainerInterface::class));
+        $this->assertInstanceOf(DiContainerInterface::class, $container->get(ContainerInterface::class));
     }
 }
