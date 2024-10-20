@@ -167,8 +167,7 @@ class DiContainer implements DiContainerInterface
 
     protected function hasClassOrInterface(string $id): bool
     {
-        return $this->config?->isUseAutowire()
-            && $this->config?->isUseZeroConfigurationDefinition()
+        return $this->config?->isUseZeroConfigurationDefinition()
             && (\class_exists($id) || \interface_exists($id));
     }
 
