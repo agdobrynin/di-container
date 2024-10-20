@@ -16,7 +16,7 @@ interface DiContainerInterface extends ContainerInterface
      * Key name for defining arguments in a constructor or method in a php-class.
      *
      * Example of using all array keys in container definitions:
-     * ```php
+     *
      *      $definition = [
      *          // Arguments for constructor
      *          Acme\SomeClass::class => [
@@ -34,7 +34,6 @@ interface DiContainerInterface extends ContainerInterface
      *              DiContainerInterface::SINGLETON => true,
      *         ],
      *      ];
-     * ```
      */
     public const ARGUMENTS = 'arguments';
     public const SINGLETON = 'singleton';
