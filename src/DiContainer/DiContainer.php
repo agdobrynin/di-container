@@ -254,12 +254,8 @@ class DiContainer implements DiContainerInterface
                 continue;
             }
 
-            $parameterType = $parameter->getType();
-
             try {
-                if (!$parameterType instanceof \ReflectionNamedType) {
-                    throw new AutowiredException('Unsupported parameter type ['.($parameterType ?: 'no type').'].');
-                }
+                $parameterType = $this->getParameterType($parameter);
 
                 if ($this->config?->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
@@ -273,7 +269,7 @@ class DiContainer implements DiContainerInterface
                         $id = (string) $inject->id;
                         $isInterface = \interface_exists($id);
 
-                        if ((!$isInterface && !\class_exists($id)) || $parameterType->isBuiltin()) {
+                        if (!$isInterface && !\class_exists($id)) {
                             $dependencies[$parameter->getName()] = $this->getValue($id);
 
                             continue;
@@ -298,9 +294,9 @@ class DiContainer implements DiContainerInterface
                 }
 
                 $dependencies[$parameter->getName()] = match (true) {
-                    $parameterType->isBuiltin() => $this->get($parameter->getName()),
-                    ContainerInterface::class === $parameterType->getName() => $this,
-                    default => $this->get($parameterType->getName()),
+                    ContainerInterface::class === $parameterType?->getName() => $this,
+                    null !== $parameterType && !$parameterType->isBuiltin() => $this->get($parameterType->getName()),
+                    default => $this->get($parameter->getName()),
                 };
             } catch (CallCircularDependency $e) {
                 throw $e;
@@ -308,8 +304,8 @@ class DiContainer implements DiContainerInterface
                 if ($e instanceof AutowiredAttributeException || !$parameter->isDefaultValueAvailable()) {
                     $declaredClass = $parameter->getDeclaringClass()?->getName() ?: '';
                     $declaredFunction = $parameter->getDeclaringFunction()->getName();
-                    $where = \implode('::', \array_filter([$declaredClass, $declaredFunction])).', parameter position #'.$parameter->getPosition();
-                    $messageParameter = "The parameter \"{$parameter->getName()}\" in {$where}";
+                    $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
+                    $messageParameter = "The parameter \"{$parameter}\" in {$where}";
                     $message = "Unresolvable dependency. {$messageParameter}. Reason: {$e->getMessage()}";
 
                     throw new AutowiredException(message: $message, previous: $e);
@@ -320,6 +316,13 @@ class DiContainer implements DiContainerInterface
         }
 
         return $dependencies;
+    }
+
+    protected function getParameterType(\ReflectionParameter $parameter): ?\ReflectionNamedType
+    {
+        return ($t = $parameter->getType()) instanceof \ReflectionUnionType
+            ? $t->getTypes()[0] // Get first union type e.g. __construct(Class1|Class2 $dependency) will return 'Class1'
+            : $parameter->getType();
     }
 
     protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton): string
