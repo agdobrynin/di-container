@@ -305,7 +305,7 @@ class DiContainer implements DiContainerInterface
                     $declaredClass = $parameter->getDeclaringClass()?->getName() ?: '';
                     $declaredFunction = $parameter->getDeclaringFunction()->getName();
                     $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
-                    $messageParameter = "The parameter \"{$parameter}\" in {$where}";
+                    $messageParameter = $parameter.' in '.$where;
                     $message = "Unresolvable dependency. {$messageParameter}. Reason: {$e->getMessage()}";
 
                     throw new AutowiredException(message: $message, previous: $e);
