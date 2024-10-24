@@ -216,20 +216,20 @@ class DiContainer implements DiContainerInterface
     }
 
     /**
-     * @param class-string|\Closure $id
+     * @param class-string|\Closure $definition
      */
-    protected function resolveInstance(\Closure|string $id, array $arguments = []): mixed
+    protected function resolveInstance(\Closure|string $definition, array $arguments = []): mixed
     {
         try {
-            if ($id instanceof \Closure) {
-                $reflectionFunction = new \ReflectionFunction($id);
+            if ($definition instanceof \Closure) {
+                $reflectionFunction = new \ReflectionFunction($definition);
                 $resolvedArgs = $this->resolveInstanceArguments($reflectionFunction->getParameters(), $arguments);
 
                 return $reflectionFunction->invokeArgs($resolvedArgs);
             }
 
-            ($reflectionClass = new \ReflectionClass($id))->isInstantiable()
-                || throw new AutowiredException("The [{$id}] class is not instantiable");
+            ($reflectionClass = new \ReflectionClass($definition))->isInstantiable()
+                || throw new AutowiredException("The [{$definition}] class is not instantiable");
 
             $parameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
             $resolvedArgs = $this->resolveInstanceArguments($parameters, $arguments);
