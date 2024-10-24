@@ -9,9 +9,9 @@ use Psr\Container\ContainerInterface;
 
 interface DiContainerCompilerInterface extends DiContainerInterface
 {
-    public function resource(array $resources): DiContainerCompilerInterface;
+    public function resource(iterable $resources): DiContainerCompilerInterface;
 
-    public function exclude(array $excludes): DiContainerCompilerInterface;
+    public function exclude(iterable $excludes): DiContainerCompilerInterface;
 
     /**
      * @throws ContainerExceptionInterface
