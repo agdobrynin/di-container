@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Classes\ClassWithEmptyType;
@@ -29,6 +30,20 @@ class ContainerWithUnionTypeOrEmptyTypeParametersTest extends TestCase
         ]);
 
         $this->assertInstanceOf(\ArrayIterator::class, $c->get(ClassWithEmptyType::class)->dependency);
+    }
+
+    public function testCloserArg(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            ClassWithEmptyType::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'dependency' => static fn () => new \ArrayIterator(),
+                ],
+            ],
+        ]);
+
+        $this->assertInstanceOf(\Closure::class, $c->get(ClassWithEmptyType::class)->dependency);
+        $this->assertInstanceOf(\ArrayIterator::class, ($c->get(ClassWithEmptyType::class)->dependency)());
     }
 
     public function testEmptyTypeHintByDefinitionConstructor(): void
