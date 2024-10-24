@@ -7,11 +7,11 @@ namespace Kaspi\DiContainer\Interfaces;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
-interface ContainerCompilerInterface
+interface DiContainerCompilerInterface extends DiContainerInterface
 {
-    public function resource(array $resources): ContainerCompilerInterface;
+    public function resource(array $resources): DiContainerCompilerInterface;
 
-    public function exclude(array $excludes): ContainerCompilerInterface;
+    public function exclude(array $excludes): DiContainerCompilerInterface;
 
     /**
      * @throws ContainerExceptionInterface
