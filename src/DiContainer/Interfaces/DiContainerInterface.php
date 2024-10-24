@@ -7,9 +7,6 @@ namespace Kaspi\DiContainer\Interfaces;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
-/**
- * @template T of object
- */
 interface DiContainerInterface extends ContainerInterface
 {
     /**
@@ -54,6 +51,8 @@ interface DiContainerInterface extends ContainerInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed;
 
     /**
+     * @template T of object
+     *
      * @param class-string<T>|string $id
      *
      * @return T
