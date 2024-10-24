@@ -34,7 +34,7 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $diAutowireDefinition = [];
     protected iterable $resolved = [];
-    protected iterable $resolvingDependencies = [];
+    protected iterable $checkCircularResolvingDependencies = [];
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -130,13 +130,13 @@ class DiContainer implements DiContainerInterface
 
         $definition = $this->definitions[$id] ?? null;
 
-        if (isset($this->resolvingDependencies[$id])) {
-            $callPath = \implode(' -> ', \array_keys((array) $this->resolvingDependencies));
+        if (isset($this->checkCircularResolvingDependencies[$id])) {
+            $callPath = \implode(' -> ', \array_keys((array) $this->checkCircularResolvingDependencies));
 
             throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);
         }
 
-        $this->resolvingDependencies[$id] = true;
+        $this->checkCircularResolvingDependencies[$id] = true;
 
         try {
             if ($this->config?->isUseAutowire()
@@ -154,7 +154,7 @@ class DiContainer implements DiContainerInterface
         } catch (AutowiredExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
-            unset($this->resolvingDependencies[$id]);
+            unset($this->checkCircularResolvingDependencies[$id]);
         }
     }
 
@@ -216,20 +216,20 @@ class DiContainer implements DiContainerInterface
     }
 
     /**
-     * @param class-string|\Closure $id
+     * @param class-string|\Closure $definition
      */
-    protected function resolveInstance(\Closure|string $id, array $arguments = []): mixed
+    protected function resolveInstance(\Closure|string $definition, array $arguments = []): mixed
     {
         try {
-            if ($id instanceof \Closure) {
-                $reflectionFunction = new \ReflectionFunction($id);
+            if ($definition instanceof \Closure) {
+                $reflectionFunction = new \ReflectionFunction($definition);
                 $resolvedArgs = $this->resolveInstanceArguments($reflectionFunction->getParameters(), $arguments);
 
                 return $reflectionFunction->invokeArgs($resolvedArgs);
             }
 
-            ($reflectionClass = new \ReflectionClass($id))->isInstantiable()
-                || throw new AutowiredException("The [{$id}] class is not instantiable");
+            ($reflectionClass = new \ReflectionClass($definition))->isInstantiable()
+                || throw new AutowiredException("The [{$definition}] class is not instantiable");
 
             $parameters = $reflectionClass->getConstructor()?->getParameters() ?? [];
             $resolvedArgs = $this->resolveInstanceArguments($parameters, $arguments);
