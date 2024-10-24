@@ -34,7 +34,7 @@ class DiContainer implements DiContainerInterface
      */
     protected iterable $diAutowireDefinition = [];
     protected iterable $resolved = [];
-    protected iterable $resolvingDependencies = [];
+    protected iterable $checkCircularResolvingDependencies = [];
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -130,13 +130,13 @@ class DiContainer implements DiContainerInterface
 
         $definition = $this->definitions[$id] ?? null;
 
-        if (isset($this->resolvingDependencies[$id])) {
-            $callPath = \implode(' -> ', \array_keys((array) $this->resolvingDependencies));
+        if (isset($this->checkCircularResolvingDependencies[$id])) {
+            $callPath = \implode(' -> ', \array_keys((array) $this->checkCircularResolvingDependencies));
 
             throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);
         }
 
-        $this->resolvingDependencies[$id] = true;
+        $this->checkCircularResolvingDependencies[$id] = true;
 
         try {
             if ($this->config?->isUseAutowire()
@@ -154,7 +154,7 @@ class DiContainer implements DiContainerInterface
         } catch (AutowiredExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
-            unset($this->resolvingDependencies[$id]);
+            unset($this->checkCircularResolvingDependencies[$id]);
         }
     }
 
