@@ -6,5 +6,5 @@ namespace Tests\Fixtures\Classes;
 
 class ClassWithEmptyType
 {
-    public function __construct($dependency) {}
+    public function __construct(public $dependency) {}
 }

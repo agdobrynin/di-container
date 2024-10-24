@@ -6,5 +6,5 @@ namespace Tests\Fixtures\Classes;
 
 class ClassWithUnionType
 {
-    public function __construct(\ReflectionClass|\ReflectionMethod $dependency) {}
+    public function __construct(public \ReflectionClass|\ReflectionMethod $dependency) {}
 }
