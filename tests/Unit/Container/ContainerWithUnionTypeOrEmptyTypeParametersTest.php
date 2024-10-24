@@ -63,5 +63,18 @@ class ContainerWithUnionTypeOrEmptyTypeParametersTest extends TestCase
         (new DiContainerFactory())->make()->get(ClassWithUnionType::class);
     }
 
-    // @todo add test for union type in constructor with success resolving.
+    public function testUnionTypeSuccess(): void
+    {
+        $class = (new DiContainerFactory())->make([
+            \ReflectionClass::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'objectOrClass' => $this,
+                ],
+            ],
+        ])->get(ClassWithUnionType::class);
+
+        $this->assertInstanceOf(ClassWithUnionType::class, $class);
+        $this->assertInstanceOf(\ReflectionClass::class, $class->dependency);
+        $this->assertEquals(self::class, $class->dependency->name);
+    }
 }
