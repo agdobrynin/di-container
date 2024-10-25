@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerCompilerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
-use Psr\Container\ContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 class DiContainerCompiler extends DiContainer implements DiContainerCompilerInterface
 {
@@ -25,7 +26,7 @@ class DiContainerCompiler extends DiContainer implements DiContainerCompilerInte
         return $this;
     }
 
-    public function compile(): ContainerInterface
+    public function compile(): DiContainerCallInterface&DiContainerInterface
     {
         throw new \LogicException('Compiling is not implemented');
     }

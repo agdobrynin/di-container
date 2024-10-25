@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 
 interface DiContainerCompilerInterface extends DiContainerInterface
 {
@@ -16,5 +15,5 @@ interface DiContainerCompilerInterface extends DiContainerInterface
     /**
      * @throws ContainerExceptionInterface
      */
-    public function compile(): ContainerInterface;
+    public function compile(): DiContainerCallInterface&DiContainerInterface;
 }
