@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 interface DiContainerInterface extends ContainerInterface
@@ -34,21 +33,6 @@ interface DiContainerInterface extends ContainerInterface
      */
     public const ARGUMENTS = 'arguments';
     public const SINGLETON = 'singleton';
-
-    /**
-     * @param class-string|string $id
-     * @param null|mixed|object   $definition
-     *
-     * @throws ContainerExceptionInterface
-     */
-    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static;
-
-    /**
-     * @param <class-string, string|null>[]|class-string|string|callable $definition
-     *
-     * @throws ContainerExceptionInterface
-     */
-    public function call(array|callable|string $definition, array $arguments = []): mixed;
 
     /**
      * @template T of object
