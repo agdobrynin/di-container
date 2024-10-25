@@ -13,8 +13,10 @@ use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionCallableExceptionInterface;
@@ -25,7 +27,7 @@ use Psr\Container\NotFoundExceptionInterface;
 /**
  * @template T of object
  */
-class DiContainer implements DiContainerInterface
+class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     protected iterable $definitions = [];
 
