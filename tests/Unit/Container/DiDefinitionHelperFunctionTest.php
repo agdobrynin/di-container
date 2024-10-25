@@ -15,9 +15,9 @@ use function Kaspi\DiContainer\diDefinition;
 /**
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\diDefinition
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  *
  * @internal
  */

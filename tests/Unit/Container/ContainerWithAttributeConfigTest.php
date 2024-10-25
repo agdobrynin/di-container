@@ -6,7 +6,9 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Attributes;
+use Tests\Fixtures\Attributes\InjectStupidSimpleType;
 use Tests\Fixtures\Attributes\SendEmail;
 
 /**
@@ -18,8 +20,9 @@ use Tests\Fixtures\Attributes\SendEmail;
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
  */
 class ContainerWithAttributeConfigTest extends TestCase
 {
@@ -91,5 +94,15 @@ class ContainerWithAttributeConfigTest extends TestCase
 
         $this->assertEquals('ivan@mail.com', $sendMail->adminEmail);
         $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $sendMail->fromFactory);
+    }
+
+    public function testInjectSimpleTypeDirect(): void
+    {
+        $c = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Unresolvable dependency [rules]');
+
+        $c->get(InjectStupidSimpleType::class);
     }
 }

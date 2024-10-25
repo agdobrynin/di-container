@@ -16,8 +16,8 @@ use Tests\Unit\Callable\Fixtures\SimpleInvokeClass;
  * @covers \Kaspi\DiContainer\DefinitionAsCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  *
  * @internal
  */

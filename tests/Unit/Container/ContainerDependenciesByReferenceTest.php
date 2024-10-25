@@ -16,8 +16,8 @@ use Tests\Fixtures\Classes\DependenciesByReference;
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  *
  * @internal
  */
