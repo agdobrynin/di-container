@@ -1,9 +1,9 @@
 services:
     php:
-        container_name: ${PHP_IMAGE:-php:8.0-cli-alpine}
+        container_name: ${PHP_IMAGE:-php:8.1-cli-alpine}
         build:
             dockerfile: Dockerfile
             args:
-                PHP_IMAGE: ${PHP_IMAGE:-php:8.0-cli-alpine}
+                PHP_IMAGE: ${PHP_IMAGE:-php:8.1-cli-alpine}
         volumes:
             - '.:/var/www/html'
