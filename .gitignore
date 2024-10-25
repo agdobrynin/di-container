@@ -3,3 +3,5 @@
 /vendor
 *.cache
 .coverage-html/
+!tests/var/.gitkeep
+tests/var
