@@ -307,9 +307,20 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function getParameterType(\ReflectionParameter $parameter): ?\ReflectionNamedType
     {
-        return ($t = $parameter->getType()) instanceof \ReflectionUnionType
-            ? $t->getTypes()[0] // Get first union type e.g. __construct(Class1|Class2 $dependency) will return 'Class1'
-            : $parameter->getType();
+        if ($parameter->getType() instanceof \ReflectionNamedType) {
+            return $parameter->getType();
+        }
+
+        if (($t = $parameter->getType()) instanceof \ReflectionUnionType) {
+            foreach ($t->getTypes() as $type) {
+                // Get first available non builtin type e.g. __construct(Class1|Class2 $dependency) will return 'Class1'
+                if (!$type->isBuiltin() && $this->has($type->getName())) {
+                    return $type;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton): string
