@@ -126,7 +126,7 @@ class ContainerWithUnionTypeOrEmptyTypeParametersTest extends TestCase
     {
         $class = (new DiContainerFactory())->make()->get(ClassC::class);
 
-        $this->assertInstanceOf(\Tests\Fixtures\Attributes\ClassA::class, $class->var);
+        $this->assertInstanceOf(\Tests\Fixtures\Attributes\ClassB::class, $class->var);
     }
 
     public function testUnionTypeByInjectWithDefinition(): void

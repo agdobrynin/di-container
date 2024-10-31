@@ -8,5 +8,5 @@ use Kaspi\DiContainer\Attributes\Inject;
 
 class ClassC
 {
-    public function __construct(#[Inject] public ClassA|ClassB $var) {}
+    public function __construct(#[Inject] public array|ClassB $var) {}
 }
