@@ -242,8 +242,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             try {
-                $parameterType = $this->getParameterType($parameter);
-
                 if ($this->config?->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
                         $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton);
@@ -282,9 +280,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                $dependencies[$parameter->getName()] = null !== $parameterType && !$parameterType->isBuiltin()
-                    ? $this->get($parameterType->getName())
-                    : $this->get($parameter->getName());
+                $parameterType = $this->getParameterType($parameter);
+
+                $dependencies[$parameter->getName()] = null === $parameterType
+                    ? $this->get($parameter->getName())
+                    : $this->get($parameterType->getName());
             } catch (CallCircularDependency $e) {
                 throw $e;
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
@@ -307,7 +307,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function getParameterType(\ReflectionParameter $parameter): ?\ReflectionNamedType
     {
-        if ($parameter->getType() instanceof \ReflectionNamedType) {
+        if (($t = $parameter->getType()) instanceof \ReflectionNamedType && !$t->isBuiltin()) {
             return $parameter->getType();
         }
 
