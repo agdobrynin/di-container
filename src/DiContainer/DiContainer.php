@@ -29,6 +29,8 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+use function Kaspi\DiContainer\Function\getParameterType;
+
 /**
  * @template T of object
  */
@@ -250,7 +252,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         continue;
                     }
 
-                    if ($inject = Inject::makeFromReflection($parameter)) {
+                    if ($inject = Inject::makeFromReflection($parameter, $this)) {
                         $injectDefinition = (string) $inject->id;
                         $isInterface = \interface_exists($injectDefinition);
 
@@ -280,7 +282,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                $parameterType = $this->getParameterType($parameter);
+                $parameterType = getParameterType($parameter, $this);
 
                 $dependencies[$parameter->getName()] = null === $parameterType
                     ? $this->get($parameter->getName())
@@ -303,24 +305,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         return $dependencies;
-    }
-
-    protected function getParameterType(\ReflectionParameter $parameter): ?\ReflectionNamedType
-    {
-        if (($t = $parameter->getType()) instanceof \ReflectionNamedType && !$t->isBuiltin()) {
-            return $parameter->getType();
-        }
-
-        if (($t = $parameter->getType()) instanceof \ReflectionUnionType) {
-            foreach ($t->getTypes() as $type) {
-                // Get first available non builtin type e.g. __construct(Class1|Class2 $dependency) will return 'Class1'
-                if (!$type->isBuiltin() && $this->has($type->getName())) {
-                    return $type;
-                }
-            }
-        }
-
-        return null;
     }
 
     protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton): string
