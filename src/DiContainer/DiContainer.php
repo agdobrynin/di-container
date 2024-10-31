@@ -34,6 +34,8 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
+    use ParameterTypeResolverTrait;
+
     protected iterable $definitions = [];
 
     /**
@@ -242,8 +244,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             try {
-                $parameterType = $this->getParameterType($parameter);
-
                 if ($this->config?->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
                         $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton);
@@ -252,7 +252,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         continue;
                     }
 
-                    if ($inject = Inject::makeFromReflection($parameter)) {
+                    if ($inject = Inject::makeFromReflection($parameter, $this)) {
                         $injectDefinition = (string) $inject->id;
                         $isInterface = \interface_exists($injectDefinition);
 
@@ -282,9 +282,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                $dependencies[$parameter->getName()] = null !== $parameterType && !$parameterType->isBuiltin()
-                    ? $this->get($parameterType->getName())
-                    : $this->get($parameter->getName());
+                $parameterType = self::getParameterType($parameter, $this);
+
+                $dependencies[$parameter->getName()] = null === $parameterType
+                    ? $this->get($parameter->getName())
+                    : $this->get($parameterType->getName());
             } catch (CallCircularDependency $e) {
                 throw $e;
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
@@ -303,13 +305,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         return $dependencies;
-    }
-
-    protected function getParameterType(\ReflectionParameter $parameter): ?\ReflectionNamedType
-    {
-        return ($t = $parameter->getType()) instanceof \ReflectionUnionType
-            ? $t->getTypes()[0] // Get first union type e.g. __construct(Class1|Class2 $dependency) will return 'Class1'
-            : $parameter->getType();
     }
 
     protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton): string

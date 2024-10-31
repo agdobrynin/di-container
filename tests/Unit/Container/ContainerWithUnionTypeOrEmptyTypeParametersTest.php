@@ -8,6 +8,10 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
+use Tests\Fixtures\Attributes\ClassC;
+use Tests\Fixtures\Attributes\ClassD;
+use Tests\Fixtures\Classes\ClassA;
+use Tests\Fixtures\Classes\ClassB;
 use Tests\Fixtures\Classes\ClassWithEmptyType;
 use Tests\Fixtures\Classes\ClassWithUnionType;
 
@@ -67,15 +71,68 @@ class ContainerWithUnionTypeOrEmptyTypeParametersTest extends TestCase
     public function testUnionTypeSuccess(): void
     {
         $class = (new DiContainerFactory())->make([
-            \ReflectionClass::class => [
+            ClassWithUnionType::class => [
                 DiContainerInterface::ARGUMENTS => [
-                    'objectOrClass' => $this,
+                    'dependency' => '@'.\ReflectionMethod::class,
+                ],
+            ],
+            \ReflectionMethod::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'objectOrMethod' => $this,
+                    'method' => 'testUnionTypeSuccess',
                 ],
             ],
         ])->get(ClassWithUnionType::class);
 
         $this->assertInstanceOf(ClassWithUnionType::class, $class);
-        $this->assertInstanceOf(\ReflectionClass::class, $class->dependency);
-        $this->assertEquals(self::class, $class->dependency->name);
+        $this->assertInstanceOf(\ReflectionMethod::class, $class->dependency);
+        $this->assertEquals(self::class, $class->dependency->class);
+        $this->assertEquals('testUnionTypeSuccess', $class->dependency->getName());
+    }
+
+    public function testUnionTypeByAttribute(): void
+    {
+        $class = (new DiContainerFactory())->make()
+            ->get(\Tests\Fixtures\Attributes\ClassWithUnionType::class)
+        ;
+
+        $this->assertInstanceOf(\Tests\Fixtures\Attributes\ClassWithUnionType::class, $class);
+        $this->assertInstanceOf(\ReflectionMethod::class, $class->dependency);
+        $this->assertEquals(self::class, $class->dependency->class);
+        $this->assertEquals('testUnionTypeByAttribute', $class->dependency->getName());
+    }
+
+    public function testUnionTypeTwoClassesWithoutDefinition(): void
+    {
+        $class = (new DiContainerFactory())->make()->get(ClassA::class);
+
+        $this->assertInstanceOf(ClassB::class, $class->var);
+    }
+
+    public function testUnionTypeTwoClassesWithDefinition(): void
+    {
+        $class = (new DiContainerFactory())->make([
+            ClassA::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'var' => ['one', 'two', 'three'],
+                ],
+            ],
+        ])->get(ClassA::class);
+
+        $this->assertEquals(['one', 'two', 'three'], $class->var);
+    }
+
+    public function testUnionTypeByInjectDefault(): void
+    {
+        $class = (new DiContainerFactory())->make()->get(ClassC::class);
+
+        $this->assertInstanceOf(\Tests\Fixtures\Attributes\ClassB::class, $class->var);
+    }
+
+    public function testUnionTypeByInjectWithDefinition(): void
+    {
+        $class = (new DiContainerFactory())->make()->get(ClassD::class);
+
+        $this->assertInstanceOf(\Tests\Fixtures\Attributes\ClassB::class, $class->var);
     }
 }
