@@ -82,6 +82,33 @@ $container = new \Kaspi\DiContainer\DiContainer(config: $diConfig);
 $container = (new \Kaspi\DiContainer\DiContainerFactory())->make(definitions: []);
 ```
 
+⚙ При попытке разрешить зависимость через метод `get` или аргумент конструктора, или метода:
+
+- `$container->get(Psr\Container\ContainerInterface::class);`
+- `$container->get(Kaspi\DiContainer\DiContainer::class);`
+- `$container->get(Kaspi\DiContainer\Interfaces\DiContainerInterface::class);`
+
+| будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
+
+```php
+function testFunc(\Psr\Container\ContainerInterface $c) {
+    return $c;
+}
+
+$container = (new \Kaspi\DiContainer\DiContainerFactory())->make();
+$container->call('testFunc') instanceof \Kaspi\DiContainer\DiContainer; // true
+```
+```php
+class TestClass {
+    public function __construct(
+        public \Psr\Container\ContainerInterface $container
+    ) {}
+}
+
+$container = (new \Kaspi\DiContainer\DiContainerFactory())->make();
+$container->get(TestClass::class)->container instanceof \Kaspi\DiContainer\DiContainer; // true
+```
+
 ### Примеры использования
 
 ------------------------------------

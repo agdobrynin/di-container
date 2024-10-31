@@ -8,7 +8,9 @@ namespace Kaspi\DiContainer\Attributes;
 final class Inject
 {
     /**
-     * @param null|class-string|string $id class name or container reference
+     * @phan-suppress-next-next-line PhanTypeMismatchDeclaredParamNullable
+     *
+     * @param class-string|string $id class name or container reference
      */
     public function __construct(public ?string $id = null, public array $arguments = [], public bool $isSingleton = false) {}
 
@@ -16,9 +18,8 @@ final class Inject
     {
         if ($attribute = $parameter->getAttributes(self::class)[0] ?? null) {
             $inject = $attribute->newInstance();
-            $type = $parameter->getType();
 
-            if (null === $inject->id && $type instanceof \ReflectionNamedType) {
+            if (null === $inject->id && ($type = $parameter->getType()) && $type instanceof \ReflectionNamedType) {
                 $inject->id = $type->getName();
             }
 

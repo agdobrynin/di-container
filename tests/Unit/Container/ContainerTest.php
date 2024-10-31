@@ -11,7 +11,6 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\Attributes\FactoryClassWithDiFactoryArgument;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
@@ -24,8 +23,10 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerDefinition
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionClosure
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
  */
 class ContainerTest extends TestCase
 {
@@ -566,6 +567,16 @@ class ContainerTest extends TestCase
         (new DiContainerFactory())->make()->get(Classes\AbstractClass::class);
     }
 
+    public function testPrivateConstructor(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('class is not instantiable');
+
+        (new DiContainerFactory())->make([
+            Classes\PrivateConstructorClass::class => ['arguments' => ['name' => 'Hi!']],
+        ])->get(Classes\PrivateConstructorClass::class);
+    }
+
     public function testResolveInterfaceFail(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
@@ -578,9 +589,11 @@ class ContainerTest extends TestCase
 
     public function testGetContainerInterfaceWithoutDefinition(): void
     {
-        $this->expectException(NotFoundExceptionInterface::class);
+        $c = new DiContainer(config: $this->diContainerConfig);
 
-        (new DiContainer(config: $this->diContainerConfig))->get(ContainerInterface::class);
+        $this->assertInstanceOf(ContainerInterface::class, $c->get(ContainerInterface::class));
+        $this->assertInstanceOf(ContainerInterface::class, $c->get(DiContainer::class));
+        $this->assertInstanceOf(DiContainer::class, $c->get(DiContainer::class));
     }
 
     public function testGetContainerInterfaceWithDefinitionInDiContainerFactory(): void
