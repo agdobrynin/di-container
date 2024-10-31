@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
+use Kaspi\DiContainer\ParameterTypeResolverTrait;
 use Psr\Container\ContainerInterface;
-
-use function Kaspi\DiContainer\Function\getParameterType;
 
 #[\Attribute(\Attribute::TARGET_PARAMETER)]
 final class Inject
 {
+    use ParameterTypeResolverTrait;
+
     /**
      * @phan-suppress-next-next-line PhanTypeMismatchDeclaredParamNullable
      *
@@ -24,7 +25,7 @@ final class Inject
             $inject = $attribute->newInstance();
 
             if (null === $inject->id) {
-                $inject->id = getParameterType($parameter, $container)?->getName();
+                $inject->id = self::getParameterType($parameter, $container)?->getName();
             }
 
             return $inject;

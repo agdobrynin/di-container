@@ -10,7 +10,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 use Tests\Fixtures\Classes\Sum;
 
-use function Kaspi\DiContainer\Function\diDefinition;
+use function Kaspi\DiContainer\diDefinition;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
 
-use function Kaspi\DiContainer\Function\diDefinition;
+use function Kaspi\DiContainer\diDefinition;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer

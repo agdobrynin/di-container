@@ -29,13 +29,13 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-use function Kaspi\DiContainer\Function\getParameterType;
-
 /**
  * @template T of object
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
+    use ParameterTypeResolverTrait;
+
     protected iterable $definitions = [];
 
     /**
@@ -282,7 +282,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                $parameterType = getParameterType($parameter, $this);
+                $parameterType = self::getParameterType($parameter, $this);
 
                 $dependencies[$parameter->getName()] = null === $parameterType
                     ? $this->get($parameter->getName())
