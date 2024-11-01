@@ -118,7 +118,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $parameters = DefinitionAsCallable::reflectParameters($definition);
             $f = static fn (\ReflectionParameter $parameter) => !isset($arguments[$parameter->getName()]);
             $needToResolve = \array_filter($parameters, $f);
-            $resolvedArgs = $this->resolveInstanceArguments($needToResolve);
+            $resolvedArgs = $this->parametersResolver($needToResolve);
 
             return \call_user_func_array($definition, $arguments + $resolvedArgs);
         } catch (AutowiredExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface $e) {
@@ -142,7 +142,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $resolvedArgs = $this->resolveInstanceArguments($diDefinition->getArgumentsForResolving());
+                $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
                 $object = ($o = $diDefinition->invoke($resolvedArgs)) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
@@ -230,7 +230,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param array<int, mixed|\ReflectionParameter> $parameters
      */
-    protected function resolveInstanceArguments(array $parameters): array
+    protected function parametersResolver(array $parameters): array
     {
         $dependencies = [];
 
