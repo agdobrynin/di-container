@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
@@ -113,27 +114,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            // @todo make definition for callable object aka DiDefinitionClosure.php
-            $definition = DefinitionAsCallable::makeFromAbstract($definition, $this);
-            $needToResolve = \array_reduce(
-                DefinitionAsCallable::reflectParameters($definition),
-                static function (array $args, \ReflectionParameter $p) use ($arguments): array {
-                    if (isset($arguments[$p->name])) {
-                        $argPrepared = $p->isVariadic() && \is_array($arguments[$p->name])
-                            ? $arguments[$p->name]
-                            : [$arguments[$p->name]];
+            $containerId = \substr(\sha1((string) \rand()), 0, 10);
+            $diDefinition = new DiDefinitionCallable($this, $containerId, $definition, false, $arguments);
+            $diDefinition->getArgumentsForResolving();
+            $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
 
-                        return \array_merge($args, $argPrepared);
-                    }
-
-                    return \array_merge($args, [$p]);
-                },
-                []
-            );
-
-            $resolvedArgs = $this->parametersResolver($needToResolve);
-
-            return \call_user_func_array($definition, \array_values($resolvedArgs));
+            return $diDefinition->invoke($resolvedArgs);
         } catch (AutowiredExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
