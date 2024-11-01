@@ -8,6 +8,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinitionAutowireInterface;
 
 final class DiDefinitionClosure implements DiDefinitionAutowireInterface
 {
+    use ArgumentsForResolvingTrait;
+
     private \ReflectionFunction $reflectionFunction;
 
     public function __construct(private string $id, private \Closure $definition, private bool $isSingleton, private array $arguments = [])
@@ -17,9 +19,7 @@ final class DiDefinitionClosure implements DiDefinitionAutowireInterface
 
     public function getArgumentsForResolving(): array
     {
-        return \array_map(function (\ReflectionParameter $p) {
-            return $this->arguments[$p->name] ?? $p;
-        }, $this->reflectionFunction->getParameters());
+        return $this->prepareArgumentsForResolving($this->reflectionFunction->getParameters(), $this->arguments);
     }
 
     public function getContainerId(): string

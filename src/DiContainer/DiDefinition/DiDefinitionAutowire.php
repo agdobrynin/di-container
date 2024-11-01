@@ -9,6 +9,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinitionAutowireInterface;
 
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 {
+    use ArgumentsForResolvingTrait;
+
     private \ReflectionClass $reflectionClass;
 
     public function __construct(private string $id, private string $definition, private bool $isSingleton, private array $arguments = [])
@@ -28,9 +30,9 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 
     public function getArgumentsForResolving(): array
     {
-        return \array_map(function (\ReflectionParameter $p) {
-            return $this->arguments[$p->name] ?? $p;
-        }, $this->reflectionClass->getConstructor()?->getParameters() ?? []);
+        $constructorArgs = $this->reflectionClass->getConstructor()?->getParameters() ?? [];
+
+        return $this->prepareArgumentsForResolving($constructorArgs, $this->arguments);
     }
 
     public function isSingleton(): bool
