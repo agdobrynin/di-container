@@ -113,14 +113,27 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
+            // @todo make definition for callable object aka DiDefinitionClosure.php
             $definition = DefinitionAsCallable::makeFromAbstract($definition, $this);
+            $needToResolve = \array_reduce(
+                DefinitionAsCallable::reflectParameters($definition),
+                static function (array $args, \ReflectionParameter $p) use ($arguments): array {
+                    if (isset($arguments[$p->name])) {
+                        $argPrepared = $p->isVariadic() && \is_array($arguments[$p->name])
+                            ? $arguments[$p->name]
+                            : [$arguments[$p->name]];
 
-            $parameters = DefinitionAsCallable::reflectParameters($definition);
-            $f = static fn (\ReflectionParameter $parameter) => !isset($arguments[$parameter->getName()]);
-            $needToResolve = \array_filter($parameters, $f);
+                        return \array_merge($args, $argPrepared);
+                    }
+
+                    return \array_merge($args, [$p]);
+                },
+                []
+            );
+
             $resolvedArgs = $this->parametersResolver($needToResolve);
 
-            return \call_user_func_array($definition, $arguments + $resolvedArgs);
+            return \call_user_func_array($definition, \array_values($resolvedArgs));
         } catch (AutowiredExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }

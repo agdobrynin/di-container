@@ -46,7 +46,7 @@ class ContainerMethodCallTest extends TestCase
         (new DiContainerFactory())->make()->call('\log');
     }
 
-    public function testUserFunction(): void
+    public function testUserFunctionSimple(): void
     {
         $res = (new DiContainerFactory())->make([
             'hello' => 'hello world!',

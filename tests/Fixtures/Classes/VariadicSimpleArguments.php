@@ -12,4 +12,14 @@ class VariadicSimpleArguments
     {
         $this->sayHello = $word;
     }
+
+    public static function say(string ...$word): string
+    {
+        return \implode('_', $word);
+    }
+
+    public static function sayStatic(string ...$word): string
+    {
+        return \implode('_', $word);
+    }
 }
