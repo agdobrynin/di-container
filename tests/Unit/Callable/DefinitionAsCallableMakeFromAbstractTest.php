@@ -6,7 +6,7 @@ namespace Tests\Unit\Callable;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -66,7 +66,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
     public function testDefinitionWithNonExistMethodAsString(): void
     {
-        $this->expectException(DefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
         $this->expectExceptionMessage('Definition is not callable');
 
         $container = (new DiContainerFactory())->make([
@@ -79,7 +79,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
     public function testWrongDefinitionArray(): void
     {
-        $this->expectException(DefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
         $this->expectExceptionMessage('When the definition is an array');
         $container = new class() implements ContainerInterface {
             public function get(string $id)
@@ -97,7 +97,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
     public function testWrongDefinitionIsNotCallable(): void
     {
-        $this->expectException(DefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
         $this->expectExceptionMessage('When the definition is an array');
 
         new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', [self::class], true);
@@ -105,7 +105,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
     public function testWrongDefinitionIsArrayWithNulls(): void
     {
-        $this->expectException(DefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
         $this->expectExceptionMessage('When the definition is an array');
 
         new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', [null, null], true);
@@ -134,7 +134,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
     public function testDefinitionAsArrayWithObjects(): void
     {
-        $this->expectException(DefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
         $this->expectExceptionMessage('Definition is not callable');
 
         $definition = [new \stdClass(), new \stdClass()];

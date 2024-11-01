@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
-use Kaspi\DiContainer\Interfaces\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 {

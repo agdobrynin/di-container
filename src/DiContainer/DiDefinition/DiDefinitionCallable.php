@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Exception\DefinitionCallableException;
-use Kaspi\DiContainer\Interfaces\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class DiDefinitionCallable implements DiDefinitionAutowireInterface
+final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 {
     use ArgumentsForResolvingTrait;
 
@@ -23,7 +23,7 @@ class DiDefinitionCallable implements DiDefinitionAutowireInterface
     /**
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @throws DefinitionCallableExceptionInterface
+     * @throws DiDefinitionCallableExceptionInterface
      */
     public function __construct(
         private ContainerInterface $container,
@@ -59,7 +59,7 @@ class DiDefinitionCallable implements DiDefinitionAutowireInterface
 
     /**
      * @throws ContainerExceptionInterface
-     * @throws DefinitionCallableExceptionInterface
+     * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
      */
     private function makeFromAbstract(array|callable|string $definition): callable
@@ -76,14 +76,14 @@ class DiDefinitionCallable implements DiDefinitionAutowireInterface
 
         return \is_callable($def)
             ? $def
-            : throw new DefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
+            : throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
     }
 
     private function parseDefinition(array|string $definition): array
     {
         if (\is_array($definition)) {
             isset($definition[0], $definition[1])
-            || throw new DefinitionCallableException(
+            || throw new DiDefinitionCallableException(
                 'When the definition is an array, two array elements must be provided. Got: '.\var_export($definition, true)
             );
 

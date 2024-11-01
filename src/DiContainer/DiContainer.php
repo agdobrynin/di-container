@@ -21,11 +21,11 @@ use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -114,13 +114,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            $containerId = \substr(\sha1((string) \rand()), 0, 10);
+            $containerId = \substr(\sha1((string) \mt_rand()), 0, 10);
             $diDefinition = new DiDefinitionCallable($this, $containerId, $definition, false, $arguments);
             $diDefinition->getArgumentsForResolving();
             $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
 
             return $diDefinition->invoke($resolvedArgs);
-        } catch (AutowiredExceptionInterface|DefinitionCallableExceptionInterface|NotFoundExceptionInterface $e) {
+        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface|NotFoundExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
     }

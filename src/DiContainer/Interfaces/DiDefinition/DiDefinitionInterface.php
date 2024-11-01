@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer\Interfaces;
+namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 interface DiDefinitionInterface
 {
