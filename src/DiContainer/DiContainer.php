@@ -250,9 +250,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         $dependencies = [];
 
-        foreach ($parameters as $name => $parameter) {
+        foreach ($parameters as $parameter) {
             if (!$parameter instanceof \ReflectionParameter) {
-                $dependencies[$name] = \is_string($parameter) && ($ref = $this->config?->getReferenceToContainer($parameter))
+                $dependencies[] = \is_string($parameter) && ($ref = $this->config?->getReferenceToContainer($parameter))
                     ? $this->get($ref)
                     : $parameter;
 
@@ -265,7 +265,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 if ($this->config?->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
                         $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton);
-                        $dependencies[$parameter->getName()] = $this->get($dependencyKey);
+                        $dependencies[] = $this->get($dependencyKey);
 
                         continue;
                     }
@@ -275,9 +275,17 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         $isInterface = \interface_exists($injectDefinition);
 
                         if (!$isInterface && !\class_exists($injectDefinition)) {
-                            $dependencies[$parameter->getName()] = ($ref = $this->config?->getReferenceToContainer($injectDefinition))
+                            $val = ($ref = $this->config?->getReferenceToContainer($injectDefinition))
                                 ? $this->get($ref)
                                 : $this->get($parameter->getName());
+
+                            if ($parameter->isVariadic()) {
+                                foreach((\is_array($val) ? $val : [$val]) as $v) {
+                                    $dependencies[] = $v;
+                                }
+                            } else {
+                                $dependencies[] = $val;
+                            }
 
                             continue;
                         }
@@ -288,13 +296,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                                     "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
                                 );
                             $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
-                            $dependencies[$parameter->getName()] = $this->get($dependencyKey);
+                            $dependencies[] = $this->get($dependencyKey);
 
                             continue;
                         }
 
                         $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton);
-                        $dependencies[$parameter->getName()] = $this->get($dependencyKey);
+                        $dependencies[] = $this->get($dependencyKey);
 
                         continue;
                     }
@@ -302,7 +310,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
                 $parameterType = self::getParameterType($parameter, $this);
 
-                $dependencies[$parameter->getName()] = null === $parameterType
+                $dependencies[] = null === $parameterType
                     ? $this->get($parameter->getName())
                     : $this->get($parameterType->getName());
 
@@ -314,7 +322,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if ($parameter->isDefaultValueAvailable()) {
-                $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
+                $dependencies[] = $parameter->getDefaultValue();
 
                 continue;
             }
