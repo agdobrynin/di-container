@@ -118,7 +118,7 @@ class DiDefinitionCallable implements DiDefinitionAutowireInterface
             return (new \ReflectionFunction($this->definition))->getParameters();
         }
 
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
         return (new \ReflectionMethod($this->definition, '__invoke'))->getParameters();
     }
 }

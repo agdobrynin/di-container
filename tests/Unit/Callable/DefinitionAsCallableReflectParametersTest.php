@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Callable;
 
-use Kaspi\DiContainer\DefinitionAsCallable;
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Tests\Unit\Callable\Fixtures\ClassMethodWithParams;
 use Tests\Unit\Callable\Fixtures\SimpleInvokeClass;
 
 /**
- * @covers \Kaspi\DiContainer\DefinitionAsCallable
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  *
  * @internal
  */
@@ -21,7 +25,8 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
     {
         $definition = fn (ContainerInterface $container, SimpleInvokeClass $class) => $container->get($class->name);
 
-        $params = DefinitionAsCallable::reflectParameters($definition);
+        $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
+        $params = $d->getArgumentsForResolving();
 
         $this->assertCount(2, $params);
         $this->assertEquals(ContainerInterface::class, $params[0]->getType());
@@ -30,7 +35,9 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
 
     public function testDefinitionAsCallableReflectParametersFunction(): void
     {
-        $params = DefinitionAsCallable::reflectParameters('Tests\Unit\Callable\Fixtures\testFunction');
+        $definition = 'Tests\Unit\Callable\Fixtures\testFunction';
+        $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
+        $params = $d->getArgumentsForResolving();
 
         $this->assertCount(2, $params);
         $this->assertEquals(\ArrayIterator::class, $params[0]->getType());
@@ -39,7 +46,10 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
 
     public function testDefinitionAsCallableReflectParametersClassWithStaticMethod(): void
     {
-        $params = DefinitionAsCallable::reflectParameters('Tests\Unit\Callable\Fixtures\ClassWithStaticMethodParams::addAndCopyStatic');
+        $definition = 'Tests\Unit\Callable\Fixtures\ClassWithStaticMethodParams::addAndCopyStatic';
+
+        $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
+        $params = $d->getArgumentsForResolving();
 
         $this->assertCount(2, $params);
         $this->assertEquals(ContainerInterface::class, $params[0]->getType());
@@ -51,7 +61,10 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
 
     public function testDefinitionAsCallableReflectParametersInvoke(): void
     {
-        $params = DefinitionAsCallable::reflectParameters(new SimpleInvokeClass(name: 'Sidor'));
+        $definition = new SimpleInvokeClass(name: 'Sidor');
+
+        $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
+        $params = $d->getArgumentsForResolving();
 
         $this->assertCount(1, $params);
         $this->assertEquals('string', $params[0]->getType()->getName());
@@ -61,7 +74,9 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
 
     public function testDefinitionAsCallableReflectParametersMethodWithParams(): void
     {
-        $params = DefinitionAsCallable::reflectParameters([new ClassMethodWithParams(), 'doSomething']);
+        $definition = [new ClassMethodWithParams(), 'doSomething'];
+        $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
+        $params = $d->getArgumentsForResolving();
 
         $this->assertCount(1, $params);
         $this->assertEquals(\ArrayIterator::class, $params[0]->getType()->getName());
