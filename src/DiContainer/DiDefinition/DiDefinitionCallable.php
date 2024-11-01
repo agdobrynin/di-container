@@ -99,6 +99,8 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 
     /**
      * @return \ReflectionParameter[]
+     *
+     * @throws \ReflectionException
      */
     private function reflectParameters(): array
     {

@@ -78,7 +78,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         return isset($this->definitions[$id])
             || isset($this->resolved[$id])
-            || ($this->config?->isUseZeroConfigurationDefinition() && (\class_exists($id) || \interface_exists($id)));
+            || (
+                $this->config?->isUseZeroConfigurationDefinition()
+                && (\class_exists($id) || \interface_exists($id) || \is_callable($id))
+            );
     }
 
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static
@@ -152,13 +155,19 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             return $this->resolved[$diDefinition->getContainerId()] = $diDefinition->getDefinition();
-        } catch (AutowiredExceptionInterface|\ReflectionException $e) {
+        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface|\ReflectionException $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
             unset($this->resolvingDependencies[$id]);
         }
     }
 
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws DiDefinitionCallableExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws \ReflectionException
+     */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
@@ -177,6 +186,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $isIdInterface = \interface_exists($id);
 
             if (null === $rawDefinition) {
+                if (\is_callable($id)) {
+                    return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $id, $isSingletonDefault, []);
+                }
+
                 if (\class_exists($id)) {
                     return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
                         && ($factory = DiFactory::makeFromReflection(new \ReflectionClass($id)))
@@ -204,6 +217,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if ($definition instanceof \Closure) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionClosure($id, $definition, $isSingleton, $arguments);
+            }
+
+            if (\is_callable($definition)) {
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $definition, $isSingleton, $arguments);
             }
 
             if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
