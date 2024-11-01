@@ -12,23 +12,28 @@ trait ArgumentsForResolvingTrait
      * @var \ReflectionParameter[]
      */
     protected array $reflectedArguments = [];
+    protected array $argumentsForResolving = [];
 
     public function getArgumentsForResolving(): array
     {
-        return \array_reduce(
-            $this->reflectedArguments,
-            function (array $arguments, \ReflectionParameter $p): array {
-                if (isset($this->arguments[$p->name])) {
-                    $argPrepared = $p->isVariadic() && \is_array($this->arguments[$p->name])
-                        ? $this->arguments[$p->name]
-                        : [$this->arguments[$p->name]];
+        if ([] === $this->argumentsForResolving) {
+            $this->argumentsForResolving = \array_reduce(
+                $this->reflectedArguments,
+                function (array $arguments, \ReflectionParameter $p): array {
+                    if (isset($this->arguments[$p->name])) {
+                        $argPrepared = $p->isVariadic() && \is_array($this->arguments[$p->name])
+                            ? $this->arguments[$p->name]
+                            : [$this->arguments[$p->name]];
 
-                    return \array_merge($arguments, $argPrepared);
-                }
+                        return \array_merge($arguments, $argPrepared);
+                    }
 
-                return \array_merge($arguments, [$p]);
-            },
-            []
-        );
+                    return \array_merge($arguments, [$p]);
+                },
+                []
+            );
+        }
+
+        return $this->argumentsForResolving;
     }
 }
