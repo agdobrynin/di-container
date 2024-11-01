@@ -19,8 +19,9 @@ trait ArgumentsForResolvingTrait
             $this->reflectedArguments,
             function (array $arguments, \ReflectionParameter $p): array {
                 if (isset($this->arguments[$p->name])) {
-                    $argSource = $this->arguments[$p->name];
-                    $argPrepared = $p->isVariadic() && \is_array($argSource) ? $argSource : [$argSource];
+                    $argPrepared = $p->isVariadic() && \is_array($this->arguments[$p->name])
+                        ? $this->arguments[$p->name]
+                        : [$this->arguments[$p->name]];
 
                     return \array_merge($arguments, $argPrepared);
                 }
