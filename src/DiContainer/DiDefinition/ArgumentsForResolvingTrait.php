@@ -6,13 +6,20 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 trait ArgumentsForResolvingTrait
 {
-    protected function prepareArgumentsForResolving(array $reflectionArguments, array $predefinedArguments): array
+    protected array $arguments = [];
+
+    /**
+     * @var \ReflectionParameter[]
+     */
+    protected array $reflectedArguments = [];
+
+    public function getArgumentsForResolving(): array
     {
         return \array_reduce(
-            $reflectionArguments,
-            static function (array $arguments, \ReflectionParameter $p) use ($predefinedArguments): array {
-                if (isset($predefinedArguments[$p->name])) {
-                    $argSource = $predefinedArguments[$p->name];
+            $this->reflectedArguments,
+            function (array $arguments, \ReflectionParameter $p): array {
+                if (isset($this->arguments[$p->name])) {
+                    $argSource = $this->arguments[$p->name];
                     $argPrepared = $p->isVariadic() && \is_array($argSource) ? $argSource : [$argSource];
 
                     return \array_merge($arguments, $argPrepared);

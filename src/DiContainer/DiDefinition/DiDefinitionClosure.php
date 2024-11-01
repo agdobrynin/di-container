@@ -12,14 +12,11 @@ final class DiDefinitionClosure implements DiDefinitionAutowireInterface
 
     private \ReflectionFunction $reflectionFunction;
 
-    public function __construct(private string $id, private \Closure $definition, private bool $isSingleton, private array $arguments = [])
+    public function __construct(private string $id, private \Closure $definition, private bool $isSingleton, array $arguments = [])
     {
         $this->reflectionFunction = new \ReflectionFunction($this->definition);
-    }
-
-    public function getArgumentsForResolving(): array
-    {
-        return $this->prepareArgumentsForResolving($this->reflectionFunction->getParameters(), $this->arguments);
+        $this->arguments = $arguments;
+        $this->reflectedArguments = $this->reflectionFunction->getParameters();
     }
 
     public function getContainerId(): string
