@@ -243,6 +243,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 continue;
             }
 
+            $autowireException = null;
+
             try {
                 if ($this->config?->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
@@ -287,21 +289,27 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 $dependencies[$parameter->getName()] = null === $parameterType
                     ? $this->get($parameter->getName())
                     : $this->get($parameterType->getName());
-            } catch (CallCircularDependency $e) {
+
+                continue;
+            } catch (AutowiredAttributeException|CallCircularDependency $e) {
                 throw $e;
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
-                if ($e instanceof AutowiredAttributeException || !$parameter->isDefaultValueAvailable()) {
-                    $declaredClass = $parameter->getDeclaringClass()?->getName() ?: '';
-                    $declaredFunction = $parameter->getDeclaringFunction()->getName();
-                    $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
-                    $messageParameter = $parameter.' in '.$where;
-                    $message = "Unresolvable dependency. {$messageParameter}. Reason: {$e->getMessage()}";
-
-                    throw new AutowiredException(message: $message, previous: $e);
-                }
-
-                $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
+                $autowireException = $e;
             }
+
+            if ($parameter->isDefaultValueAvailable()) {
+                $dependencies[$parameter->getName()] = $parameter->getDefaultValue();
+
+                continue;
+            }
+
+            $declaredClass = $parameter->getDeclaringClass()?->getName() ?: '';
+            $declaredFunction = $parameter->getDeclaringFunction()->getName();
+            $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
+            $messageParameter = $parameter.' in '.$where;
+            $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException?->getMessage()}";
+
+            throw new AutowiredException(message: $message, previous: $autowireException);
         }
 
         return $dependencies;
