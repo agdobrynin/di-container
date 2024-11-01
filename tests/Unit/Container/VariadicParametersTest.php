@@ -8,8 +8,10 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes\VariadicClassArguments;
+use Tests\Fixtures\Classes\VariadicClassWithMethodArguments;
 use Tests\Fixtures\Classes\VariadicParameterA;
 use Tests\Fixtures\Classes\VariadicParameterB;
+use Tests\Fixtures\Classes\VariadicParameterC;
 use Tests\Fixtures\Classes\VariadicParameterInterface;
 use Tests\Fixtures\Classes\VariadicSimpleArguments;
 
@@ -55,6 +57,48 @@ class VariadicParametersTest extends TestCase
         $res = $container->call([VariadicSimpleArguments::class, 'sayStatic'], ['word' => ['welcome', 'to', 'func']]);
 
         $this->assertEquals('welcome_to_func', $res);
+    }
+
+    public function testCallMethodClassWithNonStaticMethodWithSimpleParameters(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            VariadicSimpleArguments::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'word' => ['welcome', 'to', 'class'],
+                ],
+            ],
+        ]);
+
+        $variadic = $container->get(VariadicSimpleArguments::class);
+
+        $this->assertEquals(['welcome', 'to', 'class'], $variadic->sayHello);
+
+        $res = $container->call([$variadic, 'say'], ['word' => ['Hello', 'world', '!']]);
+
+        $this->assertEquals('Hello_world_!', $res);
+    }
+
+    public function testCallMethodForClassWithConstructorAndMethodWithVariadicParam(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'config.medals' => ['🥉', '🥇'],
+            'ref1' => VariadicParameterB::class,
+            'ref2' => VariadicParameterA::class,
+        ]);
+
+        $paramC = $container->get(VariadicParameterC::class);
+
+        $params = $container->call(
+            [VariadicClassWithMethodArguments::class, 'getParameters'],
+            ['parameter' => [$paramC, '@ref1', '@ref2']]
+        );
+
+        $this->assertCount(5, $params);
+        $this->assertInstanceOf(VariadicParameterC::class, \current($params));
+        $this->assertInstanceOf(VariadicParameterB::class, \next($params));
+        $this->assertInstanceOf(VariadicParameterA::class, \next($params));
+        $this->assertEquals('🥉', \next($params));
+        $this->assertEquals('🥇', \next($params));
     }
 
     public function testVariadicParametersAsClass(): void
