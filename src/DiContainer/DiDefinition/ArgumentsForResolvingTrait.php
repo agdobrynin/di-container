@@ -6,13 +6,13 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 trait ArgumentsForResolvingTrait
 {
-    protected array $arguments = [];
+    private array $arguments = [];
 
     /**
      * @var \ReflectionParameter[]
      */
-    protected array $reflectedArguments = [];
-    protected array $argumentsForResolving = [];
+    private array $reflectedArguments = [];
+    private array $argumentsForResolving = [];
 
     public function getArgumentsForResolving(): array
     {

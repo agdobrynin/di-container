@@ -62,7 +62,7 @@ class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws DefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    protected function makeFromAbstract(array|callable|string $definition): callable
+    private function makeFromAbstract(array|callable|string $definition): callable
     {
         if (\is_callable($definition)) {
             return $definition;
@@ -79,7 +79,7 @@ class DiDefinitionCallable implements DiDefinitionAutowireInterface
             : throw new DefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
     }
 
-    protected function parseDefinition(array|string $definition): array
+    private function parseDefinition(array|string $definition): array
     {
         if (\is_array($definition)) {
             isset($definition[0], $definition[1])
@@ -100,7 +100,7 @@ class DiDefinitionCallable implements DiDefinitionAutowireInterface
     /**
      * @return \ReflectionParameter[]
      */
-    protected function reflectParameters(): array
+    private function reflectParameters(): array
     {
         if (\is_array($this->definition)) {
             return (new \ReflectionMethod($this->definition[0], $this->definition[1]))->getParameters();
