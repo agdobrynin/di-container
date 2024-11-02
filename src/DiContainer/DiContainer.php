@@ -117,8 +117,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            $containerId = \substr(\sha1((string) \mt_rand()), 0, 10);
-            $diDefinition = new DiDefinitionCallable($this, $containerId, $definition, false, $arguments);
+            $diDefinition = new DiDefinitionCallable($this, '#EMPTY#', $definition, false, $arguments);
             $diDefinition->getArgumentsForResolving();
             $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
 
