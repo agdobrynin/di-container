@@ -272,17 +272,16 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
                     if ($inject = Inject::makeFromReflection($parameter, $this)) {
                         $injectDefinition = (string) $inject->id;
-                        $isInterface = \interface_exists($injectDefinition);
+                        $injectDefinitionIsInterface = \interface_exists($injectDefinition);
 
-                        if (!$isInterface && !\class_exists($injectDefinition)) {
+                        if (!$injectDefinitionIsInterface && !\class_exists($injectDefinition)) {
                             $val = ($ref = $this->config?->getReferenceToContainer($injectDefinition))
                                 ? $this->get($ref)
                                 : $this->get($parameter->getName());
 
                             if ($parameter->isVariadic()) {
-                                foreach((\is_array($val) ? $val : [$val]) as $v) {
-                                    $dependencies[] = $v;
-                                }
+                                // $val maybe array!
+                                \array_push($dependencies, ...(\is_array($val) ? $val : [$val]));
                             } else {
                                 $dependencies[] = $val;
                             }
@@ -290,7 +289,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                             continue;
                         }
 
-                        if ($isInterface) {
+                        if ($injectDefinitionIsInterface) {
                             $service = Service::makeFromReflection(new \ReflectionClass($injectDefinition))
                                 ?: throw new AutowiredException(
                                     "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
@@ -309,7 +308,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 }
 
                 $parameterType = self::getParameterType($parameter, $this);
-
+                // $parameter->isVariadic()... как тут ? Надо ли вообще тут проверять?
                 $dependencies[] = null === $parameterType
                     ? $this->get($parameter->getName())
                     : $this->get($parameterType->getName());
