@@ -25,7 +25,6 @@ use Tests\Unit\Container\ContainerMethodCall\Fixtures\NameService;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionClosure
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
  *
  * @internal

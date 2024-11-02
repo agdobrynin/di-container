@@ -26,7 +26,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws DiDefinitionCallableExceptionInterface
      */
     public function __construct(
-        private ContainerInterface $container,
+        private ?ContainerInterface $container,
         private string $id,
         array|callable|string $definition,
         private bool $isSingleton,
@@ -70,7 +70,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 
         $def = $this->parseDefinition($definition);
 
-        if (\is_string($def[0])) {
+        if (\is_string($def[0]) && $this->container) {
             $def[0] = $this->container->get($def[0]);
         }
 

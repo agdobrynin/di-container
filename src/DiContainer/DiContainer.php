@@ -9,7 +9,6 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
@@ -178,7 +177,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if (\is_a($id, ContainerInterface::class, true)) {
                 // @phan-suppress-next-line PhanUnreferencedClosure
-                return new DiDefinitionClosure($id, fn () => $this, true, []);
+                return new DiDefinitionCallable($this, $id, fn () => $this, true, []);
             }
 
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
@@ -212,10 +211,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 $definition = $rawDefinition;
                 $isSingleton = $isSingletonDefault;
                 $arguments = [];
-            }
-
-            if ($definition instanceof \Closure) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionClosure($id, $definition, $isSingleton, $arguments);
             }
 
             if (\is_callable($definition)) {

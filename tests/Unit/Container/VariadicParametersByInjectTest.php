@@ -30,6 +30,6 @@ class VariadicParametersByInjectTest extends TestCase
         ]);
 
         $class = $c->get(VariadicSimpleArgumentsByInject::class);
-        \var_dump($class);
+        $this->assertEquals(['Hi there!', 'Lets play'], $class->sayHello);
     }
 }
