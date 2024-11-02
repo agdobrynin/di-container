@@ -14,6 +14,7 @@ use Tests\Fixtures\Classes\VariadicParameterB;
 use Tests\Fixtures\Classes\VariadicParameterC;
 use Tests\Fixtures\Classes\VariadicParameterInterface;
 use Tests\Fixtures\Classes\VariadicSimpleArguments;
+use Tests\Fixtures\Classes\VariadicSimpleArrayArguments;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -50,6 +51,31 @@ class VariadicParametersTest extends TestCase
         $this->assertEquals(['first', 'second', 'third', 'fourth', 'fifth'], $c->get(VariadicSimpleArguments::class)->sayHello);
     }
 
+    public function testVariadicSimpleParametersInConstructorOneParameter(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            VariadicSimpleArguments::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'word' => 'first',
+                ],
+            ],
+        ]);
+
+        $this->assertEquals(['first'], $c->get(VariadicSimpleArguments::class)->sayHello);
+    }
+
+    public function testVariadicSimpleParametersInConstructorParameterAsArrayType(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            VariadicSimpleArrayArguments::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'token' => ['start', 'end'],
+                ],
+            ],
+        ]);
+
+        $this->assertEquals([['start', 'end']], $c->get(VariadicSimpleArrayArguments::class));
+    }
     public function testCallMethodClassWithStaticMethodWithSimpleParameters(): void
     {
         $container = (new DiContainerFactory())->make();
