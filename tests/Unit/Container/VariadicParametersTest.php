@@ -200,7 +200,7 @@ class VariadicParametersTest extends TestCase
         $this->assertInstanceOf(VariadicParameterB::class, \next($params));
     }
 
-    public function testVariadicArguentByClass(): void
+    public function testVariadicArgumentByClass(): void
     {
         $container = (new DiContainerFactory())->make();
 
