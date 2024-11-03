@@ -32,4 +32,28 @@ class VariadicParametersByInjectTest extends TestCase
         $class = $c->get(VariadicSimpleArgumentsByInject::class);
         $this->assertEquals(['Hi there!', 'Lets play'], $class->sayHello);
     }
+
+    public function testVariadicSimpleParametersInConstructorAndInMethod(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'messages.welcome' => ['Hi there!', 'Lets play'],
+            'messages.icon' => ['🎈', '🎉'],
+        ]);
+
+        $res = $container->call([VariadicSimpleArgumentsByInject::class, 'say']);
+
+        $this->assertEquals('Hi there!_Lets play | 🎈 🎉', $res);
+    }
+
+    public function testVariadicSimpleParametersStaticMethod(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'messages.welcome' => ['Hi there!', 'Lets play'],
+            'messages.icon' => ['🎈', '🎉'],
+        ]);
+
+        $res = $container->call([VariadicSimpleArgumentsByInject::class, 'sayStatic']);
+
+        $this->assertEquals('🎈~🎉', $res);
+    }
 }

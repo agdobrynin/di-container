@@ -21,7 +21,7 @@ class VariadicSimpleArgumentsByInject
         #[Inject('@messages.icon')]
         string ...$icon
     ): string {
-        return \implode('_', $this->sayHello).\implode(' ', $icon);
+        return \implode('_', $this->sayHello).' | '.\implode(' ', $icon);
     }
 
     public static function sayStatic(
