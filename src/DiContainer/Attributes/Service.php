@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
-#[\Attribute(\Attribute::TARGET_CLASS)]
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
 final class Service
 {
     /**
@@ -12,10 +12,13 @@ final class Service
      */
     public function __construct(public string $id, public array $arguments = [], public bool $isSingleton = false) {}
 
-    public static function makeFromReflection(\ReflectionClass $parameter): ?self
+    /**
+     * @return \Generator<Service>
+     */
+    public static function makeFromReflection(\ReflectionClass $parameter): \Generator
     {
-        return ($attribute = $parameter->getAttributes(self::class)[0] ?? null)
-            ? $attribute->newInstance()
-            : null;
+        foreach ($parameter->getAttributes(self::class) as $item) {
+            yield $item->newInstance();
+        }
     }
 }
