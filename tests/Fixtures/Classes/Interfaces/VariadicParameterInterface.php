@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Classes;
+namespace Tests\Fixtures\Classes\Interfaces;
 
 interface VariadicParameterInterface {}
