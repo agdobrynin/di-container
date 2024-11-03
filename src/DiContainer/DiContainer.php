@@ -196,7 +196,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 }
 
                 if ($isIdInterface && $this->config?->isUseAttribute()
-                    && $service = Service::makeFromReflection(new \ReflectionClass($id))->current()) {
+                    && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
                     return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
                 }
 
@@ -284,27 +284,16 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         }
 
                         if ($injectDefinitionIsInterface) {
-                            $services = Service::makeFromReflection(new \ReflectionClass($injectDefinition));
-
-                            if (null === $services->current()) {
-                                throw new AutowiredException(
+                            $service = Service::makeFromReflection(new \ReflectionClass($injectDefinition))
+                                ?: throw new AutowiredException(
                                     "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
                                 );
-                            }
-
-                            // variadic ?
-                            // @todo think about variadic and non variadic argument
-
-                            foreach ($services as $service) {
-                                $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
-                                $dependencies[] = $this->get($dependencyKey);
-                            }
+                            $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
+                            $dependencies[] = $this->get($dependencyKey);
 
                             continue;
                         }
 
-                        // variadic ?
-                        // @todo think about variadic and non variadic argument
                         $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton);
                         $dependencies[] = $this->get($dependencyKey);
 
