@@ -190,8 +190,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
                 if (\class_exists($id)) {
                     return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
-                        && ($factory = DiFactory::makeFromReflection(new \ReflectionClass($id)))
-                            ? new DiDefinitionAutowire($id, $factory->id, $factory->isSingleton, $factory->arguments)
+                        && ($factories = DiFactory::makeFromReflection(new \ReflectionClass($id)))
+                            ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
                             : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
                 }
 
@@ -257,11 +257,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             try {
                 if ($this->config?->isUseAttribute()) {
-                    if ($factory = DiFactory::makeFromReflection($parameter)) {
-                        // $parameter->isVariadic(); ????
-                        // #[DiFactory(a::class)] #[DiFactory(b::class)] ...$property
-                        $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton);
-                        $dependencies[] = $this->get($dependencyKey);
+                    if ($factories = DiFactory::makeFromReflection($parameter)) {
+                        foreach ($factories as $key => $factory) {
+                            $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton, $key);
+                            $dependencies[] = $this->get($dependencyKey);
+                        }
 
                         continue;
                     }
@@ -345,11 +345,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $dependencies;
     }
 
-    protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton): string
+    protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
     {
         $fnName = $parameter->getDeclaringFunction();
         $target = $parameter->getDeclaringClass()?->getName() ?: $fnName->getName().$fnName->getStartLine();
-        $dependencyKey = $target.'::'.$fnName->getName().'::'.$parameter->getType().':'.$parameter->getPosition();
+        $variadicKey = $parameter->isVariadic() ? \sprintf('#variadic%d', $variadicPosition) : '';
+        $dependencyKey = $target.'::'.$fnName->getName().'::'.$parameter->getType().':'.$parameter->getPosition().$variadicKey;
 
         try {
             $this->set(id: $dependencyKey, definition: $definition, arguments: $arguments, isSingleton: $isSingleton);
