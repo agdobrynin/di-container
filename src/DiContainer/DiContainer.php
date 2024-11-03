@@ -273,9 +273,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                                 ? $this->get($ref)
                                 : $this->get($parameter->getName());
 
-                            if ($parameter->isVariadic()) {
+                            if (\is_array($val) && $parameter->isVariadic()) {
                                 // $val maybe array!
-                                \array_push($dependencies, ...(\is_array($val) ? $val : [$val]));
+                                \array_push($dependencies, ...$val);
                             } else {
                                 $dependencies[] = $val;
                             }
@@ -302,10 +302,15 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 }
 
                 $parameterType = self::getParameterType($parameter, $this);
-                // $parameter->isVariadic()... как тут ? Надо ли вообще тут проверять?
-                $dependencies[] = null === $parameterType
+                $val = null === $parameterType
                     ? $this->get($parameter->getName())
                     : $this->get($parameterType->getName());
+
+                if (\is_array($val) && $parameter->isVariadic()) {
+                    \array_push($dependencies, ...$val);
+                } else {
+                    $dependencies[] = $val;
+                }
 
                 continue;
             } catch (AutowiredAttributeException|CallCircularDependency $e) {

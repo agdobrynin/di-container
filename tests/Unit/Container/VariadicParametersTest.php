@@ -79,6 +79,15 @@ class VariadicParametersTest extends TestCase
         $this->assertEquals([['start', 'end']], $c->get(VariadicSimpleArrayArguments::class)->tokens);
     }
 
+    public function testVariadicSimpleParametersInConstructorParameterAsArrayResolvedByParamName(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            'token' => [['start', 'end']], // if variadic argument type array - always use array wrapper.
+        ]);
+
+        $this->assertEquals([['start', 'end']], $c->get(VariadicSimpleArrayArguments::class)->tokens);
+    }
+
     public function testCallMethodClassWithStaticMethodWithSimpleParameters(): void
     {
         $container = (new DiContainerFactory())->make();
