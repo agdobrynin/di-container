@@ -69,7 +69,7 @@ class VariadicParametersTest extends TestCase
         $c = (new DiContainerFactory())->make([
             VariadicSimpleArrayArguments::class => [
                 DiContainerInterface::ARGUMENTS => [
-                    'token' => [['start', 'end']],
+                    'token' => [['start', 'end']], // if variadic argument type array - always use array wrapper.
                 ],
             ],
         ]);
