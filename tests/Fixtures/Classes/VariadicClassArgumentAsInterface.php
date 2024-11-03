@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Classes;
 
-class VariadicClassArguments
+class VariadicClassArgumentAsInterface
 {
     /**
-     * @var VariadicParameterA[]
+     * @var VariadicParameterInterface[]
      */
     protected array $parameters;
 

@@ -7,12 +7,14 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Classes\VariadicClassArguments;
+use Tests\Fixtures\Classes\VariadicArguments;
+use Tests\Fixtures\Classes\VariadicClassArgumentAsInterface;
 use Tests\Fixtures\Classes\VariadicClassWithMethodArguments;
 use Tests\Fixtures\Classes\VariadicParameterA;
 use Tests\Fixtures\Classes\VariadicParameterB;
 use Tests\Fixtures\Classes\VariadicParameterC;
 use Tests\Fixtures\Classes\VariadicParameterInterface;
+use Tests\Fixtures\Classes\VariadicParameterRule;
 use Tests\Fixtures\Classes\VariadicSimpleArguments;
 use Tests\Fixtures\Classes\VariadicSimpleArrayArguments;
 
@@ -131,13 +133,41 @@ class VariadicParametersTest extends TestCase
     public function testVariadicParametersAsClass(): void
     {
         $container = (new DiContainerFactory())->make([
-            VariadicParameterInterface::class => VariadicParameterA::class,
+            VariadicParameterInterface::class => VariadicParameterC::class,
         ]);
-        $class = $container->get(VariadicClassArguments::class);
+        $class = $container->get(VariadicClassArgumentAsInterface::class);
 
-        $this->assertInstanceOf(VariadicClassArguments::class, $class);
+        $this->assertInstanceOf(VariadicClassArgumentAsInterface::class, $class);
         $this->assertCount(1, $class->getParameters());
-        $this->assertInstanceOf(VariadicParameterA::class, \current($class->getParameters()));
+        $this->assertInstanceOf(VariadicParameterC::class, \current($class->getParameters()));
+    }
+
+    public function testVariadicParameterViaInterface(): void
+    {
+        $definitions = [
+            'ref1' => VariadicParameterC::class,
+            'ref2' => VariadicParameterA::class,
+            'ref3' => VariadicParameterB::class,
+            VariadicClassArgumentAsInterface::class => [
+                DiContainerInterface::ARGUMENTS => [
+                    'parameter' => ['@ref3', '@ref1', '@ref2', '@ref1'],
+                ],
+            ],
+        ];
+
+        $container = (new DiContainerFactory())->make($definitions);
+        $class = $container->get(VariadicClassArgumentAsInterface::class);
+
+        $this->assertInstanceOf(VariadicClassArgumentAsInterface::class, $class);
+
+        $params = $class->getParameters();
+
+        $this->assertCount(4, $params);
+
+        $this->assertInstanceOf(VariadicParameterB::class, \reset($params));
+        $this->assertInstanceOf(VariadicParameterC::class, \next($params));
+        $this->assertInstanceOf(VariadicParameterA::class, \next($params));
+        $this->assertInstanceOf(VariadicParameterC::class, \next($params));
     }
 
     public function testVariadicParametersAsClassManyItems(): void
@@ -145,7 +175,7 @@ class VariadicParametersTest extends TestCase
         $container = (new DiContainerFactory())->make([
             'paramA' => VariadicParameterA::class,
             'paramB' => VariadicParameterB::class,
-            VariadicClassArguments::class => [
+            VariadicClassArgumentAsInterface::class => [
                 DiContainerInterface::ARGUMENTS => [
                     // @todo My be if value is class - resolve as get(class-name)?
                     'parameter' => [
@@ -157,9 +187,9 @@ class VariadicParametersTest extends TestCase
                 ],
             ],
         ]);
-        $class = $container->get(VariadicClassArguments::class);
+        $class = $container->get(VariadicClassArgumentAsInterface::class);
 
-        $this->assertInstanceOf(VariadicClassArguments::class, $class);
+        $this->assertInstanceOf(VariadicClassArgumentAsInterface::class, $class);
         $this->assertCount(4, $class->getParameters());
 
         $params = $class->getParameters();
@@ -168,5 +198,15 @@ class VariadicParametersTest extends TestCase
         $this->assertInstanceOf(VariadicParameterA::class, \next($params));
         $this->assertInstanceOf(VariadicParameterA::class, \next($params));
         $this->assertInstanceOf(VariadicParameterB::class, \next($params));
+    }
+
+    public function testVariadicArguentByClass(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $class = $container->get(VariadicArguments::class);
+
+        $this->assertCount(1, $class->getRules());
+        $this->assertInstanceOf(VariadicParameterRule::class, \current($class->getRules()));
     }
 }
