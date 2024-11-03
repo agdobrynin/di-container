@@ -258,6 +258,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             try {
                 if ($this->config?->isUseAttribute()) {
                     if ($factory = DiFactory::makeFromReflection($parameter)) {
+                        // $parameter->isVariadic(); ????
+                        // #[DiFactory(a::class)] #[DiFactory(b::class)] ...$property
                         $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton);
                         $dependencies[] = $this->get($dependencyKey);
 
@@ -284,6 +286,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         }
 
                         if ($injectDefinitionIsInterface) {
+                            // interface mybe definition for many classes.
+                            // $parameter->isVariadic(); ????
+                            // #[Inject()] ...$property
+                            // #[Service(A::class)] #[Service(B::class)] interface A {}
                             $service = Service::makeFromReflection(new \ReflectionClass($injectDefinition))
                                 ?: throw new AutowiredException(
                                     "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
@@ -294,6 +300,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                             continue;
                         }
 
+                        // inject for $parameter->isVariadic();
+                        // #[Inject(A::class)] #[Iinject(B::class)] ...$property
                         $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton);
                         $dependencies[] = $this->get($dependencyKey);
 
