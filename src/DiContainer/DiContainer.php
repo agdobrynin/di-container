@@ -266,44 +266,39 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         continue;
                     }
 
-                    if ($inject = Inject::makeFromReflection($parameter, $this)) {
-                        $injectDefinition = (string) $inject->id;
-                        $injectDefinitionIsInterface = \interface_exists($injectDefinition);
+                    if ($injects = Inject::makeFromReflection($parameter, $this)) {
+                        foreach ($injects as $key => $inject) {
+                            $injectDefinition = (string) $inject->id;
 
-                        if (!$injectDefinitionIsInterface && !\class_exists($injectDefinition)) {
-                            $val = ($ref = $this->config?->getReferenceToContainer($injectDefinition))
-                                ? $this->get($ref)
-                                : $this->get($parameter->getName());
+                            if (\interface_exists($injectDefinition)) {
+                                $service = Service::makeFromReflection(new \ReflectionClass($injectDefinition))
+                                    ?: throw new AutowiredException(
+                                        "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
+                                    );
+                                $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
+                                $dependencies[] = $this->get($dependencyKey);
 
-                            if (\is_array($val) && $parameter->isVariadic()) {
-                                // $val maybe array!
-                                \array_push($dependencies, ...$val);
-                            } else {
-                                $dependencies[] = $val;
+                                continue;
                             }
 
-                            continue;
-                        }
+                            if (!\class_exists($injectDefinition)) {
+                                $val = ($ref = $this->config?->getReferenceToContainer($injectDefinition))
+                                    ? $this->get($ref)
+                                    : $this->get($parameter->getName());
 
-                        if ($injectDefinitionIsInterface) {
-                            // interface mybe definition for many classes.
-                            // $parameter->isVariadic(); ????
-                            // #[Inject()] ...$property
-                            // #[Service(A::class)] #[Service(B::class)] interface A {}
-                            $service = Service::makeFromReflection(new \ReflectionClass($injectDefinition))
-                                ?: throw new AutowiredException(
-                                    "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
-                                );
-                            $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
+                                if (\is_array($val) && $parameter->isVariadic()) {
+                                    // $val maybe array!
+                                    \array_push($dependencies, ...$val);
+                                } else {
+                                    $dependencies[] = $val;
+                                }
+
+                                continue;
+                            }
+
+                            $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton, $key);
                             $dependencies[] = $this->get($dependencyKey);
-
-                            continue;
                         }
-
-                        // inject for $parameter->isVariadic();
-                        // #[Inject(A::class)] #[Iinject(B::class)] ...$property
-                        $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton);
-                        $dependencies[] = $this->get($dependencyKey);
 
                         continue;
                     }
