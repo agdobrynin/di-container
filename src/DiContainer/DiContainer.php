@@ -121,7 +121,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
 
             return $diDefinition->invoke($resolvedArgs);
-        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface|NotFoundExceptionInterface $e) {
+        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
     }
@@ -333,6 +333,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
             $messageParameter = $parameter.' in '.$where;
             $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException?->getMessage()}";
+
+            if ($autowireException instanceof NotFoundExceptionInterface) {
+                throw new NotFoundException(message: $message, previous: $autowireException);
+            }
 
             throw new AutowiredException(message: $message, previous: $autowireException);
         }
