@@ -20,15 +20,15 @@ trait ArgumentsForResolvingTrait
             $this->argumentsForResolving = \array_reduce(
                 $this->reflectedArguments,
                 function (array $arguments, \ReflectionParameter $p): array {
-                    if (isset($this->arguments[$p->name])) {
-                        $argPrepared = $p->isVariadic() && \is_array($this->arguments[$p->name])
-                            ? $this->arguments[$p->name]
-                            : [$this->arguments[$p->name]];
-
-                        return \array_merge($arguments, $argPrepared);
+                    if (!isset($this->arguments[$p->name])) {
+                        return [...$arguments, ...[$p]];
                     }
 
-                    return \array_merge($arguments, [$p]);
+                    $prepared = $p->isVariadic() && \is_array($this->arguments[$p->name])
+                        ? $this->arguments[$p->name]
+                        : [$this->arguments[$p->name]];
+
+                    return [...$arguments, ...$prepared];
                 },
                 []
             );
