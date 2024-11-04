@@ -7,6 +7,7 @@ namespace Tests\Unit\Attribute\Inject;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
+use Tests\Unit\Attribute\Inject\Fixtures\ClassWithInjectByAttributeTowServicesOneTypeSingletonFalse;
 use Tests\Unit\Attribute\Inject\Fixtures\FreeInterfaceByInjectClass;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectArgumentByArgumentName;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectMultiNonVariadicConstructorParameter;
@@ -142,5 +143,15 @@ class InjectWithGetContainerTest extends TestCase
         $this->assertEquals(['hello', 'world'], $class->argNames[0]);
         $this->assertEquals(['run', 'now'], $class->argNames[1]);
         $this->assertEquals([['hello', 'world'], ['run', 'now']], $class->argNames);
+    }
+
+    public function testInjectTwoServicesOneType(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $class = $container->get(ClassWithInjectByAttributeTowServicesOneTypeSingletonFalse::class);
+
+        $this->assertEquals(['one', 'two'], $class->iterator1->getArrayCopy());
+        $this->assertEquals(['three', 'four'], $class->iterator2->getArrayCopy());
     }
 }

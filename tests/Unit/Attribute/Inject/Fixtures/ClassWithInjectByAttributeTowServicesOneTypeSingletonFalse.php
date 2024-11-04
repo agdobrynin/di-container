@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Attributes;
+namespace Tests\Unit\Attribute\Inject\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Inject;
 

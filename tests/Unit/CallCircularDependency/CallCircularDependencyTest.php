@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Container\CallCircularDependency;
+namespace Tests\Unit\CallCircularDependency;
 
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use PHPUnit\Framework\TestCase;
-use Tests\Unit\Container\CallCircularDependency\Fixtures\CircularClass;
-use Tests\Unit\Container\CallCircularDependency\Fixtures\CircularClassByInject;
-use Tests\Unit\Container\CallCircularDependency\Fixtures\CircularClassByInterface;
-use Tests\Unit\Container\CallCircularDependency\Fixtures\FirstClass;
+use Tests\Unit\CallCircularDependency\Fixtures\CircularClass;
+use Tests\Unit\CallCircularDependency\Fixtures\CircularClassByInject;
+use Tests\Unit\CallCircularDependency\Fixtures\CircularClassByInterface;
+use Tests\Unit\CallCircularDependency\Fixtures\FirstClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
