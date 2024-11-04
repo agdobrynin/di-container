@@ -31,16 +31,14 @@ final class Inject
             throw new AutowiredAttributeException('The attribute #[Inject] can only be applied once per non-variadic parameter.');
         }
 
-        return \array_filter(
-            \array_map(static function (\ReflectionAttribute $attribute) use ($parameter, $container) {
-                $inject = $attribute->newInstance();
+        return \array_map(static function (\ReflectionAttribute $attribute) use ($parameter, $container) {
+            $inject = $attribute->newInstance();
 
-                if (null === $inject->id) {
-                    $inject->id = self::getParameterType($parameter, $container)?->getName();
-                }
+            if (null === $inject->id) {
+                $inject->id = self::getParameterType($parameter, $container)?->getName();
+            }
 
-                return $inject->id ? $inject : null;
-            }, $attributes)
-        );
+            return $inject;
+        }, $attributes);
     }
 }
