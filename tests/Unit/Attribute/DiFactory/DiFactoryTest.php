@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\AttributeDiFactory;
+namespace Tests\Unit\Attribute\DiFactory;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
-use Tests\Unit\AttributeDiFactory\Fixtures\ClassA;
-use Tests\Unit\AttributeDiFactory\Fixtures\ClassAWithPropertyByFactoryFail;
-use Tests\Unit\AttributeDiFactory\Fixtures\ClassAWithPropertyByFactorySuccess;
-use Tests\Unit\AttributeDiFactory\Fixtures\ClassManyAttributeOnClass;
-use Tests\Unit\AttributeDiFactory\Fixtures\PropertyVariadicSuccessTest;
-use Tests\Unit\AttributeDiFactory\Fixtures\RuleA;
-use Tests\Unit\AttributeDiFactory\Fixtures\RuleB;
+use Tests\Unit\Attribute\DiFactory\Fixtures\ClassA;
+use Tests\Unit\Attribute\DiFactory\Fixtures\ClassAWithPropertyByFactoryFail;
+use Tests\Unit\Attribute\DiFactory\Fixtures\ClassAWithPropertyByFactorySuccess;
+use Tests\Unit\Attribute\DiFactory\Fixtures\ClassManyAttributeOnClass;
+use Tests\Unit\Attribute\DiFactory\Fixtures\PropertyVariadicSuccessTest;
+use Tests\Unit\Attribute\DiFactory\Fixtures\RuleA;
+use Tests\Unit\Attribute\DiFactory\Fixtures\RuleB;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -33,7 +33,7 @@ class DiFactoryTest extends TestCase
         $container = (new DiContainerFactory())->make();
         $class = $container->get(ClassA::class);
 
-        $this->assertEquals('make from Tests\Unit\AttributeDiFactory\Fixtures\ClassADiFactory', $class->dependency->name);
+        $this->assertEquals('make from Tests\Unit\Attribute\DiFactory\Fixtures\ClassADiFactory', $class->dependency->name);
     }
 
     public function testMakeFromReflectionForClassFailByCountAttribute(): void
@@ -51,7 +51,7 @@ class DiFactoryTest extends TestCase
         $container = (new DiContainerFactory())->make();
         $class = $container->get(ClassAWithPropertyByFactorySuccess::class);
 
-        $this->assertEquals('make from Tests\Unit\AttributeDiFactory\Fixtures\ClassDependencyOnPropertyDiFactory', $class->dependency->name);
+        $this->assertEquals('make from Tests\Unit\Attribute\DiFactory\Fixtures\ClassDependencyOnPropertyDiFactory', $class->dependency->name);
     }
 
     public function testMakeFromReflectionForPropertyNonVariadicFail(): void

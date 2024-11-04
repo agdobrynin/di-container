@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\AttributeInject\Fixtures;
+namespace Tests\Unit\Attribute\DiFactory\Fixtures;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\DiFactory;
 
-class PropertyVariadicWithEmptyInjectId
+class PropertyVariadicSuccessTest
 {
     /**
      * @var RuleInterface[]
@@ -14,8 +14,8 @@ class PropertyVariadicWithEmptyInjectId
     protected array $rules;
 
     public function __construct(
-        #[Inject]
-        #[Inject]
+        #[DiFactory(RuleBDiFactory::class)]
+        #[DiFactory(RuleADiFactory::class)]
         RuleInterface ...$rule
     ) {
         $this->rules = $rule;
