@@ -95,7 +95,7 @@ class InjectWithGetContainerTest extends TestCase
         $this->assertInstanceOf(RuleA::class, $class->rule);
     }
 
-    public function testPropertyVariadicInjectByClassWithAgruments(): void
+    public function testPropertyVariadicInjectByClassWithArguments(): void
     {
         $container = (new DiContainerFactory())->make();
 

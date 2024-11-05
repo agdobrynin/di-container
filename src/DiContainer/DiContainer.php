@@ -246,9 +246,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         foreach ($parameters as $parameter) {
             if (!$parameter instanceof \ReflectionParameter) {
-                $dependencies[] = \is_string($parameter) && ($ref = $this->config?->getReferenceToContainer($parameter))
-                    ? $this->get($ref)
-                    : $parameter;
+                $dependencies[] = match (true) {
+                    \is_string($parameter) && ($ref = $this->config?->getReferenceToContainer($parameter)) => $this->get($ref),
+                    \is_string($parameter) && \class_exists($parameter) => $this->get($parameter),
+                    default => $parameter,
+                };
 
                 continue;
             }

@@ -82,10 +82,11 @@ class VariadicParametersTest extends TestCase
     public function testVariadicSimpleParametersInConstructorParameterAsArrayResolvedByParamName(): void
     {
         $c = (new DiContainerFactory())->make([
-            'token' => [['start', 'end']], // if variadic argument type array - always use array wrapper.
+            'token' => [['start', 'end'], ['go', 'finish']], // if variadic argument type array - always use array wrapper.
         ]);
 
-        $this->assertEquals([['start', 'end']], $c->get(VariadicSimpleArrayArguments::class)->tokens);
+        $this->assertEquals(['start', 'end'], $c->get(VariadicSimpleArrayArguments::class)->tokens[0]);
+        $this->assertEquals(['go', 'finish'], $c->get(VariadicSimpleArrayArguments::class)->tokens[1]);
     }
 
     public function testCallMethodClassWithStaticMethodWithSimpleParameters(): void
@@ -121,14 +122,13 @@ class VariadicParametersTest extends TestCase
         $container = (new DiContainerFactory())->make([
             'config.medals' => ['🥉', '🥇'],
             'ref1' => VariadicParameterB::class,
-            'ref2' => VariadicParameterA::class,
         ]);
 
         $paramC = $container->get(VariadicParameterC::class);
 
         $params = $container->call(
             [VariadicClassWithMethodArguments::class, 'getParameters'],
-            ['parameter' => [$paramC, '@ref1', '@ref2']]
+            ['parameter' => [$paramC, '@ref1', VariadicParameterA::class]]
         );
 
         $this->assertCount(5, $params);
@@ -154,12 +154,15 @@ class VariadicParametersTest extends TestCase
     public function testVariadicParameterViaInterface(): void
     {
         $definitions = [
-            'ref1' => VariadicParameterC::class,
-            'ref2' => VariadicParameterA::class,
-            'ref3' => VariadicParameterB::class,
+            'refC' => VariadicParameterC::class,
             VariadicClassArgumentAsInterface::class => [
                 DiContainerInterface::ARGUMENTS => [
-                    'parameter' => ['@ref3', '@ref1', '@ref2', '@ref1'],
+                    'parameter' => [
+                        VariadicParameterB::class,
+                        '@refC',
+                        VariadicParameterA::class,
+                        '@refC',
+                    ],
                 ],
             ],
         ];
@@ -182,16 +185,13 @@ class VariadicParametersTest extends TestCase
     public function testVariadicParametersAsClassManyItems(): void
     {
         $container = (new DiContainerFactory())->make([
-            'paramA' => VariadicParameterA::class,
-            'paramB' => VariadicParameterB::class,
             VariadicClassArgumentAsInterface::class => [
                 DiContainerInterface::ARGUMENTS => [
-                    // @todo My be if value is class - resolve as get(class-name)?
                     'parameter' => [
-                        '@paramB',
-                        '@paramA',
-                        '@paramA',
-                        '@paramB',
+                        VariadicParameterB::class,
+                        VariadicParameterA::class,
+                        VariadicParameterA::class,
+                        VariadicParameterB::class,
                     ],
                 ],
             ],
