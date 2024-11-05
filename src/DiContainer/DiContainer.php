@@ -110,6 +110,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 : [0 => $this->definitions[$id], DiContainerInterface::SINGLETON => $isSingleton];
         }
 
+        // unset resolved ContainerInterface.
+        unset($this->resolved[ContainerInterface::class]);
+
         return $this;
     }
 
@@ -134,6 +137,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function resolve(string $id): mixed
     {
         try {
+            if (\is_a(ContainerInterface::class, $id, true)) {
+                return $this->resolved[ContainerInterface::class] = $this;
+            }
+
             if ($ref = $this->config?->getReferenceToContainer($id)) {
                 return $this->get($ref);
             }
@@ -179,11 +186,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if (!$this->config?->isUseAutowire()) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
-            }
-
-            if (\is_a($id, ContainerInterface::class, true)) {
-                // @phan-suppress-next-line PhanUnreferencedClosure
-                return new DiDefinitionCallable($this, $id, fn () => $this, true, []);
             }
 
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
