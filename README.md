@@ -409,6 +409,58 @@ $container = (new DiContainerFactory())->make($definitions);
 $container->get(App\MyClass::class); // instance of App\MyClass
 ```
 
+#### Разрешение аргументов переменной длины
+
+Каждое определение для `variadic` аргумента необходимо объявлять как массив `[]`.
+
+```php
+// Объявления классов
+namespace App\Rules;
+
+interface RuleInterface {}
+class RuleA implements RuleInterface {}
+class RuleB implements RuleInterface {}
+class RuleC implements RuleInterface {}
+
+class RuleGenerator {
+    private iterable $rules;
+
+    public function __construct(RuleInterface ...$inputRule) {
+        $this->rules = $inputRule;
+    }
+    
+    public function getRules(): array {
+        return $this->rules;
+    }
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definition = [
+    'ruleC' => App\Rules\RuleC::class,
+    App\Rules\RuleGenerator::class => [
+        DiContainerInterface::ARGUMENTS => [
+            'inputRule' => [ // <-- обернуть параметры в массив
+                App\Rules\RuleB::class,
+                App\Rules\RuleA::class,
+                '@ruleC', // <-- получение по ссылке
+            ], // <-- обернуть параметры в массив
+        ]
+    ],
+];
+
+$container = (new DiContainerFactory())->make($definition);
+
+// ... more code
+
+$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
+```
 #### Функция-хэлпер для удобства конфигурирования контейнера:
 
 ```php
@@ -472,7 +524,8 @@ $c = (new DiContainerFactory())->make($definition1 + $definition2);
 
 ```php
 #[\Kaspi\DiContainer\Attributes\Inject(
-    id: '', // определение зависимости
+    id: '', // определение зависимости (класс, интерфейс, ссылка на контейнер)
+            // если пустое определение то контейнер попытается получить значение по имени аргумента
     arguments: [], // аргументы конструктора для зависимости
     isSingleton: false,  // сервис создаётся как Singleton
 )]
@@ -602,6 +655,57 @@ use App\MyCompany;
 $company = $container->get(MyCompany::class);
 print implode(',', $company->bosses->users); // user1, user2
 print implode(',', $company->staffs->users); // user3, user4
+```
+
+#### Атрибут #[Inject] для разрешения аргументов переменной длины
+
+атририбут имеет признак `repetable`
+
+```php
+// Объявления классов
+namespace App\Rules;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+interface RuleInterface {}
+class RuleA implements RuleInterface {}
+class RuleB implements RuleInterface {}
+class RuleC implements RuleInterface {}
+
+class RuleGenerator {
+    private iterable $rules;
+
+    public function __construct(
+        #[Inject(RuleB::class)]
+        #[Inject(RuleA::class)]
+        #[Inject('@ruleC')] // получение по ссылке
+        RuleInterface ...$inputRule
+    ) {
+        $this->rules = $inputRule;
+    }
+    
+    public function getRules(): array {
+        return $this->rules;
+    }
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definition = [
+    'ruleC' => App\Rules\RuleC::class,
+];
+
+$container = (new DiContainerFactory())->make($definition);
+
+// ... more code
+
+$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
 
 ##### Service
@@ -765,6 +869,72 @@ use App\ClassWithFactoryArgument;
 /** @var ClassWithFactoryArgument $myClass */
 $myClass = $container->get(ClassWithFactoryArgument::class);
 $myClass->arrayObject->getArrayCopy(); // массив ['Ivan', 'Piter', 'Vasiliy']
+```
+
+#### Атрибут #[DiFactory] для разрешения аргументов переменной длины
+
+атририбут имеет признак `repetable`
+
+```php
+// Объявления классов
+namespace App\Rules;
+
+use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+
+interface RuleInterface {}
+
+class RuleA implements RuleInterface {
+    // some logic here
+}
+
+class RuleAFactory implements DiFactoryInterface {
+    public function __invoke(ContainerInterface $container): RuleA {
+        // some logic for creating class
+        return new RuleA();
+    }
+}
+
+class RuleB implements RuleInterface {
+    // some logic here
+}
+
+
+class RuleBFactory implements DiFactoryInterface {
+    public function __invoke(ContainerInterface $container): RuleB {
+        // some logic for creating class
+        return new RuleB();
+    }
+}
+
+class RuleGenerator {
+    private iterable $rules;
+
+    public function __construct(
+        #[DiFactory(RuleAFactory::class)]
+        #[DiFactory(RuleBFactory::class)]
+        RuleInterface ...$inputRule
+    ) {
+        $this->rules = $inputRule;
+    }
+    
+    public function getRules(): array {
+        return $this->rules;
+    }
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make($definition);
+
+// ... more code
+
+$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleA); // true
+assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleB); // true
 ```
 
 ### DiContainer::call
