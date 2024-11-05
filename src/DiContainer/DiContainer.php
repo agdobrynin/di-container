@@ -121,13 +121,15 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
 
             return $diDefinition->invoke($resolvedArgs);
-        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
+        } catch (DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
     }
 
     /**
      * Resolve dependencies.
+     *
+     * @throws ContainerExceptionInterface
      */
     protected function resolve(string $id): mixed
     {
@@ -243,6 +245,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param array<int, mixed|\ReflectionParameter> $parameters
+     *
+     * @throws ContainerExceptionInterface
      */
     protected function parametersResolver(array $parameters): array
     {
