@@ -153,5 +153,10 @@ class InjectWithGetContainerTest extends TestCase
 
         $this->assertEquals(['one', 'two'], $class->iterator1->getArrayCopy());
         $this->assertEquals(['three', 'four'], $class->iterator2->getArrayCopy());
+
+        $this->assertInstanceOf(\ArrayIterator::class, $class->iterator1);
+        $this->assertInstanceOf(\ArrayIterator::class, $class->iterator2);
+
+        $this->assertNotSame($class->iterator1, $class->iterator2);
     }
 }
