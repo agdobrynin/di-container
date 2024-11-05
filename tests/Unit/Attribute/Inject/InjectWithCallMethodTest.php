@@ -57,7 +57,7 @@ class InjectWithCallMethodTest extends TestCase
         $container = (new DiContainerFactory())->make();
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Unresolvable dependency [rules.text.strip_tags]');
+        $this->expectExceptionMessage('Unresolvable dependency [rule]');
 
         $container->call([MethodWithInjectByReferenceNotFound::class, 'rulesInvoke']);
     }

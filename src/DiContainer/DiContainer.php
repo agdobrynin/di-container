@@ -131,14 +131,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     protected function resolve(string $id): mixed
     {
-        if (!$this->has($id)) {
-            throw new NotFoundException("Unresolvable dependency [{$id}].");
-        }
-
-        $this->checkCyclicalDependencyCall($id);
-        $this->resolvingDependencies[$id] = true;
-
         try {
+            if ($ref = $this->config?->getReferenceToContainer($id)) {
+                return $this->get($ref);
+            }
+
+            if (!$this->has($id)) {
+                throw new NotFoundException("Unresolvable dependency [{$id}].");
+            }
+
+            $this->checkCyclicalDependencyCall($id);
+            $this->resolvingDependencies[$id] = true;
+
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
@@ -246,11 +250,17 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         foreach ($parameters as $parameter) {
             if (!$parameter instanceof \ReflectionParameter) {
-                $dependencies[] = match (true) {
-                    \is_string($parameter) && ($ref = $this->config?->getReferenceToContainer($parameter)) => $this->get($ref),
-                    \is_string($parameter) && \class_exists($parameter) => $this->get($parameter),
-                    default => $parameter,
-                };
+                if (\is_string($parameter)) {
+                    try {
+                        $dependencies[] = $this->get($parameter);
+                    } catch (NotFoundExceptionInterface) {
+                        $dependencies[] = $parameter;
+                    }
+
+                    continue;
+                }
+
+                $dependencies[] = $parameter;
 
                 continue;
             }
@@ -284,9 +294,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                             }
 
                             if (!\class_exists($injectDefinition)) {
-                                $val = ($ref = $this->config?->getReferenceToContainer($injectDefinition))
-                                    ? $this->get($ref)
-                                    : $this->get($parameter->getName());
+                                try {
+                                    $val = $this->get($injectDefinition);
+                                } catch (NotFoundExceptionInterface) {
+                                    $val = $this->get($parameter->getName());
+                                }
 
                                 if (\is_array($val) && $parameter->isVariadic()) {
                                     // $val maybe array!

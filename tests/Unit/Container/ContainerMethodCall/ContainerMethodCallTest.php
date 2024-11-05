@@ -50,10 +50,10 @@ class ContainerMethodCallTest extends TestCase
         $res = (new DiContainerFactory())->make([
             'hello' => 'hello world!',
         ])
-            ->call('\Tests\Unit\Container\ContainerMethodCall\Fixtures\testFunction', ['containerId' => 'hello'])
+            ->call('\Tests\Unit\Container\ContainerMethodCall\Fixtures\testFunction', ['icon' => '🎈'])
         ;
 
-        $this->assertEquals('hello world!', $res);
+        $this->assertEquals('hello world!🎈', $res);
     }
 
     public function testUserFunctionWithoutParameterType(): void
