@@ -121,7 +121,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
 
             return $diDefinition->invoke($resolvedArgs);
-        } catch (DiDefinitionCallableExceptionInterface $e) {
+        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
     }
@@ -247,6 +247,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      * @param array<int, mixed|\ReflectionParameter> $parameters
      *
      * @throws ContainerExceptionInterface
+     * @throws AutowiredExceptionInterface
      */
     protected function parametersResolver(array $parameters): array
     {
