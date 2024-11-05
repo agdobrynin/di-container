@@ -6,9 +6,9 @@ namespace Tests\Unit\Container\ContainerMethodCall\Fixtures;
 
 use Psr\Container\ContainerInterface;
 
-function testFunction(ContainerInterface $container, string $containerId): string
+function testFunction(ContainerInterface $container, string $icon): string
 {
-    return $container->get($containerId);
+    return $container->get('hello').$icon;
 }
 
 function testFunctionNotTypedParameter($container, $var)

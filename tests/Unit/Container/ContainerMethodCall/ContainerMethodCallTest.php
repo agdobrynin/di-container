@@ -20,12 +20,11 @@ use Tests\Unit\Container\ContainerMethodCall\Fixtures\NameService;
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\DefinitionAsCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionClosure
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
  *
  * @internal
@@ -46,15 +45,15 @@ class ContainerMethodCallTest extends TestCase
         (new DiContainerFactory())->make()->call('\log');
     }
 
-    public function testUserFunction(): void
+    public function testUserFunctionSimple(): void
     {
         $res = (new DiContainerFactory())->make([
             'hello' => 'hello world!',
         ])
-            ->call('\Tests\Unit\Container\ContainerMethodCall\Fixtures\testFunction', ['containerId' => 'hello'])
+            ->call('\Tests\Unit\Container\ContainerMethodCall\Fixtures\testFunction', ['icon' => '🎈'])
         ;
 
-        $this->assertEquals('hello world!', $res);
+        $this->assertEquals('hello world!🎈', $res);
     }
 
     public function testUserFunctionWithoutParameterType(): void

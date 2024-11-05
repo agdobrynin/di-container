@@ -22,7 +22,7 @@ use Tests\Fixtures\Classes\Sum;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionClosure
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  *
  * @internal
  */
