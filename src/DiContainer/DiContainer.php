@@ -110,9 +110,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 : [0 => $this->definitions[$id], DiContainerInterface::SINGLETON => $isSingleton];
         }
 
-        // unset resolved ContainerInterface.
-        unset($this->resolved[ContainerInterface::class]);
-
         return $this;
     }
 
@@ -137,8 +134,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function resolve(string $id): mixed
     {
         try {
-            if (\is_a(ContainerInterface::class, $id, true)) {
-                return $this->resolved[ContainerInterface::class] = $this;
+            if (!isset($this->resolved[$id]) && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
+                return $this->resolved[$id] = $this;
             }
 
             if ($ref = $this->config?->getReferenceToContainer($id)) {
