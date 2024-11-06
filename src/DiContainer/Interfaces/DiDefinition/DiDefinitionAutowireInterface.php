@@ -11,7 +11,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
     /**
      * @return array<int, mixed|\ReflectionParameter>
      */
-    public function getArgumentsForResolving(): array;
+    public function getParametersForResolving(): array;
 
     public function isSingleton(): bool;
 

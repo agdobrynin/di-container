@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 {
-    use ArgumentsForResolvingTrait;
+    use ParametersForResolvingTrait;
 
     private \ReflectionClass $reflectionClass;
 
@@ -19,7 +19,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
             ($this->reflectionClass = new \ReflectionClass($this->definition))->isInstantiable()
             || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $definition));
 
-            $this->reflectedArguments = $this->reflectionClass->getConstructor()?->getParameters() ?? [];
+            $this->reflectedParameters = $this->reflectionClass->getConstructor()?->getParameters() ?? [];
             $this->arguments = $arguments;
         } catch (\ReflectionException $e) {
             throw new AutowiredException(message: $e->getMessage(), previous: $e);

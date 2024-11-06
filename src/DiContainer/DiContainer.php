@@ -117,8 +117,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         try {
             $diDefinition = new DiDefinitionCallable($this, '#EMPTY#', $definition, false, $arguments);
-            $diDefinition->getArgumentsForResolving();
-            $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
+            $resolvedArgs = $this->parametersResolver($diDefinition->getParametersForResolving());
 
             return $diDefinition->invoke($resolvedArgs);
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
@@ -152,7 +151,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $resolvedArgs = $this->parametersResolver($diDefinition->getArgumentsForResolving());
+                $resolvedArgs = $this->parametersResolver($diDefinition->getParametersForResolving());
                 $object = ($o = $diDefinition->invoke($resolvedArgs)) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
@@ -181,12 +180,17 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if (!isset($this->diResolvedDefinition[$id])) {
             $rawDefinition = $this->definitions[$id] ?? null;
 
+            if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
+                $this->checkCyclicalDependencyCall($ref);
+
+                return $this->resolveDefinition($ref);
+            }
+
             if (!$this->config?->isUseAutowire()) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
             }
 
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
-            $isIdInterface = \interface_exists($id);
 
             if (null === $rawDefinition) {
                 if (\is_callable($id)) {
@@ -200,7 +204,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                             : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
                 }
 
-                if ($isIdInterface && $this->config?->isUseAttribute()
+                if (\interface_exists($id) && $this->config?->isUseAttribute()
                     && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
                     return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
                 }
@@ -218,9 +222,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 $arguments = [];
             }
 
-            if (\is_callable($definition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $definition, $isSingleton, $arguments);
-            }
+            $isIdInterface = \interface_exists($id);
 
             if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
                 if ($isIdInterface && [] === $arguments && isset($this->definitions[$definition][DiContainerInterface::ARGUMENTS])) {
@@ -230,10 +232,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $definition, $isSingleton, $arguments);
             }
 
-            if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
-                $this->checkCyclicalDependencyCall($ref);
-
-                return $this->resolveDefinition($ref);
+            if (\is_callable($definition)) {
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $definition, $isSingleton, $arguments);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
