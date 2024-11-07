@@ -7,6 +7,7 @@ namespace Tests\Unit\Callable;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\ParametersResolver;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -34,8 +35,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
         $d = new DiDefinitionCallable($container, 'x', $definition, true);
 
         $this->assertIsCallable($d->getDefinition());
-        $this->assertEquals('Hello Piter!', $d->invoke([]));
-        $this->assertEquals('Hello Ivan!', $d->invoke(['name' => 'Ivan']));
+        $this->assertEquals('Hello Piter!', $d->invoke(new ParametersResolver($container, true)));
     }
 
     public function testInvokeClassAsInstance(): void
@@ -46,7 +46,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
         $this->assertIsCallable($d->getDefinition());
         $this->assertEquals('Vasiliy hello!', \call_user_func($d->getDefinition()));
-        $this->assertEquals('Vasiliy hello!', $d->invoke([]));
+        $this->assertEquals('Vasiliy hello!', $d->invoke(new ParametersResolver($container, true)));
     }
 
     public function testDefinitionWithNonStaticMethodAsString(): void
@@ -61,7 +61,7 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
         $this->assertIsCallable($d->getDefinition());
         $this->assertEquals('Alex hello!', \call_user_func_array($d->getDefinition(), []));
-        $this->assertEquals('Alex hello!', $d->invoke([]));
+        $this->assertEquals('Alex hello!', $d->invoke(new ParametersResolver($container, true)));
     }
 
     public function testDefinitionWithNonExistMethodAsString(): void
@@ -124,11 +124,11 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
     public function testDefinitionWithStaticMethod(): void
     {
         $definition = 'Tests\Unit\Callable\Fixtures\ClassWithStaticMethod::foo';
-
-        $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
+        $container = (new DiContainerFactory())->make();
+        $d = new DiDefinitionCallable($container, 'x', $definition, true);
 
         $this->assertIsCallable($d->getDefinition());
-        $this->assertEquals('I am foo static', $d->invoke([]));
+        $this->assertEquals('I am foo static', $d->invoke(new ParametersResolver($container, true)));
         $this->assertEquals('I am foo static', \call_user_func_array($d->getDefinition(), []));
     }
 
@@ -139,5 +139,21 @@ class DefinitionAsCallableMakeFromAbstractTest extends TestCase
 
         $definition = [new \stdClass(), new \stdClass()];
         new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
+    }
+
+    public function testDefinitionAsFunction(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'test' => '🎈',
+            \ArrayIterator::class => ['arguments' => ['array' => ['🎃']]],
+        ]);
+
+        $d = new DiDefinitionCallable($container, 'x', '\Tests\Unit\Callable\Fixtures\testFunction', false);
+
+        $this->assertEquals('\Tests\Unit\Callable\Fixtures\testFunction', $d->getDefinition());
+        $this->assertEquals([], $d->getArguments());
+        $this->assertFalse($d->isSingleton());
+        $this->assertEquals('x', $d->getContainerId());
+        $this->assertEquals('x:i:0;a:2:{i:0;s:4:"🎃";i:1;s:4:"🎈";};m:a:0:{}', $d->invoke(new ParametersResolver($container, true)));
     }
 }

@@ -6,12 +6,17 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\ParametersResolverInterface;
 
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 {
-    use ParametersForResolvingTrait;
-
     private \ReflectionClass $reflectionClass;
+
+    /**
+     * @var \ReflectionParameter[]
+     */
+    private array $reflectedParameters;
+    private array $arguments;
 
     public function __construct(private string $id, private string $definition, private bool $isSingleton, array $arguments = [])
     {
@@ -31,15 +36,22 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
         return $this->id;
     }
 
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
+
     public function isSingleton(): bool
     {
         return $this->isSingleton;
     }
 
-    public function invoke(array $arguments = []): mixed
+    public function invoke(ParametersResolverInterface $parametersResolver): mixed
     {
         try {
-            return $this->reflectionClass->newInstanceArgs($arguments);
+            $resolvedArguments = $parametersResolver->resolve($this->reflectedParameters, $this->getArguments());
+
+            return $this->reflectionClass->newInstanceArgs($resolvedArguments);
         } catch (\ReflectionException $e) {
             throw new AutowiredException(message: $e->getMessage(), previous: $e);
         }

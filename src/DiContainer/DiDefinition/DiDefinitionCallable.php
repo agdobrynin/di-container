@@ -7,18 +7,23 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ParametersResolverInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 {
-    use ParametersForResolvingTrait;
-
     /**
      * @var callable
      */
     private $definition;
+
+    /**
+     * @var \ReflectionParameter[]
+     */
+    private array $reflectedParameters;
+    private array $arguments;
 
     /**
      * @throws ContainerExceptionInterface
@@ -42,14 +47,21 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         return $this->id;
     }
 
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
+
     public function isSingleton(): bool
     {
         return $this->isSingleton;
     }
 
-    public function invoke(array $arguments): mixed
+    public function invoke(ParametersResolverInterface $parametersResolver): mixed
     {
-        return \call_user_func_array($this->definition, \array_values($arguments));
+        $resolvedArguments = $parametersResolver->resolve($this->reflectedParameters, $this->arguments);
+
+        return \call_user_func_array($this->definition, \array_values($resolvedArguments));
     }
 
     public function getDefinition(): callable
