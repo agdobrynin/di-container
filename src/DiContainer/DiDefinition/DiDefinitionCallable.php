@@ -5,25 +5,21 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
-use Kaspi\DiContainer\Interfaces\ParametersResolverInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 {
+    use ParametersResolverTrait;
+
     /**
      * @var callable
      */
     private $definition;
-
-    /**
-     * @var \ReflectionParameter[]
-     */
-    private array $reflectedParameters;
-    private array $arguments;
 
     /**
      * @throws ContainerExceptionInterface
@@ -38,7 +34,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         array $arguments = [],
     ) {
         $this->definition = $this->makeFromAbstract($definition);
-        $this->reflectedParameters = $this->reflectParameters();
+        $this->reflectionParameters = $this->reflectParameters();
         $this->arguments = $arguments;
     }
 
@@ -47,21 +43,17 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         return $this->id;
     }
 
-    public function getArguments(): array
-    {
-        return $this->arguments;
-    }
-
     public function isSingleton(): bool
     {
         return $this->isSingleton;
     }
 
-    public function invoke(ParametersResolverInterface $parametersResolver): mixed
+    public function invoke(DiContainerInterface $container, ?bool $useAttribute): mixed
     {
-        $resolvedArguments = $parametersResolver->resolve($this->reflectedParameters, $this->arguments);
-
-        return \call_user_func_array($this->definition, \array_values($resolvedArguments));
+        return \call_user_func_array(
+            $this->definition,
+            \array_values($this->resolveParameters($container, $useAttribute))
+        );
     }
 
     public function getDefinition(): callable
@@ -124,15 +116,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
             return (new \ReflectionMethod($this->definition))->getParameters();
         }
 
-        if ($this->definition instanceof \Closure) {
-            return (new \ReflectionFunction($this->definition))->getParameters();
-        }
-
-        if (\is_string($this->definition) && \function_exists($this->definition)) {
-            return (new \ReflectionFunction($this->definition))->getParameters();
-        }
-
         // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
-        return (new \ReflectionMethod($this->definition, '__invoke'))->getParameters();
+        return (new \ReflectionFunction($this->definition))->getParameters();
     }
 }

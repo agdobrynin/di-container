@@ -43,8 +43,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
-     *
-     * @throws ContainerExceptionInterface
      */
     public function __construct(
         iterable $definitions = [],
@@ -112,10 +110,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            $diDefinition = new DiDefinitionCallable($this, '#EMPTY#', $definition, false, $arguments);
-            $parameterResolver = new ParametersResolver($this, $this->config?->isUseAttribute() ?? false);
-
-            return $diDefinition->invoke($parameterResolver);
+            return (new DiDefinitionCallable($this, '#EMPTY#', $definition, false, $arguments))
+                ->invoke($this, $this->config?->isUseAttribute())
+            ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
@@ -147,8 +144,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $parameterResolver = new ParametersResolver($this, $this->config?->isUseAttribute() ?? false);
-                $object = ($o = $diDefinition->invoke($parameterResolver)) instanceof DiFactoryInterface
+                $object = ($o = $diDefinition->invoke($this, $this->config?->isUseAttribute())) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
 

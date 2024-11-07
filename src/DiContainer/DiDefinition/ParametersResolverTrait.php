@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer;
+namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
@@ -14,29 +14,33 @@ use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\ParametersResolverInterface;
+use Kaspi\DiContainer\ParameterTypeResolverTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class ParametersResolver implements ParametersResolverInterface
+trait ParametersResolverTrait
 {
     use ParameterTypeResolverTrait;
 
-    public function __construct(private DiContainerInterface $container, private bool $useAttribute) {}
+    /**
+     * @var \ReflectionParameter[]
+     */
+    private array $reflectionParameters = [];
+    private array $arguments = [];
 
-    public function resolve(array $reflectionParameters, array $customArguments): array
+    public function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
     {
         $dependencies = [];
 
-        foreach ($reflectionParameters as $parameter) {
-            if (isset($customArguments[$parameter->name])) {
-                $argument = $customArguments[$parameter->name];
+        foreach ($this->reflectionParameters as $parameter) {
+            if (isset($this->arguments[$parameter->name])) {
+                $argument = $this->arguments[$parameter->name];
                 $args = \is_array($argument) && $parameter->isVariadic() ? $argument : [$argument];
 
                 foreach ($args as $arg) {
                     if (\is_string($arg)) {
                         try {
-                            $dependencies[] = $this->container->get($arg);
+                            $dependencies[] = $container->get($arg);
                         } catch (NotFoundExceptionInterface) {
                             $dependencies[] = $arg;
                         }
@@ -53,17 +57,17 @@ class ParametersResolver implements ParametersResolverInterface
             $autowireException = null;
 
             try {
-                if ($this->useAttribute) {
+                if ($useAttribute) {
                     if ($factories = DiFactory::makeFromReflection($parameter)) {
                         foreach ($factories as $key => $factory) {
-                            $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton, $key);
-                            $dependencies[] = $this->container->get($dependencyKey);
+                            $dependencyKey = $this->registerDefinition($parameter, $container, $factory->id, $factory->arguments, $factory->isSingleton, $key);
+                            $dependencies[] = $container->get($dependencyKey);
                         }
 
                         continue;
                     }
 
-                    if ($injects = Inject::makeFromReflection($parameter, $this->container)) {
+                    if ($injects = Inject::makeFromReflection($parameter, $container)) {
                         foreach ($injects as $key => $inject) {
                             $injectDefinition = (string) $inject->id;
 
@@ -72,17 +76,17 @@ class ParametersResolver implements ParametersResolverInterface
                                     ?: throw new AutowiredException(
                                         "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
                                     );
-                                $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
-                                $dependencies[] = $this->container->get($dependencyKey);
+                                $dependencyKey = $this->registerDefinition($parameter, $container, $service->id, $service->arguments, $service->isSingleton);
+                                $dependencies[] = $container->get($dependencyKey);
 
                                 continue;
                             }
 
                             if (!\class_exists($injectDefinition)) {
                                 try {
-                                    $val = $this->container->get($injectDefinition);
+                                    $val = $container->get($injectDefinition);
                                 } catch (NotFoundExceptionInterface) {
-                                    $val = $this->container->get($parameter->getName());
+                                    $val = $container->get($parameter->getName());
                                 }
 
                                 $vals = \is_array($val) && $parameter->isVariadic() ? $val : [$val];
@@ -94,19 +98,19 @@ class ParametersResolver implements ParametersResolverInterface
                                 continue;
                             }
 
-                            $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton, $key);
-                            $dependencies[] = $this->container->get($dependencyKey);
+                            $dependencyKey = $this->registerDefinition($parameter, $container, $inject->id, $inject->arguments, $inject->isSingleton, $key);
+                            $dependencies[] = $container->get($dependencyKey);
                         }
 
                         continue;
                     }
                 }
 
-                $parameterType = self::getParameterType($parameter, $this->container);
+                $parameterType = self::getParameterType($parameter, $container);
 
                 $val = null === $parameterType
-                    ? $this->container->get($parameter->getName())
-                    : $this->container->get($parameterType->getName());
+                    ? $container->get($parameter->getName())
+                    : $container->get($parameterType->getName());
 
                 $vals = \is_array($val) && $parameter->isVariadic() ? $val : [$val];
 
@@ -143,7 +147,7 @@ class ParametersResolver implements ParametersResolverInterface
         return $dependencies;
     }
 
-    protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
+    protected function registerDefinition(\ReflectionParameter $parameter, DiContainerInterface $container, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
     {
         $fnName = $parameter->getDeclaringFunction();
         $target = $parameter->getDeclaringClass()?->getName() ?: $fnName->getName().$fnName->getStartLine();
@@ -151,7 +155,7 @@ class ParametersResolver implements ParametersResolverInterface
         $dependencyKey = $target.'::'.$fnName->getName().'::'.$parameter->getType().':'.$parameter->getPosition().$variadicKey;
 
         try {
-            $this->container->set(id: $dependencyKey, definition: $definition, arguments: $arguments, isSingleton: $isSingleton);
+            $container->set(id: $dependencyKey, definition: $definition, arguments: $arguments, isSingleton: $isSingleton);
         } catch (ContainerAlreadyRegisteredException) {
         }
 
