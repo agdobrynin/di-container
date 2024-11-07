@@ -19,7 +19,6 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
@@ -32,7 +31,7 @@ use Psr\Container\NotFoundExceptionInterface;
 /**
  * @template T of object
  */
-class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
+class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use ParameterTypeResolverTrait;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Psr\Container\ContainerInterface;
 
 interface DiContainerInterface extends ContainerInterface
@@ -42,4 +43,12 @@ interface DiContainerInterface extends ContainerInterface
      * @return T
      */
     public function get(string $id): mixed;
+
+    /**
+     * @param class-string|string $id
+     * @param null|mixed|object   $definition
+     *
+     * @throws ContainerAlreadyRegisteredException
+     */
+    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static;
 }
