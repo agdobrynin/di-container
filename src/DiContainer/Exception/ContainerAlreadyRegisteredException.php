@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Exception;
 
-use Psr\Container\ContainerExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 
-class ContainerAlreadyRegisteredException extends \RuntimeException implements ContainerExceptionInterface {}
+class ContainerAlreadyRegisteredException extends \RuntimeException implements ContainerAlreadyRegisteredExceptionInterface {}

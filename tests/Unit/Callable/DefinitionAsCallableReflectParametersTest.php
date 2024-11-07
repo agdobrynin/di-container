@@ -26,7 +26,7 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
         $definition = fn (ContainerInterface $container, SimpleInvokeClass $class) => $container->get($class->name);
 
         $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
-        $params = $d->getArgumentsForResolving();
+        $params = $d->getParametersForResolving();
 
         $this->assertCount(2, $params);
         $this->assertEquals(ContainerInterface::class, $params[0]->getType());
@@ -37,7 +37,7 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
     {
         $definition = 'Tests\Unit\Callable\Fixtures\testFunction';
         $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
-        $params = $d->getArgumentsForResolving();
+        $params = $d->getParametersForResolving();
 
         $this->assertCount(2, $params);
         $this->assertEquals(\ArrayIterator::class, $params[0]->getType());
@@ -49,7 +49,7 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
         $definition = 'Tests\Unit\Callable\Fixtures\ClassWithStaticMethodParams::addAndCopyStatic';
 
         $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
-        $params = $d->getArgumentsForResolving();
+        $params = $d->getParametersForResolving();
 
         $this->assertCount(2, $params);
         $this->assertEquals(ContainerInterface::class, $params[0]->getType());
@@ -64,7 +64,7 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
         $definition = new SimpleInvokeClass(name: 'Sidor');
 
         $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
-        $params = $d->getArgumentsForResolving();
+        $params = $d->getParametersForResolving();
 
         $this->assertCount(1, $params);
         $this->assertEquals('string', $params[0]->getType()->getName());
@@ -76,7 +76,7 @@ class DefinitionAsCallableReflectParametersTest extends TestCase
     {
         $definition = [new ClassMethodWithParams(), 'doSomething'];
         $d = new DiDefinitionCallable((new DiContainerFactory())->make(), 'x', $definition, true);
-        $params = $d->getArgumentsForResolving();
+        $params = $d->getParametersForResolving();
 
         $this->assertCount(1, $params);
         $this->assertEquals(\ArrayIterator::class, $params[0]->getType()->getName());

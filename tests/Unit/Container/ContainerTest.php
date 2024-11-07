@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -344,7 +345,7 @@ class ContainerTest extends TestCase
     {
         $container = new DiContainer(['service' => 10]);
 
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
         $this->expectExceptionMessage('already registered');
 
         $container->set('service', 5);

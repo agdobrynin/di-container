@@ -13,7 +13,7 @@ use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 {
-    use ArgumentsForResolvingTrait;
+    use ParametersForResolvingTrait;
 
     /**
      * @var callable
@@ -33,7 +33,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         array $arguments = [],
     ) {
         $this->definition = $this->makeFromAbstract($definition);
-        $this->reflectedArguments = $this->reflectParameters();
+        $this->reflectedParameters = $this->reflectParameters();
         $this->arguments = $arguments;
     }
 

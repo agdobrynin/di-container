@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 interface DiContainerInterface extends ContainerInterface
 {
@@ -40,6 +43,17 @@ interface DiContainerInterface extends ContainerInterface
      * @param class-string<T>|string $id
      *
      * @return T
+     *
+     * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
+     * @throws ContainerExceptionInterface Error while retrieving the entry.*
      */
     public function get(string $id): mixed;
+
+    /**
+     * @param class-string|string $id
+     * @param null|mixed|object   $definition
+     *
+     * @throws ContainerAlreadyRegisteredException
+     */
+    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static;
 }
