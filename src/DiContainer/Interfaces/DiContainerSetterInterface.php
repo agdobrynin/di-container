@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use Psr\Container\ContainerExceptionInterface;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 
 interface DiContainerSetterInterface
 {
@@ -12,7 +12,7 @@ interface DiContainerSetterInterface
      * @param class-string|string $id
      * @param null|mixed|object   $definition
      *
-     * @throws ContainerExceptionInterface
+     * @throws ContainerAlreadyRegisteredException
      */
     public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static;
 }
