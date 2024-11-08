@@ -125,13 +125,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
      */
     protected function resolve(string $id): mixed
     {
+        if ($ref = $this->config?->getReferenceToContainer($id)) {
+            return $this->get($ref);
+        }
+
         try {
             if (!isset($this->resolved[$id]) && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
                 return $this->resolved[$id] = $this;
-            }
-
-            if ($ref = $this->config?->getReferenceToContainer($id)) {
-                return $this->get($ref);
             }
 
             if (!$this->has($id)) {
@@ -174,6 +174,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
                 $this->checkCyclicalDependencyCall($ref);
+                $this->resolvingDependencies[$ref] = true;
 
                 return $this->resolveDefinition($ref);
             }
