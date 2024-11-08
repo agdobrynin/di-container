@@ -26,6 +26,12 @@ trait ParametersResolverTrait
      * @var \ReflectionParameter[]
      */
     private array $reflectionParameters = [];
+
+    /**
+     * User defined parameters by parameter name.
+     *
+     * @var array<string, mixed>
+     */
     private array $arguments = [];
 
     /**
@@ -36,6 +42,7 @@ trait ParametersResolverTrait
      */
     private function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
     {
+        // @todo need prepare parameters for resolve with cache order.
         $dependencies = [];
 
         foreach ($this->reflectionParameters as $parameter) {
