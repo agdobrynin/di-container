@@ -42,11 +42,10 @@ trait ParametersResolverTrait
      */
     private function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
     {
-        // @todo need prepare parameters for resolve with cache order.
         $dependencies = [];
 
         foreach ($this->reflectionParameters as $parameter) {
-            if (isset($this->arguments[$parameter->name])) {
+            if (\array_key_exists($parameter->name, $this->arguments)) {
                 $argument = $this->arguments[$parameter->name];
                 $args = \is_array($argument) && $parameter->isVariadic() ? $argument : [$argument];
 
