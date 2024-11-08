@@ -28,7 +28,13 @@ trait ParametersResolverTrait
     private array $reflectionParameters = [];
     private array $arguments = [];
 
-    public function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
+    /**
+     * @throws AutowiredAttributeException
+     * @throws AutowiredExceptionInterface
+     * @throws CallCircularDependency
+     * @throws NotFoundException
+     */
+    private function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
     {
         $dependencies = [];
 
@@ -147,7 +153,7 @@ trait ParametersResolverTrait
         return $dependencies;
     }
 
-    protected function registerDefinition(\ReflectionParameter $parameter, DiContainerInterface $container, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
+    private function registerDefinition(\ReflectionParameter $parameter, DiContainerInterface $container, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
     {
         $fnName = $parameter->getDeclaringFunction();
         $target = $parameter->getDeclaringClass()?->getName() ?: $fnName->getName().$fnName->getStartLine();

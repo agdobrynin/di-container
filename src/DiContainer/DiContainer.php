@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\DiDefinition\CallableParserTrait;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
@@ -31,6 +32,7 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use ParameterTypeResolverTrait;
+    use CallableParserTrait;
 
     protected iterable $definitions = [];
 
@@ -110,7 +112,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            return (new DiDefinitionCallable($this, '#EMPTY#', $definition, false, $arguments))
+            $callable = $this::parseCallable($definition, $this);
+
+            return (new DiDefinitionCallable('#EMPTY#', $callable, false, $arguments))
                 ->invoke($this, $this->config?->isUseAttribute())
             ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
@@ -154,7 +158,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             return $this->resolved[$diDefinition->getContainerId()] = $diDefinition->getDefinition();
-        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface|\ReflectionException $e) {
+        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
             unset($this->resolvingDependencies[$id]);
@@ -162,10 +166,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     }
 
     /**
+     * @throws AutowiredExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws ContainerExceptionInterface
-     * @throws \ReflectionException
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface
     {
@@ -187,18 +191,23 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             if (null === $rawDefinition) {
                 if (\is_callable($id)) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $id, $isSingletonDefault, []);
+                    return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $id, $isSingletonDefault, []);
                 }
 
                 if (\class_exists($id)) {
+                    $reflectionClass = new \ReflectionClass($id);
+
                     return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
-                        && ($factories = DiFactory::makeFromReflection(new \ReflectionClass($id)))
+                        && ($factories = DiFactory::makeFromReflection($reflectionClass))
                             ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
                             : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
                 }
 
-                if (\interface_exists($id) && $this->config?->isUseAttribute()
-                    && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
+                if (\interface_exists($id) && $this->config?->isUseAttribute()) {
+                    $reflectionInterface = new \ReflectionClass($id);
+                    $service = Service::makeFromReflection($reflectionInterface)
+                        ?: throw new NotFoundException('Definition not found for '.$id);
+
                     return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
                 }
 
@@ -226,7 +235,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (\is_callable($definition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $definition, $isSingleton, $arguments);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $definition, $isSingleton, $arguments);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);

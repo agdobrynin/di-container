@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\Attributes\FactoryClassWithDiFactoryArgument;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
@@ -603,5 +604,15 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(ContainerInterface::class, $container->get(ContainerInterface::class));
         $this->assertInstanceOf(DiContainerInterface::class, $container->get(ContainerInterface::class));
+    }
+
+    public function testResolveInterfaceWithoutAttribute(): void
+    {
+        $container = new DiContainer([], new DiContainerConfig(useAttribute: false));
+
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Definition not found for Tests\Fixtures\Classes\Interfaces\SumInterface');
+
+        $container->get(Interfaces\SumInterface::class);
     }
 }
