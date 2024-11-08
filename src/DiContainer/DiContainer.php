@@ -34,14 +34,14 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     use ParameterTypeResolverTrait;
     use CallableParserTrait;
 
-    protected iterable $definitions = [];
+    protected array $definitions = [];
 
     /**
      * @var iterable<string, DiDefinitionAutowireInterface|DiDefinitionInterface>
      */
-    protected iterable $diResolvedDefinition = [];
-    protected iterable $resolved = [];
-    protected iterable $resolvingDependencies = [];
+    protected array $diResolvedDefinition = [];
+    protected array $resolved = [];
+    protected array $resolvingDependencies = [];
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
@@ -71,22 +71,18 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function has(string $id): bool
     {
-        return isset($this->definitions[$id])
-            || isset($this->resolved[$id])
+        return \array_key_exists($id, $this->definitions)
+            || \array_key_exists($id, $this->resolved)
             || (
                 $this->config?->isUseZeroConfigurationDefinition()
                 && (\class_exists($id) || \interface_exists($id) || \is_callable($id))
             );
     }
 
-    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static
+    public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
     {
-        if (isset($this->definitions[$id])) {
+        if (\array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
-        }
-
-        if (null === $definition) {
-            $definition = $id;
         }
 
         $this->definitions[$id] = $definition;
@@ -134,7 +130,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         }
 
         try {
-            if (!isset($this->resolved[$id]) && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
+            if (!\array_key_exists($id, $this->resolved) && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
                 return $this->resolved[$id] = $this;
             }
 
@@ -174,16 +170,17 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
+            $hasDefinition = \array_key_exists($id, $this->definitions);
             $rawDefinition = $this->definitions[$id] ?? null;
 
-            if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
+            if ($hasDefinition && \is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
                 $this->checkCyclicalDependencyCall($ref);
                 $this->resolvingDependencies[$ref] = true;
 
                 return $this->resolveDefinition($ref);
             }
 
-            if (!$this->config?->isUseAutowire()) {
+            if (($hasDefinition && null === $rawDefinition) || !$this->config?->isUseAutowire()) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
             }
 
@@ -246,7 +243,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     protected function checkCyclicalDependencyCall(string $id): void
     {
-        if (isset($this->resolvingDependencies[$id])) {
+        if (\array_key_exists($id, $this->resolvingDependencies)) {
             $callPath = \implode(' -> ', \array_keys((array) $this->resolvingDependencies)).' -> '.$id;
 
             throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);

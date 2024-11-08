@@ -81,7 +81,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class);
+        $c->set(id: FileCache::class, definition: FileCache::class);
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -92,7 +92,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, isSingleton: false);
+        $c->set(id: FileCache::class, definition: FileCache::class, isSingleton: false);
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -103,7 +103,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, isSingleton: true);
+        $c->set(id: FileCache::class, definition: FileCache::class, isSingleton: true);
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
