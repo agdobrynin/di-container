@@ -191,24 +191,25 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $id, $isSingletonDefault, []);
                 }
 
-                if (\class_exists($id)) {
-                    $reflectionClass = new \ReflectionClass($id);
-
-                    return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
-                        && ($factories = DiFactory::makeFromReflection($reflectionClass))
-                            ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
-                            : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
+                try {
+                    $reflectionClass = new \ReflectionClass($id); // @todo come up with a possible test with throw
+                } catch (\ReflectionException) {
+                    throw new NotFoundException('Definition not found for '.$id);
                 }
 
-                if (\interface_exists($id) && $this->config?->isUseAttribute()) {
-                    $reflectionInterface = new \ReflectionClass($id);
-                    $service = Service::makeFromReflection($reflectionInterface)
-                        ?: throw new NotFoundException('Definition not found for '.$id);
+                if ($reflectionClass->isInterface()) {
+                    if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
+                        // @todo if $service->id is a reference aka #[Service('@ref1')]
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
+                    }
 
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
+                    throw new NotFoundException('Definition not found for '.$id);
                 }
 
-                throw new NotFoundException('Definition not found for '.$id);
+                return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
+                    && ($factories = DiFactory::makeFromReflection($reflectionClass))
+                        ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
+                        : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
             }
 
             if (\is_array($rawDefinition)) {
