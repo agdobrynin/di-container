@@ -38,7 +38,8 @@ trait ParametersResolverTrait
      * @throws AutowiredAttributeException
      * @throws AutowiredExceptionInterface
      * @throws CallCircularDependency
-     * @throws NotFoundException
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
      */
     private function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
     {
