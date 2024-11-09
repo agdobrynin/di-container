@@ -85,22 +85,22 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
         }
 
-        $this->definitions[$id] = $definition;
-
         if ($arguments) {
-            if (\is_array($this->definitions[$id])) {
-                $arguments = $arguments + $this->definitions[$id][DiContainerInterface::ARGUMENTS] ?? [];
-                $this->definitions[$id] = [DiContainerInterface::ARGUMENTS => $arguments] + $this->definitions[$id];
+            if (\is_array($definition)) {
+                $arguments = $arguments + $definition[DiContainerInterface::ARGUMENTS] ?? [];
+                $definition = [DiContainerInterface::ARGUMENTS => $arguments] + $definition;
             } else {
-                $this->definitions[$id] = [0 => $this->definitions[$id], DiContainerInterface::ARGUMENTS => $arguments];
+                $definition = [0 => $definition, DiContainerInterface::ARGUMENTS => $arguments];
             }
         }
 
         if (null !== $isSingleton) {
-            $this->definitions[$id] = \is_array($this->definitions[$id])
-                ? [DiContainerInterface::SINGLETON => $isSingleton] + $this->definitions[$id]
-                : [0 => $this->definitions[$id], DiContainerInterface::SINGLETON => $isSingleton];
+            $definition = \is_array($definition)
+                ? [DiContainerInterface::SINGLETON => $isSingleton] + $definition
+                : [0 => $definition, DiContainerInterface::SINGLETON => $isSingleton];
         }
+
+        $this->definitions[$id] = $definition;
 
         return $this;
     }
