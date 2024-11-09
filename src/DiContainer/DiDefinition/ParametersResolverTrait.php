@@ -25,14 +25,14 @@ trait ParametersResolverTrait
     /**
      * @var \ReflectionParameter[]
      */
-    private array $reflectionParameters = [];
+    protected array $reflectionParameters = [];
 
     /**
      * User defined parameters by parameter name.
      *
      * @var array<string, mixed>
      */
-    private array $arguments = [];
+    protected array $arguments = [];
 
     /**
      * @throws AutowiredAttributeException
@@ -41,7 +41,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    private function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
+    protected function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
     {
         $dependencies = [];
 
@@ -160,7 +160,7 @@ trait ParametersResolverTrait
         return $dependencies;
     }
 
-    private function registerDefinition(\ReflectionParameter $parameter, DiContainerInterface $container, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
+    protected function registerDefinition(\ReflectionParameter $parameter, DiContainerInterface $container, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
     {
         $fnName = $parameter->getDeclaringFunction();
         $target = $parameter->getDeclaringClass()?->getName() ?: $fnName->getName().$fnName->getStartLine();
