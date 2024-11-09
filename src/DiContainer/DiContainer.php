@@ -171,22 +171,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
             $hasDefinition = \array_key_exists($id, $this->definitions);
-            $rawDefinition = $this->definitions[$id] ?? null;
-
-            if ($hasDefinition && \is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
-                $this->checkCyclicalDependencyCall($ref);
-                $this->resolvingDependencies[$ref] = true;
-
-                return $this->resolveDefinition($ref);
-            }
-
-            if (($hasDefinition && null === $rawDefinition) || !$this->config?->isUseAutowire()) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
-            }
-
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
-            if (null === $rawDefinition) {
+            if (!$hasDefinition) {
                 if (\is_callable($id)) {
                     return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $id, $isSingletonDefault, []);
                 }
@@ -199,7 +186,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
-                        // @todo if $service->id is a reference aka #[Service('@ref1')]
+                        // @todo if $service->id is a reference aka #[Service('ref1')]
                         return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
                     }
 
@@ -207,9 +194,22 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 }
 
                 return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
-                    && ($factories = DiFactory::makeFromReflection($reflectionClass))
-                        ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
-                        : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
+                && ($factories = DiFactory::makeFromReflection($reflectionClass))
+                    ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
+                    : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
+            }
+
+            $rawDefinition = $this->definitions[$id];
+
+            if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
+                $this->checkCyclicalDependencyCall($ref);
+                $this->resolvingDependencies[$ref] = true;
+
+                return $this->resolveDefinition($ref);
+            }
+
+            if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
+                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
             }
 
             if (\is_array($rawDefinition)) {
