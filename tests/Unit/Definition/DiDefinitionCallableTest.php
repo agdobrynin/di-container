@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Definition;
 
+use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use PHPUnit\Framework\TestCase;
+use Tests\Unit\Definition\Fixtures\CallableStaticMethodWithArgument;
+use Tests\Unit\Definition\Fixtures\SimpleService;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\DiFactory
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  *
  * @internal
  */
 class DiDefinitionCallableTest extends TestCase
 {
-    public function testGetDefinition(): void
+    public function testCallableStringClassStaticMethod(): void
     {
-        $d = new DiDefinitionCallable(null, 'x', static function (): string { return 'aaaa'; }, true, []);
+        $container = (new DiContainerFactory())->make(['service' => SimpleService::class]);
 
-        $this->assertInstanceOf(\Closure::class, $d->getDefinition());
-    }
+        $callable = new DiDefinitionCallable('x', CallableStaticMethodWithArgument::class.'::makeSomething', false);
+        $res = $callable->invoke($container, false);
 
-    public function testInvoke(): void
-    {
-        $d = new DiDefinitionCallable(null, 'x', static function (string ...$words): string { return \implode('_', $words); }, true, []);
-
-        $this->assertEquals('hello_world', $d->invoke(['hello', 'world']));
+        $this->assertEquals('Tests\Unit\Definition\Fixtures\SimpleService:Tests\Unit\Definition\Fixtures\WithoutConstructor:ok', $res);
     }
 }

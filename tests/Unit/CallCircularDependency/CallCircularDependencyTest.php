@@ -51,6 +51,7 @@ class CallCircularDependencyTest extends TestCase
     public function testCircularDependencyCallMethodWithSimpleInject(): void
     {
         $this->expectException(CallCircularDependency::class);
+        $this->expectExceptionMessage('Call dependencies: inject1 -> inject2 -> inject3 -> inject1');
 
         (new DiContainerFactory())->make(
             [
@@ -64,7 +65,7 @@ class CallCircularDependencyTest extends TestCase
     public function testCircularDependencyCallMethodWithInjectClass(): void
     {
         $this->expectException(CallCircularDependency::class);
-
+        $this->expectExceptionMessageMatches('/(Call dependencies).+(FirstClass ->).+(SecondClass ->).+(ThirdClass ->).+(FirstClass)/');
         (new DiContainerFactory())->make()->call(static fn (FirstClass $class) => $class);
     }
 

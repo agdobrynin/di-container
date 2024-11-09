@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\DiDefinition\CallableParserTrait;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
-use Kaspi\DiContainer\Exception\AutowiredAttributeException;
-use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
@@ -34,20 +32,19 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use ParameterTypeResolverTrait;
+    use CallableParserTrait;
 
-    protected iterable $definitions = [];
+    protected array $definitions = [];
 
     /**
      * @var iterable<string, DiDefinitionAutowireInterface|DiDefinitionInterface>
      */
-    protected iterable $diResolvedDefinition = [];
-    protected iterable $resolved = [];
-    protected iterable $resolvingDependencies = [];
+    protected array $diResolvedDefinition = [];
+    protected array $resolved = [];
+    protected array $resolvingDependencies = [];
 
     /**
      * @param iterable<class-string|string, mixed|T> $definitions
-     *
-     * @throws ContainerExceptionInterface
      */
     public function __construct(
         iterable $definitions = [],
@@ -74,22 +71,18 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function has(string $id): bool
     {
-        return isset($this->definitions[$id])
-            || isset($this->resolved[$id])
+        return \array_key_exists($id, $this->definitions)
+            || \array_key_exists($id, $this->resolved)
             || (
                 $this->config?->isUseZeroConfigurationDefinition()
                 && (\class_exists($id) || \interface_exists($id) || \is_callable($id))
             );
     }
 
-    public function set(string $id, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): static
+    public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
     {
-        if (isset($this->definitions[$id])) {
+        if (\array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
-        }
-
-        if (null === $definition) {
-            $definition = $id;
         }
 
         $this->definitions[$id] = $definition;
@@ -115,10 +108,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            $diDefinition = new DiDefinitionCallable($this, '#EMPTY#', $definition, false, $arguments);
-            $resolvedArgs = $this->parametersResolver($diDefinition->getParametersForResolving());
+            $callable = $this::parseCallable($definition, $this);
 
-            return $diDefinition->invoke($resolvedArgs);
+            return (new DiDefinitionCallable('#EMPTY#', $callable, false, $arguments))
+                ->invoke($this, $this->config?->isUseAttribute())
+            ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
@@ -131,13 +125,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
      */
     protected function resolve(string $id): mixed
     {
-        try {
-            if (!isset($this->resolved[$id]) && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
-                return $this->resolved[$id] = $this;
-            }
+        if ($ref = $this->config?->getReferenceToContainer($id)) {
+            return $this->get($ref);
+        }
 
-            if ($ref = $this->config?->getReferenceToContainer($id)) {
-                return $this->get($ref);
+        try {
+            if (!\array_key_exists($id, $this->resolved) && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
+                return $this->resolved[$id] = $this;
             }
 
             if (!$this->has($id)) {
@@ -150,8 +144,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $resolvedArgs = $this->parametersResolver($diDefinition->getParametersForResolving());
-                $object = ($o = $diDefinition->invoke($resolvedArgs)) instanceof DiFactoryInterface
+                $object = ($o = $diDefinition->invoke($this, $this->config?->isUseAttribute())) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
 
@@ -161,7 +154,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             return $this->resolved[$diDefinition->getContainerId()] = $diDefinition->getDefinition();
-        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface|\ReflectionException $e) {
+        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
             unset($this->resolvingDependencies[$id]);
@@ -169,23 +162,25 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     }
 
     /**
+     * @throws AutowiredExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws ContainerExceptionInterface
-     * @throws \ReflectionException
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
+            $hasDefinition = \array_key_exists($id, $this->definitions);
             $rawDefinition = $this->definitions[$id] ?? null;
 
-            if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
+            if ($hasDefinition && \is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
                 $this->checkCyclicalDependencyCall($ref);
+                $this->resolvingDependencies[$ref] = true;
 
                 return $this->resolveDefinition($ref);
             }
 
-            if (!$this->config?->isUseAutowire()) {
+            if (($hasDefinition && null === $rawDefinition) || !$this->config?->isUseAutowire()) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
             }
 
@@ -193,22 +188,28 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             if (null === $rawDefinition) {
                 if (\is_callable($id)) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $id, $isSingletonDefault, []);
+                    return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $id, $isSingletonDefault, []);
                 }
 
-                if (\class_exists($id)) {
-                    return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
-                        && ($factories = DiFactory::makeFromReflection(new \ReflectionClass($id)))
-                            ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
-                            : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
+                try {
+                    $reflectionClass = new \ReflectionClass($id); // @todo come up with a possible test with throw
+                } catch (\ReflectionException) {
+                    throw new NotFoundException('Definition not found for '.$id);
                 }
 
-                if (\interface_exists($id) && $this->config?->isUseAttribute()
-                    && $service = Service::makeFromReflection(new \ReflectionClass($id))) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
+                if ($reflectionClass->isInterface()) {
+                    if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
+                        // @todo if $service->id is a reference aka #[Service('@ref1')]
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
+                    }
+
+                    throw new NotFoundException('Definition not found for '.$id);
                 }
 
-                throw new NotFoundException('Definition not found for '.$id);
+                return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
+                    && ($factories = DiFactory::makeFromReflection($reflectionClass))
+                        ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
+                        : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
             }
 
             if (\is_array($rawDefinition)) {
@@ -232,7 +233,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (\is_callable($definition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $id, $definition, $isSingleton, $arguments);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $definition, $isSingleton, $arguments);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
@@ -241,144 +242,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         return $this->diResolvedDefinition[$id];
     }
 
-    /**
-     * @param array<int, mixed|\ReflectionParameter> $parameters
-     *
-     * @throws ContainerExceptionInterface
-     * @throws AutowiredExceptionInterface
-     */
-    protected function parametersResolver(array $parameters): array
-    {
-        $dependencies = [];
-
-        foreach ($parameters as $parameter) {
-            if (!$parameter instanceof \ReflectionParameter) {
-                if (\is_string($parameter)) {
-                    try {
-                        $dependencies[] = $this->get($parameter);
-                    } catch (NotFoundExceptionInterface) {
-                        $dependencies[] = $parameter;
-                    }
-
-                    continue;
-                }
-
-                $dependencies[] = $parameter;
-
-                continue;
-            }
-
-            $autowireException = null;
-
-            try {
-                if ($this->config?->isUseAttribute()) {
-                    if ($factories = DiFactory::makeFromReflection($parameter)) {
-                        foreach ($factories as $key => $factory) {
-                            $dependencyKey = $this->registerDefinition($parameter, $factory->id, $factory->arguments, $factory->isSingleton, $key);
-                            $dependencies[] = $this->get($dependencyKey);
-                        }
-
-                        continue;
-                    }
-
-                    if ($injects = Inject::makeFromReflection($parameter, $this)) {
-                        foreach ($injects as $key => $inject) {
-                            $injectDefinition = (string) $inject->id;
-
-                            if (\interface_exists($injectDefinition)) {
-                                $service = Service::makeFromReflection(new \ReflectionClass($injectDefinition))
-                                    ?: throw new AutowiredException(
-                                        "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
-                                    );
-                                $dependencyKey = $this->registerDefinition($parameter, $service->id, $service->arguments, $service->isSingleton);
-                                $dependencies[] = $this->get($dependencyKey);
-
-                                continue;
-                            }
-
-                            if (!\class_exists($injectDefinition)) {
-                                try {
-                                    $val = $this->get($injectDefinition);
-                                } catch (NotFoundExceptionInterface) {
-                                    $val = $this->get($parameter->getName());
-                                }
-
-                                if (\is_array($val) && $parameter->isVariadic()) {
-                                    // $val maybe array!
-                                    \array_push($dependencies, ...$val);
-                                } else {
-                                    $dependencies[] = $val;
-                                }
-
-                                continue;
-                            }
-
-                            $dependencyKey = $this->registerDefinition($parameter, $inject->id, $inject->arguments, $inject->isSingleton, $key);
-                            $dependencies[] = $this->get($dependencyKey);
-                        }
-
-                        continue;
-                    }
-                }
-
-                $parameterType = self::getParameterType($parameter, $this);
-                $val = null === $parameterType
-                    ? $this->get($parameter->getName())
-                    : $this->get($parameterType->getName());
-
-                if (\is_array($val) && $parameter->isVariadic()) {
-                    \array_push($dependencies, ...$val);
-                } else {
-                    $dependencies[] = $val;
-                }
-
-                continue;
-            } catch (AutowiredAttributeException|CallCircularDependency $e) {
-                throw $e;
-            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
-                $autowireException = $e;
-            }
-
-            if ($parameter->isDefaultValueAvailable()) {
-                $dependencies[] = $parameter->getDefaultValue();
-
-                continue;
-            }
-
-            $declaredClass = $parameter->getDeclaringClass()?->getName() ?: '';
-            $declaredFunction = $parameter->getDeclaringFunction()->getName();
-            $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
-            $messageParameter = $parameter.' in '.$where;
-            $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException?->getMessage()}";
-
-            if ($autowireException instanceof NotFoundExceptionInterface) {
-                throw new NotFoundException(message: $message, previous: $autowireException);
-            }
-
-            throw new AutowiredException(message: $message, previous: $autowireException);
-        }
-
-        return $dependencies;
-    }
-
-    protected function registerDefinition(\ReflectionParameter $parameter, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
-    {
-        $fnName = $parameter->getDeclaringFunction();
-        $target = $parameter->getDeclaringClass()?->getName() ?: $fnName->getName().$fnName->getStartLine();
-        $variadicKey = $parameter->isVariadic() ? \sprintf('#variadic%d', $variadicPosition) : '';
-        $dependencyKey = $target.'::'.$fnName->getName().'::'.$parameter->getType().':'.$parameter->getPosition().$variadicKey;
-
-        try {
-            $this->set(id: $dependencyKey, definition: $definition, arguments: $arguments, isSingleton: $isSingleton);
-        } catch (ContainerAlreadyRegisteredException) {
-        }
-
-        return $dependencyKey;
-    }
-
     protected function checkCyclicalDependencyCall(string $id): void
     {
-        if (isset($this->resolvingDependencies[$id])) {
+        if (\array_key_exists($id, $this->resolvingDependencies)) {
             $callPath = \implode(' -> ', \array_keys((array) $this->resolvingDependencies)).' -> '.$id;
 
             throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);

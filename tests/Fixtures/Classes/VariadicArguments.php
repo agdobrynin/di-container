@@ -11,13 +11,13 @@ class VariadicArguments
      */
     protected array $parameters;
 
-    public function __construct(VariadicParameterRule ...$rule)
+    public function __construct(?VariadicParameterRule ...$rule)
     {
         $this->parameters = $rule;
     }
 
-    public function getRules(): array
+    public function getRules(): ?array
     {
-        return $this->parameters;
+        return $this->parameters[0] ? $this->parameters : null;
     }
 }

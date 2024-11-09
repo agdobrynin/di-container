@@ -217,4 +217,17 @@ class VariadicParametersTest extends TestCase
         $this->assertCount(1, $class->getRules());
         $this->assertInstanceOf(VariadicParameterRule::class, \current($class->getRules()));
     }
+
+    public function testVariadicArgumentWithNullable(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            VariadicArguments::class => [
+                DiContainerInterface::ARGUMENTS => ['rule' => null],
+            ],
+        ]);
+
+        $class = $container->get(VariadicArguments::class);
+
+        $this->assertNull($class->getRules());
+    }
 }

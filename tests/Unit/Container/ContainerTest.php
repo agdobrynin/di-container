@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\Attributes\FactoryClassWithDiFactoryArgument;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
@@ -88,7 +89,7 @@ class ContainerTest extends TestCase
     public function testAutowiredOffForClass(): void
     {
         $container = (new DiContainer())
-            ->set(Classes\RedisCache::class)
+            ->set(Classes\RedisCache::class, Classes\RedisCache::class)
         ;
 
         $r = $container->get(Classes\RedisCache::class);
@@ -333,7 +334,7 @@ class ContainerTest extends TestCase
     public function testNoConstructor(): void
     {
         $container = (new DiContainer(config: $this->diContainerConfig))
-            ->set(Classes\NoConstructorAndInvokable::class)
+            ->set(Classes\NoConstructorAndInvokable::class, [])
         ;
 
         $result = $container->get(Classes\NoConstructorAndInvokable::class);
@@ -384,9 +385,9 @@ class ContainerTest extends TestCase
     public function testSetAsAbstract(): void
     {
         $container = new DiContainer();
-        $container->set('name');
+        $container->set('name', '');
 
-        $this->assertEquals('name', $container->get('name'));
+        $this->assertEquals('', $container->get('name'));
     }
 
     public function testResolveWithoutConfig(): void
@@ -603,5 +604,27 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf(ContainerInterface::class, $container->get(ContainerInterface::class));
         $this->assertInstanceOf(DiContainerInterface::class, $container->get(ContainerInterface::class));
+    }
+
+    public function testResolveInterfaceWithoutAttribute(): void
+    {
+        $container = new DiContainer([], new DiContainerConfig(useAttribute: false));
+
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Definition not found for Tests\Fixtures\Classes\Interfaces\SumInterface');
+
+        $container->get(Interfaces\SumInterface::class);
+    }
+
+    public function testHasValueNull(): void
+    {
+        $container = (new DiContainerFactory())->make(['keyNull' => null]);
+        $container->set('null', null);
+
+        $this->assertTrue($container->has('keyNull'));
+        $this->assertNull($container->get('keyNull'));
+
+        $this->assertTrue($container->has('null'));
+        $this->assertNull($container->get('null'));
     }
 }
