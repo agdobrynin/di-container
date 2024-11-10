@@ -108,15 +108,12 @@ trait ParametersResolverTrait
 
                 $parameterType = self::getParameterType($parameter, $container);
 
-                $val = null === $parameterType
+                $resolvedVal = null === $parameterType
                     ? $container->get($parameter->getName())
                     : $container->get($parameterType->getName());
 
-                $vals = \is_array($val) && $parameter->isVariadic() ? $val : [$val];
-
-                foreach ($vals as $val) {
-                    $dependencies[] = $val;
-                }
+                $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
+                \array_push($dependencies, ...$vals);
 
                 continue;
             } catch (AutowiredAttributeException|CallCircularDependency $e) {
