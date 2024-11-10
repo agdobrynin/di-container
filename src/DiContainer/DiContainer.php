@@ -76,7 +76,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             || $this->hasByRef($id)
             || (
                 $this->config?->isUseZeroConfigurationDefinition()
-                && (\class_exists($id) || \interface_exists($id) || \is_callable($id))
+                && (\class_exists($id) || \interface_exists($id))
             );
     }
 
@@ -181,10 +181,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
             if (!$hasDefinition) {
-                if (\is_callable($id)) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $id, $isSingletonDefault, []);
-                }
-
                 try {
                     $reflectionClass = new \ReflectionClass($id); // @todo come up with a possible test with throw
                 } catch (\ReflectionException) {

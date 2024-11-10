@@ -7,6 +7,7 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Classes\ClassWithStaticMethods;
 
 /**
@@ -67,9 +68,20 @@ class ContainerDefinitionAsCallableTest extends TestCase
     public function testCallableDefinitionWithNullDefinition(): void
     {
         $container = (new DiContainerFactory())->make();
-        $res = $container->get(ClassWithStaticMethods::class.'::doSomething');
+        $this->expectException(ContainerExceptionInterface::class);
+
+        $container->get(ClassWithStaticMethods::class.'::doSomething');
+    }
+
+    public function testCallableDefinitionWithDefinition(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'doSomething' => ClassWithStaticMethods::class.'::doSomething',
+        ]);
+
+        $res = $container->get('doSomething');
 
         $this->assertEquals((object) ['name' => 'John Doe', 'age' => 32, 'gender' => 'male'], $res);
-        $this->assertNotSame($res, $container->get(ClassWithStaticMethods::class.'::doSomething'));
+        $this->assertNotSame($res, $container->get('doSomething'));
     }
 }
