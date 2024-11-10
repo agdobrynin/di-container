@@ -71,12 +71,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function has(string $id): bool
     {
-        if ($ref = $this->config?->getReferenceToContainer($id)) {
-            return \array_key_exists($ref, $this->definitions);
-        }
-
         return \array_key_exists($id, $this->definitions)
             || \array_key_exists($id, $this->resolved)
+            || $this->hasByRef($id)
             || (
                 $this->config?->isUseZeroConfigurationDefinition()
                 && (\class_exists($id) || \interface_exists($id) || \is_callable($id))
@@ -120,6 +117,12 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
+    }
+
+    protected function hasByRef(string $id): bool
+    {
+        return ($ref = $this->config?->getReferenceToContainer($id))
+            && \array_key_exists($ref, $this->definitions);
     }
 
     /**
