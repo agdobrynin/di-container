@@ -408,6 +408,49 @@ $container = (new DiContainerFactory())->make($definitions);
 // Получение данных из контейнера с автоматическим связыванием зависимостей
 $container->get(App\MyClass::class); // instance of App\MyClass
 ```
+#### `callable` тип как определение (definition).
+
+Определения могут быть объявлены `callable` типом (см. [Callable](https://www.php.net/manual/ru/language.types.callable.php))
+
+```php
+// определение класса
+namespace App;
+
+class ServiceLocation {
+    public function __construct(public string $city) {}
+}
+
+// ...
+
+class ClassWithStaticMethods
+{
+    public static function doSomething(ServiceLocation $serviceLocation): \stdClass
+    {
+        return (object) [
+            'name' => 'John Doe',
+            'age' => 32,
+            'gender' => 'male',
+            'city' => $serviceLocation->city,
+        ];
+    }
+}
+```
+```php
+use Kaspi\DiContainer\Interfaces\{DiContainerFactory, DiContainerInterface};
+
+$expect = (object) ['name' => 'John Doe', 'age' => 32, 'gender' => 'male', 'city' => 'Vice city'];
+
+$container = (new DiContainerFactory())->make([
+    App\ServiceLocation::class => [
+        DiContainerInterface::ARGUMENTS => ['city' => 'Vice city'],
+     ],
+    'doSomething' => App\ClassWithStaticMethods::class.'::doSomething',
+]);
+// получение данных
+$expect === $container->get('doSomething'); // true
+```
+
+> 📝 Если у метода присутствуют аргументы, то они могут быть разрешены контейнером автоматически включая использование атрибутов _#[Inject]_, _#[DiFactory]_  
 
 #### Разрешение аргументов переменной длины
 
