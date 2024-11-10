@@ -193,7 +193,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
-                        // @todo if $service->id is a reference aka #[Service('ref1')]
+                        // @todo if $service->id is a reference aka #[Service('@ref1')]
                         return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
                     }
 
