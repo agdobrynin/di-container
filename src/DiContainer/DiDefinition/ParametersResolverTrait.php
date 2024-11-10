@@ -51,17 +51,9 @@ trait ParametersResolverTrait
                 $args = \is_array($argument) && $parameter->isVariadic() ? $argument : [$argument];
 
                 foreach ($args as $arg) {
-                    if (\is_string($arg)) {
-                        try {
-                            $dependencies[] = $container->get($arg);
-                        } catch (NotFoundExceptionInterface) {
-                            $dependencies[] = $arg;
-                        }
-
-                        continue;
-                    }
-
-                    $dependencies[] = $arg;
+                    $dependencies[] = \is_string($arg) && $container->has($arg)
+                        ? $container->get($arg)
+                        : $arg;
                 }
 
                 continue;
@@ -96,17 +88,12 @@ trait ParametersResolverTrait
                             }
 
                             if (!\class_exists($injectDefinition)) {
-                                try {
-                                    $val = $container->get($injectDefinition);
-                                } catch (NotFoundExceptionInterface) {
-                                    $val = $container->get($parameter->getName());
-                                }
+                                $resolvedVal = $container->has($injectDefinition)
+                                    ? $container->get($injectDefinition)
+                                    : $container->get($parameter->getName());
 
-                                $vals = \is_array($val) && $parameter->isVariadic() ? $val : [$val];
-
-                                foreach ($vals as $val) {
-                                    $dependencies[] = $val;
-                                }
+                                $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
+                                \array_push($dependencies, ...$vals);
 
                                 continue;
                             }
