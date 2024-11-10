@@ -71,6 +71,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function has(string $id): bool
     {
+        if ($ref = $this->config?->getReferenceToContainer($id)) {
+            return \array_key_exists($ref, $this->definitions);
+        }
+
         return \array_key_exists($id, $this->definitions)
             || \array_key_exists($id, $this->resolved)
             || (
