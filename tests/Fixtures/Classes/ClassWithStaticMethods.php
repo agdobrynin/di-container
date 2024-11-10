@@ -11,12 +11,14 @@ class ClassWithStaticMethods
         return $dict[$lang];
     }
 
-    public static function doSomething(): \stdClass
+    public static function doSomething(?ServiceLocation $serviceLocation = null): \stdClass
     {
-        return (object) [
-            'name' => 'John Doe',
-            'age' => 32,
-            'gender' => 'male',
-        ];
+        return (object) \array_filter(
+            [
+                'name' => 'John Doe',
+                'age' => 32,
+                'gender' => 'male',
+            ] + ($serviceLocation ? ['city' => $serviceLocation->city] : [null]),
+        );
     }
 }
