@@ -34,17 +34,28 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     use ParameterTypeResolverTrait;
     use CallableParserTrait;
 
+    /**
+     * @var array<class-string|non-empty-string, mixed>
+     */
     protected array $definitions = [];
 
     /**
-     * @var iterable<string, DiDefinitionAutowireInterface|DiDefinitionInterface>
+     * @var array<class-string|non-empty-string, DiDefinitionAutowireInterface|DiDefinitionInterface>
      */
     protected array $diResolvedDefinition = [];
+
+    /**
+     * @var array<class-string|non-empty-string, mixed>
+     */
     protected array $resolved = [];
+
+    /**
+     * @var array<class-string|non-empty-string, bool>
+     */
     protected array $resolvingDependencies = [];
 
     /**
-     * @param iterable<class-string|string, mixed|T> $definitions
+     * @param iterable<class-string|non-empty-string, mixed|T> $definitions
      */
     public function __construct(
         iterable $definitions = [],
@@ -57,7 +68,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     }
 
     /**
-     * @param class-string<T>|string $id
+     * @param class-string<T>|non-empty-string $id
      *
      * @return T
      *
@@ -160,7 +171,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     : $object;
             }
 
-            return $this->resolved[$diDefinition->getContainerId()] = $diDefinition->getDefinition();
+            return $this->resolved[$id] = $diDefinition->getDefinition();
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
