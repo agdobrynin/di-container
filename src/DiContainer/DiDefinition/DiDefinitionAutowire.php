@@ -18,7 +18,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
     /**
      * @throws AutowiredExceptionInterface
      */
-    public function __construct(private string $id, private string $definition, private bool $isSingleton, array $arguments = [])
+    public function __construct(private string $definition, private bool $isSingleton, array $arguments = [])
     {
         try {
             $this->reflectionClass = new \ReflectionClass($this->definition);
@@ -30,11 +30,6 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
         } catch (\ReflectionException $e) {
             throw new AutowiredException(message: $e->getMessage(), previous: $e);
         }
-    }
-
-    public function getContainerId(): string
-    {
-        return $this->id;
     }
 
     public function isSingleton(): bool

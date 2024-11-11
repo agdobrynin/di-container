@@ -16,16 +16,11 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      */
     private $definition;
 
-    public function __construct(private string $id, callable $definition, private bool $isSingleton, array $arguments = [])
+    public function __construct(callable $definition, private bool $isSingleton, array $arguments = [])
     {
         $this->definition = $definition;
         $this->reflectionParameters = $this->reflectParameters();
         $this->arguments = $arguments;
-    }
-
-    public function getContainerId(): string
-    {
-        return $this->id;
     }
 
     public function isSingleton(): bool

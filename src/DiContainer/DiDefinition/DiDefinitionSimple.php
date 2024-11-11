@@ -8,12 +8,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
 final class DiDefinitionSimple implements DiDefinitionInterface
 {
-    public function __construct(private string $id, private mixed $definition) {}
-
-    public function getContainerId(): string
-    {
-        return $this->id;
-    }
+    public function __construct(private mixed $definition) {}
 
     public function getDefinition(): mixed
     {
