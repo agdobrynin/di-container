@@ -50,10 +50,11 @@ interface DiContainerInterface extends ContainerInterface
     public function get(string $id): mixed;
 
     /**
-     * @param class-string|string $id
-     * @param mixed|object        $definition
+     * @param class-string|non-empty-string $id
+     * @param mixed|object                  $definition
      *
      * @throws ContainerAlreadyRegisteredException
+     * @throws ContainerExceptionInterface
      */
     public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static;
 }
