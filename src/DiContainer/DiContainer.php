@@ -26,9 +26,6 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-/**
- * @template T of object
- */
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use ParameterTypeResolverTrait;
@@ -55,19 +52,30 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected array $resolvingDependencies = [];
 
     /**
-     * @param iterable<class-string|non-empty-string, mixed|T> $definitions
+     * @param iterable<class-string|non-empty-string, class-string|mixed> $definitions
+     *
+     * @throws ContainerExceptionInterface
      */
     public function __construct(
         iterable $definitions = [],
         protected ?DiContainerConfigInterface $config = null
     ) {
         foreach ($definitions as $id => $definition) {
-            $key = \is_string($id) ? $id : (string) $definition;
+            $key = match (true) {
+                \is_string($id) => $id,
+                \is_string($definition) => $definition,
+                default => throw new ContainerException(
+                    \sprintf('Definition key must be a non-empty string. Definition [%s].', \get_debug_type($definition))
+                )
+            };
+
             $this->set(id: $key, definition: $definition);
         }
     }
 
     /**
+     * @template T of object
+     *
      * @param class-string<T>|non-empty-string $id
      *
      * @return T
@@ -93,6 +101,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
     {
+        if (($id = \trim($id)) === '') {
+            throw new ContainerException('The container ID must be a non-empty string.');
+        }
+
         if (\array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
         }
@@ -214,6 +226,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             $rawDefinition = $this->definitions[$id];
+
+            if ($rawDefinition instanceof DiDefinitionInterface) {
+                return $this->diResolvedDefinition[$id] = $rawDefinition;
+            }
 
             if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
                 $this->checkCyclicalDependencyCall($ref);
