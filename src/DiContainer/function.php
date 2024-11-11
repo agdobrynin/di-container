@@ -8,7 +8,7 @@ use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiContainerConfigExceptionInterface;
 
-if (!\function_exists('Kaspi\DiContainer\diDefinition')) {
+if (!\function_exists('Kaspi\DiContainer\diDefinition')) { // @codeCoverageIgnore
     /**
      * @phan-suppress PhanUnreferencedFunction
      *
@@ -24,4 +24,4 @@ if (!\function_exists('Kaspi\DiContainer\diDefinition')) {
 
         return $containerKey ? [$containerKey => $prepareDefinition] : $prepareDefinition;
     }
-}
+} // @codeCoverageIgnore
