@@ -6,16 +6,14 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
-use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\ParameterTypeResolverTrait;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 trait ParametersResolverTrait
@@ -26,6 +24,7 @@ trait ParametersResolverTrait
      * @var \ReflectionParameter[]
      */
     protected array $reflectionParameters = [];
+    protected array $resolvedArguments = [];
 
     /**
      * User defined parameters by parameter name.
@@ -41,7 +40,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveParameters(DiContainerInterface $container, ?bool $useAttribute): array
+    protected function resolveParameters(ContainerInterface $container, ?bool $useAttribute): array
     {
         $dependencies = [];
 
@@ -64,42 +63,43 @@ trait ParametersResolverTrait
             try {
                 if ($useAttribute) {
                     if ($factories = DiFactory::makeFromReflection($parameter)) {
-                        foreach ($factories as $key => $factory) {
-                            $dependencyKey = $this->registerDefinition($parameter, $container, $factory->id, $factory->arguments, $factory->isSingleton, $key);
-                            $dependencies[] = $container->get($dependencyKey);
+                        foreach ($factories as $factory) {
+                            $dependencies[] = $this->resolvedArguments[$factory->id]
+                                ?? $object = (new DiDefinitionAutowire($factory->id, $factory->isSingleton, $factory->arguments))
+                                    ->invoke($container, true)($container)
+                            ;
+
+                            if (!isset($this->resolvedArguments[$factory->id]) && $factory->isSingleton && isset($object)) {
+                                $this->resolvedArguments[$factory->id] = $object;
+                            }
                         }
 
                         continue;
                     }
 
                     if ($injects = Inject::makeFromReflection($parameter, $container)) {
-                        foreach ($injects as $key => $inject) {
+                        foreach ($injects as $inject) {
                             $injectDefinition = (string) $inject->id;
 
-                            if (\interface_exists($injectDefinition)) {
-                                $service = Service::makeFromReflection(new \ReflectionClass($injectDefinition))
-                                    ?: throw new AutowiredException(
-                                        "The interface [{$injectDefinition}] is not defined via the php-attribute like #[Service]."
-                                    );
-                                $dependencyKey = $this->registerDefinition($parameter, $container, $service->id, $service->arguments, $service->isSingleton);
-                                $dependencies[] = $container->get($dependencyKey);
+                            if (\class_exists($injectDefinition)) {
+                                $dependencies[] = $this->resolvedArguments[$injectDefinition]
+                                    ?? $object = (new DiDefinitionAutowire($injectDefinition, $inject->isSingleton, $inject->arguments))
+                                        ->invoke($container, true)
+                                ;
+
+                                if (!isset($this->resolvedArguments[$injectDefinition]) && $inject->isSingleton && isset($object)) {
+                                    $this->resolvedArguments[$injectDefinition] = $object;
+                                }
 
                                 continue;
                             }
 
-                            if (!\class_exists($injectDefinition)) {
-                                $resolvedVal = $container->has($injectDefinition)
-                                    ? $container->get($injectDefinition)
-                                    : $container->get($parameter->getName());
+                            $resolvedVal = $container->has($injectDefinition)
+                                ? $container->get($injectDefinition)
+                                : $container->get($parameter->getName());
 
-                                $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
-                                \array_push($dependencies, ...$vals);
-
-                                continue;
-                            }
-
-                            $dependencyKey = $this->registerDefinition($parameter, $container, $inject->id, $inject->arguments, $inject->isSingleton, $key);
-                            $dependencies[] = $container->get($dependencyKey);
+                            $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
+                            \array_push($dependencies, ...$vals);
                         }
 
                         continue;
@@ -142,20 +142,5 @@ trait ParametersResolverTrait
         }
 
         return $dependencies;
-    }
-
-    protected function registerDefinition(\ReflectionParameter $parameter, DiContainerInterface $container, mixed $definition, array $arguments, bool $isSingleton, int $variadicPosition = 0): string
-    {
-        $fnName = $parameter->getDeclaringFunction();
-        $target = $parameter->getDeclaringClass()?->getName() ?: $fnName->getName().$fnName->getStartLine();
-        $variadicKey = $parameter->isVariadic() ? \sprintf('#variadic%d', $variadicPosition) : '';
-        $dependencyKey = $target.'::'.$fnName->getName().'::'.$parameter->getType().':'.$parameter->getPosition().$variadicKey;
-
-        try {
-            $container->set(id: $dependencyKey, definition: $definition, arguments: $arguments, isSingleton: $isSingleton);
-        } catch (ContainerAlreadyRegisteredException) {
-        }
-
-        return $dependencyKey;
     }
 }

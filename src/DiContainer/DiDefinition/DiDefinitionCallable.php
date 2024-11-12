@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Psr\Container\ContainerInterface;
 
 final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 {
@@ -28,7 +28,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         return $this->isSingleton;
     }
 
-    public function invoke(DiContainerInterface $container, ?bool $useAttribute): mixed
+    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
     {
         if ([] === $this->reflectionParameters) {
             return \call_user_func($this->definition);

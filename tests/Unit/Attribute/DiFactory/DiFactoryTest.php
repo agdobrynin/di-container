@@ -9,7 +9,9 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Attribute\DiFactory\Fixtures\ClassA;
 use Tests\Unit\Attribute\DiFactory\Fixtures\ClassAWithPropertyByFactoryFail;
+use Tests\Unit\Attribute\DiFactory\Fixtures\ClassAWithPropertyByFactoryIsSingletonTrue;
 use Tests\Unit\Attribute\DiFactory\Fixtures\ClassAWithPropertyByFactorySuccess;
+use Tests\Unit\Attribute\DiFactory\Fixtures\ClassDependency;
 use Tests\Unit\Attribute\DiFactory\Fixtures\ClassManyAttributeOnClass;
 use Tests\Unit\Attribute\DiFactory\Fixtures\PropertyVariadicSuccessTest;
 use Tests\Unit\Attribute\DiFactory\Fixtures\RuleA;
@@ -52,6 +54,28 @@ class DiFactoryTest extends TestCase
         $class = $container->get(ClassAWithPropertyByFactorySuccess::class);
 
         $this->assertEquals('make from Tests\Unit\Attribute\DiFactory\Fixtures\ClassDependencyOnPropertyDiFactory', $class->dependency->name);
+    }
+
+    public function testPropertyByDiFactoryIsSingletonFalseByDefault(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->assertInstanceOf(ClassDependency::class, $container->get(ClassAWithPropertyByFactorySuccess::class)->dependency);
+
+        $this->assertNotSame(
+            $container->get(ClassAWithPropertyByFactorySuccess::class)->dependency,
+            $container->get(ClassAWithPropertyByFactorySuccess::class)->dependency
+        );
+    }
+
+    public function testPropertyByDiFactoryIsSingletonTrue(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->assertSame(
+            $container->get(ClassAWithPropertyByFactoryIsSingletonTrue::class)->dependency,
+            $container->get(ClassAWithPropertyByFactoryIsSingletonTrue::class)->dependency
+        );
     }
 
     public function testMakeFromReflectionForPropertyNonVariadicFail(): void
