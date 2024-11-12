@@ -39,6 +39,10 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 
     public function invoke(DiContainerInterface $container, ?bool $useAttribute): mixed
     {
+        if ([] === $this->reflectionParameters) {
+            return $this->reflectionClass->newInstance();
+        }
+
         $args = $this->resolveParameters($container, $useAttribute);
 
         return $this->reflectionClass->newInstanceArgs($args);
