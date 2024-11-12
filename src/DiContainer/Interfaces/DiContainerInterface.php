@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -50,10 +51,11 @@ interface DiContainerInterface extends ContainerInterface
     public function get(string $id): mixed;
 
     /**
-     * @param class-string|string $id
-     * @param mixed|object        $definition
+     * @param class-string|non-empty-string $id
+     * @param mixed|object                  $definition
      *
      * @throws ContainerAlreadyRegisteredException
+     * @throws DiDefinitionExceptionInterface
      */
     public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static;
 }

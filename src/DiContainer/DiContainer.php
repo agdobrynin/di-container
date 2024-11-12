@@ -13,6 +13,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
@@ -26,38 +27,57 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-/**
- * @template T of object
- */
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use ParameterTypeResolverTrait;
     use CallableParserTrait;
 
+    /**
+     * @var array<class-string|non-empty-string, mixed>
+     */
     protected array $definitions = [];
 
     /**
-     * @var iterable<string, DiDefinitionAutowireInterface|DiDefinitionInterface>
+     * @var array<class-string|non-empty-string, DiDefinitionAutowireInterface|DiDefinitionInterface>
      */
     protected array $diResolvedDefinition = [];
+
+    /**
+     * @var array<class-string|non-empty-string, mixed>
+     */
     protected array $resolved = [];
+
+    /**
+     * @var array<class-string|non-empty-string, bool>
+     */
     protected array $resolvingDependencies = [];
 
     /**
-     * @param iterable<class-string|string, mixed|T> $definitions
+     * @param iterable<class-string|non-empty-string, class-string|mixed> $definitions
+     *
+     * @throws ContainerExceptionInterface
      */
     public function __construct(
         iterable $definitions = [],
         protected ?DiContainerConfigInterface $config = null
     ) {
         foreach ($definitions as $id => $definition) {
-            $key = \is_string($id) ? $id : (string) $definition;
+            $key = match (true) {
+                \is_string($id) => $id,
+                \is_string($definition) => $definition,
+                default => throw new DiDefinitionException(
+                    \sprintf('Definition key must be a non-empty string. Definition [%s].', \get_debug_type($definition))
+                )
+            };
+
             $this->set(id: $key, definition: $definition);
         }
     }
 
     /**
-     * @param class-string<T>|string $id
+     * @template T of object
+     *
+     * @param class-string<T>|non-empty-string $id
      *
      * @return T
      *
@@ -82,6 +102,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
     {
+        if (($id = \trim($id)) === '') {
+            throw new DiDefinitionException('The container ID must be a non-empty string.');
+        }
+
         if (\array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
         }
@@ -111,7 +135,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         try {
             $callable = $this::parseCallable($definition, $this);
 
-            return (new DiDefinitionCallable('#EMPTY#', $callable, false, $arguments))
+            return (new DiDefinitionCallable($callable, false, $arguments))
                 ->invoke($this, $this->config?->isUseAttribute())
             ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
@@ -156,11 +180,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     : $o;
 
                 return $diDefinition->isSingleton()
-                    ? $this->resolved[$diDefinition->getContainerId()] = $object
+                    ? $this->resolved[$id] = $object
                     : $object;
             }
 
-            return $this->resolved[$diDefinition->getContainerId()] = $diDefinition->getDefinition();
+            return $this->resolved[$id] = $diDefinition->getDefinition();
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
@@ -190,7 +214,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
                         // @todo if $service->id is a reference aka #[Service('@ref1')]
-                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $service->id, $service->isSingleton, $service->arguments);
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($service->id, $service->isSingleton, $service->arguments);
                     }
 
                     throw new NotFoundException('Definition not found for '.$id);
@@ -198,11 +222,15 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
                 return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
                 && ($factories = DiFactory::makeFromReflection($reflectionClass))
-                    ? new DiDefinitionAutowire($id, $factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
-                    : new DiDefinitionAutowire($id, $id, $isSingletonDefault, []);
+                    ? new DiDefinitionAutowire($factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
+                    : new DiDefinitionAutowire($id, $isSingletonDefault, []);
             }
 
             $rawDefinition = $this->definitions[$id];
+
+            if ($rawDefinition instanceof DiDefinitionInterface) {
+                return $this->diResolvedDefinition[$id] = $rawDefinition;
+            }
 
             if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
                 $this->checkCyclicalDependencyCall($ref);
@@ -212,7 +240,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
             }
 
             if (\is_array($rawDefinition)) {
@@ -232,14 +260,14 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     $arguments += (array) $this->definitions[$definition][DiContainerInterface::ARGUMENTS];
                 }
 
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($id, $definition, $isSingleton, $arguments);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($definition, $isSingleton, $arguments);
             }
 
             if (\is_callable($definition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($id, $definition, $isSingleton, $arguments);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($definition, $isSingleton, $arguments);
             }
 
-            return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($id, $rawDefinition);
+            return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
         }
 
         return $this->diResolvedDefinition[$id];

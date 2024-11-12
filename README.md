@@ -49,6 +49,7 @@ $post = new App\Controllers\Post(
     new App\Models\Post()
 );
 ```
+> контейнер "пытается" самостоятельно определить запрашиваемую зависимость - является ли это классом или callable типом.
 
 Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples) 🦄
 
@@ -504,7 +505,37 @@ assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
-#### Функция-хэлпер для удобства конфигурирования контейнера:
+#### Определения реализующие интерфейс DiDefinitionInterface 
+
+В некоторых случая необходимо конфигурирование контейнера используя определения реализующие
+интерфейс `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface` так как алгоритм
+разрешения зависимостей пытается автоматически определить является ли классом определения или callable типом.
+
+Пример когда значение `log` будет воспринято как `callable` тип (внутренняя функция php `\log(float $num)`:
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+$container = (new DiContainerFactory())->make([
+    'log' => ['a' => 'aaa'],
+]);
+$container->get('log'); // 💥 ошибка при получении
+// Kaspi\DiContainer\Exception\NotFoundException:
+//      Unresolvable dependency. Parameter #0 [ <required> float $num ] in log.
+```
+
+в таком случае делаем объявление с помощью класса `Kaspi\DiContainer\DiDefinition\DiDefinitionSimple`
+
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
+
+$container = (new DiContainerFactory())->make([
+    'log' => new DiDefinitionSimple(['a' => 'aaa']),
+]);
+
+var_dump( ['a' => 'aaa'] === $container->get('log') ); // true
+```
+
+##### Функция-хэлпер для удобства конфигурирования контейнера:
 
 ```php
 Kaspi\DiContainer\diDefinition(?string $containerKey = null, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): array
