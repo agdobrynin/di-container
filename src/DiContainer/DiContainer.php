@@ -13,6 +13,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
@@ -64,7 +65,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $key = match (true) {
                 \is_string($id) => $id,
                 \is_string($definition) => $definition,
-                default => throw new ContainerException(
+                default => throw new DiDefinitionException(
                     \sprintf('Definition key must be a non-empty string. Definition [%s].', \get_debug_type($definition))
                 )
             };
@@ -102,7 +103,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
     {
         if (($id = \trim($id)) === '') {
-            throw new ContainerException('The container ID must be a non-empty string.');
+            throw new DiDefinitionException('The container ID must be a non-empty string.');
         }
 
         if (\array_key_exists($id, $this->definitions)) {
