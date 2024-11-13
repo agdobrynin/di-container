@@ -7,4 +7,7 @@ namespace Tests\Unit\Attribute\Service\Fixtures;
 use Kaspi\DiContainer\Attributes\Service;
 
 #[Service('@services.serviceOne')]
-interface ByReferenceInterface {}
+interface ByReferenceInterface
+{
+    public function getName(): string;
+}

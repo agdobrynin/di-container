@@ -6,7 +6,7 @@ namespace Tests\Unit\Attribute\Service\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Inject;
 
-class ClassInjectArgumentByInterface
+class ClassInjectArgumentInterfaceByReference
 {
     public function __construct(
         #[Inject]
