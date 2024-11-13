@@ -229,10 +229,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             $rawDefinition = $this->definitions[$id];
 
-            if ($rawDefinition instanceof DiDefinitionInterface) {
-                return $this->diResolvedDefinition[$id] = $rawDefinition;
-            }
-
             if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
                 $this->checkCyclicalDependencyCall($ref);
                 $this->resolvingDependencies[$ref] = true;
@@ -241,7 +237,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
+                return $this->diResolvedDefinition[$id] = $rawDefinition instanceof DiDefinitionSimple
+                    ? $rawDefinition
+                    : new DiDefinitionSimple($rawDefinition);
+            }
+
+            if ($rawDefinition instanceof DiDefinitionInterface) {
+                return $this->diResolvedDefinition[$id] = $rawDefinition;
             }
 
             if (\is_array($rawDefinition)) {
