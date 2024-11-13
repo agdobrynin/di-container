@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Definition;
 
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -107,5 +110,23 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $container->set('x', new DiDefinitionSimple('log'));
 
         $this->assertEquals('log', $container->get('x'));
+    }
+
+    public function testResolveDefinitionsWithoutAutowire(): void
+    {
+        $def = [
+            'aaa' => 'aaa string',
+            'null' => null,
+            'log' => [DiContainerInterface::ARGUMENTS => ['x' => 'aaa']],
+            'array_walk' => new DiDefinitionSimple(new \stdClass()),
+        ];
+
+        $container = new DiContainer($def, new DiContainerConfig(useAutowire: false, useAttribute: false));
+
+        $this->assertEquals('aaa string', $container->get('aaa'));
+        $this->assertNull($container->get('null'));
+        $this->assertEquals(['arguments' => ['x' => 'aaa']], $container->get('log'));
+        $this->assertInstanceOf(DiDefinitionSimple::class, $container->get('array_walk'));
+        $this->assertInstanceOf(\stdClass::class, $container->get('array_walk')->getDefinition());
     }
 }

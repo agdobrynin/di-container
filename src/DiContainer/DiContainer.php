@@ -238,9 +238,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
-                return $this->diResolvedDefinition[$id] = $rawDefinition instanceof DiDefinitionSimple
-                    ? $rawDefinition
-                    : new DiDefinitionSimple($rawDefinition);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
             }
 
             if ($rawDefinition instanceof DiDefinitionInterface) {
