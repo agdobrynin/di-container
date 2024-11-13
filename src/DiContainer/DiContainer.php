@@ -23,6 +23,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -55,7 +56,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     /**
      * @param iterable<class-string|non-empty-string, class-string|mixed> $definitions
      *
-     * @throws ContainerExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     public function __construct(
         iterable $definitions = [],
