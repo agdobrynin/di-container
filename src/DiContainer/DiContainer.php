@@ -206,15 +206,16 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
             if (!$hasDefinition) {
-                try {
-                    $reflectionClass = new \ReflectionClass($id); // @todo come up with a possible test with throw
-                } catch (\ReflectionException) {
-                    throw new NotFoundException('Definition not found for '.$id);
-                }
+                $reflectionClass = new \ReflectionClass($id); // @todo come up possible test with throw
 
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
-                        // @todo if $service->id is a reference aka #[Service('@ref1')]
+                        // reference aka #[Service('@ref1')] interface MyInterface {}
+                        if (($ref = $this->config?->getReferenceToContainer($service->id))
+                            && $definition = $this->resolveDefinition($ref)) {
+                            return $this->diResolvedDefinition[$service->id] = $definition;
+                        }
+
                         return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($service->id, $service->isSingleton, $service->arguments);
                     }
 
@@ -222,9 +223,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 }
 
                 return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
-                && ($factories = DiFactory::makeFromReflection($reflectionClass))
-                    ? new DiDefinitionAutowire($factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
-                    : new DiDefinitionAutowire($id, $isSingletonDefault, []);
+                    && ($factories = DiFactory::makeFromReflection($reflectionClass))
+                        ? new DiDefinitionAutowire($factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
+                        : new DiDefinitionAutowire($id, $isSingletonDefault, []);
             }
 
             $rawDefinition = $this->definitions[$id];
@@ -237,9 +238,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
-                return $this->diResolvedDefinition[$id] = $rawDefinition instanceof DiDefinitionSimple
-                    ? $rawDefinition
-                    : new DiDefinitionSimple($rawDefinition);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
             }
 
             if ($rawDefinition instanceof DiDefinitionInterface) {
