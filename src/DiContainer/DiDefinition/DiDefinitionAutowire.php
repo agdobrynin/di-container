@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Psr\Container\ContainerInterface;
 
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 {
@@ -37,7 +37,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
         return $this->isSingleton;
     }
 
-    public function invoke(DiContainerInterface $container, ?bool $useAttribute): mixed
+    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
     {
         if ([] === $this->reflectionParameters) {
             return $this->reflectionClass->newInstance();

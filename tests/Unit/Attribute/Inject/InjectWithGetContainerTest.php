@@ -10,6 +10,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Attribute\Inject\Fixtures\ClassWithInjectByAttributeTowServicesOneTypeSingletonFalse;
 use Tests\Unit\Attribute\Inject\Fixtures\FreeInterfaceByInjectClass;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectArgumentByArgumentName;
+use Tests\Unit\Attribute\Inject\Fixtures\InjectDependencyWithPrivateConstructor;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectMultiNonVariadicConstructorParameter;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectVariadicArgumentByArgumentName;
 use Tests\Unit\Attribute\Inject\Fixtures\PropertyNonVariadicReferenceInjectId;
@@ -158,5 +159,15 @@ class InjectWithGetContainerTest extends TestCase
         $this->assertInstanceOf(\ArrayIterator::class, $class->iterator2);
 
         $this->assertNotSame($class->iterator1, $class->iterator2);
+    }
+
+    public function testResolveConstructorArgumentWithSubClassWithPrivateConstructor(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/(DependencyWithPrivateConstructor).+(class is not instantiable)/');
+
+        $container->get(InjectDependencyWithPrivateConstructor::class);
     }
 }

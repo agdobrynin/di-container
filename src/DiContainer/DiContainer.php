@@ -23,6 +23,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -55,7 +56,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     /**
      * @param iterable<class-string|non-empty-string, class-string|mixed> $definitions
      *
-     * @throws ContainerExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     public function __construct(
         iterable $definitions = [],
@@ -228,10 +229,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             $rawDefinition = $this->definitions[$id];
 
-            if ($rawDefinition instanceof DiDefinitionInterface) {
-                return $this->diResolvedDefinition[$id] = $rawDefinition;
-            }
-
             if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
                 $this->checkCyclicalDependencyCall($ref);
                 $this->resolvingDependencies[$ref] = true;
@@ -240,7 +237,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
+                return $this->diResolvedDefinition[$id] = $rawDefinition instanceof DiDefinitionSimple
+                    ? $rawDefinition
+                    : new DiDefinitionSimple($rawDefinition);
+            }
+
+            if ($rawDefinition instanceof DiDefinitionInterface) {
+                return $this->diResolvedDefinition[$id] = $rawDefinition;
             }
 
             if (\is_array($rawDefinition)) {
