@@ -108,6 +108,17 @@ class ContainerSharedDefinitionTest extends TestCase
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
 
+    public function testContainerSharedDefinitionIsArrayBySetMethodTrue(): void
+    {
+        $c = new DiContainer(
+            config: new DiContainerConfig()
+        );
+
+        $c->set(id: FileCache::class, definition: [FileCache::class], isSingleton: true);
+
+        $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
+    }
+
     public function testContainerSharedDefinitionClosureTrue(): void
     {
         $definition = [
@@ -242,5 +253,16 @@ class ContainerSharedDefinitionTest extends TestCase
 
         $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));
         $this->assertSame($c->get(SumInterface::class), $c->get(SumInterface::class));
+    }
+
+    public function testContainerSetMethodSharedDefinitionInterfaceTrue(): void
+    {
+        $c = (new DiContainer(config: new DiContainerConfig()))
+            ->set(SumInterface::class, Sum::class, ['init' => 10], true)
+        ;
+
+        $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));
+        $this->assertSame($c->get(SumInterface::class), $c->get(SumInterface::class));
+        $this->assertEquals(20, $c->get(SumInterface::class)->add(10));
     }
 }
