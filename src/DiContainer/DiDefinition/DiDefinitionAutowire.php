@@ -41,7 +41,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
     public function invoke(?bool $useAttribute): mixed
     {
         if ([] === $this->reflectionParameters) {
-            return $this->reflectionClass->newInstance();
+            return $this->reflectionClass->newInstanceWithoutConstructor();
         }
 
         $args = $this->resolveParameters($useAttribute);
