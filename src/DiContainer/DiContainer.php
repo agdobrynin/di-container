@@ -30,6 +30,7 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
+    use ParameterTypeResolverTrait;
     use CallableParserTrait;
 
     /**
