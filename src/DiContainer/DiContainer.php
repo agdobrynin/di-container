@@ -136,8 +136,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         try {
             $callable = $this::parseCallable($definition, $this);
 
-            return (new DiDefinitionCallable($callable, false, $arguments))
-                ->invoke($this, $this->config?->isUseAttribute())
+            return (new DiDefinitionCallable($this, $callable, false, $arguments))
+                ->invoke($this->config?->isUseAttribute())
             ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
@@ -176,7 +176,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $object = ($o = $diDefinition->invoke($this, $this->config?->isUseAttribute())) instanceof DiFactoryInterface
+                $object = ($o = $diDefinition->invoke($this->config?->isUseAttribute())) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
 
@@ -211,21 +211,33 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
                         // reference aka #[Service('@ref1')] interface MyInterface {}
-                        if (($ref = $this->config?->getReferenceToContainer($service->id))
+                        if (($ref = $this->config?->getReferenceToContainer($service->getId()))
                             && $definition = $this->resolveDefinition($ref)) {
-                            return $this->diResolvedDefinition[$service->id] = $definition;
+                            return $this->diResolvedDefinition[$service->getId()] = $definition;
                         }
 
-                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($service->id, $service->isSingleton, $service->arguments);
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
+                            $this,
+                            $service->getId(),
+                            $service->isSingleton(),
+                            $service->getArguments()
+                        );
                     }
 
                     throw new NotFoundException('Definition not found for '.$id);
                 }
 
-                return $this->diResolvedDefinition[$id] = $this->config?->isUseAttribute()
-                    && ($factories = DiFactory::makeFromReflection($reflectionClass))
-                        ? new DiDefinitionAutowire($factories[0]->id, $factories[0]->isSingleton, $factories[0]->arguments)
-                        : new DiDefinitionAutowire($id, $isSingletonDefault, []);
+                if ($this->config?->isUseAttribute()
+                    && $factory = DiFactory::makeFromReflection($reflectionClass)->current()) {
+                    return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
+                        $this,
+                        $factory->getId(),
+                        $factory->isSingleton(),
+                        $factory->getArguments()
+                    );
+                }
+
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($this, $id, $isSingletonDefault, []);
             }
 
             $rawDefinition = $this->definitions[$id];
@@ -262,11 +274,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     $arguments += (array) $this->definitions[$definition][DiContainerInterface::ARGUMENTS];
                 }
 
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($definition, $isSingleton, $arguments);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($this, $definition, $isSingleton, $arguments);
             }
 
             if (\is_callable($definition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($definition, $isSingleton, $arguments);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $definition, $isSingleton, $arguments);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);

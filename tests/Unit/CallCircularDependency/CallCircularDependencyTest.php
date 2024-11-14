@@ -44,6 +44,7 @@ class CallCircularDependencyTest extends TestCase
     public function testCircularDependencyCallCircularDependencyInClass(): void
     {
         $this->expectException(CallCircularDependency::class);
+        $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+FirstClass.+SecondClass.+FirstClass/');
 
         (new DiContainerFactory())->make()->get(FirstClass::class);
     }

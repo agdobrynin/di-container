@@ -26,8 +26,8 @@ class DiDefinitionCallableTest extends TestCase
     {
         $container = (new DiContainerFactory())->make(['service' => SimpleService::class]);
 
-        $callable = new DiDefinitionCallable(CallableStaticMethodWithArgument::class.'::makeSomething', false);
-        $res = $callable->invoke($container, false);
+        $callable = new DiDefinitionCallable($container, CallableStaticMethodWithArgument::class.'::makeSomething', false);
+        $res = $callable->invoke(false);
 
         $this->assertEquals('Tests\Unit\Definition\Fixtures\SimpleService:Tests\Unit\Definition\Fixtures\WithoutConstructor:ok', $res);
     }

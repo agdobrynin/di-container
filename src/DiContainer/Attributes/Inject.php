@@ -5,25 +5,39 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Attributes;
 
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
+use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 use Kaspi\DiContainer\ParameterTypeResolverTrait;
 use Psr\Container\ContainerInterface;
 
 #[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
-final class Inject
+final class Inject implements DiAttributeInterface
 {
     use ParameterTypeResolverTrait;
 
     /**
-     * @phan-suppress-next-next-line PhanTypeMismatchDeclaredParamNullable
-     *
      * @param class-string|string $id class name or container reference
      */
-    public function __construct(public ?string $id = null, public array $arguments = [], public bool $isSingleton = false) {}
+    public function __construct(private string $id = '', private array $arguments = [], private bool $isSingleton = false) {}
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
+
+    public function isSingleton(): bool
+    {
+        return $this->isSingleton;
+    }
 
     /**
-     * @return array<int, Inject>
+     * @return \Generator<Inject>
      */
-    public static function makeFromReflection(\ReflectionParameter $parameter, ContainerInterface $container): array
+    public static function makeFromReflection(\ReflectionParameter $parameter, ContainerInterface $container): \Generator
     {
         $attributes = $parameter->getAttributes(self::class);
 
@@ -31,14 +45,14 @@ final class Inject
             throw new AutowiredAttributeException('The attribute #[Inject] can only be applied once per non-variadic parameter.');
         }
 
-        return \array_map(static function (\ReflectionAttribute $attribute) use ($parameter, $container) {
+        foreach ($attributes as $attribute) {
             $inject = $attribute->newInstance();
 
-            if (null === $inject->id) {
-                $inject->id = self::getParameterType($parameter, $container)?->getName();
+            if ('' === $inject->id && $type = self::getParameterType($parameter, $container)?->getName()) {
+                $inject->id = $type;
             }
 
-            return $inject;
-        }, $attributes);
+            yield $inject;
+        }
     }
 }

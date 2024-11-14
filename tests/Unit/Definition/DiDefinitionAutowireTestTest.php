@@ -25,7 +25,7 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('Class "aaa" does not exist');
 
-        new DiDefinitionAutowire('aaa', true);
+        new DiDefinitionAutowire(new DiContainer(), 'aaa', true);
     }
 
     public function testDefinitionWithPrivateConstructor(): void
@@ -33,15 +33,15 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('class is not instantiable');
 
-        new DiDefinitionAutowire(PrivateConstructor::class, true);
+        new DiDefinitionAutowire(new DiContainer(), PrivateConstructor::class, true);
     }
 
     public function testDefinitionWithoutConstructor(): void
     {
         $container = new DiContainer();
 
-        $definition = new DiDefinitionAutowire(WithoutConstructor::class, true);
-        $class = $definition->invoke($container, false);
+        $definition = new DiDefinitionAutowire($container, WithoutConstructor::class, true);
+        $class = $definition->invoke(false);
 
         $this->assertInstanceOf(WithoutConstructor::class, $class);
         $this->assertEquals('Tests\Unit\Definition\Fixtures\WithoutConstructor', $definition->getDefinition());
@@ -52,6 +52,6 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('class is not instantiable');
 
-        new DiDefinitionAutowire(FreeInterface::class, true);
+        new DiDefinitionAutowire(new DiContainer(), FreeInterface::class, true);
     }
 }

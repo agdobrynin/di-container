@@ -16,8 +16,9 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      */
     private $definition;
 
-    public function __construct(callable $definition, private bool $isSingleton, array $arguments = [])
+    public function __construct(ContainerInterface $container, callable $definition, private bool $isSingleton, array $arguments = [])
     {
+        $this->container = $container;
         $this->definition = $definition;
         $this->reflectionParameters = $this->reflectParameters();
         $this->arguments = $arguments;
@@ -28,16 +29,15 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         return $this->isSingleton;
     }
 
-    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
+    public function invoke(?bool $useAttribute): mixed
     {
         if ([] === $this->reflectionParameters) {
             return \call_user_func($this->definition);
         }
 
-        $resolvedArgs = $this->resolveParameters($container, $useAttribute);
-        $args = \array_values($resolvedArgs);
+        $resolvedArgs = $this->resolveParameters($useAttribute);
 
-        return \call_user_func_array($this->definition, $args);
+        return \call_user_func_array($this->definition, $resolvedArgs);
     }
 
     public function getDefinition(): callable
