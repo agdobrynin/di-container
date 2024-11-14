@@ -25,6 +25,10 @@ trait ParametersResolverTrait
      * @var \ReflectionParameter[]
      */
     protected array $reflectionParameters = [];
+
+    /**
+     * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
+     */
     protected array $resolvedArguments = [];
 
     /**
@@ -34,6 +38,8 @@ trait ParametersResolverTrait
      */
     protected array $arguments = [];
 
+    protected ContainerInterface $container;
+
     /**
      * @throws AutowiredAttributeException
      * @throws AutowiredExceptionInterface
@@ -41,7 +47,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveParameters(ContainerInterface $container, ?bool $useAttribute): array
+    protected function resolveParameters(?bool $useAttribute): array
     {
         $dependencies = [];
 
@@ -51,8 +57,8 @@ trait ParametersResolverTrait
                 $args = \is_array($argument) && $parameter->isVariadic() ? $argument : [$argument];
 
                 foreach ($args as $arg) {
-                    $dependencies[] = \is_string($arg) && $container->has($arg)
-                        ? $container->get($arg)
+                    $dependencies[] = \is_string($arg) && $this->container->has($arg)
+                        ? $this->container->get($arg)
                         : $arg;
                 }
 
@@ -67,25 +73,25 @@ trait ParametersResolverTrait
 
                     if ($factories->valid()) {
                         foreach ($factories as $factory) {
-                            $dependencies[] = $this->resolveArgumentByAttribute($factory, $container);
+                            $dependencies[] = $this->resolveArgumentByAttribute($factory);
                         }
 
                         continue;
                     }
 
-                    $injects = Inject::makeFromReflection($parameter, $container);
+                    $injects = Inject::makeFromReflection($parameter, $this->container);
 
                     if ($injects->valid()) {
                         foreach ($injects as $inject) {
                             if (\class_exists($inject->getId())) {
-                                $dependencies[] = $this->resolveArgumentByAttribute($inject, $container);
+                                $dependencies[] = $this->resolveArgumentByAttribute($inject);
 
                                 continue;
                             }
 
-                            $resolvedVal = $container->has($inject->getId())
-                                ? $container->get($inject->getId())
-                                : $container->get($parameter->getName());
+                            $resolvedVal = $this->container->has($inject->getId())
+                                ? $this->container->get($inject->getId())
+                                : $this->container->get($parameter->getName());
 
                             $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
                             \array_push($dependencies, ...$vals);
@@ -95,11 +101,11 @@ trait ParametersResolverTrait
                     }
                 }
 
-                $parameterType = self::getParameterType($parameter, $container);
+                $parameterType = self::getParameterType($parameter, $this->container);
 
                 $resolvedVal = null === $parameterType
-                    ? $container->get($parameter->getName())
-                    : $container->get($parameterType->getName());
+                    ? $this->container->get($parameter->getName())
+                    : $this->container->get($parameterType->getName());
 
                 $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
                 \array_push($dependencies, ...$vals);
@@ -133,20 +139,26 @@ trait ParametersResolverTrait
         return $dependencies;
     }
 
-    protected function resolveArgumentByAttribute(DiAttributeInterface $attribute, ContainerInterface $container): mixed
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws AutowiredExceptionInterface
+     */
+    protected function resolveArgumentByAttribute(DiAttributeInterface $attribute): mixed
     {
         if (isset($this->resolvedArguments[$attribute->getId()])) {
             return $this->resolvedArguments[$attribute->getId()];
         }
 
         $object = (new DiDefinitionAutowire(
+            $this->container,
             $attribute->getId(),
             $attribute->isSingleton(),
             $attribute->getArguments()
-        ))->invoke($container, true);
+        ))->invoke(true);
 
         $objectResult = $attribute instanceof DiFactory
-            ? $object($container)
+            ? $object($this->container)
             : $object;
 
         return $attribute->isSingleton()

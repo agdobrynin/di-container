@@ -18,9 +18,10 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
     /**
      * @throws AutowiredExceptionInterface
      */
-    public function __construct(private string $definition, private bool $isSingleton, array $arguments = [])
+    public function __construct(ContainerInterface $container, private string $definition, private bool $isSingleton, array $arguments = [])
     {
         try {
+            $this->container = $container;
             $this->reflectionClass = new \ReflectionClass($this->definition);
             $this->reflectionClass->isInstantiable()
                 || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $definition));
@@ -37,13 +38,13 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
         return $this->isSingleton;
     }
 
-    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
+    public function invoke(?bool $useAttribute): mixed
     {
         if ([] === $this->reflectionParameters) {
             return $this->reflectionClass->newInstance();
         }
 
-        $args = $this->resolveParameters($container, $useAttribute);
+        $args = $this->resolveParameters($useAttribute);
 
         return $this->reflectionClass->newInstanceArgs($args);
     }
