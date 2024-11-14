@@ -237,7 +237,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     );
                 }
 
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($this, $id, $isSingletonDefault, []);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($this, $reflectionClass, $isSingletonDefault, []);
             }
 
             $rawDefinition = $this->definitions[$id];
