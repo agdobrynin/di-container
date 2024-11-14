@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\ParameterTypeResolverTrait;
 use Psr\Container\ContainerExceptionInterface;
@@ -62,40 +63,28 @@ trait ParametersResolverTrait
 
             try {
                 if ($useAttribute) {
-                    if ($factories = DiFactory::makeFromReflection($parameter)) {
-                        foreach ($factories as $factory) {
-                            $dependencies[] = $this->resolvedArguments[$factory->id]
-                                ?? $object = (new DiDefinitionAutowire($factory->id, $factory->isSingleton, $factory->arguments))
-                                    ->invoke($container, true)($container)
-                            ;
+                    $factories = DiFactory::makeFromReflection($parameter);
 
-                            if (!isset($this->resolvedArguments[$factory->id]) && $factory->isSingleton && isset($object)) {
-                                $this->resolvedArguments[$factory->id] = $object;
-                            }
+                    if ($factories->valid()) {
+                        foreach ($factories as $factory) {
+                            $dependencies[] = $this->resolveArgumentByAttribute($factory, $container);
                         }
 
                         continue;
                     }
 
-                    if ($injects = Inject::makeFromReflection($parameter, $container)) {
+                    $injects = Inject::makeFromReflection($parameter, $container);
+
+                    if ($injects->valid()) {
                         foreach ($injects as $inject) {
-                            $injectDefinition = (string) $inject->id;
-
-                            if (\class_exists($injectDefinition)) {
-                                $dependencies[] = $this->resolvedArguments[$injectDefinition]
-                                    ?? $object = (new DiDefinitionAutowire($injectDefinition, $inject->isSingleton, $inject->arguments))
-                                        ->invoke($container, true)
-                                ;
-
-                                if (!isset($this->resolvedArguments[$injectDefinition]) && $inject->isSingleton && isset($object)) {
-                                    $this->resolvedArguments[$injectDefinition] = $object;
-                                }
+                            if (\class_exists($inject->getId())) {
+                                $dependencies[] = $this->resolveArgumentByAttribute($inject, $container);
 
                                 continue;
                             }
 
-                            $resolvedVal = $container->has($injectDefinition)
-                                ? $container->get($injectDefinition)
+                            $resolvedVal = $container->has($inject->getId())
+                                ? $container->get($inject->getId())
                                 : $container->get($parameter->getName());
 
                             $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
@@ -142,5 +131,26 @@ trait ParametersResolverTrait
         }
 
         return $dependencies;
+    }
+
+    protected function resolveArgumentByAttribute(DiAttributeInterface $attribute, ContainerInterface $container): mixed
+    {
+        if (isset($this->resolvedArguments[$attribute->getId()])) {
+            return $this->resolvedArguments[$attribute->getId()];
+        }
+
+        $object = (new DiDefinitionAutowire(
+            $attribute->getId(),
+            $attribute->isSingleton(),
+            $attribute->getArguments()
+        ))->invoke($container, true);
+
+        $objectResult = $attribute instanceof DiFactory
+            ? $object($container)
+            : $object;
+
+        return $attribute->isSingleton()
+            ? $this->resolvedArguments[$attribute->getId()] = $objectResult
+            : $objectResult;
     }
 }
