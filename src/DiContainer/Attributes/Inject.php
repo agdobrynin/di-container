@@ -41,6 +41,10 @@ final class Inject implements DiAttributeInterface
     {
         $attributes = $parameter->getAttributes(self::class);
 
+        if ([] === $attributes) {
+            return;
+        }
+
         if (!$parameter->isVariadic() && \count($attributes) > 1) {
             throw new AutowiredAttributeException('The attribute #[Inject] can only be applied once per non-variadic parameter.');
         }

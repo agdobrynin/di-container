@@ -42,6 +42,10 @@ final class DiFactory implements DiAttributeInterface
     {
         $attributes = $parameter->getAttributes(self::class);
 
+        if ([] === $attributes) {
+            return;
+        }
+
         if ($parameter instanceof \ReflectionClass && \count($attributes) > 1) {
             throw new AutowiredAttributeException('The attribute #[DiFactory] can only be applied once per class.');
         }
