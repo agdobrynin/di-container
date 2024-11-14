@@ -17,6 +17,7 @@ use Tests\Unit\Definition\Fixtures\SimpleService;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\getParameterReflectionType
  *
  * @internal
  */

@@ -6,14 +6,13 @@ namespace Kaspi\DiContainer\Attributes;
 
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
-use Kaspi\DiContainer\ParameterTypeResolverTrait;
 use Psr\Container\ContainerInterface;
+
+use function Kaspi\DiContainer\getParameterReflectionType;
 
 #[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
 final class Inject implements DiAttributeInterface
 {
-    use ParameterTypeResolverTrait;
-
     /**
      * @param class-string|string $id class name or container reference
      */
@@ -52,7 +51,7 @@ final class Inject implements DiAttributeInterface
         foreach ($attributes as $attribute) {
             $inject = $attribute->newInstance();
 
-            if ('' === $inject->id && $type = self::getParameterType($parameter, $container)?->getName()) {
+            if ('' === $inject->id && $type = getParameterReflectionType($parameter, $container)?->getName()) {
                 $inject->id = $type;
             }
 

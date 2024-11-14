@@ -30,6 +30,7 @@ use Tests\Unit\Attribute\Inject\Fixtures\RuleB;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
+ * @covers \Kaspi\DiContainer\getParameterReflectionType
  *
  * @internal
  */
