@@ -6,6 +6,7 @@ namespace Tests\Unit\Callable;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use PHPUnit\Framework\TestCase;
@@ -40,6 +41,11 @@ class CallableMakeFromAbstractTest extends TestCase
                 $this->setContainer($container);
 
                 return $this->parseCallable($definition);
+            }
+
+            public function getContainer(): DiContainerInterface
+            {
+                return $this->container;
             }
         };
     }

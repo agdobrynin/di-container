@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 trait ParametersResolverTrait
@@ -136,6 +137,8 @@ trait ParametersResolverTrait
 
         return $dependencies;
     }
+
+    abstract public function getContainer(): ContainerInterface;
 
     /**
      * @throws ContainerExceptionInterface

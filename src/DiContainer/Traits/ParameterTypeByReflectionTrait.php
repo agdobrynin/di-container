@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Psr\Container\ContainerInterface;
+
 trait ParameterTypeByReflectionTrait
 {
     use PsrContainerTrait;
@@ -28,4 +30,6 @@ trait ParameterTypeByReflectionTrait
 
         return null;
     }
+
+    abstract public function getContainer(): ContainerInterface;
 }

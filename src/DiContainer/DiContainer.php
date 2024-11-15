@@ -143,6 +143,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         }
     }
 
+    public function getContainer(): ContainerInterface
+    {
+        return $this;
+    }
+
     protected function hasByRef(string $id): bool
     {
         return ($ref = $this->config?->getReferenceToContainer($id))
