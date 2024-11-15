@@ -45,7 +45,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveParameters(?bool $useAttribute): array
+    public function resolveParameters(?bool $useAttribute): array
     {
         $dependencies = [];
 
