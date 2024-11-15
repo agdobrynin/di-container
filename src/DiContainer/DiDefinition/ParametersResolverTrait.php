@@ -12,15 +12,14 @@ use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
-use Kaspi\DiContainer\ParameterTypeResolverTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+use function Kaspi\DiContainer\getParameterReflectionType;
+
 trait ParametersResolverTrait
 {
-    use ParameterTypeResolverTrait;
-
     /**
      * @var \ReflectionParameter[]
      */
@@ -101,7 +100,7 @@ trait ParametersResolverTrait
                     }
                 }
 
-                $parameterType = self::getParameterType($parameter, $this->container);
+                $parameterType = getParameterReflectionType($parameter, $this->container);
 
                 $resolvedVal = null === $parameterType
                     ? $this->container->get($parameter->getName())
