@@ -16,7 +16,6 @@ use Tests\Fixtures\Classes\ClassWithEmptyType;
 use Tests\Fixtures\Classes\ClassWithUnionType;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\DiFactory::makeFromReflection
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
