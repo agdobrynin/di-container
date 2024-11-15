@@ -52,8 +52,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
         return $this->reflectionClass->newInstanceArgs($args);
     }
 
-    public function getDefinition(): string
+    public function getDefinition(): \ReflectionClass
     {
-        return $this->reflectionClass->getName();
+        return $this->reflectionClass;
     }
 }
