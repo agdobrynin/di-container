@@ -8,7 +8,6 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
-use Psr\Container\ContainerInterface;
 
 use function Kaspi\DiContainer\getParameterReflectionType;
 
