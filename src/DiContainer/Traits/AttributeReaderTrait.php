@@ -12,7 +12,6 @@ use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
-    use PsrContainerTrait;
 
     /**
      * @return \Generator<DiFactory>

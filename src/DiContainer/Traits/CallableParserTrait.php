@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 trait CallableParserTrait
@@ -49,4 +50,6 @@ trait CallableParserTrait
             ? $parsedDefinition
             : throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
     }
+
+    abstract public function getContainer(): ContainerInterface;
 }

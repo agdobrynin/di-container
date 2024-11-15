@@ -18,10 +18,6 @@ trait PsrContainerTrait
 
     public function getContainer(): ContainerInterface
     {
-        if ($this instanceof ContainerInterface) {
-            return $this;
-        }
-
         return $this->container ?? throw new ContainerException('Need set container implementation.');
     }
 }
