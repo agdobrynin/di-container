@@ -33,18 +33,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 
     public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
     {
-        if (!isset($this->reflectionClass)) {
-            try {
-                $this->reflectionClass = new \ReflectionClass($this->definition);
-            } catch (\ReflectionException $e) {
-                throw new AutowiredException(message: $e->getMessage(), previous: $e);
-            }
-        }
-
-        $this->reflectionClass->isInstantiable()
-            || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+        $this->initDefinition();
 
         if (!isset($this->reflectionParameters)) {
+            $this->reflectionClass->isInstantiable()
+                || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+
             $this->reflectionParameters = $this->reflectionClass->getConstructor()?->getParameters() ?? [];
         }
 
@@ -61,6 +55,23 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 
     public function getDefinition(): \ReflectionClass
     {
+        if ($this->definition instanceof \ReflectionClass) {
+            return $this->reflectionClass;
+        }
+
+        $this->initDefinition();
+
         return $this->reflectionClass;
+    }
+
+    protected function initDefinition(): void
+    {
+        if (!isset($this->reflectionClass) && \is_string($this->definition)) {
+            try {
+                $this->reflectionClass = new \ReflectionClass($this->definition);
+            } catch (\ReflectionException $e) {
+                throw new AutowiredException(message: $e->getMessage(), previous: $e);
+            }
+        }
     }
 }
