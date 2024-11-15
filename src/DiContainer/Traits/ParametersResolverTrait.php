@@ -15,11 +15,10 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-use function Kaspi\DiContainer\getParameterReflectionType;
-
 trait ParametersResolverTrait
 {
     use AttributeReaderTrait;
+    use ParameterTypeByReflectionTrait;
     use PsrContainerTrait;
 
     /**
@@ -100,7 +99,7 @@ trait ParametersResolverTrait
                     }
                 }
 
-                $parameterType = getParameterReflectionType($parameter, $this->getContainer());
+                $parameterType = $this->getParameterTypeByReflection($parameter);
 
                 $resolvedVal = null === $parameterType
                     ? $this->getContainer()->get($parameter->getName())

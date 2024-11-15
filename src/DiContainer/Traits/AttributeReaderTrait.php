@@ -9,10 +9,9 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 
-use function Kaspi\DiContainer\getParameterReflectionType;
-
 trait AttributeReaderTrait
 {
+    use ParameterTypeByReflectionTrait;
     use PsrContainerTrait;
 
     /**
@@ -64,7 +63,8 @@ trait AttributeReaderTrait
         foreach ($attributes as $attribute) {
             $inject = $attribute->newInstance();
 
-            if ('' === $inject->getId() && $type = getParameterReflectionType($parameter, $this->getContainer())?->getName()) {
+            if ('' === $inject->getId()
+                && $type = $this->getParameterTypeByReflection($parameter)?->getName()) {
                 $inject = new Inject($type, $inject->getArguments(), $inject->isSingleton());
             }
 

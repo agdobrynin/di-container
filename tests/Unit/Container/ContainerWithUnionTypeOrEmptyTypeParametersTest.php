@@ -22,7 +22,7 @@ use Tests\Fixtures\Classes\ClassWithUnionType;
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\getParameterReflectionType
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal
  */

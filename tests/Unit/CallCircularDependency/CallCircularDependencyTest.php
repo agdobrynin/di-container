@@ -23,7 +23,7 @@ use Tests\Unit\CallCircularDependency\Fixtures\FirstClass;
  * @covers \Kaspi\DiContainer\diDefinition
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\getParameterReflectionType
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal
  */

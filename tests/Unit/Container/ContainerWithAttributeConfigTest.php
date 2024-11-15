@@ -22,7 +22,7 @@ use Tests\Fixtures\Attributes\SendEmail;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
- * @covers \Kaspi\DiContainer\getParameterReflectionType
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  */
 class ContainerWithAttributeConfigTest extends TestCase
 {
