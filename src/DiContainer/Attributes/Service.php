@@ -28,11 +28,4 @@ final class Service implements DiAttributeInterface
     {
         return $this->isSingleton;
     }
-
-    public static function makeFromReflection(\ReflectionClass $parameter): ?self
-    {
-        return ($attribute = $parameter->getAttributes(self::class)[0] ?? null)
-            ? $attribute->newInstance()
-            : null;
-    }
 }

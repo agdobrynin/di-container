@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Attributes\Service;
-use Kaspi\DiContainer\DiDefinition\CallableParserTrait;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
@@ -24,12 +21,15 @@ use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\AttributeReaderTrait;
+use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
+    use AttributeReaderTrait;
     use CallableParserTrait;
 
     /**
@@ -208,7 +208,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 $reflectionClass = new \ReflectionClass($id); // @todo come up possible test with throw
 
                 if ($reflectionClass->isInterface()) {
-                    if ($this->config?->isUseAttribute() && $service = Service::makeFromReflection($reflectionClass)) {
+                    if ($this->config?->isUseAttribute() && $service = $this->getServiceAttribute($reflectionClass)) {
                         // reference aka #[Service('@ref1')] interface MyInterface {}
                         if (($ref = $this->config?->getReferenceToContainer($service->getId()))
                             && $definition = $this->resolveDefinition($ref)) {
@@ -227,7 +227,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 }
 
                 if ($this->config?->isUseAttribute()
-                    && $factory = DiFactory::makeFromReflection($reflectionClass)->current()) {
+                    && $factory = $this->getDiFactoryAttribute($reflectionClass)->current()) {
                     return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
                         $this,
                         $factory->getId(),

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer\DiDefinition;
+namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
@@ -13,13 +13,15 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 use function Kaspi\DiContainer\getParameterReflectionType;
 
 trait ParametersResolverTrait
 {
+    use AttributeReaderTrait;
+    use PsrContainerTrait;
+
     /**
      * @var \ReflectionParameter[]
      */
@@ -36,8 +38,6 @@ trait ParametersResolverTrait
      * @var array<string, mixed>
      */
     protected array $arguments = [];
-
-    protected ContainerInterface $container;
 
     /**
      * @throws AutowiredAttributeException
@@ -56,8 +56,8 @@ trait ParametersResolverTrait
                 $args = \is_array($argument) && $parameter->isVariadic() ? $argument : [$argument];
 
                 foreach ($args as $arg) {
-                    $dependencies[] = \is_string($arg) && $this->container->has($arg)
-                        ? $this->container->get($arg)
+                    $dependencies[] = \is_string($arg) && $this->getContainer()->has($arg)
+                        ? $this->getContainer()->get($arg)
                         : $arg;
                 }
 
@@ -68,7 +68,7 @@ trait ParametersResolverTrait
 
             try {
                 if ($useAttribute) {
-                    $factories = DiFactory::makeFromReflection($parameter);
+                    $factories = $this->getDiFactoryAttribute($parameter);
 
                     if ($factories->valid()) {
                         foreach ($factories as $factory) {
@@ -78,7 +78,7 @@ trait ParametersResolverTrait
                         continue;
                     }
 
-                    $injects = Inject::makeFromReflection($parameter, $this->container);
+                    $injects = $this->getInjectAttribute($parameter);
 
                     if ($injects->valid()) {
                         foreach ($injects as $inject) {
@@ -88,9 +88,9 @@ trait ParametersResolverTrait
                                 continue;
                             }
 
-                            $resolvedVal = $this->container->has($inject->getId())
-                                ? $this->container->get($inject->getId())
-                                : $this->container->get($parameter->getName());
+                            $resolvedVal = $this->getContainer()->has($inject->getId())
+                                ? $this->getContainer()->get($inject->getId())
+                                : $this->getContainer()->get($parameter->getName());
 
                             $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
                             \array_push($dependencies, ...$vals);
@@ -100,11 +100,11 @@ trait ParametersResolverTrait
                     }
                 }
 
-                $parameterType = getParameterReflectionType($parameter, $this->container);
+                $parameterType = getParameterReflectionType($parameter, $this->getContainer());
 
                 $resolvedVal = null === $parameterType
-                    ? $this->container->get($parameter->getName())
-                    : $this->container->get($parameterType->getName());
+                    ? $this->getContainer()->get($parameter->getName())
+                    : $this->getContainer()->get($parameterType->getName());
 
                 $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
                 \array_push($dependencies, ...$vals);
@@ -150,14 +150,14 @@ trait ParametersResolverTrait
         }
 
         $object = (new DiDefinitionAutowire(
-            $this->container,
+            $this->getContainer(),
             $attribute->getId(),
             $attribute->isSingleton(),
             $attribute->getArguments()
         ))->invoke(true);
 
         $objectResult = $attribute instanceof DiFactory
-            ? $object($this->container)
+            ? $object($this->getContainer())
             : $object;
 
         return $attribute->isSingleton()

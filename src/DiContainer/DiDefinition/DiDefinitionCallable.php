@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Traits\ParametersResolverTrait;
+use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use Psr\Container\ContainerInterface;
 
 final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 {
     use ParametersResolverTrait;
+    use PsrContainerTrait;
 
     /**
      * @var callable
@@ -18,7 +21,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 
     public function __construct(ContainerInterface $container, callable $definition, private bool $isSingleton, array $arguments = [])
     {
-        $this->container = $container;
+        $this->setContainer($container);
         $this->definition = $definition;
         $this->reflectionParameters = $this->reflectParameters();
         $this->arguments = $arguments;
