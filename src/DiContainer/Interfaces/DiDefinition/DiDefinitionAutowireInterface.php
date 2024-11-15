@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 interface DiDefinitionAutowireInterface extends DiDefinitionInterface
@@ -17,5 +18,5 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function invoke(?bool $useAttribute): mixed;
+    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed;
 }

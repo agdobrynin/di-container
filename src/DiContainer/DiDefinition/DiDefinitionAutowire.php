@@ -6,7 +6,6 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use Psr\Container\ContainerInterface;
@@ -18,22 +17,13 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 
     private \ReflectionClass $reflectionClass;
 
-    /**
-     * @throws AutowiredExceptionInterface
-     */
-    public function __construct(ContainerInterface $container, \ReflectionClass|string $definition, private bool $isSingleton, array $arguments = [])
+    public function __construct(private \ReflectionClass|string $definition, private bool $isSingleton, array $arguments = [])
     {
-        try {
-            $this->reflectionClass = \is_string($definition) ? new \ReflectionClass($definition) : $definition;
-            $this->reflectionClass->isInstantiable()
-                || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
-
-            $this->setContainer($container);
-            $this->reflectionParameters = $this->reflectionClass->getConstructor()?->getParameters() ?? [];
-            $this->arguments = $arguments;
-        } catch (\ReflectionException $e) {
-            throw new AutowiredException(message: $e->getMessage(), previous: $e);
+        if ($this->definition instanceof \ReflectionClass) {
+            $this->reflectionClass = $this->definition;
         }
+
+        $this->arguments = $arguments;
     }
 
     public function isSingleton(): bool
@@ -41,8 +31,25 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
         return $this->isSingleton;
     }
 
-    public function invoke(?bool $useAttribute): mixed
+    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
     {
+        if (!isset($this->reflectionClass)) {
+            try {
+                $this->reflectionClass = new \ReflectionClass($this->definition);
+            } catch (\ReflectionException $e) {
+                throw new AutowiredException(message: $e->getMessage(), previous: $e);
+            }
+        }
+
+        $this->reflectionClass->isInstantiable()
+            || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+
+        if (!isset($this->reflectionParameters)) {
+            $this->reflectionParameters = $this->reflectionClass->getConstructor()?->getParameters() ?? [];
+        }
+
+        $this->setContainer($container);
+
         if ([] === $this->reflectionParameters) {
             return $this->reflectionClass->newInstanceWithoutConstructor();
         }
