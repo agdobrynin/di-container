@@ -21,7 +21,6 @@ use Tests\Fixtures\Classes\Interfaces;
  * @internal
  *
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\Attributes\Inject::makeFromReflection
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -29,6 +28,7 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  */
 class ContainerTest extends TestCase
 {

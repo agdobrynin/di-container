@@ -34,24 +34,4 @@ final class DiFactory implements DiAttributeInterface
     {
         return $this->isSingleton;
     }
-
-    /**
-     * @return \Generator<DiFactory>
-     */
-    public static function makeFromReflection(\ReflectionClass|\ReflectionParameter $parameter): \Generator
-    {
-        $attributes = $parameter->getAttributes(self::class);
-
-        if ($parameter instanceof \ReflectionClass && \count($attributes) > 1) {
-            throw new AutowiredAttributeException('The attribute #[DiFactory] can only be applied once per class.');
-        }
-
-        if ($parameter instanceof \ReflectionParameter && !$parameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowiredAttributeException('The attribute #[DiFactory] can only be applied once per non-variadic parameter.');
-        }
-
-        foreach ($attributes as $attribute) {
-            yield $attribute->newInstance();
-        }
-    }
 }

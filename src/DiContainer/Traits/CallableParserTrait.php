@@ -2,22 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer\DiDefinition;
+namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 trait CallableParserTrait
 {
+    use PsrContainerTrait;
+
     /**
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    protected static function parseCallable(array|callable|string $definition, ContainerInterface $container): callable
+    public function parseCallable(array|callable|string $definition): callable
     {
         if (\is_callable($definition)) {
             return $definition;
@@ -41,7 +42,7 @@ trait CallableParserTrait
         })($definition);
 
         if (\is_string($parsedDefinition[0])) {
-            $parsedDefinition[0] = $container->get($parsedDefinition[0]);
+            $parsedDefinition[0] = $this->getContainer()->get($parsedDefinition[0]);
         }
 
         return \is_callable($parsedDefinition)

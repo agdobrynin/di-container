@@ -18,6 +18,7 @@ use Tests\Unit\Attribute\Service\Fixtures\ServiceOne;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal
  */

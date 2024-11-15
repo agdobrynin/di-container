@@ -44,7 +44,8 @@ class DiDefinitionAutowireTestTest extends TestCase
         $class = $definition->invoke(false);
 
         $this->assertInstanceOf(WithoutConstructor::class, $class);
-        $this->assertEquals('Tests\Unit\Definition\Fixtures\WithoutConstructor', $definition->getDefinition());
+        $this->assertInstanceOf(\ReflectionClass::class, $definition->getDefinition());
+        $this->assertEquals('Tests\Unit\Definition\Fixtures\WithoutConstructor', $definition->getDefinition()->getName());
     }
 
     public function testDefinitionIsInterface(): void

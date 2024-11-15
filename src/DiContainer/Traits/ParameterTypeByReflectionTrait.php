@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer;
+namespace Kaspi\DiContainer\Traits;
 
-use Psr\Container\ContainerInterface;
-
-trait ParameterTypeResolverTrait
+trait ParameterTypeByReflectionTrait
 {
-    protected static function getParameterType(\ReflectionParameter $parameter, ContainerInterface $container): ?\ReflectionNamedType
+    use PsrContainerTrait;
+
+    public function getParameterTypeByReflection(\ReflectionParameter $parameter): ?\ReflectionNamedType
     {
         $reflectionType = $parameter->getType();
 
@@ -19,8 +19,8 @@ trait ParameterTypeResolverTrait
         if ($reflectionType instanceof \ReflectionUnionType) {
             foreach ($reflectionType->getTypes() as $type) {
                 // Get first available non builtin type e.g.
-                // __construct(string|Class1|Class2 $dependency) will return 'Class1'
-                if (!$type->isBuiltin() && $container->has($type->getName())) {
+                // __construct(string|Class1|Class2 $dependency) if Class1 has in container will return 'Class1'
+                if (!$type->isBuiltin() && $this->getContainer()->has($type->getName())) {
                     return $type;
                 }
             }
