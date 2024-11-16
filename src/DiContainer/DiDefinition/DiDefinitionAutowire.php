@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use Psr\Container\ContainerInterface;
 
-final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
+final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionIdentifierInterface
 {
     use ParametersResolverTrait;
     use PsrContainerTrait;
@@ -47,6 +50,9 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
         return $this->reflectionClass->newInstanceArgs($args);
     }
 
+    /**
+     * @throws AutowiredExceptionInterface
+     */
     public function getDefinition(): \ReflectionClass
     {
         if ($this->definition instanceof \ReflectionClass) {
@@ -57,6 +63,19 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
             return $this->reflectionClass = new \ReflectionClass($this->definition);
         } catch (\ReflectionException $e) {
             throw new AutowiredException(message: $e->getMessage());
+        }
+    }
+
+    public function getIdentifier(): string
+    {
+        if (\is_string($this->definition)) {
+            return $this->definition;
+        }
+
+        try {
+            return $this->getDefinition()->getName();
+        } catch (AutowiredExceptionInterface $e) {
+            throw new DiDefinitionException(message: $e->getMessage());
         }
     }
 }
