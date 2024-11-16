@@ -25,7 +25,7 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('Class "aaa" does not exist');
 
-        (new DiDefinitionAutowire('aaa', true))->invoke(new DiContainer(), false);
+        (new DiDefinitionAutowire('aaa'))->invoke(new DiContainer(), false);
     }
 
     public function testDefinitionWithPrivateConstructor(): void
@@ -33,14 +33,14 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('class is not instantiable');
 
-        (new DiDefinitionAutowire(PrivateConstructor::class, true))->invoke(new DiContainer(), false);
+        (new DiDefinitionAutowire(PrivateConstructor::class))->invoke(new DiContainer(), false);
     }
 
     public function testDefinitionWithoutConstructor(): void
     {
         $container = new DiContainer();
 
-        $definition = new DiDefinitionAutowire(WithoutConstructor::class, true);
+        $definition = new DiDefinitionAutowire(WithoutConstructor::class);
         $class = $definition->invoke($container, false);
 
         $this->assertInstanceOf(WithoutConstructor::class, $class);
@@ -53,12 +53,12 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('class is not instantiable');
 
-        (new DiDefinitionAutowire(FreeInterface::class, true))->invoke(new DiContainer(), false);
+        (new DiDefinitionAutowire(FreeInterface::class))->invoke(new DiContainer(), false);
     }
 
     public function testDefinitionAutowireNonExistClassGetIdentifier(): void
     {
-        $definition = new DiDefinitionAutowire('non-exist-class', false);
+        $definition = new DiDefinitionAutowire('non-exist-class');
 
         $this->assertEquals('non-exist-class', $definition->getIdentifier());
     }
@@ -68,6 +68,6 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectException(AutowiredExceptionInterface::class);
         $this->expectExceptionMessage('Class "non-exist-class" does not exist');
 
-        (new DiDefinitionAutowire('non-exist-class', false))->getDefinition();
+        (new DiDefinitionAutowire('non-exist-class'))->getDefinition();
     }
 }

@@ -13,7 +13,11 @@ use Tests\Unit\Definition\Fixtures\Generated\ServiceImplementation;
 use Tests\Unit\Definition\Fixtures\Generated\ServiceInterface;
 
 /**
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal
  */
@@ -23,12 +27,12 @@ class DefinitionAsDiDefinitionAutowireTest extends TestCase
     {
         $definition = static function (): \Generator {
             for ($i = 0; $i <= 10; ++$i) {
-                yield new DiDefinitionAutowire("Tests\\Unit\\Definition\\Fixtures\\Generated\\Service{$i}", true);
+                yield new DiDefinitionAutowire("Tests\\Unit\\Definition\\Fixtures\\Generated\\Service{$i}");
             }
 
-            yield 'some_alias' => new DiDefinitionAutowire(Service6::class, true);
+            yield 'some_alias' => new DiDefinitionAutowire(Service6::class);
 
-            yield new DiDefinitionAutowire(ServiceImplementation::class, true);
+            yield new DiDefinitionAutowire(ServiceImplementation::class);
 
             yield ServiceInterface::class => ServiceImplementation::class;
         };

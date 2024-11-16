@@ -136,7 +136,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
     public function testResolveDefinitionAsDiDefinitionAutowire(): void
     {
         $definition = [
-            new DiDefinitionAutowire(SimpleServiceWithArgument::class, true, arguments: ['token' => 'abc-abc']),
+            new DiDefinitionAutowire(SimpleServiceWithArgument::class, arguments: ['token' => 'abc-abc']),
         ];
 
         $container = (new DiContainerFactory())->make($definition);
@@ -144,14 +144,28 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $service = $container->get(SimpleServiceWithArgument::class);
 
         $this->assertInstanceOf(SimpleServiceWithArgument::class, $service);
-        $this->assertSame($service, $container->get(SimpleServiceWithArgument::class));
+        $this->assertNotSame($service, $container->get(SimpleServiceWithArgument::class));
         $this->assertEquals('abc-abc', $service->getToken());
+    }
+
+    public function testResolveDefinitionAsDiDefinitionAutowireWithIsSingletonByDiContainerConfig(): void
+    {
+        $definition = [
+            new DiDefinitionAutowire(SimpleServiceWithArgument::class, arguments: ['token' => 'abc-abc']),
+        ];
+
+        $container = new DiContainer($definition, new DiContainerConfig(isSingletonServiceDefault: true));
+        $service = $container->get(SimpleServiceWithArgument::class);
+        // default isSingleton by DiContainerConfig.
+        $this->assertSame($service, $container->get(SimpleServiceWithArgument::class));
+
+        $this->assertInstanceOf(SimpleServiceWithArgument::class, $service);
     }
 
     public function testResolveDefinitionAsDiDefinitionAutowireWithReflectionClass(): void
     {
         $definition = [
-            new DiDefinitionAutowire(new \ReflectionClass(SimpleServiceWithArgument::class), false, arguments: ['token' => 'abc-abc']),
+            new DiDefinitionAutowire(new \ReflectionClass(SimpleServiceWithArgument::class), arguments: ['token' => 'abc-abc']),
         ];
 
         $container = (new DiContainerFactory())->make($definition);
