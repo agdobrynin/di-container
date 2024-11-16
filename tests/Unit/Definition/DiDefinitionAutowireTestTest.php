@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace Tests\Unit\Definition;
 
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Definition\Fixtures\FreeInterface;
+use Tests\Unit\Definition\Fixtures\Generated\Service0;
+use Tests\Unit\Definition\Fixtures\Generated\Service6;
 use Tests\Unit\Definition\Fixtures\PrivateConstructor;
 use Tests\Unit\Definition\Fixtures\WithoutConstructor;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer::__construct
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  *
  * @internal
@@ -69,5 +74,19 @@ class DiDefinitionAutowireTestTest extends TestCase
         $this->expectExceptionMessage('Class "non-exist-class" does not exist');
 
         (new DiDefinitionAutowire('non-exist-class'))->getDefinition();
+    }
+
+    public function testDefinitionAutowireWithMethodAddArgumentAndArgumentByReference(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'serviceMain' => Service0::class,
+            // ... may may definitions.
+            (new DiDefinitionAutowire(Service6::class))
+                ->addArgument('service', '@serviceMain'),
+        ]);
+
+        $class6 = $container->get(Service6::class);
+
+        $this->assertInstanceOf(Service0::class, $class6->service);
     }
 }

@@ -101,7 +101,9 @@ class DefinitionHelperFunctionTest extends TestCase
         $container = (new DiContainerFactory())->make()
             ->set(
                 'factoryTwo',
-                diCallable([CallableStaticMethod::class, 'myMethod'], arguments: ['name' => 'Vasiliy', 'city' => 'Narnia'])
+                diCallable([CallableStaticMethod::class, 'myMethod'])
+                    ->addArgument('name', 'Vasiliy')
+                    ->addArgument('city', 'Narnia')
             )
         ;
 
@@ -147,6 +149,16 @@ class DefinitionHelperFunctionTest extends TestCase
         ]);
 
         $this->assertEquals(['token' => 'aaa-bbb-ccc', 'refreshToken' => 'qqq-ccc-fff'], $container->get('refresh-token'));
+    }
+
+    public function testDefinitionAsAutowireHelperWithAddArgument(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(SimpleServiceWithArgument::class)
+                ->addArgument('token', 'aaa-bbb-ccc'),
+        ]);
+
+        $this->assertEquals('aaa-bbb-ccc', $container->get(SimpleServiceWithArgument::class)->getToken());
     }
 
     public function testCallableWithInstancedClassWithMethodBySetContainer(): void

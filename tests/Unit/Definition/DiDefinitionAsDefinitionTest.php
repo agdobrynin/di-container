@@ -136,7 +136,8 @@ class DiDefinitionAsDefinitionTest extends TestCase
     public function testResolveDefinitionAsDiDefinitionAutowire(): void
     {
         $definition = [
-            new DiDefinitionAutowire(SimpleServiceWithArgument::class, arguments: ['token' => 'abc-abc']),
+            (new DiDefinitionAutowire(SimpleServiceWithArgument::class))
+                ->addArgument('token', 'abc-abc'),
         ];
 
         $container = (new DiContainerFactory())->make($definition);

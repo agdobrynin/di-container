@@ -33,6 +33,13 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         $this->arguments = $arguments;
     }
 
+    public function addArgument(string $name, mixed $value): self
+    {
+        $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
     public function isSingleton(): ?bool
     {
         return $this->isSingleton;

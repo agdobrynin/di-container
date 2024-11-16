@@ -11,6 +11,8 @@ use Psr\Container\NotFoundExceptionInterface;
 
 interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 {
+    public function addArgument(string $name, mixed $value): self;
+
     public function isSingleton(): ?bool;
 
     /**
