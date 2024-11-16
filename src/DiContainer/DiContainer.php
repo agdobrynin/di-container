@@ -66,7 +66,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 \is_string($id) => $id,
                 \is_string($definition) => $definition,
                 default => throw new DiDefinitionException(
-                    \sprintf('Definition key must be a non-empty string. Definition [%s].', \get_debug_type($definition))
+                    \sprintf('Definition identifier must be a non-empty string. Definition [%s].', \get_debug_type($definition))
                 )
             };
 
@@ -103,11 +103,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
     {
         if (($id = \trim($id)) === '') {
-            throw new DiDefinitionException('The container ID must be a non-empty string.');
+            throw new DiDefinitionException('Definition identifier must be a non-empty string.');
         }
 
         if (\array_key_exists($id, $this->definitions)) {
-            throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
+            throw new ContainerAlreadyRegisteredException("Definition identifier [{$id}] already registered in container.");
         }
 
         if ($arguments) {
@@ -227,7 +227,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                         );
                     }
 
-                    throw new NotFoundException('Definition not found for '.$id);
+                    throw new NotFoundException('Definition not found for identifier '.$id);
                 }
 
                 if ($this->config?->isUseAttribute()
