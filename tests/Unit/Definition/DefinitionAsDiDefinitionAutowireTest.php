@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Tests\Unit\Definition;
 
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Definition\Fixtures\Generated\Service0;
 use Tests\Unit\Definition\Fixtures\Generated\Service6;
 use Tests\Unit\Definition\Fixtures\Generated\ServiceImplementation;
 use Tests\Unit\Definition\Fixtures\Generated\ServiceInterface;
 
+use function Kaspi\DiContainer\diAutowire;
+
 /**
+ * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
@@ -27,12 +29,12 @@ class DefinitionAsDiDefinitionAutowireTest extends TestCase
     {
         $definition = static function (): \Generator {
             for ($i = 0; $i <= 10; ++$i) {
-                yield new DiDefinitionAutowire("Tests\\Unit\\Definition\\Fixtures\\Generated\\Service{$i}");
+                yield diAutowire("Tests\\Unit\\Definition\\Fixtures\\Generated\\Service{$i}");
             }
 
-            yield 'some_alias' => new DiDefinitionAutowire(Service6::class);
+            yield 'some_alias' => diAutowire(Service6::class);
 
-            yield new DiDefinitionAutowire(ServiceImplementation::class);
+            yield diAutowire(ServiceImplementation::class);
 
             yield ServiceInterface::class => ServiceImplementation::class;
         };
