@@ -92,6 +92,18 @@ class DefinitionHelperFunctionTest extends TestCase
         $this->assertEquals('Hello Ivan! Welcome to Vice city 🎈', $container->get('factoryOne'));
     }
 
+    public function testDiDefinitionFunctionCallableBySetContainer(): void
+    {
+        $container = (new DiContainerFactory())->make()
+            ->set(
+                'factoryTwo',
+                diCallable([CallableStaticMethod::class, 'myMethod'], arguments: ['name' => 'Vasiliy', 'city' => 'Narnia'])
+            )
+        ;
+
+        $this->assertEquals('Hello Vasiliy! Welcome to Narnia 🎈', $container->get('factoryTwo'));
+    }
+
     public function testDiDefinitionFunctionCallableWithoutIdentifier(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -113,11 +125,31 @@ class DefinitionHelperFunctionTest extends TestCase
         $container->get('service');
     }
 
+    public function testCallableWrongArrayBySetContainer(): void
+    {
+        $container = (new DiContainerFactory())->make()
+            ->set('service', diCallable([self::class]))
+        ;
+
+        $this->expectException(ContainerExceptionInterface::class);
+
+        $container->get('service');
+    }
+
     public function testCallableWithInstancedClassWithMethod(): void
     {
         $container = (new DiContainerFactory())->make([
             'refresh-token' => diCallable([new SimpleServiceWithArgument('aaa-bbb-ccc'), 'getRefreshToken']),
         ]);
+
+        $this->assertEquals(['token' => 'aaa-bbb-ccc', 'refreshToken' => 'qqq-ccc-fff'], $container->get('refresh-token'));
+    }
+
+    public function testCallableWithInstancedClassWithMethodBySetContainer(): void
+    {
+        $container = (new DiContainerFactory())->make()
+            ->set('refresh-token', diCallable([new SimpleServiceWithArgument('aaa-bbb-ccc'), 'getRefreshToken']))
+        ;
 
         $this->assertEquals(['token' => 'aaa-bbb-ccc', 'refreshToken' => 'qqq-ccc-fff'], $container->get('refresh-token'));
     }

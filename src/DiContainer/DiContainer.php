@@ -112,6 +112,12 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             throw new ContainerAlreadyRegisteredException("Definition identifier [{$id}] already registered in container.");
         }
 
+        if ($definition instanceof DiDefinitionInterface) {
+            $this->definitions[$id] = $definition;
+
+            return $this;
+        }
+
         if ($arguments) {
             if (\is_array($definition)) {
                 $arguments = $arguments + $definition[DiContainerInterface::ARGUMENTS] ?? [];
