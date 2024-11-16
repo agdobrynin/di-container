@@ -33,7 +33,7 @@ class CallableMakeFromAbstractTest extends TestCase
 
     public function setUp(): void
     {
-        $this->callableParser = new class() {
+        $this->callableParser = new class {
             use CallableParserTrait;
 
             public function make($definition, $container)
@@ -111,7 +111,7 @@ class CallableMakeFromAbstractTest extends TestCase
 
     public function testWrongDefinitionArray(): void
     {
-        $container = new class() implements ContainerInterface {
+        $container = new class implements ContainerInterface {
             public function get(string $id)
             {
                 return $id;

@@ -359,7 +359,7 @@ class ContainerTest extends TestCase
         ];
 
         yield 'anonymous class' => [
-            'obj' => new class() {
+            'obj' => new class {
                 public function time()
                 {
                     return \time();
