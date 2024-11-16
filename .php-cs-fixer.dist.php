@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
+
 $finder = (new PhpCsFixer\Finder())
     ->in(__DIR__)
     ->exclude([])
 ;
 
 return (new PhpCsFixer\Config())
+    ->setParallelConfig(ParallelConfigFactory::detect())
     ->setRules([
         '@PhpCsFixer' => true,
         'declare_strict_types' => true,
