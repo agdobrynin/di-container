@@ -12,4 +12,9 @@ class SimpleServiceWithArgument
     {
         return $this->token;
     }
+
+    public function getRefreshToken(): array
+    {
+        return ['token' => $this->token, 'refreshToken' => 'qqq-ccc-fff'];
+    }
 }

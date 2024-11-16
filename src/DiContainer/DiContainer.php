@@ -23,7 +23,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -31,7 +30,6 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use AttributeReaderTrait;
-    use CallableParserTrait;
 
     /**
      * @var array<class-string|non-empty-string, mixed>
@@ -135,9 +133,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            $callable = $this->parseCallable($definition);
-
-            return (new DiDefinitionCallable($callable, false, $arguments))
+            return (new DiDefinitionCallable($definition, false, $arguments))
                 ->invoke($this, $this->config?->isUseAttribute())
             ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
@@ -147,7 +143,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function getContainer(): ContainerInterface
     {
-        return $this;
+        return $this; // @codeCoverageIgnore
     }
 
     protected function hasByRef(string $id): bool

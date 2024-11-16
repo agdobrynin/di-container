@@ -38,9 +38,8 @@ if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
-    // @todo Think about use CallableParseTrait.
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diCallable(callable $definition, array $arguments = [], ?bool $isSingleton = null): DiDefinitionCallable
+    function diCallable(array|callable|string $definition, array $arguments = [], ?bool $isSingleton = null): DiDefinitionCallable
     {
         return new DiDefinitionCallable($definition, $isSingleton, $arguments);
     }

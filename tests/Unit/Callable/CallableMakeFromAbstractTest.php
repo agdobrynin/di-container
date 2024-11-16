@@ -62,7 +62,7 @@ class CallableMakeFromAbstractTest extends TestCase
         ]);
 
         $callable = $this->callableParser->make(SimpleInvokeClass::class, $container);
-        $d = new DiDefinitionCallable($callable, true);
+        $d = new DiDefinitionCallable($callable);
 
         $this->assertIsCallable($d->getDefinition());
         $this->assertEquals('Hello Piter!', $d->invoke($container, true));
@@ -73,7 +73,7 @@ class CallableMakeFromAbstractTest extends TestCase
         $definition = [new SimpleInvokeClass(name: 'Vasiliy'), 'hello'];
         $container = (new DiContainerFactory())->make();
         $callable = $this->callableParser->make($definition, $container);
-        $d = new DiDefinitionCallable($callable, true);
+        $d = new DiDefinitionCallable($callable);
 
         $this->assertIsCallable($d->getDefinition());
         $this->assertEquals('Vasiliy hello!', \call_user_func($d->getDefinition()));

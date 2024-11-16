@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Definition\Fixtures\CallableStaticMethod;
 use Tests\Unit\Definition\Fixtures\SimpleService;
+use Tests\Unit\Definition\Fixtures\SimpleServiceWithArgument;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
@@ -99,5 +100,25 @@ class DefinitionHelperFunctionTest extends TestCase
         (new DiContainerFactory())->make([
             diCallable([CallableStaticMethod::class, 'myMethod']),
         ]);
+    }
+
+    public function testCallableWrongArray(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'service' => diCallable([self::class]),
+        ]);
+
+        $this->expectException(ContainerExceptionInterface::class);
+
+        $container->get('service');
+    }
+
+    public function testCallableWithInstancedClassWithMethod(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'refresh-token' => diCallable([new SimpleServiceWithArgument('aaa-bbb-ccc'), 'getRefreshToken']),
+        ]);
+
+        $this->assertEquals(['token' => 'aaa-bbb-ccc', 'refreshToken' => 'qqq-ccc-fff'], $container->get('refresh-token'));
     }
 }
