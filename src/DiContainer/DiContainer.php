@@ -274,8 +274,16 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $isIdInterface = \interface_exists($id);
 
             if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
-                if ($isIdInterface && [] === $arguments && isset($this->definitions[$definition][DiContainerInterface::ARGUMENTS])) {
-                    $arguments += (array) $this->definitions[$definition][DiContainerInterface::ARGUMENTS];
+                $relatedDefinition = $this->definitions[$definition] ?? null;
+
+                if ($isIdInterface && $relatedDefinition instanceof DiDefinitionAutowireInterface) {
+                    return $this->diResolvedDefinition[$id] = $relatedDefinition;
+                }
+
+                if ($isIdInterface && [] === $arguments
+                    && \is_array($relatedDefinition)
+                    && \array_key_exists(DiContainerInterface::ARGUMENTS, $relatedDefinition)) {
+                    $arguments += (array) $relatedDefinition[DiContainerInterface::ARGUMENTS];
                 }
 
                 return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($definition, $isSingleton, $arguments);
