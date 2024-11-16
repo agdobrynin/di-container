@@ -9,6 +9,9 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Definition\Fixtures\CallableStaticMethod;
+use Tests\Unit\Definition\Fixtures\Generated\Service0;
+use Tests\Unit\Definition\Fixtures\Generated\ServiceImplementation;
+use Tests\Unit\Definition\Fixtures\Generated\ServiceInterface;
 use Tests\Unit\Definition\Fixtures\SimpleService;
 use Tests\Unit\Definition\Fixtures\SimpleServiceWithArgument;
 
@@ -26,6 +29,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal
  */
@@ -152,5 +156,17 @@ class DefinitionHelperFunctionTest extends TestCase
         ;
 
         $this->assertEquals(['token' => 'aaa-bbb-ccc', 'refreshToken' => 'qqq-ccc-fff'], $container->get('refresh-token'));
+    }
+
+    public function testDefinitionAsAutowireWithSetContainer(): void
+    {
+        $container = (new DiContainerFactory())->make()
+            ->set(ServiceInterface::class, diAutowire(ServiceImplementation::class))
+        ;
+
+        $class = $container->get(ServiceInterface::class);
+
+        $this->assertInstanceOf(ServiceImplementation::class, $class);
+        $this->assertInstanceOf(Service0::class, $class->service);
     }
 }
