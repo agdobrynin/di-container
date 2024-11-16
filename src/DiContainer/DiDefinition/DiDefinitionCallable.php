@@ -51,7 +51,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws NotFoundExceptionInterface
      * @throws AutowiredExceptionInterface
      */
-    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
+    public function invoke(ContainerInterface $container, ?bool $useAttribute = null): mixed
     {
         $this->reflectionParameters ??= $this->reflectParameters($container);
 

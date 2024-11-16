@@ -20,5 +20,5 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed;
+    public function invoke(ContainerInterface $container, ?bool $useAttribute = null): mixed;
 }

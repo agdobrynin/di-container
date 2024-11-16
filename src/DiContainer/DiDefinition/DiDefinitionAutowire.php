@@ -40,7 +40,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->isSingleton;
     }
 
-    public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
+    public function invoke(ContainerInterface $container, ?bool $useAttribute = null): mixed
     {
         $this->getDefinition()->isInstantiable()
             || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));

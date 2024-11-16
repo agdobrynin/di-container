@@ -188,6 +188,6 @@ class CallableMakeFromAbstractTest extends TestCase
 
         $this->assertEquals('\Tests\Unit\Callable\Fixtures\testFunction', $d->getDefinition());
         $this->assertFalse($d->isSingleton());
-        $this->assertEquals('x:i:0;a:2:{i:0;s:4:"🎃";i:1;s:4:"🎈";};m:a:0:{}', $d->invoke($container, true));
+        $this->assertEquals('x:i:0;a:2:{i:0;s:4:"🎃";i:1;s:4:"🎈";};m:a:0:{}', $d->invoke($container));
     }
 }
