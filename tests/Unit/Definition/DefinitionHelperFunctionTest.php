@@ -8,17 +8,21 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
+use Tests\Unit\Definition\Fixtures\CallableStaticMethod;
 use Tests\Unit\Definition\Fixtures\SimpleService;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diValue;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
  * @covers \Kaspi\DiContainer\diValue
  *
@@ -76,5 +80,24 @@ class DefinitionHelperFunctionTest extends TestCase
         $this->expectExceptionMessage('does not exist');
 
         $container->get('non-exist-class');
+    }
+
+    public function testDiDefinitionFunctionCallable(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'factoryOne' => diCallable([CallableStaticMethod::class, 'myMethod'], arguments: ['name' => 'Ivan', 'city' => 'Vice city']),
+        ]);
+
+        $this->assertEquals('Hello Ivan! Welcome to Vice city 🎈', $container->get('factoryOne'));
+    }
+
+    public function testDiDefinitionFunctionCallableWithoutIdentifier(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('must be a non-empty string');
+
+        (new DiContainerFactory())->make([
+            diCallable([CallableStaticMethod::class, 'myMethod']),
+        ]);
     }
 }
