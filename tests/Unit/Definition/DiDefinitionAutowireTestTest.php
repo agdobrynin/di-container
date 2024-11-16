@@ -55,4 +55,19 @@ class DiDefinitionAutowireTestTest extends TestCase
 
         (new DiDefinitionAutowire(FreeInterface::class, true))->invoke(new DiContainer(), false);
     }
+
+    public function testDefinitionAutowireNonExistClassGetIdentifier(): void
+    {
+        $definition = new DiDefinitionAutowire('non-exist-class', false);
+
+        $this->assertEquals('non-exist-class', $definition->getIdentifier());
+    }
+
+    public function testDefinitionAutowireGetDefinitionOnNonExistClass(): void
+    {
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('Class "non-exist-class" does not exist');
+
+        (new DiDefinitionAutowire('non-exist-class', false))->getDefinition();
+    }
 }

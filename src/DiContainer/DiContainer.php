@@ -16,6 +16,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
@@ -65,12 +66,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $key = match (true) {
                 \is_string($id) => $id,
                 \is_string($definition) => $definition,
+                $definition instanceof DiDefinitionIdentifierInterface => $definition->getIdentifier(),
                 default => throw new DiDefinitionException(
                     \sprintf('Definition identifier must be a non-empty string. Definition [%s].', \get_debug_type($definition))
                 )
             };
 
-            $this->set(id: $key, definition: $definition);
+            $this->set(id: $key, definition: $definition); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
         }
     }
 

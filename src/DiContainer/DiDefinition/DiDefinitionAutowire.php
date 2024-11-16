@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowiredException;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
@@ -68,14 +67,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     public function getIdentifier(): string
     {
-        if (\is_string($this->definition)) {
-            return $this->definition;
-        }
-
-        try {
-            return $this->getDefinition()->getName();
-        } catch (AutowiredExceptionInterface $e) {
-            throw new DiDefinitionException(message: $e->getMessage());
-        }
+        return \is_string($this->definition)
+            ? $this->definition
+            : $this->reflectionClass->getName();
     }
 }

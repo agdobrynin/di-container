@@ -7,15 +7,18 @@ namespace Tests\Unit\Definition;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Tests\Unit\Definition\Fixtures\SimpleServiceWithArgument;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
  *
  * @internal
@@ -128,5 +131,35 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->assertEquals(['arguments' => ['x' => 'aaa']], $container->get('log'));
         $this->assertInstanceOf(DiDefinitionSimple::class, $container->get('array_walk'));
         $this->assertInstanceOf(\stdClass::class, $container->get('array_walk')->getDefinition());
+    }
+
+    public function testResolveDefinitionAsDiDefinitionAutowire(): void
+    {
+        $definition = [
+            new DiDefinitionAutowire(SimpleServiceWithArgument::class, true, arguments: ['token' => 'abc-abc']),
+        ];
+
+        $container = (new DiContainerFactory())->make($definition);
+        $container->get(SimpleServiceWithArgument::class);
+        $service = $container->get(SimpleServiceWithArgument::class);
+
+        $this->assertInstanceOf(SimpleServiceWithArgument::class, $service);
+        $this->assertSame($service, $container->get(SimpleServiceWithArgument::class));
+        $this->assertEquals('abc-abc', $service->getToken());
+    }
+
+    public function testResolveDefinitionAsDiDefinitionAutowireWithReflectionClass(): void
+    {
+        $definition = [
+            new DiDefinitionAutowire(new \ReflectionClass(SimpleServiceWithArgument::class), false, arguments: ['token' => 'abc-abc']),
+        ];
+
+        $container = (new DiContainerFactory())->make($definition);
+        $container->get(SimpleServiceWithArgument::class);
+        $service = $container->get(SimpleServiceWithArgument::class);
+
+        $this->assertInstanceOf(SimpleServiceWithArgument::class, $service);
+        $this->assertNotSame($service, $container->get(SimpleServiceWithArgument::class));
+        $this->assertEquals('abc-abc', $service->getToken());
     }
 }
