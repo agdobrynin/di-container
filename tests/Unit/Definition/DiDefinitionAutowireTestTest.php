@@ -78,12 +78,17 @@ class DiDefinitionAutowireTestTest extends TestCase
 
     public function testDefinitionAutowireWithMethodAddArgumentAndArgumentByReference(): void
     {
-        $container = (new DiContainerFactory())->make([
-            'serviceMain' => Service0::class,
+        $definition = static function (): \Generator {
+            yield 'serviceZero' => Service0::class;
+
             // ... may may definitions.
-            (new DiDefinitionAutowire(Service6::class))
-                ->addArgument('service', '@serviceMain'),
-        ]);
+
+            yield (new DiDefinitionAutowire(Service6::class))
+                ->addArgument('service', '@serviceZero')
+            ;
+        };
+
+        $container = (new DiContainerFactory())->make($definition());
 
         $class6 = $container->get(Service6::class);
 
