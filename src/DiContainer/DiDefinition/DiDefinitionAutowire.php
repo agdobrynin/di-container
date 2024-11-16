@@ -19,7 +19,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     private \ReflectionClass $reflectionClass;
 
-    public function __construct(private \ReflectionClass|string $definition, private bool $isSingleton, array $arguments = [])
+    public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null, array $arguments = [])
     {
         if ($this->definition instanceof \ReflectionClass) {
             $this->reflectionClass = $this->definition;
@@ -28,7 +28,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         $this->arguments = $arguments;
     }
 
-    public function isSingleton(): bool
+    public function isSingleton(): ?bool
     {
         return $this->isSingleton;
     }

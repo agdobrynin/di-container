@@ -11,7 +11,7 @@ use Psr\Container\NotFoundExceptionInterface;
 
 interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 {
-    public function isSingleton(): bool;
+    public function isSingleton(): ?bool;
 
     /**
      * @throws AutowiredExceptionInterface

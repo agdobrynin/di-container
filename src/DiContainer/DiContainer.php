@@ -186,7 +186,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     ? $o($this)
                     : $o;
 
-                return $diDefinition->isSingleton()
+                $isSingleton = (
+                    $diDefinition->isSingleton()
+                    ?? $this->config?->isSingletonServiceDefault()
+                    ?? false
+                );
+
+                return $isSingleton
                     ? $this->resolved[$id] = $object
                     : $object;
             }
