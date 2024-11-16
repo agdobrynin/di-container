@@ -32,16 +32,13 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 
     public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
     {
-        $this->setContainer($container);
-
-        if (!isset($this->reflectionParameters)) {
-            $this->reflectionParameters = $this->reflectParameters();
-        }
+        $this->reflectionParameters ??= $this->reflectParameters();
 
         if ([] === $this->reflectionParameters) {
             return \call_user_func($this->definition);
         }
 
+        $this->setContainer($container);
         $resolvedArgs = $this->resolveParameters($useAttribute);
 
         return \call_user_func_array($this->definition, $resolvedArgs);

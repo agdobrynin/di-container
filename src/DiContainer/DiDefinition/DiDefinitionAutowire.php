@@ -33,21 +33,15 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
 
     public function invoke(ContainerInterface $container, ?bool $useAttribute): mixed
     {
-        $this->initDefinition();
-
-        if (!isset($this->reflectionParameters)) {
-            $this->reflectionClass->isInstantiable()
-                || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
-
-            $this->reflectionParameters = $this->reflectionClass->getConstructor()?->getParameters() ?? [];
-        }
-
-        $this->setContainer($container);
+        $this->getDefinition()->isInstantiable()
+            || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+        $this->reflectionParameters ??= $this->reflectionClass->getConstructor()?->getParameters() ?? [];
 
         if ([] === $this->reflectionParameters) {
             return $this->reflectionClass->newInstanceWithoutConstructor();
         }
 
+        $this->setContainer($container);
         $args = $this->resolveParameters($useAttribute);
 
         return $this->reflectionClass->newInstanceArgs($args);
@@ -59,19 +53,10 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface
             return $this->reflectionClass;
         }
 
-        $this->initDefinition();
-
-        return $this->reflectionClass;
-    }
-
-    protected function initDefinition(): void
-    {
-        if (!isset($this->reflectionClass) && \is_string($this->definition)) {
-            try {
-                $this->reflectionClass = new \ReflectionClass($this->definition);
-            } catch (\ReflectionException $e) {
-                throw new AutowiredException(message: $e->getMessage(), previous: $e);
-            }
+        try {
+            return $this->reflectionClass = new \ReflectionClass($this->definition);
+        } catch (\ReflectionException $e) {
+            throw new AutowiredException(message: $e->getMessage());
         }
     }
 }
