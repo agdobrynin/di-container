@@ -151,11 +151,10 @@ trait ParametersResolverTrait
             return $this->resolvedArguments[$attribute->getId()];
         }
 
-        $object = (new DiDefinitionAutowire(
-            $attribute->getId(),
-            $attribute->isSingleton(),
-            $attribute->getArguments()
-        ))->invoke($this->getContainer(), true);
+        $object = (new DiDefinitionAutowire($attribute->getId(), $attribute->isSingleton(), $attribute->getArguments()))
+            ->setContainer($this->getContainer())
+            ->invoke(true)
+        ;
 
         $objectResult = $attribute instanceof DiFactory
             ? $object($this->getContainer())

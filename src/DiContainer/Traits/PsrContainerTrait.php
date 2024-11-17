@@ -12,9 +12,14 @@ trait PsrContainerTrait
 {
     protected ContainerInterface $container;
 
-    public function setContainer(ContainerInterface $container): void
+    /**
+     * @phan-suppress PhanTypeMismatchReturn
+     */
+    public function setContainer(ContainerInterface $container): static
     {
         $this->container = $container;
+
+        return $this;
     }
 
     /**

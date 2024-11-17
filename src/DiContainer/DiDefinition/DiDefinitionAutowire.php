@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
-use Psr\Container\ContainerInterface;
 
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionIdentifierInterface
 {
@@ -28,7 +27,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         $this->arguments = $arguments;
     }
 
-    public function addArgument(string $name, mixed $value): self
+    public function addArgument(string $name, mixed $value): static
     {
         $this->arguments[$name] = $value;
 
@@ -40,7 +39,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->isSingleton;
     }
 
-    public function invoke(ContainerInterface $container, ?bool $useAttribute = null): mixed
+    public function invoke(?bool $useAttribute = null): mixed
     {
         $this->getDefinition()->isInstantiable()
             || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
@@ -50,7 +49,6 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             return $this->reflectionClass->newInstanceWithoutConstructor();
         }
 
-        $this->setContainer($container);
         $args = $this->resolveParameters($useAttribute);
 
         return $this->reflectionClass->newInstanceArgs($args);

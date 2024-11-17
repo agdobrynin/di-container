@@ -11,7 +11,6 @@ use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionCallable implements DiDefinitionAutowireInterface
@@ -33,7 +32,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         $this->arguments = $arguments;
     }
 
-    public function addArgument(string $name, mixed $value): self
+    public function addArgument(string $name, mixed $value): static
     {
         $this->arguments[$name] = $value;
 
@@ -51,15 +50,14 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws NotFoundExceptionInterface
      * @throws AutowiredExceptionInterface
      */
-    public function invoke(ContainerInterface $container, ?bool $useAttribute = null): mixed
+    public function invoke(?bool $useAttribute = null): mixed
     {
-        $this->reflectionParameters ??= $this->reflectParameters($container);
+        $this->reflectionParameters ??= $this->reflectParameters();
 
         if ([] === $this->reflectionParameters) {
             return \call_user_func($this->parsedDefinition);
         }
 
-        $this->setContainer($container);
         $resolvedArgs = $this->resolveParameters($useAttribute);
 
         return \call_user_func_array($this->parsedDefinition, $resolvedArgs);
@@ -77,9 +75,8 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    private function reflectParameters(ContainerInterface $container): array
+    private function reflectParameters(): array
     {
-        $this->setContainer($container);
         $this->parsedDefinition ??= $this->parseCallable($this->definition);
 
         if (\is_array($this->parsedDefinition)) {
