@@ -8,20 +8,20 @@ use Kaspi\DiContainer\{DiContainer, DiContainerConfig};
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 $definitions = [
-        \PDO::class => [
-            // ⚠ Ключ "arguments" является зарезервированным значением
-            // и служит для передачи в конструктор класса.
-            // Таким объявлением в конструкторе класса \PDO
-            // аргумент с именем $dsn получит значение
-            // DiContainerInterface::ARGUMENTS = 'arguments'
-            DiContainerInterface::ARGUMENTS => [
-                'dsn' => 'sqlite:/opt/databases/mydb.sq3',
-            ],
-            // Сервис будет создан как Singleton - в течении
-            // жизненного цикла контейнера. 
-            DiContainerInterface::SINGLETON => true,
-        ];
+    \PDO::class => [
+        // ⚠ Ключ "arguments" является зарезервированным значением
+        // и служит для передачи в конструктор класса.
+        // Таким объявлением в конструкторе класса \PDO
+        // аргумент с именем $dsn получит значение
+        // DiContainerInterface::ARGUMENTS = 'arguments'
+        DiContainerInterface::ARGUMENTS => [
+            'dsn' => 'sqlite:/opt/databases/mydb.sq3',
+        ],
+        // Сервис будет создан как Singleton - в течении
+        // жизненного цикла контейнера. 
+        DiContainerInterface::SINGLETON => true,
     ];
+];
 
 $config = new DiContainerConfig();
 $container = new DiContainer(definitions: $definitions, config: $config);
