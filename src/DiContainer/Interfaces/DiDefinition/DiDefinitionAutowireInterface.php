@@ -11,6 +11,11 @@ use Psr\Container\NotFoundExceptionInterface;
 
 interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 {
+    /**
+     * @param non-empty-string $name
+     *
+     * @return $this
+     */
     public function addArgument(string $name, mixed $value): static;
 
     public function isSingleton(): ?bool;
