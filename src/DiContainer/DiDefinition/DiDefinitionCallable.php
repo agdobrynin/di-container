@@ -65,9 +65,9 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         return \call_user_func_array($this->parsedDefinition, $resolvedArgs);
     }
 
-    public function getDefinition(): array|callable|string
+    public function getDefinition(): callable
     {
-        return $this->definition;
+        return $this->parsedDefinition ??= $this->parseCallable($this->definition);
     }
 
     /**

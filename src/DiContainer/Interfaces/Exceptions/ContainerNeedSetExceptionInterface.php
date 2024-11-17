@@ -6,4 +6,4 @@ namespace Kaspi\DiContainer\Interfaces\Exceptions;
 
 use Psr\Container\ContainerExceptionInterface;
 
-interface ContainerAlreadyRegisteredExceptionInterface extends ContainerExceptionInterface {}
+interface ContainerNeedSetExceptionInterface extends ContainerExceptionInterface {}
