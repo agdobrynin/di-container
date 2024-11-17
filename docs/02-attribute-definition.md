@@ -425,28 +425,3 @@ $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
 assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleB); // true
 ```
-
-### DiContainer::call
-
-Контейнер предоставляет метод `call()`, который может вызывать любой PHP **callable** тип:
-
-- функция
-- callback функция (`\Closure`)
-- статические методы класса - `App\MyClass::someStaticMethod`
-- метод у созданного класса - `[$classInstance, 'someMethod']`
-- класс реализующий метод __invoke() - `$classInstance`
-
-#### 🔢 Так же доступны вызовы с параметрами:
-
-- Класс реализующий `__invoke` метод
-```php
-$container->call(App\MyClassWithInvokeMethod::class);
-```
-- класс с нестатическим методом (*)
-```php
-$container->call([App\MyClass::class, 'someMethod']);
-$container->call(App\MyClass::class.'::someMethod');
-$container->call('App\MyClass::someMethod');
-```
-> (*) при вызове если `App\MyClass` нуждается в создании
-> через конструктор то он будет создан используя `DiContainer::get(App\MyClass::class)` 
