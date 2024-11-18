@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
@@ -58,9 +59,11 @@ trait ParametersResolverTrait
                     : [$argument];
 
                 foreach ($args as $arg) {
-                    $dependencies[] = \is_string($arg) && $this->getContainer()->has($arg)
-                        ? $this->getContainer()->get($arg)
-                        : $arg;
+                    $dependencies[] = match (true) {
+                        $arg instanceof DiDefinitionReference => $this->getContainer()->get($arg->getDefinition()),
+                        \is_string($arg) && $this->getContainer()->has($arg) => $this->getContainer()->get($arg),
+                        default => $arg, // @todo how detect value type?
+                    };
                 }
 
                 continue;

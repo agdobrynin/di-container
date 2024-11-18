@@ -12,6 +12,7 @@ use Tests\Unit\Definition\Fixtures\Variadic\RuleC;
 use Tests\Unit\Definition\Fixtures\Variadic\RuleGenerator;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diReference;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -19,6 +20,8 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
+ * @covers \Kaspi\DiContainer\diReference
  *
  * @internal
  */
@@ -34,7 +37,7 @@ class VariadicArgumentTest extends TestCase
                     value: [ // <-- обернуть параметры в массив для variadic типов
                         RuleB::class,
                         RuleA::class,
-                        '@ruleC', // <-- получение по ссылке
+                        diReference('ruleC'), // <-- получение по ссылке
                     ], // <-- обернуть параметры в массив
                 ),
         ];
@@ -59,7 +62,7 @@ class VariadicArgumentTest extends TestCase
                     'inputRule' => [ // <-- обернуть параметры в массив для variadic типов
                         RuleB::class,
                         RuleA::class,
-                        '@ruleC', // <-- получение по ссылке
+                        diReference('ruleC'), // <-- получение по ссылке
                     ], // <-- обернуть параметры в массив
                 ]
             ),

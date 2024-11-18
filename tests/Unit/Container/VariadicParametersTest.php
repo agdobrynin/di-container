@@ -18,6 +18,8 @@ use Tests\Fixtures\Classes\VariadicParameterRule;
 use Tests\Fixtures\Classes\VariadicSimpleArguments;
 use Tests\Fixtures\Classes\VariadicSimpleArrayArguments;
 
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -26,7 +28,9 @@ use Tests\Fixtures\Classes\VariadicSimpleArrayArguments;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal
@@ -44,7 +48,7 @@ class VariadicParametersTest extends TestCase
                         'second',
                         'third',
                         'fourth',
-                        '@ref1', // reference to other container-id
+                        diReference('ref1'), // reference to other container-id
                     ],
                 ],
             ],

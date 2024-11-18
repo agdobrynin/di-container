@@ -17,6 +17,8 @@ use Tests\Fixtures\Attributes\FactoryClassWithDiFactoryArgument;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
 
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @internal
  *
@@ -27,7 +29,9 @@ use Tests\Fixtures\Classes\Interfaces;
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  */
 class ContainerTest extends TestCase
@@ -434,9 +438,9 @@ class ContainerTest extends TestCase
                 Classes\Logger::class => [
                     'arguments' => [
                         // get by container-id
-                        'name' => '@logger_name_my_app',
+                        'name' => diReference('logger_name_my_app'),
                         // get by container link
-                        'file' => '@local_file',
+                        'file' => diReference('local_file'),
                     ],
                 ],
             ]
