@@ -10,7 +10,7 @@ use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
+use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -145,7 +145,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws AutowiredExceptionInterface
      */
-    protected function resolveArgumentByAttribute(DiAttributeInterface $attribute): mixed
+    protected function resolveArgumentByAttribute(DiAttributeServiceInterface $attribute): mixed
     {
         if (isset($this->resolvedArguments[$attribute->getId()])) {
             return $this->resolvedArguments[$attribute->getId()];

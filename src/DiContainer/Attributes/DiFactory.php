@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Attributes;
 
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
+use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
-final class DiFactory implements DiAttributeInterface
+final class DiFactory implements DiAttributeServiceInterface
 {
     /**
      * @param class-string<DiFactoryInterface> $id

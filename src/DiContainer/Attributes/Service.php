@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
+use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class Service implements DiAttributeInterface
+final class Service implements DiAttributeServiceInterface
 {
     /**
      * @param class-string|string $id class name or container reference
