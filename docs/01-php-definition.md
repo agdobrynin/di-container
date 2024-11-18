@@ -13,7 +13,7 @@ $definitions = [
         // и служит для передачи в конструктор класса.
         // Таким объявлением в конструкторе класса \PDO
         // аргумент с именем $dsn получит значение
-        // DiContainerInterface::ARGUMENTS = 'arguments'
+        // DiContainerInterface::ARGUMENTS === 'arguments'
         DiContainerInterface::ARGUMENTS => [
             'dsn' => 'sqlite:/opt/databases/mydb.sq3',
         ],
@@ -282,7 +282,7 @@ $interfaceDefinition = [
 ];
 
 $container = (new DiContainerFactory())->make(
-    $simpleDefinitions + $interfaceDefinition // a simple merge or use function \array_merge
+    \array_merge($simpleDefinitions, $interfaceDefinition)
 );
 ```
 
@@ -354,7 +354,7 @@ $interfacesDefinitions = [
 ];
 
 $container = (new DiContainerFactory()->make(
-    $classesDefinitions + $interfacesDefinitions
+    \array_merge($classesDefinitions, $interfacesDefinitions)
 );
 ```
 
@@ -541,7 +541,7 @@ namespace App;
 
 interface SumInterface {}
 
-class Sum {
+class Sum implements SumInterface {
     public function __construct(public int $init) {}
 }
 ```
