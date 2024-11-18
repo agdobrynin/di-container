@@ -4,22 +4,27 @@
 
 #### Поддерживаемые типы:
 - Функция `is_callable`
+  ```php
+    function userFunc() { /*... do something ... */ }
+    // ...
+    $container->call('userFunc');
+  ```
 - Callback функция (`\Closure`) `is_callable`
     ```php
-    $definition = static fn() => ...
+    $container->call(static function() { /*... do something ... */ });
     ```
 - Статические методы класса `is_callable`
   ```php
-  $definition = 'App\MyClass::someStaticMethod';
-  $definition = App\MyClass::class.'::someStaticMethod';
+  $container->call('App\MyClass::someStaticMethod');
+  $container->call(App\MyClass::class.'::someStaticMethod');
   ```
 - Метод у созданного класса `is_callable`
   ```php
-  $definition = [$classInstance, 'someMethod']
+  $container->call([$classInstance, 'someMethod']);
   ```
 - Класс реализующий метод __invoke() `is_callable`
   ```php
-  $definition = $classInstance
+  $container->call($classInstance);
   ```
 - класс с нестатическим методом (*)
   ```php
