@@ -35,8 +35,8 @@ class VariadicArgumentTest extends TestCase
                 ->addArgument(
                     name: 'inputRule', // имя аргумента в конструкторе
                     value: [ // <-- обернуть параметры в массив для variadic типов
-                        RuleB::class,
-                        RuleA::class,
+                        diReference(RuleB::class),
+                        diReference(RuleA::class),
                         diReference('ruleC'), // <-- получение по ссылке
                     ], // <-- обернуть параметры в массив
                 ),
@@ -60,8 +60,8 @@ class VariadicArgumentTest extends TestCase
                 [
                     // имя аргумента в конструкторе
                     'inputRule' => [ // <-- обернуть параметры в массив для variadic типов
-                        RuleB::class,
-                        RuleA::class,
+                        diReference(RuleB::class),
+                        diReference(RuleA::class),
                         diReference('ruleC'), // <-- получение по ссылке
                     ], // <-- обернуть параметры в массив
                 ]
