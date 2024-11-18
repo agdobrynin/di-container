@@ -126,7 +126,7 @@ $container = (new \Kaspi\DiContainer\DiContainerFactory())->make($definitions);
 var_dump($container->get('services.one') instanceof App\Services\ServiceOne); // true
 ```
 
-> 🚩 Поддерживаемые [типы](https://github.com/agdobrynin/di-container/docs/03-call-method.md#поддерживаемые-типы)
+> 🚩 Поддерживаемые [типы](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
 > подробнее в разделе описывающий `DiContainer::call` 
 
 #### diValue
