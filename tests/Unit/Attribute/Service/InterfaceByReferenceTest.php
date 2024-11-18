@@ -7,7 +7,10 @@ namespace Tests\Unit\Attribute\Service;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReference;
+use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceEmptyIdentifier;
+use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceNotFound;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceSpaceInIdentifier;
 use Tests\Unit\Attribute\Service\Fixtures\ServiceOne;
 
@@ -43,7 +46,7 @@ class InterfaceByReferenceTest extends TestCase
         $this->assertSame($class->service, $container->get(ClassInjectArgumentInterfaceByReference::class)->service);
     }
 
-    public function testResolveInterfaceByReferenceWithIdentifier(): void
+    public function testResolveInterfaceByReferenceSpaceIdentifier(): void
     {
         $container = (new DiContainerFactory())->make();
 
@@ -51,5 +54,25 @@ class InterfaceByReferenceTest extends TestCase
         $this->expectExceptionMessage(' must be a non-empty string');
 
         $container->get(ClassInjectArgumentInterfaceByReferenceSpaceInIdentifier::class);
+    }
+
+    public function testResolveInterfaceByReferenceEmptyIdentifier(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage(' must be a non-empty string');
+
+        $container->get(ClassInjectArgumentInterfaceByReferenceEmptyIdentifier::class);
+    }
+
+    public function testResolveInterfaceByReferenceNotFoundIdentifier(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('services.serviceOne');
+
+        $container->get(ClassInjectArgumentInterfaceByReferenceNotFound::class);
     }
 }

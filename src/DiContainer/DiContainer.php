@@ -226,7 +226,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
             if (!$hasDefinition) {
-                $reflectionClass = new \ReflectionClass($id); // @todo come up possible test with throw
+                try {
+                    $reflectionClass = new \ReflectionClass($id);
+                } catch (\ReflectionException) {
+                    throw new NotFoundException("Definition identifier [{$id}] not found.");
+                }
 
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute()) {
