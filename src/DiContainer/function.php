@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -50,5 +51,12 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
     function diValue(mixed $definition): DiDefinitionValue
     {
         return new DiDefinitionValue($definition);
+    }
+} // @codeCoverageIgnore
+
+if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
+    function diReference(string $containerIdentifier): DiDefinitionReference
+    {
+        return new DiDefinitionReference($containerIdentifier);
     }
 } // @codeCoverageIgnore
