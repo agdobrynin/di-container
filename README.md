@@ -148,9 +148,9 @@ $container->get(TestClass::class)->container instanceof \Kaspi\DiContainer\DiCon
 
 ### Подробное описание конфигурирования и использования
 
-* [DiContainer с конфигурированием на основе php-определений](https://github.com/agdobrynin/di-container/docs/01-php-definition.md).
-* [DiContainer c конфигурированием через PHP атрибуты](https://github.com/agdobrynin/di-container/docs/02-attribute-definition.md).
-* [DiContainer::call](https://github.com/agdobrynin/di-container/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений. 
+* [DiContainer с конфигурированием на основе php-определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md).
+* [DiContainer c конфигурированием через PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
+* [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений. 
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода
