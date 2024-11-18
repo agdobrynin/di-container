@@ -13,6 +13,8 @@ use Tests\Unit\Attribute\Inject\Fixtures\InjectArgumentByArgumentName;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectDependencyWithPrivateConstructor;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectMultiNonVariadicConstructorParameter;
 use Tests\Unit\Attribute\Inject\Fixtures\InjectVariadicArgumentByArgumentName;
+use Tests\Unit\Attribute\Inject\Fixtures\PropertyInjectByReferenceInjectWithEmptyIdentifier;
+use Tests\Unit\Attribute\Inject\Fixtures\PropertyInjectByReferenceInjectWithSpaceIdentifier;
 use Tests\Unit\Attribute\Inject\Fixtures\PropertyNonVariadicReferenceInjectId;
 use Tests\Unit\Attribute\Inject\Fixtures\PropertyVariadicByIdWithClass;
 use Tests\Unit\Attribute\Inject\Fixtures\PropertyVariadicByIdWithClassWithArgument;
@@ -24,6 +26,7 @@ use Tests\Unit\Attribute\Inject\Fixtures\RuleB;
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\InjectByReference
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -132,14 +135,17 @@ class InjectWithGetContainerTest extends TestCase
 
     public function testResolveNonVariadicParameterWithoutType(): void
     {
-        $container = (new DiContainerFactory())->make(['argName' => ['hello', 'world']]);
+        $container = (new DiContainerFactory())->make(['public.welcome_array' => ['hello', 'world']]);
 
         $this->assertEquals(['hello', 'world'], $container->get(InjectArgumentByArgumentName::class)->argName);
     }
 
     public function testResolveVariadicParameterWithoutType(): void
     {
-        $container = (new DiContainerFactory())->make(['argName' => [['hello', 'world'], ['run', 'now']]]);
+        $container = (new DiContainerFactory())->make([
+            'welcome.variadic_param' => [['hello', 'world'], ['run', 'now']],
+        ]);
+
         $class = $container->get(InjectVariadicArgumentByArgumentName::class);
 
         $this->assertEquals(['hello', 'world'], $class->argNames[0]);
@@ -170,5 +176,25 @@ class InjectWithGetContainerTest extends TestCase
         $this->expectExceptionMessageMatches('/(DependencyWithPrivateConstructor).+(class is not instantiable)/');
 
         $container->get(InjectDependencyWithPrivateConstructor::class);
+    }
+
+    public function testResolveConstructorArgumentByInjectByReferenceEmptyIdentifier(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/(InjectByReference).+(must be a non-empty string)/');
+
+        $container->get(PropertyInjectByReferenceInjectWithEmptyIdentifier::class);
+    }
+
+    public function testResolveConstructorArgumentByInjectByReferenceSpaceIdentifier(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/(InjectByReference).+(must be a non-empty string)/');
+
+        $container->get(PropertyInjectByReferenceInjectWithSpaceIdentifier::class);
     }
 }

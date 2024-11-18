@@ -53,7 +53,9 @@ trait ParametersResolverTrait
         foreach ($this->reflectionParameters as $parameter) {
             if (\array_key_exists($parameter->name, $this->arguments)) {
                 $argument = $this->arguments[$parameter->name];
-                $args = \is_array($argument) && $parameter->isVariadic() ? $argument : [$argument];
+                $args = \is_array($argument) && $parameter->isVariadic()
+                    ? $argument
+                    : [$argument];
 
                 foreach ($args as $arg) {
                     $dependencies[] = \is_string($arg) && $this->getContainer()->has($arg)
@@ -91,6 +93,23 @@ trait ParametersResolverTrait
                             $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
                                 ? $this->getContainer()->get($inject->getIdentifier())
                                 : $this->getContainer()->get($parameter->getName());
+
+                            $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                                ? $resolvedVal
+                                : [$resolvedVal];
+                            \array_push($dependencies, ...$vals);
+                        }
+
+                        continue;
+                    }
+
+                    $injectsByReference = $this->getInjectByReferenceAttribute($parameter);
+
+                    if ($injectsByReference->valid()) {
+                        foreach ($injectsByReference as $inject) {
+                            $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
+                                ? $this->getContainer()->get($inject->getIdentifier())
+                                : throw new NotFoundException("Definition identifier [{$inject->getIdentifier()}] not found.");
 
                             $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
                             \array_push($dependencies, ...$vals);

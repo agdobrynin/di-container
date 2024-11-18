@@ -17,6 +17,7 @@ use Tests\Unit\Attribute\Inject\Fixtures\RuleB;
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\InjectByReference
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
@@ -57,7 +58,7 @@ class InjectWithCallMethodTest extends TestCase
         $container = (new DiContainerFactory())->make();
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Unresolvable dependency [rule]');
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+rules.text.strip_tags/');
 
         $container->call([MethodWithInjectByReferenceNotFound::class, 'rulesInvoke']);
     }

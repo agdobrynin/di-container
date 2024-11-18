@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Attribute\Inject\Fixtures;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
 
 class InjectVariadicArgumentByArgumentName
 {
@@ -14,7 +14,7 @@ class InjectVariadicArgumentByArgumentName
     public array $argNames;
 
     public function __construct(
-        #[Inject]
+        #[InjectByReference('welcome.variadic_param')]
         array ...$argName
     ) {
         $this->argNames = $argName;

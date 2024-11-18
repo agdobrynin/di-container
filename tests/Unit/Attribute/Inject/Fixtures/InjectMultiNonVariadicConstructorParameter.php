@@ -9,8 +9,8 @@ use Kaspi\DiContainer\Attributes\Inject;
 class InjectMultiNonVariadicConstructorParameter
 {
     public function __construct(
-        #[Inject('@param1')]
-        #[Inject('@param2')]
+        #[Inject]
+        #[Inject]
         public array $param1
     ) {}
 }

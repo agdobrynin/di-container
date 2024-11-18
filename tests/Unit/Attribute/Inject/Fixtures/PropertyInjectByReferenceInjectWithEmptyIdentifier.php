@@ -6,7 +6,7 @@ namespace Tests\Unit\Attribute\Inject\Fixtures;
 
 use Kaspi\DiContainer\Attributes\InjectByReference;
 
-class PropertyVariadicReferenceInjectId
+class PropertyInjectByReferenceInjectWithEmptyIdentifier
 {
     /**
      * @var RuleInterface[]
@@ -14,15 +14,9 @@ class PropertyVariadicReferenceInjectId
     protected array $rules;
 
     public function __construct(
-        #[InjectByReference('ruleA')]
-        #[InjectByReference('ruleB')]
+        #[InjectByReference('')]
         RuleInterface ...$rule
     ) {
         $this->rules = $rule;
-    }
-
-    public function getRules(): array
-    {
-        return $this->rules;
     }
 }
