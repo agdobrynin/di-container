@@ -530,7 +530,7 @@ $container->get('log'); // 💥 ошибка при получении
 
 ```php
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 
 use function Kaspi\DiContainer\diValue;
 

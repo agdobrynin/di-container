@@ -8,7 +8,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ use Tests\Unit\Definition\Fixtures\SimpleServiceWithArgument;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  *
  * @internal
  */
@@ -30,7 +30,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        (new DiContainerFactory())->make([new DiDefinitionSimple([])]);
+        (new DiContainerFactory())->make([new DiDefinitionValue([])]);
     }
 
     public function testDiDefinitionAsCallbackWithoutContainerKey(): void
@@ -46,7 +46,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        (new DiContainerFactory())->make(['' => new DiDefinitionSimple([])]);
+        (new DiContainerFactory())->make(['' => new DiDefinitionValue([])]);
     }
 
     public function testDiDefinitionWithContainerKeyStringWithSpaces(): void
@@ -54,7 +54,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        (new DiContainerFactory())->make(['     ' => new DiDefinitionSimple([])]);
+        (new DiContainerFactory())->make(['     ' => new DiDefinitionValue([])]);
     }
 
     public function testDiDefinitionWithContainerKeyIsNumber(): void
@@ -62,7 +62,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        (new DiContainerFactory())->make([100 => new DiDefinitionSimple([])]);
+        (new DiContainerFactory())->make([100 => new DiDefinitionValue([])]);
     }
 
     public function testDiDefinitionSetKeyEmptyString(): void
@@ -70,7 +70,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        (new DiContainerFactory())->make()->set('', new DiDefinitionSimple([]));
+        (new DiContainerFactory())->make()->set('', new DiDefinitionValue([]));
     }
 
     public function testDiDefinitionSetKeyIsNumber(): void
@@ -78,13 +78,13 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        (new DiContainerFactory())->make()->set('  ', new DiDefinitionSimple([]));
+        (new DiContainerFactory())->make()->set('  ', new DiDefinitionValue([]));
     }
 
     public function testDiDefinitionAsDiDefinitionSimpleArray(): void
     {
         $container = (new DiContainerFactory())->make([
-            'log' => new DiDefinitionSimple(['a' => 'aaa']),
+            'log' => new DiDefinitionValue(['a' => 'aaa']),
         ]);
 
         $this->assertEquals(['a' => 'aaa'], $container->get('log'));
@@ -93,7 +93,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
     public function testDiDefinitionSetDiDefinitionSimpleArray(): void
     {
         $container = (new DiContainerFactory())->make();
-        $container->set('log', new DiDefinitionSimple(['a' => 'aaa']));
+        $container->set('log', new DiDefinitionValue(['a' => 'aaa']));
 
         $this->assertEquals(['a' => 'aaa'], $container->get('log'));
     }
@@ -101,7 +101,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
     public function testDiDefinitionAsDiDefinitionSimpleString(): void
     {
         $container = (new DiContainerFactory())->make([
-            'x' => new DiDefinitionSimple('log'),
+            'x' => new DiDefinitionValue('log'),
         ]);
 
         $this->assertEquals('log', $container->get('x'));
@@ -110,7 +110,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
     public function testDiDefinitionSetDiDefinitionSimpleString(): void
     {
         $container = (new DiContainerFactory())->make();
-        $container->set('x', new DiDefinitionSimple('log'));
+        $container->set('x', new DiDefinitionValue('log'));
 
         $this->assertEquals('log', $container->get('x'));
     }
@@ -121,7 +121,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
             'aaa' => 'aaa string',
             'null' => null,
             'log' => [DiContainerInterface::ARGUMENTS => ['x' => 'aaa']],
-            'array_walk' => new DiDefinitionSimple(new \stdClass()),
+            'array_walk' => new DiDefinitionValue(new \stdClass()),
         ];
 
         $container = new DiContainer($def, new DiContainerConfig(useAutowire: false, useAttribute: false));
@@ -129,7 +129,7 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->assertEquals('aaa string', $container->get('aaa'));
         $this->assertNull($container->get('null'));
         $this->assertEquals(['arguments' => ['x' => 'aaa']], $container->get('log'));
-        $this->assertInstanceOf(DiDefinitionSimple::class, $container->get('array_walk'));
+        $this->assertInstanceOf(DiDefinitionValue::class, $container->get('array_walk'));
         $this->assertInstanceOf(\stdClass::class, $container->get('array_walk')->getDefinition());
     }
 

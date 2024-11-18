@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
@@ -268,7 +268,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
             }
 
             if ($rawDefinition instanceof DiDefinitionInterface) {
@@ -307,7 +307,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($definition, $isSingleton, $arguments);
             }
 
-            return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
+            return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
         }
 
         return $this->diResolvedDefinition[$id];

@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiContainerConfigExceptionInterface;
@@ -47,8 +47,8 @@ if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diValue(mixed $definition): DiDefinitionSimple
+    function diValue(mixed $definition): DiDefinitionValue
     {
-        return new DiDefinitionSimple($definition);
+        return new DiDefinitionValue($definition);
     }
 } // @codeCoverageIgnore

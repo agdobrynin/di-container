@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
-final class DiDefinitionSimple implements DiDefinitionInterface
+final class DiDefinitionValue implements DiDefinitionInterface
 {
     public function __construct(private mixed $definition) {}
 

@@ -24,7 +24,7 @@ use Tests\Unit\Attribute\DiFactory\Fixtures\RuleB;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionSimple
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  *
  * @internal
  */
