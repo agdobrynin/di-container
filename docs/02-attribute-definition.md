@@ -10,6 +10,7 @@
 Доступные атрибуты:
 - **[Inject](#inject)** - внедрение зависимости в аргументы конструктор или методы класса.
 - **[Service](#service)** - определение для интерфейса какой класс будет вызван и разрешен в контейнере.
+- **[ServiceByReference](#servicebyreference)** - определение для интерфейса по ссылке.
 - **[DiFactory](#difactory)** - Фабрика для разрешения зависимостей. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
 
 ## Inject
@@ -269,6 +270,10 @@ use App\MyLogger;
 $myClass = $container->get(MyLogger::class);
 print $myClass->customLogger->loggerFile(); // /var/log/app.log
 ```
+
+## ServiceByReference
+
+todo...
 
 ## DiFactory
 
