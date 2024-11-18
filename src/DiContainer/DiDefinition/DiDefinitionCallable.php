@@ -5,65 +5,89 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionCallable implements DiDefinitionAutowireInterface
 {
+    use CallableParserTrait;
     use ParametersResolverTrait;
     use PsrContainerTrait;
+
+    private $definition;
 
     /**
      * @var callable
      */
-    private $definition;
+    private $parsedDefinition;
 
-    public function __construct(ContainerInterface $container, callable $definition, private bool $isSingleton, array $arguments = [])
+    public function __construct(array|callable|string $definition, private ?bool $isSingleton = null, array $arguments = [])
     {
-        $this->setContainer($container);
         $this->definition = $definition;
-        $this->reflectionParameters = $this->reflectParameters();
         $this->arguments = $arguments;
     }
 
-    public function isSingleton(): bool
+    public function addArgument(string $name, mixed $value): static
+    {
+        $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
+    public function isSingleton(): ?bool
     {
         return $this->isSingleton;
     }
 
-    public function invoke(?bool $useAttribute): mixed
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws DiDefinitionCallableExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws AutowiredExceptionInterface
+     */
+    public function invoke(?bool $useAttribute = null): mixed
     {
+        $this->reflectionParameters ??= $this->reflectParameters();
+
         if ([] === $this->reflectionParameters) {
-            return \call_user_func($this->definition);
+            return \call_user_func($this->parsedDefinition);
         }
 
         $resolvedArgs = $this->resolveParameters($useAttribute);
 
-        return \call_user_func_array($this->definition, $resolvedArgs);
+        return \call_user_func_array($this->parsedDefinition, $resolvedArgs);
     }
 
     public function getDefinition(): callable
     {
-        return $this->definition;
+        return $this->parsedDefinition ??= $this->parseCallable($this->definition);
     }
 
     /**
      * @return \ReflectionParameter[]
      *
-     * @throws \ReflectionException
+     * @throws ContainerExceptionInterface
+     * @throws DiDefinitionCallableExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     private function reflectParameters(): array
     {
-        if (\is_array($this->definition)) {
-            return (new \ReflectionMethod($this->definition[0], $this->definition[1]))->getParameters();
+        $this->parsedDefinition ??= $this->parseCallable($this->definition);
+
+        if (\is_array($this->parsedDefinition)) {
+            return (new \ReflectionMethod($this->parsedDefinition[0], $this->parsedDefinition[1]))->getParameters();
         }
 
-        if (\is_string($this->definition) && \strpos($this->definition, '::') > 0) {
-            return (new \ReflectionMethod($this->definition))->getParameters();
+        if (\is_string($this->parsedDefinition) && \strpos($this->parsedDefinition, '::') > 0) {
+            return (new \ReflectionMethod($this->parsedDefinition))->getParameters();
         }
 
-        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
-        return (new \ReflectionFunction($this->definition))->getParameters();
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+        return (new \ReflectionFunction($this->parsedDefinition))->getParameters();
     }
 }

@@ -8,7 +8,9 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Definition\Fixtures\CallableStaticMethodWithArgument;
+use Tests\Unit\Definition\Fixtures\ClassWithInvokeMethod;
 use Tests\Unit\Definition\Fixtures\SimpleService;
+use Tests\Unit\Definition\Fixtures\WithoutConstructor;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -27,9 +29,19 @@ class DiDefinitionCallableTest extends TestCase
     {
         $container = (new DiContainerFactory())->make(['service' => SimpleService::class]);
 
-        $callable = new DiDefinitionCallable($container, CallableStaticMethodWithArgument::class.'::makeSomething', false);
-        $res = $callable->invoke(false);
+        $callable = new DiDefinitionCallable(CallableStaticMethodWithArgument::class.'::makeSomething', false);
+        $res = $callable->setContainer($container)->invoke();
 
         $this->assertEquals('Tests\Unit\Definition\Fixtures\SimpleService:Tests\Unit\Definition\Fixtures\WithoutConstructor:ok', $res);
+    }
+
+    public function testCallableClassWithInvokeMethid(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $res = (new DiDefinitionCallable(ClassWithInvokeMethod::class))->setContainer($container)->invoke();
+
+        $this->assertInstanceOf(WithoutConstructor::class, $res[0]);
+        $this->assertInstanceOf(SimpleService::class, $res[1]);
     }
 }

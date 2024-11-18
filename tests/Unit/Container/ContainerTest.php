@@ -359,7 +359,7 @@ class ContainerTest extends TestCase
         ];
 
         yield 'anonymous class' => [
-            'obj' => new class() {
+            'obj' => new class {
                 public function time()
                 {
                     return \time();
@@ -611,7 +611,7 @@ class ContainerTest extends TestCase
         $container = new DiContainer([], new DiContainerConfig(useAttribute: false));
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition not found for Tests\Fixtures\Classes\Interfaces\SumInterface');
+        $this->expectExceptionMessage('Definition not found for identifier Tests\Fixtures\Classes\Interfaces\SumInterface');
 
         $container->get(Interfaces\SumInterface::class);
     }

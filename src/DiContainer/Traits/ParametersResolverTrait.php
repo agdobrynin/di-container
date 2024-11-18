@@ -25,7 +25,7 @@ trait ParametersResolverTrait
     /**
      * @var \ReflectionParameter[]
      */
-    protected array $reflectionParameters = [];
+    protected array $reflectionParameters;
 
     /**
      * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
@@ -46,7 +46,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    public function resolveParameters(?bool $useAttribute): array
+    public function resolveParameters(?bool $useAttribute = null): array
     {
         $dependencies = [];
 
@@ -151,12 +151,10 @@ trait ParametersResolverTrait
             return $this->resolvedArguments[$attribute->getId()];
         }
 
-        $object = (new DiDefinitionAutowire(
-            $this->getContainer(),
-            $attribute->getId(),
-            $attribute->isSingleton(),
-            $attribute->getArguments()
-        ))->invoke(true);
+        $object = (new DiDefinitionAutowire($attribute->getId(), $attribute->isSingleton(), $attribute->getArguments()))
+            ->setContainer($this->getContainer())
+            ->invoke(true)
+        ;
 
         $objectResult = $attribute instanceof DiFactory
             ? $object($this->getContainer())

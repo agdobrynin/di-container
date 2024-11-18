@@ -16,6 +16,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
@@ -65,12 +66,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $key = match (true) {
                 \is_string($id) => $id,
                 \is_string($definition) => $definition,
+                $definition instanceof DiDefinitionIdentifierInterface => $definition->getIdentifier(),
                 default => throw new DiDefinitionException(
-                    \sprintf('Definition key must be a non-empty string. Definition [%s].', \get_debug_type($definition))
+                    \sprintf('Definition identifier must be a non-empty string. Definition [%s].', \get_debug_type($definition))
                 )
             };
 
-            $this->set(id: $key, definition: $definition);
+            $this->set(id: $key, definition: $definition); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
         }
     }
 
@@ -103,11 +105,17 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
     {
         if (($id = \trim($id)) === '') {
-            throw new DiDefinitionException('The container ID must be a non-empty string.');
+            throw new DiDefinitionException('Definition identifier must be a non-empty string.');
         }
 
         if (\array_key_exists($id, $this->definitions)) {
-            throw new ContainerAlreadyRegisteredException("Key [{$id}] already registered in container.");
+            throw new ContainerAlreadyRegisteredException("Definition identifier [{$id}] already registered in container.");
+        }
+
+        if ($definition instanceof DiDefinitionInterface) {
+            $this->definitions[$id] = $definition;
+
+            return $this;
         }
 
         if ($arguments) {
@@ -135,7 +143,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         try {
             $callable = $this->parseCallable($definition);
 
-            return (new DiDefinitionCallable($this, $callable, false, $arguments))
+            return (new DiDefinitionCallable($callable, arguments: $arguments))
+                ->setContainer($this)
                 ->invoke($this->config?->isUseAttribute())
             ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
@@ -180,11 +189,18 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $object = ($o = $diDefinition->invoke($this->config?->isUseAttribute())) instanceof DiFactoryInterface
+                $o = $diDefinition->setContainer($this)->invoke($this->config?->isUseAttribute());
+                $object = $o instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
 
-                return $diDefinition->isSingleton()
+                $isSingleton = (
+                    $diDefinition->isSingleton()
+                    ?? $this->config?->isSingletonServiceDefault()
+                    ?? false
+                );
+
+                return $isSingleton
                     ? $this->resolved[$id] = $object
                     : $object;
             }
@@ -221,27 +237,25 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                         }
 
                         return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
-                            $this,
                             $service->getId(),
                             $service->isSingleton(),
                             $service->getArguments()
                         );
                     }
 
-                    throw new NotFoundException('Definition not found for '.$id);
+                    throw new NotFoundException('Definition not found for identifier '.$id);
                 }
 
                 if ($this->config?->isUseAttribute()
                     && $factory = $this->getDiFactoryAttribute($reflectionClass)->current()) {
                     return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
-                        $this,
                         $factory->getId(),
                         $factory->isSingleton(),
                         $factory->getArguments()
                     );
                 }
 
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($this, $reflectionClass, $isSingletonDefault, []);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $isSingletonDefault, []);
             }
 
             $rawDefinition = $this->definitions[$id];
@@ -274,15 +288,23 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $isIdInterface = \interface_exists($id);
 
             if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
-                if ($isIdInterface && [] === $arguments && isset($this->definitions[$definition][DiContainerInterface::ARGUMENTS])) {
-                    $arguments += (array) $this->definitions[$definition][DiContainerInterface::ARGUMENTS];
+                $relatedDefinition = $this->definitions[$definition] ?? null;
+
+                if ($isIdInterface && $relatedDefinition instanceof DiDefinitionAutowireInterface) {
+                    return $this->diResolvedDefinition[$id] = $relatedDefinition;
                 }
 
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($this, $definition, $isSingleton, $arguments);
+                if ($isIdInterface && [] === $arguments
+                    && \is_array($relatedDefinition)
+                    && \array_key_exists(DiContainerInterface::ARGUMENTS, $relatedDefinition)) {
+                    $arguments += (array) $relatedDefinition[DiContainerInterface::ARGUMENTS];
+                }
+
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($definition, $isSingleton, $arguments);
             }
 
             if (\is_callable($definition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($this, $definition, $isSingleton, $arguments);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($definition, $isSingleton, $arguments);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionSimple($rawDefinition);
