@@ -229,18 +229,19 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 $reflectionClass = new \ReflectionClass($id); // @todo come up possible test with throw
 
                 if ($reflectionClass->isInterface()) {
-                    if ($this->config?->isUseAttribute() && $service = $this->getServiceAttribute($reflectionClass)) {
-                        // reference aka #[Service('@ref1')] interface MyInterface {}
-                        if (($ref = $this->config?->getReferenceToContainer($service->getIdentifier()))
-                            && $definition = $this->resolveDefinition($ref)) {
-                            return $this->diResolvedDefinition[$service->getIdentifier()] = $definition;
+                    if ($this->config?->isUseAttribute()) {
+                        if ($service = $this->getServiceAttribute($reflectionClass)) {
+                            return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
+                                $service->getIdentifier(),
+                                $service->isSingleton(),
+                                $service->getArguments()
+                            );
                         }
 
-                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
-                            $service->getIdentifier(),
-                            $service->isSingleton(),
-                            $service->getArguments()
-                        );
+                        if (($serviceByReference = $this->getServiceByReferenceAttribute($reflectionClass))
+                            && $definition = $this->resolveDefinition($serviceByReference->getIdentifier())) {
+                            return $this->diResolvedDefinition[$serviceByReference->getIdentifier()] = $definition;
+                        }
                     }
 
                     throw new NotFoundException('Definition not found for identifier '.$id);

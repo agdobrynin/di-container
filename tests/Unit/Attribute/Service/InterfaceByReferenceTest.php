@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace Tests\Unit\Attribute\Service;
 
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReference;
 use Tests\Unit\Attribute\Service\Fixtures\ServiceOne;
+
+use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Attributes\Service
+ * @covers \Kaspi\DiContainer\Attributes\ServiceByReference
+ * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
@@ -27,11 +30,7 @@ class InterfaceByReferenceTest extends TestCase
     public function testResolveInterfaceByReference(): void
     {
         $container = (new DiContainerFactory())->make([
-            'services.serviceOne' => [
-                ServiceOne::class,
-                DiContainerInterface::ARGUMENTS => ['name' => 'Vice City'],
-                DiContainerInterface::SINGLETON => true,
-            ],
+            'services.serviceOne' => diAutowire(ServiceOne::class, ['name' => 'Vice City'], true),
         ]);
 
         $class = $container->get(ClassInjectArgumentInterfaceByReference::class);
