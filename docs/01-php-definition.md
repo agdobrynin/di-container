@@ -13,7 +13,7 @@ $definitions = [
         // и служит для передачи в конструктор класса.
         // Таким объявлением в конструкторе класса \PDO
         // аргумент с именем $dsn получит значение
-        // DiContainerInterface::ARGUMENTS = 'arguments'
+        // DiContainerInterface::ARGUMENTS === 'arguments'
         DiContainerInterface::ARGUMENTS => [
             'dsn' => 'sqlite:/opt/databases/mydb.sq3',
         ],
@@ -188,7 +188,7 @@ print implode(',', $users->users); // John, Arnold
 ## Внедрение значений зависимостей аргументов по ссылке на другой идентификатор контейнера.
 
 Для внедрения зависимостей в аргументы по ссылке используется синтаксис `@container-id` -
-где строка начинающаяся с символа `@` будет означать ссылку на другое определение
+где строка начинающаяся с символа `@` будет означать ссылку на другой идентификатор
 в контейнере, а часть `container-id` является идентификатором определения.
 
 ### Разрешение простых (builtin) типов аргументов в объявлении:
@@ -213,8 +213,8 @@ use Kaspi\DiContainer\DiContainerFactory;
 
 use function Kaspi\DiContainer\diAutowire;
 
-// В объявлении arguments->users = "@data"
-// будет искать в контейнере определение "data".
+// В объявлении значение аргумента "@data"
+// будет искать в контейнере идентификатор "data".
 
 $definitions = [
     'data' => ['user1', 'user2'],
@@ -282,7 +282,7 @@ $interfaceDefinition = [
 ];
 
 $container = (new DiContainerFactory())->make(
-    $simpleDefinitions + $interfaceDefinition // a simple merge or use function \array_merge
+    \array_merge($simpleDefinitions, $interfaceDefinition)
 );
 ```
 
@@ -354,7 +354,7 @@ $interfacesDefinitions = [
 ];
 
 $container = (new DiContainerFactory()->make(
-    $classesDefinitions + $interfacesDefinitions
+    \array_merge($classesDefinitions, $interfacesDefinitions)
 );
 ```
 
@@ -398,9 +398,10 @@ $container = (new DiContainerFactory())->make($definitions);
 // Получение данных из контейнера с автоматическим связыванием зависимостей
 $container->get(App\MyClass::class); // instance of App\MyClass
 ```
-## `callable` тип как определение (definition).
+## Callable тип как определение (definition).
 
-Определения могут быть объявлены `callable` типом (см. [Callable](https://www.php.net/manual/ru/language.types.callable.php))
+Определения могут быть объявлены `callable` типом (см. [Callable](https://www.php.net/manual/ru/language.types.callable.php)), например такие —
+функция, функция обратного вызова, статический метод класса.
 
 ```php
 // определение класса
@@ -433,15 +434,26 @@ use function Kaspi\DiContainer\diCallable;
 
 $expect = (object) ['name' => 'John Doe', 'age' => 32, 'gender' => 'male', 'city' => 'Vice city'];
 
-$container = (new DiContainerFactory())->make([
+$defServices = [
     diAutowire(App\ServiceLocation::class, ['city' => 'Vice city'])
-    'doSomething' => diCallable(App\ClassWithStaticMethods::class.'::doSomething'),
-]);
+];
+
+// ... many definitions ...
+
+$defCustom = [
+    // статический метод класса является callable типом.
+    'doSomething' => diCallable('App\ClassWithStaticMethods::doSomething'),
+];
+
+$container = (new DiContainerFactory())->make(
+    \array_merge($defServices, $defCustom)
+);
 // получение данных
 $expect === $container->get('doSomething'); // true
 ```
 
-> 📝 Если у метода присутствуют аргументы, то они могут быть разрешены контейнером автоматически включая использование атрибутов
+> 📝 Если у `callable` определения присутствуют аргументы, то они могут быть разрешены контейнером
+> автоматически включая использование атрибутов
 > _#[Inject]_, _#[DiFactory]_.
 
 ## Разрешение аргументов переменной длины
@@ -541,7 +553,7 @@ namespace App;
 
 interface SumInterface {}
 
-class Sum {
+class Sum implements SumInterface {
     public function __construct(public int $init) {}
 }
 ```

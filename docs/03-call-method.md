@@ -3,29 +3,41 @@
 Контейнер предоставляет метод `call()`, который может вызывать любой PHP **callable** тип.
 
 #### Поддерживаемые типы:
-- функция
-- callback функция (`\Closure`)
-- статические методы класса - `App\MyClass::someStaticMethod`
-- метод у созданного класса - `[$classInstance, 'someMethod']`
-- класс реализующий метод __invoke() - `$classInstance`
-
-#### 🔢 Так же доступны вызовы с параметрами:
-
-- Класс реализующий `__invoke` метод
-```php
-$container->call(App\MyClassWithInvokeMethod::class);
-```
+- Функция `is_callable`
+  ```php
+    function userFunc() { /*... do something ... */ }
+    // ...
+    $container->call('userFunc');
+  ```
+- Callback функция (`\Closure`) `is_callable`
+    ```php
+    $container->call(static function() { /*... do something ... */ });
+    ```
+- Статические методы класса `is_callable`
+  ```php
+  $container->call('App\MyClass::someStaticMethod');
+  $container->call(App\MyClass::class.'::someStaticMethod');
+  ```
+- Метод у созданного класса `is_callable`
+  ```php
+  $container->call([$classInstance, 'someMethod']);
+  ```
+- Класс реализующий метод __invoke() `is_callable`
+  ```php
+  $container->call($classInstance);
+  ```
 - класс с нестатическим методом (*)
-```php
-$container->call([App\MyClass::class, 'someMethod']);
-$container->call(App\MyClass::class.'::someMethod');
-$container->call('App\MyClass::someMethod');
-```
+  ```php
+  $container->call(App\MyClass::class); // исполнение метода __invoke
+  $container->call([App\MyClass::class, 'someMethod']);
+  $container->call(App\MyClass::class.'::someMethod');
+  $container->call('App\MyClass::someMethod');
+  ```
 
-> (*) при вызове если `App\MyClass` нуждается в создании
-> через конструктор то он будет создан используя `DiContainer::get(App\MyClass::class)`
+> (*) при вызове будет создан экземпляр класса `App\MyClass::class` с разрешением
+> зависимостей в конструкторе класса и затем будет исполнен указанный метод. Если метод
+> не указан, то будет попытка вызвать метод `__invoke` 
 
-### определение `DiContainer::call`
 
 Аргументы метода:
 ```php
