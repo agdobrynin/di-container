@@ -70,9 +70,8 @@ trait ParametersResolverTrait
 
             try {
                 if ($useAttribute) {
-                    $factories = $this->getDiFactoryAttribute($parameter);
-
-                    if ($factories->valid()) {
+                    if (($factories = $this->getDiFactoryAttribute($parameter))
+                        && $factories->valid()) {
                         foreach ($factories as $factory) {
                             $dependencies[] = $this->resolveArgumentByAttribute($factory);
                         }
@@ -80,9 +79,8 @@ trait ParametersResolverTrait
                         continue;
                     }
 
-                    $injects = $this->getInjectAttribute($parameter);
-
-                    if ($injects->valid()) {
+                    if (($injects = $this->getInjectAttribute($parameter))
+                        && $injects->valid()) {
                         foreach ($injects as $inject) {
                             if (\class_exists($inject->getIdentifier())) {
                                 $dependencies[] = $this->resolveArgumentByAttribute($inject);
@@ -103,9 +101,8 @@ trait ParametersResolverTrait
                         continue;
                     }
 
-                    $injectsByReference = $this->getInjectByReferenceAttribute($parameter);
-
-                    if ($injectsByReference->valid()) {
+                    if (($injectsByReference = $this->getInjectByReferenceAttribute($parameter))
+                        && $injectsByReference->valid()) {
                         foreach ($injectsByReference as $inject) {
                             $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
                                 ? $this->getContainer()->get($inject->getIdentifier())
