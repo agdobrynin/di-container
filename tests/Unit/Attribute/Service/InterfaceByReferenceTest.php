@@ -6,7 +6,9 @@ namespace Tests\Unit\Attribute\Service;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReference;
+use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceSpaceInIdentifier;
 use Tests\Unit\Attribute\Service\Fixtures\ServiceOne;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -39,5 +41,15 @@ class InterfaceByReferenceTest extends TestCase
         $this->assertEquals('Vice City', $class->service->getName());
 
         $this->assertSame($class->service, $container->get(ClassInjectArgumentInterfaceByReference::class)->service);
+    }
+
+    public function testResolveInterfaceByReferenceWithIdentifier(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage(' must be a non-empty string');
+
+        $container->get(ClassInjectArgumentInterfaceByReferenceSpaceInIdentifier::class);
     }
 }

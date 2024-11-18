@@ -16,7 +16,7 @@ final class InjectByReference implements DiAttributeInterface
     public function __construct(private string $id)
     {
         if ('' === $id) {
-            throw new AutowiredAttributeException('Argument [id] is required for php-attribute #['.__CLASS__.']');
+            throw new AutowiredAttributeException('Attribute #['.__CLASS__.'] argument [id] must be a non-empty string.');
         }
     }
 
