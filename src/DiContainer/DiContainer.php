@@ -20,6 +20,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
@@ -57,14 +58,15 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
      * @param iterable<class-string|non-empty-string, class-string|mixed> $definitions
      *
      * @throws DiDefinitionExceptionInterface
+     * @throws ContainerAlreadyRegisteredExceptionInterface
      */
     public function __construct(
         iterable $definitions = [],
         protected ?DiContainerConfigInterface $config = null
     ) {
-        foreach ($definitions as $id => $definition) {
+        foreach ($definitions as $identifier => $definition) {
             $key = match (true) {
-                \is_string($id) => $id,
+                \is_string($identifier) => $identifier,
                 \is_string($definition) => $definition,
                 $definition instanceof DiDefinitionIdentifierInterface => $definition->getIdentifier(),
                 default => throw new DiDefinitionException(
