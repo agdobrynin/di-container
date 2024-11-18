@@ -59,11 +59,9 @@ trait ParametersResolverTrait
                     : [$argument];
 
                 foreach ($args as $arg) {
-                    $dependencies[] = match (true) {
-                        $arg instanceof DiDefinitionReference => $this->getContainer()->get($arg->getDefinition()),
-                        \is_string($arg) && $this->getContainer()->has($arg) => $this->getContainer()->get($arg),
-                        default => $arg, // @todo how detect value type?
-                    };
+                    $dependencies[] = $arg instanceof DiDefinitionReference
+                        ? $this->getContainer()->get($arg->getDefinition())
+                        : $arg; // @todo how detect value type?
                 }
 
                 continue;
