@@ -8,10 +8,10 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
 final class DiDefinitionReference implements DiDefinitionInterface
 {
-    public function __construct(private string $reference) {}
+    public function __construct(private string $containerIdentifier) {}
 
     public function getDefinition(): string
     {
-        return $this->reference;
+        return $this->containerIdentifier;
     }
 }
