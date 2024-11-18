@@ -92,7 +92,7 @@ $post = new App\Controllers\PostController(
 ### Конфигурирование DiContainer
 
 Для конфигурирования параметров используется класс:
-`Kaspi\DiContainer\DiContainerConfig::class` который имплементирует интерфейс `Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
+`Kaspi\DiContainer\DiContainerConfig::class` который имплементируют интерфейс `Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
 
 ```php
 $diConfig = new \Kaspi\DiContainer\DiContainerConfig(
