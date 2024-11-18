@@ -6,5 +6,5 @@ namespace Kaspi\DiContainer\Interfaces\Attributes;
 
 interface DiAttributeInterface
 {
-    public function getId(): string;
+    public function getIdentifier(): string;
 }

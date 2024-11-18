@@ -231,13 +231,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute() && $service = $this->getServiceAttribute($reflectionClass)) {
                         // reference aka #[Service('@ref1')] interface MyInterface {}
-                        if (($ref = $this->config?->getReferenceToContainer($service->getId()))
+                        if (($ref = $this->config?->getReferenceToContainer($service->getIdentifier()))
                             && $definition = $this->resolveDefinition($ref)) {
-                            return $this->diResolvedDefinition[$service->getId()] = $definition;
+                            return $this->diResolvedDefinition[$service->getIdentifier()] = $definition;
                         }
 
                         return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
-                            $service->getId(),
+                            $service->getIdentifier(),
                             $service->isSingleton(),
                             $service->getArguments()
                         );
@@ -249,7 +249,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 if ($this->config?->isUseAttribute()
                     && $factory = $this->getDiFactoryAttribute($reflectionClass)->current()) {
                     return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
-                        $factory->getId(),
+                        $factory->getIdentifier(),
                         $factory->isSingleton(),
                         $factory->getArguments()
                     );

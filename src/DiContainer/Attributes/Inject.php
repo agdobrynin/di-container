@@ -14,7 +14,7 @@ final class Inject implements DiAttributeServiceInterface
      */
     public function __construct(private string $id = '', private array $arguments = [], private bool $isSingleton = false) {}
 
-    public function getId(): string
+    public function getIdentifier(): string
     {
         return $this->id;
     }

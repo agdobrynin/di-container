@@ -60,9 +60,10 @@ trait AttributeReaderTrait
         }
 
         foreach ($attributes as $attribute) {
+            /** @var Inject $inject */
             $inject = $attribute->newInstance();
 
-            if ('' === $inject->getId()
+            if ('' === $inject->getIdentifier()
                 && $type = $this->getParameterTypeByReflection($parameter)?->getName()) {
                 $inject = new Inject($type, $inject->getArguments(), $inject->isSingleton());
             }

@@ -82,14 +82,14 @@ trait ParametersResolverTrait
 
                     if ($injects->valid()) {
                         foreach ($injects as $inject) {
-                            if (\class_exists($inject->getId())) {
+                            if (\class_exists($inject->getIdentifier())) {
                                 $dependencies[] = $this->resolveArgumentByAttribute($inject);
 
                                 continue;
                             }
 
-                            $resolvedVal = $this->getContainer()->has($inject->getId())
-                                ? $this->getContainer()->get($inject->getId())
+                            $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
+                                ? $this->getContainer()->get($inject->getIdentifier())
                                 : $this->getContainer()->get($parameter->getName());
 
                             $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
@@ -147,11 +147,11 @@ trait ParametersResolverTrait
      */
     protected function resolveArgumentByAttribute(DiAttributeServiceInterface $attribute): mixed
     {
-        if (isset($this->resolvedArguments[$attribute->getId()])) {
-            return $this->resolvedArguments[$attribute->getId()];
+        if (isset($this->resolvedArguments[$attribute->getIdentifier()])) {
+            return $this->resolvedArguments[$attribute->getIdentifier()];
         }
 
-        $object = (new DiDefinitionAutowire($attribute->getId(), $attribute->isSingleton(), $attribute->getArguments()))
+        $object = (new DiDefinitionAutowire($attribute->getIdentifier(), $attribute->isSingleton(), $attribute->getArguments()))
             ->setContainer($this->getContainer())
             ->invoke(true)
         ;
@@ -161,7 +161,7 @@ trait ParametersResolverTrait
             : $object;
 
         return $attribute->isSingleton()
-            ? $this->resolvedArguments[$attribute->getId()] = $objectResult
+            ? $this->resolvedArguments[$attribute->getIdentifier()] = $objectResult
             : $objectResult;
     }
 }

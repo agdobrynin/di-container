@@ -20,7 +20,7 @@ final class DiFactory implements DiAttributeServiceInterface
             || throw new AutowiredAttributeException("Parameter '{$id}' must be implement '".DiFactoryInterface::class."' interface");
     }
 
-    public function getId(): string
+    public function getIdentifier(): string
     {
         return $this->id;
     }
