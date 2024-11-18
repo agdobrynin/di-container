@@ -6,7 +6,9 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\Attributes\ServiceByReference;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 
 trait AttributeReaderTrait
@@ -44,6 +46,13 @@ trait AttributeReaderTrait
             : null;
     }
 
+    public function getServiceByReferenceAttribute(\ReflectionClass $parameter): ?ServiceByReference
+    {
+        return ($attribute = $parameter->getAttributes(ServiceByReference::class)[0] ?? null)
+            ? $attribute->newInstance()
+            : null;
+    }
+
     /**
      * @return \Generator<Inject>
      */
@@ -69,6 +78,26 @@ trait AttributeReaderTrait
             }
 
             yield $inject;
+        }
+    }
+
+    /**
+     * @return \Generator<InjectByReference>
+     */
+    public function getInjectByReferenceAttribute(\ReflectionParameter $parameter): \Generator
+    {
+        $attributes = $parameter->getAttributes(InjectByReference::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
+        if (!$parameter->isVariadic() && \count($attributes) > 1) {
+            throw new AutowiredAttributeException('The attribute #[InjectByReference] can only be applied once per non-variadic parameter.');
+        }
+
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
         }
     }
 }
