@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Container\ContainerMethodCall;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
@@ -171,7 +172,7 @@ class ContainerMethodCallTest extends TestCase
         ]);
 
         $res = $container->call(static function (
-            #[Inject('@inject1')]
+            #[InjectByReference('inject1')]
             \ArrayObject $arrayObject
         ) {
             return $arrayObject;

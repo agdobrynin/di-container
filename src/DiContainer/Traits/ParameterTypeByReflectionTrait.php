@@ -31,5 +31,32 @@ trait ParameterTypeByReflectionTrait
         return null;
     }
 
+    public function isParameterCanBeString(\ReflectionParameter $parameter): bool
+    {
+        // @todo make more effective this method.
+
+        $type = $parameter->getType();
+
+        if (null === $type) {
+            return true;
+        }
+
+        if (!$type->isBuiltin()) {
+            return false;
+        }
+
+        if ($type instanceof \ReflectionNamedType) {
+            return $type->getName() === 'string';
+        }
+
+        foreach ($type->getTypes() as $type) {
+            if ($type->isBuiltin() && $type->getName() === 'string') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     abstract public function getContainer(): ContainerInterface;
 }

@@ -6,11 +6,12 @@ namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
 
 class SendEmail
 {
     public function __construct(
-        #[Inject('@emails.admin')]
+        #[InjectByReference('emails.admin')]
         public string $adminEmail,
         #[DiFactory(DiFactoryObject::class)]
         public ?array $fromFactory = null,

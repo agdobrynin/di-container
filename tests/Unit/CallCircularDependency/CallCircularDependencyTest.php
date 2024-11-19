@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\CallCircularDependency;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use PHPUnit\Framework\TestCase;
@@ -63,7 +64,7 @@ class CallCircularDependencyTest extends TestCase
                 'inject2' => diReference('inject3'),
                 'inject3' => diReference('inject1'),
             ]
-        )->call(static fn (#[Inject('inject1')] string $v) => $v);
+        )->call(static fn (#[InjectByReference('inject1')] string $v) => $v);
     }
 
     public function testCircularDependencyCallMethodWithInjectClass(): void

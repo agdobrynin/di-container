@@ -89,11 +89,18 @@ trait ParametersResolverTrait
                                 continue;
                             }
 
-                            // @todo How about if identifier string 'aaa' and container::has('aaa') === true
-                            // It conflict with #[InjectByReference] ????
-                            $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
-                                ? $this->getContainer()->get($inject->getIdentifier())
-                                : $this->getContainer()->get($parameter->getName());
+                            if (\interface_exists($inject->getIdentifier())) {
+                                $dependencies[] = $this->getContainer()->get($inject->getIdentifier());
+
+                                continue;
+                            }
+
+                            // @todo check if inject->id !== '' and $parameter has string type.
+                            var_dump('1111', $this->isParameterCanBeString($parameter));
+
+                            $resolvedVal = $this->getContainer()->has($parameter->getName())
+                                ? $this->getContainer()->get($parameter->getName())
+                                : throw new AutowiredException(sprintf('Can not resolve by argument name [%s]', $parameter->getName()));
 
                             $vals = \is_array($resolvedVal) && $parameter->isVariadic()
                                 ? $resolvedVal

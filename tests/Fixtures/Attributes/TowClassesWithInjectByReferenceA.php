@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
 
 class TowClassesWithInjectByReferenceA
 {
     public function __construct(
-        #[Inject('@inject1')]
+        #[InjectByReference('inject1')]
         public \ArrayIterator $iterator
     ) {}
 }
@@ -17,7 +18,7 @@ class TowClassesWithInjectByReferenceA
 class TowClassesWithInjectByReferenceB
 {
     public function __construct(
-        #[Inject('@inject2')]
+        #[InjectByReference('inject2')]
         public \ArrayIterator $iterator
     ) {}
 }

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
 
 class SimpleDb implements SimpleDbInterface
 {
     public function __construct(
         #[Inject(arguments: ['array' => '@shared-data'])]
         public \ArrayIterator $data,
-        #[Inject('@config-table-name')]
+        #[InjectByReference('config-table-name')]
         public string $tableName,
     ) {}
 
