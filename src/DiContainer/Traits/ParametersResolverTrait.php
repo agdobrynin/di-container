@@ -89,6 +89,8 @@ trait ParametersResolverTrait
                                 continue;
                             }
 
+                            // @todo How about if identifier string 'aaa' and container::has('aaa') === true
+                            // It conflict with #[InjectByReference] ????
                             $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
                                 ? $this->getContainer()->get($inject->getIdentifier())
                                 : $this->getContainer()->get($parameter->getName());
