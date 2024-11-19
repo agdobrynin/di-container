@@ -7,51 +7,6 @@
 use Kaspi\DiContainer\{DiContainer, DiContainerConfig};
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
-$definitions = [
-    \PDO::class => [
-        // ⚠ Ключ "arguments" является зарезервированным значением
-        // и служит для передачи в конструктор класса.
-        // Таким объявлением в конструкторе класса \PDO
-        // аргумент с именем $dsn получит значение
-        // DiContainerInterface::ARGUMENTS === 'arguments'
-        DiContainerInterface::ARGUMENTS => [
-            'dsn' => 'sqlite:/opt/databases/mydb.sq3',
-        ],
-        // Сервис будет создан как Singleton - в течении
-        // жизненного цикла контейнера. 
-        DiContainerInterface::SINGLETON => true,
-    ];
-];
-
-$config = new DiContainerConfig();
-$container = new DiContainer(definitions: $definitions, config: $config);
-```
-
-```php
-// Объявление класса
-namespace App;
-
-class MyClass {
-    public function __construct(public \PDO $pdo) {}
-}
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\MyClass;
-
-/** @var MyClass $myClass */
-$myClass = $container->get(MyClass::class);
-$myClass->pdo->query('...')
-```
-#### ⚠ Для увеличения производительности рекомендуется использовать функции-хэлперы для создания определений.
-
-Пример определения описанный выше будет выглядеть так:
-```php
-// Определения для DiContainer как array
-use Kaspi\DiContainer\{DiContainer, DiContainerConfig};
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-
 use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
@@ -65,6 +20,22 @@ $definitions = [
 $config = new DiContainerConfig();
 $container = new DiContainer(definitions: $definitions, config: $config);
 ```
+```php
+// Объявление класса
+namespace App;
+
+class MyClass {
+    public function __construct(public \PDO $pdo) {}
+}
+```
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+use App\MyClass;
+
+/** @var MyClass $myClass */
+$myClass = $container->get(MyClass::class);
+$myClass->pdo->query('...')
+```
 Функции-хэлперы определения имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
 
 ### Доступные функции-хэлперы для определений контейнера:
@@ -74,6 +45,8 @@ $container = new DiContainer(definitions: $definitions, config: $config);
 Автоматическое создание объекта и внедрения зависимостей.
 
 ```php
+use function \Kaspi\DiContainer\diAutowire;
+
 diAutowire(string $definition, array $arguments = [], ?bool $isSingleton = null)
 ```
 
@@ -104,6 +77,8 @@ $definitions = [
 Получение результата обработки `callable` типа, внедрения зависимостей при необходимости в функцию `callable`.
 
 ```php
+use function \Kaspi\DiContainer\diCallable; 
+
 diCallable(array|callable|string $definition, array $arguments = [], ?bool $isSingleton = null)
 ```
 
@@ -136,6 +111,8 @@ var_dump($container->get('services.one') instanceof App\Services\ServiceOne); //
 При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
 
 ```php
+use function \Kaspi\DiContainer\diValue;
+
 diValue(mixed $definition)
 ```
 
@@ -150,6 +127,16 @@ $definitions = [
 ```
 
 > 📝 [Пример и объяснение применения](#определения-для-простых-типов)
+
+#### diReference
+
+Объявление аргумента или определения как ссылки на другой идентификатор контейнера.
+
+```php
+use function \Kaspi\DiContainer\diReference;
+ 
+diReference(array|callable|string $definition, array $arguments = [], ?bool $isSingleton = null)
+```
 
 ## Разрешение типов аргументов в конструкторе по имени:
 
@@ -187,9 +174,8 @@ print implode(',', $users->users); // John, Arnold
 
 ## Внедрение значений зависимостей аргументов по ссылке на другой идентификатор контейнера.
 
-Для внедрения зависимостей в аргументы по ссылке используется синтаксис `@container-id` -
-где строка начинающаяся с символа `@` будет означать ссылку на другой идентификатор
-в контейнере, а часть `container-id` является идентификатором определения.
+Для внедрения зависимостей в аргументы по ссылке используется
+функция-хэлпер [diReference](#direference).
 
 ### Разрешение простых (builtin) типов аргументов в объявлении:
 
@@ -212,9 +198,7 @@ use App\{MyUsers, MyEmployers};
 use Kaspi\DiContainer\DiContainerFactory;
 
 use function Kaspi\DiContainer\diAutowire;
-
-// В объявлении значение аргумента "@data"
-// будет искать в контейнере идентификатор "data".
+use function Kaspi\DiContainer\diReference;
 
 $definitions = [
     'data' => ['user1', 'user2'],
@@ -222,8 +206,8 @@ $definitions = [
     // ... more definitions
     
     // внедрение зависимости аргумента по ссылке на контейнер-id
-    diAutowire(App\MyUsers::class, ['users' => '@data']),
-    diAutowire(App\MyEmployers::class, ['employers' => '@data'])
+    diAutowire(App\MyUsers::class, ['users' => diReference('data')]),
+    diAutowire(App\MyEmployers::class, ['employers' => diReference('data')])
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -487,6 +471,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diReference;
 
 $definition = [
     'ruleC' => App\Rules\RuleC::class,
@@ -496,7 +481,7 @@ $definition = [
             value: [ // <-- обернуть параметры в массив для variadic типов
                 App\Rules\RuleB::class,
                 App\Rules\RuleA::class,
-                '@ruleC', // <-- получение по ссылке
+                diReference('ruleC'), // <-- получение по ссылке
             ], // <-- обернуть параметры в массив            
         )
 ];

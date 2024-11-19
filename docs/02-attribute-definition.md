@@ -9,6 +9,7 @@
 
 Доступные атрибуты:
 - **[Inject](#inject)** - внедрение зависимости в аргументы конструктор или методы класса.
+- **[InjectByReference](#injectbyreference)** - внедрение зависимости по ссылке на другое определение в контейнере.
 - **[Service](#service)** - определение для интерфейса какой класс будет вызван и разрешен в контейнере.
 - **[ServiceByReference](#servicebyreference)** - определение для интерфейса по ссылке.
 - **[DiFactory](#difactory)** - Фабрика для разрешения зависимостей. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
@@ -16,7 +17,9 @@
 ## Inject
 
 ```php
-#[\Kaspi\DiContainer\Attributes\Inject(
+use Kaspi\DiContainer\Attributes\Inject;
+
+#[Inject(
     id: '', // Определение зависимости (класс, интерфейс).
             // При пустом определении контейнер попытается получить
             // значение исходя из типа аргумента.
@@ -24,9 +27,30 @@
             // контейнер попытается разрешить зависимость
             // по имени аргумента используя имя аргумента как идентификатор в контейнере.
     arguments: [], // Аргументы конструктора для зависимости
+                   // переданные пользователем при конфигурировании.
     isSingleton: false,  // Сервис создаётся как Singleton.
 )]
 ```
+
+> 📝 Параметр "arguments" это аргументы, предоставленные пользователем.
+>
+> Каждый элемент в массиве аргументов должен содержать имя переменной в ключе и значении элемента.
+>   
+> ⚠ Если значение аргумента это строка и начинается с символа "@" то это будет обработано как ссылка на другое определение.
+>
+> ```php
+> $arguments = [
+>      // параметр строка
+>      "paramNameOne" => "some value",
+>      // ссылка на другое определение в контейнере
+>      // сам символ определен как constant в 
+>      // Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface::IS_REFERENCE
+>      "paramNameTwo" => "@identifier",
+>      "paramNameAny" => ..., // any types sucha as array,
+>                             // object and other available types.
+> ];
+> ```
+> 
 
 ### Получение существующего класса и разрешение простых типов параметров в конструкторе:
 
@@ -38,7 +62,14 @@ use Kaspi\DiContainer\Attributes\Inject;
 
 class MyClass {
     public function __construct(
-        #[Inject(arguments: ['dsn' => '@pdo_dsn'])]
+        #[Inject(
+            arguments: [
+                // ⚠ префикс "@" в значении аргумента
+                // указывает что данные для этого аргумента
+                // нужно получить по ссылке.
+                'dsn' => '@pdo_dsn',
+            ]
+        )]
         public \PDO $pdo
     ) {}
 }
@@ -61,56 +92,6 @@ use App\MyClass;
 $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
-
-### Использование **Inject** атрибута на простых (встроенных) типах для получения данных из контейнера:
-
-```php
-// Объявление класса
-namespace App;
-
-use Kaspi\DiContainer\Attributes\Inject;
-
-class MyUsers {
-    public function __construct(
-        // ссылка на контейнер с определением
-        #[Inject('@users_data')]
-        public array $users
-    ) {}
-}
-
-class MyEmployers {
-    public function __construct(
-        // ссылка на контейнер с определением
-        #[Inject('@users_data')]
-        public array $employers
-    ) {}
-}
-```
-
-```php
-// Определения для DiContainer
-use Kaspi\DiContainer\DiContainerFactory;
-
-$definitions = [
-    'users_data' => ['user1', 'user2'],
-];
-
-$container = (new DiContainerFactory())->make($definitions);
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\{MyUsers, MyEmployers};
-
-/** @var MyUsers::class $users */
-$users = $container->get(MyUsers::class);
-print implode(',', $users->users); // user1, user2
-
-/** @var MyEmployers::class $employers */
-$employers = $container->get(MyEmployers::class);
-print implode(',', $employers->employers); // user1, user2
-```
-
 ### Внедрение типизированных аргументов через атрибут **Inject**:
 
 ```php
@@ -176,7 +157,6 @@ class RuleGenerator {
     public function __construct(
         #[Inject(RuleB::class)]
         #[Inject(RuleA::class)]
-        #[Inject('@ruleC')] // получение по ссылке
         RuleInterface ...$inputRule
     ) {
         $this->rules = $inputRule;
@@ -206,12 +186,63 @@ assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
 
+## **InjectByReference**
+
+Внедрение по ссылке на другое определение в контейнере.
+
+```php
+use Kaspi\DiContainer\Attributes\InjectByReference;
+
+#[InjectByReference(
+    id: '', // имя определения в контейнере.
+)]
+```
+
+Атрибут имеет признак `repetable`
+
+```php
+// Объявления классов
+namespace App\Rules;
+
+use Kaspi\DiContainer\Attributes\InjectByReference;
+
+interface RuleInterface {}
+class RuleA implements RuleInterface {}
+
+class RuleGenerator {
+    public function __construct(
+        #[InjectByReference('service.rules.rule-a')] // получение по ссылке
+        public RuleInterface $inputRule
+    ) {}
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definition = [
+    'service.rules.rule-a' => diAutowire(App\Rules\RuleA::class),
+];
+
+$container = (new DiContainerFactory())->make($definition);
+
+// ... more code
+
+$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+assert($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
+```
+
+
 ## Service
 
 ```php
-#[\Kaspi\DiContainer\Attributes\Service(
+use \Kaspi\DiContainer\Attributes\Service;
+
+#[Service(
     id: '', // Класс реализующий интерфейс.
-            // Ссылка на идентификатор контейнера реализующий интерфейс.
+            // Пустое значение попытка автоматически определить
+            // тип аргумента.
     arguments: [], // Аргументы конструктора для зависимости.
     isSingleton: false,  // Сервис создаётся как Singleton.
 )]
