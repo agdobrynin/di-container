@@ -31,4 +31,16 @@ class VariadicSimpleArgumentsByInject
     ): string {
         return \implode('~', $icon);
     }
+
+    public static function injectStringDirect(
+        #[Inject('hello')]
+        #[Inject('world')]
+        #[Inject('!')]
+        string ...$word
+    ): \Generator
+    {
+        foreach ($word as $w) {
+            yield $w;
+        }
+    }
 }

@@ -55,4 +55,18 @@ class VariadicParametersByInjectTest extends TestCase
 
         $this->assertEquals('🎈~🎉', $res);
     }
+
+    public function testVariadicStringParametersStaticMethod(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        /** @var \Generator<string> $res */
+        $res = $container->call([VariadicSimpleArgumentsByInject::class, 'injectStringDirect']);
+
+        $this->assertEquals('hello', $res->current());
+        $res->next();
+        $this->assertEquals('world', $res->current());
+        $res->next();
+        $this->assertEquals('!', $res->current());
+    }
 }

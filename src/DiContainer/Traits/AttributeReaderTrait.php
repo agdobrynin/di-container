@@ -77,10 +77,6 @@ trait AttributeReaderTrait
                 $inject = new Inject($type, $inject->getArguments(), $inject->isSingleton());
             }
 
-            if ('' === $inject->getIdentifier()) {
-                throw new AutowiredAttributeException('Can not determine inject object type');
-            }
-
             yield $inject;
         }
     }

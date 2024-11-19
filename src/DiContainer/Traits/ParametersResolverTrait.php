@@ -89,15 +89,20 @@ trait ParametersResolverTrait
                                 continue;
                             }
 
+                            // @todo how about arguments ?
                             if (\interface_exists($inject->getIdentifier())) {
                                 $dependencies[] = $this->getContainer()->get($inject->getIdentifier());
 
                                 continue;
                             }
 
-                            // @todo check if inject->id !== '' and $parameter has string type.
-                            var_dump('1111', $this->isParameterCanBeString($parameter));
+                            if ($this->isParameterCanBeString($parameter)) {
+                                $dependencies[] = $inject->getIdentifier();
 
+                                continue;
+                            }
+
+                            // try resolve by argument name
                             $resolvedVal = $this->getContainer()->has($parameter->getName())
                                 ? $this->getContainer()->get($parameter->getName())
                                 : throw new AutowiredException(sprintf('Can not resolve by argument name [%s]', $parameter->getName()));
