@@ -109,7 +109,9 @@ trait ParametersResolverTrait
                                 ? $this->getContainer()->get($inject->getIdentifier())
                                 : throw new NotFoundException("Definition identifier [{$inject->getIdentifier()}] not found.");
 
-                            $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
+                            $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                                ? $resolvedVal
+                                : [$resolvedVal];
                             \array_push($dependencies, ...$vals);
                         }
 
