@@ -13,6 +13,8 @@ use Tests\Unit\CallCircularDependency\Fixtures\CircularClassByInject;
 use Tests\Unit\CallCircularDependency\Fixtures\CircularClassByInterface;
 use Tests\Unit\CallCircularDependency\Fixtures\FirstClass;
 
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -35,9 +37,9 @@ class CallCircularDependencyTest extends TestCase
 
         (new DiContainerFactory())->make(
             [
-                'inject1' => '@inject2',
-                'inject2' => '@inject3',
-                'inject3' => '@inject1',
+                'inject1' => diReference('inject2'),
+                'inject2' => diReference('inject3'),
+                'inject3' => diReference('inject1'),
             ]
         )->get('inject1');
     }
@@ -57,11 +59,11 @@ class CallCircularDependencyTest extends TestCase
 
         (new DiContainerFactory())->make(
             [
-                'inject1' => '@inject2',
-                'inject2' => '@inject3',
-                'inject3' => '@inject1',
+                'inject1' => diReference('inject2'),
+                'inject2' => diReference('inject3'),
+                'inject3' => diReference('inject1'),
             ]
-        )->call(static fn (#[Inject('@inject1')] string $v) => $v);
+        )->call(static fn (#[Inject('inject1')] string $v) => $v);
     }
 
     public function testCircularDependencyCallMethodWithInjectClass(): void

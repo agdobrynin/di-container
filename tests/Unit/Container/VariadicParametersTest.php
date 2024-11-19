@@ -132,7 +132,13 @@ class VariadicParametersTest extends TestCase
 
         $params = $container->call(
             [VariadicClassWithMethodArguments::class, 'getParameters'],
-            ['parameter' => [$paramC, '@ref1', VariadicParameterA::class]]
+            [
+                'parameter' => [
+                    $paramC,
+                    diReference('ref1'),
+                    diReference(VariadicParameterA::class),
+                ],
+            ]
         );
 
         $this->assertCount(5, $params);
@@ -162,10 +168,10 @@ class VariadicParametersTest extends TestCase
             VariadicClassArgumentAsInterface::class => [
                 DiContainerInterface::ARGUMENTS => [
                     'parameter' => [
-                        VariadicParameterB::class,
-                        '@refC',
-                        VariadicParameterA::class,
-                        '@refC',
+                        diReference(VariadicParameterB::class),
+                        diReference('refC'),
+                        diReference(VariadicParameterA::class),
+                        diReference('refC'),
                     ],
                 ],
             ],
@@ -192,10 +198,10 @@ class VariadicParametersTest extends TestCase
             VariadicClassArgumentAsInterface::class => [
                 DiContainerInterface::ARGUMENTS => [
                     'parameter' => [
-                        VariadicParameterB::class,
-                        VariadicParameterA::class,
-                        VariadicParameterA::class,
-                        VariadicParameterB::class,
+                        diReference(VariadicParameterB::class),
+                        diReference(VariadicParameterA::class),
+                        diReference(VariadicParameterA::class),
+                        diReference(VariadicParameterB::class),
                     ],
                 ],
             ],

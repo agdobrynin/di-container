@@ -15,6 +15,8 @@ use Tests\Unit\Definition\Fixtures\Generated\Service6;
 use Tests\Unit\Definition\Fixtures\PrivateConstructor;
 use Tests\Unit\Definition\Fixtures\WithoutConstructor;
 
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -84,7 +86,7 @@ class DiDefinitionAutowireTestTest extends TestCase
             // ... may may definitions.
 
             yield (new DiDefinitionAutowire(Service6::class))
-                ->addArgument('service', '@serviceZero')
+                ->addArgument('service', diReference('serviceZero'))
             ;
         };
 

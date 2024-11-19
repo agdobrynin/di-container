@@ -11,6 +11,8 @@ use Tests\Fixtures\Attributes;
 use Tests\Fixtures\Attributes\InjectStupidSimpleType;
 use Tests\Fixtures\Attributes\SendEmail;
 
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @internal
  *
@@ -47,7 +49,7 @@ class ContainerWithAttributeConfigTest extends TestCase
     {
         $c = (new DiContainerFactory())->make([
             'data' => ['one', 'second'],
-            'shared-data' => '@data',
+            'shared-data' => diReference('data'),
             'config-table-name' => 'logs',
         ]);
 

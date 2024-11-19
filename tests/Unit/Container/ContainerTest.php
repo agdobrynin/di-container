@@ -17,6 +17,7 @@ use Tests\Fixtures\Attributes\FactoryClassWithDiFactoryArgument;
 use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diReference;
 
 /**
@@ -136,34 +137,12 @@ class ContainerTest extends TestCase
         $this->assertEquals(15, $container->get('test'));
     }
 
-    public function testClassResolveWithCustomLinkSymbol(): void
-    {
-        $definitions = [
-            'all_records' => ['first', 'second'],
-            Classes\Db::class => [
-                'arguments' => [
-                    'data' => '*all_records',
-                ],
-            ],
-            Interfaces\CacheTypeInterface::class => Classes\FileCache::class,
-        ];
-
-        $config = new DiContainerConfig(referenceContainerSymbol: '*');
-        $container = new DiContainer(definitions: $definitions, config: $config);
-
-        $repository = $container->get(Classes\UserRepository::class);
-
-        $this->assertEquals('first, second', $repository->all());
-        $this->assertNull($repository->db->store);
-        $this->assertInstanceOf(Interfaces\CacheTypeInterface::class, $repository->db->cache);
-    }
-
     public function testResolveByInterfaceWithNamedArgClassInstance(): void
     {
         $definitions = static function (): \Generator {
-            yield Classes\UserRepository::class => [
-                'arguments' => ['db' => '@database'],
-            ];
+            yield diAutowire(Classes\UserRepository::class)
+                ->addArgument('db', diReference('database'))
+            ;
 
             yield 'database' => static function (Interfaces\CacheTypeInterface $cache): Classes\Db {
                 return new Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
@@ -186,9 +165,7 @@ class ContainerTest extends TestCase
         $definitions = static function () use ($base): \Generator {
             yield 'database' => static fn () => new Classes\Db($base);
 
-            yield Classes\UserRepository::class => [
-                'arguments' => ['db' => '@database'],
-            ];
+            yield diAutowire(Classes\UserRepository::class, ['db' => diReference('database')]);
         };
 
         $container = new DiContainer($definitions(), $this->diContainerConfig);
@@ -430,19 +407,15 @@ class ContainerTest extends TestCase
         $loggerConfig = [
             'logger_file' => '/path/to/your.log',
             'logger_name_my_app' => 'app-logger',
-            'local_file' => '@logger_file',
+            'local_file' => diReference('logger_file'),
         ];
+
         $definitions = \array_merge(
             $loggerConfig,
             [
-                Classes\Logger::class => [
-                    'arguments' => [
-                        // get by container-id
-                        'name' => diReference('logger_name_my_app'),
-                        // get by container link
-                        'file' => diReference('local_file'),
-                    ],
-                ],
+                diAutowire(Classes\Logger::class)
+                    ->addArgument('name', diReference('logger_name_my_app'))
+                    ->addArgument('file', diReference('local_file')),
             ]
         );
 
@@ -515,12 +488,8 @@ class ContainerTest extends TestCase
     {
         $instances = [
             'shared_user' => ['first', 'second'],
-            'all_records' => '@shared_user',
-            Classes\Db::class => [
-                'arguments' => [
-                    'data' => '@all_records',
-                ],
-            ],
+            'all_records' => diReference('shared_user'),
+            diAutowire(Classes\Db::class, ['data' => diReference('all_records')]),
         ];
 
         $container = new DiContainer(definitions: $instances, config: $this->diContainerConfig);
@@ -533,9 +502,9 @@ class ContainerTest extends TestCase
         $c = new DiContainer(
             definitions: [
                 'main' => 'Main value',
-                'abc' => '@main',
-                'x' => '@abc',
-                'y' => '@x',
+                'abc' => diReference('main'),
+                'x' => diReference('abc'),
+                'y' => diReference('x'),
             ],
             config: $this->diContainerConfig
         );

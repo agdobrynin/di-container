@@ -15,6 +15,9 @@ use Tests\Fixtures\Classes\ClassB;
 use Tests\Fixtures\Classes\ClassWithEmptyType;
 use Tests\Fixtures\Classes\ClassWithUnionType;
 
+use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\DiContainer
@@ -71,17 +74,12 @@ class ContainerWithUnionTypeOrEmptyTypeParametersTest extends TestCase
     public function testUnionTypeSuccess(): void
     {
         $class = (new DiContainerFactory())->make([
-            ClassWithUnionType::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'dependency' => '@'.\ReflectionMethod::class,
-                ],
-            ],
-            \ReflectionMethod::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'objectOrMethod' => $this,
-                    'method' => 'testUnionTypeSuccess',
-                ],
-            ],
+            diAutowire(ClassWithUnionType::class)
+                ->addArgument('dependency', diReference(\ReflectionMethod::class)),
+            diAutowire(\ReflectionMethod::class, [
+                'objectOrMethod' => $this,
+                'method' => 'testUnionTypeSuccess',
+            ]),
         ])->get(ClassWithUnionType::class);
 
         $this->assertInstanceOf(ClassWithUnionType::class, $class);

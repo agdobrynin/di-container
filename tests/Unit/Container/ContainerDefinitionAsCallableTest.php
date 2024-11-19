@@ -11,6 +11,9 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Classes\ClassWithStaticMethods;
 use Tests\Fixtures\Classes\ServiceLocation;
 
+use function Kaspi\DiContainer\diCallable;
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -33,13 +36,13 @@ class ContainerDefinitionAsCallableTest extends TestCase
                 'en' => 'welcome to site',
                 'fr' => 'bienvenue sur le site',
             ],
-            'welcome_message' => [
+            'welcome_message' => diCallable(
                 ClassWithStaticMethods::class.'::langWelcomeMessage',
-                DiContainerInterface::ARGUMENTS => [
-                    'dict' => '@dictionary_welcome_message',
+                [
+                    'dict' => diReference('dictionary_welcome_message'),
                     'lang' => 'fr',
-                ],
-            ],
+                ]
+            ),
         ]);
 
         $res = $container->get('welcome_message');
@@ -55,14 +58,9 @@ class ContainerDefinitionAsCallableTest extends TestCase
                 'ru' => 'добро пожаловать на сайт',
                 'fr' => 'bienvenue sur le site',
             ],
-            'welcome_message' => [
-                ClassWithStaticMethods::class.'::langWelcomeMessage',
-                DiContainerInterface::SINGLETON => true,
-                DiContainerInterface::ARGUMENTS => [
-                    'dict' => '@dictionary_welcome_message',
-                    'lang' => 'ru',
-                ],
-            ],
+            'welcome_message' => diCallable(ClassWithStaticMethods::class.'::langWelcomeMessage', isSingleton: true)
+                ->addArgument('dict', diReference('dictionary_welcome_message'))
+                ->addArgument('lang', 'ru'),
         ]);
 
         $res = $container->get('welcome_message');

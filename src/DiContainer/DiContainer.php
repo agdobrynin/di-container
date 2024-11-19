@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -267,11 +268,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             $rawDefinition = $this->definitions[$id];
 
-            if (\is_string($rawDefinition) && $ref = $this->config?->getReferenceToContainer($rawDefinition)) {
-                $this->checkCyclicalDependencyCall($ref);
-                $this->resolvingDependencies[$ref] = true;
+            if ($rawDefinition instanceof DiDefinitionReference) {
+                $this->checkCyclicalDependencyCall($rawDefinition->getDefinition());
+                $this->resolvingDependencies[$rawDefinition->getDefinition()] = true;
 
-                return $this->resolveDefinition($ref);
+                return $this->resolveDefinition($rawDefinition->getDefinition());
             }
 
             if (null === $rawDefinition || !$this->config?->isUseAutowire()) {

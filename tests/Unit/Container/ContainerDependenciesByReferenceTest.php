@@ -11,6 +11,9 @@ use Tests\Fixtures\Attributes\TowClassesWithInjectByReferenceA;
 use Tests\Fixtures\Attributes\TowClassesWithInjectByReferenceB;
 use Tests\Fixtures\Classes\DependenciesByReference;
 
+use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diReference;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -27,24 +30,13 @@ class ContainerDependenciesByReferenceTest extends TestCase
     public function testContainerDependenciesByReference(): void
     {
         $container = (new DiContainerFactory())->make([
-            'iterator1' => [
-                \ArrayIterator::class,
-                DiContainerInterface::ARGUMENTS => [
-                    'array' => ['one', 'two', 'three'],
-                ],
-            ],
-            'iterator2' => [
-                \ArrayIterator::class,
-                DiContainerInterface::ARGUMENTS => [
-                    'array' => ['four', 'five', 'six'],
-                ],
-            ],
-            DependenciesByReference::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'dependencies1' => '@iterator1',
-                    'dependencies2' => '@iterator2',
-                ],
-            ],
+            'iterator1' => diAutowire(\ArrayIterator::class)
+                ->addArgument('array', ['one', 'two', 'three']),
+            'iterator2' => diAutowire(\ArrayIterator::class)
+                ->addArgument('array', ['four', 'five', 'six']),
+            diAutowire(DependenciesByReference::class)
+                ->addArgument('dependencies1', diReference('iterator1'))
+                ->addArgument('dependencies2', diReference('iterator2')),
         ]);
 
         $class = $container->get(DependenciesByReference::class);
