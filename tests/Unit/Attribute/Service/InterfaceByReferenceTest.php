@@ -14,6 +14,8 @@ use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenc
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceEmptyIdentifier;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceNotFound;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceSpaceInIdentifier;
+use Tests\Unit\Attribute\Service\Fixtures\ServiceAttributeEmptyInterface;
+use Tests\Unit\Attribute\Service\Fixtures\ServiceAttributeWithSpacesInIdInterface;
 use Tests\Unit\Attribute\Service\Fixtures\ServiceOne;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -88,5 +90,25 @@ class InterfaceByReferenceTest extends TestCase
         );
 
         $container->get(ByReferenceFirstInterface::class);
+    }
+
+    public function testResolveByServiceAttributeWithEmptyId(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('must be a non-empty string');
+
+        $container->get(ServiceAttributeEmptyInterface::class);
+    }
+
+    public function testResolveByServiceAttributeWithSpacesInId(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('must be a non-empty string');
+
+        $container->get(ServiceAttributeWithSpacesInIdInterface::class);
     }
 }
