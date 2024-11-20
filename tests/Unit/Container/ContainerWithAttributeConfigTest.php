@@ -101,7 +101,7 @@ class ContainerWithAttributeConfigTest extends TestCase
         $this->assertEquals(['first' => '🥇', 'second' => '🥈'], $sendMail->fromFactory);
     }
 
-    public function testInjectSimpleTypeDirect(): void
+    public function testInjectArgumentByArgumentNameFail(): void
     {
         $c = (new DiContainerFactory())->make();
 
@@ -109,5 +109,14 @@ class ContainerWithAttributeConfigTest extends TestCase
         $this->expectExceptionMessage('Can not resolve by argument name [rules]');
 
         $c->get(InjectStupidSimpleType::class);
+    }
+
+    public function testInjectArgumentByArgumentNameSuccess(): void
+    {
+        $c = (new DiContainerFactory())->make([
+            'rules' => ['first', 'second'],
+        ]);
+
+        $this->assertEquals(['first', 'second'], $c->get(InjectStupidSimpleType::class)->rules);
     }
 }
