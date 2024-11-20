@@ -98,7 +98,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     {
         return \array_key_exists($id, $this->definitions)
             || \array_key_exists($id, $this->resolved)
-            || $this->hasByRef($id)
             || (
                 $this->config?->isUseZeroConfigurationDefinition()
                 && (\class_exists($id) || \interface_exists($id))
@@ -160,12 +159,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         return $this;
     }
 
-    protected function hasByRef(string $id): bool
-    {
-        return ($ref = $this->config?->getReferenceToContainer($id))
-            && \array_key_exists($ref, $this->definitions);
-    }
-
     /**
      * Resolve dependencies.
      *
@@ -173,10 +166,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
      */
     protected function resolve(string $id): mixed
     {
-        if ($ref = $this->config?->getReferenceToContainer($id)) {
-            return $this->get($ref);
-        }
-
         try {
             if (!\array_key_exists($id, $this->resolved) && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
                 return $this->resolved[$id] = $this;
@@ -275,7 +264,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 return $this->resolveDefinition($rawDefinition->getDefinition());
             }
 
-            if (null === $rawDefinition || !$this->config?->isUseAutowire()) {
+            if (null === $rawDefinition) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
             }
 

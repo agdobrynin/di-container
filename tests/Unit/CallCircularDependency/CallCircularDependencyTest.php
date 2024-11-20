@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\CallCircularDependency;
 
-use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
@@ -18,7 +17,6 @@ use function Kaspi\DiContainer\diReference;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\Attributes\InjectContext
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig

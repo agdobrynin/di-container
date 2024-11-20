@@ -115,24 +115,6 @@ class DiDefinitionAsDefinitionTest extends TestCase
         $this->assertEquals('log', $container->get('x'));
     }
 
-    public function testResolveDefinitionsWithoutAutowire(): void
-    {
-        $def = [
-            'aaa' => 'aaa string',
-            'null' => null,
-            'log' => [DiContainerInterface::ARGUMENTS => ['x' => 'aaa']],
-            'array_walk' => new DiDefinitionValue(new \stdClass()),
-        ];
-
-        $container = new DiContainer($def, new DiContainerConfig(useAutowire: false, useAttribute: false));
-
-        $this->assertEquals('aaa string', $container->get('aaa'));
-        $this->assertNull($container->get('null'));
-        $this->assertEquals(['arguments' => ['x' => 'aaa']], $container->get('log'));
-        $this->assertInstanceOf(DiDefinitionValue::class, $container->get('array_walk'));
-        $this->assertInstanceOf(\stdClass::class, $container->get('array_walk')->getDefinition());
-    }
-
     public function testResolveDefinitionAsDiDefinitionAutowire(): void
     {
         $definition = [

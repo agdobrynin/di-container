@@ -81,28 +81,6 @@ class ContainerTest extends TestCase
         $this->assertEquals(11, $container->get('test'));
     }
 
-    public function testAutowiredOff1(): void
-    {
-        $container = (new DiContainer(config: new DiContainerConfig(useAutowire: false, useAttribute: false)))
-            ->set('test', static fn () => \time())
-        ;
-
-        $this->assertInstanceOf(\Closure::class, $container->get('test'));
-        $this->assertIsInt($container->get('test')());
-    }
-
-    public function testAutowiredOffForClass(): void
-    {
-        $container = (new DiContainer())
-            ->set(Classes\RedisCache::class, Classes\RedisCache::class)
-        ;
-
-        $r = $container->get(Classes\RedisCache::class);
-
-        $this->assertIsString($r);
-        $this->assertEquals('Tests\Fixtures\Classes\RedisCache', $r);
-    }
-
     public function testGetClosureWithGlobalParams(): void
     {
         $fn = static fn (int $myParams) => 10 + $myParams;
