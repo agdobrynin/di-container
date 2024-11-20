@@ -225,6 +225,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                             );
                         }
 
+                        // @todo maybe recursion call 🚩
                         if (($serviceByReference = $this->getServiceByReferenceAttribute($reflectionClass))
                             && $definition = $this->resolveDefinition($serviceByReference->getIdentifier())) {
                             return $this->diResolvedDefinition[$serviceByReference->getIdentifier()] = $definition;
@@ -252,7 +253,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 $this->checkCyclicalDependencyCall($rawDefinition->getDefinition());
                 $this->resolvingDependencies[$rawDefinition->getDefinition()] = true;
 
-                return $this->resolveDefinition($rawDefinition->getDefinition());
+                try {
+                    return $this->resolveDefinition($rawDefinition->getDefinition());
+                } finally {
+                    unset($this->resolvingDependencies[$rawDefinition->getDefinition()]);
+                }
             }
 
             if (null === $rawDefinition) {
