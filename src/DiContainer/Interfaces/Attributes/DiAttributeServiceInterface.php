@@ -22,11 +22,10 @@ interface DiAttributeServiceInterface extends DiAttributeInterface
      *
      *      [
      *          // raw value
-     *          "paramNameOne" => "some value",
+     *          "paramNameOne" => "some value", // include scalar types, array, null type.
      *          // reference to container identifier
      *          // see constant self::IS_REFERENCE
      *          "paramNameTwo" => "@identifier",
-     *          "paramNameAny" => ..., // any types sucha as array, boolean and other simple available types.
      *      ]
      *
      * @return array<non-empty-string, mixed>
