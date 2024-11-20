@@ -120,12 +120,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             return $this;
         }
 
-        if ($definition instanceof \Closure) {
-            $this->definitions[$id] = new DiDefinitionCallable($definition);
-
-            return $this;
-        }
-
         $this->definitions[$id] = $definition;
 
         return $this;
