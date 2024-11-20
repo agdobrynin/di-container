@@ -26,7 +26,7 @@ interface DiAttributeServiceInterface extends DiAttributeInterface
      *          // reference to container identifier
      *          // see constant self::IS_REFERENCE
      *          "paramNameTwo" => "@identifier",
-     *          "paramNameAny" => ..., // any types sucha as array, object and other available types.
+     *          "paramNameAny" => ..., // any types sucha as array, boolean and other simple available types.
      *      ]
      *
      * @return array<non-empty-string, mixed>
