@@ -6,6 +6,8 @@ namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
+use Tests\Fixtures\Attributes\InjectByReferenceTwiceNonVariadicArgument;
 use Tests\Fixtures\Attributes\VariadicSimpleArgumentsByInject;
 
 /**
@@ -55,5 +57,15 @@ class VariadicParametersByInjectTest extends TestCase
         $res = $container->call([VariadicSimpleArgumentsByInject::class, 'sayStatic']);
 
         $this->assertEquals('🎈~🎉', $res);
+    }
+
+    public function testInjectByReferenceTwiceForNonVariadicArgument(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('non-variadic parameter');
+
+        $container->get(InjectByReferenceTwiceNonVariadicArgument::class);
     }
 }
