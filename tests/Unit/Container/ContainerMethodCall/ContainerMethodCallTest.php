@@ -21,7 +21,9 @@ use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
+ * @covers \Kaspi\DiContainer\Attributes\InjectByReference
  * @covers \Kaspi\DiContainer\Attributes\InjectContext
+ * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory

@@ -20,12 +20,12 @@ use function Kaspi\DiContainer\diReference;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
+ * @covers \Kaspi\DiContainer\diReference
  *
  * @internal
  */

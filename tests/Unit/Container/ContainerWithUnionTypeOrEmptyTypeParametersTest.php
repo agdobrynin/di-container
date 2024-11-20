@@ -25,6 +25,8 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerFactory::make
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
+ * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal

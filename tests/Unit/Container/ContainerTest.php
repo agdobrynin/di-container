@@ -26,6 +26,8 @@ use function Kaspi\DiContainer\diReference;
  *
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Service
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory::make

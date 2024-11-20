@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use function Kaspi\DiContainer\diCallable;
 
 /**
+ * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory

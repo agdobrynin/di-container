@@ -17,12 +17,16 @@ use function Kaspi\DiContainer\diReference;
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\InjectContext
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  *
  * @internal
