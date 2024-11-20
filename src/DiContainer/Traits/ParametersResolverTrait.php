@@ -80,24 +80,17 @@ trait ParametersResolverTrait
                         continue;
                     }
 
-                    if (($injects = $this->getInjectAttribute($parameter))
-                        && $injects->valid()) {
-                        foreach ($injects as $inject) {
+                    if (($injectContextAttributes = $this->getInjectContextAttribute($parameter))
+                        && $injectContextAttributes->valid()) {
+                        foreach ($injectContextAttributes as $inject) {
                             if (\class_exists($inject->getIdentifier())) {
                                 $dependencies[] = $this->resolveArgumentByAttribute($inject);
 
                                 continue;
                             }
 
-                            // @todo how about arguments ?
                             if (\interface_exists($inject->getIdentifier())) {
                                 $dependencies[] = $this->getContainer()->get($inject->getIdentifier());
-
-                                continue;
-                            }
-
-                            if ($this->isParameterCanBeString($parameter)) {
-                                $dependencies[] = $inject->getIdentifier();
 
                                 continue;
                             }
@@ -116,9 +109,9 @@ trait ParametersResolverTrait
                         continue;
                     }
 
-                    if (($injectsByReference = $this->getInjectByReferenceAttribute($parameter))
-                        && $injectsByReference->valid()) {
-                        foreach ($injectsByReference as $inject) {
+                    if (($injectByReferences = $this->getInjectByReferenceAttribute($parameter))
+                        && $injectByReferences->valid()) {
+                        foreach ($injectByReferences as $inject) {
                             $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
                                 ? $this->getContainer()->get($inject->getIdentifier())
                                 : throw new NotFoundException("Definition identifier [{$inject->getIdentifier()}] not found.");

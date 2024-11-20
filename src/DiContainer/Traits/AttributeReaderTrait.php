@@ -56,7 +56,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<InjectContext>
      */
-    public function getInjectAttribute(\ReflectionParameter $parameter): \Generator
+    public function getInjectContextAttribute(\ReflectionParameter $parameter): \Generator
     {
         $attributes = $parameter->getAttributes(InjectContext::class);
 
