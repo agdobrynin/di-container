@@ -6,7 +6,7 @@ namespace Tests\Unit\CallCircularDependency;
 
 use Kaspi\DiContainer\Attributes\InjectByReference;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Exception\CallCircularDependency;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\CallCircularDependency\Fixtures\CircularClass;
 use Tests\Unit\CallCircularDependency\Fixtures\CircularClassByInject;
@@ -37,7 +37,7 @@ class CallCircularDependencyTest extends TestCase
 {
     public function testCallCircularDependencySimpleValue(): void
     {
-        $this->expectException(CallCircularDependency::class);
+        $this->expectException(CallCircularDependencyException::class);
 
         (new DiContainerFactory())->make(
             [
@@ -50,7 +50,7 @@ class CallCircularDependencyTest extends TestCase
 
     public function testCircularDependencyCallCircularDependencyInClass(): void
     {
-        $this->expectException(CallCircularDependency::class);
+        $this->expectException(CallCircularDependencyException::class);
         $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+FirstClass.+SecondClass.+FirstClass/');
 
         (new DiContainerFactory())->make()->get(FirstClass::class);
@@ -58,7 +58,7 @@ class CallCircularDependencyTest extends TestCase
 
     public function testCircularDependencyCallMethodWithSimpleInject(): void
     {
-        $this->expectException(CallCircularDependency::class);
+        $this->expectException(CallCircularDependencyException::class);
         $this->expectExceptionMessage('Call dependencies: inject1 -> inject2 -> inject3 -> inject1');
 
         (new DiContainerFactory())->make(
@@ -72,21 +72,21 @@ class CallCircularDependencyTest extends TestCase
 
     public function testCircularDependencyCallMethodWithInjectClass(): void
     {
-        $this->expectException(CallCircularDependency::class);
+        $this->expectException(CallCircularDependencyException::class);
         $this->expectExceptionMessageMatches('/(Call dependencies).+(FirstClass ->).+(SecondClass ->).+(ThirdClass ->).+(FirstClass)/');
         (new DiContainerFactory())->make()->call(static fn (FirstClass $class) => $class);
     }
 
     public function testCircularDependencyCallMethodInvokableClass(): void
     {
-        $this->expectException(CallCircularDependency::class);
+        $this->expectException(CallCircularDependencyException::class);
 
         (new DiContainerFactory())->make()->call(FirstClass::class);
     }
 
     public function testCircularDependencyClassByInterface(): void
     {
-        $this->expectException(CallCircularDependency::class);
+        $this->expectException(CallCircularDependencyException::class);
 
         (new DiContainerFactory())->make(
             [CircularClassByInterface::class => diAutowire(FirstClass::class)]
@@ -95,7 +95,7 @@ class CallCircularDependencyTest extends TestCase
 
     public function testCircularDependencyClassByInterfaceWithInject(): void
     {
-        $this->expectException(CallCircularDependency::class);
+        $this->expectException(CallCircularDependencyException::class);
 
         (new DiContainerFactory())->make()->get(CircularClassByInject::class);
     }

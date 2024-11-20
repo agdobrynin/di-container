@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Attribute\Service;
 
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Tests\Unit\Attribute\Service\Fixtures\ByReferenceFirstInterface;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReference;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceEmptyIdentifier;
 use Tests\Unit\Attribute\Service\Fixtures\ClassInjectArgumentInterfaceByReferenceNotFound;
@@ -74,5 +76,17 @@ class InterfaceByReferenceTest extends TestCase
         $this->expectExceptionMessage('services.serviceOne');
 
         $container->get(ClassInjectArgumentInterfaceByReferenceNotFound::class);
+    }
+
+    public function testResolveInterfaceByReferenceWithCircularCall(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $this->expectException(CallCircularDependencyException::class);
+        $this->expectExceptionMessageMatches(
+            '/ByReferenceFirstInterface.+ByReferenceSecondInterface.+ByReferenceFirstInterface/'
+        );
+
+        $container->get(ByReferenceFirstInterface::class);
     }
 }
