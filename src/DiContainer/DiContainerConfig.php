@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Kaspi\DiContainer\Exception\DiContainerConfigException;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 
 final class DiContainerConfig implements DiContainerConfigInterface

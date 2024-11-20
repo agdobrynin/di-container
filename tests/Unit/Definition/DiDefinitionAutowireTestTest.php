@@ -15,6 +15,7 @@ use Tests\Unit\Definition\Fixtures\Generated\Service6;
 use Tests\Unit\Definition\Fixtures\PrivateConstructor;
 use Tests\Unit\Definition\Fixtures\WithoutConstructor;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diReference;
 
 /**
@@ -81,7 +82,7 @@ class DiDefinitionAutowireTestTest extends TestCase
     public function testDefinitionAutowireWithMethodAddArgumentAndArgumentByReference(): void
     {
         $definition = static function (): \Generator {
-            yield 'serviceZero' => Service0::class;
+            yield 'serviceZero' => diAutowire(Service0::class);
 
             // ... may may definitions.
 

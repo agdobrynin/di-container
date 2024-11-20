@@ -12,6 +12,9 @@ use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependency;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -59,9 +62,12 @@ trait ParametersResolverTrait
                     : [$argument];
 
                 foreach ($args as $arg) {
-                    $dependencies[] = $arg instanceof DiDefinitionReference
-                        ? $this->getContainer()->get($arg->getDefinition())
-                        : $arg; // @todo how detect value type?
+                    $dependencies[] = match (true) {
+                        $arg instanceof DiDefinitionReference => $this->getContainer()->get($arg->getDefinition()),
+                        $arg instanceof DiDefinitionAutowireInterface => $this->resolveArgument($parameter, $arg, $useAttribute),
+                        $arg instanceof DiDefinitionInterface => $arg->getDefinition(),
+                        default => $arg, // @todo how detect value type?
+                    };
                 }
 
                 continue;
@@ -98,7 +104,7 @@ trait ParametersResolverTrait
                             // try resolve by argument name
                             $resolvedVal = $this->getContainer()->has($parameter->getName())
                                 ? $this->getContainer()->get($parameter->getName())
-                                : throw new AutowiredException(sprintf('Can not resolve by argument name [%s]', $parameter->getName()));
+                                : throw new AutowiredException(\sprintf('Can not resolve by argument name [%s]', $parameter->getName()));
 
                             $vals = \is_array($resolvedVal) && $parameter->isVariadic()
                                 ? $resolvedVal
@@ -188,6 +194,34 @@ trait ParametersResolverTrait
 
         return $attribute->isSingleton()
             ? $this->resolvedArguments[$attribute->getIdentifier()] = $objectResult
+            : $objectResult;
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws AutowiredExceptionInterface
+     */
+    protected function resolveArgument(\ReflectionParameter $parameter, DiDefinitionAutowireInterface $definitionAutowire, ?bool $useAttribute): mixed
+    {
+        static $variadicPosition = 0;
+
+        $id = $parameter->isVariadic()
+            ? \sprintf('%s#%d', $parameter->getName(), ++$variadicPosition)
+            : $parameter->getName();
+
+        if (isset($this->resolvedArguments[$id])) {
+            return $this->resolvedArguments[$id];
+        }
+
+        $object = $definitionAutowire->setContainer($this->getContainer())->invoke($useAttribute);
+
+        $objectResult = $object instanceof DiFactoryInterface
+            ? $object($this->getContainer())
+            : $object;
+
+        return $definitionAutowire->isSingleton()
+            ? $this->resolvedArguments[$id] = $objectResult
             : $objectResult;
     }
 }

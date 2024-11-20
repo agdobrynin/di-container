@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class SimpleDb implements SimpleDbInterface
 {

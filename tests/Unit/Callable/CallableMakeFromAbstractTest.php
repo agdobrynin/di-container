@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\Unit\Callable\Fixtures\SimpleInvokeClass;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 
 /**
@@ -32,7 +33,7 @@ class CallableMakeFromAbstractTest extends TestCase
     public function testInvokeClassAsString(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleInvokeClass::class => ['arguments' => ['name' => 'Piter']],
+            diAutowire(SimpleInvokeClass::class, ['name' => 'Piter']),
         ]);
         $d = new DiDefinitionCallable(SimpleInvokeClass::class);
         $d->setContainer($container);
@@ -44,7 +45,7 @@ class CallableMakeFromAbstractTest extends TestCase
     public function testInvokeClassAsStringDefinitionDiCallableInContainer(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleInvokeClass::class => ['arguments' => ['name' => 'Piter']],
+            diAutowire(SimpleInvokeClass::class, ['name' => 'Piter']),
             // ... more definition ...
             'get-result' => diCallable(SimpleInvokeClass::class),
         ]);
@@ -66,7 +67,7 @@ class CallableMakeFromAbstractTest extends TestCase
     public function testDefinitionWithNonStaticMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleInvokeClass::class => ['arguments' => ['name' => 'Alex']],
+            diAutowire(SimpleInvokeClass::class, ['name' => 'Alex']),
         ]);
 
         $definition = 'Tests\Unit\Callable\Fixtures\SimpleInvokeClass::hello';
@@ -81,7 +82,7 @@ class CallableMakeFromAbstractTest extends TestCase
     public function testDiCallableHelperAsClassAndMethod(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleInvokeClass::class => ['arguments' => ['name' => 'Alex']],
+            diAutowire(SimpleInvokeClass::class, ['name' => 'Alex']),
             // ... more definition
             'get-result' => diCallable(SimpleInvokeClass::class.'::hello'),
         ]);
@@ -163,7 +164,7 @@ class CallableMakeFromAbstractTest extends TestCase
     {
         $container = (new DiContainerFactory())->make([
             'test' => '🎈',
-            \ArrayIterator::class => ['arguments' => ['array' => ['🎃']]],
+            diAutowire(\ArrayIterator::class, ['array' => ['🎃']]),
         ]);
 
         $definition = '\Tests\Unit\Callable\Fixtures\testFunction';
@@ -178,7 +179,7 @@ class CallableMakeFromAbstractTest extends TestCase
     public function testDefinitionAsClassWithInvokeMethod(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleInvokeClass::class => ['arguments' => ['name' => 'Alex']],
+            diAutowire(SimpleInvokeClass::class, ['name' => 'Alex']),
         ]);
 
         $d = new DiDefinitionCallable(SimpleInvokeClass::class, arguments: ['name' => 'Ivan']);
@@ -191,7 +192,7 @@ class CallableMakeFromAbstractTest extends TestCase
     public function testNonStaticMethod(): void
     {
         $container = (new DiContainerFactory())->make([
-            SimpleInvokeClass::class => ['arguments' => ['name' => 'Gustav']],
+            diAutowire(SimpleInvokeClass::class, ['name' => 'Gustav']),
         ]);
         // ....
         $d = new DiDefinitionCallable([SimpleInvokeClass::class, 'hello']);

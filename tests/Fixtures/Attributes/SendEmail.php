@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
 
 class SendEmail

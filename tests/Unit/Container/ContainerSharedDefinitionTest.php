@@ -7,13 +7,13 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes\Db;
 use Tests\Fixtures\Classes\DbDiFactory;
 use Tests\Fixtures\Classes\FileCache;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 use Tests\Fixtures\Classes\Sum;
+
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 

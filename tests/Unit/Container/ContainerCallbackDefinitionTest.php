@@ -7,8 +7,8 @@ namespace Tests\Unit\Container;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
+
 use function Kaspi\DiContainer\diCallable;
 
 /**

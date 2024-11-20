@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Classes\Interfaces\VariadicParameterInterface;
 use Tests\Fixtures\Classes\VariadicArguments;
@@ -103,11 +102,8 @@ class VariadicParametersTest extends TestCase
     public function testCallMethodClassWithNonStaticMethodWithSimpleParameters(): void
     {
         $container = (new DiContainerFactory())->make([
-            VariadicSimpleArguments::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'word' => ['welcome', 'to', 'class'],
-                ],
-            ],
+            diAutowire(VariadicSimpleArguments::class)
+                ->addArgument('word', ['welcome', 'to', 'class']),
         ]);
 
         $variadic = $container->get(VariadicSimpleArguments::class);
@@ -123,7 +119,7 @@ class VariadicParametersTest extends TestCase
     {
         $container = (new DiContainerFactory())->make([
             'config.medals' => ['🥉', '🥇'],
-            'ref1' => VariadicParameterB::class,
+            'ref1' => diAutowire(VariadicParameterB::class),
         ]);
 
         $paramC = $container->get(VariadicParameterC::class);
@@ -150,7 +146,7 @@ class VariadicParametersTest extends TestCase
     public function testVariadicParametersAsClass(): void
     {
         $container = (new DiContainerFactory())->make([
-            VariadicParameterInterface::class => VariadicParameterC::class,
+            VariadicParameterInterface::class => diAutowire(VariadicParameterC::class),
         ]);
         $class = $container->get(VariadicClassArgumentAsInterface::class);
 
@@ -162,7 +158,7 @@ class VariadicParametersTest extends TestCase
     public function testVariadicParameterViaInterface(): void
     {
         $definitions = [
-            'refC' => VariadicParameterC::class,
+            'refC' => diAutowire(VariadicParameterC::class),
             diAutowire(
                 VariadicClassArgumentAsInterface::class,
                 [
@@ -231,9 +227,7 @@ class VariadicParametersTest extends TestCase
     public function testVariadicArgumentWithNullable(): void
     {
         $container = (new DiContainerFactory())->make([
-            VariadicArguments::class => [
-                DiContainerInterface::ARGUMENTS => ['rule' => null],
-            ],
+            diAutowire(VariadicArguments::class, ['rule' => null]),
         ]);
 
         $class = $container->get(VariadicArguments::class);

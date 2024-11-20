@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Attributes\TowClassesWithInjectByReferenceA;
 use Tests\Fixtures\Attributes\TowClassesWithInjectByReferenceB;

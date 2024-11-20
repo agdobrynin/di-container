@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Container;
 
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Fixtures\Classes\ClassWithStaticMethods;
 use Tests\Fixtures\Classes\ServiceLocation;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diReference;
 
@@ -80,9 +80,7 @@ class ContainerDefinitionAsCallableTest extends TestCase
     {
         $container = (new DiContainerFactory())->make([
             'doSomething' => ClassWithStaticMethods::class.'::doSomething',
-            ServiceLocation::class => [
-                DiContainerInterface::ARGUMENTS => ['city' => 'Vice city'],
-            ],
+            diAutowire(ServiceLocation::class, ['city' => 'Vice city']),
         ]);
 
         $res = $container->get('doSomething');

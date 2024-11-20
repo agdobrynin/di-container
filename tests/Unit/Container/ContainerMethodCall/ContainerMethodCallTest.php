@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container\ContainerMethodCall;
 
-use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
+use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInjectedServiceInConstructor;
@@ -17,6 +16,8 @@ use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithMethodWithDepende
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassWithStaticMethod;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\GreetingService;
 use Tests\Unit\Container\ContainerMethodCall\Fixtures\NameService;
+
+use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -80,14 +81,8 @@ class ContainerMethodCallTest extends TestCase
     public function testClassWithInvokeMethod(): void
     {
         $res = (new DiContainerFactory())->make([
-            NameService::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'name' => 'Noa',
-                ],
-            ],
-        ])
-            ->call(ClassInvokeAndInjectedServiceInConstructor::class, ['greeting' => 'Aloha'])
-        ;
+            diAutowire(NameService::class, ['name' => 'Noa']),
+        ])->call(ClassInvokeAndInjectedServiceInConstructor::class, ['greeting' => 'Aloha']);
 
         $this->assertEquals('Aloha Noa 🕶', $res);
     }
@@ -95,11 +90,7 @@ class ContainerMethodCallTest extends TestCase
     public function testClassWithMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make([
-            NameService::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'name' => 'Jimmy',
-                ],
-            ],
+            diAutowire(NameService::class, ['name' => 'Jimmy']),
         ]);
 
         $definition = 'Tests\Unit\Container\ContainerMethodCall\Fixtures\ClassInjectedServiceInConstructor::sayHello';
@@ -111,11 +102,7 @@ class ContainerMethodCallTest extends TestCase
     public function testClassWithMethodAsArray(): void
     {
         $container = (new DiContainerFactory())->make([
-            NameService::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'name' => 'Jimmy',
-                ],
-            ],
+            diAutowire(NameService::class, ['name' => 'Jimmy']),
         ]);
 
         $definition = [ClassInjectedServiceInConstructor::class, 'sayHello'];
@@ -143,8 +130,8 @@ class ContainerMethodCallTest extends TestCase
     public function testCallMethodWithDependency(): void
     {
         $container = (new DiContainerFactory())->make([
-            NameService::class => [DiContainerInterface::ARGUMENTS => ['name' => 'Jimmy']],
-            GreetingService::class => [DiContainerInterface::ARGUMENTS => ['greeting' => 'Hello']],
+            diAutowire(NameService::class, ['name' => 'Jimmy']),
+            diAutowire(GreetingService::class, ['greeting' => 'Hello']),
         ]);
 
         $res = $container->call([ClassWithMethodWithDependency::class, 'sayHello'], ['icon' => '🎉']);
@@ -163,12 +150,7 @@ class ContainerMethodCallTest extends TestCase
     public function testUseInjectForParameter(): void
     {
         $container = (new DiContainerFactory())->make([
-            'inject1' => [
-                \ArrayObject::class,
-                DiContainerInterface::ARGUMENTS => [
-                    'array' => ['i1', 'i2'],
-                ],
-            ],
+            'inject1' => diAutowire(\ArrayObject::class, ['array' => ['i1', 'i2']]),
         ]);
 
         $res = $container->call(static function (

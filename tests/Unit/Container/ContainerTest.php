@@ -18,6 +18,7 @@ use Tests\Fixtures\Classes;
 use Tests\Fixtures\Classes\Interfaces;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diReference;
 
 /**
@@ -88,7 +89,7 @@ class ContainerTest extends TestCase
         $container = (new DiContainer(config: $this->diContainerConfig))
             ->set('myParams', 1)
             ->set('test', $fn)
-            ->set('test2', FactoryClassWithDiFactoryArgument::class)
+            ->set('test2', diAutowire(FactoryClassWithDiFactoryArgument::class))
         ;
 
         $this->assertEquals(11, $container->get('test'));
@@ -126,7 +127,7 @@ class ContainerTest extends TestCase
                 return new Classes\Db(['Lorem', 'Ipsum'], cache: $cache);
             };
 
-            yield Interfaces\CacheTypeInterface::class => Classes\FileCache::class;
+            yield Interfaces\CacheTypeInterface::class => diAutowire(Classes\FileCache::class);
         };
 
         $container = new DiContainer($definitions(), $this->diContainerConfig);
@@ -223,12 +224,12 @@ class ContainerTest extends TestCase
     public function testNoConstructor(): void
     {
         $container = (new DiContainer(config: $this->diContainerConfig))
-            ->set(Classes\NoConstructorAndInvokable::class, [])
+            ->set('invokable', diCallable(Classes\NoConstructorAndInvokable::class))
         ;
 
-        $result = $container->get(Classes\NoConstructorAndInvokable::class);
+        $result = $container->get('invokable');
 
-        $this->assertEquals('abc', $result());
+        $this->assertEquals('abc', $result);
     }
 
     public function testExistId(): void
@@ -385,7 +386,6 @@ class ContainerTest extends TestCase
     public function testParseConstructorArguments(): void
     {
         $container = new DiContainer(config: $this->diContainerConfig);
-        $container->set(Classes\Logger::class, ['name' => 'log-app', 'file' => '/var/log/log.txt']);
 
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessageMatches('/^Unresolvable dependency.*Logger::__construct/');
@@ -433,7 +433,7 @@ class ContainerTest extends TestCase
     public function testDefinitionAsFactory(): void
     {
         $c = (new DiContainerFactory())->make([
-            Classes\Db::class => Classes\DbDiFactory::class,
+            Classes\Db::class => diAutowire(Classes\DbDiFactory::class),
         ]);
 
         $db = $c->get(Classes\Db::class);
@@ -457,7 +457,7 @@ class ContainerTest extends TestCase
         $this->expectExceptionMessage('class is not instantiable');
 
         (new DiContainerFactory())->make([
-            Classes\PrivateConstructorClass::class => ['arguments' => ['name' => 'Hi!']],
+            diAutowire(Classes\PrivateConstructorClass::class),
         ])->get(Classes\PrivateConstructorClass::class);
     }
 
@@ -467,7 +467,7 @@ class ContainerTest extends TestCase
         $this->expectExceptionMessage('Class "ok" does not exist');
 
         (new DiContainerFactory())->make([
-            Interfaces\SumInterface::class => 'ok',
+            Interfaces\SumInterface::class => diAutowire('ok'),
         ])->get(Interfaces\SumInterface::class);
     }
 

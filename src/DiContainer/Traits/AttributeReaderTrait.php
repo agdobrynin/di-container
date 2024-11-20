@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
+use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\ServiceByReference;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;

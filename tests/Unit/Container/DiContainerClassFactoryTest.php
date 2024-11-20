@@ -17,6 +17,7 @@ use Tests\Fixtures\Attributes\SuperClass;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 use Tests\Fixtures\Classes\Sum;
 use Tests\Fixtures\Classes\SumDiFactoryForInterface;
+
 use function Kaspi\DiContainer\diAutowire;
 
 /**

@@ -34,6 +34,7 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
+    // @phan-suppress-next-line PhanUnreferencedFunction
     function diReference(string $containerIdentifier): DiDefinitionReference
     {
         return new DiDefinitionReference($containerIdentifier);

@@ -27,16 +27,16 @@ use function Kaspi\DiContainer\diReference;
  */
 class VariadicArgumentTest extends TestCase
 {
-    public function testVariadicArgumentWithDiAutowireAndAddArgumentMethod(): void
+    public function testVariadicArgumentWithDiAutowire(): void
     {
         $definition = [
-            'ruleC' => RuleC::class,
+            'ruleC' => diAutowire(RuleC::class),
             diAutowire(RuleGenerator::class)
                 ->addArgument(
                     name: 'inputRule', // имя аргумента в конструкторе
                     value: [ // <-- обернуть параметры в массив для variadic типов
-                        diReference(RuleB::class),
-                        diReference(RuleA::class),
+                        diAutowire(RuleB::class),
+                        diAutowire(RuleA::class),
                         diReference('ruleC'), // <-- получение по ссылке
                     ], // <-- обернуть параметры в массив
                 ),
@@ -51,17 +51,17 @@ class VariadicArgumentTest extends TestCase
         $this->assertInstanceOf(RuleC::class, $class->getRules()[2]);
     }
 
-    public function testVariadicArgumentWithDiAutowire(): void
+    public function testVariadicArgumentWithDiReference(): void
     {
         $definition = [
-            'ruleC' => RuleC::class,
+            'ruleC' => diAutowire(RuleC::class),
             diAutowire(
                 RuleGenerator::class,
                 [
                     // имя аргумента в конструкторе
                     'inputRule' => [ // <-- обернуть параметры в массив для variadic типов
-                        diReference(RuleB::class),
-                        diReference(RuleA::class),
+                        diReference(RuleB::class), // <- при включённом zeroConfig сработает.
+                        diReference(RuleA::class), // <- при включённом zeroConfig сработает.
                         diReference('ruleC'), // <-- получение по ссылке
                     ], // <-- обернуть параметры в массив
                 ]

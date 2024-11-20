@@ -23,10 +23,12 @@ use Tests\Unit\Attribute\Inject\Fixtures\PropertyVariadicWithEmptyInjectId;
 use Tests\Unit\Attribute\Inject\Fixtures\RuleA;
 use Tests\Unit\Attribute\Inject\Fixtures\RuleB;
 
+use function Kaspi\DiContainer\diAutowire;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\Attributes\InjectContext
  * @covers \Kaspi\DiContainer\Attributes\InjectByReference
+ * @covers \Kaspi\DiContainer\Attributes\InjectContext
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -78,8 +80,8 @@ class InjectWithGetContainerTest extends TestCase
     public function testInjectVariadicByReferenceInjectId(): void
     {
         $container = (new DiContainerFactory())->make([
-            'ruleA' => RuleA::class,
-            'ruleB' => RuleB::class,
+            'ruleA' => diAutowire(RuleA::class),
+            'ruleB' => diAutowire(RuleB::class),
         ]);
         $class = $container->get(PropertyVariadicReferenceInjectId::class);
 
@@ -93,7 +95,7 @@ class InjectWithGetContainerTest extends TestCase
     public function testPropertyNonVariadicReferenceInjectId(): void
     {
         $container = (new DiContainerFactory())->make([
-            'ruleA' => RuleA::class,
+            'ruleA' => diAutowire(RuleA::class),
         ]);
         $class = $container->get(PropertyNonVariadicReferenceInjectId::class);
 

@@ -11,6 +11,7 @@ use Tests\Unit\Definition\Fixtures\CallableStaticMethodWithArgument;
 use Tests\Unit\Definition\Fixtures\ClassWithInvokeMethod;
 use Tests\Unit\Definition\Fixtures\SimpleService;
 use Tests\Unit\Definition\Fixtures\WithoutConstructor;
+
 use function Kaspi\DiContainer\diAutowire;
 
 /**
