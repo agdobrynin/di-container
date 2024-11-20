@@ -9,7 +9,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
-use Kaspi\DiContainer\Exception\CallCircularDependency;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -46,7 +46,7 @@ trait ParametersResolverTrait
     /**
      * @throws AutowiredAttributeException
      * @throws AutowiredExceptionInterface
-     * @throws CallCircularDependency
+     * @throws CallCircularDependencyException
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
@@ -142,7 +142,7 @@ trait ParametersResolverTrait
                 \array_push($dependencies, ...$vals);
 
                 continue;
-            } catch (AutowiredAttributeException|CallCircularDependency $e) {
+            } catch (AutowiredAttributeException|CallCircularDependencyException $e) {
                 throw $e;
             } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
                 $autowireException = $e;

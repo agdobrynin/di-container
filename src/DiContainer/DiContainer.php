@@ -8,7 +8,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Exception\CallCircularDependency;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
@@ -284,7 +284,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         if (\array_key_exists($id, $this->resolvingDependencies)) {
             $callPath = \implode(' -> ', \array_keys($this->resolvingDependencies)).' -> '.$id;
 
-            throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);
+            throw new CallCircularDependencyException('Trying call cyclical dependency. Call dependencies: '.$callPath);
         }
     }
 }

@@ -6,4 +6,4 @@ namespace Kaspi\DiContainer\Exception;
 
 use Psr\Container\ContainerExceptionInterface;
 
-class CallCircularDependency extends \RuntimeException implements ContainerExceptionInterface {}
+class CallCircularDependencyException extends \RuntimeException implements ContainerExceptionInterface {}
