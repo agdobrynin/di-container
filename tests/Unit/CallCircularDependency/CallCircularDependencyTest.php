@@ -13,6 +13,7 @@ use Tests\Unit\CallCircularDependency\Fixtures\CircularClassByInject;
 use Tests\Unit\CallCircularDependency\Fixtures\CircularClassByInterface;
 use Tests\Unit\CallCircularDependency\Fixtures\FirstClass;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diReference;
 
 /**
@@ -84,7 +85,7 @@ class CallCircularDependencyTest extends TestCase
         $this->expectException(CallCircularDependency::class);
 
         (new DiContainerFactory())->make(
-            [CircularClassByInterface::class => FirstClass::class]
+            [CircularClassByInterface::class => diAutowire(FirstClass::class)]
         )->get(CircularClass::class);
     }
 

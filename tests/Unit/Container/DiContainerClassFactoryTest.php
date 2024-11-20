@@ -17,6 +17,7 @@ use Tests\Fixtures\Attributes\SuperClass;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 use Tests\Fixtures\Classes\Sum;
 use Tests\Fixtures\Classes\SumDiFactoryForInterface;
+use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -62,7 +63,7 @@ class DiContainerClassFactoryTest extends TestCase
     public function testInterfaceByFactory(): void
     {
         $c = (new DiContainerFactory())->make([
-            SumInterface::class => SumDiFactoryForInterface::class,
+            SumInterface::class => diAutowire(SumDiFactoryForInterface::class),
         ]);
 
         // See in class SumDiFactoryForInterface where init value 10.

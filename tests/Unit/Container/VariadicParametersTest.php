@@ -18,6 +18,7 @@ use Tests\Fixtures\Classes\VariadicParameterRule;
 use Tests\Fixtures\Classes\VariadicSimpleArguments;
 use Tests\Fixtures\Classes\VariadicSimpleArrayArguments;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diReference;
 
 /**
@@ -41,8 +42,9 @@ class VariadicParametersTest extends TestCase
     {
         $c = (new DiContainerFactory())->make([
             'ref1' => 'fifth',
-            VariadicSimpleArguments::class => [
-                DiContainerInterface::ARGUMENTS => [
+            diAutowire(
+                VariadicSimpleArguments::class,
+                [
                     'word' => [
                         'first',
                         'second',
@@ -50,8 +52,8 @@ class VariadicParametersTest extends TestCase
                         'fourth',
                         diReference('ref1'), // reference to other container-id
                     ],
-                ],
-            ],
+                ]
+            ),
         ]);
 
         $this->assertEquals(['first', 'second', 'third', 'fourth', 'fifth'], $c->get(VariadicSimpleArguments::class)->sayHello);
@@ -60,11 +62,7 @@ class VariadicParametersTest extends TestCase
     public function testVariadicSimpleParametersInConstructorOneParameter(): void
     {
         $c = (new DiContainerFactory())->make([
-            VariadicSimpleArguments::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'word' => 'first',
-                ],
-            ],
+            diAutowire(VariadicSimpleArguments::class, ['word' => 'first']),
         ]);
 
         $this->assertEquals(['first'], $c->get(VariadicSimpleArguments::class)->sayHello);
@@ -73,11 +71,11 @@ class VariadicParametersTest extends TestCase
     public function testVariadicSimpleParametersInConstructorParameterAsArrayType(): void
     {
         $c = (new DiContainerFactory())->make([
-            VariadicSimpleArrayArguments::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'token' => [['start', 'end']], // if variadic argument type array - always use array wrapper.
-                ],
-            ],
+            diAutowire(VariadicSimpleArrayArguments::class)
+                ->addArgument(
+                    'token',
+                    [['start', 'end']], // if variadic argument type array - always use array wrapper.
+                ),
         ]);
 
         $this->assertEquals([['start', 'end']], $c->get(VariadicSimpleArrayArguments::class)->tokens);
@@ -165,16 +163,17 @@ class VariadicParametersTest extends TestCase
     {
         $definitions = [
             'refC' => VariadicParameterC::class,
-            VariadicClassArgumentAsInterface::class => [
-                DiContainerInterface::ARGUMENTS => [
+            diAutowire(
+                VariadicClassArgumentAsInterface::class,
+                [
                     'parameter' => [
-                        diReference(VariadicParameterB::class),
+                        diAutowire(VariadicParameterB::class),
                         diReference('refC'),
-                        diReference(VariadicParameterA::class),
+                        diAutowire(VariadicParameterA::class),
                         diReference('refC'),
                     ],
-                ],
-            ],
+                ]
+            ),
         ];
 
         $container = (new DiContainerFactory())->make($definitions);
@@ -195,16 +194,16 @@ class VariadicParametersTest extends TestCase
     public function testVariadicParametersAsClassManyItems(): void
     {
         $container = (new DiContainerFactory())->make([
-            VariadicClassArgumentAsInterface::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'parameter' => [
+            diAutowire(VariadicClassArgumentAsInterface::class)
+                ->addArgument(
+                    'parameter',
+                    [
                         diReference(VariadicParameterB::class),
                         diReference(VariadicParameterA::class),
                         diReference(VariadicParameterA::class),
                         diReference(VariadicParameterB::class),
-                    ],
-                ],
-            ],
+                    ]
+                ),
         ]);
         $class = $container->get(VariadicClassArgumentAsInterface::class);
 

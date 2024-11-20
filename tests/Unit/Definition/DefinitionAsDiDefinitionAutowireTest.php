@@ -12,6 +12,7 @@ use Tests\Unit\Definition\Fixtures\Generated\ServiceImplementation;
 use Tests\Unit\Definition\Fixtures\Generated\ServiceInterface;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diReference;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -36,7 +37,7 @@ class DefinitionAsDiDefinitionAutowireTest extends TestCase
 
             yield diAutowire(ServiceImplementation::class);
 
-            yield ServiceInterface::class => ServiceImplementation::class;
+            yield ServiceInterface::class => diReference(ServiceImplementation::class);
         };
 
         $container = (new DiContainerFactory())->make($definition());

@@ -14,6 +14,8 @@ use Tests\Fixtures\Classes\DbDiFactory;
 use Tests\Fixtures\Classes\FileCache;
 use Tests\Fixtures\Classes\Interfaces\SumInterface;
 use Tests\Fixtures\Classes\Sum;
+use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diCallable;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -39,9 +41,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionFalseByDefinition(): void
     {
         $c = (new DiContainerFactory())->make([
-            FileCache::class => [
-                DiContainerInterface::SINGLETON => false,
-            ],
+            diAutowire(FileCache::class, isSingleton: false),
         ]);
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
@@ -50,9 +50,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionTrueByDefinition(): void
     {
         $c = (new DiContainerFactory())->make([
-            FileCache::class => [
-                DiContainerInterface::SINGLETON => true,
-            ],
+            diAutowire(FileCache::class, isSingleton: true),
         ]);
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
@@ -82,7 +80,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, definition: FileCache::class);
+        $c->set(id: FileCache::class, definition: diAutowire(FileCache::class));
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -93,7 +91,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, definition: FileCache::class, isSingleton: false);
+        $c->set(FileCache::class, diAutowire(FileCache::class, isSingleton: false));
 
         $this->assertNotSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -104,7 +102,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, definition: FileCache::class, isSingleton: true);
+        $c->set(FileCache::class, diAutowire(FileCache::class, isSingleton: true));
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -115,7 +113,7 @@ class ContainerSharedDefinitionTest extends TestCase
             config: new DiContainerConfig()
         );
 
-        $c->set(id: FileCache::class, definition: [FileCache::class], isSingleton: true);
+        $c->set(FileCache::class, diAutowire(FileCache::class, isSingleton: true));
 
         $this->assertSame($c->get(FileCache::class), $c->get(FileCache::class));
     }
@@ -123,10 +121,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionClosureTrue(): void
     {
         $definition = [
-            FileCache::class => [
-                static fn () => new FileCache(),
-                DiContainerInterface::SINGLETON => true,
-            ],
+            FileCache::class => diCallable(static fn () => new FileCache(), isSingleton: true),
         ];
 
         $c = new DiContainer(
@@ -140,10 +135,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionClosureFalse(): void
     {
         $definition = [
-            FileCache::class => [
-                static fn () => new FileCache(),
-                DiContainerInterface::SINGLETON => false,
-            ],
+            FileCache::class => diCallable(static fn () => new FileCache(), isSingleton: false),
         ];
 
         $c = new DiContainer(
@@ -157,7 +149,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionDiFabricDefault(): void
     {
         $definition = [
-            Db::class => DbDiFactory::class,
+            Db::class => diAutowire(DbDiFactory::class),
         ];
 
         $c = new DiContainer(
@@ -172,10 +164,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionDiFabricFalse(): void
     {
         $definition = [
-            Db::class => [
-                DbDiFactory::class,
-                DiContainerInterface::SINGLETON => false,
-            ],
+            Db::class => diAutowire(DbDiFactory::class, isSingleton: false),
         ];
 
         $c = new DiContainer(
@@ -190,10 +179,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionDiFabricTrue(): void
     {
         $definition = [
-            Db::class => [
-                DbDiFactory::class,
-                DiContainerInterface::SINGLETON => true,
-            ],
+            Db::class => diAutowire(DbDiFactory::class, isSingleton: true),
         ];
 
         $c = new DiContainer(
@@ -208,7 +194,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionInterfaceDefault(): void
     {
         $definition = [
-            SumInterface::class => Sum::class, // default service not shared defined in DiContainerConfig!
+            SumInterface::class => diAutowire(Sum::class), // default service not shared defined in DiContainerConfig!
         ];
 
         $c = new DiContainer(
@@ -223,10 +209,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionInterfaceFalse(): void
     {
         $definition = [
-            SumInterface::class => [
-                Sum::class,
-                DiContainerInterface::SINGLETON => false, // service not shared!
-            ],
+            SumInterface::class => diAutowire(Sum::class, isSingleton: false),
         ];
 
         $c = new DiContainer(
@@ -241,10 +224,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSharedDefinitionInterfaceTrue(): void
     {
         $definition = [
-            SumInterface::class => [
-                Sum::class,
-                DiContainerInterface::SINGLETON => true, // service shared!
-            ],
+            SumInterface::class => diAutowire(Sum::class, isSingleton: true),
         ];
 
         $c = new DiContainer(
@@ -259,7 +239,7 @@ class ContainerSharedDefinitionTest extends TestCase
     public function testContainerSetMethodSharedDefinitionInterfaceTrue(): void
     {
         $c = (new DiContainer(config: new DiContainerConfig()))
-            ->set(SumInterface::class, Sum::class, ['init' => 10], true)
+            ->set(SumInterface::class, diAutowire(Sum::class, ['init' => 10], true))
         ;
 
         $this->assertInstanceOf(Sum::class, $c->get(SumInterface::class));

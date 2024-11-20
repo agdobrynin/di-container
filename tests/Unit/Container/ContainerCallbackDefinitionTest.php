@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
+use function Kaspi\DiContainer\diCallable;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer
@@ -46,14 +47,9 @@ class ContainerCallbackDefinitionTest extends TestCase
     public function testCallbackDefinitionSingletonDefaultButDefinitionSingletonTrue(): void
     {
         $def = [
-            'callback' => [
-                static fn () => new \ArrayIterator(['i1']),
-                DiContainerInterface::SINGLETON => true,
-            ],
-            'callback2' => [
-                static fn () => new \ArrayIterator(['i2']),
-            ],
-            'callback3' => fn () => new \ArrayIterator(['i3']),
+            'callback' => diCallable(static fn () => new \ArrayIterator(['i1']), isSingleton: true),
+            'callback2' => diCallable(static fn () => new \ArrayIterator(['i2'])),
+            'callback3' => diCallable(fn () => new \ArrayIterator(['i3'])),
         ];
 
         $container = (new DiContainerFactory())->make($def);
@@ -65,10 +61,7 @@ class ContainerCallbackDefinitionTest extends TestCase
     public function testCallbackDefinitionSingletonDefaultTrueButDefinitionSingletonFalse(): void
     {
         $def = [
-            'callback' => [
-                static fn () => new \ArrayIterator(['i1']),
-                DiContainerInterface::SINGLETON => false,
-            ],
+            'callback' => diCallable(static fn () => new \ArrayIterator(['i1']), isSingleton: false),
         ];
 
         $container = new DiContainer(definitions: $def, config: new DiContainerConfig(isSingletonServiceDefault: true));

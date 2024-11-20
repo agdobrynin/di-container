@@ -11,6 +11,7 @@ use Tests\Unit\Definition\Fixtures\CallableStaticMethodWithArgument;
 use Tests\Unit\Definition\Fixtures\ClassWithInvokeMethod;
 use Tests\Unit\Definition\Fixtures\SimpleService;
 use Tests\Unit\Definition\Fixtures\WithoutConstructor;
+use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -27,7 +28,7 @@ class DiDefinitionCallableTest extends TestCase
 {
     public function testCallableStringClassStaticMethod(): void
     {
-        $container = (new DiContainerFactory())->make(['service' => SimpleService::class]);
+        $container = (new DiContainerFactory())->make(['service' => diAutowire(SimpleService::class)]);
 
         $callable = new DiDefinitionCallable(CallableStaticMethodWithArgument::class.'::makeSomething', false);
         $res = $callable->setContainer($container)->invoke();

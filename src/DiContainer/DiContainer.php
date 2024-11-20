@@ -104,7 +104,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             );
     }
 
-    public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static
+    public function set(string $id, mixed $definition): static
     {
         if (($id = \trim($id)) === '') {
             throw new DiDefinitionException('Definition identifier must be a non-empty string.');
@@ -120,19 +120,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             return $this;
         }
 
-        if ($arguments) {
-            if (\is_array($definition)) {
-                $arguments = $arguments + $definition[DiContainerInterface::ARGUMENTS] ?? [];
-                $definition = [DiContainerInterface::ARGUMENTS => $arguments] + $definition;
-            } else {
-                $definition = [0 => $definition, DiContainerInterface::ARGUMENTS => $arguments];
-            }
-        }
+        if ($definition instanceof \Closure) {
+            $this->definitions[$id] = new DiDefinitionCallable($definition);
 
-        if (null !== $isSingleton) {
-            $definition = \is_array($definition)
-                ? [DiContainerInterface::SINGLETON => $isSingleton] + $definition
-                : [0 => $definition, DiContainerInterface::SINGLETON => $isSingleton];
+            return $this;
         }
 
         $this->definitions[$id] = $definition;
@@ -272,35 +263,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 return $this->diResolvedDefinition[$id] = $rawDefinition;
             }
 
-            if (\is_array($rawDefinition)) {
-                $definition = $rawDefinition[0] ?? $id;
-                $isSingleton = (bool) ($rawDefinition[DiContainerInterface::SINGLETON] ?? $isSingletonDefault);
-                $arguments = (array) ($rawDefinition[DiContainerInterface::ARGUMENTS] ?? []);
-            } else {
-                $definition = $rawDefinition;
-                $isSingleton = $isSingletonDefault;
-                $arguments = [];
-            }
-
-            $isIdInterface = \interface_exists($id);
-
-            if (\is_string($definition) && (\class_exists($definition) || $isIdInterface)) {
-                $relatedDefinition = $this->definitions[$definition] ?? null;
-
-                if ($isIdInterface && $relatedDefinition instanceof DiDefinitionAutowireInterface) {
-                    return $this->diResolvedDefinition[$id] = $relatedDefinition;
-                }
-
-                if ($isIdInterface && [] === $arguments
-                    && \is_array($relatedDefinition)
-                    && \array_key_exists(DiContainerInterface::ARGUMENTS, $relatedDefinition)) {
-                    $arguments += (array) $relatedDefinition[DiContainerInterface::ARGUMENTS];
-                }
-
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($definition, $isSingleton, $arguments);
-            }
-
-            if (\is_callable($definition)) {
+            if (\is_callable($rawDefinition)) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($definition, $isSingleton, $arguments);
             }
 

@@ -110,11 +110,7 @@ class ContainerWithUnionTypeOrEmptyTypeParametersTest extends TestCase
     public function testUnionTypeTwoClassesWithDefinition(): void
     {
         $class = (new DiContainerFactory())->make([
-            ClassA::class => [
-                DiContainerInterface::ARGUMENTS => [
-                    'var' => ['one', 'two', 'three'],
-                ],
-            ],
+            diAutowire(ClassA::class, ['var' => ['one', 'two', 'three']]),
         ])->get(ClassA::class);
 
         $this->assertEquals(['one', 'two', 'three'], $class->var);

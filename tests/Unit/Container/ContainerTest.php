@@ -152,65 +152,11 @@ class ContainerTest extends TestCase
         $this->assertEquals('Lorem, Ipsum', $repo->all());
     }
 
-    public function testSetWithParseParams(): void
-    {
-        $container = (new DiContainer(config: $this->diContainerConfig))
-            ->set(
-                Classes\Db::class,
-                [
-                    'arguments' => [
-                        'data' => [],
-                        'store' => '/var/log',
-                    ],
-                ],
-            )
-        ;
-
-        $db = $container->get(Classes\Db::class);
-
-        $this->assertEmpty($db->all());
-        $this->assertEquals('/var/log', $db->store);
-        $this->assertNull($db->cache);
-    }
-
-    public function testSetWithReplaceArguments(): void
-    {
-        $container = (new DiContainer(config: $this->diContainerConfig))
-            ->set(
-                id: Classes\Db::class,
-                definition: [
-                    'arguments' => [
-                        'data' => [],
-                        'store' => '/var/log',
-                    ],
-                ],
-                arguments: [
-                    'store' => '/var/new_log',
-                ],
-            )
-        ;
-
-        $db = $container->get(Classes\Db::class);
-
-        $this->assertEmpty($db->all());
-        $this->assertEquals('/var/new_log', $db->store);
-        $this->assertNull($db->cache);
-    }
-
     public function testByInterfaceWithParams(): void
     {
         $definitions = [
-            Interfaces\SumInterface::class => [
-                Classes\Sum::class,
-                'arguments' => [
-                    'init' => 50,
-                ],
-            ],
-            Classes\Sum::class => [
-                'arguments' => [
-                    'init' => 10,
-                ],
-            ],
+            Interfaces\SumInterface::class => diAutowire(Classes\Sum::class, ['init' => 50]),
+            diAutowire(Classes\Sum::class, ['init' => 10]),
         ];
 
         $c = new DiContainer($definitions, $this->diContainerConfig);
@@ -219,26 +165,10 @@ class ContainerTest extends TestCase
         $this->assertEquals(20, $c->get(Classes\Sum::class)->add(10));
     }
 
-    public function testByInterfaceByClassAndClassWithParams(): void
-    {
-        $definitions = [
-            Interfaces\SumInterface::class => Classes\Sum::class,
-            Classes\Sum::class => [
-                'arguments' => [
-                    'init' => 10,
-                ],
-            ],
-        ];
-
-        $c = new DiContainer($definitions, $this->diContainerConfig);
-
-        $this->assertEquals(20, $c->get(Interfaces\SumInterface::class)->add(10));
-    }
-
     public function testByInterfaceOnly(): void
     {
         $instances = [
-            Interfaces\SumInterface::class => Classes\Sum::class,
+            Interfaces\SumInterface::class => diAutowire(Classes\Sum::class),
         ];
 
         $sum = (new DiContainer($instances, $this->diContainerConfig))->get(Interfaces\SumInterface::class);
@@ -431,12 +361,13 @@ class ContainerTest extends TestCase
                     'name' => 'John',
                 ],
             ],
-            Classes\Names::class => [
-                'arguments' => [
+            diAutowire(
+                Classes\Names::class,
+                [
                     'place' => 'In the city',
                     'names' => ['Ivan', 'Piter'],
                 ],
-            ],
+            ),
         ];
 
         $container = new DiContainer(definitions: $def, config: $this->diContainerConfig);

@@ -57,5 +57,5 @@ interface DiContainerInterface extends ContainerInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
      * @throws DiDefinitionExceptionInterface
      */
-    public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static;
+    public function set(string $id, mixed $definition): static;
 }
