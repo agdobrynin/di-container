@@ -377,9 +377,10 @@ class FactoryMyClass implements DiFactoryInterface {
 ```php
 // определения для контейнера
 use Kaspi\DiContainer\DiContainerFactory;
+use function \Kaspi\DiContainer\diAutowire;
 
 $definitions = [
-    App\MyClass::class => App\FactoryMyClass::class
+    App\MyClass::class => diAutowire(App\FactoryMyClass::class)
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
