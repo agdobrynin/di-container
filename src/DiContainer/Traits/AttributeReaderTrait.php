@@ -97,17 +97,7 @@ trait AttributeReaderTrait
         }
 
         foreach ($attributes as $attribute) {
-            /** @var InjectByReference $injectReference */
-            $injectReference = $attribute->newInstance();
-
-            if ('' === $injectReference->getIdentifier()
-                && $type = $this->getParameterTypeByReflection($parameter)?->getName()) {
-                yield new InjectByReference($type);
-            }
-
-            yield $injectReference->getIdentifier()
-                ? $injectReference
-                : throw new AutowiredAttributeException('Can not determine the type argument by #[InjectByReference].');
+            yield $attribute->newInstance();
         }
     }
 }
