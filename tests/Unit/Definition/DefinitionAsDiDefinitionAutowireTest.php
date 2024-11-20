@@ -7,6 +7,7 @@ namespace Tests\Unit\Definition;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Definition\Fixtures\Generated\Service0;
+use Tests\Unit\Definition\Fixtures\Generated\Service1;
 use Tests\Unit\Definition\Fixtures\Generated\Service6;
 use Tests\Unit\Definition\Fixtures\Generated\ServiceImplementation;
 use Tests\Unit\Definition\Fixtures\Generated\ServiceInterface;
@@ -58,5 +59,17 @@ class DefinitionAsDiDefinitionAutowireTest extends TestCase
 
         $this->assertInstanceOf(ServiceImplementation::class, $container->get(ServiceInterface::class));
         $this->assertInstanceOf(Service0::class, $container->get(ServiceInterface::class)->service);
+    }
+
+    public function testDefinitionAsAutowire(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(
+                Service1::class,
+                ['service' => diAutowire(Service0::class)]
+            ),
+        ]);
+
+        $this->assertInstanceOf(Service0::class, $container->get(Service1::class)->service);
     }
 }
