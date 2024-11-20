@@ -282,7 +282,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected function checkCyclicalDependencyCall(string $id): void
     {
         if (\array_key_exists($id, $this->resolvingDependencies)) {
-            $callPath = \implode(' -> ', \array_keys((array) $this->resolvingDependencies)).' -> '.$id;
+            $callPath = \implode(' -> ', \array_keys($this->resolvingDependencies)).' -> '.$id;
 
             throw new CallCircularDependency('Trying call cyclical dependency. Call dependencies: '.$callPath);
         }
