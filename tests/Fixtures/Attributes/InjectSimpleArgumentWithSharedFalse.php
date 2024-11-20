@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class InjectSimpleArgumentWithSharedFalse
 {
     public function __construct(
-        #[Inject(
+        #[InjectContext(
             arguments: ['array' => ['first' => '🥇', 'second' => '🥈']],
             isSingleton: false
         )]

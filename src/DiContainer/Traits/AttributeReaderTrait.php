@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\ServiceByReference;
@@ -54,27 +54,27 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<Inject>
+     * @return \Generator<InjectContext>
      */
     public function getInjectAttribute(\ReflectionParameter $parameter): \Generator
     {
-        $attributes = $parameter->getAttributes(Inject::class);
+        $attributes = $parameter->getAttributes(InjectContext::class);
 
         if ([] === $attributes) {
             return;
         }
 
         if (!$parameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowiredAttributeException('The attribute #[Inject] can only be applied once per non-variadic parameter.');
+            throw new AutowiredAttributeException('The attribute #[InjectContext] can only be applied once per non-variadic parameter.');
         }
 
         foreach ($attributes as $attribute) {
-            /** @var Inject $inject */
+            /** @var InjectContext $inject */
             $inject = $attribute->newInstance();
 
             if ('' === $inject->getIdentifier()
                 && $type = $this->getParameterTypeByReflection($parameter)?->getName()) {
-                $inject = new Inject($type, $inject->getArguments(), $inject->isSingleton());
+                $inject = new InjectContext($type, $inject->getArguments(), $inject->isSingleton());
             }
 
             yield $inject;
@@ -97,7 +97,17 @@ trait AttributeReaderTrait
         }
 
         foreach ($attributes as $attribute) {
-            yield $attribute->newInstance();
+            /** @var InjectByReference $injectReference */
+            $injectReference = $attribute->newInstance();
+
+            if ('' === $injectReference->getIdentifier()
+                && $type = $this->getParameterTypeByReflection($parameter)?->getName()) {
+                yield new InjectByReference($type);
+            }
+
+            yield $injectReference->getIdentifier()
+                ? $injectReference
+                : throw new AutowiredAttributeException('Can not determine the type argument by #[InjectByReference].');
         }
     }
 }

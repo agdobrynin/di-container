@@ -121,9 +121,15 @@ use function Kaspi\DiContainer\diValue;
 
 $definitions = [
     'log' => diValue(
-        definition: ['var' => 'value'] // array('var' => 'value') 
+        definition: ['var' => 'value']
     )
 ];
+
+$container = (new \Kaspi\DiContainer\DiContainerFactory())->make($definitions);
+
+// ...
+
+var_dump($container->get('log')); // array('var' => 'value')
 ```
 
 > 📝 [Пример и объяснение применения](#определения-для-простых-типов)
@@ -325,6 +331,7 @@ use App\ClassInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diReference;
 
 $classesDefinitions = [
     diAutowire(ClassFirst::class)
@@ -334,7 +341,7 @@ $classesDefinitions = [
 // ... many definitions ...
 
 $interfacesDefinitions = [
-    ClassInterface::class => ClassFirst::class,
+    ClassInterface::class => diReference(ClassFirst::class),
 ];
 
 $container = (new DiContainerFactory()->make(
@@ -438,7 +445,7 @@ $expect === $container->get('doSomething'); // true
 
 > 📝 Если у `callable` определения присутствуют аргументы, то они могут быть разрешены контейнером
 > автоматически включая использование атрибутов
-> _#[Inject]_, _#[DiFactory]_.
+> _#[InjectContext]_, _#[DiFactory]_.
 
 ## Разрешение аргументов переменной длины
 
@@ -479,8 +486,8 @@ $definition = [
         ->addArgument(
             name: 'inputRule', // имя аргумента в конструкторе
             value: [ // <-- обернуть параметры в массив для variadic типов
-                App\Rules\RuleB::class,
-                App\Rules\RuleA::class,
+                diAutowire(App\Rules\RuleB::class),
+                diAutowire(App\Rules\RuleA::class),
                 diReference('ruleC'), // <-- получение по ссылке
             ], // <-- обернуть параметры в массив            
         )

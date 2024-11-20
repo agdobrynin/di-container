@@ -8,7 +8,7 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 use Kaspi\DiContainer\Traits\ArgumentsInAttribute;
 
 #[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
-final class Inject implements DiAttributeServiceInterface
+final class InjectContext implements DiAttributeServiceInterface
 {
     use ArgumentsInAttribute;
 

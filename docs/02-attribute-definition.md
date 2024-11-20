@@ -8,18 +8,18 @@
 > приоритет имеют php-атрибуты чем php-определения.
 
 Доступные атрибуты:
-- **[Inject](#inject)** - внедрение зависимости в аргументы конструктор или методы класса.
+- **[InjectContext](#injectcontext)** - внедрение зависимости в аргументы конструктор или методы класса в контексте класса или метода.
 - **[InjectByReference](#injectbyreference)** - внедрение зависимости по ссылке на другое определение в контейнере.
 - **[Service](#service)** - определение для интерфейса какой класс будет вызван и разрешен в контейнере.
 - **[ServiceByReference](#servicebyreference)** - определение для интерфейса по ссылке.
 - **[DiFactory](#difactory)** - Фабрика для разрешения зависимостей. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
 
-## Inject
+## InjectContext
 
 ```php
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
-#[Inject(
+#[InjectContext(
     id: '', // Определение зависимости (класс, интерфейс).
             // При пустом определении контейнер попытается получить
             // значение исходя из типа аргумента.
@@ -58,17 +58,18 @@ use Kaspi\DiContainer\Attributes\Inject;
 // Объявление класса
 namespace App;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class MyClass {
     public function __construct(
-        #[Inject(
+        #[InjectContext(
             arguments: [
                 // ⚠ префикс "@" в значении аргумента
                 // указывает что данные для этого аргумента
                 // нужно получить по ссылке.
                 'dsn' => '@pdo_dsn',
-            ]
+            ],
+            isSingleton: true 
         )]
         public \PDO $pdo
     ) {}
@@ -92,13 +93,13 @@ use App\MyClass;
 $myClass = $container->get(MyClass::class);
 $myClass->pdo->query('...')
 ```
-### Внедрение типизированных аргументов через атрибут **Inject**:
+### Внедрение типизированных аргументов через атрибут **InjectLocal**:
 
 ```php
 // Объявление класса
 namespace App;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class MyUsers {
     public function __construct(public array $users) {}
@@ -107,9 +108,9 @@ class MyUsers {
 class MyCompany {
     public function __construct(
         // аргумент id подставится автоматически и будет MyUsers
-        #[Inject(arguments: ['users' => '@users_bosses'])]
+        #[InjectContext(arguments: ['users' => '@users_bosses'])]
         public MyUsers $bosses,
-        #[Inject(arguments: ['users' => '@users_staffs'])]
+        #[InjectContext(arguments: ['users' => '@users_staffs'])]
         public MyUsers $staffs,
     ) {}
 }
@@ -136,7 +137,7 @@ print implode(',', $company->bosses->users); // user1, user2
 print implode(',', $company->staffs->users); // user3, user4
 ```
 
-### Атрибут **#[Inject]** для разрешения аргументов переменной длины
+### Атрибут **#[InjectContext]** для разрешения аргументов переменной длины
 
 Атрибут имеет признак `repetable`
 
@@ -144,7 +145,7 @@ print implode(',', $company->staffs->users); // user3, user4
 // Объявления классов
 namespace App\Rules;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 interface RuleInterface {}
 class RuleA implements RuleInterface {}
@@ -155,8 +156,8 @@ class RuleGenerator {
     private iterable $rules;
 
     public function __construct(
-        #[Inject(RuleB::class)]
-        #[Inject(RuleA::class)]
+        #[InjectContext(RuleB::class)]
+        #[InjectContext(RuleA::class)]
         RuleInterface ...$inputRule
     ) {
         $this->rules = $inputRule;
@@ -172,18 +173,13 @@ class RuleGenerator {
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
-$definition = [
-    'ruleC' => App\Rules\RuleC::class,
-];
-
-$container = (new DiContainerFactory())->make($definition);
+$container = (new DiContainerFactory())->make();
 
 // ... more code
 
 $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
 assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
-assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
 
 ## **InjectByReference**
@@ -237,7 +233,7 @@ assert($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 ## Service
 
 ```php
-use \Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\Attributes\Service;
 
 #[Service(
     id: '', // Класс реализующий интерфейс.
@@ -252,7 +248,7 @@ use \Kaspi\DiContainer\Attributes\Service;
 // Объявление классов
 namespace App;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\Service;
 
 #[Service(CustomLogger::class)] // класс реализующий данный интерфейс.
@@ -264,7 +260,7 @@ interface CustomLoggerInterface {
 
 class CustomLogger implements CustomLoggerInterface {
     public function __construct(
-        #[Inject('@logger_file')]
+        #[InjectByReference('@logger_file')]
         protected string $file,
     ) {}
     
@@ -277,8 +273,8 @@ class CustomLogger implements CustomLoggerInterface {
 
 class MyLogger {
     public function __construct(
-        #[Inject]   // Аргумент id подставится автоматически и будет CustomLoggerInterface.
-                    // Найдёт интерфейс и проверит у него php-атрибут Service.
+        // Контейнер найдёт интерфейс
+        // и проверит у него php-атрибут Service.
         public CustomLoggerInterface $customLogger
     ) {}
 }
@@ -309,7 +305,9 @@ todo...
 ## DiFactory
 
 ```php
-#[\Kaspi\DiContainer\Attributes\DiFactory(
+use Kaspi\DiContainer\Attributes\DiFactory;
+
+#[DiFactory(
     id: '', // Класс реализующий интерфейс Kaspi\DiContainer\Interfaces\DiFactoryInterface
     arguments: [], // аргументы конструктора для зависимости
     isSingleton: false,  // сервис создаётся как Singleton

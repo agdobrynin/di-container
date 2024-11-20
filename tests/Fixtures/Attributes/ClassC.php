@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class ClassC
 {
-    public function __construct(#[Inject] public array|ClassB $var) {}
+    public function __construct(#[InjectContext] public array|ClassB $var) {}
 }

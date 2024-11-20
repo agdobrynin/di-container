@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Attribute\Inject\Fixtures;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class PropertyVariadicWithEmptyInjectId
 {
@@ -14,8 +14,8 @@ class PropertyVariadicWithEmptyInjectId
     protected array $rules;
 
     public function __construct(
-        #[Inject]
-        #[Inject]
+        #[InjectContext]
+        #[InjectContext]
         RuleInterface ...$rule
     ) {
         $this->rules = $rule;

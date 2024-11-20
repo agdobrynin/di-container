@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class SimpleServiceWithTwoInterfacesDefault
 {
     public function __construct(
-        #[Inject]
+        #[InjectContext]
         public SimpleInterfaceSharedDefault $service1,
-        #[Inject]
+        #[InjectContext]
         public SimpleInterfaceSharedDefault $service2,
     ) {}
 }

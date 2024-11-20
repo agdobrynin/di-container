@@ -18,26 +18,20 @@ composer require kaspi/di-container
 // определение контейнера с настройкой "zero configuration for dependency inject"
 // когда ненужно объявлять зависимость если класс существуют
 // и может быть запрошен по "PSR-4 auto loading"
-$container = (new \Kaspi\DiContainer\DiContainerFactory())
-    ->make([
-        \Kaspi\DiContainer\diAutowire(App\Services\Mail::class)
-            ->addArgument('transport', 'sendmail')
-    ]);
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make();
 ```
 
 ```php
 namespace App\Services;
 
 class Mail {
-    public function __construct(private string $transport) {}
+    public function __construct() { /* логика инициализации */ }
     
-    public function envelop() {
-        // ...
-    }
+    public function envelop() { /* ... */ }
     
-    public function send(): bool {
-        // ...
-    }
+    public function send(): bool { /* ... */ }
 }
 ```
 
@@ -82,7 +76,7 @@ $postController->send($post);
 
 ```php
 $post = new App\Controllers\PostController(
-    new App\Services\Mail('sendmail')
+    new App\Services\Mail()
 );
 ```
 > контейнер "пытается" самостоятельно определить запрашиваемую зависимость - является ли это классом или callable типом.
@@ -96,20 +90,14 @@ $post = new App\Controllers\PostController(
 
 ```php
 $diConfig = new \Kaspi\DiContainer\DiContainerConfig(
-    // Использовать автоматическое разрешение аргументов
-    // сервисов-классов или методов-классов или функций.
-    useAutowire: true,
     // Ненужно объявлять каждую зависимость.
     // Если класс или функция или интерфейс существуют -
-    // то он может быть запрошен по "PSR-4 autoloading".
+    // то он может быть запрошен по "PSR-4 autoload".
     useZeroConfigurationDefinition: true,
     // Использовать Php-атрибуты для объявления зависимостей.
     useAttribute: true,
-    // Сервис (объект) будет создаваться заново при разрешении зависимости
-    // если знание true, то объект будет создан как Singleton.
+    // Сервис (объект) создавать как одиночку (singleton pattern).
     isSingletonServiceDefault: false,
-    // Строка (символ) определяющий шаблон как ссылку другой контейнер
-    referenceContainerSymbol: '@',
 );
 // передать настройки в контейнер
 $container = new \Kaspi\DiContainer\DiContainer(config: $diConfig);

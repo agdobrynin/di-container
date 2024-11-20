@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Classes;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 use Tests\Fixtures\Classes\Interfaces\VariadicParameterInterface;
 
 class VariadicClassWithMethodArguments
 {
     public function __construct(
-        #[Inject(arguments: ['array' => '@config.medals'])]
+        #[InjectContext(arguments: ['array' => '@config.medals'])]
         public \ArrayIterator $iterator
     ) {}
 

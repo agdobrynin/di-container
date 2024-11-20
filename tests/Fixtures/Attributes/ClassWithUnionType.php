@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 use Tests\Unit\Container\ContainerWithUnionTypeOrEmptyTypeParametersTest;
 
 class ClassWithUnionType
 {
     public function __construct(
-        #[Inject(
+        #[InjectContext(
             \ReflectionMethod::class,
             arguments: [
                 'objectOrMethod' => ContainerWithUnionTypeOrEmptyTypeParametersTest::class,

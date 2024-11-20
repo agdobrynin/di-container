@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Container\ContainerMethodCall;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -20,7 +20,7 @@ use Tests\Unit\Container\ContainerMethodCall\Fixtures\NameService;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\InjectContext
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
@@ -127,7 +127,7 @@ class ContainerMethodCallTest extends TestCase
     public function testResolveParamsInFunction(): void
     {
         $container = (new DiContainerFactory())->make();
-        $action = static function (#[Inject(arguments: ['array' => ['Hello']])] \ArrayIterator $iterator): \ArrayIterator {
+        $action = static function (#[InjectContext(arguments: ['array' => ['Hello']])] \ArrayIterator $iterator): \ArrayIterator {
             $iterator->append('World');
 
             return $iterator;
@@ -186,9 +186,9 @@ class ContainerMethodCallTest extends TestCase
         $container = (new DiContainerFactory())->make();
 
         $res = $container->call(static function (
-            #[Inject(arguments: ['array' => ['e1']])]
+            #[InjectContext(arguments: ['array' => ['e1']])]
             \ArrayIterator $iterator1,
-            #[Inject(arguments: ['array' => ['e2']])]
+            #[InjectContext(arguments: ['array' => ['e2']])]
             \ArrayIterator $iterator2,
         ) {
             return [$iterator1, $iterator2];

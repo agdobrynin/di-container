@@ -16,7 +16,7 @@ use function Kaspi\DiContainer\diReference;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\InjectContext
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory

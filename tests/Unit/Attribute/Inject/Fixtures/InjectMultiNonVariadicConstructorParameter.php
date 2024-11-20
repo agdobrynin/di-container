@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Attribute\Inject\Fixtures;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 
 class InjectMultiNonVariadicConstructorParameter
 {
     public function __construct(
-        #[Inject]
-        #[Inject]
+        #[InjectContext]
+        #[InjectContext]
         public array $param1
     ) {}
 }

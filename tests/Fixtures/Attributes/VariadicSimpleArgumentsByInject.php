@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Attributes;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectContext;
 use Kaspi\DiContainer\Attributes\InjectByReference;
 
 class VariadicSimpleArgumentsByInject
@@ -33,9 +33,9 @@ class VariadicSimpleArgumentsByInject
     }
 
     public static function injectStringDirect(
-        #[Inject('hello')]
-        #[Inject('world')]
-        #[Inject('!')]
+        #[InjectContext('hello')]
+        #[InjectContext('world')]
+        #[InjectContext('!')]
         string ...$word
     ): \Generator
     {
