@@ -16,6 +16,8 @@
 
 ## InjectContext
 
+Применяется к аргументам конструктора класса, метода или функции.
+
 ```php
 use Kaspi\DiContainer\Attributes\InjectContext;
 
@@ -23,7 +25,7 @@ use Kaspi\DiContainer\Attributes\InjectContext;
     id: '', // Определение зависимости (класс, интерфейс).
             // При пустом определении контейнер попытается получить
             // значение исходя из типа аргумента.
-            // Если не удалось получить определение по типу аргумента
+            // Если не удалось получить id по типу аргумента
             // контейнер попытается разрешить зависимость
             // по имени аргумента используя имя аргумента как идентификатор в контейнере.
     arguments: [], // Аргументы конструктора для зависимости
@@ -40,14 +42,13 @@ use Kaspi\DiContainer\Attributes\InjectContext;
 >
 > ```php
 > $arguments = [
->      // параметр строка
->      "paramNameOne" => "some value",
+>       "paramNameOne" => "some value", // может включать скальные типы, 
+>                                       // массив, null - scalar, array, null type.
 >      // ссылка на другое определение в контейнере
 >      // сам символ определен как constant в 
 >      // Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface::IS_REFERENCE
 >      "paramNameTwo" => "@identifier",
->      "paramNameAny" => ..., // any types sucha as array,
->                             // object and other available types.
+>      "paramNameAny" => ...,
 > ];
 > ```
 > 
