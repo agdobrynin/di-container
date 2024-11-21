@@ -259,7 +259,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (\is_callable($rawDefinition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $isSingletonDefault, []);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $isSingletonDefault);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
