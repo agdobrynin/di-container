@@ -12,7 +12,10 @@ use Psr\Container\NotFoundExceptionInterface;
 interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 {
     /**
+     * If argument is variadic then $value must be wrap array.
+     *
      * @param non-empty-string $name
+     * @param mixed $value
      *
      * @return $this
      */
