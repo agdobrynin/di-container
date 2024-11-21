@@ -24,7 +24,7 @@ class InjectReaderTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use AttributeReaderTrait;
-    use PsrContainerTrait; // need for abstract method getContainer in AttributeReaderTrait.
+    use PsrContainerTrait; // 🧨 need for abstract method getContainer in AttributeReaderTrait.
 
     public function testNoneInject(): void
     {
