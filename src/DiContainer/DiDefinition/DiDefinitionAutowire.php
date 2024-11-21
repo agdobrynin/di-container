@@ -46,8 +46,10 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     public function invoke(?bool $useAttribute = null): mixed
     {
-        $this->getDefinition()->isInstantiable()
-            || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+        if (!$this->getDefinition()->isInstantiable()) {
+            throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+        }
+
         $this->reflectionParameters ??= $this->reflectionClass->getConstructor()?->getParameters() ?? [];
 
         if ([] === $this->reflectionParameters) {

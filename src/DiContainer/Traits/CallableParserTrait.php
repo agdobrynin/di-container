@@ -27,10 +27,11 @@ trait CallableParserTrait
 
         $parsedDefinition = (static function (array|string $argument): array {
             if (\is_array($argument)) {
-                isset($argument[0], $argument[1])
-                || throw new DiDefinitionCallableException(
-                    'When the definition is an array, two array elements must be provided. Got: '.\var_export($argument, true)
-                );
+                if (!isset($argument[0], $argument[1])) {
+                    throw new DiDefinitionCallableException(
+                        'When the definition is an array, two array elements must be provided. Got: '.\var_export($argument, true)
+                    );
+                }
 
                 return [$argument[0], $argument[1]];
             }
