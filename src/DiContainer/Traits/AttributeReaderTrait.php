@@ -13,7 +13,7 @@ trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
-    public function getDiFactoryAttribute(\ReflectionClass|\ReflectionParameter $parameter): ?DiFactory
+    public function getDiFactoryAttribute(\ReflectionClass $parameter): ?DiFactory
     {
         return ($attribute = $parameter->getAttributes(DiFactory::class)[0] ?? null)
             ? $attribute->newInstance()
