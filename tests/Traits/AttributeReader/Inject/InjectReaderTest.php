@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
+use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -90,5 +91,19 @@ class InjectReaderTest extends TestCase
         }
 
         $this->assertFalse($injects->valid()); // All Inject fetched, generator empty.
+    }
+
+    public function testInjectNonBuiltinParameter(): void
+    {
+        $f = static fn (
+            #[Inject]
+            SuperClass $a
+        ) => '';
+        $p = new \ReflectionParameter($f, 0);
+
+        $injects = $this->getInjectAttribute($p);
+
+        $this->assertTrue($injects->valid());
+        $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());
     }
 }
