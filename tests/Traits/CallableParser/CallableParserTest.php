@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
+use Tests\Traits\CallableParser\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Traits\CallableParserTrait
@@ -43,4 +44,10 @@ class CallableParserTest extends TestCase
         $this->parseCallable(['one']);
     }
 
+    public function testDefinitionIsCallableString(): void
+    {
+        $res = $this->parseCallable(SuperClass::class.'::staticMethod');
+
+        $this->assertEquals(SuperClass::class.'::staticMethod', $res);
+    }
 }
