@@ -9,12 +9,14 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getInjectAttribute
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
+ * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
  * @internal
  */
@@ -101,6 +103,30 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
+        $injects = $this->getInjectAttribute($p);
+
+        $this->assertTrue($injects->valid());
+        $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());
+    }
+
+    public function testInjectUnionTypeParameter(): void
+    {
+        $f = static fn (
+            #[Inject]
+            string|SuperClass $a
+        ) => '';
+        $p = new \ReflectionParameter($f, 0);
+
+        $container = new class implements ContainerInterface {
+            public function get($id) {}
+
+            public function has($id): bool
+            {
+                return true;
+            }
+        };
+
+        $this->setContainer($container);
         $injects = $this->getInjectAttribute($p);
 
         $this->assertTrue($injects->valid());
