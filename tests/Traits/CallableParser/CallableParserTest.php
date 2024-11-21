@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\CallableParser;
 
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -19,10 +20,27 @@ class CallableParserTest extends TestCase
     use CallableParserTrait;
     use PsrContainerTrait; // 🧨 need for abstract method getContainer in CallableParserTrait.
 
-    public function testCallableParserForCallableReady(): void
+    public function testDefinitionIsCallableReady(): void
     {
         $res = $this->parseCallable(static fn () => 'ya');
 
         $this->assertIsCallable($res);
     }
+
+    public function testDefinitionArrayEmpty(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('two array elements must be provided');
+
+        $this->parseCallable([]);
+    }
+
+    public function testDefinitionArrayOneItem(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('two array elements must be provided');
+
+        $this->parseCallable(['one']);
+    }
+
 }
