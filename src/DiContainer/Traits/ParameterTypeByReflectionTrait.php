@@ -10,12 +10,12 @@ trait ParameterTypeByReflectionTrait
 {
     use PsrContainerTrait;
 
-    public function getParameterTypeByReflection(\ReflectionParameter $parameter): ?\ReflectionNamedType
+    public function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
     {
-        $reflectionType = $parameter->getType();
+        $reflectionType = $reflectionParameter->getType();
 
         if ($reflectionType instanceof \ReflectionNamedType && !$reflectionType->isBuiltin()) {
-            return $parameter->getType();
+            return $reflectionParameter->getType();
         }
 
         if ($reflectionType instanceof \ReflectionUnionType) {
