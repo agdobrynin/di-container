@@ -30,7 +30,6 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
-        $this->assertInstanceOf(\Generator::class, $this->getInjectAttribute($p));
         $this->assertFalse($this->getInjectAttribute($p)->valid());
     }
 
@@ -84,18 +83,12 @@ class InjectReaderTest extends TestCase
 
         $this->assertTrue($injects->valid());
 
-        $this->assertEquals('one', $injects->current()->getIdentifier());
+        $identifiers = ['one', 'two', 'three']; // Inject id argument for parameter $a in function $f
 
-        $injects->next();
+        foreach ($injects as $k => $inject) {
+            $this->assertEquals($identifiers[$k], $injects->current()->getIdentifier());
+        }
 
-        $this->assertEquals('two', $injects->current()->getIdentifier());
-
-        $injects->next();
-
-        $this->assertEquals('three', $injects->current()->getIdentifier());
-
-        $injects->next(); // All Inject fetched, generator empty.
-
-        $this->assertFalse($injects->valid());
+        $this->assertFalse($injects->valid()); // All Inject fetched, generator empty.
     }
 }
