@@ -73,18 +73,16 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($useAttribute) {
-                    if (($injectAttribute = $this->getInjectAttribute($parameter))
-                        && $injectAttribute->valid()) {
-                        foreach ($injectAttribute as $inject) {
-                            // @todo how about is variadic inject?
-                            $dependencies[] = $inject->getIdentifier()
-                                ? $this->getContainer()->get($inject->getIdentifier())
-                                : $this->getContainer()->get($parameter->getName());
-                        }
-
-                        continue;
+                if ($useAttribute && ($injectAttribute = $this->getInjectAttribute($parameter))
+                    && $injectAttribute->valid()) {
+                    foreach ($injectAttribute as $inject) {
+                        // @todo how about is variadic inject?
+                        $dependencies[] = $inject->getIdentifier()
+                            ? $this->getContainer()->get($inject->getIdentifier())
+                            : $this->getContainer()->get($parameter->getName());
                     }
+
+                    continue;
                 }
 
                 $parameterType = $this->getParameterTypeByReflection($parameter);
