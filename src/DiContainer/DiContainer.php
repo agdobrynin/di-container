@@ -212,23 +212,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute()) {
                         if ($service = $this->getServiceAttribute($reflectionClass)) {
-                            return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
-                                $service->getIdentifier(),
-                                $service->isSingleton(),
-                                $service->getArguments()
-                            );
-                        }
-
-                        if ($serviceByReference = $this->getServiceByReferenceAttribute($reflectionClass)) {
-                            $this->checkCyclicalDependencyCall($serviceByReference->getIdentifier());
-                            $this->resolvingDependencies[$serviceByReference->getIdentifier()] = true;
+                            $this->checkCyclicalDependencyCall($service->getIdentifier());
+                            $this->resolvingDependencies[$service->getIdentifier()] = true;
 
                             try {
-                                return $this->diResolvedDefinition[
-                                    $serviceByReference->getIdentifier()
-                                ] = $this->resolveDefinition($serviceByReference->getIdentifier());
+                                return $this->diResolvedDefinition[] = $this->resolveDefinition($service->getIdentifier());
                             } finally {
-                                unset($this->resolvingDependencies[$serviceByReference->getIdentifier()]);
+                                unset($this->resolvingDependencies[$service->getIdentifier()]);
                             }
                         }
                     }
@@ -237,11 +227,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 }
 
                 if ($this->config?->isUseAttribute()
-                    && $factory = $this->getDiFactoryAttribute($reflectionClass)->current()) {
+                    && $factory = $this->getDiFactoryAttribute($reflectionClass)) {
                     return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
                         $factory->getIdentifier(),
-                        $factory->isSingleton(),
-                        $factory->getArguments()
+                        $factory->isSingleton()
                     );
                 }
 
