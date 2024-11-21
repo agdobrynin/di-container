@@ -18,18 +18,23 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     private \ReflectionClass $reflectionClass;
 
-    public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null, array $arguments = [])
+    public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
         if ($this->definition instanceof \ReflectionClass) {
             $this->reflectionClass = $this->definition;
         }
-
-        $this->arguments = $arguments;
     }
 
     public function addArgument(string $name, mixed $value): static
     {
         $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
+    public function addArguments(array $arguments): static
+    {
+        $this->arguments = $arguments;
 
         return $this;
     }

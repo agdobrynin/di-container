@@ -130,7 +130,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         try {
             $callable = $this->parseCallable($definition);
 
-            return (new DiDefinitionCallable($callable, arguments: $arguments))
+            return (new DiDefinitionCallable($callable))
+                ->addArguments($arguments)
                 ->setContainer($this)
                 ->invoke($this->config?->isUseAttribute())
             ;

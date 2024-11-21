@@ -11,17 +11,17 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diAutowire(string $definition, array $arguments = [], ?bool $isSingleton = null): DiDefinitionAutowire
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowire
     {
-        return new DiDefinitionAutowire($definition, $isSingleton, $arguments);
+        return new DiDefinitionAutowire($definition, $isSingleton);
     }
 } // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diCallable(array|callable|string $definition, array $arguments = [], ?bool $isSingleton = null): DiDefinitionCallable
+    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionCallable
     {
-        return new DiDefinitionCallable($definition, $isSingleton, $arguments);
+        return new DiDefinitionCallable($definition, $isSingleton);
     }
 } // @codeCoverageIgnore
 

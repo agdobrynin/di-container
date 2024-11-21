@@ -26,15 +26,21 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      */
     private $parsedDefinition;
 
-    public function __construct(array|callable|string $definition, private ?bool $isSingleton = null, array $arguments = [])
+    public function __construct(array|callable|string $definition, private ?bool $isSingleton = null)
     {
         $this->definition = $definition;
-        $this->arguments = $arguments;
     }
 
     public function addArgument(string $name, mixed $value): static
     {
         $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
+    public function addArguments(array $arguments): static
+    {
+        $this->arguments = $arguments;
 
         return $this;
     }
