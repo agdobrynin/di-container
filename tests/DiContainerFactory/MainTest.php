@@ -42,4 +42,18 @@ class MainTest extends TestCase
         $this->assertEquals('b', $container->get('a'));
         $this->assertEquals('hello!', $container->get('c'));
     }
+
+    public function testMakeContainerByFactoryDefinitionInsertByArray(): void
+    {
+        $definitions = [
+            'a' => 'b',
+            'c' => static fn () => 'hello!',
+        ];
+
+        $container = (new DiContainerFactory())->make($definitions);
+
+        $this->assertInstanceOf(DiContainer::class, $container);
+        $this->assertEquals('b', $container->get('a'));
+        $this->assertEquals('hello!', $container->get('c'));
+    }
 }
