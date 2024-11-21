@@ -13,16 +13,16 @@ trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
-    public function getDiFactoryAttribute(\ReflectionClass $parameter): ?DiFactory
+    public function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
-        return ($attribute = $parameter->getAttributes(DiFactory::class)[0] ?? null)
+        return ($attribute = $reflectionClass->getAttributes(DiFactory::class)[0] ?? null)
             ? $attribute->newInstance()
             : null;
     }
 
-    public function getServiceAttribute(\ReflectionClass $parameter): ?Service
+    public function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
-        return ($attribute = $parameter->getAttributes(Service::class)[0] ?? null)
+        return ($attribute = $reflectionClass->getAttributes(Service::class)[0] ?? null)
             ? $attribute->newInstance()
             : null;
     }
@@ -30,15 +30,15 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<Inject>
      */
-    public function getInjectAttribute(\ReflectionParameter $parameter): \Generator
+    public function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
-        $attributes = $parameter->getAttributes(Inject::class);
+        $attributes = $reflectionParameter->getAttributes(Inject::class);
 
         if ([] === $attributes) {
             return;
         }
 
-        if (!$parameter->isVariadic() && \count($attributes) > 1) {
+        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
             throw new AutowiredAttributeException(
                 'The attribute #[Inject] can only be applied once per non-variadic parameter.'
             );
@@ -49,7 +49,7 @@ trait AttributeReaderTrait
             $inject = $attribute->newInstance();
 
             if ('' === $inject->getIdentifier()
-                && $type = $this->getParameterTypeByReflection($parameter)?->getName()) {
+                && $type = $this->getParameterTypeByReflection($reflectionParameter)?->getName()) {
                 $inject = new Inject($type);
             }
 
