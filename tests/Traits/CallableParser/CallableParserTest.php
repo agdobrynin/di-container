@@ -8,10 +8,12 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Tests\Traits\CallableParser\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Traits\CallableParserTrait
+ * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
  * @internal
  */
@@ -49,5 +51,68 @@ class CallableParserTest extends TestCase
         $res = $this->parseCallable(SuperClass::class.'::staticMethod');
 
         $this->assertEquals(SuperClass::class.'::staticMethod', $res);
+    }
+
+    public function testDefinitionAsClassWithMethodAsArray(): void
+    {
+        $this->setContainer(new class implements ContainerInterface {
+            public function get(string $id)
+            {
+                return new SuperClass('srv');
+            }
+
+            public function has(string $id): bool
+            {
+                return true;
+            }
+        });
+
+        $definition = [SuperClass::class, 'method'];
+        $parsedDefinition = $this->parseCallable($definition);
+
+        $this->assertIsCallable($parsedDefinition);
+        $this->assertIsNotCallable($definition);
+    }
+
+    public function testDefinitionAsClassWithMethodAsString(): void
+    {
+        $this->setContainer(new class implements ContainerInterface {
+            public function get(string $id)
+            {
+                return new SuperClass('srv');
+            }
+
+            public function has(string $id): bool
+            {
+                return true;
+            }
+        });
+
+        $definition = SuperClass::class.'::method';
+        $parsedDefinition = $this->parseCallable($definition);
+
+        $this->assertIsCallable($parsedDefinition);
+        $this->assertIsNotCallable($definition);
+    }
+
+    public function testDefinitionAsClassAsStringAndHiddenInvokeMethod(): void
+    {
+        $this->setContainer(new class implements ContainerInterface {
+            public function get(string $id)
+            {
+                return new SuperClass('srv');
+            }
+
+            public function has(string $id): bool
+            {
+                return true;
+            }
+        });
+
+        $definition = SuperClass::class;
+        $parsedDefinition = $this->parseCallable($definition);
+
+        $this->assertIsCallable($parsedDefinition);
+        $this->assertIsNotCallable($definition);
     }
 }
