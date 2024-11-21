@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
@@ -64,7 +61,7 @@ trait ParametersResolverTrait
                 foreach ($args as $arg) {
                     $dependencies[] = match (true) {
                         $arg instanceof DiDefinitionReference => $this->getContainer()->get($arg->getDefinition()),
-                        $arg instanceof DiDefinitionAutowireInterface => $this->resolveArgument($parameter, $arg, $useAttribute),
+                        $arg instanceof DiDefinitionAutowireInterface => $this->resolveContextArgument($parameter, $arg, $useAttribute),
                         $arg instanceof DiDefinitionInterface => $arg->getDefinition(),
                         default => $arg, // @todo how detect value type?
                     };
@@ -77,55 +74,13 @@ trait ParametersResolverTrait
 
             try {
                 if ($useAttribute) {
-                    if (($factories = $this->getDiFactoryAttribute($parameter))
-                        && $factories->valid()) {
-                        foreach ($factories as $factory) {
-                            $dependencies[] = $this->resolveArgumentByAttribute($factory);
-                        }
-
-                        continue;
-                    }
-
-                    if (($injectContextAttributes = $this->getInjectContextAttribute($parameter))
-                        && $injectContextAttributes->valid()) {
-                        foreach ($injectContextAttributes as $inject) {
-                            if (\class_exists($inject->getIdentifier())) {
-                                $dependencies[] = $this->resolveArgumentByAttribute($inject);
-
-                                continue;
-                            }
-
-                            if (\interface_exists($inject->getIdentifier())) {
-                                $dependencies[] = $this->getContainer()->get($inject->getIdentifier());
-
-                                continue;
-                            }
-
-                            // try resolve by argument name
-                            $resolvedVal = $this->getContainer()->has($parameter->getName())
-                                ? $this->getContainer()->get($parameter->getName())
-                                : throw new AutowiredException(\sprintf('Can not resolve by argument name [%s]', $parameter->getName()));
-
-                            $vals = \is_array($resolvedVal) && $parameter->isVariadic()
-                                ? $resolvedVal
-                                : [$resolvedVal];
-                            \array_push($dependencies, ...$vals);
-                        }
-
-                        continue;
-                    }
-
-                    if (($injectByReferences = $this->getInjectByReferenceAttribute($parameter))
-                        && $injectByReferences->valid()) {
-                        foreach ($injectByReferences as $inject) {
-                            $resolvedVal = $this->getContainer()->has($inject->getIdentifier())
+                    if (($injectAttribute = $this->getInjectAttribute($parameter))
+                        && $injectAttribute->valid()) {
+                        foreach ($injectAttribute as $inject) {
+                            // @todo how about is variadic inject?
+                            $dependencies[] = $inject->getIdentifier()
                                 ? $this->getContainer()->get($inject->getIdentifier())
-                                : throw new NotFoundException("Definition identifier [{$inject->getIdentifier()}] not found.");
-
-                            $vals = \is_array($resolvedVal) && $parameter->isVariadic()
-                                ? $resolvedVal
-                                : [$resolvedVal];
-                            \array_push($dependencies, ...$vals);
+                                : $this->getContainer()->get($parameter->getName());
                         }
 
                         continue;
@@ -138,7 +93,9 @@ trait ParametersResolverTrait
                     ? $this->getContainer()->get($parameter->getName())
                     : $this->getContainer()->get($parameterType->getName());
 
-                $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
+                $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                    ? $resolvedVal
+                    : [$resolvedVal];
                 \array_push($dependencies, ...$vals);
 
                 continue;
@@ -177,32 +134,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws AutowiredExceptionInterface
      */
-    protected function resolveArgumentByAttribute(DiAttributeServiceInterface $attribute): mixed
-    {
-        if (isset($this->resolvedArguments[$attribute->getIdentifier()])) {
-            return $this->resolvedArguments[$attribute->getIdentifier()];
-        }
-
-        $object = (new DiDefinitionAutowire($attribute->getIdentifier(), $attribute->isSingleton(), $attribute->getArguments()))
-            ->setContainer($this->getContainer())
-            ->invoke(true)
-        ;
-
-        $objectResult = $attribute instanceof DiFactory
-            ? $object($this->getContainer())
-            : $object;
-
-        return $attribute->isSingleton()
-            ? $this->resolvedArguments[$attribute->getIdentifier()] = $objectResult
-            : $objectResult;
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws AutowiredExceptionInterface
-     */
-    protected function resolveArgument(\ReflectionParameter $parameter, DiDefinitionAutowireInterface $definitionAutowire, ?bool $useAttribute): mixed
+    protected function resolveContextArgument(\ReflectionParameter $parameter, DiDefinitionAutowireInterface $definitionAutowire, ?bool $useAttribute): mixed
     {
         static $variadicPosition = 0;
 

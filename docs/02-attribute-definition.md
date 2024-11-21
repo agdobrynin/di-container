@@ -19,7 +19,7 @@
 Применяется к аргументам конструктора класса, метода или функции.
 
 ```php
-use Kaspi\DiContainer\Attributes\InjectContext;
+use Kaspi\DiContainer\Attributes\Inject;
 
 #[InjectContext(
     id: '', // Определение зависимости (класс, интерфейс).
@@ -59,11 +59,11 @@ use Kaspi\DiContainer\Attributes\InjectContext;
 // Объявление класса
 namespace App;
 
-use Kaspi\DiContainer\Attributes\InjectContext;
+use Kaspi\DiContainer\Attributes\Inject;
 
 class MyClass {
     public function __construct(
-        #[InjectContext(
+        #[Inject(
             arguments: [
                 // ⚠ префикс "@" в значении аргумента
                 // указывает что данные для этого аргумента
@@ -100,7 +100,7 @@ $myClass->pdo->query('...')
 // Объявление класса
 namespace App;
 
-use Kaspi\DiContainer\Attributes\InjectContext;
+use Kaspi\DiContainer\Attributes\Inject;
 
 class MyUsers {
     public function __construct(public array $users) {}
@@ -109,9 +109,9 @@ class MyUsers {
 class MyCompany {
     public function __construct(
         // аргумент id подставится автоматически и будет MyUsers
-        #[InjectContext(arguments: ['users' => '@users_bosses'])]
+        #[Inject(arguments: ['users' => '@users_bosses'])]
         public MyUsers $bosses,
-        #[InjectContext(arguments: ['users' => '@users_staffs'])]
+        #[Inject(arguments: ['users' => '@users_staffs'])]
         public MyUsers $staffs,
     ) {}
 }
@@ -146,7 +146,7 @@ print implode(',', $company->staffs->users); // user3, user4
 // Объявления классов
 namespace App\Rules;
 
-use Kaspi\DiContainer\Attributes\InjectContext;
+use Kaspi\DiContainer\Attributes\Inject;
 
 interface RuleInterface {}
 class RuleA implements RuleInterface {}
@@ -157,8 +157,8 @@ class RuleGenerator {
     private iterable $rules;
 
     public function __construct(
-        #[InjectContext(RuleB::class)]
-        #[InjectContext(RuleA::class)]
+        #[Inject(RuleB::class)]
+        #[Inject(RuleA::class)]
         RuleInterface ...$inputRule
     ) {
         $this->rules = $inputRule;
@@ -249,7 +249,7 @@ use Kaspi\DiContainer\Attributes\Service;
 // Объявление классов
 namespace App;
 
-use Kaspi\DiContainer\Attributes\InjectByReference;use Kaspi\DiContainer\Attributes\InjectContext;
+use Kaspi\DiContainer\Attributes\InjectByReference;use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
 
 #[Service(CustomLogger::class)] // класс реализующий данный интерфейс.
