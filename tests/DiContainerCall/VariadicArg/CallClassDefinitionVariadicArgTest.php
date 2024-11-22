@@ -28,7 +28,7 @@ use function Kaspi\DiContainer\diReference;
  */
 class CallClassDefinitionVariadicArgTest extends TestCase
 {
-    public function testCallStaticMethodWithoutAttribute(): void
+    public function testCallStaticMethodWithoutAttributePassArgumentByDiReference(): void
     {
         $config = new DiContainerConfig(useZeroConfigurationDefinition: true, useAttribute: false);
         $container = new DiContainer(config: $config);
@@ -39,6 +39,27 @@ class CallClassDefinitionVariadicArgTest extends TestCase
                 'word' => [ // <-- variadic vars wrap by array
                     diReference(WordSuffix::class),
                     diReference(WordHello::class),
+                ], // <-- variadic vars wrap by array
+            ]
+        );
+        $this->assertInstanceOf(WordSuffix::class, $res[0]);
+        $this->assertInstanceOf(WordHello::class, $res[1]);
+    }
+
+    public function testCallStaticMethodWithoutAttributePassArgumentByDiAutowire(): void
+    {
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: false, // off autoconfigure.
+            useAttribute: false
+        );
+        $container = new DiContainer(config: $config);
+
+        $res = $container->call(
+            [Talk::class, 'staticMethodByReference'],
+            [
+                'word' => [ // <-- variadic vars wrap by array
+                    diAutowire(WordSuffix::class),
+                    diAutowire(WordHello::class),
                 ], // <-- variadic vars wrap by array
             ]
         );
