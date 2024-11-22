@@ -62,6 +62,20 @@ class CallFunctionTest extends TestCase
         $this->assertEquals('I am alone', $res);
     }
 
+    public function testUserFunctionResolveArgumentByName(): void
+    {
+        $definitions = [
+            'allUsers' => ['Ivan', 'Piter', 'Vasiliy'],
+        ];
+        $config = new DiContainerConfig();
+        $container = new DiContainer($definitions, $config);
+
+        $res = $container->call('\Tests\Fixtures\functionResolveArgumentByName');
+        $expect = 'IVAN - PITER - VASILIY';
+
+        $this->assertEquals($expect, $res);
+    }
+
     public function testUserFunctionInjectByAttributeWithDefaultValue(): void
     {
         $definitions = [

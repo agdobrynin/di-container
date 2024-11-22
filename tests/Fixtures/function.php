@@ -23,3 +23,8 @@ function functionWithVariadic(
         return $carry.' / '.$class->publicProperty;
     }, '');
 }
+
+function functionResolveArgumentByName(#[Inject] array $allUsers): string
+{
+    return \implode(' - ', \array_map(static fn (string $item) => \strtoupper($item), $allUsers));
+}
