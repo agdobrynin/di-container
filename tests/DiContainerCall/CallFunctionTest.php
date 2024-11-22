@@ -60,8 +60,5 @@ class CallFunctionTest extends TestCase
         $this->assertEquals('I am alone', $res);
     }
 
-    public function testUserFunctionVariadicArguments()
-    {
-
-    }
+    public function testUserFunctionVariadicArguments() {}
 }
