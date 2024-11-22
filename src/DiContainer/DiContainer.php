@@ -25,7 +25,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -33,7 +32,6 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use AttributeReaderTrait;
-    use CallableParserTrait;
 
     /**
      * @var array<class-string|non-empty-string, mixed>
@@ -129,9 +127,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            $callable = $this->parseCallable($definition);
-
-            return (new DiDefinitionCallable($callable))
+            return (new DiDefinitionCallable($definition))
                 ->addArguments($arguments)
                 ->setContainer($this)
                 ->invoke($this->config?->isUseAttribute())
