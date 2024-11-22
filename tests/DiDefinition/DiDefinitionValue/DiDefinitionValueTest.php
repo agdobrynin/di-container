@@ -26,6 +26,8 @@ class DiDefinitionValueTest extends TestCase
         $o->foo = 'bar';
 
         yield 'set 4' => [$o, $o];
+
+        yield 'set 5' => [' ', ' '];
     }
 
     /**
