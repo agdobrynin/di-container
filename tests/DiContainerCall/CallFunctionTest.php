@@ -11,6 +11,7 @@ use Tests\Fixtures\ClassWithSimplePublicProperty;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
@@ -30,9 +31,6 @@ class CallFunctionTest extends TestCase
         $this->assertEquals(2.0, $res);
     }
 
-    /**
-     * @covers \Kaspi\DiContainer\diAutowire
-     */
     public function testUserFunction(): void
     {
         $container = (new DiContainerFactory())->make([
@@ -45,9 +43,6 @@ class CallFunctionTest extends TestCase
         $this->assertEquals('Ready + 🚀', $res);
     }
 
-    /**
-     * @covers \Kaspi\DiContainer\diAutowire
-     */
     public function testUserFunctionWithDefaultValue(): void
     {
         $container = (new DiContainerFactory())->make([
