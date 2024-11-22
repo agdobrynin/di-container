@@ -27,7 +27,10 @@ trait PsrContainerTrait
      */
     public function getContainer(): ContainerInterface
     {
-        return $this->container
-            ?? throw new ContainerNeedSetException('Need set container implementation. Use method setContainer() in '.__CLASS__.' class.');
+        if (!isset($this->container)) {
+            throw new ContainerNeedSetException('Need set container implementation. Use method setContainer() in '.__CLASS__.' class.');
+        }
+
+        return $this->container;
     }
 }
