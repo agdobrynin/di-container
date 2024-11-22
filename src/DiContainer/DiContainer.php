@@ -106,7 +106,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function set(string $id, mixed $definition): static
     {
-        if (($id = \trim($id)) === '') {
+        // Only check empty string.
+        if ('' === \trim($id)) {
             throw new DiDefinitionException('Definition identifier must be a non-empty string.');
         }
 
