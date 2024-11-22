@@ -34,7 +34,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $container = new DiContainer(config: $config);
 
         $res = $container->call(
-            [Talk::class, 'staticMethod'],
+            [Talk::class, 'staticMethodByReference'],
             [
                 'word' => [ // <-- variadic vars wrap by array
                     diReference(WordSuffix::class),
@@ -46,7 +46,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 
-    public function testCallStaticMethodWitAttribute(): void
+    public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifier(): void
     {
         $config = new DiContainerConfig();
         $definitions = [
@@ -55,9 +55,20 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         ];
         $container = new DiContainer(definitions: $definitions, config: $config);
 
-        $res = $container->call([Talk::class, 'staticMethod']);
+        $res = $container->call([Talk::class, 'staticMethodByReference']);
 
         $this->assertInstanceOf(WordHello::class, $res[0]);
         $this->assertInstanceOf(WordSuffix::class, $res[1]);
+    }
+
+    public function testCallStaticMethodWitAttributeInjectIdAsClass(): void
+    {
+        $config = new DiContainerConfig();
+        $container = new DiContainer(config: $config);
+
+        $res = $container->call([Talk::class, 'staticMethodByClass']);
+
+        $this->assertInstanceOf(WordSuffix::class, $res[0]);
+        $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 }
