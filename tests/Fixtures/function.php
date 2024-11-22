@@ -4,7 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-function funcWithDependencyClass(ClassWithSimplePublicProperty $class, ?string $append = null): string
-{
+use Kaspi\DiContainer\Attributes\Inject;
+
+function funcWithDependencyClass(
+    ClassWithSimplePublicProperty $class,
+    #[Inject('service.append')]
+    ?string $append = null
+): string {
     return $class->publicProperty.($append ? ' + '.$append : '');
+}
+
+function functionWithVariadic(
+    #[Inject('item.first')]
+    #[Inject('item.second')]
+    ClassWithSimplePublicProperty ...$item
+): string {
+    return \array_reduce($item, static function (string $carry, ClassWithSimplePublicProperty $class): string {
+        return $carry.' / '.$class->publicProperty;
+    }, '');
 }

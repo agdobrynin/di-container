@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall;
 
+use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\ClassWithSimplePublicProperty;
@@ -67,9 +68,10 @@ class CallClassDefinitionTest extends TestCase
      */
     public function testClassWithNoneStaticMethodAsArray(): void
     {
-        $container = (new DiContainerFactory())->make([
+        $container = new DiContainer([
             // global definition when resolve class container will get dependency by argument name.
             'publicProperty' => 'Try call as array from',
+            diAutowire(ClassWithSimplePublicProperty::class),
         ]);
 
         $res = $container->call([ClassWithSimplePublicProperty::class, 'method'], ['append' => '🌞']);
