@@ -85,8 +85,5 @@ class CallClassDefinitionTest extends TestCase
         $this->assertEquals('static method 🗿', $res);
     }
 
-    public function testCallVariadicArguments(): void
-    {
-
-    }
+    public function testCallVariadicArguments(): void {}
 }
