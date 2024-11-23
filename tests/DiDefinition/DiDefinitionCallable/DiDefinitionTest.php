@@ -54,7 +54,7 @@ class DiDefinitionTest extends TestCase
         $this->assertEquals('getServiceName', $definition[1]);
     }
 
-    public function testCallableArgument(): void
+    public function testCallableMethodArgument(): void
     {
         $def = (new DiDefinitionCallable(CallableArgument::class))
             ->addArgument('name', 'ok')
@@ -64,7 +64,7 @@ class DiDefinitionTest extends TestCase
         $this->assertEquals('ok 😀', $def->invoke());
     }
 
-    public function testCallableArguments(): void
+    public function testCallableMethodArguments(): void
     {
         $def = (new DiDefinitionCallable(CallableArgument::class))
             ->addArguments(['name' => 'ok'])
