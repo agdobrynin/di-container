@@ -67,7 +67,7 @@ trait ParametersResolverTrait
                     };
 
                     // @todo It is look too crazy. Please make it simple for variadic argument.
-                    if ($parameter->isVariadic() && !\is_array($argument) && \is_array($resolvedVal)) {
+                    if (!\is_array($argument) && \is_array($resolvedVal) && $parameter->isVariadic()) {
                         \array_push($dependencies, ...$resolvedVal);
                     } else {
                         $dependencies[] = $resolvedVal;
