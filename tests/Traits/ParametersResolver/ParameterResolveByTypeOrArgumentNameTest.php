@@ -67,4 +67,19 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->assertNull($this->resolveParameters()[0]);
     }
+
+    public function testParameterResolveByTypeWithVariadic(): void
+    {
+        $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')->with(\ArrayIterator::class)
+            ->willReturn(new \ArrayIterator())
+        ;
+        $this->setContainer($mockContainer);
+
+        $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
+    }
 }
