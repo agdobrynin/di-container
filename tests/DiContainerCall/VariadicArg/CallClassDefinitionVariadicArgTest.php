@@ -80,7 +80,8 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         ];
         $container = new DiContainer($definitions, config: $config);
 
-        $res = $container->call([Talk::class, 'staticMethodByReference'],
+        $res = $container->call(
+            [Talk::class, 'staticMethodByReference'],
             [
                 'word' => diReference('service.word'),
             ]

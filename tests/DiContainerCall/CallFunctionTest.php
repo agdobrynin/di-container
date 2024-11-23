@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\ClassWithSimplePublicProperty;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -105,43 +104,5 @@ class CallFunctionTest extends TestCase
         $res = $container->call('\Tests\Fixtures\funcWithDependencyClass');
 
         $this->assertEquals('Hello + 🌐', $res);
-    }
-
-    public function testUserFunctionVariadicArgumentsPassByCallMethod(): void
-    {
-        $container = new DiContainer([
-            'item.first' => diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', 'Hello'),
-            'item.second' => diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', 'World'),
-        ]);
-
-        $res = $container->call(
-            '\Tests\Fixtures\functionWithVariadic',
-            [
-                'item' => [ // <-- wrap variadic argument
-                    diReference('item.first'),
-                    diReference('item.second'),
-                ], // <-- wrap variadic argument
-            ]
-        );
-
-        $this->assertEquals(' / Hello / World', $res);
-    }
-
-    public function testUserFunctionVariadicArgumentsByAttribute(): void
-    {
-        $definitions = [
-            'item.first' => diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', '🎈'),
-            'item.second' => diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', '🎃'),
-        ];
-        $config = new DiContainerConfig(useAttribute: true);
-        $container = new DiContainer($definitions, $config);
-
-        $res = $container->call('\Tests\Fixtures\functionWithVariadic');
-
-        $this->assertEquals(' / 🎈 / 🎃', $res);
     }
 }
