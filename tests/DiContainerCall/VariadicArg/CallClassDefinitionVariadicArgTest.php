@@ -164,7 +164,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         ];
         $container = new DiContainer($definitions, $config);
 
-        $res = $container->call([Talk::class, 'staticMethodByDiArgumentNameOneToMany']);
+        $res = $container->call([Talk::class, 'staticMethodByArgumentNameOneToMany']);
 
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
         $this->assertInstanceOf(WordHello::class, $res[1]);

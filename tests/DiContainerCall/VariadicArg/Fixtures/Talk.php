@@ -41,7 +41,7 @@ class Talk
     /**
      * @param WordInterface ...$wordService
      */
-    public static function staticMethodByDiArgumentNameOneToMany(
+    public static function staticMethodByArgumentNameOneToMany(
         ...$wordService
     ): array {
         return $wordService;
