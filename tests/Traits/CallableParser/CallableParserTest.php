@@ -55,17 +55,12 @@ class CallableParserTest extends TestCase
 
     public function testDefinitionAsClassWithMethodAsArray(): void
     {
-        $this->setContainer(new class implements ContainerInterface {
-            public function get(string $id)
-            {
-                return new SuperClass('srv');
-            }
-
-            public function has(string $id): bool
-            {
-                return true;
-            }
-        });
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')->with(SuperClass::class)
+            ->willReturn(new SuperClass('srv'))
+        ;
+        $this->setContainer($mockContainer);
 
         $definition = [SuperClass::class, 'method'];
         $parsedDefinition = $this->parseCallable($definition);
@@ -76,17 +71,12 @@ class CallableParserTest extends TestCase
 
     public function testDefinitionAsClassWithMethodAsString(): void
     {
-        $this->setContainer(new class implements ContainerInterface {
-            public function get(string $id)
-            {
-                return new SuperClass('srv');
-            }
-
-            public function has(string $id): bool
-            {
-                return true;
-            }
-        });
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')->with(SuperClass::class)
+            ->willReturn(new SuperClass('srv'))
+        ;
+        $this->setContainer($mockContainer);
 
         $definition = SuperClass::class.'::method';
         $parsedDefinition = $this->parseCallable($definition);
@@ -97,17 +87,12 @@ class CallableParserTest extends TestCase
 
     public function testDefinitionAsClassAsStringAndHiddenInvokeMethod(): void
     {
-        $this->setContainer(new class implements ContainerInterface {
-            public function get(string $id)
-            {
-                return new SuperClass('srv');
-            }
-
-            public function has(string $id): bool
-            {
-                return true;
-            }
-        });
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')->with(SuperClass::class)
+            ->willReturn(new SuperClass('srv'))
+        ;
+        $this->setContainer($mockContainer);
 
         $definition = SuperClass::class;
         $parsedDefinition = $this->parseCallable($definition);
