@@ -59,12 +59,19 @@ trait ParametersResolverTrait
                     : [$argument];
 
                 foreach ($args as $arg) {
-                    $dependencies[] = match (true) {
+                    $resolvedVal = match (true) {
                         $arg instanceof DiDefinitionReference => $this->getContainer()->get($arg->getDefinition()),
                         $arg instanceof DiDefinitionAutowireInterface => $this->resolveContextArgument($parameter, $arg, $useAttribute),
                         $arg instanceof DiDefinitionInterface => $arg->getDefinition(),
                         default => $arg, // @todo how detect value type?
                     };
+
+                    // @todo It is look too crazy. Please make it simple for variadic argument.
+                    if ($parameter->isVariadic() && !\is_array($argument) && \is_array($resolvedVal)) {
+                        \array_push($dependencies, ...$resolvedVal);
+                    } else {
+                        $dependencies[] = $resolvedVal;
+                    }
                 }
 
                 continue;
@@ -76,10 +83,14 @@ trait ParametersResolverTrait
                 if ($useAttribute && ($injectAttribute = $this->getInjectAttribute($parameter))
                     && $injectAttribute->valid()) {
                     foreach ($injectAttribute as $inject) {
-                        // @todo how about is variadic inject?
-                        $dependencies[] = $inject->getIdentifier()
+                        $resolvedVal = $inject->getIdentifier()
                             ? $this->getContainer()->get($inject->getIdentifier())
                             : $this->getContainer()->get($parameter->getName());
+                        // @todo It is look too crazy. Please make it simple for variadic argument.
+                        $vals = $parameter->isVariadic() && \is_array($resolvedVal)
+                            ? $resolvedVal
+                            : [$resolvedVal];
+                        \array_push($dependencies, ...$vals);
                     }
 
                     continue;
