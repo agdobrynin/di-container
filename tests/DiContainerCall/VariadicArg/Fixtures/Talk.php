@@ -23,4 +23,27 @@ class Talk
     ): array {
         return $word;
     }
+
+    public static function staticMethodByReferenceOneToMany(
+        #[Inject('services.words')]
+        WordInterface ...$word
+    ): array {
+        return $word;
+    }
+
+    public static function staticMethodByDiFactoryOneToMany(
+        #[Inject(WordVariadicDiFactory::class)]
+        WordInterface ...$word
+    ): array {
+        return $word;
+    }
+
+    /**
+     * @param WordInterface ...$wordService
+     */
+    public static function staticMethodByDiArgumentNameOneToMany(
+        ...$wordService
+    ): array {
+        return $wordService;
+    }
 }
