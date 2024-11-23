@@ -102,6 +102,7 @@ trait ParametersResolverTrait
                     ? $this->getContainer()->get($parameter->getName())
                     : $this->getContainer()->get($parameterType->getName());
 
+                // @todo Think about variadic parameter, builtin type array mey be too.
                 $vals = \is_array($resolvedVal)
                     ? $resolvedVal
                     : [$resolvedVal];
