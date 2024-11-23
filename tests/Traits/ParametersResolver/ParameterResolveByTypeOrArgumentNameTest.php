@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +17,7 @@ use Psr\Container\ContainerInterface;
  *
  * @internal
  */
-class ParameterResolveByTypeTest extends TestCase
+class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 {
     use ParametersResolverTrait;
     use PsrContainerTrait;
@@ -49,5 +50,20 @@ class ParameterResolveByTypeTest extends TestCase
         $this->container = $mock;
 
         $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
+    }
+
+    public function testParameterResolveByTypeNotFoundAndSetDefaultValue(): void
+    {
+        $fn = static fn (?SomeClass $someClass = null) => $someClass;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mock = $this->createMock(ContainerInterface::class);
+        $mock->expects($this->once())
+            ->method('get')->with(SomeClass::class)
+            ->willThrowException(new NotFoundException())
+        ;
+        $this->container = $mock;
+
+        $this->assertNull($this->resolveParameters()[0]);
     }
 }
