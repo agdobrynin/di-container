@@ -155,4 +155,23 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
             \call_user_func_array($fn, $this->resolveParameters())[0]
         );
     }
+
+    public function testParameterResolveByTypeNotFoundInContainerWithoutDefaultValue(): void
+    {
+        // SuperClass not registered in container.
+        $fn = static fn (SuperClass $superClass) => $superClass;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')->with(SuperClass::class)
+            ->willThrowException(new NotFoundException())
+        ;
+        $this->setContainer($mockContainer);
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass/');
+
+        $this->resolveParameters();
+    }
 }
