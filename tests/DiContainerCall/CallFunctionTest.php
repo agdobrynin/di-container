@@ -7,6 +7,7 @@ namespace Tests\DiContainerCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\NotFoundExceptionInterface;
 use Tests\Fixtures\ClassWithSimplePublicProperty;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -104,5 +105,15 @@ class CallFunctionTest extends TestCase
         $res = $container->call('\Tests\Fixtures\funcWithDependencyClass');
 
         $this->assertEquals('Hello + 🌐', $res);
+    }
+
+    public function testUserFunctionUnresolvedArgument(): void
+    {
+        $container = new DiContainer();
+
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty \$class/');
+
+        $container->call('\Tests\Fixtures\funcWithDependencyClass');
     }
 }
