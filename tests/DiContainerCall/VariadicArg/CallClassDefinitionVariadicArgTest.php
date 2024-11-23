@@ -36,10 +36,10 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
             [
-                'word' => [ // <-- variadic vars wrap by array
+                'word' => [ // <- variadic vars wrap by array
                     diReference(WordSuffix::class),
                     diReference(WordHello::class),
-                ], // <-- variadic vars wrap by array
+                ], // <- variadic vars wrap by array
             ]
         );
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
@@ -57,10 +57,10 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
             [
-                'word' => [ // <-- variadic vars wrap by array
+                'word' => [ // <- variadic vars wrap by array
                     diAutowire(WordSuffix::class),
                     diAutowire(WordHello::class),
-                ], // <-- variadic vars wrap by array
+                ], // <- variadic vars wrap by array
             ]
         );
         $this->assertInstanceOf(WordSuffix::class, $res[0]);

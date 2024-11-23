@@ -79,7 +79,7 @@ class CallClassDefinitionTest extends TestCase
         $this->assertEquals('Try call as array from method 🌞', $res);
     }
 
-    public function testCallFromStaticMethod(): void
+    public function testCallFromStaticMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make();
         $res = $container->call(ClassWithSimplePublicProperty::class.'::staticMethod', ['append' => '🗿']);
