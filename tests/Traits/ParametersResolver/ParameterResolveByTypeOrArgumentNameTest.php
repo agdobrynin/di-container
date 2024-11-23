@@ -13,6 +13,7 @@ use Psr\Container\ContainerInterface;
 /**
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::setContainer
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait::getContainer
  *
  * @internal
@@ -27,12 +28,12 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (\ArrayIterator $array) => $array;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mock = $this->createMock(ContainerInterface::class);
-        $mock->expects($this->once())
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
             ->method('get')->with(\ArrayIterator::class)
             ->willReturn(new \ArrayIterator())
         ;
-        $this->container = $mock;
+        $this->setContainer($mockContainer);
 
         $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
     }
@@ -42,12 +43,12 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn ($myArrayIterator) => $myArrayIterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mock = $this->createMock(ContainerInterface::class);
-        $mock->expects($this->once())
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
             ->method('get')->with('myArrayIterator')
             ->willReturn(new \ArrayIterator())
         ;
-        $this->container = $mock;
+        $this->setContainer($mockContainer);
 
         $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
     }
@@ -57,12 +58,12 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (?SomeClass $someClass = null) => $someClass;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mock = $this->createMock(ContainerInterface::class);
-        $mock->expects($this->once())
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
             ->method('get')->with(SomeClass::class)
             ->willThrowException(new NotFoundException())
         ;
-        $this->container = $mock;
+        $this->setContainer($mockContainer);
 
         $this->assertNull($this->resolveParameters()[0]);
     }
