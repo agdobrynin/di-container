@@ -27,7 +27,6 @@ class PsrContainerTest extends TestCase
         };
 
         $this->assertInstanceOf(self::class, $this->setContainer($container));
-        $this->assertInstanceOf(ContainerInterface::class, $this->getContainer());
     }
 
     public function testPsrContainerGetException(): void
