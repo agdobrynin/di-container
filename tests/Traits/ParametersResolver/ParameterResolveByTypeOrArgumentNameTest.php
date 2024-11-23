@@ -38,7 +38,10 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
+        $this->assertInstanceOf(
+            \ArrayIterator::class,
+            \call_user_func_array($fn, $this->resolveParameters())
+        );
     }
 
     public function testParameterResolveByName(): void
@@ -53,7 +56,10 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
+        $this->assertInstanceOf(
+            \ArrayIterator::class,
+            \call_user_func_array($fn, $this->resolveParameters())
+        );
     }
 
     public function testParameterResolveByNameVariadicParameter(): void
@@ -101,7 +107,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->assertNull($this->resolveParameters()[0]);
+        $this->assertNull(\call_user_func_array($fn, $this->resolveParameters()));
     }
 
     public function testParameterResolveByTypeWithVariadic(): void
@@ -115,7 +121,9 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
             ->willReturn(new \ArrayIterator())
         ;
         $this->setContainer($mockContainer);
-
-        $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
+        $this->assertInstanceOf(
+            \ArrayIterator::class,
+            \call_user_func_array($fn, $this->resolveParameters())[0]
+        );
     }
 }
