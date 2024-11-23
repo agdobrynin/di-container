@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
@@ -53,6 +54,39 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->setContainer($mockContainer);
 
         $this->assertInstanceOf(\ArrayIterator::class, $this->resolveParameters()[0]);
+    }
+
+    public function testParameterResolveByNameVariadicParameter(): void
+    {
+        $fn = static fn (SuperClass $superClass, string ...$word) => [$superClass, $word];
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer
+            ->expects($this->atMost(2))
+            ->method('get')
+            ->with($this->logicalOr(
+                SuperClass::class,
+                'word'
+            ))
+            ->willReturn(
+                new SuperClass(),
+                ['one', 'two', 'three']
+            )
+        ;
+
+        $this->setContainer($mockContainer);
+
+        $params = $this->resolveParameters();
+
+        $this->assertCount(4, $params);
+        $this->assertInstanceOf(SuperClass::class, $params[0]);
+        $this->assertEquals('one', $params[1]);
+        $this->assertEquals('two', $params[2]);
+        $this->assertEquals('three', $params[3]);
+
+        $this->assertInstanceOf(SuperClass::class, \call_user_func_array($fn, $params)[0]);
+        $this->assertEquals(['one', 'two', 'three'], \call_user_func_array($fn, $params)[1]);
     }
 
     public function testParameterResolveByTypeNotFoundAndSetDefaultValue(): void
