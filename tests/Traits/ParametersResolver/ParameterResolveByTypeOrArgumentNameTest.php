@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -165,12 +167,31 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(SuperClass::class)
-            ->willThrowException(new NotFoundException())
+            ->willThrowException(new NotFoundException('Not found SuperClass'))
         ;
         $this->setContainer($mockContainer);
 
         $this->expectException(NotFoundException::class);
-        $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass/');
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass.+Not found/');
+
+        $this->resolveParameters();
+    }
+
+    public function testParameterResolveByTypeThrowWhenResolveDependency(): void
+    {
+        // SuperClass is registered in container, but fire throw when resolve in container.
+        $fn = static fn (SuperClass $superClass) => $superClass;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')->with(SuperClass::class)
+            ->willThrowException(new AutowiredException('some error'))
+        ;
+        $this->setContainer($mockContainer);
+
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass.+some error/');
 
         $this->resolveParameters();
     }
