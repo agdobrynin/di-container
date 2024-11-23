@@ -23,7 +23,7 @@ use function Kaspi\DiContainer\diAutowire;
  */
 class CallClassDefinitionTest extends TestCase
 {
-    public function testClassWithInvokeMethod(): void
+    public function testCallWithArgumentsInvokeClass(): void
     {
         $container = (new DiContainerFactory())->make([
             diAutowire(ClassWithSimplePublicProperty::class)
@@ -38,7 +38,7 @@ class CallClassDefinitionTest extends TestCase
     /**
      * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
      */
-    public function testClassWithInvokeMethodArgumentDefault(): void
+    public function testCallInvokeClassArgumentDefaultValue(): void
     {
         $container = (new DiContainerFactory())->make([
             diAutowire(ClassWithSimplePublicProperty::class)
@@ -50,7 +50,7 @@ class CallClassDefinitionTest extends TestCase
         $this->assertEquals('Ready', $res);
     }
 
-    public function testClassWithNoneStaticMethodAsString(): void
+    public function testCallWithArgumentsClassWithNoneStaticMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make([
             diAutowire(ClassWithSimplePublicProperty::class)
@@ -66,7 +66,7 @@ class CallClassDefinitionTest extends TestCase
      * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue::getDefinition
      * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
      */
-    public function testClassWithNoneStaticMethodAsArray(): void
+    public function testCallWithArgumentsClassWithNoneStaticMethodAsArray(): void
     {
         $container = new DiContainer([
             // global definition when resolve class container will get dependency by argument name.
@@ -79,7 +79,7 @@ class CallClassDefinitionTest extends TestCase
         $this->assertEquals('Try call as array from method 🌞', $res);
     }
 
-    public function testCallFromStaticMethodAsString(): void
+    public function testCallWithArgumentsFromStaticMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make();
         $res = $container->call(ClassWithSimplePublicProperty::class.'::staticMethod', ['append' => '🗿']);
