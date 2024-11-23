@@ -74,12 +74,13 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $config = new DiContainerConfig(
             useAttribute: false // off attribute for configure.
         );
-        $container = new DiContainer(config: $config);
-        // one definition return array of resolved definition.
-        $container->set('service.word', diAutowire(WordVariadicDiFactory::class));
+        $definitions = [
+            // one definition return array of resolved definition.
+            'service.word' => diAutowire(WordVariadicDiFactory::class),
+        ];
+        $container = new DiContainer($definitions, config: $config);
 
-        $res = $container->call(
-            [Talk::class, 'staticMethodByReference'],
+        $res = $container->call([Talk::class, 'staticMethodByReference'],
             [
                 'word' => diReference('service.word'),
             ]
