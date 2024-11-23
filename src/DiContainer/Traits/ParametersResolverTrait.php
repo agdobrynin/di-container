@@ -102,7 +102,7 @@ trait ParametersResolverTrait
                     ? $this->getContainer()->get($parameter->getName())
                     : $this->getContainer()->get($parameterType->getName());
 
-                $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                $vals = \is_array($resolvedVal)
                     ? $resolvedVal
                     : [$resolvedVal];
                 \array_push($dependencies, ...$vals);
