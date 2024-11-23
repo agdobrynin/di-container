@@ -117,16 +117,13 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
-        $container = new class implements ContainerInterface {
-            public function get($id) {}
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('has')->with(SuperClass::class)
+            ->willReturn(true)
+        ;
+        $this->setContainer($mockContainer);
 
-            public function has($id): bool
-            {
-                return true;
-            }
-        };
-
-        $this->setContainer($container);
         $injects = $this->getInjectAttribute($p);
 
         $this->assertTrue($injects->valid());
