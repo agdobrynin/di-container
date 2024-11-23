@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Traits\PsrContainerTrait;
+namespace Tests\Traits\PsrContainer;
 
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
@@ -14,7 +14,7 @@ use Psr\Container\ContainerInterface;
  *
  * @internal
  */
-class PsrContainerTraitTest extends TestCase
+class PsrContainerTest extends TestCase
 {
     use PsrContainerTrait;
 
