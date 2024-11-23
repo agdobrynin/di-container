@@ -62,7 +62,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         );
     }
 
-    public function testParameterResolveByNameVariadicParameter(): void
+    public function testParameterResolveByNameVariadicParameterString(): void
     {
         $fn = static fn (SuperClass $superClass, string ...$word) => [$superClass, $word];
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -93,6 +93,35 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->assertInstanceOf(SuperClass::class, \call_user_func_array($fn, $params)[0]);
         $this->assertEquals(['one', 'two', 'three'], \call_user_func_array($fn, $params)[1]);
+    }
+
+    public function testParameterResolveByNameVariadicParameterArray(): void
+    {
+        $fn = static fn (array ...$phrase) => $phrase;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer
+            ->expects($this->once())
+            ->method('get')
+            ->with('phrase')
+            ->willReturn(
+                [
+                    ['one', 'two', 'three'],
+                    ['four', 'five', 'six'],
+                ]
+            )
+        ;
+
+        $this->setContainer($mockContainer);
+
+        $params = $this->resolveParameters();
+
+        $this->assertCount(2, $params);
+        $this->assertEquals(
+            [['one', 'two', 'three'], ['four', 'five', 'six']],
+            \call_user_func_array($fn, $params)
+        );
     }
 
     public function testParameterResolveByTypeNotFoundAndSetDefaultValue(): void
