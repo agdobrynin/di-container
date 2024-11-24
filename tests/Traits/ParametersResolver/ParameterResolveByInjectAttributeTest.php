@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
+use Tests\Traits\ParametersResolver\Fixtures\SuperDiFactory;
 use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
 
 /**
@@ -72,7 +73,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $this->resolveParameters(useAttribute: true);
     }
 
-    public function testParameterResolveTypedArgumentByInjectAttributeWithId(): void
+    public function testParameterResolveTypedVariadicArgumentByTowInjectAttributeWithId(): void
     {
         $fn = static fn (
             #[Inject('services.one')]
@@ -92,6 +93,32 @@ class ParameterResolveByInjectAttributeTest extends TestCase
                 new SuperClass(),
                 new MoreSuperClass(),
             )
+        ;
+        $this->setContainer($mockContainer);
+
+        $params = $this->resolveParameters(useAttribute: true);
+
+        $this->assertIsArray($params);
+        $this->assertInstanceOf(SuperInterface::class, $params[0]);
+        $this->assertInstanceOf(SuperInterface::class, $params[1]);
+    }
+
+    public function testParameterResolveTypedVariadicArgumentByOneInjectAttributeWithIdAkaDiFactory(): void
+    {
+        $fn = static fn (
+            #[Inject(SuperDiFactory::class)]
+            SuperInterface ...$super
+        ) => $super;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')
+            ->with(SuperDiFactory::class)
+            ->willReturn([
+                new SuperClass(),
+                new MoreSuperClass(),
+            ])
         ;
         $this->setContainer($mockContainer);
 
