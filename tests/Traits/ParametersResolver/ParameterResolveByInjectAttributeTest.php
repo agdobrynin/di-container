@@ -6,6 +6,7 @@ namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -148,5 +149,27 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
 
         $this->assertIsObject($res);
+    }
+
+    public function testParameterResolveByArgumentNameNotFound(): void
+    {
+        $fn = static fn (
+            #[Inject]
+            object|string $parameter
+        ) => $parameter;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')
+            ->with('parameter')
+            ->willThrowException(new NotFoundException('Not found'))
+        ;
+        $this->setContainer($mockContainer);
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+object\|string \$parameter.+Not found/');
+
+        $this->resolveParameters(useAttribute: true);
     }
 }
