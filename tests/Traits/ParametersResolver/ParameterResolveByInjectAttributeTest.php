@@ -193,4 +193,53 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->assertEquals('welcome!', $res);
     }
+
+    public function testParameterResolveByArgumentNameNonVariadicTypeArray(): void
+    {
+        $fn = static fn (
+            #[Inject('names')]
+            array $name
+        ): array => $name;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')
+            ->with('names')
+            ->willReturn(['Ivan', 'Piter'])
+        ;
+        $this->setContainer($mockContainer);
+
+        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+
+        $this->assertEquals(['Ivan', 'Piter'], $res);
+    }
+
+    public function testParameterResolveByArgumentNameVariadicTypeArray(): void
+    {
+        $fn = static fn (
+            #[Inject('names')]
+            array ...$name
+        ): array => \array_map(
+            static fn (array $name, int $index) => $index > 0 ? \array_map('strtoupper', $name) : \array_map('strtolower', $name),
+            $name,
+            \array_keys($name)
+        );
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')
+            ->with('names')
+            ->willReturn([['IvaN', 'PiteR'], ['vasIliy', 'niKOlay']])
+        ;
+        $this->setContainer($mockContainer);
+
+        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+
+        $this->assertCount(2, $res);
+
+        $this->assertEquals(['ivan', 'piter'], $res[0]);
+        $this->assertEquals(['VASILIY', 'NIKOLAY'], $res[1]);
+    }
 }
