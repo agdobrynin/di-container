@@ -172,4 +172,25 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->resolveParameters(useAttribute: true);
     }
+
+    public function testParameterResolveByArgumentNameNotFoundWithDefaultValue(): void
+    {
+        $fn = static fn (
+            #[Inject]
+            object|string $parameter = 'welcome!'
+        ) => $parameter;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')
+            ->with('parameter')
+            ->willThrowException(new NotFoundException('Not found'))
+        ;
+        $this->setContainer($mockContainer);
+
+        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+
+        $this->assertEquals('welcome!', $res);
+    }
 }
