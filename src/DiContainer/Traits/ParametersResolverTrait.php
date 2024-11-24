@@ -145,12 +145,19 @@ trait ParametersResolverTrait
      */
     protected function resolveUserDefinedArgument(\ReflectionParameter $parameter, mixed $argumentDefinition, ?bool $useAttribute): mixed
     {
-        return match (true) {
-            $argumentDefinition instanceof DiDefinitionReference => $this->getContainer()->get($argumentDefinition->getDefinition()),
-            $argumentDefinition instanceof DiDefinitionAutowireInterface => $this->resolveContextArgument($parameter, $argumentDefinition, $useAttribute),
-            $argumentDefinition instanceof DiDefinitionInterface => $argumentDefinition->getDefinition(),
-            default => $argumentDefinition, // @todo how detect value type?
-        };
+        if ($argumentDefinition instanceof DiDefinitionReference) {
+            return $this->getContainer()->get($argumentDefinition->getDefinition());
+        }
+
+        if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
+            return $this->resolveContextArgument($parameter, $argumentDefinition, $useAttribute);
+        }
+
+        if ($argumentDefinition instanceof DiDefinitionInterface) {
+            return $argumentDefinition->getDefinition();
+        }
+
+        return $argumentDefinition;
     }
 
     /**
