@@ -126,6 +126,31 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         );
     }
 
+    public function testParameterResolveByNameNonVariadicParameterArray(): void
+    {
+        $fn = static fn (array $phrase) => $phrase;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer
+            ->expects($this->once())
+            ->method('get')
+            ->with('phrase')
+            ->willReturn(
+                ['one', 'two', 'three'],
+            )
+        ;
+
+        $this->setContainer($mockContainer);
+
+        $params = $this->resolveParameters();
+
+        $this->assertEquals(
+            ['one', 'two', 'three'],
+            \call_user_func_array($fn, $params)
+        );
+    }
+
     public function testParameterResolveByTypeNotFoundAndSetDefaultValue(): void
     {
         $fn = static fn (?SomeClass $someClass = null) => $someClass;
