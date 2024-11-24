@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -53,25 +54,24 @@ trait ParametersResolverTrait
 
         foreach ($this->reflectionParameters as $parameter) {
             if (\array_key_exists($parameter->name, $this->arguments)) {
-                $argument = $this->arguments[$parameter->name];
-                $args = \is_array($argument) && $parameter->isVariadic()
-                    ? $argument
-                    : [$argument];
+                $argumentDefinition = $this->arguments[$parameter->name];
 
-                foreach ($args as $arg) {
-                    $resolvedVal = match (true) {
-                        $arg instanceof DiDefinitionReference => $this->getContainer()->get($arg->getDefinition()),
-                        $arg instanceof DiDefinitionAutowireInterface => $this->resolveContextArgument($parameter, $arg, $useAttribute),
-                        $arg instanceof DiDefinitionInterface => $arg->getDefinition(),
-                        default => $arg, // @todo how detect value type?
-                    };
+                if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
+                    foreach ($argumentDefinition as $definitionItem) {
+                        $resolvedVal = $this->resolveUserDefinedArgument($parameter, $definitionItem, $useAttribute);
+                        $dependencies[] = $resolvedVal;
+                    }
 
-                    $vals = \is_array($resolvedVal) && $parameter->isVariadic()
-                        ? $resolvedVal
-                        : [$resolvedVal];
-
-                    \array_push($dependencies, ...$vals);
+                    continue;
                 }
+
+                $resolvedVal = $this->resolveUserDefinedArgument($parameter, $argumentDefinition, $useAttribute);
+
+                $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                    ? $resolvedVal
+                    : [$resolvedVal];
+
+                \array_push($dependencies, ...$vals);
 
                 continue;
             }
@@ -136,6 +136,22 @@ trait ParametersResolverTrait
     }
 
     abstract public function getContainer(): ContainerInterface;
+
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws AutowiredExceptionInterface
+     */
+    protected function resolveUserDefinedArgument(\ReflectionParameter $parameter, mixed $argumentDefinition, ?bool $useAttribute): mixed
+    {
+        return match (true) {
+            $argumentDefinition instanceof DiDefinitionReference => $this->getContainer()->get($argumentDefinition->getDefinition()),
+            $argumentDefinition instanceof DiDefinitionAutowireInterface => $this->resolveContextArgument($parameter, $argumentDefinition, $useAttribute),
+            $argumentDefinition instanceof DiDefinitionInterface => $argumentDefinition->getDefinition(),
+            default => $argumentDefinition, // @todo how detect value type?
+        };
+    }
 
     /**
      * @throws ContainerExceptionInterface
