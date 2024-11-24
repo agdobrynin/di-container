@@ -85,7 +85,7 @@ trait ParametersResolverTrait
                         $resolvedVal = $inject->getIdentifier()
                             ? $this->getContainer()->get($inject->getIdentifier())
                             : $this->getContainer()->get($parameter->getName());
-                        // @todo It is look too crazy. Please make it simple for variadic argument.
+
                         $vals = \is_array($resolvedVal) && $parameter->isVariadic()
                             ? $resolvedVal
                             : [$resolvedVal];
