@@ -177,7 +177,8 @@ trait ParametersResolverTrait
             return $this->resolvedArguments[$id];
         }
 
-        $object = $definitionAutowire->setContainer($this->getContainer())->invoke($useAttribute);
+        $definitionAutowire->setContainer($this->getContainer());
+        $object = $definitionAutowire->invoke($useAttribute);
 
         $objectResult = $object instanceof DiFactoryInterface
             ? $object($this->getContainer())
