@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
 
@@ -45,10 +46,10 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $arguments = $this->resolveParameters(useAttribute: true);
+        $params = $this->resolveParameters(useAttribute: true);
         $this->assertEquals(
             ['✔', '❤'],
-            \call_user_func_array($fn, $arguments)->getArrayCopy()
+            \call_user_func_array($fn, $params)->getArrayCopy()
         );
     }
 
@@ -79,5 +80,25 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             SuperInterface ...$super
         ) => $super;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->atLeast(2))
+            ->method('get')
+            ->with($this->logicalOr(
+                'services.one',
+                'services.tow',
+            ))
+            ->willReturn(
+                new SuperClass(),
+                new MoreSuperClass(),
+            )
+        ;
+        $this->setContainer($mockContainer);
+
+        $params = $this->resolveParameters(useAttribute: true);
+
+        $this->assertIsArray($params);
+        $this->assertInstanceOf(SuperInterface::class, $params[0]);
+        $this->assertInstanceOf(SuperInterface::class, $params[1]);
     }
 }
