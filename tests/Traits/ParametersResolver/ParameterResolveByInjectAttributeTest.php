@@ -96,11 +96,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters(useAttribute: true);
+        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
 
-        $this->assertIsArray($params);
-        $this->assertInstanceOf(SuperInterface::class, $params[0]);
-        $this->assertInstanceOf(SuperInterface::class, $params[1]);
+        $this->assertIsArray($res);
+        $this->assertInstanceOf(SuperInterface::class, $res[0]);
+        $this->assertInstanceOf(SuperInterface::class, $res[1]);
     }
 
     public function testParameterResolveTypedVariadicArgumentByOneInjectAttributeWithIdAkaDiFactory(): void
@@ -122,10 +122,10 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters(useAttribute: true);
+        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
 
-        $this->assertIsArray($params);
-        $this->assertInstanceOf(SuperInterface::class, $params[0]);
-        $this->assertInstanceOf(SuperInterface::class, $params[1]);
+        $this->assertIsArray($res);
+        $this->assertInstanceOf(SuperInterface::class, $res[0]);
+        $this->assertInstanceOf(SuperInterface::class, $res[1]);
     }
 }
