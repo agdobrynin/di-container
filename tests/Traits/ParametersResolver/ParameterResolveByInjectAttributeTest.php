@@ -128,4 +128,25 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
         $this->assertInstanceOf(SuperInterface::class, $res[1]);
     }
+
+    public function testParameterResolveByArgumentName(): void
+    {
+        $fn = static fn (
+            #[Inject]
+            object|string $parameter
+        ) => $parameter;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')
+            ->with('parameter')
+            ->willReturn(new \stdClass())
+        ;
+        $this->setContainer($mockContainer);
+
+        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+
+        $this->assertIsObject($res);
+    }
 }
