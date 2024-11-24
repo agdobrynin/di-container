@@ -67,11 +67,11 @@ trait ParametersResolverTrait
                     };
 
                     // @todo It is look too crazy. Please make it simple for variadic argument.
-                    if (!\is_array($argument) && \is_array($resolvedVal) && $parameter->isVariadic()) {
-                        \array_push($dependencies, ...$resolvedVal);
-                    } else {
-                        $dependencies[] = $resolvedVal;
-                    }
+                    $vals = !\is_array($argument) && \is_array($resolvedVal) && $parameter->isVariadic()
+                        ? $resolvedVal
+                        : [$resolvedVal];
+
+                    \array_push($dependencies, ...$vals);
                 }
 
                 continue;
@@ -87,7 +87,7 @@ trait ParametersResolverTrait
                             ? $this->getContainer()->get($inject->getIdentifier())
                             : $this->getContainer()->get($parameter->getName());
                         // @todo It is look too crazy. Please make it simple for variadic argument.
-                        $vals = $parameter->isVariadic() && \is_array($resolvedVal)
+                        $vals = \is_array($resolvedVal) && $parameter->isVariadic()
                             ? $resolvedVal
                             : [$resolvedVal];
                         \array_push($dependencies, ...$vals);
