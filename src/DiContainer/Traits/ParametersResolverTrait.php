@@ -66,8 +66,7 @@ trait ParametersResolverTrait
                         default => $arg, // @todo how detect value type?
                     };
 
-                    // @todo It is look too crazy. Please make it simple for variadic argument.
-                    $vals = !\is_array($argument) && \is_array($resolvedVal) && $parameter->isVariadic()
+                    $vals = \is_array($resolvedVal)
                         ? $resolvedVal
                         : [$resolvedVal];
 
