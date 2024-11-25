@@ -25,6 +25,8 @@ trait ParametersResolverTrait
     use UseAttributeTrait;
     use DiDefinitionAutowireInvokeTrait;
 
+    public static int $variadicPosition = 0;
+
     /**
      * @var \ReflectionParameter[]
      */
@@ -58,6 +60,8 @@ trait ParametersResolverTrait
                 $argumentDefinition = $this->arguments[$parameter->name];
 
                 if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
+                    self::$variadicPosition = 0;
+
                     foreach ($argumentDefinition as $definitionItem) {
                         $resolvedVal = $this->resolveUserDefinedArgument($parameter, $definitionItem);
                         $dependencies[] = $resolvedVal;
@@ -82,6 +86,8 @@ trait ParametersResolverTrait
             try {
                 if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
                     && $injectAttribute->valid()) {
+                    self::$variadicPosition = 0;
+
                     foreach ($injectAttribute as $inject) {
                         $resolvedVal = $inject->getIdentifier()
                             ? $this->getContainer()->get($inject->getIdentifier())
@@ -151,10 +157,8 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
-            static $variadicPosition = 0;
-
             $id = $parameter->isVariadic()
-                ? \sprintf('%s#%d', $parameter->getName(), ++$variadicPosition)
+                ? \sprintf('%s#%d', $parameter->getName(), self::$variadicPosition++)
                 : $parameter->getName();
 
             if (isset($this->resolvedArguments[$id])) {
