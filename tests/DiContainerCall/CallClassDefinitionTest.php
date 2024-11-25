@@ -18,6 +18,8 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
  *
  * @internal
  */
