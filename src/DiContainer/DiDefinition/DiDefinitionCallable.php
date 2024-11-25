@@ -31,20 +31,6 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
         $this->definition = $definition;
     }
 
-    public function addArgument(string $name, mixed $value): static
-    {
-        $this->arguments[$name] = $value;
-
-        return $this;
-    }
-
-    public function addArguments(array $arguments): static
-    {
-        $this->arguments = $arguments;
-
-        return $this;
-    }
-
     public function isSingleton(): ?bool
     {
         return $this->isSingleton;

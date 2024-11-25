@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
@@ -25,7 +26,7 @@ trait ParametersResolverTrait
     use UseAttributeTrait;
     use DiDefinitionAutowireInvokeTrait;
 
-    public static int $variadicPosition = 0;
+    protected static int $variadicPosition = 0;
 
     /**
      * @var \ReflectionParameter[]
@@ -43,6 +44,26 @@ trait ParametersResolverTrait
      * @var array<string, mixed>
      */
     protected array $arguments = [];
+
+    public function addArgument(string $name, mixed $value): static
+    {
+        if (1 !== \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name)) {
+            throw new DiDefinitionException("Invalid argument name: \"{$name}\"");
+        }
+
+        $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
+    public function addArguments(array $arguments): static
+    {
+        foreach ($arguments as $name => $value) {
+            $this->addArgument($name, $value);
+        }
+
+        return $this;
+    }
 
     /**
      * @throws AutowiredAttributeException
