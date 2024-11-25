@@ -22,7 +22,6 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
  * @covers \Kaspi\DiContainer\diReference
- * @covers \Kaspi\DiContainer\Traits\DiDefinitionAutowireInvokeTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
