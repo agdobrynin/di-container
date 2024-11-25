@@ -130,7 +130,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             return (new DiDefinitionCallable($definition))
                 ->addArguments($arguments)
                 ->setContainer($this)
-                ->invoke($this->config?->isUseAttribute())
+                ->setUseAttribute($this->config?->isUseAttribute())
+                ->invoke()
             ;
         } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
@@ -164,7 +165,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $o = $diDefinition->setContainer($this)->invoke($this->config?->isUseAttribute());
+                $o = $diDefinition->setContainer($this)
+                    ->setUseAttribute($this->config?->isUseAttribute())
+                    ->invoke()
+                ;
                 $object = $o instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;

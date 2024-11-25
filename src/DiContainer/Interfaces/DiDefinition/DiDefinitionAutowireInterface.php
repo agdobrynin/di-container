@@ -47,12 +47,9 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 
     public function isSingleton(): ?bool;
 
-    /**
-     * @throws AutowiredExceptionInterface
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function invoke(?bool $useAttribute = null): mixed;
+    public function setUseAttribute(?bool $useAttribute): static;
+
+    public function isUseAttribute(): bool;
 
     public function setContainer(ContainerInterface $container): static;
 
@@ -60,4 +57,11 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      * @throws ContainerNeedSetExceptionInterface
      */
     public function getContainer(): ContainerInterface;
+
+    /**
+     * @throws AutowiredExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function invoke(): mixed;
 }

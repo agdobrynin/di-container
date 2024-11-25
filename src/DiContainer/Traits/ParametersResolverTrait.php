@@ -23,6 +23,7 @@ trait ParametersResolverTrait
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
     use PsrContainerTrait;
+    use UseAttributeTrait;
 
     /**
      * @var \ReflectionParameter[]
@@ -48,7 +49,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    public function resolveParameters(?bool $useAttribute = null): array
+    public function resolveParameters(): array
     {
         $dependencies = [];
 
@@ -58,14 +59,14 @@ trait ParametersResolverTrait
 
                 if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
                     foreach ($argumentDefinition as $definitionItem) {
-                        $resolvedVal = $this->resolveUserDefinedArgument($parameter, $definitionItem, $useAttribute);
+                        $resolvedVal = $this->resolveUserDefinedArgument($parameter, $definitionItem);
                         $dependencies[] = $resolvedVal;
                     }
 
                     continue;
                 }
 
-                $resolvedVal = $this->resolveUserDefinedArgument($parameter, $argumentDefinition, $useAttribute);
+                $resolvedVal = $this->resolveUserDefinedArgument($parameter, $argumentDefinition);
 
                 $vals = \is_array($resolvedVal) && $parameter->isVariadic()
                     ? $resolvedVal
@@ -79,7 +80,7 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($useAttribute && ($injectAttribute = $this->getInjectAttribute($parameter))
+                if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
                     && $injectAttribute->valid()) {
                     foreach ($injectAttribute as $inject) {
                         $resolvedVal = $inject->getIdentifier()
@@ -143,14 +144,14 @@ trait ParametersResolverTrait
      * @throws ContainerExceptionInterface
      * @throws AutowiredExceptionInterface
      */
-    protected function resolveUserDefinedArgument(\ReflectionParameter $parameter, mixed $argumentDefinition, ?bool $useAttribute): mixed
+    protected function resolveUserDefinedArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
         if ($argumentDefinition instanceof DiDefinitionReference) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
         if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
-            return $this->resolveContextArgument($parameter, $argumentDefinition, $useAttribute);
+            return $this->resolveContextArgument($parameter, $argumentDefinition);
         }
 
         if ($argumentDefinition instanceof DiDefinitionInterface) {
@@ -165,7 +166,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws AutowiredExceptionInterface
      */
-    protected function resolveContextArgument(\ReflectionParameter $parameter, DiDefinitionAutowireInterface $definitionAutowire, ?bool $useAttribute): mixed
+    protected function resolveContextArgument(\ReflectionParameter $parameter, DiDefinitionAutowireInterface $definitionAutowire): mixed
     {
         static $variadicPosition = 0;
 
@@ -178,7 +179,7 @@ trait ParametersResolverTrait
         }
 
         $definitionAutowire->setContainer($this->getContainer());
-        $object = $definitionAutowire->invoke($useAttribute);
+        $object = $definitionAutowire->invoke();
 
         $objectResult = $object instanceof DiFactoryInterface
             ? $object($this->getContainer())
