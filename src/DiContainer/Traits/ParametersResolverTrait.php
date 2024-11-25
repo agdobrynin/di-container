@@ -151,6 +151,7 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
+            // @todo move logic from self::resolveContextArgument to here. Move invoke object to trait.
             $argumentDefinition->setContainer($this->getContainer())
                 ->setUseAttribute($this->isUseAttribute())
             ;
