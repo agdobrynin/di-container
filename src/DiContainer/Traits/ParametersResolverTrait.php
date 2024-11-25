@@ -11,7 +11,6 @@ use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -24,6 +23,7 @@ trait ParametersResolverTrait
     use ParameterTypeByReflectionTrait;
     use PsrContainerTrait;
     use UseAttributeTrait;
+    use DiDefinitionAutowireInvokeTrait;
 
     /**
      * @var \ReflectionParameter[]
@@ -151,12 +151,26 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
-            // @todo move logic from self::resolveContextArgument to here. Move invoke object to trait.
+            static $variadicPosition = 0;
+
+            $id = $parameter->isVariadic()
+                ? \sprintf('%s#%d', $parameter->getName(), ++$variadicPosition)
+                : $parameter->getName();
+
+            if (isset($this->resolvedArguments[$id])) {
+                return $this->resolvedArguments[$id];
+            }
+
+            // Configure definition.
             $argumentDefinition->setContainer($this->getContainer())
                 ->setUseAttribute($this->isUseAttribute())
             ;
 
-            return $this->resolveContextArgument($parameter, $argumentDefinition);
+            $objectResult = $this->invokeAutowireDefinition($argumentDefinition);
+
+            return $argumentDefinition->isSingleton()
+                ? $this->resolvedArguments[$id] = $objectResult
+                : $objectResult;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInterface) {
@@ -164,33 +178,5 @@ trait ParametersResolverTrait
         }
 
         return $argumentDefinition;
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws AutowiredExceptionInterface
-     */
-    protected function resolveContextArgument(\ReflectionParameter $parameter, DiDefinitionAutowireInterface $definitionAutowire): mixed
-    {
-        static $variadicPosition = 0;
-
-        $id = $parameter->isVariadic()
-            ? \sprintf('%s#%d', $parameter->getName(), ++$variadicPosition)
-            : $parameter->getName();
-
-        if (isset($this->resolvedArguments[$id])) {
-            return $this->resolvedArguments[$id];
-        }
-
-        $object = $definitionAutowire->invoke();
-
-        $objectResult = $object instanceof DiFactoryInterface
-            ? $object($this->getContainer())
-            : $object;
-
-        return $definitionAutowire->isSingleton()
-            ? $this->resolvedArguments[$id] = $objectResult
-            : $objectResult;
     }
 }
