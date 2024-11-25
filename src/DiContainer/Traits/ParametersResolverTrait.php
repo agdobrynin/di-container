@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -24,7 +25,6 @@ trait ParametersResolverTrait
     use ParameterTypeByReflectionTrait;
     use PsrContainerTrait;
     use UseAttributeTrait;
-    use DiDefinitionAutowireInvokeTrait;
 
     protected static int $variadicPosition = 0;
 
@@ -45,6 +45,9 @@ trait ParametersResolverTrait
      */
     protected array $arguments = [];
 
+    /**
+     * @phan-suppress PhanTypeMismatchReturn
+     */
     public function addArgument(string $name, mixed $value): static
     {
         if (1 !== \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name)) {
@@ -56,6 +59,9 @@ trait ParametersResolverTrait
         return $this;
     }
 
+    /**
+     * @phan-suppress PhanTypeMismatchReturn
+     */
     public function addArguments(array $arguments): static
     {
         foreach ($arguments as $name => $value) {
@@ -191,7 +197,9 @@ trait ParametersResolverTrait
                 ->setUseAttribute($this->isUseAttribute())
             ;
 
-            $objectResult = $this->invokeAutowireDefinition($argumentDefinition);
+            $objectResult = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
+                ? $o($this->getContainer())
+                : $o;
 
             return $argumentDefinition->isSingleton()
                 ? $this->resolvedArguments[$id] = $objectResult
