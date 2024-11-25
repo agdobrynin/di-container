@@ -18,6 +18,7 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::setContainer
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait::getContainer
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
  *
  * @internal
  */

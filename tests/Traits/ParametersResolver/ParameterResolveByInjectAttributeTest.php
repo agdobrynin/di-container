@@ -23,6 +23,8 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait::getParameterTypeByReflection
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait::getContainer
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait::setContainer
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
  *
  * @internal
  */
@@ -47,8 +49,9 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->willReturn(new \ArrayIterator(['✔', '❤']))
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
-        $params = $this->resolveParameters(useAttribute: true);
+        $params = $this->resolveParameters();
         $this->assertEquals(
             ['✔', '❤'],
             \call_user_func_array($fn, $params)->getArrayCopy()
@@ -67,11 +70,12 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
         $this->expectException(AutowiredAttributeException::class);
         $this->expectExceptionMessage('once per non-variadic parameter');
 
-        $this->resolveParameters(useAttribute: true);
+        $this->resolveParameters();
     }
 
     public function testParameterResolveTypedVariadicArgumentByTowInjectAttributeWithId(): void
@@ -96,8 +100,9 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             )
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+        $res = \call_user_func_array($fn, $this->resolveParameters());
 
         $this->assertIsArray($res);
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
@@ -122,8 +127,9 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ])
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+        $res = \call_user_func_array($fn, $this->resolveParameters());
 
         $this->assertIsArray($res);
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
@@ -145,8 +151,9 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->willReturn(new \stdClass())
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+        $res = \call_user_func_array($fn, $this->resolveParameters());
 
         $this->assertIsObject($res);
     }
@@ -166,11 +173,12 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->willThrowException(new NotFoundException('Not found'))
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+object\|string \$parameter.+Not found/');
 
-        $this->resolveParameters(useAttribute: true);
+        $this->resolveParameters();
     }
 
     public function testParameterResolveByArgumentNameNotFoundWithDefaultValue(): void
@@ -188,8 +196,9 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->willThrowException(new NotFoundException('Not found'))
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+        $res = \call_user_func_array($fn, $this->resolveParameters());
 
         $this->assertEquals('welcome!', $res);
     }
@@ -209,8 +218,9 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->willReturn(['Ivan', 'Piter'])
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+        $res = \call_user_func_array($fn, $this->resolveParameters());
 
         $this->assertEquals(['Ivan', 'Piter'], $res);
     }
@@ -234,8 +244,9 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->willReturn([['IvaN', 'PiteR'], ['vasIliy', 'niKOlay']])
         ;
         $this->setContainer($mockContainer);
+        $this->setUseAttribute(true);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters(useAttribute: true));
+        $res = \call_user_func_array($fn, $this->resolveParameters());
 
         $this->assertCount(2, $res);
 

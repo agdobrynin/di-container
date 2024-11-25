@@ -56,7 +56,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws NotFoundExceptionInterface
      * @throws AutowiredExceptionInterface
      */
-    public function invoke(?bool $useAttribute = null): mixed
+    public function invoke(): mixed
     {
         $this->reflectionParameters ??= $this->reflectParameters();
 
@@ -64,7 +64,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
             return \call_user_func($this->parsedDefinition);
         }
 
-        $resolvedArgs = $this->resolveParameters($useAttribute);
+        $resolvedArgs = $this->resolveParameters();
 
         return \call_user_func_array($this->parsedDefinition, $resolvedArgs);
     }
