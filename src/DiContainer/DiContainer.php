@@ -19,12 +19,12 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
+use Kaspi\DiContainer\Traits\DiDefinitionAutowireInvokeTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -32,6 +32,7 @@ use Psr\Container\NotFoundExceptionInterface;
 class DiContainer implements DiContainerInterface, DiContainerCallInterface
 {
     use AttributeReaderTrait;
+    use DiDefinitionAutowireInvokeTrait;
 
     /**
      * @var array<class-string|non-empty-string, mixed>
@@ -165,13 +166,12 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionAutowireInterface) {
-                $o = $diDefinition->setContainer($this)
+                // Configure definition.
+                $diDefinition->setContainer($this)
                     ->setUseAttribute($this->config?->isUseAttribute())
-                    ->invoke()
                 ;
-                $object = $o instanceof DiFactoryInterface
-                    ? $o($this)
-                    : $o;
+
+                $object = $this->invokeAutowireDefinition($diDefinition);
 
                 $isSingleton = (
                     $diDefinition->isSingleton()
