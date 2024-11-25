@@ -151,6 +151,10 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
+            $argumentDefinition->setContainer($this->getContainer())
+                ->setUseAttribute($this->isUseAttribute())
+            ;
+
             return $this->resolveContextArgument($parameter, $argumentDefinition);
         }
 
@@ -178,7 +182,6 @@ trait ParametersResolverTrait
             return $this->resolvedArguments[$id];
         }
 
-        $definitionAutowire->setContainer($this->getContainer());
         $object = $definitionAutowire->invoke();
 
         $objectResult = $object instanceof DiFactoryInterface
