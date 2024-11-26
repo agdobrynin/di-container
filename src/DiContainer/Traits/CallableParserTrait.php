@@ -47,9 +47,11 @@ trait CallableParserTrait
             $parsedDefinition[0] = $this->getContainer()->get($parsedDefinition[0]);
         }
 
-        return \is_callable($parsedDefinition)
-            ? $parsedDefinition
-            : throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
+        if (\is_callable($parsedDefinition)) {
+            return $parsedDefinition;
+        }
+
+        throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
     }
 
     abstract public function getContainer(): ContainerInterface;
