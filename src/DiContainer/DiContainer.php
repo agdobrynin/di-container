@@ -99,7 +99,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             || (
                 $this->config?->isUseZeroConfigurationDefinition()
                 && (\class_exists($id) || \interface_exists($id))
-            );
+            )
+            || $this->isContainer($id);
     }
 
     public function set(string $id, mixed $definition): static
@@ -151,8 +152,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected function resolve(string $id): mixed
     {
         try {
-            if (!\array_key_exists($id, $this->resolved)
-                && \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true)) {
+            if (!\array_key_exists($id, $this->resolved) && $this->isContainer($id)) {
                 return $this->resolved[$id] = $this;
             }
 
@@ -270,6 +270,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         }
 
         return $this->diResolvedDefinition[$id];
+    }
+
+    protected function isContainer(string $id): bool
+    {
+        return \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true);
     }
 
     protected function checkCyclicalDependencyCall(string $id): void

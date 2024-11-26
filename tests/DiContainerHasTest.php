@@ -7,6 +7,7 @@ namespace Tests;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Tests\Fixtures\ClassWithSimplePublicProperty;
 use Tests\Fixtures\RuleInterface;
 
@@ -63,5 +64,19 @@ class DiContainerHasTest extends TestCase
         $container = new DiContainer(config: $config);
 
         $this->assertFalse($container->has($id));
+    }
+
+    public function testHasContainerInterfaceWithZeroConfig(): void
+    {
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true,
+        );
+
+        $this->assertTrue((new DiContainer(config: $config))->has(ContainerInterface::class));
+    }
+
+    public function testHasContainerInterfaceWithoutZeroConfig(): void
+    {
+        $this->assertTrue((new DiContainer())->has(ContainerInterface::class));
     }
 }
