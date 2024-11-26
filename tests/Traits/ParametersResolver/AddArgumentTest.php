@@ -36,7 +36,7 @@ class AddArgumentTest extends TestCase
 
         $this->addArgument('iterator', []);
 
-        $this->assertIsArray($this->resolveParameters());
+        $this->assertEquals([], \call_user_func_array($fn, $this->resolveParameters()));
     }
 
     public function testAddArgumentVariadicSuccess(): void
@@ -46,7 +46,7 @@ class AddArgumentTest extends TestCase
 
         $this->addArgument('iterator', [[], []]);
 
-        $this->assertIsArray($this->resolveParameters());
+        $this->assertEquals([[], []], \call_user_func_array($fn, $this->resolveParameters()));
     }
 
     public function testAddArgumentFailByName(): void
@@ -108,25 +108,25 @@ class AddArgumentTest extends TestCase
 
     public function testAddArgumentsSuccess(): void
     {
-        $fn = static fn (iterable $iterator, ?string $value = null) => $iterator;
+        $fn = static fn (iterable $iterator, ?string $value = null) => \array_merge((array) $iterator, [$value]);
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
 
         $this->addArguments([
-            'iterator' => [],
+            'iterator' => ['ok'],
         ]);
 
-        $this->assertIsArray($this->resolveParameters());
+        $this->assertEquals(['ok', null], \call_user_func_array($fn, $this->resolveParameters()));
     }
 
     public function testNoUserDefinedArgumentSuccess(): void
     {
-        $fn = static fn (iterable $iterator = [], string $value = '') => $iterator;
+        $fn = static fn (array $array = [], string $value = 'app') => $array + [$value];
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
 
         $this->addArguments([]);
 
-        $this->assertIsArray($this->resolveParameters());
+        $this->assertEquals(['app'], \call_user_func_array($fn, $this->resolveParameters()));
     }
 }
