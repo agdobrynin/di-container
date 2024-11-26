@@ -153,7 +153,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     {
         try {
             if (!\array_key_exists($id, $this->resolved) && $this->isContainer($id)) {
-                return $this->resolved[$id] = $this;
+                return $this;
             }
 
             if (!$this->has($id)) {
