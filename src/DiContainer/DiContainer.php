@@ -152,7 +152,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected function resolve(string $id): mixed
     {
         try {
-            if (!\array_key_exists($id, $this->resolved) && $this->isContainer($id)) {
+            if ($this->isContainer($id)) {
                 return $this;
             }
 
