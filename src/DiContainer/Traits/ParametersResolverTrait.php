@@ -8,7 +8,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\Exception\AutowiredAttributeException;
 use Kaspi\DiContainer\Exception\AutowiredException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
@@ -76,29 +75,7 @@ trait ParametersResolverTrait
     public function resolveParameters(): array
     {
         // Check valid user defined arguments
-        if ([] !== $this->arguments) {
-            $parameters = \array_reduce(
-                $this->reflectionParameters,
-                static function (array $a, \ReflectionParameter $p) {
-                    $a[] = $p->name;
-
-                    return $a;
-                },
-                []
-            );
-
-            foreach ($this->arguments as $name => $value) {
-                if (!\in_array($name, $parameters, true)) {
-                    throw new DiDefinitionException(
-                        \sprintf(
-                            'Invalid user defined argument name "%s". Definition '.__CLASS__.' has "%s"',
-                            $name,
-                            \implode(', ', \array_keys($parameters))
-                        )
-                    );
-                }
-            }
-        }
+        $this->validateInputArguments();
 
         $dependencies = [];
 
@@ -231,5 +208,42 @@ trait ParametersResolverTrait
         }
 
         return $argumentDefinition;
+    }
+
+    /**
+     * @throws AutowiredExceptionInterface
+     */
+    protected function validateInputArguments(): void
+    {
+        if ([] !== $this->arguments) {
+            $parameters = \array_column($this->reflectionParameters, 'name');
+
+            if (\count($this->arguments) > \count($parameters)) {
+                throw new AutowiredAttributeException(
+                    \sprintf(
+                        'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
+                        \implode(', ', \array_keys($this->arguments)),
+                        \implode(', ', $parameters)
+                    )
+                );
+            }
+
+            $argumentPosition = 0;
+
+            foreach ($this->arguments as $name => $value) {
+                ++$argumentPosition;
+
+                if (!\in_array($name, $parameters, true)) {
+                    throw new AutowiredAttributeException(
+                        \sprintf(
+                            'Invalid input argument name "%s" at position #%d. Definition '.__CLASS__.' has arguments: "%s"',
+                            $name,
+                            $argumentPosition,
+                            \implode(', ', $parameters)
+                        )
+                    );
+                }
+            }
+        }
     }
 }
