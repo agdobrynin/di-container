@@ -4,13 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
+use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
+
+use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diValue;
 
 /**
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
+ * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -19,45 +29,104 @@ class AddArgumentTest extends TestCase
     use ParametersResolverTrait;
     use PsrContainerTrait;
 
-    public function dataProviderAddArgumentSuccess(): \Generator
+    public function testAddArgumentNonVariadicSuccess(): void
     {
-        yield 'name #1' => ['name', 'aaaa'];
+        $fn = static fn (iterable $iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        yield 'name #2' => ['_4site', 'aaaa'];
+        $this->addArgument('iterator', []);
 
-        yield 'name #3' => ['täyte', 'aaaa'];
-
-        yield 'name #4' => ['Terä', 'aaaa'];
+        $this->assertIsArray($this->resolveParameters());
     }
 
-    /**
-     * @dataProvider dataProviderAddArgumentSuccess
-     */
-    public function testAddArgumentSuccess(string $name, mixed $value): void
+    public function testAddArgumentVariadicSuccess(): void
     {
-        $this->addArgument($name, $value);
+        $fn = static fn (iterable ...$iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $this->assertTrue(\array_key_exists($name, $this->arguments));
+        $this->addArgument('iterator', [[], []]);
+
+        $this->assertIsArray($this->resolveParameters());
     }
 
-    public function dataProviderAddArgumentFail(): \Generator
+    public function testAddArgumentFailByName(): void
     {
-        yield 'name #1' => ['    name    ', 'aaaa'];
+        $fn = static fn (iterable $iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        yield 'name #2' => ['4site', 'aaaa'];
+        $this->addArgument('a', []);
 
-        yield 'name #3' => ['Ter ', 'aaaa'];
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('Invalid input argument name "a"');
 
-        yield 'name #4' => [' Ter', 'aaaa'];
+        $this->resolveParameters();
     }
 
-    /**
-     * @dataProvider dataProviderAddArgumentFail
-     */
-    public function testAddArgumentFail(string $name, mixed $value): void
+    public function testAddArgumentsFailByName(): void
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
+        $fn = static fn (iterable $iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $this->addArgument($name, $value);
+        $this->addArguments([
+            [],
+        ]);
+
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('Invalid input argument name "0"');
+
+        $this->resolveParameters();
+    }
+
+    public function testAddArgumentFailByCount(): void
+    {
+        $fn = static fn (iterable $iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $this->addArguments(['iterator' => [], 'val' => 'value']);
+
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('Too many input arguments');
+
+        $this->resolveParameters();
+    }
+
+    public function testAddArgumentsWithoutNames(): void
+    {
+        $fn = static fn (string $value, SuperClass $class) => 'ok';
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $this->addArguments([
+            'value' => diValue('value'),
+            diAutowire(SuperClass::class), // 🚩 without array key as argument name
+        ]);
+
+        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectExceptionMessage('Invalid input argument name "0" at position #2');
+
+        $this->resolveParameters();
+    }
+
+    public function testAddArgumentsSuccess(): void
+    {
+        $fn = static fn (iterable $iterator, ?string $value = null) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $this->setUseAttribute(false);
+
+        $this->addArguments([
+            'iterator' => [],
+        ]);
+
+        $this->assertIsArray($this->resolveParameters());
+    }
+
+    public function testNoUserDefinedArgumentSuccess(): void
+    {
+        $fn = static fn (iterable $iterator = [], string $value = '') => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $this->setUseAttribute(false);
+
+        $this->addArguments([]);
+
+        $this->assertIsArray($this->resolveParameters());
     }
 }
