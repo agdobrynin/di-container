@@ -11,7 +11,7 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 final class Service implements DiAttributeServiceInterface
 {
     /**
-     * @param class-string $id class name or container identifier
+     * @param class-string|non-empty-string $id class name or container identifier
      */
     public function __construct(private string $id, private bool $isSingleton = false)
     {
