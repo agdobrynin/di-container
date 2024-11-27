@@ -262,10 +262,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 }
             }
 
-            if (null === $rawDefinition) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
-            }
-
             if ($rawDefinition instanceof DiDefinitionInterface) {
                 return $this->diResolvedDefinition[$id] = $rawDefinition;
             }
