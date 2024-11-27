@@ -11,7 +11,6 @@ use Psr\Container\ContainerInterface;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *

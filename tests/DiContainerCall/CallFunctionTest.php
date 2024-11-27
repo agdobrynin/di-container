@@ -8,7 +8,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
-use Tests\Fixtures\ClassWithSimplePublicProperty;
+use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
 
 use function Kaspi\DiContainer\diAutowire;
 
@@ -47,7 +47,7 @@ class CallFunctionTest extends TestCase
 
         $container = new DiContainer($definitions);
 
-        $res = $container->call('\Tests\Fixtures\funcWithDependencyClass', ['append' => '🚀']);
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass', ['append' => '🚀']);
 
         $this->assertEquals('Ready + 🚀', $res);
     }
@@ -59,7 +59,7 @@ class CallFunctionTest extends TestCase
                 ->addArgument('publicProperty', 'I am alone'),
         ]);
 
-        $res = $container->call('\Tests\Fixtures\funcWithDependencyClass');
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
 
         $this->assertEquals('I am alone', $res);
     }
@@ -72,7 +72,7 @@ class CallFunctionTest extends TestCase
         $config = new DiContainerConfig();
         $container = new DiContainer($definitions, $config);
 
-        $res = $container->call('\Tests\Fixtures\functionResolveArgumentByName');
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
         $expect = 'IVAN - PITER - VASILIY';
 
         $this->assertEquals($expect, $res);
@@ -88,7 +88,7 @@ class CallFunctionTest extends TestCase
         $config = new DiContainerConfig(useAttribute: true);
         $container = new DiContainer($definitions, $config);
 
-        $res = $container->call('\Tests\Fixtures\funcWithDependencyClass');
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
 
         $this->assertEquals('Hello', $res);
     }
@@ -104,7 +104,7 @@ class CallFunctionTest extends TestCase
         $config = new DiContainerConfig(useAttribute: true);
         $container = new DiContainer($definitions, $config);
 
-        $res = $container->call('\Tests\Fixtures\funcWithDependencyClass');
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
 
         $this->assertEquals('Hello + 🌐', $res);
     }
@@ -116,6 +116,6 @@ class CallFunctionTest extends TestCase
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty \$class/');
 
-        $container->call('\Tests\Fixtures\funcWithDependencyClass');
+        $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
     }
 }

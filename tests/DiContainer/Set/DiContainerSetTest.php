@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace DiContainer\Set;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;

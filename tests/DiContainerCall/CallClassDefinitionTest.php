@@ -7,7 +7,7 @@ namespace Tests\DiContainerCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\ClassWithSimplePublicProperty;
+use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
 
 use function Kaspi\DiContainer\diAutowire;
 

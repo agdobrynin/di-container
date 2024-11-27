@@ -26,7 +26,8 @@
             "Tests\\": "tests/"
         },
         "files": [
-            "tests/Fixtures/function.php"
+            "tests/Fixtures/function.php",
+            "tests/DiContainerCall/Fixtures/function.php"
         ]
     },
     "authors": [

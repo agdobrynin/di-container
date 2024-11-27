@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace Tests\DiContainer\Has;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use Tests\Fixtures\ClassWithSimplePublicProperty;
-use Tests\Fixtures\RuleInterface;
+use Tests\DiContainer\Has\Fixtures\ClassWithSimpleDependency;
+use Tests\DiContainer\Has\Fixtures\MyInterface;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer
@@ -28,9 +28,9 @@ class DiContainerHasTest extends TestCase
 
     public function dataProvideWithZeroConfig(): \Generator
     {
-        yield 'class' => [ClassWithSimplePublicProperty::class];
+        yield 'class' => [ClassWithSimpleDependency::class];
 
-        yield 'interface' => [RuleInterface::class];
+        yield 'interface' => [MyInterface::class];
     }
 
     /**
@@ -48,9 +48,9 @@ class DiContainerHasTest extends TestCase
 
     public function dataProvideWithoutZeroConfig(): \Generator
     {
-        yield 'class' => [ClassWithSimplePublicProperty::class];
+        yield 'class' => [ClassWithSimpleDependency::class];
 
-        yield 'interface' => [RuleInterface::class];
+        yield 'interface' => [MyInterface::class];
     }
 
     /**
