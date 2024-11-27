@@ -87,14 +87,14 @@ trait ParametersResolverTrait
                     self::$variadicPosition = 0;
 
                     foreach ($argumentDefinition as $definitionItem) {
-                        $resolvedVal = $this->resolveUserDefinedArgument($parameter, $definitionItem);
+                        $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
                         $dependencies[] = $resolvedVal;
                     }
 
                     continue;
                 }
 
-                $resolvedVal = $this->resolveUserDefinedArgument($parameter, $argumentDefinition);
+                $resolvedVal = $this->resolveInputArgument($parameter, $argumentDefinition);
 
                 $vals = \is_array($resolvedVal) && $parameter->isVariadic()
                     ? $resolvedVal
@@ -174,7 +174,7 @@ trait ParametersResolverTrait
      * @throws ContainerExceptionInterface
      * @throws AutowireExceptionInterface
      */
-    protected function resolveUserDefinedArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
+    protected function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
         if ($argumentDefinition instanceof DiDefinitionReference) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
