@@ -36,7 +36,7 @@ class DiContainerHasTest extends TestCase
     /**
      * @dataProvider dataProvideWithZeroConfig
      */
-    public function testHasWithZeroConfigDefinition(string $id): void
+    public function testHasWithZeroConfig(string $id): void
     {
         $config = new DiContainerConfig(
             useZeroConfigurationDefinition: true,
@@ -56,7 +56,7 @@ class DiContainerHasTest extends TestCase
     /**
      * @dataProvider dataProvideWithoutZeroConfig
      */
-    public function testHasWithoutZeroConfigDefinition(string $id): void
+    public function testHasWithoutZeroConfig(string $id): void
     {
         $config = new DiContainerConfig(
             useZeroConfigurationDefinition: false,
