@@ -131,6 +131,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 namespace App\Rules;
 
 interface RuleInterface {}
+
 class RuleA implements RuleInterface {}
 class RuleB implements RuleInterface {}
 
@@ -156,6 +157,55 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\DiContainerFactory;
 
 $container = (new DiContainerFactory())->make();
+
+// ... more code
+
+$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+```
+
+#### Атрибут #[Inject] для аргументов переменной длины по идентификатору контейнера
+
+```php
+namespace App\Rules;
+
+interface RuleInterface {}
+
+class RuleA implements RuleInterface {}
+class RuleB implements RuleInterface {}
+
+class RuleGenerator {
+    private iterable $rules;
+
+    public function __construct(
+        #[Inject('services.rules')]
+        RuleInterface ...$inputRule
+    ) {
+        $this->rules = $inputRule;
+    }
+    
+    public function getRules(): array {
+        return $this->rules;
+    }
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\diCallable;
+
+$definitions = [
+    'services.rules' => diCallable(
+        // Автоматически внедрит зависимости этой callback функции
+        static function (App\Rules\RuleB::class $b, App\Rules\RuleA::class $a) {
+            return [$b, $a]; // вернуть массив определений для аргумента переменной длины.
+        }
+    ),
+];
+
+$container = (new DiContainerFactory())->make($definitions);
 
 // ... more code
 
@@ -222,7 +272,6 @@ $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
 assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
-
 
 ### Атрибут **#[Inject]** для внедрения по ссылке на другое определение в контейнере.
 
