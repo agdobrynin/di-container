@@ -91,12 +91,12 @@ $definitions = [
 Если необходим другой идентификатор, то можно указывать так:
 ```php
 $definitions = [
-    // $container->get('pdo-in-tmp')
-    'pdo-in-tmp' => diAutowire(\PDO::class)
+    // $container->get('pdo-in-tmp-file')
+    'pdo-in-tmp-file' => diAutowire(\PDO::class)
         ->addArgument('dsn', 'sqlite:/tmp/my.db'),
-    // $container->get('pdo-in-local')
-    'pdo-in-local' => diAutowire(\PDO::class)
-        ->addArgument('dsn', 'sqlite:/var/local/my.db'),
+    // $container->get('pdo-in-memory')
+    'pdo-in-memory' => diAutowire(\PDO::class)
+        ->addArgument('dsn', 'sqlite::memory:'),
 ];
 ```
 ##### diCallable - получение результата обработки `callable` типа.
