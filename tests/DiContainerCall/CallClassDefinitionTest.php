@@ -18,6 +18,8 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue::getDefinition
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
  *
@@ -37,9 +39,6 @@ class CallClassDefinitionTest extends TestCase
         $this->assertEquals('Ready invoke 🚀', $res);
     }
 
-    /**
-     * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
-     */
     public function testCallInvokeClassArgumentDefaultValue(): void
     {
         $container = (new DiContainerFactory())->make([
@@ -64,10 +63,6 @@ class CallClassDefinitionTest extends TestCase
         $this->assertEquals('Start method 🚩', $res);
     }
 
-    /**
-     * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue::getDefinition
-     * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
-     */
     public function testCallWithArgumentsClassWithNoneStaticMethodAsArray(): void
     {
         $container = new DiContainer([
