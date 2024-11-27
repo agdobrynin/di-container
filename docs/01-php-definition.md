@@ -9,7 +9,9 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
-    diAutowire(\PDO::class,true)
+    // класс PDO создать единожды и всегда возвращать тот же объект
+    diAutowire(\PDO::class,true, isSingleton: true)
+        // с аргументом $dsn в конструкторе.
         ->addArgument('dsn', 'sqlite:/tmp/my.db'),
 ];
 
@@ -28,6 +30,9 @@ class MyClass {
 // Получение данных из контейнера с автоматическим связыванием зависимостей
 $myClass = $container->get(App\MyClass::class); // $pdo->dsn === 'sqlite:/tmp/my.db' 
 $myClass->pdo->query('...');
+
+// получать один и тот же объект
+var_dump($myClass === $container->get(App\MyClass::class)); // true
 ```
 ### Объявления для определений контейнера:
 
@@ -66,6 +71,10 @@ use function \Kaspi\DiContainer\diAutowire;
 
 diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
 ```
+Аргументы:
+- `$definition` - имя класса представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
+- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
+
 > 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
 > Можно указать аргументы для "определения" через методы:
 > - `addArgument(string $name, mixed $value)`
@@ -101,21 +110,26 @@ $definitions = [
 ```
 ##### diCallable - получение результата обработки `callable` типа.
 
-
 ```php
 use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use function \Kaspi\DiContainer\diCallable; 
 
 diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
 ```
+Аргументы:
+- `$definition` - значение которое `DiContainer` может преобразовать в [callable тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
+- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
 
 > 🔌 Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
 > Можно указать аргументы для "определения" через методы:
 > - `addArgument(string $name, mixed $value)`
 > - `addArguments(array $arguments)`
 
-При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
+- 🚩 При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
+
+Пример:
 ```php
+// объявление класса
 namespace App\Services;
 
 class ServiceOne {
@@ -296,7 +310,7 @@ $simpleDefinitions = [
 
 $interfaceDefinition = [
     LoggerInterface::class => diCallable(
-       definition: static function (ContainerInterface $c) {
+        static function (ContainerInterface $c) {
             return (new Logger($c->get('logger_name')))
                 ->pushHandler(new StreamHandler($c->get('logger_file')));    
         },
