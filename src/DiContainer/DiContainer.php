@@ -127,12 +127,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             return $this;
         }
 
-        if ($definition instanceof \Closure) {
-            $this->definitions[$id] = new DiDefinitionCallable($definition, $this->isSingletonDefault);
-
-            return $this;
-        }
-
         $this->definitions[$id] = $definition;
 
         return $this;
@@ -264,6 +258,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             if ($rawDefinition instanceof DiDefinitionInterface) {
                 return $this->diResolvedDefinition[$id] = $rawDefinition;
+            }
+
+            if ($rawDefinition instanceof \Closure) {
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $this->isSingletonDefault);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
