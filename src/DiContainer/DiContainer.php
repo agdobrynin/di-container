@@ -34,6 +34,11 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     use AttributeReaderTrait;
 
     /**
+     * Default singleton for definitions.
+     */
+    protected bool $isSingletonDefault;
+
+    /**
      * @var array<class-string|non-empty-string, mixed>
      */
     protected array $definitions = [];
@@ -63,6 +68,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         iterable $definitions = [],
         protected ?DiContainerConfigInterface $config = null
     ) {
+        $this->isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
+
         foreach ($definitions as $identifier => $definition) {
             $key = match (true) {
                 \is_string($identifier) => $identifier,
@@ -116,6 +123,12 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
         if ($definition instanceof DiDefinitionInterface) {
             $this->definitions[$id] = $definition;
+
+            return $this;
+        }
+
+        if ($definition instanceof \Closure) {
+            $this->definitions[$id] = new DiDefinitionCallable($definition, $this->isSingletonDefault);
 
             return $this;
         }
@@ -175,11 +188,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     ? $o($this)
                     : $o;
 
-                $isSingleton = (
-                    $diDefinition->isSingleton()
-                    ?? $this->config?->isSingletonServiceDefault()
-                    ?? false
-                );
+                $isSingleton = $diDefinition->isSingleton() ?? $this->isSingletonDefault;
 
                 return $isSingleton
                     ? $this->resolved[$id] = $object
@@ -204,7 +213,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
             $hasDefinition = \array_key_exists($id, $this->definitions);
-            $isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
             if (!$hasDefinition) {
                 try {
@@ -238,7 +246,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     );
                 }
 
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $isSingletonDefault);
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->isSingletonDefault);
             }
 
             $rawDefinition = $this->definitions[$id];
@@ -260,10 +268,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             if ($rawDefinition instanceof DiDefinitionInterface) {
                 return $this->diResolvedDefinition[$id] = $rawDefinition;
-            }
-
-            if (\is_callable($rawDefinition)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $isSingletonDefault);
             }
 
             return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
