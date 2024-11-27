@@ -48,12 +48,13 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowireI
 > - `addArgument(string $name, mixed $value)`
 > - `addArguments(array $arguments)`
 
-При конфигурировании не нужно указывать идентификатор контейнера — он сформируется из аргумента `$definition`
+При конфигурировании если не нужен идентификатор контейнера отличный от имени определения, то можно указать так:
 
 ```php
 use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
+    // идентификатор контейнера сформируется из аргумента `$definition`
     diAutowire(\PDO::class)
         ->addArgument('dsn', 'sqlite:/tmp/my.db'),
     )
@@ -64,7 +65,17 @@ $definitions = [
         ->addArgument('dsn', 'sqlite:/tmp/my.db'),
 ];
 ```
-
+Если необходим другой идентификатор, то можно указывать так:
+```php
+$definitions = [
+    // $container->get('pdo-in-tmp')
+    'pdo-in-tmp' => diAutowire(\PDO::class)
+        ->addArgument('dsn', 'sqlite:/tmp/my.db'),
+    // $container->get('pdo-in-local')
+    'pdo-in-local' => diAutowire(\PDO::class)
+        ->addArgument('dsn', 'sqlite:/var/local/my.db'),
+];
+```
 #### diCallable
 
 Получение результата обработки `callable` типа, внедрения зависимостей при необходимости в функцию `callable`.
