@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -59,7 +59,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
     public function getContainer(): ContainerInterface;
 
     /**
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */

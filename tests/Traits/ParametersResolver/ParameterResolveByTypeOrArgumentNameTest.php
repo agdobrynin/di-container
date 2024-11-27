@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
-use Kaspi\DiContainer\Exception\AutowiredException;
+use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -212,11 +212,11 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(SuperClass::class)
-            ->willThrowException(new AutowiredException('some error'))
+            ->willThrowException(new AutowireException('some error'))
         ;
         $this->setContainer($mockContainer);
 
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass.+some error/');
 
         $this->resolveParameters();

@@ -20,7 +20,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
@@ -134,7 +134,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 ->setUseAttribute($this->config?->isUseAttribute())
                 ->invoke()
             ;
-        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
+        } catch (AutowireExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e);
         }
     }
@@ -187,7 +187,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             return $this->resolved[$id] = $diDefinition->getDefinition();
-        } catch (AutowiredExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
+        } catch (AutowireExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
             unset($this->resolvingDependencies[$id]);
@@ -195,7 +195,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     }
 
     /**
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws ContainerExceptionInterface

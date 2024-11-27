@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
-use Kaspi\DiContainer\Exception\AutowiredAttributeException;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 
 trait AttributeReaderTrait
 {
@@ -39,7 +39,7 @@ trait AttributeReaderTrait
         }
 
         if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowiredAttributeException(
+            throw new AutowireAttributeException(
                 'The attribute #[Inject] can only be applied once per non-variadic parameter.'
             );
         }

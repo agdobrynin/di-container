@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Exception\AutowiredException;
+use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 
@@ -33,7 +33,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function invoke(): mixed
     {
         if (!$this->getDefinition()->isInstantiable()) {
-            throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
         }
 
         $this->reflectionParameters ??= $this->reflectionClass->getConstructor()?->getParameters() ?? [];
@@ -48,7 +48,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     }
 
     /**
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      */
     public function getDefinition(): \ReflectionClass
     {
@@ -59,7 +59,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         try {
             return $this->reflectionClass = new \ReflectionClass($this->definition);
         } catch (\ReflectionException $e) {
-            throw new AutowiredException(message: $e->getMessage());
+            throw new AutowireException(message: $e->getMessage());
         }
     }
 

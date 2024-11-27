@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Attributes\Inject;
-use Kaspi\DiContainer\Exception\AutowiredAttributeException;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
@@ -72,7 +72,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $this->setContainer($mockContainer);
         $this->setUseAttribute(true);
 
-        $this->expectException(AutowiredAttributeException::class);
+        $this->expectException(AutowireAttributeException::class);
         $this->expectExceptionMessage('once per non-variadic parameter');
 
         $this->resolveParameters();

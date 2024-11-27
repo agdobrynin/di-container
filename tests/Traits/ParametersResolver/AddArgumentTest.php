@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -56,7 +56,7 @@ class AddArgumentTest extends TestCase
 
         $this->addArgument('a', []);
 
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Invalid input argument name "a"');
 
         $this->resolveParameters();
@@ -71,7 +71,7 @@ class AddArgumentTest extends TestCase
             [],
         ]);
 
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Invalid input argument name "0"');
 
         $this->resolveParameters();
@@ -84,7 +84,7 @@ class AddArgumentTest extends TestCase
 
         $this->addArguments(['iterator' => [], 'val' => 'value']);
 
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Too many input arguments');
 
         $this->resolveParameters();
@@ -100,7 +100,7 @@ class AddArgumentTest extends TestCase
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
         ]);
 
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Invalid input argument name "0" at position #2');
 
         $this->resolveParameters();

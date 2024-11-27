@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Attributes\Raw;
 
 use Kaspi\DiContainer\Attributes\Service;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,7 +33,7 @@ class ServiceTest extends TestCase
 
     public function testServiceWithEmptyId(): void
     {
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
         new Service('');
@@ -41,7 +41,7 @@ class ServiceTest extends TestCase
 
     public function testServiceWithSpacesId(): void
     {
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
         new Service('      ');

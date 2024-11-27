@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
-use Kaspi\DiContainer\Exception\AutowiredAttributeException;
-use Kaspi\DiContainer\Exception\AutowiredException;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -66,8 +66,8 @@ trait ParametersResolverTrait
     }
 
     /**
-     * @throws AutowiredAttributeException
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireAttributeException
+     * @throws AutowireExceptionInterface
      * @throws CallCircularDependencyException
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
@@ -138,9 +138,9 @@ trait ParametersResolverTrait
                 \array_push($dependencies, ...$vals);
 
                 continue;
-            } catch (AutowiredAttributeException|CallCircularDependencyException $e) {
+            } catch (AutowireAttributeException|CallCircularDependencyException $e) {
                 throw $e;
-            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
+            } catch (AutowireExceptionInterface|ContainerExceptionInterface $e) {
                 $autowireException = $e;
             }
 
@@ -160,7 +160,7 @@ trait ParametersResolverTrait
                 throw new NotFoundException(message: $message, previous: $autowireException);
             }
 
-            throw new AutowiredException(message: $message, previous: $autowireException);
+            throw new AutowireException(message: $message, previous: $autowireException);
         }
 
         return $dependencies;
@@ -172,7 +172,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      */
     protected function resolveUserDefinedArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
@@ -211,7 +211,7 @@ trait ParametersResolverTrait
     }
 
     /**
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      */
     protected function validateInputArguments(): void
     {
@@ -219,7 +219,7 @@ trait ParametersResolverTrait
             $parameters = \array_column($this->reflectionParameters, 'name');
 
             if (\count($this->arguments) > \count($parameters)) {
-                throw new AutowiredAttributeException(
+                throw new AutowireAttributeException(
                     \sprintf(
                         'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
                         \implode(', ', \array_keys($this->arguments)),
@@ -234,7 +234,7 @@ trait ParametersResolverTrait
                 ++$argumentPosition;
 
                 if (!\in_array($name, $parameters, true)) {
-                    throw new AutowiredAttributeException(
+                    throw new AutowireAttributeException(
                         \sprintf(
                             'Invalid input argument name "%s" at position #%d. Definition '.__CLASS__.' has arguments: "%s"',
                             $name,

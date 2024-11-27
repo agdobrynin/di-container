@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperClassPrivateConstructor;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperInterface;
@@ -19,7 +19,7 @@ class InstantiableTest extends TestCase
 {
     public function testAutowireIsNotInstantiableStringByInvoke(): void
     {
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Class "'.NotExist::class.'" does not exist');
 
         (new DiDefinitionAutowire(NotExist::class))->invoke();
@@ -27,7 +27,7 @@ class InstantiableTest extends TestCase
 
     public function testAutowireIsNotInstantiableInterfaceByInvoke(): void
     {
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/SuperInterface.+class is not instantiable/');
 
         (new DiDefinitionAutowire(SuperInterface::class))->invoke();
@@ -35,7 +35,7 @@ class InstantiableTest extends TestCase
 
     public function testAutowireIsNotInstantiableWithPrivateConstructorByInvoke(): void
     {
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/SuperClassPrivateConstructor.+class is not instantiable/');
 
         (new DiDefinitionAutowire(SuperClassPrivateConstructor::class))->invoke();

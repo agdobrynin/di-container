@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
-use Kaspi\DiContainer\Exception\AutowiredAttributeException;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
@@ -17,7 +17,7 @@ final class DiFactory implements DiAttributeServiceInterface
     public function __construct(private string $id, private bool $isSingleton = false)
     {
         if (!\is_a($id, DiFactoryInterface::class, true)) {
-            throw new AutowiredAttributeException("Parameter '{$id}' must be implement '".DiFactoryInterface::class."' interface");
+            throw new AutowireAttributeException("Parameter '{$id}' must be implement '".DiFactoryInterface::class."' interface");
         }
     }
 

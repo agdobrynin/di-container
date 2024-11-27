@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
@@ -40,7 +40,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      */
     public function invoke(): mixed
     {

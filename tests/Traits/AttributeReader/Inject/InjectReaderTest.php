@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\Inject;
 
 use Kaspi\DiContainer\Attributes\Inject;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -45,7 +45,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
 
         $this->getInjectAttribute($p)->valid();

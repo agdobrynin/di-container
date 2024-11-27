@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Attributes\Raw;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Attributes\Raw\Fixtures\MyDiFactory;
 
@@ -33,7 +33,7 @@ class DiFactoryTest extends TestCase
 
     public function testDiFactoryIsFail(): void
     {
-        $this->expectException(AutowiredExceptionInterface::class);
+        $this->expectException(AutowireExceptionInterface::class);
 
         new DiFactory(self::class);
     }
