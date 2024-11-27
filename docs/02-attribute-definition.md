@@ -29,7 +29,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 )]
 ```
 
-### Получение существующего класса и разрешение простых типов параметров в конструкторе:
+### Атрибут #[Inject] для получения по типу аргумента в конструкторе:
 
 ```php
 // Объявление класса
@@ -37,9 +37,9 @@ namespace App;
 
 use Kaspi\DiContainer\Attributes\Inject;
 
-class MyClass {
+class MyDb {
     public function __construct(
-        #[Inject('services.db-connection')]
+        #[Inject]
         public \PDO $pdo
     ) {}
 }
@@ -51,8 +51,8 @@ use Kaspi\DiContainer\DiContainerFactory;
 use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
-    'services.db-connection' => diAutowire(\PDO::class)
-        ->addArgument('dsn', 'sqlite:/opt/databases/mydb.sq3')
+    diAutowire(\PDO::class)
+        ->addArgument('dsn', 'sqlite:/tmp/my.db')
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -60,22 +60,75 @@ $container = (new DiContainerFactory())->make($definitions);
 
 ```php
 // Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\MyClass;
-
-/** @var MyClass $myClass */
-$myClass = $container->get(MyClass::class);
-$myClass->pdo->query('...')
+$myClass = $container->get(App\MyDb);
+$myClass->pdo->query('...'); // аргумент $pdo указывать на dns = 'sqlite:/tmp/my.db'
 ```
 
-### Атрибут **#[Inject]** для разрешения аргументов переменной длины
+### Атрибут #[Inject] для получения по идентификатору контейнера в конструкторе:
+
+```php
+// Объявление класса
+use Kaspi\DiContainer\Attributes\Inject;
+
+namespace App;
+
+class MyDb {
+    public function __construct(
+        #[Inject('services.pdo-by-env')]
+        public \PDO $pdo
+    ) {}
+}
+```
+```php
+// file config/main.php
+use function Kaspi\DiContainer\diAutowire;
+
+return [
+    'pdo-prod' => diAutowire(PDO::class)
+        ->addArgument('dsn', 'sqlite:/data/prod/db.db'),
+    'pdo-local' => diAutowire(PDO::class)
+        ->addArgument('dsn', 'sqlite:/tmp/db.db'),
+];
+```
+```php
+// file config/db.php
+use Kaspi\DiContainer\Attributes\Inject;
+use function Kaspi\DiContainer\{diCallable, diReference};
+
+return [        
+    'services.pdo-by-env' => diCallable(
+        static fn (PDO $prod, PDO $local) => getenv('APP_ENV') === 'prod' ? $prod : $local
+    )
+        ->addArgument('prod', diReference('pdo-prod'))
+        ->addArgument('local', diReference('pdo-local')),
+];
+```
+```php
+$container = (new DiContainerFactory())->make(
+    \array_merge(
+        require_once 'config/main.php',
+        require_once 'config/db.php',
+    )
+);
+```
+
+```php
+// Получение данных из контейнера с автоматическим связыванием зависимостей
+putenv('APP_ENV=local');
+
+// свойство $pdo будет указывать на базу sqlite:/tmp/db.db'
+$myClass = $container->get(App\MyDb::class);
+```
+
+### Атрибут #[Inject] для разрешения аргументов переменной длины
 
 Атрибут имеет признак `repetable`
 
 ```php
 // Объявления классов
-namespace App\Rules;
-
 use Kaspi\DiContainer\Attributes\Inject;
+
+namespace App\Rules;
 
 interface RuleInterface {}
 class RuleA implements RuleInterface {}
@@ -111,16 +164,17 @@ assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
-### Атрибут **#[Inject]** и класс реализующий DiFactoryInterface
+### Атрибут #[Inject] и класс реализующий DiFactoryInterface
 Класс реализующий `Kaspi\DiContainer\Interfaces\DiFactoryInterface` будет вызван контейнером и исполнен метод `__invoke`
 который является результатом для Inject атрибута.
 
 Пример применения для аргументов переменной длинны:
 ```php
 // Объявления классов
-namespace App\Rules;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
-use Kaspi\DiContainer\Attributes\Inject;use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+namespace App\Rules;
 
 interface RuleInterface {}
 class RuleA implements RuleInterface {}
@@ -175,8 +229,6 @@ assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```php
 // Объявления классов
 namespace App\Rules;
-
-use Kaspi\DiContainer\Attributes\InjectByReference;
 
 interface RuleInterface {}
 
@@ -246,10 +298,11 @@ use Kaspi\DiContainer\Attributes\Service;
 
 ```php
 // Объявление классов
-namespace App;
-
-use Kaspi\DiContainer\Attributes\InjectByReference;use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByReference;
+use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
+
+namespace App;
 
 #[Service(CustomLogger::class)] // класс реализующий данный интерфейс.
 interface CustomLoggerInterface {
@@ -294,7 +347,6 @@ $container = (new DiContainerFactory())->make($definitions);
 
 ```php
 // Получение данных из контейнера с автоматическим связыванием зависимостей
-/** @var MyLogger $myClass */
 $myClass = $container->get(App\MyLogger::class);
 print $myClass->customLogger->loggerFile(); // /var/log/app.log
 ```
