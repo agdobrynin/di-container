@@ -1,6 +1,6 @@
 # DiContainer
 
-Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0 с автоматическим связыванием.
+Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0.
 
 ## Установка
 
@@ -14,19 +14,11 @@ composer require kaspi/di-container
 - Поддержка **Php-атрибутов** для конфигурирования сервисов в контейнере.
 
 ## Быстрый старт
-```php
-// определение контейнера с настройкой "zero configuration for dependency inject"
-// когда ненужно объявлять зависимость если класс существуют
-// и может быть загружен по автозагрузке,
-// например через composer "PSR-4 auto loading"
-use Kaspi\DiContainer\DiContainerFactory;
-
-$container = (new DiContainerFactory())->make();
-```
-
+Определения классов:
 ```php
 namespace App\Services;
 
+// Сервис отправки почты
 class Mail {
     public function __construct() { /* логика инициализации */ }
     
@@ -35,10 +27,9 @@ class Mail {
     public function send(): bool { /* ... */ }
 }
 ```
-
 ```php
 namespace App\Models;
-
+// Модель данных — пост в блоге.
 class Post {
     public string $title;
     // ...
@@ -46,12 +37,12 @@ class Post {
 ```
 
 ```php
-// определение класса
 namespace App\Controllers;
 
 use App\Services\Mail;
 use App\Models\Post;
 
+// Контроллер для обработки действия.
 class  PostController {
     public function __construct(private Mail $mail) {}
     
@@ -63,12 +54,19 @@ class  PostController {
     }
 }
 ```
+
 ```php
-$post = new App\Models\Post();
-$post->title = 'Publication about DiContainer';
+// определение контейнера с настройкой "zero configuration for dependency inject"
+// когда ненужно объявлять зависимость если класс существуют
+// и может быть загружен по автозагрузке,
+// например через composer "PSR-4 auto loading"
+$container = (new Kaspi\DiContainer\DiContainerFactory())->make();
 
 // ...
 
+//Заполняем модель данными.
+$post = new App\Models\Post();
+$post->title = 'Publication about DiContainer';
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
 $postController = $container->get(App\Controllers\PostController::class);
 $postController->send($post);
@@ -111,7 +109,7 @@ use Kaspi\DiContainer\{DiContainerConfig, DiContainer};
 $diConfig = new DiContainerConfig(
     // Ненужно объявлять каждую зависимость.
     // Если класс, функция или интерфейс существуют
-    // и может быть запрошен через автозагрузку (пример через composer),
+    // и может быть запрошен через автозагрузку (например через composer),
     // то объявлять каждое определение необязательно.
     useZeroConfigurationDefinition: true,
     // Использовать Php-атрибуты для объявления определений контейнера.
