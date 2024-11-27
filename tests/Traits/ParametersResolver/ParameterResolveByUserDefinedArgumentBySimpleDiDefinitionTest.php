@@ -9,11 +9,8 @@ use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
-use function Kaspi\DiContainer\diValue;
-
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
@@ -37,7 +34,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->arguments = [
-            'iterator' => diValue(['aaa', 'bbb', 'ccc']),
+            'iterator' => ['aaa', 'bbb', 'ccc'],
         ];
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
@@ -57,8 +54,8 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         // 🚩 test data
         $this->arguments = [
             'iterator' => [
-                diValue(['aaa', 'bbb', 'ccc']),
-                diValue(['ddd', 'eee', 'fff']),
+                ['aaa', 'bbb', 'ccc'],
+                ['ddd', 'eee', 'fff'],
             ],
         ];
 
@@ -81,7 +78,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->arguments = [
-            'iterator' => diValue([['aaa', 'bbb', 'ccc'], ['ddd', 'eee', 'fff']]),
+            'iterator' => [['aaa', 'bbb', 'ccc'], ['ddd', 'eee', 'fff']],
         ];
 
         $res = \call_user_func_array($fn, $this->resolveParameters());

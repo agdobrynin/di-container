@@ -11,12 +11,10 @@ use PHPUnit\Framework\TestCase;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diValue;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
@@ -96,7 +94,7 @@ class AddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArguments([
-            'value' => diValue('value'),
+            'value' => 'value',
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
         ]);
 
