@@ -29,13 +29,36 @@ class MyClass {
 $myClass = $container->get(App\MyClass::class); // $pdo->dsn === 'sqlite:/tmp/my.db' 
 $myClass->pdo->query('...');
 ```
-### Доступные функции-хэлперы для определений контейнера:
+### Объявления для определений контейнера:
 
-📑 Функции-хэлперы имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
+#### Определения для простых типов
 
-#### diAutowire
+Можно добавлять любые простые определения в виде массивов, строк или любых простых php типов.
 
-Автоматическое создание объекта и внедрения зависимостей.
+```php
+$definitions =  [
+    'logger.name' => 'payment',
+    'logger.file' => '/var/log/payment.log',
+    'feedback.show-recipient' => false,
+    'feedback.email' => [
+        'help@my-company.inc',
+        'boss@my-company.inc',
+    ],
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+
+$container->get('logger.name'); // 'payment'
+$container->get('logger.file'); // '/var/log/payment.log'
+$container->get('feedback.show-recipient'); // FALSE
+$container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
+```
+
+#### Объявления через функции-хэлперы:
+
+> 📑 Функции-хэлперы имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
+
+##### diAutowire - автоматическое создание объекта и внедрения зависимостей.
 
 ```php
 use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -76,9 +99,8 @@ $definitions = [
         ->addArgument('dsn', 'sqlite:/var/local/my.db'),
 ];
 ```
-#### diCallable
+##### diCallable - получение результата обработки `callable` типа.
 
-Получение результата обработки `callable` типа, внедрения зависимостей при необходимости в функцию `callable`.
 
 ```php
 use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -129,48 +151,14 @@ var_dump($container->get('services.one') instanceof App\Services\ServiceOne); //
 >   'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key'),
 > ];
 > ```
-
-#### diValue
-
-Объявление простого значения не требующего разрешения зависимостей. При запросе из контейнера
-будет возвращено значение такое какое передали в определении "как есть".
-
-При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
-
-```php
-use function \Kaspi\DiContainer\diValue;
-
-diValue(mixed $definition)
-```
-
-```php
-use function Kaspi\DiContainer\diValue;
-
-$definitions = [
-    'log' => diValue(['var' => 'value'])
-];
-
-$container = (new \Kaspi\DiContainer\DiContainerFactory())->make($definitions);
-
-// ...
-
-var_dump($container->get('log')); // array('var' => 'value')
-```
-
-> 📝 Использование такого определения не обязательно.
->
-> 🚩 Подробнее в разделе [определения для простых значений](#определения-для-простых-типов)
-
-#### diReference
-
-Объявление аргумента или определения как ссылки на другой идентификатор контейнера.
+##### diReference - объявление аргумента или определения как ссылки на другой идентификатор контейнера.
 
 ```php
 use function \Kaspi\DiContainer\diReference;
  
 diReference(string $containerIdentifier)
 ```
-Пример.
+Пример:
 ```php
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
@@ -539,43 +527,6 @@ $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
 assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
-```
-## Определения для простых типов
-
-Можно добавлять любые простые определения в виде массивов, строк или любых простых php типов.
-
-```php
-$definitions =  [
-    'logger.name' => 'payment',
-    'logger.file' => '/var/log/payment.log',
-    'feedback.show-recipient' => false,
-    'feedback.email' => [
-        'help@my-company.inc',
-        'boss@my-company.inc',
-    ],
-];
-
-$container = (new DiContainerFactory())->make($definitions);
-
-$container->get('logger.name'); // 'payment'
-$container->get('logger.file'); // '/var/log/payment.log'
-$container->get('feedback.show-recipient'); // FALSE
-$container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
-```
-
-В некоторых случая необходимо конфигурирование контейнера используя `Kaspi\DiContainer\diValue`
-чтобы запретить контейнеру обрабатывать значение и возвращать его "как есть".
-
-```php
-use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use function Kaspi\DiContainer\diValue;
-
-$container = (new DiContainerFactory())->make([
-    'log' => diValue(['a' => 'aaa'])
-]);
-
-var_dump( ['a' => 'aaa'] === $container->get('log') ); // true
 ```
 
 ## Примеры использования для конфигурирования:

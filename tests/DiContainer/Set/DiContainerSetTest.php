@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace DiContainer\Set;
 
 use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
@@ -39,7 +38,7 @@ class DiContainerSetTest extends TestCase
     {
         yield 'with spaces' => [' foo ', 'definition'];
 
-        yield 'with string as "null" and definition DiDefinition' => ['null', new DiDefinitionValue(null)];
+        yield 'with string as "null" and definition NULL' => ['null', null];
     }
 
     /**

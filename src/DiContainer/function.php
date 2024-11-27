@@ -7,7 +7,6 @@ namespace Kaspi\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
@@ -22,14 +21,6 @@ if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionCallable
     {
         return new DiDefinitionCallable($definition, $isSingleton);
-    }
-} // @codeCoverageIgnore
-
-if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
-    // @phan-suppress-next-line PhanUnreferencedFunction
-    function diValue(mixed $definition): DiDefinitionValue
-    {
-        return new DiDefinitionValue($definition);
     }
 } // @codeCoverageIgnore
 

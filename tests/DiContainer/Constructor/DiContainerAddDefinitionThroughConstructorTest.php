@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\DiContainer\Constructor;
 
 use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
+
+use function Kaspi\DiContainer\diCallable;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer
@@ -25,7 +26,7 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
 
         yield 'array' => [[[]]];
 
-        yield 'try pass class implement DiDefinitionInterface' => [[new DiDefinitionValue('string')]];
+        yield 'try pass class implement DiDefinitionInterface' => [[diCallable(static fn () => 'string')]];
     }
 
     /**

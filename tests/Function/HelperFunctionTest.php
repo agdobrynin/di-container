@@ -7,13 +7,11 @@ namespace Tests\Function;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diReference;
-use function Kaspi\DiContainer\diValue;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -23,20 +21,11 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diReference
- * @covers \Kaspi\DiContainer\diValue
  *
  * @internal
  */
 class HelperFunctionTest extends TestCase
 {
-    public function testFunctionDiValue(): void
-    {
-        $def = diValue(null);
-
-        $this->assertInstanceOf(DiDefinitionValue::class, $def);
-        $this->assertNull($def->getDefinition());
-    }
-
     public function testFunctionDiReference(): void
     {
         $def = diReference('ok');
