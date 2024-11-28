@@ -6,6 +6,8 @@ namespace Tests\FromDocs\PhpDefinitions;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Tests\FromDocs\PhpDefinitions\Fixtures\MyEmployers;
+use Tests\FromDocs\PhpDefinitions\Fixtures\MyUsers;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
@@ -20,6 +22,7 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
@@ -59,5 +62,35 @@ class DiReferenceTest extends TestCase
         $container = (new DiContainerFactory())->make($definitions);
 
         $this->assertEquals($expectFile, $container->get(\SplFileInfo::class)->getFilename());
+    }
+
+    public function testDiReferenceByClasses(): void
+    {
+        $definitions = [
+            'data' => ['user1', 'user2'],
+
+            // ... more definitions
+
+            // внедрение зависимости аргумента по ссылке на контейнер-id
+            diAutowire(MyUsers::class)
+                ->addArgument('users', diReference('data'))
+                ->addArgument('type', 'Some value'),
+            diAutowire(MyEmployers::class)
+                // добавить много аргументов за один раз
+                ->addArguments([
+                    'employers' => diReference('data'),
+                    'type' => 'Other value',
+                ]),
+        ];
+
+        $container = (new DiContainerFactory())->make($definitions);
+
+        $users = $container->get(MyUsers::class);
+        $this->assertEquals(['user1', 'user2'], $users->users);
+        $this->assertEquals('Some value', $users->type);
+
+        $employers = $container->get(MyEmployers::class);
+        $this->assertEquals(['user1', 'user2'], $employers->employers);
+        $this->assertEquals('Other value', $employers->type);
     }
 }
