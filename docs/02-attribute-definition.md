@@ -200,7 +200,7 @@ use Kaspi\DiContainer\diCallable;
 $definitions = [
     'services.rules' => diCallable(
         // Автоматически внедрит зависимости этой callback функции
-        static function (App\Rules\RuleB::class $b, App\Rules\RuleA::class $a) {
+        static function (App\Rules\RuleB $b, App\Rules\RuleA $a) {
             return [$b, $a]; // вернуть массив определений для аргумента переменной длины.
         }
     ),
