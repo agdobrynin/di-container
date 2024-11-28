@@ -31,10 +31,12 @@ class MyClass {
 $myClass = $container->get(App\MyClass::class); // $pdo->dsn === 'sqlite:/tmp/my.db' 
 $myClass->pdo->query('...');
 
-// получать один и тот же объект так как в определении указан isSingleton=true
+// получать один и тот же объект PDO::class
+// так как в определении указан isSingleton=true
 $myClassTwo = $container->get(App\MyClass::class);
+
 var_dump(
-    \spl_object_id($myClass) === \spl_object_id($myClassTwo)
+    \spl_object_id($myClass->pdo) === \spl_object_id($myClassTwo->pdo)
 ); // true
 ```
 ### Объявления для определений контейнера:
