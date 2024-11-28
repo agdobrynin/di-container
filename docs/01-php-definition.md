@@ -561,10 +561,16 @@ assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 // объявления классов
 namespace App;
 
-interface SumInterface {}
+interface SumInterface {
+    public function getInit(): int;
+}
 
 class Sum implements SumInterface {
-    public function __construct(public int $init) {}
+    public function __construct(private int $init) {}
+
+    public function getInit(): int {
+        return $this->init;
+    }
 }
 ```
 ```php
@@ -582,6 +588,6 @@ $definition = [
 
 $c = (new DiContainerFactory())->make($definition);
 // … вызова определения
-print $c->get(App\SumInterface::class)->init; // 50
-print $c->get(App\Sum::class)->init; // 10
+print $c->get(App\SumInterface::class)->getInit(); // 50
+print $c->get(App\Sum::class)->getInit(); // 10
 ```
