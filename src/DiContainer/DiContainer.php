@@ -209,11 +209,8 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             $hasDefinition = \array_key_exists($id, $this->definitions);
 
             if (!$hasDefinition) {
-                try {
-                    $reflectionClass = new \ReflectionClass($id);
-                } catch (\ReflectionException) { // @todo come up with a test for this error
-                    throw new NotFoundException("Definition identifier [{$id}] not found.");
-                }
+                // @todo come up with a test for throw ReflectionException
+                $reflectionClass = new \ReflectionClass($id);
 
                 if ($reflectionClass->isInterface()) {
                     if ($this->config?->isUseAttribute()) {
