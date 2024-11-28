@@ -92,8 +92,8 @@ return [
 ```
 ```php
 // file config/db.php
-use Kaspi\DiContainer\Attributes\Inject;
-use function Kaspi\DiContainer\{diCallable, diReference};
+use Psr\Container\ContainerInterface;
+use function Kaspi\DiContainer\diCallable;
 
 return [        
     'services.pdo' => diCallable(
