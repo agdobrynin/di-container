@@ -529,7 +529,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use function Kaspi\DiContainer\{diAutowire, diReference};
 
 $definition = [
-    'ruleC' => App\Rules\RuleC::class,
+    'ruleC' => diAutowire(App\Rules\RuleC::class),
     diAutowire(App\Rules\RuleGenerator::class)
         ->addArgument(
             name: 'inputRule', // имя аргумента в конструкторе
