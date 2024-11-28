@@ -37,4 +37,17 @@ class DiCallableDefinitionTest extends TestCase
         $this->assertEquals('my-api-key', $container->get('services.one')->getApiKey());
         $this->assertSame($container->get('services.one'), $container->get('services.one'));
     }
+
+    public function testCallbackDefinition(): void
+    {
+        $definitions = [
+            'services.one' => static fn () => new ServiceOne(apiKey: 'my-api-key'),
+        ];
+
+        $container = (new DiContainerFactory())->make($definitions);
+
+        $this->assertInstanceOf(ServiceOne::class, $container->get('services.one'));
+        $this->assertEquals('my-api-key', $container->get('services.one')->getApiKey());
+        $this->assertNotSame($container->get('services.one'), $container->get('services.one'));
+    }
 }
