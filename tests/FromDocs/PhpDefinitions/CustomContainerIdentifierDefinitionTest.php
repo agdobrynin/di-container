@@ -37,6 +37,13 @@ class CustomContainerIdentifierDefinitionTest extends TestCase
         $this->assertTrue($dir1->valid());
         $this->assertSame($dir1, $container->get('file-1'));
 
+        $files = \array_filter(
+            \iterator_to_array($dir1),
+            static fn (\SplFileInfo $item) => 'txt' === $item->getExtension()
+        );
+
+        $this->assertCount(2, $files);
+
         $dir2 = $container->get('file-2');
         $this->assertTrue($dir2->valid());
         $this->assertNotSame($dir2, $container->get('file-2'));
