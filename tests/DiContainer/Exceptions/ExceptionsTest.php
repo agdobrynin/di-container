@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Tests\DiContainer\Exceptions\Fixtures\DependencyClass;
 use Tests\DiContainer\Exceptions\Fixtures\FirstClass;
 use Tests\DiContainer\Exceptions\Fixtures\SecondClass;
 use Tests\DiContainer\Exceptions\Fixtures\SuperClass;
@@ -87,5 +88,21 @@ class ExceptionsTest extends TestCase
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+string \$value.+DependencyClass/');
 
         $container->get(SuperClass::class);
+    }
+
+    public function testManyArguments(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(DependencyClass::class)
+                ->addArguments([
+                    'value' => 'Ok',
+                    'value2' => 'Ok',
+                ]),
+        ]);
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Too many input arguments');
+
+        $container->get(DependencyClass::class);
     }
 }
