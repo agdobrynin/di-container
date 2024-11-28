@@ -198,7 +198,6 @@ $definitions = [
 
     diAutowire(\PDO::class)
         ->addArgument('dsn', diReference('services.env-dsn')), // ссылка на определение
-    )
 ];
 ```
 
