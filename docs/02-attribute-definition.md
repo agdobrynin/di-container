@@ -74,7 +74,7 @@ namespace App;
 
 class MyDb {
     public function __construct(
-        #[Inject('services.pdo-by-env')]
+        #[Inject('services.pdo')]
         public \PDO $pdo
     ) {}
 }
@@ -84,9 +84,9 @@ class MyDb {
 use function Kaspi\DiContainer\diAutowire;
 
 return [
-    'pdo-prod' => diAutowire(PDO::class)
+    'services.pdo-prod' => diAutowire(PDO::class)
         ->addArgument('dsn', 'sqlite:/data/prod/db.db'),
-    'pdo-local' => diAutowire(PDO::class)
+    'services.pdo-local' => diAutowire(PDO::class)
         ->addArgument('dsn', 'sqlite:/tmp/db.db'),
 ];
 ```
@@ -96,25 +96,26 @@ use Kaspi\DiContainer\Attributes\Inject;
 use function Kaspi\DiContainer\{diCallable, diReference};
 
 return [        
-    'services.pdo-by-env' => diCallable(
-        static fn (PDO $prod, PDO $local) => getenv('APP_ENV') === 'prod' ? $prod : $local
-    )
-        ->addArgument('prod', diReference('pdo-prod'))
-        ->addArgument('local', diReference('pdo-local')),
+    'services.pdo' => diCallable(
+        static fn (ContainerInterface $container) => match (\getenv('APP_PDO')) {
+            'prod' => $container->get('services.pdo-prod'),
+            default => $container->get('services.pdo-local')
+        }
+    ),
 ];
 ```
 ```php
 $container = (new DiContainerFactory())->make(
     \array_merge(
-        require_once 'config/main.php',
-        require_once 'config/db.php',
+        require 'config/main.php',
+        require 'config/db.php',
     )
 );
 ```
 
 ```php
 // Получение данных из контейнера с автоматическим связыванием зависимостей
-putenv('APP_ENV=local');
+putenv('APP_PDO=local');
 
 // свойство $pdo будет указывать на базу sqlite:/tmp/db.db'
 $myClass = $container->get(App\MyDb::class);
