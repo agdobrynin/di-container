@@ -388,7 +388,7 @@ $interfacesDefinitions = [
     ClassInterface::class => diReference(ClassFirst::class),
 ];
 
-$container = (new DiContainerFactory()->make(
+$container = (new DiContainerFactory())->make(
     \array_merge($classesDefinitions, $interfacesDefinitions)
 );
 ```
