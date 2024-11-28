@@ -10,7 +10,7 @@ use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
     // класс PDO создать единожды и всегда возвращать тот же объект
-    diAutowire(\PDO::class,true, isSingleton: true)
+    diAutowire(\PDO::class, isSingleton: true)
         // с аргументом $dsn в конструкторе.
         ->addArgument('dsn', 'sqlite:/tmp/my.db'),
 ];
