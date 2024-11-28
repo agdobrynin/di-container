@@ -483,7 +483,8 @@ class FactorySuperClass implements DiFactoryInterface
 // Получение данных из контейнера с автоматическим связыванием зависимостей
 use App\SuperClass;
 
-/** @var SuperClass $myClass */
+$container = (new DiContainerFactory())->make();
+
 $myClass = $container->get(SuperClass::class);
 print $myClass->name; // Piter
 print $myClass->age; // 22
