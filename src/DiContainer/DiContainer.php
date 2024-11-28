@@ -211,7 +211,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             if (!$hasDefinition) {
                 try {
                     $reflectionClass = new \ReflectionClass($id);
-                } catch (\ReflectionException) {
+                } catch (\ReflectionException) { // @todo come up with a test for this error
                     throw new NotFoundException("Definition identifier [{$id}] not found.");
                 }
 
