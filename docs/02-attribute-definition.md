@@ -115,7 +115,7 @@ $container = (new DiContainerFactory())->make(
 
 ```php
 // Получение данных из контейнера с автоматическим связыванием зависимостей
-putenv('APP_PDO=local');
+\putenv('APP_PDO=local');
 
 // свойство $pdo будет указывать на базу sqlite:/tmp/db.db'
 $myClass = $container->get(App\MyDb::class);
