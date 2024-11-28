@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -87,5 +88,21 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         $this->assertEquals(['aaa', 'bbb', 'ccc'], $res[0]);
         $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]);
+    }
+
+    public function testUserDefinedArgumentByDefinitionValue(): void
+    {
+        $fn = static fn (array $words) => $words;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        // 🚩 test data
+        $this->arguments = [
+            'words' => new DiDefinitionValue(['hello', 'world', '!']),
+        ];
+
+        $res = \call_user_func_array($fn, $this->resolveParameters());
+
+        $this->assertCount(3, $res);
+        $this->assertEquals(['hello', 'world', '!'], $res);
     }
 }
