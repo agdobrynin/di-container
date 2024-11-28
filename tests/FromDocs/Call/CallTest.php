@@ -37,7 +37,7 @@ class CallTest extends TestCase
         $this->assertEquals('The name Ivan saved!', $res);
     }
 
-    public function testFunction(): void
+    public function testCallbackFunction(): void
     {
         $container = (new DiContainerFactory())->make();
 
