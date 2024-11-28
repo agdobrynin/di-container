@@ -182,11 +182,15 @@ use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diReference;
 
 $definitions = [
-    'services.env-dsn' => diCallable(definition: static function () {
-        getenv('APP_ENV') !== 'prod'
-            ? 'sqlite:/tmp/mydb.db'
-            : 'sqlite:/databases/my-app/app.db'
-    }, isSingleton: true),
+    'services.env-dsn' => diCallable(
+        definition: static function () {
+            return match (getenv('APP_ENV')) {
+                'prod' => 'sqlite:/databases/my-app/app.db',
+                default => 'sqlite:/tmp/mydb.db',  
+            };
+        },
+        isSingleton: true
+    ),
 
     // ...
 
@@ -313,7 +317,7 @@ $simpleDefinitions = [
 
 $interfaceDefinition = [
     LoggerInterface::class => diCallable(
-        static function (ContainerInterface $c) {
+        definition: static function (ContainerInterface $c) {
             return (new Logger($c->get('logger_name')))
                 ->pushHandler(new StreamHandler($c->get('logger_file')));    
         },
@@ -494,7 +498,7 @@ $container->get('doSomething'); // (object) ['name' => 'John Doe', 'age' => 32, 
 
 ## Разрешение аргументов переменной длины
 
-Каждое определение для `variadic` аргумента необходимо объявлять как массив `[]` если необходимо несколько зависимостей.
+Каждое определение для `variadic` аргумента необходимо объявлять как массив `[]` если нужно разрешить несколько зависимостей.
 
 ```php
 // Объявления классов
