@@ -361,7 +361,7 @@ $definition = [
         ->addArgument('file', '/var/log/app.log')
 ];
 
-$container = (new DiContainerFactory()->make($definition);
+$container = (new DiContainerFactory())->make($definition);
 ```
 
 ```php
