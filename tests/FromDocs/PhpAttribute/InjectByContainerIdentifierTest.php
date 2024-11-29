@@ -39,12 +39,13 @@ class InjectByContainerIdentifierTest extends TestCase
         \putenv('APP_TEST_FILE');
         \putenv('APP_TEST_FILE='.$env);
 
-        $container = (new DiContainerFactory())->make(
-            \array_merge(
-                require __DIR__.'/Fixtures/config/main.php',
-                require __DIR__.'/Fixtures/config/config-by-env.php',
-            )
-        );
+        $conf = (static function (): \Generator {
+            yield from (require __DIR__.'/Fixtures/config/main.php')();
+
+            yield from (require __DIR__.'/Fixtures/config/config-by-env.php')();
+        })();
+
+        $container = (new DiContainerFactory())->make($conf);
 
         $class = $container->get(MyFileByContainerIdentifier::class);
 
