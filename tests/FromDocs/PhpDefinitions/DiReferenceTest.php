@@ -11,7 +11,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\MyUsers;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -21,14 +21,14 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
-class DiReferenceTest extends TestCase
+class diGetTest extends TestCase
 {
     public function dataProvider(): \Generator
     {
@@ -40,7 +40,7 @@ class DiReferenceTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testDiReference(string $envValue, string $expectFile): void
+    public function testdiGet(string $envValue, string $expectFile): void
     {
         \putenv('APP_TEST_FILE');
         \putenv('APP_TEST_FILE='.$envValue);
@@ -56,7 +56,7 @@ class DiReferenceTest extends TestCase
                 isSingleton: true
             ),
             diAutowire(\SplFileInfo::class)
-                ->addArgument('filename', diReference('services.env')), // ссылка на определение
+                ->addArgument('filename', diGet('services.env')), // ссылка на определение
         ];
 
         $container = (new DiContainerFactory())->make($definitions);
@@ -64,7 +64,7 @@ class DiReferenceTest extends TestCase
         $this->assertEquals($expectFile, $container->get(\SplFileInfo::class)->getFilename());
     }
 
-    public function testDiReferenceByClasses(): void
+    public function testdiGetByClasses(): void
     {
         $definitions = [
             'data' => ['user1', 'user2'],
@@ -73,12 +73,12 @@ class DiReferenceTest extends TestCase
 
             // внедрение зависимости аргумента по ссылке на контейнер-id
             diAutowire(MyUsers::class)
-                ->addArgument('users', diReference('data'))
+                ->addArgument('users', diGet('data'))
                 ->addArgument('type', 'Some value'),
             diAutowire(MyEmployers::class)
                 // добавить много аргументов за один раз
                 ->addArguments([
-                    'employers' => diReference('data'),
+                    'employers' => diGet('data'),
                     'type' => 'Other value',
                 ]),
         ];

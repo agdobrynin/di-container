@@ -14,7 +14,7 @@ use Tests\DiContainerCall\CircularReference\Fixtures\SecondClass;
 use Tests\DiContainerCall\CircularReference\Fixtures\ThirdClass;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -23,8 +23,8 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
@@ -69,7 +69,7 @@ class MainTest extends TestCase
 
         $container->call(
             [ClassWithMethod::class, 'method'],
-            ['service' => diReference('services.second')]
+            ['service' => diGet('services.second')]
         );
     }
 

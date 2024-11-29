@@ -12,7 +12,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleC;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleGenerator;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -20,8 +20,8 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
@@ -38,7 +38,7 @@ class VariadicArgumentTest extends TestCase
                     value: [ // <-- обернуть параметры в массив для variadic типов если их несколько.
                         diAutowire(RuleB::class),
                         diAutowire(RuleA::class),
-                        diReference('ruleC'), // <-- получение по ссылке
+                        diGet('ruleC'), // <-- получение по ссылке
                     ], // <-- обернуть параметры в массив если их несколько.
                 ),
         ];

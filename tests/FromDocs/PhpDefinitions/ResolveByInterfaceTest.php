@@ -10,7 +10,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ClassFirst;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassInterface;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -18,8 +18,8 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
@@ -49,7 +49,7 @@ class ResolveByInterfaceTest extends TestCase
         // ... many definitions ...
 
         $interfacesDefinitions = [
-            ClassInterface::class => diReference(ClassFirst::class),
+            ClassInterface::class => diGet(ClassFirst::class),
         ];
 
         $container = (new DiContainerFactory())->make(

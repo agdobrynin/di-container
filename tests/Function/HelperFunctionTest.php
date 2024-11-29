@@ -6,11 +6,13 @@ namespace Tests\Function;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
+use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diReference;
 
 /**
@@ -18,19 +20,20 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diReference
  *
  * @internal
  */
 class HelperFunctionTest extends TestCase
 {
-    public function testFunctionDiReference(): void
+    public function testFunctiondiGet(): void
     {
-        $def = diReference('ok');
+        $def = diGet('ok');
 
-        $this->assertInstanceOf(DiDefinitionReference::class, $def);
+        $this->assertInstanceOf(DiDefinitionGet::class, $def);
         $this->assertEquals('ok', $def->getDefinition());
     }
 
@@ -48,5 +51,13 @@ class HelperFunctionTest extends TestCase
 
         $this->assertInstanceOf(DiDefinitionAutowire::class, $def);
         $this->assertTrue($def->isSingleton());
+    }
+
+    public function testDepricatedFunctionDiReference(): void
+    {
+        $def = diReference('ok');
+
+        $this->assertInstanceOf(DiDefinitionReference::class, $def);
+        $this->assertEquals('ok', $def->getDefinition());
     }
 }

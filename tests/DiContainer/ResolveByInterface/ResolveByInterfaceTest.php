@@ -17,7 +17,7 @@ use Tests\DiContainer\ResolveByInterface\Fixtures\SuperInterface;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Service
@@ -27,8 +27,8 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\CallableParserTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
@@ -57,7 +57,7 @@ class ResolveByInterfaceTest extends TestCase
         $def = [
             diAutowire(ServiceViaAttributeWithClassA::class),
             // ...
-            'services.class-a' => diReference(ServiceViaAttributeWithClassA::class),
+            'services.class-a' => diGet(ServiceViaAttributeWithClassA::class),
         ];
 
         $container = new DiContainer($def, config: $config);
@@ -74,9 +74,9 @@ class ResolveByInterfaceTest extends TestCase
         );
 
         $def = [
-            'services.class-b' => diReference('services.class-a'),
+            'services.class-b' => diGet('services.class-a'),
             // ...
-            'services.class-a' => diReference('services.class-b'),
+            'services.class-a' => diGet('services.class-b'),
         ];
 
         $container = new DiContainer($def, config: $config);
@@ -113,9 +113,9 @@ class ResolveByInterfaceTest extends TestCase
         $def = [
             'services.one' => diAutowire(ServiceViaAttributeWithClassA::class, true),
             // ...
-            'services.x' => diReference('services.one'),
+            'services.x' => diGet('services.one'),
             // ...
-            ServiceViaAttributeWithClassInterface::class => diReference('services.x'),
+            ServiceViaAttributeWithClassInterface::class => diGet('services.x'),
         ];
 
         $container = new DiContainer($def, config: $config);

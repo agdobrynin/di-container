@@ -13,7 +13,7 @@ use Tests\DiContainerCall\VariadicArg\Fixtures\WordSuffix;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordVariadicDiFactory;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject::getIdentifier
@@ -22,8 +22,8 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
@@ -32,7 +32,7 @@ use function Kaspi\DiContainer\diReference;
  */
 class CallClassDefinitionVariadicArgTest extends TestCase
 {
-    public function testCallStaticMethodWithoutAttributePassArgumentByDiReference(): void
+    public function testCallStaticMethodWithoutAttributePassArgumentBydiGet(): void
     {
         $config = new DiContainerConfig(
             useZeroConfigurationDefinition: true,
@@ -44,8 +44,8 @@ class CallClassDefinitionVariadicArgTest extends TestCase
             [Talk::class, 'staticMethodByReference'],
             [
                 'word' => [ // <- variadic vars wrap by array
-                    diReference(WordSuffix::class),
-                    diReference(WordHello::class),
+                    diGet(WordSuffix::class),
+                    diGet(WordHello::class),
                 ], // <- variadic vars wrap by array
             ]
         );
@@ -88,7 +88,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
             [
-                'word' => diReference('service.word'),
+                'word' => diGet('service.word'),
             ]
         );
         $this->assertInstanceOf(WordSuffix::class, $res[0]);

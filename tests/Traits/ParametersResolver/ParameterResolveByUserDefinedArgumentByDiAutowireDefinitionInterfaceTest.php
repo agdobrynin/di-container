@@ -15,13 +15,13 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperDiFactory;
 use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
@@ -129,7 +129,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $this->assertInstanceOf(SuperClass::class, $res[1]);
     }
 
-    public function testResolveByAutowireDefinitionVariadicByDiReferenceAkaTag(): void
+    public function testResolveByAutowireDefinitionVariadicBydiGetAkaTag(): void
     {
         $fn = static fn (SuperInterface ...$item) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -147,7 +147,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
 
         // 🚩 test data
         $this->arguments = [
-            'item' => diReference('services.super'),
+            'item' => diGet('services.super'),
         ];
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
