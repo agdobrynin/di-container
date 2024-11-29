@@ -34,7 +34,10 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 {
     public function testCallStaticMethodWithoutAttributePassArgumentByDiReference(): void
     {
-        $config = new DiContainerConfig(useZeroConfigurationDefinition: true, useAttribute: false);
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true,
+            useAttribute: false
+        );
         $container = new DiContainer(config: $config);
 
         $res = $container->call(
@@ -54,7 +57,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
     {
         $config = new DiContainerConfig(
             useZeroConfigurationDefinition: false, // off autoconfigure.
-            useAttribute: false
+            useAttribute: false // off attribute
         );
         $container = new DiContainer(config: $config);
 
