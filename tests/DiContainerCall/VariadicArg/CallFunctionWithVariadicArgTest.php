@@ -14,7 +14,7 @@ use Tests\DiContainerCall\VariadicArg\Fixtures\WordSuffix;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordVariadicDiFactory;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -23,8 +23,8 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
  *
@@ -32,7 +32,7 @@ use function Kaspi\DiContainer\diReference;
  */
 class CallFunctionWithVariadicArgTest extends TestCase
 {
-    public function testUserFunctionVariadicArgumentsPassByCallMethodWithDiReference(): void
+    public function testUserFunctionVariadicArgumentsPassByCallMethodWithdiGet(): void
     {
         $fn = static fn (
             WordInterface ...$word
@@ -48,8 +48,8 @@ class CallFunctionWithVariadicArgTest extends TestCase
             $fn,
             [
                 'word' => [
-                    diReference('services.word_hello'),
-                    diReference('services.word_suffix'),
+                    diGet('services.word_hello'),
+                    diGet('services.word_suffix'),
                 ],
             ]
         );
@@ -107,7 +107,7 @@ class CallFunctionWithVariadicArgTest extends TestCase
         ];
         $container = new DiContainer($definitions, new DiContainerConfig());
 
-        $res = $container->call($fn, ['word' => diReference('services.words')]);
+        $res = $container->call($fn, ['word' => diGet('services.words')]);
 
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
         $this->assertInstanceOf(WordHello::class, $res[1]);

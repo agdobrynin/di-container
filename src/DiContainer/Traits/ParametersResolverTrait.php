@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
@@ -176,7 +176,7 @@ trait ParametersResolverTrait
      */
     protected function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
-        if ($argumentDefinition instanceof DiDefinitionReference) {
+        if ($argumentDefinition instanceof DiDefinitionGet) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 

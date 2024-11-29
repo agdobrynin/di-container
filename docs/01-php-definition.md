@@ -170,18 +170,18 @@ var_dump($container->get('services.one') instanceof App\Services\ServiceOne); //
 >   'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key'),
 > ];
 > ```
-##### diReference - объявление аргумента или определения как ссылки на другой идентификатор контейнера.
+##### diGet - объявление аргумента или определения как ссылки на другой идентификатор контейнера.
 
 ```php
-use function \Kaspi\DiContainer\diReference;
+use function \Kaspi\DiContainer\diGet;
  
-diReference(string $containerIdentifier)
+diGet(string $containerIdentifier)
 ```
 Пример:
 ```php
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 $definitions = [
     'services.env-dsn' => diCallable(
@@ -197,14 +197,14 @@ $definitions = [
     // ...
 
     diAutowire(\PDO::class)
-        ->addArgument('dsn', diReference('services.env-dsn')), // ссылка на определение
+        ->addArgument('dsn', diGet('services.env-dsn')), // ссылка на определение
 ];
 ```
 
 ## Внедрение значений зависимостей аргументов по ссылке на другой идентификатор контейнера.
 
 Для внедрения зависимостей в аргументы по ссылке используется
-функция-хэлпер [diReference](#direference).
+функция-хэлпер [diGet](#diget---объявление-аргумента-или-определения-как-ссылки-на-другой-идентификатор-контейнера).
 
 ```php
 // Объявление класса
@@ -225,7 +225,7 @@ use App\{MyUsers, MyEmployers};
 use Kaspi\DiContainer\DiContainerFactory;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 $definitions = [
     'data' => ['user1', 'user2'],
@@ -234,12 +234,12 @@ $definitions = [
     
     // внедрение зависимости аргумента по ссылке на контейнер-id
     diAutowire(App\MyUsers::class)
-        ->addArgument('users', diReference('data'))
+        ->addArgument('users', diGet('data'))
         ->addArgument('type', 'Some value'),
     diAutowire(App\MyEmployers::class)
         // добавить много аргументов за один раз
         ->addArguments([
-            'employers' => diReference('data'),
+            'employers' => diGet('data'),
             'type' => 'Other value',
         ]),
 ];
@@ -375,7 +375,7 @@ print $myClass->file; // /var/log/app.log
 // Определения для DiContainer - отдельно класс и реализации.
 use App\{ClassFirst, ClassInterface};
 use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\{diAutowire, diReference};
+use function Kaspi\DiContainer\{diAutowire, diGet};
 
 $classesDefinitions = [
     diAutowire(ClassFirst::class)
@@ -385,7 +385,7 @@ $classesDefinitions = [
 // ... many definitions ...
 
 $interfacesDefinitions = [
-    ClassInterface::class => diReference(ClassFirst::class),
+    ClassInterface::class => diGet(ClassFirst::class),
 ];
 
 $container = (new DiContainerFactory())->make(
@@ -526,7 +526,7 @@ class RuleGenerator {
 // определения для контейнера
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\{diAutowire, diReference};
+use function Kaspi\DiContainer\{diAutowire, diGet};
 
 $definition = [
     'ruleC' => diAutowire(App\Rules\RuleC::class),
@@ -536,7 +536,7 @@ $definition = [
             value: [ // <-- обернуть параметры в массив для variadic типов если их несколько.
                 diAutowire(App\Rules\RuleB::class),
                 diAutowire(App\Rules\RuleA::class),
-                diReference('ruleC'), // <-- получение по ссылке
+                diGet('ruleC'), // <-- получение по ссылке
             ], // <-- обернуть параметры в массив если их несколько.            
         )
 ];

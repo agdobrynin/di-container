@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
-final class DiDefinitionReference implements DiDefinitionInterface
+final class DiDefinitionGet implements DiDefinitionInterface
 {
     /**
      * @param non-empty-string $containerIdentifier

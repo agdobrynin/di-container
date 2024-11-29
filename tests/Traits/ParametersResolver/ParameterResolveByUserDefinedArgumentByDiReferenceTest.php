@@ -9,24 +9,24 @@ use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
-use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
- * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
  * @internal
  */
-class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
+class ParameterResolveByUserDefinedArgumentBydiGetTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
 
-    public function testUserDefinedArgumentByDiReferenceNonVariadicSuccess(): void
+    public function testUserDefinedArgumentBydiGetNonVariadicSuccess(): void
     {
         $fn = static fn (\ArrayIterator $iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -39,7 +39,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->setContainer($mockContainer);
         // 🚩 test data
         $this->arguments = [
-            'iterator' => diReference('services.icon-iterator'),
+            'iterator' => diGet('services.icon-iterator'),
         ];
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
@@ -48,7 +48,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->assertEquals(['🚀', '🔥'], $res->getArrayCopy());
     }
 
-    public function testUserDefinedArgumentByManyDiReferenceVariadic(): void
+    public function testUserDefinedArgumentByManydiGetVariadic(): void
     {
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -70,8 +70,8 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         // 🚩 test data
         $this->arguments = [
             'iterator' => [
-                diReference('services.icon-iterator.two'),
-                diReference('services.icon-iterator.one'),
+                diGet('services.icon-iterator.two'),
+                diGet('services.icon-iterator.one'),
             ],
         ];
 
@@ -86,7 +86,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->assertEquals(['🔥'], $res[1]->getArrayCopy());
     }
 
-    public function testUserDefinedArgumentByOneDiReferenceVariadic(): void
+    public function testUserDefinedArgumentByOnediGetVariadic(): void
     {
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -106,7 +106,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->setContainer($mockContainer);
         // 🚩 test data
         $this->arguments = [
-            'iterator' => diReference('services.icon-iterator'),
+            'iterator' => diGet('services.icon-iterator'),
         ];
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
