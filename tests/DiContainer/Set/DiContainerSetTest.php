@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DiContainer\Set;
+namespace Tests\DiContainer\Set;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
