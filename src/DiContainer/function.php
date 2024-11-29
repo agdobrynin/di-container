@@ -6,7 +6,11 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+
+// @todo Remove alias when remove function diReference.
+\class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
@@ -25,9 +29,27 @@ if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
-    // @phan-suppress-next-line PhanUnreferencedFunction
+    /**
+     * @deprecated Function diReference() was deprecated, used diGet()
+     *
+     * @phan-suppress PhanUnreferencedFunction
+     * @phan-suppress PhanUndeclaredClassMethod
+     * @phan-suppress PhanUndeclaredTypeReturnType
+     */
     function diReference(string $containerIdentifier): DiDefinitionReference
     {
+        @\trigger_error('Function diReference() was deprecated, used diGet(). This function will remove next realise.', \E_USER_DEPRECATED);
+
         return new DiDefinitionReference($containerIdentifier);
+    }
+} // @codeCoverageIgnore
+
+if (!\function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
+    /**
+     * @phan-suppress PhanUnreferencedFunction
+     */
+    function diGet(string $containerIdentifier): DiDefinitionGet
+    {
+        return new DiDefinitionGet($containerIdentifier);
     }
 } // @codeCoverageIgnore

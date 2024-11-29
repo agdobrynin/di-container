@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionReference;
 
-use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionReference
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  *
  * @internal
  */
@@ -30,7 +30,7 @@ class DiDefinitionReferenceTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        new DiDefinitionReference($definition);
+        new DiDefinitionGet($definition);
     }
 
     public function dataProviderDefinitionSuccess(): \Generator
@@ -49,6 +49,6 @@ class DiDefinitionReferenceTest extends TestCase
      */
     public function testDiDefinitionReferenceSuccess(string $definition, string $expect): void
     {
-        $this->assertEquals($expect, (new DiDefinitionReference($definition))->getDefinition());
+        $this->assertEquals($expect, (new DiDefinitionGet($definition))->getDefinition());
     }
 }
