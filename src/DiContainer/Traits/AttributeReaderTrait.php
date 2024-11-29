@@ -7,39 +7,22 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
-use Kaspi\DiContainer\Exception\AutowiredAttributeException;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 
 trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
-    /**
-     * @return \Generator<DiFactory>
-     */
-    public function getDiFactoryAttribute(\ReflectionClass|\ReflectionParameter $parameter): \Generator
+    public function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
-        $attributes = $parameter->getAttributes(DiFactory::class);
-
-        if ([] === $attributes) {
-            return;
-        }
-
-        if ($parameter instanceof \ReflectionClass && \count($attributes) > 1) {
-            throw new AutowiredAttributeException('The attribute #[DiFactory] can only be applied once per class.');
-        }
-
-        if ($parameter instanceof \ReflectionParameter && !$parameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowiredAttributeException('The attribute #[DiFactory] can only be applied once per non-variadic parameter.');
-        }
-
-        foreach ($attributes as $attribute) {
-            yield $attribute->newInstance();
-        }
+        return ($attribute = $reflectionClass->getAttributes(DiFactory::class)[0] ?? null)
+            ? $attribute->newInstance()
+            : null;
     }
 
-    public function getServiceAttribute(\ReflectionClass $parameter): ?Service
+    public function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
-        return ($attribute = $parameter->getAttributes(Service::class)[0] ?? null)
+        return ($attribute = $reflectionClass->getAttributes(Service::class)[0] ?? null)
             ? $attribute->newInstance()
             : null;
     }
@@ -47,24 +30,27 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<Inject>
      */
-    public function getInjectAttribute(\ReflectionParameter $parameter): \Generator
+    public function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
-        $attributes = $parameter->getAttributes(Inject::class);
+        $attributes = $reflectionParameter->getAttributes(Inject::class);
 
         if ([] === $attributes) {
             return;
         }
 
-        if (!$parameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowiredAttributeException('The attribute #[Inject] can only be applied once per non-variadic parameter.');
+        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
+            throw new AutowireAttributeException(
+                'The attribute #[Inject] can only be applied once per non-variadic parameter.'
+            );
         }
 
         foreach ($attributes as $attribute) {
+            /** @var Inject $inject */
             $inject = $attribute->newInstance();
 
-            if ('' === $inject->getId()
-                && $type = $this->getParameterTypeByReflection($parameter)?->getName()) {
-                $inject = new Inject($type, $inject->getArguments(), $inject->isSingleton());
+            if ('' === $inject->getIdentifier()
+                && $type = $this->getParameterTypeByReflection($reflectionParameter)?->getName()) {
+                $inject = new Inject($type);
             }
 
             yield $inject;

@@ -6,49 +6,28 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionSimple;
-use Kaspi\DiContainer\Exception\ContainerException;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiContainerConfigExceptionInterface;
-
-if (!\function_exists('Kaspi\DiContainer\diDefinition')) { // @codeCoverageIgnore
-    /**
-     * @phan-suppress PhanUnreferencedFunction
-     *
-     * @throws DiContainerConfigExceptionInterface
-     */
-    function diDefinition(?string $containerKey = null, mixed $definition = null, ?array $arguments = null, ?bool $isSingleton = null): array
-    {
-        $prepareDefinition = (
-            ($definition ? [0 => $definition] : [])
-            + ($arguments ? [DiContainerInterface::ARGUMENTS => $arguments] : [])
-            + (null !== $isSingleton ? [DiContainerInterface::SINGLETON => $isSingleton] : [])
-        ) ?: throw new ContainerException('Definition function is empty.');
-
-        return $containerKey ? [$containerKey => $prepareDefinition] : $prepareDefinition;
-    }
-} // @codeCoverageIgnore
+use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diAutowire(string $definition, array $arguments = [], ?bool $isSingleton = null): DiDefinitionAutowire
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowire
     {
-        return new DiDefinitionAutowire($definition, $isSingleton, $arguments);
+        return new DiDefinitionAutowire($definition, $isSingleton);
     }
 } // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diCallable(array|callable|string $definition, array $arguments = [], ?bool $isSingleton = null): DiDefinitionCallable
+    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionCallable
     {
-        return new DiDefinitionCallable($definition, $isSingleton, $arguments);
+        return new DiDefinitionCallable($definition, $isSingleton);
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
+if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diValue(mixed $definition): DiDefinitionSimple
+    function diReference(string $containerIdentifier): DiDefinitionReference
     {
-        return new DiDefinitionSimple($definition);
+        return new DiDefinitionReference($containerIdentifier);
     }
 } // @codeCoverageIgnore

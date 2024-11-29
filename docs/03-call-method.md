@@ -78,9 +78,9 @@ $container = (new DiContainerFactory())->make();
 // вызов контроллера с автоматическим разрешением зависимостей и передачей аргументов
 print $container->call(
     ['App\Controllers\PostController', 'store'],
-    [$_POST]
     // $_POST содержит ['name' => 'Ivan']
     // 'name' соответствует имени аргумента в методе store
+    \array_filter($_POST,  static fn ($v, $k) => 'name' === $k, \ARRAY_FILTER_USE_BOTH)
 );
 ```
 результат

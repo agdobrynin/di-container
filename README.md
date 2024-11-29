@@ -1,6 +1,6 @@
 # DiContainer
 
-Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0 с автоматическим связыванием.
+Kaspi/di-container — это легковесный контейнер внедрения зависимостей для PHP >= 8.0.
 
 ## Установка
 
@@ -9,41 +9,27 @@ composer require kaspi/di-container
 ```
 ### Особенности
 
-- **Autowiring** - контейнер автоматически создаёт и внедряет зависимости.
-- Поддержка "**zero configuration for dependency injection**" - когда ненужно объявлять зависимость если класс существуют и может быть запрошен по "PSR-4 auto loading"
+- **Autowire** - контейнер автоматически создаёт и внедряет зависимости.
+- Поддержка "**zero configuration for dependency injection**" - когда ненужно объявлять зависимость если класс существуют и может быть запрошен по "PSR-4 auto loading" с автоматическим внедрением зависимостей.
 - Поддержка **Php-атрибутов** для конфигурирования сервисов в контейнере.
 
 ## Быстрый старт
-```php
-// определение контейнера с настройкой "zero configuration for dependency inject"
-// когда ненужно объявлять зависимость если класс существуют
-// и может быть запрошен по "PSR-4 auto loading"
-$container = (new \Kaspi\DiContainer\DiContainerFactory())
-    ->make([
-        \Kaspi\DiContainer\diAutowire(App\Services\Mail::class)
-            ->addArgument('transport', 'sendmail')
-    ]);
-```
-
+Определения классов:
 ```php
 namespace App\Services;
 
+// Сервис отправки почты
 class Mail {
-    public function __construct(private string $transport) {}
+    public function __construct() { /* логика инициализации */ }
     
-    public function envelop() {
-        // ...
-    }
+    public function envelop() { /* ... */ }
     
-    public function send(): bool {
-        // ...
-    }
+    public function send(): bool { /* ... */ }
 }
 ```
-
 ```php
 namespace App\Models;
-
+// Модель данных — пост в блоге.
 class Post {
     public string $title;
     // ...
@@ -51,12 +37,12 @@ class Post {
 ```
 
 ```php
-// определение класса
 namespace App\Controllers;
 
 use App\Services\Mail;
 use App\Models\Post;
 
+// Контроллер для обработки действия.
 class  PostController {
     public function __construct(private Mail $mail) {}
     
@@ -68,6 +54,31 @@ class  PostController {
     }
 }
 ```
+
+```php
+// Создать контейнер.
+$container = (new Kaspi\DiContainer\DiContainerFactory())->make();
+
+// more code...
+
+//Заполняем модель данными.
+$post = new App\Models\Post();
+$post->title = 'Publication about DiContainer';
+
+// получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
+$postController = $container->get(App\Controllers\PostController::class);
+$postController->send($post);
+```
+> Контейнер "пытается" самостоятельно определить запрашиваемую зависимость - является ли это классом или callable типом.
+
+🛠 Фактически `DiContainer` выполнит следующие действия для `App\Controllers\PostController`:
+
+```php
+$post = new App\Controllers\PostController(
+    new App\Services\Mail()
+);
+```
+Другой вариант для примера выше можно использовать для получения результата метод `call`:
 ```php
 $post = new App\Models\Post();
 $post->title = 'Publication about DiContainer';
@@ -75,17 +86,13 @@ $post->title = 'Publication about DiContainer';
 // ...
 
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
-$postController = $container->get(App\Controllers\PostController::class);
-$postController->send($post);
-```
-Фактически `DiContainer` выполнит следующие действия для `App\Controllers\PostController`:
-
-```php
-$post = new App\Controllers\PostController(
-    new App\Services\Mail('sendmail')
+$container->call(
+    definition: [App\Controllers\PostController::class,'send'],
+    arguments: ['post' => $post]
 );
+
 ```
-> контейнер "пытается" самостоятельно определить запрашиваемую зависимость - является ли это классом или callable типом.
+> 📝 [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
 
 🦄 Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples)
 
@@ -95,28 +102,27 @@ $post = new App\Controllers\PostController(
 `Kaspi\DiContainer\DiContainerConfig::class` который имплементируют интерфейс `Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
 
 ```php
-$diConfig = new \Kaspi\DiContainer\DiContainerConfig(
-    // Использовать автоматическое разрешение аргументов
-    // сервисов-классов или методов-классов или функций.
-    useAutowire: true,
+use Kaspi\DiContainer\{DiContainerConfig, DiContainer};
+
+$diConfig = new DiContainerConfig(
     // Ненужно объявлять каждую зависимость.
-    // Если класс или функция или интерфейс существуют -
-    // то он может быть запрошен по "PSR-4 autoloading".
+    // Если класс, функция или интерфейс существуют
+    // и может быть запрошен через автозагрузку (например через composer),
+    // то объявлять каждое определение необязательно.
     useZeroConfigurationDefinition: true,
-    // Использовать Php-атрибуты для объявления зависимостей.
+    // Использовать Php-атрибуты для объявления определений контейнера.
     useAttribute: true,
-    // Сервис (объект) будет создаваться заново при разрешении зависимости
-    // если знание true, то объект будет создан как Singleton.
+    // Сервис (объект) создавать как одиночку (singleton pattern).
     isSingletonServiceDefault: false,
-    // Строка (символ) определяющий шаблон как ссылку другой контейнер
-    referenceContainerSymbol: '@',
 );
 // передать настройки в контейнер
-$container = new \Kaspi\DiContainer\DiContainer(config: $diConfig);
+$container = new DiContainer(config: $diConfig);
 ```
 Или использовать фабрику с настроенными по умолчанию параметрами:
 ```php
-$container = (new \Kaspi\DiContainer\DiContainerFactory())->make(definitions: []);
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make(definitions: []);
 ```
 
 ⚙ При попытке разрешить зависимость через метод `get` или аргумент конструктора, или метода:
@@ -128,22 +134,27 @@ $container = (new \Kaspi\DiContainer\DiContainerFactory())->make(definitions: []
 | будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
 
 ```php
+use Kaspi\DiContainer\DiContainerFactory;
+
 function testFunc(\Psr\Container\ContainerInterface $c) {
     return $c;
 }
 
-$container = (new \Kaspi\DiContainer\DiContainerFactory())->make();
-$container->call('testFunc') instanceof \Kaspi\DiContainer\DiContainer; // true
+$container = (new DiContainerFactory())->make();
+$container->call('testFunc') instanceof DiContainer; // true
 ```
 ```php
+use Kaspi\DiContainer\DiContainerFactory;
+use Psr\Container\ContainerInterface;
+
 class TestClass {
     public function __construct(
-        public \Psr\Container\ContainerInterface $container
+        public ContainerInterface $container
     ) {}
 }
 
-$container = (new \Kaspi\DiContainer\DiContainerFactory())->make();
-$container->get(TestClass::class)->container instanceof \Kaspi\DiContainer\DiContainer; // true
+$container = (new DiContainerFactory())->make();
+$container->get(TestClass::class)->container instanceof DiContainer; // true
 ```
 
 ### Подробное описание конфигурирования и использования

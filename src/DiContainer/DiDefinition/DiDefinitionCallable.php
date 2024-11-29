@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
@@ -26,17 +26,9 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      */
     private $parsedDefinition;
 
-    public function __construct(array|callable|string $definition, private ?bool $isSingleton = null, array $arguments = [])
+    public function __construct(array|callable|string $definition, private ?bool $isSingleton = null)
     {
         $this->definition = $definition;
-        $this->arguments = $arguments;
-    }
-
-    public function addArgument(string $name, mixed $value): static
-    {
-        $this->arguments[$name] = $value;
-
-        return $this;
     }
 
     public function isSingleton(): ?bool
@@ -48,9 +40,9 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      */
-    public function invoke(?bool $useAttribute = null): mixed
+    public function invoke(): mixed
     {
         $this->reflectionParameters ??= $this->reflectParameters();
 
@@ -58,7 +50,7 @@ final class DiDefinitionCallable implements DiDefinitionAutowireInterface
             return \call_user_func($this->parsedDefinition);
         }
 
-        $resolvedArgs = $this->resolveParameters($useAttribute);
+        $resolvedArgs = $this->resolveParameters();
 
         return \call_user_func_array($this->parsedDefinition, $resolvedArgs);
     }

@@ -27,10 +27,11 @@ trait CallableParserTrait
 
         $parsedDefinition = (static function (array|string $argument): array {
             if (\is_array($argument)) {
-                isset($argument[0], $argument[1])
-                || throw new DiDefinitionCallableException(
-                    'When the definition is an array, two array elements must be provided. Got: '.\var_export($argument, true)
-                );
+                if (!isset($argument[0], $argument[1])) {
+                    throw new DiDefinitionCallableException(
+                        'When the definition is an array, two array elements must be provided. Got: '.\var_export($argument, true)
+                    );
+                }
 
                 return [$argument[0], $argument[1]];
             }
@@ -46,9 +47,11 @@ trait CallableParserTrait
             $parsedDefinition[0] = $this->getContainer()->get($parsedDefinition[0]);
         }
 
-        return \is_callable($parsedDefinition)
-            ? $parsedDefinition
-            : throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
+        if (\is_callable($parsedDefinition)) {
+            return $parsedDefinition;
+        }
+
+        throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
     }
 
     abstract public function getContainer(): ContainerInterface;

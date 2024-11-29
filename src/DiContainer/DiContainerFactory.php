@@ -11,11 +11,9 @@ class DiContainerFactory implements DiContainerFactoryInterface // @phan-suppres
     public function make(iterable $definitions = []): DiContainer
     {
         $config = new DiContainerConfig(
-            useAutowire: true,
             useZeroConfigurationDefinition: true,
             useAttribute: true,
             isSingletonServiceDefault: false,
-            referenceContainerSymbol: '@'
         );
 
         return new DiContainer($definitions, $config);

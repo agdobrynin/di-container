@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Exception\AutowiredException;
+use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 
@@ -18,20 +18,11 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     private \ReflectionClass $reflectionClass;
 
-    public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null, array $arguments = [])
+    public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
         if ($this->definition instanceof \ReflectionClass) {
             $this->reflectionClass = $this->definition;
         }
-
-        $this->arguments = $arguments;
-    }
-
-    public function addArgument(string $name, mixed $value): static
-    {
-        $this->arguments[$name] = $value;
-
-        return $this;
     }
 
     public function isSingleton(): ?bool
@@ -39,23 +30,25 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->isSingleton;
     }
 
-    public function invoke(?bool $useAttribute = null): mixed
+    public function invoke(): mixed
     {
-        $this->getDefinition()->isInstantiable()
-            || throw new AutowiredException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+        if (!$this->getDefinition()->isInstantiable()) {
+            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+        }
+
         $this->reflectionParameters ??= $this->reflectionClass->getConstructor()?->getParameters() ?? [];
 
         if ([] === $this->reflectionParameters) {
             return $this->reflectionClass->newInstanceWithoutConstructor();
         }
 
-        $args = $this->resolveParameters($useAttribute);
+        $args = $this->resolveParameters();
 
         return $this->reflectionClass->newInstanceArgs($args);
     }
 
     /**
-     * @throws AutowiredExceptionInterface
+     * @throws AutowireExceptionInterface
      */
     public function getDefinition(): \ReflectionClass
     {
@@ -66,7 +59,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         try {
             return $this->reflectionClass = new \ReflectionClass($this->definition);
         } catch (\ReflectionException $e) {
-            throw new AutowiredException(message: $e->getMessage());
+            throw new AutowireException(message: $e->getMessage());
         }
     }
 

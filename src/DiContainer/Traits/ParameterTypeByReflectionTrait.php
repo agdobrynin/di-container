@@ -10,18 +10,18 @@ trait ParameterTypeByReflectionTrait
 {
     use PsrContainerTrait;
 
-    public function getParameterTypeByReflection(\ReflectionParameter $parameter): ?\ReflectionNamedType
+    public function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
     {
-        $reflectionType = $parameter->getType();
+        $reflectionType = $reflectionParameter->getType();
 
         if ($reflectionType instanceof \ReflectionNamedType && !$reflectionType->isBuiltin()) {
-            return $parameter->getType();
+            return $reflectionParameter->getType();
         }
 
         if ($reflectionType instanceof \ReflectionUnionType) {
             foreach ($reflectionType->getTypes() as $type) {
                 // Get first available non builtin type e.g.
-                // __construct(string|Class1|Class2 $dependency) if Class1 has in container will return 'Class1'
+                // __construct(string|Class1|Class2 $dependency) if container identifier Class1 has will return 'Class1'
                 if (!$type->isBuiltin() && $this->getContainer()->has($type->getName())) {
                     return $type;
                 }

@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class Service implements DiAttributeInterface
+final class Service implements DiAttributeServiceInterface
 {
     /**
-     * @param class-string|string $id class name or container reference
+     * @param class-string|non-empty-string $id class name or container identifier
      */
-    public function __construct(private string $id, private array $arguments = [], private bool $isSingleton = false) {}
-
-    public function getId(): string
+    public function __construct(private string $id, private bool $isSingleton = false)
     {
-        return $this->id;
+        if ('' === \trim($id)) {
+            throw new AutowireAttributeException('Attribute #['.__CLASS__.'] argument [id] must be a non-empty string.');
+        }
     }
 
-    public function getArguments(): array
+    public function getIdentifier(): string
     {
-        return $this->arguments;
+        return $this->id;
     }
 
     public function isSingleton(): bool

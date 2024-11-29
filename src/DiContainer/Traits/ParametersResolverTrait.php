@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\Exception\AutowiredAttributeException;
-use Kaspi\DiContainer\Exception\AutowiredException;
-use Kaspi\DiContainer\Exception\CallCircularDependency;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowiredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -21,6 +23,9 @@ trait ParametersResolverTrait
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
     use PsrContainerTrait;
+    use UseAttributeTrait;
+
+    protected static int $variadicPosition = 0;
 
     /**
      * @var \ReflectionParameter[]
@@ -40,26 +45,62 @@ trait ParametersResolverTrait
     protected array $arguments = [];
 
     /**
-     * @throws AutowiredAttributeException
-     * @throws AutowiredExceptionInterface
-     * @throws CallCircularDependency
+     * @phan-suppress PhanTypeMismatchReturn
+     * @phan-suppress PhanUnreferencedPublicMethod
+     */
+    public function addArgument(string $name, mixed $value): static
+    {
+        $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @phan-suppress PhanTypeMismatchReturn
+     */
+    public function addArguments(array $arguments): static
+    {
+        $this->arguments = $arguments;
+
+        return $this;
+    }
+
+    /**
+     * @throws AutowireAttributeException
+     * @throws AutowireExceptionInterface
+     * @throws CallCircularDependencyException
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    public function resolveParameters(?bool $useAttribute = null): array
+    public function resolveParameters(): array
     {
+        // Check valid user defined arguments
+        $this->validateInputArguments();
+
         $dependencies = [];
 
         foreach ($this->reflectionParameters as $parameter) {
             if (\array_key_exists($parameter->name, $this->arguments)) {
-                $argument = $this->arguments[$parameter->name];
-                $args = \is_array($argument) && $parameter->isVariadic() ? $argument : [$argument];
+                $argumentDefinition = $this->arguments[$parameter->name];
 
-                foreach ($args as $arg) {
-                    $dependencies[] = \is_string($arg) && $this->getContainer()->has($arg)
-                        ? $this->getContainer()->get($arg)
-                        : $arg;
+                if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
+                    self::$variadicPosition = 0;
+
+                    foreach ($argumentDefinition as $definitionItem) {
+                        $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
+                        $dependencies[] = $resolvedVal;
+                    }
+
+                    continue;
                 }
+
+                $resolvedVal = $this->resolveInputArgument($parameter, $argumentDefinition);
+
+                $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                    ? $resolvedVal
+                    : [$resolvedVal];
+
+                \array_push($dependencies, ...$vals);
 
                 continue;
             }
@@ -67,37 +108,22 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($useAttribute) {
-                    $factories = $this->getDiFactoryAttribute($parameter);
+                if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
+                    && $injectAttribute->valid()) {
+                    self::$variadicPosition = 0;
 
-                    if ($factories->valid()) {
-                        foreach ($factories as $factory) {
-                            $dependencies[] = $this->resolveArgumentByAttribute($factory);
-                        }
+                    foreach ($injectAttribute as $inject) {
+                        $resolvedVal = $inject->getIdentifier()
+                            ? $this->getContainer()->get($inject->getIdentifier())
+                            : $this->getContainer()->get($parameter->getName());
 
-                        continue;
+                        $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                            ? $resolvedVal
+                            : [$resolvedVal];
+                        \array_push($dependencies, ...$vals);
                     }
 
-                    $injects = $this->getInjectAttribute($parameter);
-
-                    if ($injects->valid()) {
-                        foreach ($injects as $inject) {
-                            if (\class_exists($inject->getId())) {
-                                $dependencies[] = $this->resolveArgumentByAttribute($inject);
-
-                                continue;
-                            }
-
-                            $resolvedVal = $this->getContainer()->has($inject->getId())
-                                ? $this->getContainer()->get($inject->getId())
-                                : $this->getContainer()->get($parameter->getName());
-
-                            $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
-                            \array_push($dependencies, ...$vals);
-                        }
-
-                        continue;
-                    }
+                    continue;
                 }
 
                 $parameterType = $this->getParameterTypeByReflection($parameter);
@@ -106,13 +132,15 @@ trait ParametersResolverTrait
                     ? $this->getContainer()->get($parameter->getName())
                     : $this->getContainer()->get($parameterType->getName());
 
-                $vals = \is_array($resolvedVal) && $parameter->isVariadic() ? $resolvedVal : [$resolvedVal];
+                $vals = \is_array($resolvedVal) && $parameter->isVariadic()
+                    ? $resolvedVal
+                    : [$resolvedVal];
                 \array_push($dependencies, ...$vals);
 
                 continue;
-            } catch (AutowiredAttributeException|CallCircularDependency $e) {
+            } catch (AutowireAttributeException|CallCircularDependencyException $e) {
                 throw $e;
-            } catch (AutowiredExceptionInterface|ContainerExceptionInterface $e) {
+            } catch (AutowireExceptionInterface|ContainerExceptionInterface $e) {
                 $autowireException = $e;
             }
 
@@ -132,7 +160,7 @@ trait ParametersResolverTrait
                 throw new NotFoundException(message: $message, previous: $autowireException);
             }
 
-            throw new AutowiredException(message: $message, previous: $autowireException);
+            throw new AutowireException(message: $message, previous: $autowireException);
         }
 
         return $dependencies;
@@ -141,27 +169,81 @@ trait ParametersResolverTrait
     abstract public function getContainer(): ContainerInterface;
 
     /**
-     * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @throws AutowiredExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws AutowireExceptionInterface
      */
-    protected function resolveArgumentByAttribute(DiAttributeInterface $attribute): mixed
+    protected function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
-        if (isset($this->resolvedArguments[$attribute->getId()])) {
-            return $this->resolvedArguments[$attribute->getId()];
+        if ($argumentDefinition instanceof DiDefinitionReference) {
+            return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
-        $object = (new DiDefinitionAutowire($attribute->getId(), $attribute->isSingleton(), $attribute->getArguments()))
-            ->setContainer($this->getContainer())
-            ->invoke(true)
-        ;
+        if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
+            $id = $parameter->isVariadic()
+                ? \sprintf('%s#%d', $parameter->getName(), self::$variadicPosition++)
+                : $parameter->getName();
 
-        $objectResult = $attribute instanceof DiFactory
-            ? $object($this->getContainer())
-            : $object;
+            if (isset($this->resolvedArguments[$id])) {
+                return $this->resolvedArguments[$id];
+            }
 
-        return $attribute->isSingleton()
-            ? $this->resolvedArguments[$attribute->getId()] = $objectResult
-            : $objectResult;
+            // Configure definition.
+            $argumentDefinition->setContainer($this->getContainer())
+                ->setUseAttribute($this->isUseAttribute())
+            ;
+
+            $objectResult = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
+                ? $o($this->getContainer())
+                : $o;
+
+            return $argumentDefinition->isSingleton()
+                ? $this->resolvedArguments[$id] = $objectResult
+                : $objectResult;
+        }
+
+        if ($argumentDefinition instanceof DiDefinitionInterface) {
+            return $argumentDefinition->getDefinition();
+        }
+
+        return $argumentDefinition;
+    }
+
+    /**
+     * @throws AutowireExceptionInterface
+     */
+    protected function validateInputArguments(): void
+    {
+        if ([] !== $this->arguments) {
+            $parameters = \array_column($this->reflectionParameters, 'name');
+
+            if (\count($this->arguments) > \count($parameters)) {
+                throw new AutowireAttributeException(
+                    \sprintf(
+                        'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
+                        \implode(', ', \array_keys($this->arguments)),
+                        \implode(', ', $parameters)
+                    )
+                );
+            }
+
+            $argumentPosition = 0;
+
+            foreach ($this->arguments as $name => $value) {
+                ++$argumentPosition;
+
+                if (!\in_array($name, $parameters, true)) {
+                    throw new AutowireAttributeException(
+                        \sprintf(
+                            'Invalid input argument name "%s" at position #%d. Definition '.__CLASS__.' has arguments: "%s"',
+                            $name,
+                            $argumentPosition,
+                            \implode(', ', $parameters)
+                        )
+                    );
+                }
+            }
+        }
     }
 }

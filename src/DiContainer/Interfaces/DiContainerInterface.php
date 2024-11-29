@@ -13,32 +13,6 @@ use Psr\Container\NotFoundExceptionInterface;
 interface DiContainerInterface extends ContainerInterface
 {
     /**
-     * Key name for defining arguments in a constructor or method in a php-class.
-     *
-     * Example of using all array keys in container definitions:
-     *
-     *      $definition = [
-     *          // Arguments for constructor
-     *          Acme\SomeClass::class => [
-     *              DiContainerInterface::ARGUMENTS => [
-     *                  'varFirst' => 10,
-     *                  'varSecond' => [1, 2, 3],
-     *              ],
-     *          ],
-     *          Acme\OtherClass::class => [
-     *              // Arguments for a constructor
-     *              DiContainerInterface::ARGUMENTS => [
-     *                   'initValue' => 100
-     *              ],
-     *              // Make service as shared (public)
-     *              DiContainerInterface::SINGLETON => true,
-     *         ],
-     *      ];
-     */
-    public const ARGUMENTS = 'arguments';
-    public const SINGLETON = 'singleton';
-
-    /**
      * @template T of object
      *
      * @param class-string<T>|string $id
@@ -57,5 +31,5 @@ interface DiContainerInterface extends ContainerInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
      * @throws DiDefinitionExceptionInterface
      */
-    public function set(string $id, mixed $definition, ?array $arguments = null, ?bool $isSingleton = null): static;
+    public function set(string $id, mixed $definition): static;
 }

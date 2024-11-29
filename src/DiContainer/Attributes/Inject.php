@@ -10,22 +10,12 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 final class Inject implements DiAttributeInterface
 {
     /**
-     * @param class-string|string $id class name or container reference
+     * @param class-string|string $id class name or container identifier
      */
-    public function __construct(private string $id = '', private array $arguments = [], private bool $isSingleton = false) {}
+    public function __construct(private string $id = '') {}
 
-    public function getId(): string
+    public function getIdentifier(): string
     {
         return $this->id;
-    }
-
-    public function getArguments(): array
-    {
-        return $this->arguments;
-    }
-
-    public function isSingleton(): bool
-    {
-        return $this->isSingleton;
     }
 }
