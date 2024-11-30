@@ -19,7 +19,7 @@ use function Kaspi\DiContainer\diGet;
  *
  * @internal
  */
-class ParameterResolveByUserDefinedArgumentBydiGetTest extends TestCase
+class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use ParametersResolverTrait;
