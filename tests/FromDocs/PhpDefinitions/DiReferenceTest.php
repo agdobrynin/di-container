@@ -28,7 +28,7 @@ use function Kaspi\DiContainer\diGet;
  *
  * @internal
  */
-class diGetTest extends TestCase
+class DiReferenceTest extends TestCase
 {
     public function dataProvider(): \Generator
     {
