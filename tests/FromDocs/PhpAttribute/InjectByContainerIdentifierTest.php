@@ -36,16 +36,25 @@ class InjectByContainerIdentifierTest extends TestCase
      */
     public function testByContainerIdentifier(string $env, string $fileName): void
     {
+        $configFromFiles = (static function (string ...$file): \Generator {
+            foreach ($file as $srcFile) {
+                $src = require $srcFile;
+
+                if ($src instanceof \Closure) {
+                    yield from $src();
+                } elseif (\is_array($src)) {
+                    yield from $src;
+                } else {
+                    throw new \InvalidArgumentException('Unexpected value from file: '.$srcFile);
+                }
+            }
+        });
+
+        $fileList = \glob(__DIR__.'/Fixtures/config/*.php');
+        $container = (new DiContainerFactory())->make($configFromFiles(...$fileList));
+
         \putenv('APP_TEST_FILE');
         \putenv('APP_TEST_FILE='.$env);
-
-        $conf = (static function (): \Generator {
-            yield from (require __DIR__.'/Fixtures/config/main.php')();
-
-            yield from (require __DIR__.'/Fixtures/config/config-by-env.php')();
-        })();
-
-        $container = (new DiContainerFactory())->make($conf);
 
         $class = $container->get(MyFileByContainerIdentifier::class);
 
