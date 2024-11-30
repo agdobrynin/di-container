@@ -7,9 +7,10 @@ use function Kaspi\DiContainer\diCallable;
 
 return [
     'services.file' => diCallable(
-        static fn (ContainerInterface $container) => match (\getenv('APP_TEST_FILE')) {
+        definition: static fn (ContainerInterface $container) => match (\getenv('APP_TEST_FILE')) {
             'prod' => $container->get('services.file.prod'),
-            default => $container->get('services.file.local')
-        }
+            default => $container->get('services.file.local'),
+        },
+        isSingleton: true
     ),
 ];

@@ -31,7 +31,7 @@ class MainTest extends TestCase
 
     public function testMakeContainerByFactoryDefinitionInsertByGenerator(): void
     {
-        $definitions = static function () {
+        $definitions = static function (): \Generator {
             yield 'a' => 'b';
 
             yield 'c' => static fn () => 'hello!';
