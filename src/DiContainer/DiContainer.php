@@ -135,9 +135,13 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
-            return (new DiDefinitionCallable($definition))
-                ->addArguments($arguments)
-                ->setContainer($this)
+            $diCallable = new DiDefinitionCallable($definition);
+
+            foreach ($arguments as $name => $argument) {
+                $diCallable->addArgument($name, $argument);
+            }
+
+            return $diCallable->setContainer($this)
                 ->setUseAttribute($this->config?->isUseAttribute())
                 ->invoke()
             ;

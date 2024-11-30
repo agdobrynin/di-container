@@ -61,14 +61,25 @@ class AddArgumentTest extends TestCase
         $this->resolveParameters();
     }
 
+    public function testAddArgumentFailByIndex(): void
+    {
+        $fn = static fn (iterable $iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $this->addArgument(10, []);
+
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('Invalid input argument by index [10]');
+
+        $this->resolveParameters();
+    }
+
     public function testAddArgumentsByIndex(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $this->addArguments([
-            [],
-        ]);
+        $this->addArguments([]);
 
         $this->assertEquals([], \call_user_func_array($fn, $this->resolveParameters()));
     }
@@ -78,7 +89,7 @@ class AddArgumentTest extends TestCase
         $fn = static fn (iterable $iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $this->addArguments(['iterator' => [], 'val' => 'value']);
+        $this->addArguments(iterator: [], val: 'value');
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Too many input arguments');
@@ -97,10 +108,10 @@ class AddArgumentTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->addArguments([
-            'value' => 'value',
+        $this->addArguments(
+            'value',
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
-        ]);
+        );
 
         $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
     }
@@ -111,9 +122,7 @@ class AddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
 
-        $this->addArguments([
-            'iterator' => ['ok'],
-        ]);
+        $this->addArguments(iterator: ['ok']);
 
         $this->assertEquals(['ok', null], \call_user_func_array($fn, $this->resolveParameters()));
     }
