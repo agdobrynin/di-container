@@ -49,7 +49,7 @@ trait ParametersResolverTrait
      * @phan-suppress PhanTypeMismatchReturn
      * @phan-suppress PhanUnreferencedPublicMethod
      */
-    public function addArgument(string $name, mixed $value): static
+    public function addArgument(int|string $name, mixed $value): static
     {
         $this->arguments[$name] = $value;
 

@@ -61,18 +61,6 @@ class AddArgumentTest extends TestCase
         $this->resolveParameters();
     }
 
-    public function testAddArgumentsByIndex(): void
-    {
-        $fn = static fn (iterable $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
-
-        $this->addArguments([
-            [],
-        ]);
-
-        $this->assertEquals([], \call_user_func_array($fn, $this->resolveParameters()));
-    }
-
     public function testAddArgumentFailByCount(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
@@ -101,6 +89,23 @@ class AddArgumentTest extends TestCase
             'value',
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
         ]);
+
+        $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
+    }
+
+    public function testAddArgumentByIndex(): void
+    {
+        $fn = static fn (string $value, SuperClass $class) => 'ok';
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->never())
+            ->method('get')
+        ;
+        $this->setContainer($mockContainer);
+
+        $this->addArgument(0, 'value');
+        $this->addArgument(1, diAutowire(SuperClass::class));
 
         $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
     }

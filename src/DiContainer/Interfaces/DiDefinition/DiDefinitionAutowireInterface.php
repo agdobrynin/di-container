@@ -13,16 +13,17 @@ use Psr\Container\NotFoundExceptionInterface;
 interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 {
     /**
+     * Add input argument by index or name.
      * If argument is variadic then $value must be wrap array.
      *
      * ⚠ This method replaces the previously defined argument with the same name.
      *
-     * @param non-empty-string                                          $name
+     * @param int|non-empty-string                                      $name
      * @param DiDefinitionAutowireInterface|DiDefinitionInterface|mixed $value
      *
      * @return $this
      */
-    public function addArgument(string $name, mixed $value): static;
+    public function addArgument(int|string $name, mixed $value): static;
 
     /**
      * Arguments provided by the user.
