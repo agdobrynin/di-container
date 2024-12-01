@@ -567,10 +567,13 @@ assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 >```php
 > // Передать три аргумента в конструктор класс
 > diAutowire(App\Rules\RuleGenerator::class)
+>   // Передать в параметр с индексом 0 значение.
 >   ->bindArguments(
->       diAutowire(App\Rules\RuleB::class),
->       diAutowire(App\Rules\RuleA::class),
->       diGet('ruleC'), // <-- получение по ссылке
+>       [ // <-- обернуть параметры в массив для variadic типов если их несколько.
+>           diAutowire(App\Rules\RuleB::class),
+>           diAutowire(App\Rules\RuleA::class),
+>           diGet('ruleC'), // <-- получение по ссылке
+>       ] // <-- обернуть параметры в массив если их несколько.
 >   );
 > ```
 
