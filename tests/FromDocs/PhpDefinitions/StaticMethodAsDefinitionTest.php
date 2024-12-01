@@ -30,7 +30,7 @@ class StaticMethodAsDefinitionTest extends TestCase
     {
         $defServices = [
             diAutowire(ServiceLocation::class)
-                ->addArguments(['locationCity' => 'Vice city']),
+                ->bindArguments('Vice city'),
         ];
 
         // ... many definitions ...

@@ -42,7 +42,8 @@ class CallFunctionTest extends TestCase
     {
         $definitions = [
             diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', 'Ready'),
+                // bind by name
+                ->bindArguments(publicProperty: 'Ready'),
         ];
 
         $container = new DiContainer($definitions);
@@ -56,7 +57,8 @@ class CallFunctionTest extends TestCase
     {
         $container = new DiContainer([
             diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', 'I am alone'),
+                // bind by index
+                ->bindArguments('I am alone'),
         ]);
 
         $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');

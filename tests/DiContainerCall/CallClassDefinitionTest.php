@@ -31,7 +31,8 @@ class CallClassDefinitionTest extends TestCase
     {
         $container = (new DiContainerFactory())->make([
             diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', 'Ready'),
+                // bind by name
+                ->bindArguments(publicProperty: 'Ready'),
         ]);
 
         $res = $container->call(ClassWithSimplePublicProperty::class, ['append' => '🚀']);
@@ -43,7 +44,8 @@ class CallClassDefinitionTest extends TestCase
     {
         $container = (new DiContainerFactory())->make([
             diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', 'Ready'),
+                // bind by index
+                ->bindArguments('Ready'),
         ]);
 
         $res = $container->call(ClassWithSimplePublicProperty::class);
@@ -55,7 +57,7 @@ class CallClassDefinitionTest extends TestCase
     {
         $container = (new DiContainerFactory())->make([
             diAutowire(ClassWithSimplePublicProperty::class)
-                ->addArgument('publicProperty', 'Start'),
+                ->bindArguments(publicProperty: 'Start'),
         ]);
 
         $res = $container->call(ClassWithSimplePublicProperty::class.'::method', ['append' => '🚩']);

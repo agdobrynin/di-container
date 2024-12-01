@@ -27,9 +27,9 @@ class ExamplesTest extends TestCase
     {
         $definition = [
             SumInterface::class => diAutowire(Sum::class)
-                ->addArgument('init', 50),
+                ->bindArguments(init: 50),
             diAutowire(Sum::class)
-                ->addArgument('init', 10),
+                ->bindArguments(init: 10),
         ];
 
         $c = (new DiContainerFactory())->make($definition);

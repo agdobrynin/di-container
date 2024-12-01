@@ -30,7 +30,8 @@ class ResolveByInterfaceTest extends TestCase
     {
         $definition = [
             ClassInterface::class => diAutowire(ClassFirst::class)
-                ->addArgument('file', '/var/log/app.log'),
+                // bind by name
+                ->bindArguments(file: '/var/log/app.log'),
         ];
 
         $container = (new DiContainerFactory())->make($definition);
@@ -43,7 +44,8 @@ class ResolveByInterfaceTest extends TestCase
     {
         $classesDefinitions = [
             diAutowire(ClassFirst::class)
-                ->addArgument('file', '/var/log/app.log'),
+                // bind by index
+                ->bindArguments('/var/log/app.log'),
         ];
 
         // ... many definitions ...

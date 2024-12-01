@@ -28,7 +28,7 @@ class InjectByArgumentTypeTest extends TestCase
     {
         $definitions = [
             diAutowire(\SplFileInfo::class)
-                ->addArgument('filename', __DIR__.'/Fixtures/file1.txt'),
+                ->bindArguments(filename: __DIR__.'/Fixtures/file1.txt'),
         ];
 
         $container = (new DiContainerFactory())->make($definitions);
