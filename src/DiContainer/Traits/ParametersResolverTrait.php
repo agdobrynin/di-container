@@ -101,14 +101,13 @@ trait ParametersResolverTrait
         $this->validateInputArguments();
 
         $dependencies = [];
+        self::$variadicPosition = 0;
 
         foreach ($this->reflectionParameters as $parameter) {
             try {
                 $argumentDefinition = $this->getInputArgument($parameter);
 
                 if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
-                    self::$variadicPosition = 0;
-
                     foreach ($argumentDefinition as $definitionItem) {
                         $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
                         $dependencies[] = $resolvedVal;
@@ -134,8 +133,6 @@ trait ParametersResolverTrait
             try {
                 if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
                     && $injectAttribute->valid()) {
-                    self::$variadicPosition = 0;
-
                     foreach ($injectAttribute as $inject) {
                         $resolvedVal = $inject->getIdentifier()
                             ? $this->getContainer()->get($inject->getIdentifier())
