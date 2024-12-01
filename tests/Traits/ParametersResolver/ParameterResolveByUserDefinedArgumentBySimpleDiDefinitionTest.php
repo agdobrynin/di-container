@@ -77,8 +77,10 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(
-            ['aaa', 'bbb', 'ccc'],
-            ['ddd', 'eee', 'fff']
+            [
+                ['aaa', 'bbb', 'ccc'],
+                ['ddd', 'eee', 'fff'],
+            ]
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
