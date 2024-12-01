@@ -23,7 +23,7 @@ use function Kaspi\DiContainer\diAutowire;
  *
  * @internal
  */
-class AddArgumentTest extends TestCase
+class DeprecatedMethodAddArgumentTest extends TestCase
 {
     use ParametersResolverTrait;
     use PsrContainerTrait;
