@@ -18,6 +18,8 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      *
      * ⚠ This method replaces the previously defined argument with the same name.
      *
+     * @deprecated Use method bindArguments(). This method will remove next major realise.
+     *
      * @param int|non-empty-string                                      $name
      * @param DiDefinitionAutowireInterface|DiDefinitionInterface|mixed $value
      *
@@ -40,11 +42,23 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      *                                              // include DiDefinitionAutowireInterface.
      *       ]
      *
+     * @deprecated Use method bindArguments(). This method will remove next major realise.
+     *
      * @param array<non-empty-string, mixed> $arguments
      *
      * @return $this
      */
     public function addArguments(array $arguments): static;
+
+    /**
+     * Arguments provided by the user added by name or index.
+     * User can set addArgument(var1: 'value 1', var2: 'value 2') equals ['var1' => 'value 1', 'var2' => 'value 2'].
+     *
+     * ⚠ This method replaces all previously defined arguments.
+     *
+     * @return $this
+     */
+    public function bindArguments(mixed ...$argument): static;
 
     public function isSingleton(): ?bool;
 

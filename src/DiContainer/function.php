@@ -38,7 +38,7 @@ if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
      */
     function diReference(string $containerIdentifier): DiDefinitionReference
     {
-        @\trigger_error('Function diReference() was deprecated, used diGet(). This function will remove next realise.', \E_USER_DEPRECATED);
+        @\trigger_error('Function diReference() was deprecated, used diGet(). This function will remove next major realise.', \E_USER_DEPRECATED);
 
         return new DiDefinitionReference($containerIdentifier);
     }

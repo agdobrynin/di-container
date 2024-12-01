@@ -46,22 +46,48 @@ trait ParametersResolverTrait
     protected array $arguments = [];
 
     /**
+     * @deprecated Use method bindArguments(). This method will remove next major realise.
      * @phan-suppress PhanTypeMismatchReturn
      * @phan-suppress PhanUnreferencedPublicMethod
      */
     public function addArgument(int|string $name, mixed $value): static
     {
+        @\trigger_error('Use method bindArguments(). This method will remove next major realise.', \E_USER_DEPRECATED);
+
         $this->arguments[$name] = $value;
 
         return $this;
     }
 
     /**
+     * @deprecated Use method bindArguments(). This method will remove next major realise.
      * @phan-suppress PhanTypeMismatchReturn
      */
     public function addArguments(array $arguments): static
     {
+        @\trigger_error('Use method bindArguments(). This method will remove next major realise.', \E_USER_DEPRECATED);
         $this->arguments = $arguments;
+
+        return $this;
+    }
+
+    /**
+     * @phan-suppress PhanUnreferencedPublicMethod
+     * @phan-suppress PhanTypeMismatchReturn
+     */
+    public function bindArguments(mixed ...$argument): static
+    {
+        $index = 0;
+        $this->arguments = [];
+
+        foreach ($argument as $name => $value) {
+            $key = \is_string($name)
+                ? $name
+                : $index;
+
+            $this->arguments[$key] = $value;
+            ++$index;
+        }
 
         return $this;
     }
@@ -235,6 +261,16 @@ trait ParametersResolverTrait
 
             foreach ($this->arguments as $name => $value) {
                 ++$argumentPosition;
+
+                if (\is_int($name) && $name > $countParameters) {
+                    throw new AutowireAttributeException(
+                        \sprintf(
+                            'Invalid input argument by index [%d]. Definition '.__CLASS__.' has arguments: "%s"',
+                            $name,
+                            \implode(', ', $parameters)
+                        )
+                    );
+                }
 
                 if (\is_string($name) && !\in_array($name, $parameters, true)) {
                     throw new AutowireAttributeException(
