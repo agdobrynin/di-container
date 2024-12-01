@@ -247,6 +247,17 @@ trait ParametersResolverTrait
     {
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
+            $hasVariadic = [] !== \array_filter($this->reflectionParameters, static fn (\ReflectionParameter $parameter) => $parameter->isVariadic());
+
+            if (!$hasVariadic && \count($this->arguments) > \count($parameters)) {
+                throw new AutowireAttributeException(
+                    \sprintf(
+                        'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
+                        \implode(', ', \array_keys($this->arguments)),
+                        \implode(', ', $parameters)
+                    )
+                );
+            }
 
             $argumentPosition = 0;
 
