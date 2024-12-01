@@ -46,14 +46,14 @@ trait ParametersResolverTrait
     protected array $arguments = [];
 
     /**
-     * @deprecated Use method bindArguments(). This method will remove next major realise.
+     * @deprecated Use method bindArguments(). This method will remove next major release.
      *
      * @phan-suppress PhanTypeMismatchReturn
      * @phan-suppress PhanUnreferencedPublicMethod
      */
     public function addArgument(int|string $name, mixed $value): static
     {
-        @\trigger_error('Use method bindArguments(). This method will remove next major realise.', \E_USER_DEPRECATED);
+        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
 
         $this->arguments[$name] = $value;
 
@@ -61,14 +61,14 @@ trait ParametersResolverTrait
     }
 
     /**
-     * @deprecated Use method bindArguments(). This method will remove next major realise.
+     * @deprecated Use method bindArguments(). This method will remove next major release.
      *
      * @phan-suppress PhanTypeMismatchReturn
      * @phan-suppress PhanUnreferencedPublicMethod
      */
     public function addArguments(array $arguments): static
     {
-        @\trigger_error('Use method bindArguments(). This method will remove next major realise.', \E_USER_DEPRECATED);
+        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
         $this->arguments = $arguments;
 
         return $this;

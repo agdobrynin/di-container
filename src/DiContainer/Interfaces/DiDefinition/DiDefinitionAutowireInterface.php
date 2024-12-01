@@ -18,7 +18,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      *
      * ⚠ This method replaces the previously defined argument with the same name.
      *
-     * @deprecated Use method bindArguments(). This method will remove next major realise.
+     * @deprecated Use method bindArguments(). This method will remove next major release.
      *
      * @param int|non-empty-string                                      $name
      * @param DiDefinitionAutowireInterface|DiDefinitionInterface|mixed $value
@@ -42,7 +42,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      *                                              // include DiDefinitionAutowireInterface.
      *       ]
      *
-     * @deprecated Use method bindArguments(). This method will remove next major realise.
+     * @deprecated Use method bindArguments(). This method will remove next major release.
      *
      * @param array<non-empty-string, mixed> $arguments
      *
