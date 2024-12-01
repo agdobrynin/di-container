@@ -26,7 +26,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
 
-    public function testUserDefinedArgumentBydiGetNonVariadicSuccess(): void
+    public function testUserDefinedArgumentBydiGetNonVariadicSuccessByName(): void
     {
         $fn = static fn (\ArrayIterator $iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -38,9 +38,9 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         ;
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->arguments = [
-            'iterator' => diGet('services.icon-iterator'),
-        ];
+        $this->bindArguments(
+            iterator: diGet('services.icon-iterator'),
+        );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -68,12 +68,12 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->arguments = [
-            'iterator' => [
+        $this->bindArguments(
+            iterator: [
                 diGet('services.icon-iterator.two'),
                 diGet('services.icon-iterator.one'),
             ],
-        ];
+        );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -86,7 +86,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->assertEquals(['🔥'], $res[1]->getArrayCopy());
     }
 
-    public function testUserDefinedArgumentByOnediGetVariadic(): void
+    public function testUserDefinedArgumentByOnediGetVariadicByIndex(): void
     {
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -105,9 +105,9 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->arguments = [
-            'iterator' => diGet('services.icon-iterator'),
-        ];
+        $this->bindArguments(
+            diGet('services.icon-iterator')
+        );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 

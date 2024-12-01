@@ -29,7 +29,7 @@ class DependencyOneTest extends TestCase
             // класс SplFileInfo создать единожды и всегда возвращать тот же объект
             diAutowire(\SplFileInfo::class, isSingleton: true)
                 // с аргументом $filename в конструкторе.
-                ->addArgument('filename', __FILE__),
+                ->bindArguments(filename: __FILE__),
         ];
 
         $config = new DiContainerConfig();

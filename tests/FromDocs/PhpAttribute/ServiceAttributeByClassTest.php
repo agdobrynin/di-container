@@ -30,7 +30,7 @@ class ServiceAttributeByClassTest extends TestCase
     {
         $definitions = [
             diAutowire(CustomLogger::class)
-                ->addArgument('file', '/var/log/app.log'),
+                ->bindArguments(file: '/var/log/app.log'),
         ];
 
         $container = (new DiContainerFactory())->make($definitions);

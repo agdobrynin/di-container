@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\InputArgumentNotFoundException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
@@ -45,12 +46,30 @@ trait ParametersResolverTrait
     protected array $arguments = [];
 
     /**
+     * @deprecated Use method bindArguments(). This method will remove next major release.
+     *
      * @phan-suppress PhanTypeMismatchReturn
      * @phan-suppress PhanUnreferencedPublicMethod
      */
-    public function addArgument(string $name, mixed $value): static
+    public function addArgument(int|string $name, mixed $value): static
     {
+        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
+
         $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @deprecated Use method bindArguments(). This method will remove next major release.
+     *
+     * @phan-suppress PhanTypeMismatchReturn
+     * @phan-suppress PhanUnreferencedPublicMethod
+     */
+    public function addArguments(array $arguments): static
+    {
+        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
+        $this->arguments = $arguments;
 
         return $this;
     }
@@ -58,9 +77,13 @@ trait ParametersResolverTrait
     /**
      * @phan-suppress PhanTypeMismatchReturn
      */
-    public function addArguments(array $arguments): static
+    public function bindArguments(mixed ...$argument): static
     {
-        $this->arguments = $arguments;
+        $this->arguments = [];
+
+        foreach ($argument as $name => $value) {
+            $this->arguments[$name] = $value;
+        }
 
         return $this;
     }
@@ -80,8 +103,8 @@ trait ParametersResolverTrait
         $dependencies = [];
 
         foreach ($this->reflectionParameters as $parameter) {
-            if (\array_key_exists($parameter->name, $this->arguments)) {
-                $argumentDefinition = $this->arguments[$parameter->name];
+            try {
+                $argumentDefinition = $this->getInputArgument($parameter);
 
                 if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
                     self::$variadicPosition = 0;
@@ -103,6 +126,7 @@ trait ParametersResolverTrait
                 \array_push($dependencies, ...$vals);
 
                 continue;
+            } catch (InputArgumentNotFoundException) {
             }
 
             $autowireException = null;
@@ -217,8 +241,9 @@ trait ParametersResolverTrait
     {
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
+            $hasVariadic = [] !== \array_filter($this->reflectionParameters, static fn (\ReflectionParameter $parameter) => $parameter->isVariadic());
 
-            if (\count($this->arguments) > \count($parameters)) {
+            if (!$hasVariadic && \count($this->arguments) > \count($parameters)) {
                 throw new AutowireAttributeException(
                     \sprintf(
                         'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
@@ -233,7 +258,7 @@ trait ParametersResolverTrait
             foreach ($this->arguments as $name => $value) {
                 ++$argumentPosition;
 
-                if (!\in_array($name, $parameters, true)) {
+                if (\is_string($name) && !\in_array($name, $parameters, true)) {
                     throw new AutowireAttributeException(
                         \sprintf(
                             'Invalid input argument name "%s" at position #%d. Definition '.__CLASS__.' has arguments: "%s"',
@@ -245,5 +270,18 @@ trait ParametersResolverTrait
                 }
             }
         }
+    }
+
+    protected function getInputArgument(\ReflectionParameter $parameter): mixed
+    {
+        if (\array_key_exists($parameter->name, $this->arguments)) {
+            return $this->arguments[$parameter->name];
+        }
+
+        if (\array_key_exists($parameter->getPosition(), $this->arguments)) {
+            return $this->arguments[$parameter->getPosition()];
+        }
+
+        throw new InputArgumentNotFoundException();
     }
 }
