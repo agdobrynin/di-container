@@ -247,32 +247,11 @@ trait ParametersResolverTrait
     {
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
-            $countParameters = \count($parameters);
-
-            if (\count($this->arguments) > $countParameters) {
-                throw new AutowireAttributeException(
-                    \sprintf(
-                        'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
-                        \implode(', ', \array_keys($this->arguments)),
-                        \implode(', ', $parameters)
-                    )
-                );
-            }
 
             $argumentPosition = 0;
 
             foreach ($this->arguments as $name => $value) {
                 ++$argumentPosition;
-
-                if (\is_int($name) && $name > $countParameters) {
-                    throw new AutowireAttributeException(
-                        \sprintf(
-                            'Invalid input argument by index [%d]. Definition '.__CLASS__.' has arguments: "%s"',
-                            $name,
-                            \implode(', ', $parameters)
-                        )
-                    );
-                }
 
                 if (\is_string($name) && !\in_array($name, $parameters, true)) {
                     throw new AutowireAttributeException(
