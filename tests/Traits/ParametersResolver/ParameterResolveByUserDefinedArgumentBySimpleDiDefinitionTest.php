@@ -91,15 +91,27 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]);
     }
 
-    public function testUserDefinedArgumentByDefinitionValue(): void
+    public function testUserDefinedArgumentByDefinitionValueByName(): void
     {
         $fn = static fn (array $words) => $words;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         // 🚩 test data
-        $this->arguments = [
-            'words' => new DiDefinitionValue(['hello', 'world', '!']),
-        ];
+        $this->bindArguments(words: new DiDefinitionValue(['hello', 'world', '!']));
+
+        $res = \call_user_func_array($fn, $this->resolveParameters());
+
+        $this->assertCount(3, $res);
+        $this->assertEquals(['hello', 'world', '!'], $res);
+    }
+
+    public function testUserDefinedArgumentByDefinitionValueByIndex(): void
+    {
+        $fn = static fn (array $words) => $words;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        // 🚩 test data
+        $this->bindArguments(new DiDefinitionValue(['hello', 'world', '!']));
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 

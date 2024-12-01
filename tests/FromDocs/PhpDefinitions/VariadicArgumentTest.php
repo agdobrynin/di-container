@@ -33,9 +33,9 @@ class VariadicArgumentTest extends TestCase
         $definition = [
             'ruleC' => diAutowire(RuleC::class),
             diAutowire(RuleGenerator::class)
-                ->addArgument(
-                    name: 'inputRule', // имя аргумента в конструкторе
-                    value: [ // <-- обернуть параметры в массив для variadic типов если их несколько.
+                ->bindArguments(
+                    inputRule: // имя аргумента в конструкторе
+                    [ // <-- обернуть параметры в массив для variadic типов если их несколько.
                         diAutowire(RuleB::class),
                         diAutowire(RuleA::class),
                         diGet('ruleC'), // <-- получение по ссылке
