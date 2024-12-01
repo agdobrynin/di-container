@@ -34,9 +34,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->setContainer($mockContainer);
 
         // 🚩 test data
-        $this->arguments = [
-            'iterator' => ['aaa', 'bbb', 'ccc'],
-        ];
+        $this->bindArguments(iterator: ['aaa', 'bbb', 'ccc']);
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -53,12 +51,12 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->setContainer($mockContainer);
 
         // 🚩 test data
-        $this->arguments = [
-            'iterator' => [
+        $this->bindArguments(
+            iterator: [
                 ['aaa', 'bbb', 'ccc'],
                 ['ddd', 'eee', 'fff'],
-            ],
-        ];
+            ]
+        );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -68,7 +66,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]);
     }
 
-    public function testUserDefinedArgumentByOneDiValueVariadicSuccess(): void
+    public function testUserDefinedArgumentByIndexVariadicSuccess(): void
     {
         $fn = static fn (iterable ...$iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -78,9 +76,10 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->setContainer($mockContainer);
 
         // 🚩 test data
-        $this->arguments = [
-            'iterator' => [['aaa', 'bbb', 'ccc'], ['ddd', 'eee', 'fff']],
-        ];
+        $this->bindArguments(
+            ['aaa', 'bbb', 'ccc'],
+            ['ddd', 'eee', 'fff']
+        );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
