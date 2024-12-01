@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -60,7 +61,7 @@ class AddArgumentTest extends TestCase
         $this->resolveParameters();
     }
 
-    public function testAddArgumentsFailByName(): void
+    public function testAddArgumentsByIndex(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -69,10 +70,7 @@ class AddArgumentTest extends TestCase
             [],
         ]);
 
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Invalid input argument name "0"');
-
-        $this->resolveParameters();
+        $this->assertEquals([], \call_user_func_array($fn, $this->resolveParameters()));
     }
 
     public function testAddArgumentFailByCount(): void
@@ -93,15 +91,18 @@ class AddArgumentTest extends TestCase
         $fn = static fn (string $value, SuperClass $class) => 'ok';
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->never())
+            ->method('get')
+        ;
+        $this->setContainer($mockContainer);
+
         $this->addArguments([
-            'value' => 'value',
+            'value',
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
         ]);
 
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Invalid input argument name "0" at position #2');
-
-        $this->resolveParameters();
+        $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
     }
 
     public function testAddArgumentsSuccess(): void
