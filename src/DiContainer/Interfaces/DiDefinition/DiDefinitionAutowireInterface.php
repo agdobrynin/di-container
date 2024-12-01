@@ -35,16 +35,6 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      */
     public function addArguments(mixed ...$argument): static;
 
-    /**
-     * Arguments provided by the user added by name or index.
-     * User can set addArgument(var1: 'value 1', var2: 'value 2') equals ['var1' => 'value 1', 'var2' => 'value 2'].
-     *
-     * ⚠ This method replaces all previously defined arguments.
-     *
-     * @return $this
-     */
-    public function bindArguments(mixed ...$argument): static;
-
     public function isSingleton(): ?bool;
 
     public function setUseAttribute(?bool $useAttribute): static;
