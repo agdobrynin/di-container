@@ -40,7 +40,7 @@ class DiReferenceTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testDiGet(string $envValue, string $expectFile): void
+    public function testdiGet(string $envValue, string $expectFile): void
     {
         \putenv('APP_TEST_FILE');
         \putenv('APP_TEST_FILE='.$envValue);
@@ -64,7 +64,7 @@ class DiReferenceTest extends TestCase
         $this->assertEquals($expectFile, $container->get(\SplFileInfo::class)->getFilename());
     }
 
-    public function testDiGetByClasses(): void
+    public function testdiGetByClasses(): void
     {
         $definitions = [
             'data' => ['user1', 'user2'],
@@ -77,10 +77,10 @@ class DiReferenceTest extends TestCase
                 ->addArgument('type', 'Some value'),
             diAutowire(MyEmployers::class)
                 // добавить много аргументов за один раз
-                ->addArguments(
-                    employers: diGet('data'),
-                    type: 'Other value',
-                ),
+                ->addArguments([
+                    'employers' => diGet('data'),
+                    'type' => 'Other value',
+                ]),
         ];
 
         $container = (new DiContainerFactory())->make($definitions);

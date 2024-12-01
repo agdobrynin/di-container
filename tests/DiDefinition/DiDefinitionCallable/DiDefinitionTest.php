@@ -68,7 +68,7 @@ class DiDefinitionTest extends TestCase
     public function testCallableMethodArguments(): void
     {
         $def = (new DiDefinitionCallable(CallableArgument::class))
-            ->addArguments(name: 'ok')
+            ->addArguments(['name' => 'ok'])
         ;
         $def->setContainer(new DiContainer(config: new DiContainerConfig()));
 

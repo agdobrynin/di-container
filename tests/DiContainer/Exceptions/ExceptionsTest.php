@@ -94,7 +94,10 @@ class ExceptionsTest extends TestCase
     {
         $container = (new DiContainerFactory())->make([
             diAutowire(DependencyClass::class)
-                ->addArguments(value: 'ok', value2: 'ok'),
+                ->addArguments([
+                    'value' => 'Ok',
+                    'value2' => 'Ok',
+                ]),
         ]);
 
         $this->expectException(ContainerExceptionInterface::class);
