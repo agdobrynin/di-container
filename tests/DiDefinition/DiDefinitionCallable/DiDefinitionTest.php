@@ -42,7 +42,7 @@ class DiDefinitionTest extends TestCase
     {
         $container = new DiContainer([
             diAutowire(MainClass::class)
-                ->addArgument('serviceName', 'someServiceName'),
+                ->bindArguments(serviceName: 'someServiceName'),
         ]);
 
         $definition = (new DiDefinitionCallable([MainClass::class, 'getServiceName']))
@@ -58,7 +58,7 @@ class DiDefinitionTest extends TestCase
     public function testCallableMethodArgument(): void
     {
         $def = (new DiDefinitionCallable(CallableArgument::class))
-            ->addArgument('name', 'ok')
+            ->bindArguments('ok')
         ;
         $def->setContainer(new DiContainer(config: new DiContainerConfig()));
 
@@ -68,7 +68,7 @@ class DiDefinitionTest extends TestCase
     public function testCallableMethodArguments(): void
     {
         $def = (new DiDefinitionCallable(CallableArgument::class))
-            ->addArguments(['name' => 'ok'])
+            ->bindArguments(name: 'ok')
         ;
         $def->setContainer(new DiContainer(config: new DiContainerConfig()));
 

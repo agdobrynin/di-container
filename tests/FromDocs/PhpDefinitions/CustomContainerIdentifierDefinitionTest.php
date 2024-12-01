@@ -26,9 +26,9 @@ class CustomContainerIdentifierDefinitionTest extends TestCase
     {
         $definitions = [
             'file-1' => diAutowire(\FilesystemIterator::class, isSingleton: true)
-                ->addArgument('directory', __DIR__.'/Fixtures'),
+                ->bindArguments(directory: __DIR__.'/Fixtures'), // bind by name
             'file-2' => diAutowire(\FilesystemIterator::class, isSingleton: false)
-                ->addArgument('directory', __DIR__.'/Fixtures'),
+                ->bindArguments(__DIR__.'/Fixtures'), // bind by index
         ];
 
         $container = (new DiContainerFactory())->make($definitions);

@@ -56,7 +56,7 @@ class DiReferenceTest extends TestCase
                 isSingleton: true
             ),
             diAutowire(\SplFileInfo::class)
-                ->addArgument('filename', diGet('services.env')), // ссылка на определение
+                ->bindArguments(filename: diGet('services.env')), // ссылка на определение
         ];
 
         $container = (new DiContainerFactory())->make($definitions);
@@ -73,14 +73,17 @@ class DiReferenceTest extends TestCase
 
             // внедрение зависимости аргумента по ссылке на контейнер-id
             diAutowire(MyUsers::class)
-                ->addArgument('users', diGet('data'))
-                ->addArgument('type', 'Some value'),
+                // unsorted bind by name
+                ->bindArguments(
+                    type: 'Some value',
+                    users: diGet('data')
+                ),
             diAutowire(MyEmployers::class)
-                // добавить много аргументов за один раз
-                ->addArguments([
-                    'employers' => diGet('data'),
-                    'type' => 'Other value',
-                ]),
+                // bind by index
+                ->bindArguments(
+                    diGet('data'),
+                    'Other value',
+                ),
         ];
 
         $container = (new DiContainerFactory())->make($definitions);

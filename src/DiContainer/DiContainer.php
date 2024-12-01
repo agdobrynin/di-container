@@ -136,7 +136,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     {
         try {
             return (new DiDefinitionCallable($definition))
-                ->addArguments($arguments)
+                ->bindArguments(...$arguments)
                 ->setContainer($this)
                 ->setUseAttribute($this->config?->isUseAttribute())
                 ->invoke()

@@ -52,7 +52,8 @@ use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
     diAutowire(\PDO::class)
-        ->addArgument('dsn', 'sqlite:/tmp/my.db')
+        // Подставить в параметр $dsn в конструкторе.
+        ->bindArguments(dsn: 'sqlite:/tmp/my.db')
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -85,9 +86,9 @@ use function Kaspi\DiContainer\diAutowire;
 
 return [
     'services.pdo-prod' => diAutowire(PDO::class)
-        ->addArgument('dsn', 'sqlite:/data/prod/db.db'),
+        ->bindArguments(dsn: 'sqlite:/data/prod/db.db'),
     'services.pdo-local' => diAutowire(PDO::class)
-        ->addArgument('dsn', 'sqlite:/tmp/db.db'),
+        ->bindArguments(dsn: 'sqlite:/tmp/db.db'),
 ];
 ```
 ```php
@@ -309,11 +310,12 @@ class RuleGenerator {
 // определения для контейнера
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 
 $definition = [
     diAutowire(App\Rules\RuleA::class)
-        ->addArgument('dependency', '...'),
+        ->bindArguments('dependency'),
 
     // ...
 
@@ -389,7 +391,8 @@ use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
     diAutowire(App\CustomLogger::class)
-        ->addArgument('file', '/var/log/app.log')
+        // 🌞 подставить в параметр $file в конструкторе.
+        ->bindArguments(file: '/var/log/app.log')
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
