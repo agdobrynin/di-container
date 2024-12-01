@@ -12,7 +12,7 @@ $definitions = [
     // класс PDO создать единожды и всегда возвращать тот же объект
     diAutowire(\PDO::class, isSingleton: true)
         // с аргументом $dsn в конструкторе.
-        ->addArgument('dsn', 'sqlite:/tmp/my.db'),
+        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
 ];
 
 $config = new DiContainerConfig();
@@ -81,9 +81,16 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowireI
 - `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
 
 > 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
-> Можно указать аргументы для "определения" через методы:
-> - `addArgument(string $name, mixed $value)`
-> - `addArguments(array $arguments)`
+> Можно указать аргументы для "определения" через метод:
+> - `bindArguments(mixed ...$argument)`
+> 
+> ❗ метод перезаписывает ранее определенные аргументы.
+> 
+> Можно указывать имена параметров используя именованные аргументы
+> ```php
+> // имена параметров $var1 = 'value 1', $var2 = 'value 2' 
+> bindArguments(var1: 'value 1', var2: 'value 2')
+> ```
 
 При конфигурировании если не нужен идентификатор контейнера отличный от имени определения, то можно указать так:
 
@@ -93,24 +100,26 @@ use function Kaspi\DiContainer\diAutowire;
 $definitions = [
     // идентификатор контейнера сформируется из аргумента `$definition`
     diAutowire(\PDO::class)
-        ->addArgument('dsn', 'sqlite:/tmp/my.db'),
+        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
     )
 ];
 // эквивалентно
 $definitions = [
     \PDO::class => diAutowire(\PDO::class)
-        ->addArgument('dsn', 'sqlite:/tmp/my.db'),
+        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
 ];
 ```
 Если необходим другой идентификатор, то можно указывать так:
 ```php
+use function Kaspi\DiContainer\diAutowire;
+
 $definitions = [
     // $container->get('pdo-in-tmp-file')
     'pdo-in-tmp-file' => diAutowire(\PDO::class)
-        ->addArgument('dsn', 'sqlite:/tmp/my.db'),
+        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
     // $container->get('pdo-in-memory')
     'pdo-in-memory' => diAutowire(\PDO::class)
-        ->addArgument('dsn', 'sqlite::memory:'),
+        ->bindArguments(dsn: 'sqlite::memory:'),
 ];
 ```
 ##### diCallable - получение результата обработки `callable` типа.
@@ -126,9 +135,16 @@ diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefi
 - `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
 
 > 🔌 Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
-> Можно указать аргументы для "определения" через методы:
-> - `addArgument(string $name, mixed $value)`
-> - `addArguments(array $arguments)`
+> Можно указать аргументы для "определения" через метод:
+> - `bindArguments(mixed ...$argument)`
+>
+> ❗ метод перезаписывает ранее определенные аргументы.
+> 
+> Можно указывать имена параметров используя именованные аргументы
+> ```php
+> // имена параметров $var1 = 'value 1', $var2 = 'value 2' 
+> bindArguments(var1: 'value 1', var2: 'value 2')
+> ```
 
 - 🚩 При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
 
@@ -197,7 +213,7 @@ $definitions = [
     // ...
 
     diAutowire(\PDO::class)
-        ->addArgument('dsn', diGet('services.env-dsn')), // ссылка на определение
+        ->bindArguments(dsn: diGet('services.env-dsn')), // ссылка на определение
 ];
 ```
 
@@ -234,14 +250,9 @@ $definitions = [
     
     // внедрение зависимости аргумента по ссылке на контейнер-id
     diAutowire(App\MyUsers::class)
-        ->addArgument('users', diGet('data'))
-        ->addArgument('type', 'Some value'),
+        ->bindArguments(users: diGet('data'), type: 'Some value')
     diAutowire(App\MyEmployers::class)
-        // добавить много аргументов за один раз
-        ->addArguments([
-            'employers' => diGet('data'),
-            'type' => 'Other value',
-        ]),
+        ->bindArguments(employers: diGet('data'), type: 'Other value'),
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -358,7 +369,9 @@ use function Kaspi\DiContainer\diAutowire;
 
 $definition = [
     ClassInterface::class => diAutowire(ClassFirst::class)
-        ->addArgument('file', '/var/log/app.log')
+        // без указания именованного аргумента,
+        // подставит для конструктора в параметр с индексом 0.
+        ->bindArguments('/var/log/app.log')
 ];
 
 $container = (new DiContainerFactory())->make($definition);
@@ -379,7 +392,7 @@ use function Kaspi\DiContainer\{diAutowire, diGet};
 
 $classesDefinitions = [
     diAutowire(ClassFirst::class)
-        ->addArgument('file', '/var/log/app.log')
+        ->bindArguments(file: '/var/log/app.log')
 ];
 
 // ... many definitions ...
@@ -473,7 +486,7 @@ use function Kaspi\DiContainer\{diAutowire, diCallable};
 
 $defServices = [
     diAutowire(App\ServiceLocation::class)
-        ->addArguments(['city' => 'Vice city']),
+        ->bindArguments(city: 'Vice city'),
 ];
 
 // ... many definitions ...
@@ -531,9 +544,9 @@ use function Kaspi\DiContainer\{diAutowire, diGet};
 $definition = [
     'ruleC' => diAutowire(App\Rules\RuleC::class),
     diAutowire(App\Rules\RuleGenerator::class)
-        ->addArgument(
-            name: 'inputRule', // имя аргумента в конструкторе
-            value: [ // <-- обернуть параметры в массив для variadic типов если их несколько.
+        ->bindArguments(
+            // имя аргумента в конструкторе
+            inputRule: [ // <-- обернуть параметры в массив для variadic типов если их несколько.
                 diAutowire(App\Rules\RuleB::class),
                 diAutowire(App\Rules\RuleA::class),
                 diGet('ruleC'), // <-- получение по ссылке
@@ -550,6 +563,16 @@ assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
+> ⛏ Можно не указывать имя аргумента для метода `bindArguments`, тогда определение будет выглядеть так:
+>```php
+> // Передать три аргумента в конструктор класс
+> diAutowire(App\Rules\RuleGenerator::class)
+>   ->bindArguments(
+>       diAutowire(App\Rules\RuleB::class),
+>       diAutowire(App\Rules\RuleA::class),
+>       diGet('ruleC'), // <-- получение по ссылке
+>   );
+> ```
 
 ## Примеры использования для конфигурирования:
 
@@ -581,9 +604,9 @@ use function Kaspi\DiContainer\diAutowire;
 
 $definition = [
     App\SumInterface::class => diAutowire(App\Sum::class)
-        ->addArgument('init', 50),
+        ->bindArguments(init: 50),
     diAutowire(App\Sum::class)
-        ->addArgument('init', 10),
+        ->bindArguments(init: 10),
 ];
 
 $c = (new DiContainerFactory())->make($definition);

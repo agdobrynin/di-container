@@ -47,6 +47,7 @@ trait ParametersResolverTrait
 
     /**
      * @deprecated Use method bindArguments(). This method will remove next major realise.
+     *
      * @phan-suppress PhanTypeMismatchReturn
      * @phan-suppress PhanUnreferencedPublicMethod
      */
@@ -61,7 +62,9 @@ trait ParametersResolverTrait
 
     /**
      * @deprecated Use method bindArguments(). This method will remove next major realise.
+     *
      * @phan-suppress PhanTypeMismatchReturn
+     * @phan-suppress PhanUnreferencedPublicMethod
      */
     public function addArguments(array $arguments): static
     {
@@ -72,7 +75,6 @@ trait ParametersResolverTrait
     }
 
     /**
-     * @phan-suppress PhanUnreferencedPublicMethod
      * @phan-suppress PhanTypeMismatchReturn
      */
     public function bindArguments(mixed ...$argument): static

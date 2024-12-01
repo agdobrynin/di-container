@@ -52,7 +52,11 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 
     /**
      * Arguments provided by the user added by name or index.
-     * User can set addArgument(var1: 'value 1', var2: 'value 2') equals ['var1' => 'value 1', 'var2' => 'value 2'].
+     * User can set
+     *
+     *      bindArguments(var1: 'value 1', var2: 'value 2')
+     *      // equals
+     *      ['var1' => 'value 1', 'var2' => 'value 2'].
      *
      * ⚠ This method replaces all previously defined arguments.
      *
