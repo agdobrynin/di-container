@@ -242,8 +242,9 @@ trait ParametersResolverTrait
     {
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
+            $countParameters = \count($parameters);
 
-            if (\count($this->arguments) > \count($parameters)) {
+            if (\count($this->arguments) > $countParameters) {
                 throw new AutowireAttributeException(
                     \sprintf(
                         'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
