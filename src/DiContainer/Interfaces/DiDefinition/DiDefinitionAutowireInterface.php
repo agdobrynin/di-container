@@ -52,7 +52,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
 
     /**
      * Arguments provided by the user added by name or index.
-     * User can set
+     * User can set.
      *
      *      bindArguments(var1: 'value 1', var2: 'value 2')
      *      // bind parameters by name $var1 = 'value 1', $var2 = 'value 2'
