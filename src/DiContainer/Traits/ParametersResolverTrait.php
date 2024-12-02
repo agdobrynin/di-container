@@ -41,7 +41,7 @@ trait ParametersResolverTrait
     /**
      * User defined parameters by parameter name.
      *
-     * @var array<string, mixed>
+     * @var array<int|string, mixed>
      */
     protected array $arguments = [];
 
