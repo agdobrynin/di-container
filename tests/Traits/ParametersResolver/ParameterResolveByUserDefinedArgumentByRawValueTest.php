@@ -62,25 +62,26 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
     public function testUserDefinedArgumentAsArrayVariadicByIndexSuccess(): void
     {
-        $fn = static fn (iterable ...$iterator) => $iterator;
+        $fn = static fn (string $val, iterable ...$iterator) => [$val, $iterator];
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockContainer->expects($this->never())->method('get');
+        $mockContainer->expects(self::never())->method('get');
         $this->setContainer($mockContainer);
 
         // 🚩 test data
-        $this->bindArguments([
+        $this->bindArguments(
+            'my way',
             ['aaa', 'bbb', 'ccc'],
             ['ddd', 'eee', 'fff'],
-        ]);
+        );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        [$str ,$iter] = \call_user_func_array($fn, $this->resolveParameters());
 
-        $this->assertCount(2, $res);
-
-        $this->assertEquals(['aaa', 'bbb', 'ccc'], $res[0]);
-        $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]);
+        $this->assertEquals('my way', $str);
+        $this->assertCount(2, $iter);
+        $this->assertEquals(['aaa', 'bbb', 'ccc'], $iter[0]);
+        $this->assertEquals(['ddd', 'eee', 'fff'], $iter[1]);
     }
 
     public function testUserDefinedArgumentAsArrayVariadicByNameSuccess(): void
@@ -136,7 +137,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
 
-        // 🚩 test data
+        // 🚩 test data, unsorted parameter names
         $this->bindArguments(word: ['aaa', 'bbb', 'ccc'], numbers: [1_000, 10_000]);
 
         [$numbers, $word] = \call_user_func_array($fn, $this->resolveParameters());

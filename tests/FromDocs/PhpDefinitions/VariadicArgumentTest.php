@@ -28,7 +28,7 @@ use function Kaspi\DiContainer\diGet;
  */
 class VariadicArgumentTest extends TestCase
 {
-    public function testVariadicArgument(): void
+    public function testVariadicArgumentByName(): void
     {
         $definition = [
             'ruleC' => diAutowire(RuleC::class),
@@ -47,6 +47,28 @@ class VariadicArgumentTest extends TestCase
 
         $ruleGenerator = $container->get(RuleGenerator::class);
 
+        $this->assertInstanceOf(RuleB::class, $ruleGenerator->getRules()[0]);
+        $this->assertInstanceOf(RuleA::class, $ruleGenerator->getRules()[1]);
+        $this->assertInstanceOf(RuleC::class, $ruleGenerator->getRules()[2]);
+    }
+
+    public function testVariadicArgumentByIndex(): void
+    {
+        $definition = [
+            'ruleC' => diAutowire(RuleC::class),
+            diAutowire(RuleGenerator::class)
+                ->bindArguments(
+                    diAutowire(RuleB::class),
+                    diAutowire(RuleA::class),
+                    diGet('ruleC'), // <-- получение по ссылке
+                ),
+        ];
+
+        $container = (new DiContainerFactory())->make($definition);
+
+        $ruleGenerator = $container->get(RuleGenerator::class);
+
+        $this->assertCount(3, $ruleGenerator->getRules());
         $this->assertInstanceOf(RuleB::class, $ruleGenerator->getRules()[0]);
         $this->assertInstanceOf(RuleA::class, $ruleGenerator->getRules()[1]);
         $this->assertInstanceOf(RuleC::class, $ruleGenerator->getRules()[2]);

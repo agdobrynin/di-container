@@ -512,7 +512,8 @@ $container->get('doSomething'); // (object) ['name' => 'John Doe', 'age' => 32, 
 
 ## Разрешение аргументов переменной длины
 
-Каждое определение для `variadic` аргумента необходимо объявлять как массив `[]` если нужно разрешить несколько зависимостей.
+Каждый аргумент для `variadic` параметра необходимо объявлять
+как массив `[]` если используется передача по имени.
 
 ```php
 // Объявления классов
@@ -545,12 +546,13 @@ $definition = [
     'ruleC' => diAutowire(App\Rules\RuleC::class),
     diAutowire(App\Rules\RuleGenerator::class)
         ->bindArguments(
-            // имя аргумента в конструкторе
-            inputRule: [ // <-- обернуть параметры в массив для variadic типов если их несколько.
-                diAutowire(App\Rules\RuleB::class),
-                diAutowire(App\Rules\RuleA::class),
-                diGet('ruleC'), // <-- получение по ссылке
-            ], // <-- обернуть параметры в массив если их несколько.            
+            // имя параметра $inputRule в конструкторе
+            inputRule:
+                [ // <-- обернуть параметры в массив для variadic типов если их несколько.
+                    diAutowire(App\Rules\RuleB::class),
+                    diAutowire(App\Rules\RuleA::class),
+                    diGet('ruleC'), // <-- получение по ссылке
+                ], // <-- обернуть параметры в массив если их несколько.            
         )
 ];
 
@@ -563,19 +565,17 @@ assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
-> ⛏ Можно не указывать имя аргумента для метода `bindArguments`, тогда определение будет выглядеть так:
->```php
-> // Передать три аргумента в конструктор класс
-> diAutowire(App\Rules\RuleGenerator::class)
->   // Передать в параметр с индексом 0 значение.
->   ->bindArguments(
->       [ // <-- обернуть параметры в массив для variadic типов если их несколько.
->           diAutowire(App\Rules\RuleB::class),
->           diAutowire(App\Rules\RuleA::class),
->           diGet('ruleC'), // <-- получение по ссылке
->       ] // <-- обернуть параметры в массив если их несколько.
->   );
-> ```
+⛏ Если не использовать имя параметра то передавать аргументы по индексу в конструкторе можно просто перечисляя нужные определения:
+```php
+ // Передать три аргумента в конструктор класс
+ diAutowire(App\Rules\RuleGenerator::class)
+   // Передать в параметр с индексом 0 значение.
+   ->bindArguments(
+       diAutowire(App\Rules\RuleB::class),
+       diAutowire(App\Rules\RuleA::class),
+       diGet('ruleC'), // <-- получение по ссылке
+   );
+```
 
 ## Примеры использования для конфигурирования:
 

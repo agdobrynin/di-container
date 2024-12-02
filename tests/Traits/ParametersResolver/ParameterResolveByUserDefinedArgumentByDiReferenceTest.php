@@ -48,13 +48,13 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->assertEquals(['🚀', '🔥'], $res->getArrayCopy());
     }
 
-    public function testUserDefinedArgumentByManydiGetVariadic(): void
+    public function testUserDefinedArgumentByManydiGetVariadicByName(): void
     {
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockContainer->expects($this->atMost(2))
+        $mockContainer->expects(self::exactly(2))
             ->method('get')
             ->with($this->logicalOr(
                 'services.icon-iterator.one',
@@ -86,13 +86,49 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->assertEquals(['🔥'], $res[1]->getArrayCopy());
     }
 
+    public function testUserDefinedArgumentByManydiGetVariadicByIndex(): void
+    {
+        $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects(self::exactly(2))
+            ->method('get')
+            ->with(self::logicalOr(
+                'services.icon-iterator.two',
+                'services.icon-iterator.one'
+            ))
+            ->willReturn(
+                new \ArrayIterator(array: ['🚀']),
+                new \ArrayIterator(array: ['🔥']),
+            )
+        ;
+
+        $this->setContainer($mockContainer);
+        // 🚩 test data
+        $this->bindArguments(
+            diGet('services.icon-iterator.two'),
+            diGet('services.icon-iterator.one'),
+        );
+
+        $res = \call_user_func_array($fn, $this->resolveParameters());
+
+        $this->assertCount(2, $res);
+
+        $this->assertInstanceOf(\ArrayIterator::class, $res[0]);
+        $this->assertEquals(['🚀'], $res[0]->getArrayCopy());
+
+        $this->assertInstanceOf(\ArrayIterator::class, $res[1]);
+        $this->assertEquals(['🔥'], $res[1]->getArrayCopy());
+    }
+
     public function testUserDefinedArgumentByOnediGetVariadicByIndex(): void
     {
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockContainer->expects($this->atMost(2))
+        $mockContainer->expects(self::once())
             ->method('get')
             ->with('services.icon-iterator')
             ->willReturn(
