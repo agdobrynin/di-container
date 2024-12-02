@@ -275,8 +275,25 @@ trait ParametersResolverTrait
             return $this->arguments[$parameter->name];
         }
 
-        if (\array_key_exists($parameter->getPosition(), $this->arguments)) {
+        if (!$parameter->isVariadic() && \array_key_exists($parameter->getPosition(), $this->arguments)) {
             return $this->arguments[$parameter->getPosition()];
+        }
+
+        if ($parameter->isVariadic() && \array_key_exists($parameter->getPosition(), $this->arguments)) {
+            $variadicPosition = $parameter->getPosition();
+
+            if (!\array_key_exists($variadicPosition + 1, $this->arguments)) {
+                return $this->arguments[$variadicPosition];
+            }
+
+            $values = [];
+
+            do {
+                $values[] = $this->arguments[$variadicPosition];
+                ++$variadicPosition;
+            } while (\array_key_exists($variadicPosition, $this->arguments));
+
+            return $values;
         }
 
         throw new InputArgumentNotFoundException();
