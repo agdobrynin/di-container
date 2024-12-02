@@ -26,6 +26,7 @@ trait ParametersResolverTrait
     use PsrContainerTrait;
     use UseAttributeTrait;
 
+    protected static InputArgumentNotFoundException $argumentNotFoundException;
     protected static int $variadicPosition = 0;
 
     /**
@@ -292,6 +293,6 @@ trait ParametersResolverTrait
             return $values;
         }
 
-        throw new InputArgumentNotFoundException();
+        throw self::$argumentNotFoundException ??= new InputArgumentNotFoundException();
     }
 }
