@@ -79,11 +79,7 @@ trait ParametersResolverTrait
      */
     public function bindArguments(mixed ...$argument): static
     {
-        $this->arguments = [];
-
-        foreach ($argument as $name => $value) {
-            $this->arguments[$name] = $value;
-        }
+        $this->arguments = $argument;
 
         return $this;
     }
