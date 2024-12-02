@@ -94,9 +94,9 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with($this->logicalOr(
-                'services.icon-iterator.one',
-                'services.icon-iterator.two'
+            ->with(self::logicalOr(
+                'services.icon-iterator.two',
+                'services.icon-iterator.one'
             ))
             ->willReturn(
                 new \ArrayIterator(array: ['🚀']),
