@@ -101,14 +101,13 @@ trait ParametersResolverTrait
         $this->validateInputArguments();
 
         $dependencies = [];
+        self::$variadicPosition = 0;
 
         foreach ($this->reflectionParameters as $parameter) {
             try {
                 $argumentDefinition = $this->getInputArgument($parameter);
 
                 if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
-                    self::$variadicPosition = 0;
-
                     foreach ($argumentDefinition as $definitionItem) {
                         $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
                         $dependencies[] = $resolvedVal;
@@ -134,8 +133,6 @@ trait ParametersResolverTrait
             try {
                 if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
                     && $injectAttribute->valid()) {
-                    self::$variadicPosition = 0;
-
                     foreach ($injectAttribute as $inject) {
                         $resolvedVal = $inject->getIdentifier()
                             ? $this->getContainer()->get($inject->getIdentifier())
@@ -278,8 +275,25 @@ trait ParametersResolverTrait
             return $this->arguments[$parameter->name];
         }
 
-        if (\array_key_exists($parameter->getPosition(), $this->arguments)) {
+        if (!$parameter->isVariadic() && \array_key_exists($parameter->getPosition(), $this->arguments)) {
             return $this->arguments[$parameter->getPosition()];
+        }
+
+        if ($parameter->isVariadic() && \array_key_exists($parameter->getPosition(), $this->arguments)) {
+            $variadicPosition = $parameter->getPosition();
+
+            if (!\array_key_exists($variadicPosition + 1, $this->arguments)) {
+                return $this->arguments[$variadicPosition];
+            }
+
+            $values = [];
+
+            do {
+                $values[] = $this->arguments[$variadicPosition];
+                ++$variadicPosition;
+            } while (\array_key_exists($variadicPosition, $this->arguments));
+
+            return $values;
         }
 
         throw new InputArgumentNotFoundException();
