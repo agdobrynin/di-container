@@ -266,6 +266,7 @@ trait ParametersResolverTrait
     protected function getArgumentNameOrIndexByParameter(\ReflectionParameter $parameter): false|int|string
     {
         return match (true) {
+            [] === $this->arguments => false,
             \array_key_exists($parameter->name, $this->arguments) => $parameter->name,
             \array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
             default => false,
