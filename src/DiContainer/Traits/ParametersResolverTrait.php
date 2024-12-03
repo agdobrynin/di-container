@@ -8,7 +8,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
-use Kaspi\DiContainer\Exception\InputArgumentNotFoundException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
@@ -26,7 +25,6 @@ trait ParametersResolverTrait
     use PsrContainerTrait;
     use UseAttributeTrait;
 
-    protected static InputArgumentNotFoundException $argumentNotFoundException;
     protected static int $variadicPosition = 0;
 
     /**
@@ -101,8 +99,8 @@ trait ParametersResolverTrait
         self::$variadicPosition = 0;
 
         foreach ($this->reflectionParameters as $parameter) {
-            try {
-                $argumentDefinition = $this->getInputArgument($parameter);
+            if (false !== ($argumentNameOrIndex = $this->getArgumentNameOrIndexByParameter($parameter))) {
+                $argumentDefinition = $this->getInputArgument($argumentNameOrIndex, $parameter->isVariadic());
 
                 if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
                     foreach ($argumentDefinition as $definitionItem) {
@@ -122,7 +120,6 @@ trait ParametersResolverTrait
                 \array_push($dependencies, ...$vals);
 
                 continue;
-            } catch (InputArgumentNotFoundException) {
             }
 
             $autowireException = null;
@@ -266,33 +263,33 @@ trait ParametersResolverTrait
         }
     }
 
-    protected function getInputArgument(\ReflectionParameter $parameter): mixed
+    protected function getArgumentNameOrIndexByParameter(\ReflectionParameter $parameter): false|int|string
     {
-        if (\array_key_exists($parameter->name, $this->arguments)) {
-            return $this->arguments[$parameter->name];
+        return match (true) {
+            \array_key_exists($parameter->name, $this->arguments) => $parameter->name,
+            \array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
+            default => false,
+        };
+    }
+
+    protected function getInputArgument(int|string $argumentNameOrIndex, bool $isVariadic): mixed
+    {
+        if (\is_string($argumentNameOrIndex)) {
+            return $this->arguments[$argumentNameOrIndex];
         }
 
-        if (!$parameter->isVariadic() && \array_key_exists($parameter->getPosition(), $this->arguments)) {
-            return $this->arguments[$parameter->getPosition()];
+        if (!$isVariadic || !\array_key_exists($argumentNameOrIndex + 1, $this->arguments)) {
+            return $this->arguments[$argumentNameOrIndex];
         }
 
-        if ($parameter->isVariadic() && \array_key_exists($parameter->getPosition(), $this->arguments)) {
-            $variadicPosition = $parameter->getPosition();
+        $values = [];
+        $variadicPosition = $argumentNameOrIndex;
 
-            if (!\array_key_exists($variadicPosition + 1, $this->arguments)) {
-                return $this->arguments[$variadicPosition];
-            }
+        do {
+            $values[] = $this->arguments[$variadicPosition];
+            ++$variadicPosition;
+        } while (\array_key_exists($variadicPosition, $this->arguments));
 
-            $values = [];
-
-            do {
-                $values[] = $this->arguments[$variadicPosition];
-                ++$variadicPosition;
-            } while (\array_key_exists($variadicPosition, $this->arguments));
-
-            return $values;
-        }
-
-        throw self::$argumentNotFoundException ??= new InputArgumentNotFoundException();
+        return $values;
     }
 }
