@@ -18,13 +18,30 @@ composer require kaspi/di-container
 ```php
 namespace App\Services;
 
+// Класс для создания сообщения
+class Envelope {
+    public function subject(string $subject): static {
+        // ...
+        return $this;
+    }
+    
+    public function message(string $message): static {
+        // ...
+        return $this;
+    }
+}
+
 // Сервис отправки почты
 class Mail {
-    public function __construct() { /* логика инициализации */ }
+    public function __construct(private Envelope $envelope) {}
     
-    public function envelop() { /* ... */ }
+    public function envelop(): Envelope {
+        return $this->envelope;
+    }
     
-    public function send(): bool { /* ... */ }
+    public function send(): bool {
+        // отправка сообщения 
+    }
 }
 ```
 ```php
@@ -49,7 +66,7 @@ class  PostController {
     public function send(Post $post): bool {
         $this->mail->envelop()
             ->subject('Publication success')
-            ->body('Post <'.$post->title.'> was published.');
+            ->message('Post <'.$post->title.'> was published.');
         return $this->mail->send();
     }
 }
@@ -75,9 +92,13 @@ $postController->send($post);
 
 ```php
 $post = new App\Controllers\PostController(
-    new App\Services\Mail()
+    new App\Services\Mail(
+        new App\Services\Envelope()
+    )
 );
 ```
+🚩 Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/00-start.php)
+
 Другой вариант для примера выше можно использовать для получения результата метод `call`:
 ```php
 $post = new App\Models\Post();

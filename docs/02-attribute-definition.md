@@ -69,7 +69,7 @@ $container = (new DiContainerFactory())->make(require 'config/main.php');
 
 // ... more code ...
 
-// свойство $pdo будет указывать на базу sqlite:/tmp/db.db'
+// PDO будет указывать на базу sqlite:/tmp/db.db'
 $myClass = $container->get(App\MyDb::class);
 ```
 
@@ -114,8 +114,9 @@ $container = (new DiContainerFactory())->make();
 // ... more code
 
 $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
-assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
-assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+
+var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
 #### Атрибут #[Inject] для аргументов переменной длины по идентификатору контейнера
@@ -163,8 +164,9 @@ $container = (new DiContainerFactory())->make($definitions);
 // ... more code
 
 $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
-assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
-assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+
+var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
 ### Атрибут #[Inject] и класс реализующий DiFactoryInterface
@@ -222,11 +224,12 @@ $container = (new DiContainerFactory())->make();
 // ... more code
 
 $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
-assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
-assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+
+var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
-### Атрибут **#[Inject]** для внедрения по ссылке на другое определение в контейнере.
+### Атрибут **#[Inject]** при внедрении класса для интерфейса.
 
 ```php
 // Объявления классов
@@ -234,55 +237,26 @@ namespace App\Rules;
 
 interface RuleInterface {}
 
-// ...
-
-class RuleA implements RuleInterface {
-    private array $config;
-
-    public function __construct(private $dependency) {}
-
-    public function setConfig(array $config): static {
-        $this->config = $config;
-        
-        return $this;
-    }
-}
-
-// ...
+class RuleA implements RuleInterface {}
 
 class RuleGenerator {
     public function __construct(
-        #[Inject('service.rules.pre-config-rule-a')]
+        #[Inject(RuleA::class)]
         public RuleInterface $inputRule
     ) {}
 }
 ```
 ```php
 // определения для контейнера
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diCallable;
 
-$definition = [
-    diAutowire(App\Rules\RuleA::class)
-        ->bindArguments('dependency'),
-
-    // ...
-
-    'service.rules.pre-config-rule-a' => diCallable(
-        static function (App\Rules\RuleA $ruleA) {
-            reutrn $ruleA->setConfig([...]);
-        }
-    ), 
-];
-
-$container = (new DiContainerFactory())->make($definition);
+$container = (new DiContainerFactory())->make();
 
 // ... more code
 
 $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
-assert($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
+
+var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 ```
 
 ## Service

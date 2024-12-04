@@ -25,16 +25,16 @@ Content-Type: text/html;charset=utf-8
 MAIL;
     }
 
-    public function subject(string $subject): self
+    public function subject(string $subject): static
     {
         $this->subject = $subject;
 
         return $this;
     }
 
-    public function body(string $body): self
+    public function message(string $message): static
     {
-        $this->body = $body;
+        $this->body = $message;
 
         return $this;
     }
@@ -72,7 +72,7 @@ class PostController
     {
         $this->mail->envelop()
             ->subject('Publication success')
-            ->body('Post <'.$post->title.'> was published.')
+            ->message('Post <'.$post->title.'> was published.')
         ;
 
         $r = $this->mail->send();
@@ -88,10 +88,10 @@ $post = new Post();
 $post->title = 'Publication about DiContainer';
 
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
-echo '🕸  DiContainer::get ✉ send bytes: '.$container->get(PostController::class)->send($post).PHP_EOL;
+echo '🕸  DiContainer::get ✉  send bytes: '.$container->get(PostController::class)->send($post).PHP_EOL;
 
 // Использование call
-echo '🖥  DiContainer::call ✉ send bytes: '.$container->call(
+echo '🖥  DiContainer::call ✉  send bytes: '.$container->call(
     definition: [PostController::class, 'send'],
     arguments: ['post' => $post]
 ).PHP_EOL;
