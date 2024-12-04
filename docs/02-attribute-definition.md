@@ -29,42 +29,6 @@ use Kaspi\DiContainer\Attributes\Inject;
 )]
 ```
 
-### Атрибут #[Inject] для получения по типу аргумента в конструкторе:
-
-```php
-// Объявление класса
-namespace App;
-
-use Kaspi\DiContainer\Attributes\Inject;
-
-class MyDb {
-    public function __construct(
-        #[Inject]
-        public \PDO $pdo
-    ) {}
-}
-```
-
-```php
-// Определения для DiContainer
-use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\diAutowire;
-
-$definitions = [
-    diAutowire(\PDO::class)
-        // Подставить в параметр $dsn в конструкторе.
-        ->bindArguments(dsn: 'sqlite:/tmp/my.db')
-];
-
-$container = (new DiContainerFactory())->make($definitions);
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-$myClass = $container->get(App\MyDb);
-$myClass->pdo->query('...'); // аргумент $pdo указывать на dns = 'sqlite:/tmp/my.db'
-```
-
 ### Атрибут #[Inject] для получения по идентификатору контейнера в конструкторе:
 
 ```php
@@ -75,48 +39,35 @@ namespace App;
 
 class MyDb {
     public function __construct(
-        #[Inject('services.pdo')]
+        #[Inject('services.pdo-env')]
         public \PDO $pdo
     ) {}
 }
 ```
 ```php
 // file config/main.php
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\{diAutowire, diCallable};
 
 return [
     'services.pdo-prod' => diAutowire(PDO::class)
         ->bindArguments(dsn: 'sqlite:/data/prod/db.db'),
     'services.pdo-local' => diAutowire(PDO::class)
         ->bindArguments(dsn: 'sqlite:/tmp/db.db'),
-];
-```
-```php
-// file config/db.php
-use Psr\Container\ContainerInterface;
-use function Kaspi\DiContainer\diCallable;
-
-return [        
-    'services.pdo' => diCallable(
-        static fn (ContainerInterface $container) => match (\getenv('APP_PDO')) {
+    'services.pdo-env' => diCallable(
+        definition: static fn (ContainerInterface $container) => match (\getenv('APP_PDO')) {
             'prod' => $container->get('services.pdo-prod'),
             default => $container->get('services.pdo-local')
-        }
+        },
+        isSingleton: true,
     ),
 ];
 ```
 ```php
-$container = (new DiContainerFactory())->make(
-    \array_merge(
-        require 'config/main.php',
-        require 'config/db.php',
-    )
-);
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
+// определение контейнера.
+$container = (new DiContainerFactory())->make(require 'config/main.php');
 \putenv('APP_PDO=local');
+
+// ... more code ...
 
 // свойство $pdo будет указывать на базу sqlite:/tmp/db.db'
 $myClass = $container->get(App\MyDb::class);
@@ -333,7 +284,6 @@ $container = (new DiContainerFactory())->make($definition);
 $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
 assert($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 ```
-
 
 ## Service
 
