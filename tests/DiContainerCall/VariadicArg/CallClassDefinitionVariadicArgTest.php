@@ -97,7 +97,9 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
     public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifier(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true // inject by attribute
+        );
         $definitions = [
             'word.first' => diAutowire(WordHello::class),
             'word.second' => diAutowire(WordSuffix::class),
@@ -110,9 +112,11 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $this->assertInstanceOf(WordSuffix::class, $res[1]);
     }
 
-    public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifierOneToMany(): void
+    public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifierDiFactory(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true, // inject by attribute
+        );
         $definitions = [
             'services.words' => diAutowire(WordVariadicDiFactory::class),
         ];
@@ -123,9 +127,11 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
     }
 
-    public function testCallStaticMethodWitAttributeInjectIdAsContainerAsClassOneToMany(): void
+    public function testCallStaticMethodWitAttributeInjectByDiFactoryInInject(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true, // inject by attribute
+        );
         $container = new DiContainer(config: $config);
 
         $res = $container->call([Talk::class, 'staticMethodByDiFactoryOneToMany']);
@@ -136,7 +142,9 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
     public function testCallStaticMethodWitAttributeInjectIdAsClass(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true, // inject by attribute
+        );
         $container = new DiContainer(config: $config);
 
         $res = $container->call([Talk::class, 'staticMethodByClass']);
