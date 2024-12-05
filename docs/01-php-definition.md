@@ -514,8 +514,8 @@ $container->get('doSomething'); // (object) ['name' => 'John Doe', 'age' => 32, 
 
 ## Разрешение аргументов переменной длины
 
-Каждый аргумент для `variadic` параметра необходимо объявлять
-как массив `[]` если используется передача по имени.
+Если необходимо передать несколько аргументов для `variadic` параметра используя имя параметра
+то необходимо объявлять аргументы как массив `[]`.
 
 ```php
 // Объявления классов
@@ -567,6 +567,18 @@ assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
+Если необходимо передать только один аргумент и использовать имя параметра, то объявление будет таким:
+```php
+// для примера выше
+$definition = [
+    diAutowire(App\Rules\RuleGenerator::class)
+        ->bindArguments(
+            // имя параметра $inputRule в конструкторе
+            inputRule: diAutowire(App\Rules\RuleB::class),            
+        )
+];
+```
+
 ⛏ Если не использовать имя параметра то передавать аргументы по индексу в конструкторе можно просто перечисляя нужные определения:
 ```php
  // Передать три аргумента в конструктор класс
