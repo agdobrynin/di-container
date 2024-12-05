@@ -48,12 +48,13 @@ class User
 }
 
 $definitions = [
-    diAutowire(MyUsers::class)
-        ->bindArguments(usersClass: User::class),
     // класс PDO создать единожды и всегда возвращать тот же объект
     diAutowire(PDO::class, isSingleton: true)
         // с аргументом $dsn в конструкторе.
         ->bindArguments(dsn: 'sqlite::memory:'),
+    // класс с определением обязательного параметра. $pdo будет получен по типу параметра.
+    diAutowire(MyUsers::class)
+        ->bindArguments(usersClass: User::class),
 ];
 
 $config = new DiContainerConfig(
