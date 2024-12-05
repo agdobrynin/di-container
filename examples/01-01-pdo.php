@@ -9,9 +9,24 @@ use function Kaspi\DiContainer\diAutowire;
 
 require_once './vendor/autoload.php';
 
-class MyClass
+class MyUsers
 {
-    public function __construct(public PDO $pdo) {}
+    public function __construct(private PDO $pdo, private string $usersClass) {}
+
+    public function init(): void
+    {
+        $this->pdo->beginTransaction();
+        $this->pdo->query('create table users (name string)');
+        $this->pdo->query('insert into users values("Ivan"), ("Vasiliy"), ("Piter")');
+        $this->pdo->commit();
+    }
+
+    public function getAllUsers(): array
+    {
+        return $users = $this->pdo->query('select * from users')
+            ->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $this->usersClass)
+        ;
+    }
 }
 
 class User
@@ -25,6 +40,8 @@ class User
 }
 
 $definitions = [
+    diAutowire(MyUsers::class)
+        ->bindArguments(usersClass: User::class),
     // класс PDO создать единожды и всегда возвращать тот же объект
     diAutowire(PDO::class, isSingleton: true)
         // с аргументом $dsn в конструкторе.
@@ -40,18 +57,7 @@ $config = new DiContainerConfig(
 $container = new DiContainer(definitions: $definitions, config: $config);
 
 // Получение данных из контейнера с автоматическим связыванием зависимостей
-$myClass = $container->get(MyClass::class); // $pdo->dsn === 'sqlite::memory:'
-$myClass->pdo->query('create table users (name string)');
-$myClass->pdo->query('insert into users values("Ivan"), ("Vasiliy"), ("Piter")');
-$users = $myClass->pdo->query('select * from users')
-    ->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, 'User')
-;
-\var_dump('👤', $users);
-// получать один и тот же объект PDO::class
-// так как в определении указан isSingleton=true
-$myClassTwo = $container->get(MyClass::class);
+$users = $container->get(MyUsers::class); // $pdo->dsn === 'sqlite::memory:'
+$users->init();
 
-\var_dump(
-    ' 🐎 ',
-    \spl_object_id($myClass->pdo) === \spl_object_id($myClassTwo->pdo)
-); // true
+\var_dump('👤', $users->getAllUsers());
