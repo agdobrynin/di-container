@@ -39,6 +39,8 @@ var_dump(
     \spl_object_id($myClass->pdo) === \spl_object_id($myClassTwo->pdo)
 ); // true
 ```
+🚩 Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/01-01-pdo.php)
+
 ### Объявления для определений контейнера:
 
 #### Определения для простых типов
