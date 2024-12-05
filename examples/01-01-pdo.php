@@ -11,7 +11,15 @@ require_once './vendor/autoload.php';
 
 class MyUsers
 {
-    public function __construct(private PDO $pdo, private string $usersClass) {}
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function __construct(private PDO $pdo, private string $usersClass)
+    {
+        if (!class_exists($this->usersClass)) {
+            throw new InvalidArgumentException("{$this->usersClass} does not exist");
+        }
+    }
 
     public function init(): void
     {
