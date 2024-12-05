@@ -121,10 +121,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $mockContainer->expects($this->once())
             ->method('get')
             ->with(SuperDiFactory::class)
-            ->willReturn([
-                new SuperClass(),
-                new MoreSuperClass(),
-            ])
+            ->willReturn(new SuperClass())
         ;
         $this->setContainer($mockContainer);
         $this->setUseAttribute(true);
@@ -133,7 +130,6 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->assertIsArray($res);
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
-        $this->assertInstanceOf(SuperInterface::class, $res[1]);
     }
 
     public function testParameterResolveByArgumentName(): void
@@ -241,16 +237,15 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $mockContainer->expects($this->once())
             ->method('get')
             ->with('names')
-            ->willReturn([['IvaN', 'PiteR'], ['vasIliy', 'niKOlay']])
+            ->willReturn(['IvaN', 'PiteR'])
         ;
         $this->setContainer($mockContainer);
         $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
-        $this->assertCount(2, $res);
+        $this->assertCount(1, $res);
 
         $this->assertEquals(['ivan', 'piter'], $res[0]);
-        $this->assertEquals(['VASILIY', 'NIKOLAY'], $res[1]);
     }
 }

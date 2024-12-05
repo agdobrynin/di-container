@@ -6,7 +6,6 @@ namespace Tests\FromDocs\PhpAttribute;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
-use Tests\FromDocs\PhpAttribute\Fixtures\RuleA;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleB;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleGeneratorInjectByContainerIdentifier;
 
@@ -32,8 +31,8 @@ class InjectVariadicInjectByContainerIdentifierTest extends TestCase
         $definitions = [
             'services.rules' => diCallable(
                 // Автоматически внедрит зависимости этой callback функции
-                static function (RuleB $b, RuleA $a) {
-                    return [$b, $a]; // вернуть массив определений для аргумента переменной длины.
+                static function (RuleB $b) {
+                    return $b;
                 }
             ),
         ];
@@ -43,6 +42,5 @@ class InjectVariadicInjectByContainerIdentifierTest extends TestCase
         $ruleGenerator = $container->get(RuleGeneratorInjectByContainerIdentifier::class);
 
         $this->assertInstanceOf(RuleB::class, $ruleGenerator->getRules()[0]);
-        $this->assertInstanceOf(RuleA::class, $ruleGenerator->getRules()[1]);
     }
 }

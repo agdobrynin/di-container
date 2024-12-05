@@ -117,7 +117,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $this->setContainer($mockContainer);
 
         // 🚩 test data
-        $this->bindArguments(['aaa', 'bbb', 'ccc']);
+        $this->bindArguments('aaa', 'bbb', 'ccc');
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 

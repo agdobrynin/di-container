@@ -92,25 +92,8 @@ class CallFunctionWithVariadicArgTest extends TestCase
 
         $res = $container->call($fn);
 
+        $this->assertCount(1, $res);
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
-    }
-
-    public function testUserFunctionVariadicArgumentsByInjectWithIdAsReferenceToOneToMany(): void
-    {
-        $fn = static fn (
-            WordInterface ...$word
-        ) => $word;
-
-        $definitions = [
-            'services.words' => diAutowire(WordVariadicDiFactory::class),
-        ];
-        $container = new DiContainer($definitions, new DiContainerConfig());
-
-        $res = $container->call($fn, ['word' => diGet('services.words')]);
-
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 
     public function testUserFunctionVariadicArgumentsByInjectWithIdAsDiFactoryOneToMany(): void
@@ -125,6 +108,5 @@ class CallFunctionWithVariadicArgTest extends TestCase
         $res = $container->call($fn);
 
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 }

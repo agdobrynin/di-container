@@ -66,6 +66,27 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]);
     }
 
+    public function testUserDefinedArgumentVariadicOneByName(): void
+    {
+        $fn = static fn (string ...$str) => $str;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects($this->never())->method('get');
+        $this->setContainer($mockContainer);
+
+        // 🚩 test data
+        $this->bindArguments(
+            str: 'hi my darling'
+        );
+
+        $res = \call_user_func_array($fn, $this->resolveParameters());
+
+        $this->assertCount(1, $res);
+
+        $this->assertEquals('hi my darling', $res[0]);
+    }
+
     public function testUserDefinedArgumentByIndexVariadicSuccess(): void
     {
         $fn = static fn (iterable ...$iterator) => $iterator;
@@ -77,10 +98,8 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(
-            [
-                ['aaa', 'bbb', 'ccc'],
-                ['ddd', 'eee', 'fff'],
-            ]
+            ['aaa', 'bbb', 'ccc'],
+            ['ddd', 'eee', 'fff'],
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());

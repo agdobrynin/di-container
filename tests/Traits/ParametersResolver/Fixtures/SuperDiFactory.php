@@ -9,11 +9,10 @@ use Psr\Container\ContainerInterface;
 
 class SuperDiFactory implements DiFactoryInterface
 {
-    public function __invoke(ContainerInterface $container): mixed
+    public function __construct(private MoreSuperClass $moreSuperClass) {}
+
+    public function __invoke(ContainerInterface $container): MoreSuperClass
     {
-        return [
-            new MoreSuperClass(),
-            new SuperClass(),
-        ];
+        return $this->moreSuperClass;
     }
 }

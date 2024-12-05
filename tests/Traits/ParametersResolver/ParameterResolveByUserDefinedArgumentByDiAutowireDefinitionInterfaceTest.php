@@ -23,6 +23,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
+ * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
@@ -78,13 +79,19 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->expects(self::exactly(2))
+            ->method('get')
+            ->with(MoreSuperClass::class)
+            ->willReturn(new MoreSuperClass())
+        ;
+
         $this->setContainer($mockContainer);
 
         // 🚩 test data
         $this->bindArguments(
             item: [
                 diAutowire(SuperClass::class),
-                diAutowire(MoreSuperClass::class),
+                diAutowire(SuperDiFactory::class),
             ]
         );
 
@@ -152,45 +159,31 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         );
     }
 
-    public function testResolveByAutowireDefinitionVariadicByDiFactoryInterfaceByIndex(): void
-    {
-        $fn = static fn (SuperInterface ...$item) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
-
-        $mockContainer = $this->createMock(ContainerInterface::class);
-        $this->setContainer($mockContainer);
-
-        // 🚩 test data
-        $this->bindArguments(
-            diAutowire(SuperDiFactory::class)
-        );
-
-        $res = \call_user_func_array($fn, $this->resolveParameters());
-
-        $this->assertCount(2, $res);
-        $this->assertInstanceOf(MoreSuperClass::class, $res[0]);
-        $this->assertInstanceOf(SuperClass::class, $res[1]);
-    }
-
     public function testResolveByAutowireDefinitionVariadicByDiGetAkaTagByName(): void
     {
         $fn = static fn (SuperInterface ...$item) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockContainer->expects($this->once())
+        $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with('services.super')
-            ->willReturn([
+            ->with(self::logicalOr(
+                'services.super.one',
+                'services.super.two'
+            ))
+            ->willReturn(
                 new MoreSuperClass(),
                 new SuperClass(),
-            ])
+            )
         ;
         $this->setContainer($mockContainer);
 
         // 🚩 test data
         $this->bindArguments(
-            item: diGet('services.super')
+            item: [
+                diGet('services.super.one'),
+                diGet('services.super.two'),
+            ]
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
@@ -206,19 +199,23 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockContainer->expects($this->once())
+        $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with('services.super')
-            ->willReturn([
+            ->with(self::logicalOr(
+                'services.super.one',
+                'services.super.two',
+            ))
+            ->willReturn(
                 new MoreSuperClass(),
                 new SuperClass(),
-            ])
+            )
         ;
         $this->setContainer($mockContainer);
 
         // 🚩 test data
         $this->bindArguments(
-            diGet('services.super')
+            diGet('services.super.one'),
+            diGet('services.super.two')
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());

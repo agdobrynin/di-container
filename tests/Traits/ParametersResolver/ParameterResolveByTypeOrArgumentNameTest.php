@@ -72,7 +72,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer
-            ->expects($this->atMost(2))
+            ->expects(self::exactly(2))
             ->method('get')
             ->with($this->logicalOr(
                 SuperClass::class,
@@ -80,7 +80,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
             ))
             ->willReturn(
                 new SuperClass(),
-                ['one', 'two', 'three']
+                'one'
             )
         ;
 
@@ -88,14 +88,12 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $params = $this->resolveParameters();
 
-        $this->assertCount(4, $params);
+        $this->assertCount(2, $params);
         $this->assertInstanceOf(SuperClass::class, $params[0]);
         $this->assertEquals('one', $params[1]);
-        $this->assertEquals('two', $params[2]);
-        $this->assertEquals('three', $params[3]);
 
         $this->assertInstanceOf(SuperClass::class, \call_user_func_array($fn, $params)[0]);
-        $this->assertEquals(['one', 'two', 'three'], \call_user_func_array($fn, $params)[1]);
+        $this->assertEquals(['one'], \call_user_func_array($fn, $params)[1]);
     }
 
     public function testParameterResolveByNameVariadicParameterArray(): void
@@ -109,10 +107,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
             ->method('get')
             ->with('phrase')
             ->willReturn(
-                [
-                    ['one', 'two', 'three'],
-                    ['four', 'five', 'six'],
-                ]
+                ['one', 'two', 'three'],
             )
         ;
 
@@ -120,9 +115,9 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $params = $this->resolveParameters();
 
-        $this->assertCount(2, $params);
+        $this->assertCount(1, $params);
         $this->assertEquals(
-            [['one', 'two', 'three'], ['four', 'five', 'six']],
+            [['one', 'two', 'three']],
             \call_user_func_array($fn, $params)
         );
     }

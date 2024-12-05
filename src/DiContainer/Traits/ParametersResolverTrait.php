@@ -100,10 +100,8 @@ trait ParametersResolverTrait
 
         foreach ($this->reflectionParameters as $parameter) {
             if (false !== ($argumentNameOrIndex = $this->getArgumentNameOrIndexByParameter($parameter))) {
-                $argumentDefinition = $this->getInputArgument($argumentNameOrIndex, $parameter->isVariadic());
-
-                if (\is_array($argumentDefinition) && $parameter->isVariadic()) {
-                    foreach ($argumentDefinition as $definitionItem) {
+                if ($parameter->isVariadic()) {
+                    foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
                         $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
                         $dependencies[] = $resolvedVal;
                     }
@@ -111,13 +109,7 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                $resolvedVal = $this->resolveInputArgument($parameter, $argumentDefinition);
-
-                $vals = \is_array($resolvedVal) && $parameter->isVariadic()
-                    ? $resolvedVal
-                    : [$resolvedVal];
-
-                \array_push($dependencies, ...$vals);
+                $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$argumentNameOrIndex]);
 
                 continue;
             }
@@ -128,14 +120,9 @@ trait ParametersResolverTrait
                 if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
                     && $injectAttribute->valid()) {
                     foreach ($injectAttribute as $inject) {
-                        $resolvedVal = $inject->getIdentifier()
+                        $dependencies[] = $inject->getIdentifier()
                             ? $this->getContainer()->get($inject->getIdentifier())
                             : $this->getContainer()->get($parameter->getName());
-
-                        $vals = \is_array($resolvedVal) && $parameter->isVariadic()
-                            ? $resolvedVal
-                            : [$resolvedVal];
-                        \array_push($dependencies, ...$vals);
                     }
 
                     continue;
@@ -143,14 +130,9 @@ trait ParametersResolverTrait
 
                 $parameterType = $this->getParameterTypeByReflection($parameter);
 
-                $resolvedVal = null === $parameterType
+                $dependencies[] = null === $parameterType
                     ? $this->getContainer()->get($parameter->getName())
                     : $this->getContainer()->get($parameterType->getName());
-
-                $vals = \is_array($resolvedVal) && $parameter->isVariadic()
-                    ? $resolvedVal
-                    : [$resolvedVal];
-                \array_push($dependencies, ...$vals);
 
                 continue;
             } catch (AutowireAttributeException|CallCircularDependencyException $e) {
@@ -273,23 +255,20 @@ trait ParametersResolverTrait
         };
     }
 
-    protected function getInputArgument(int|string $argumentNameOrIndex, bool $isVariadic): mixed
+    protected function getInputVariadicArgument(int|string $argumentNameOrIndex): array
     {
         if (\is_string($argumentNameOrIndex)) {
-            return $this->arguments[$argumentNameOrIndex];
-        }
-
-        if (!$isVariadic || !\array_key_exists($argumentNameOrIndex + 1, $this->arguments)) {
-            return $this->arguments[$argumentNameOrIndex];
+            return \is_array($this->arguments[$argumentNameOrIndex])
+                ? $this->arguments[$argumentNameOrIndex]
+                : [$this->arguments[$argumentNameOrIndex]];
         }
 
         $values = [];
-        $variadicPosition = $argumentNameOrIndex;
 
         do {
-            $values[] = $this->arguments[$variadicPosition];
-            ++$variadicPosition;
-        } while (\array_key_exists($variadicPosition, $this->arguments));
+            $values[] = $this->arguments[$argumentNameOrIndex];
+            ++$argumentNameOrIndex;
+        } while (\array_key_exists($argumentNameOrIndex, $this->arguments));
 
         return $values;
     }
