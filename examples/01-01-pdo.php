@@ -69,4 +69,9 @@ $container = new DiContainer(definitions: $definitions, config: $config);
 $users = $container->get(MyUsers::class); // $pdo->dsn === 'sqlite::memory:'
 $users->init();
 
-\var_dump('👤', $users->getAllUsers());
+\var_dump('👤 List of exist users:', $users->getAllUsers());
+
+var_dump(
+    '⛓ Object is equal?',
+    \spl_object_id($container->get(PDO::class)) === \spl_object_id($container->get(PDO::class))
+); // true
