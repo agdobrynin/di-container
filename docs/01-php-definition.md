@@ -39,6 +39,8 @@ var_dump(
     \spl_object_id($myClass->pdo) === \spl_object_id($myClassTwo->pdo)
 ); // true
 ```
+🚩 Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/01-01-pdo.php)
+
 ### Объявления для определений контейнера:
 
 #### Определения для простых типов
@@ -579,7 +581,7 @@ assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 
 ## Примеры использования для конфигурирования:
 
-## Пример #1 
+### Пример #1 
 
 Один класс как самостояние определение со своими аргументами, и как реализация интерфейса, но со своими аргументами
 
@@ -617,3 +619,33 @@ $c = (new DiContainerFactory())->make($definition);
 print $c->get(App\SumInterface::class)->getInit(); // 50
 print $c->get(App\Sum::class)->getInit(); // 10
 ```
+
+### Пример #2
+Создание объекта без сохранения результата в контейнере.
+```php
+class MyApiRequest {
+    public function __construct(
+         private SomeDependency $dependency,
+         private string $endpoint
+    ) {....}
+
+    public function request(): string
+    { 
+       // .... 
+    }
+}
+
+// SomeDependency $dependency будет разрешено контейнером
+$apiV1 = \Kaspi\DiContainer\diAutowire(MyApiRequest::class)
+   ->bindArguments(endpoint: 'http://www.site.com/apiv1/')
+  ->setContainer($container)
+  ->invoke();
+
+// SomeDependency $dependency будет разрешено контейнером
+$apiV2 = \Kaspi\DiContainer\diAutowire(MyApiRequest::class)
+   ->bindArguments(endpoint: 'http://www.site.com/apiv2/')
+  ->setContainer($container)
+  ->invoke();
+```
+- Такой вызов работает как `DiContainer::get`, но будет каждый раз выполнять разрешение зависимостей и создание **нового объекта**;
+- Подстановка аргументов для создания объекта так же может быть каждый раз разной;
