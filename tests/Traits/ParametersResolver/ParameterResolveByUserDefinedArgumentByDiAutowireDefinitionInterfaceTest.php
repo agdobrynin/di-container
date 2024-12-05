@@ -65,7 +65,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         // 🚩 test data
         $this->bindArguments(
             diAutowire(ClassWithDependency::class)
-                ->bindArguments(dependency: 'aaaa')
+                ->bindArguments('aaaa')
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
