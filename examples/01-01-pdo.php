@@ -31,7 +31,7 @@ class MyUsers
 
     public function getAllUsers(): array
     {
-        return $users = $this->pdo->query('select * from users')
+        return $this->pdo->query('select * from users')
             ->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $this->usersClass)
         ;
     }
