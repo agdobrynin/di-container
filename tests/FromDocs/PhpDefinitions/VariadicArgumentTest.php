@@ -6,6 +6,7 @@ namespace Tests\FromDocs\PhpDefinitions;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\ParameterIterableVariadic;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleA;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleB;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleC;
@@ -13,6 +14,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleGenerator;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diValue;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -21,7 +23,9 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
@@ -72,5 +76,30 @@ class VariadicArgumentTest extends TestCase
         $this->assertInstanceOf(RuleB::class, $ruleGenerator->getRules()[0]);
         $this->assertInstanceOf(RuleA::class, $ruleGenerator->getRules()[1]);
         $this->assertInstanceOf(RuleC::class, $ruleGenerator->getRules()[2]);
+    }
+
+    public function testVariadicArgumentByNameForIterableParameter(): void
+    {
+        $definition = [
+            diAutowire(ParameterIterableVariadic::class)
+                ->bindArguments(parameter: diValue(['first'])),
+        ];
+
+        $container = (new DiContainerFactory())->make($definition);
+
+        $this->assertEquals(['first'], $container->get(ParameterIterableVariadic::class)->getParameters()[0]);
+    }
+
+    public function testVariadicArgumentByIndexForIterableParameter(): void
+    {
+        $definition = [
+            diAutowire(ParameterIterableVariadic::class, true)
+                ->bindArguments(['first'], ['second']),
+        ];
+
+        $container = (new DiContainerFactory())->make($definition);
+
+        $this->assertEquals(['first'], $container->get(ParameterIterableVariadic::class)->getParameters()[0]);
+        $this->assertEquals(['second'], $container->get(ParameterIterableVariadic::class)->getParameters()[1]);
     }
 }

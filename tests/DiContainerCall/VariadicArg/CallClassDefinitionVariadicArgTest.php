@@ -79,33 +79,16 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $config = new DiContainerConfig(
             useAttribute: false // off attribute for configure.
         );
-        $definitions = [
-            // one definition return array of resolved definition.
-            'service.word' => diAutowire(WordVariadicDiFactory::class),
-        ];
-        $container = new DiContainer($definitions, config: $config);
 
-        $res = $container->call(
-            [Talk::class, 'staticMethodByReference'],
-            [
-                'word' => diGet('service.word'),
-            ]
-        );
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
-    }
-
-    public function testCallStaticMethodWithoutAttributePassArgumentByDiFactoryOneToMany(): void
-    {
-        $config = new DiContainerConfig(
-            useAttribute: false // off attribute for configure.
-        );
         $container = new DiContainer(config: $config);
 
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
             [
-                'word' => diAutowire(WordVariadicDiFactory::class),
+                'word' => [
+                    $container->get(WordSuffix::class),
+                    $container->get(WordHello::class),
+                ],
             ]
         );
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
@@ -114,7 +97,9 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
     public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifier(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true // inject by attribute
+        );
         $definitions = [
             'word.first' => diAutowire(WordHello::class),
             'word.second' => diAutowire(WordSuffix::class),
@@ -127,9 +112,11 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $this->assertInstanceOf(WordSuffix::class, $res[1]);
     }
 
-    public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifierOneToMany(): void
+    public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifierDiFactory(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true, // inject by attribute
+        );
         $definitions = [
             'services.words' => diAutowire(WordVariadicDiFactory::class),
         ];
@@ -138,23 +125,26 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $res = $container->call([Talk::class, 'staticMethodByReferenceOneToMany']);
 
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 
-    public function testCallStaticMethodWitAttributeInjectIdAsContainerAsClassOneToMany(): void
+    public function testCallStaticMethodWitAttributeInjectByDiFactoryInInject(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true, // inject by attribute
+        );
         $container = new DiContainer(config: $config);
 
         $res = $container->call([Talk::class, 'staticMethodByDiFactoryOneToMany']);
 
+        $this->assertCount(1, $res);
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 
     public function testCallStaticMethodWitAttributeInjectIdAsClass(): void
     {
-        $config = new DiContainerConfig();
+        $config = new DiContainerConfig(
+            useAttribute: true, // inject by attribute
+        );
         $container = new DiContainer(config: $config);
 
         $res = $container->call([Talk::class, 'staticMethodByClass']);
@@ -173,7 +163,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call([Talk::class, 'staticMethodByArgumentNameOneToMany']);
 
+        $this->assertCount(1, $res);
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 }

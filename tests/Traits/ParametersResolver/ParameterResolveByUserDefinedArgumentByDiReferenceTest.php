@@ -128,21 +128,23 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockContainer->expects(self::once())
+        $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with('services.icon-iterator')
+            ->with(self::logicalOr(
+                'services.icon-iterator.one',
+                'services.icon-iterator.two'
+            ))
             ->willReturn(
-                [
-                    new \ArrayIterator(array: ['🚀']),
-                    new \ArrayIterator(array: ['🔥']),
-                ]
+                new \ArrayIterator(array: ['🚀']),
+                new \ArrayIterator(array: ['🔥']),
             )
         ;
 
         $this->setContainer($mockContainer);
         // 🚩 test data
         $this->bindArguments(
-            diGet('services.icon-iterator')
+            diGet('services.icon-iterator.one'),
+            diGet('services.icon-iterator.two')
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());

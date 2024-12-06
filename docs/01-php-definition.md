@@ -65,6 +65,8 @@ $container->get('logger.file'); // '/var/log/payment.log'
 $container->get('feedback.show-recipient'); // FALSE
 $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
 ```
+> _Так же для некоторых случаев может понадобиться определение без обработки «как есть»,
+> то нужно использовать функцию-хэлпер [diValue](#divalue---объявление-аргумента-или-определения-без-обработки--как-есть)._ 
 
 #### Объявления через функции-хэлперы:
 
@@ -217,6 +219,39 @@ $definitions = [
     diAutowire(\PDO::class)
         ->bindArguments(dsn: diGet('services.env-dsn')), // ссылка на определение
 ];
+```
+
+##### diValue - объявление аргумента или определения без обработки — «как есть».
+
+```php
+use function \Kaspi\DiContainer\diValue;
+ 
+diValue(mixed $value)
+```
+Пример когда надо объявить аргумент «как есть»:
+```php
+// класс
+class ParameterIterableVariadic
+{
+    private array $parameters;
+
+    public function __construct(iterable ...$parameter)
+    {
+        $this->parameters = $parameter;
+    }
+    //... some logic
+}
+```
+```php
+use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diValue;
+
+$definition = [
+    diAutowire(ParameterIterableVariadic::class)
+        ->bindArguments(parameter: diValue(['ok']))
+];
+
+$container = (new DiContainerFactory())->make($definition);
 ```
 
 ## Внедрение значений зависимостей аргументов по ссылке на другой идентификатор контейнера.
@@ -514,8 +549,8 @@ $container->get('doSomething'); // (object) ['name' => 'John Doe', 'age' => 32, 
 
 ## Разрешение аргументов переменной длины
 
-Каждый аргумент для `variadic` параметра необходимо объявлять
-как массив `[]` если используется передача по имени.
+Если необходимо передать несколько аргументов для `variadic` параметра используя имя параметра
+то необходимо объявлять аргументы как массив `[]`.
 
 ```php
 // Объявления классов
@@ -567,6 +602,18 @@ assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
+Если необходимо передать только один аргумент и использовать имя параметра, то объявление будет таким:
+```php
+// для примера выше
+$definition = [
+    diAutowire(App\Rules\RuleGenerator::class)
+        ->bindArguments(
+            // имя параметра $inputRule в конструкторе
+            inputRule: diAutowire(App\Rules\RuleB::class),            
+        )
+];
+```
+
 ⛏ Если не использовать имя параметра то передавать аргументы по индексу в конструкторе можно просто перечисляя нужные определения:
 ```php
  // Передать три аргумента в конструктор класс

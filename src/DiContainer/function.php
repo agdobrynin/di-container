@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 
 // @todo Remove alias when remove function diReference.
 \class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
@@ -51,5 +52,15 @@ if (!\function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
     function diGet(string $containerIdentifier): DiDefinitionGet
     {
         return new DiDefinitionGet($containerIdentifier);
+    }
+} // @codeCoverageIgnore
+
+if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
+    /**
+     * @phan-suppress PhanUnreferencedFunction
+     */
+    function diValue(mixed $value): DiDefinitionValue
+    {
+        return new DiDefinitionValue($value);
     }
 } // @codeCoverageIgnore

@@ -16,7 +16,7 @@ class MyUsers
      */
     public function __construct(private PDO $pdo, private string $usersClass)
     {
-        if (!class_exists($this->usersClass)) {
+        if (!\class_exists($this->usersClass)) {
             throw new InvalidArgumentException("{$this->usersClass} does not exist");
         }
     }
@@ -71,7 +71,8 @@ $users->init();
 
 \var_dump('👤 List of exist users:', $users->getAllUsers());
 
-var_dump(
+$pdo = $container->get(PDO::class);
+\var_dump(
     '⛓ Object is equal?',
-    \spl_object_id($container->get(PDO::class)) === \spl_object_id($container->get(PDO::class))
+    \spl_object_id($pdo) === \spl_object_id($container->get(PDO::class))
 ); // true

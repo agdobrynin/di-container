@@ -133,7 +133,8 @@ class RuleGenerator {
     private iterable $rules;
 
     public function __construct(
-        #[Inject('services.rules')]
+        #[Inject('services.rules.b')]
+        #[Inject('services.rules.a')]
         RuleInterface ...$inputRule
     ) {
         $this->rules = $inputRule;
@@ -148,15 +149,17 @@ class RuleGenerator {
 // определения для контейнера
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\diCallable;
+use Kaspi\DiContainer\{diAutowire, diCallable};
 
 $definitions = [
-    'services.rules' => diCallable(
+    'services.rules.a' => diCallable(
         // Автоматически внедрит зависимости этой callback функции
-        static function (App\Rules\RuleB $b, App\Rules\RuleA $a) {
-            return [$b, $a]; // вернуть массив определений для аргумента переменной длины.
+        static function (App\Rules\RuleA $a) {
+            // тут возможны дополнительные настройки объекта
+            return $a
         }
     ),
+    'services.rules.b' => diAutowire(App\Rules\RuleB::class),
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -188,14 +191,11 @@ class RuleB implements RuleInterface {}
 class RulesDiFactory implements DiFactoryInterface {
     public function __construct(
         private RuleA $ruleA,
-        private RuleB $ruleB,
     ) {}
 
-    public function __invoke(ContainerInterface $container): array {
-        return [
-            $this->ruleA,
-            $this->ruleB,
-        ];
+    public function __invoke(ContainerInterface $container): RuleA {
+        // тут возможны дополнительные настройки объекта ruleA
+        return $this->ruleA;
     }
 }
 
@@ -203,6 +203,7 @@ class RuleGenerator {
     private iterable $rules;
 
     public function __construct(
+        #[Inject(RuleB::class)]
         #[Inject(RulesDiFactory::class)]
         RuleInterface ...$inputRule
     ) {

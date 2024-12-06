@@ -42,9 +42,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             return $this->reflectionClass->newInstanceWithoutConstructor();
         }
 
-        $args = $this->resolveParameters();
-
-        return $this->reflectionClass->newInstanceArgs($args);
+        return $this->reflectionClass->newInstanceArgs($this->resolveParameters());
     }
 
     /**
