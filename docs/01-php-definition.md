@@ -65,6 +65,8 @@ $container->get('logger.file'); // '/var/log/payment.log'
 $container->get('feedback.show-recipient'); // FALSE
 $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
 ```
+> _Так же для некоторых случаев может понадобиться определение без обработки «как есть»,
+> то нужно использовать функцию-хэлпер [diValue](#divalue---объявление-аргумента-или-определения-без-обработки--как-есть)._ 
 
 #### Объявления через функции-хэлперы:
 
