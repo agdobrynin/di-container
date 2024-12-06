@@ -9,14 +9,8 @@ use Psr\Container\ContainerInterface;
 
 class WordVariadicDiFactory implements DiFactoryInterface
 {
-    /**
-     * @return WordInterface[]
-     */
-    public function __invoke(ContainerInterface $container): array
+    public function __invoke(ContainerInterface $container): mixed
     {
-        return [
-            $container->get(WordSuffix::class),
-            $container->get(WordHello::class),
-        ];
+        return $container->get(WordSuffix::class);
     }
 }
