@@ -219,6 +219,39 @@ $definitions = [
 ];
 ```
 
+##### diValue - объявление аргумента или определения без обработки — «как есть».
+
+```php
+use function \Kaspi\DiContainer\diValue;
+ 
+diValue(mixed $value)
+```
+Пример когда надо объявить аргумент «как есть»:
+```php
+// класс
+class ParameterIterableVariadic
+{
+    private array $parameters;
+
+    public function __construct(iterable ...$parameter)
+    {
+        $this->parameters = $parameter;
+    }
+    //... some logic
+}
+```
+```php
+use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diValue;
+
+$definition = [
+    diAutowire(ParameterIterableVariadic::class)
+        ->bindArguments(parameter: diValue(['ok']))
+];
+
+$container = (new DiContainerFactory())->make($definition);
+```
+
 ## Внедрение значений зависимостей аргументов по ссылке на другой идентификатор контейнера.
 
 Для внедрения зависимостей в аргументы по ссылке используется
