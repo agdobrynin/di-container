@@ -99,7 +99,7 @@ trait ParametersResolverTrait
         self::$variadicPosition = 0;
 
         foreach ($this->reflectionParameters as $parameter) {
-            if (false !== ($argumentNameOrIndex = $this->getArgumentNameOrIndexByParameter($parameter))) {
+            if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                 if ($parameter->isVariadic()) {
                     foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
                         $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
@@ -245,7 +245,7 @@ trait ParametersResolverTrait
         }
     }
 
-    protected function getArgumentNameOrIndexByParameter(\ReflectionParameter $parameter): false|int|string
+    protected function getArgumentByNameOrIndex(\ReflectionParameter $parameter): false|int|string
     {
         if ([] === $this->arguments) {
             return false;
