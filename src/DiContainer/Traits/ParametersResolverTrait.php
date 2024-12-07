@@ -266,13 +266,6 @@ trait ParametersResolverTrait
                 : [$this->arguments[$argumentNameOrIndex]];
         }
 
-        $values = [];
-
-        do {
-            $values[] = $this->arguments[$argumentNameOrIndex];
-            ++$argumentNameOrIndex;
-        } while (\array_key_exists($argumentNameOrIndex, $this->arguments));
-
-        return $values;
+        return \array_slice($this->arguments, $argumentNameOrIndex);
     }
 }
