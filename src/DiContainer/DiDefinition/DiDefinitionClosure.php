@@ -19,6 +19,10 @@ final class DiDefinitionClosure implements DiDefinitionClosureInterface
 
     public function invoke(): \Closure
     {
+        if (!$this->getContainer()->has($this->getDefinition())) {
+            throw new AutowireException("Definition \"{$this->definition}\" does not exist");
+        }
+
         return function () { // @phan-suppress-current-line PhanUnreferencedClosure
             return $this->container->get($this->getDefinition());
         };
@@ -26,7 +30,9 @@ final class DiDefinitionClosure implements DiDefinitionClosureInterface
 
     public function getDefinition(): string
     {
-        return '' !== \trim($this->definition)
+        static $trimmedDefinition;
+
+        return '' !== ($trimmedDefinition ??= \trim($this->definition))
             ? $this->definition
             : throw new AutowireException('Definition for '.__CLASS__.' must be non-empty string.');
     }
