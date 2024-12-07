@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Attributes\AsClosure;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Service;
@@ -54,6 +55,28 @@ trait AttributeReaderTrait
             }
 
             yield $inject;
+        }
+    }
+
+    /**
+     * @return \Generator<AsClosure>
+     */
+    public function getAsClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    {
+        $attributes = $reflectionParameter->getAttributes(AsClosure::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
+        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
+            throw new AutowireAttributeException(
+                'The attribute #[AsClosure] can only be applied once per non-variadic parameter.'
+            );
+        }
+
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
         }
     }
 }

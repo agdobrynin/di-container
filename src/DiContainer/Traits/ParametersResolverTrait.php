@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Attributes\AsClosure;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -116,14 +120,36 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($this->isUseAttribute() && $this->getInjectAttribute($parameter)->valid()) {
-                    foreach ($this->getInjectAttribute($parameter) as $inject) {
-                        $dependencies[] = $inject->getIdentifier()
-                            ? $this->getContainer()->get($inject->getIdentifier())
-                            : $this->getContainer()->get($parameter->getName());
+                if ($this->isUseAttribute()) {
+                    $injectValid = $this->getInjectAttribute($parameter)->valid();
+                    $asClosureValid = $this->getAsClosureAttribute($parameter)->valid();
+
+                    if ($injectValid && $asClosureValid) {
+                        throw new AutowireAttributeException(
+                            \sprintf('Cannot use attributes %s, %s together.', Inject::class, AsClosure::class)
+                        );
                     }
 
-                    continue;
+                    if ($injectValid) {
+                        foreach ($this->getInjectAttribute($parameter) as $inject) {
+                            $dependencies[] = $inject->getIdentifier()
+                                ? $this->getContainer()->get($inject->getIdentifier())
+                                : $this->getContainer()->get($parameter->getName());
+                        }
+
+                        continue;
+                    }
+
+                    if ($asClosureValid) {
+                        foreach ($this->getAsClosureAttribute($parameter) as $asClosure) {
+                            $dependencies[] = (new DiDefinitionClosure($asClosure->getIdentifier()))
+                                ->setContainer($this->getContainer())
+                                ->invoke()
+                            ;
+                        }
+
+                        continue;
+                    }
                 }
 
                 $parameterType = $this->getParameterTypeByReflection($parameter);
@@ -173,6 +199,10 @@ trait ParametersResolverTrait
     {
         if ($argumentDefinition instanceof DiDefinitionGet) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
+        }
+
+        if ($argumentDefinition instanceof DiDefinitionClosureInterface) {
+            return $argumentDefinition->setContainer($this->getContainer())->invoke();
         }
 
         if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
