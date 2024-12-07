@@ -117,9 +117,8 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
-                    && $injectAttribute->valid()) {
-                    foreach ($injectAttribute as $inject) {
+                if ($this->isUseAttribute() && $this->getInjectAttribute($parameter)->valid()) {
+                    foreach ($this->getInjectAttribute($parameter) as $inject) {
                         $dependencies[] = $inject->getIdentifier()
                             ? $this->getContainer()->get($inject->getIdentifier())
                             : $this->getContainer()->get($parameter->getName());
