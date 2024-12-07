@@ -102,8 +102,7 @@ trait ParametersResolverTrait
             if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                 if ($parameter->isVariadic()) {
                     foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
-                        $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
-                        $dependencies[] = $resolvedVal;
+                        $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
                     }
 
                     continue;
