@@ -17,14 +17,12 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperDiFactory;
 use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Inject::getIdentifier
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getInjectAttribute
+ * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait::getParameterTypeByReflection
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait::getContainer
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait::setContainer
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
+ * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
