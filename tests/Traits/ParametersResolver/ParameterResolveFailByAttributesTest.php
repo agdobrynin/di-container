@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @internal
  */
-class ParameterResolveByAttributesTest extends TestCase
+class ParameterResolveFailByAttributesTest extends TestCase
 {
     use ParametersResolverTrait;
     use PsrContainerTrait;
