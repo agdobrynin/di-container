@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Attributes;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
-#[\Attribute(\Attribute::TARGET_PROPERTY | \Attribute::IS_REPEATABLE)]
+#[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
 final class AsClosure implements DiAttributeInterface
 {
     /**
