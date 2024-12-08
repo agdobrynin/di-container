@@ -31,6 +31,9 @@ class ParameterResolveByUserDefinedArgumentByAsClosureAttributeTest extends Test
 
     public function testResolveArgumentNoneVariadicAsClosureAttribute(): void
     {
+        /**
+         * @param \Closure(): MoreSuperClass $item
+         */
         $fn = static fn (
             #[AsClosure(MoreSuperClass::class)]
             \Closure $item
