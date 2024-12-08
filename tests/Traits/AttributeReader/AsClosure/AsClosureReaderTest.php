@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\AsClosure;
 
 use Kaspi\DiContainer\Attributes\AsClosure;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
@@ -14,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @covers \Kaspi\DiContainer\Attributes\AsClosure
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
+ *
  * @internal
  */
 class AsClosureReaderTest extends TestCase
