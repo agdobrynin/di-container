@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Function;
 
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionClosureInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use PHPUnit\Framework\TestCase;
 
+use function Kaspi\DiContainer\diAsClosure;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diReference;
 
 /**
+ * @covers \Kaspi\DiContainer\diAsClosure
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
@@ -33,7 +35,7 @@ class HelperFunctionTest extends TestCase
     {
         $def = diGet('ok');
 
-        $this->assertInstanceOf(DiDefinitionGet::class, $def);
+        $this->assertInstanceOf(DiDefinitionInterface::class, $def);
         $this->assertEquals('ok', $def->getDefinition());
     }
 
@@ -41,7 +43,7 @@ class HelperFunctionTest extends TestCase
     {
         $def = diCallable(static fn () => 'ok', true);
 
-        $this->assertInstanceOf(DiDefinitionCallable::class, $def);
+        $this->assertInstanceOf(DiDefinitionAutowireInterface::class, $def);
         $this->assertTrue($def->isSingleton());
     }
 
@@ -49,8 +51,15 @@ class HelperFunctionTest extends TestCase
     {
         $def = diAutowire(self::class, true);
 
-        $this->assertInstanceOf(DiDefinitionAutowire::class, $def);
+        $this->assertInstanceOf(DiDefinitionAutowireInterface::class, $def);
         $this->assertTrue($def->isSingleton());
+    }
+
+    public function testFunctionDiAsClosure(): void
+    {
+        $def = diAsClosure(self::class);
+
+        $this->assertInstanceOf(DiDefinitionClosureInterface::class, $def);
     }
 
     public function testDepricatedFunctionDiReference(): void
