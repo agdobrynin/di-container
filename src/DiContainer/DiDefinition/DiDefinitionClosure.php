@@ -30,10 +30,10 @@ final class DiDefinitionClosure implements DiDefinitionClosureInterface
 
     public function getDefinition(): string
     {
-        static $trimmedDefinition;
+        if ('' !== \trim($this->definition)) {
+            return $this->definition;
+        }
 
-        return '' !== ($trimmedDefinition ??= \trim($this->definition))
-            ? $this->definition
-            : throw new AutowireException('Definition for '.__CLASS__.' must be non-empty string.');
+        throw new AutowireException('Definition for '.__CLASS__.' must be non-empty string.');
     }
 }

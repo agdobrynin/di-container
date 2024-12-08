@@ -17,7 +17,7 @@ class AsClosureTest extends TestCase
 {
     public function successIdsDataProvider(): \Generator
     {
-        yield 'string' => ['ok' , 'ok'];
+        yield 'string' => ['ok', 'ok'];
 
         yield 'has start space' => [' ok', ' ok'];
 
