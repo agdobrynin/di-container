@@ -217,8 +217,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         // 🚩 test data
         $this->bindArguments(
             item: [
-                diProxyClosure(MoreSuperClass::class, false),
-                diProxyClosure(SuperClass::class, true),
+                diProxyClosure(MoreSuperClass::class, false), // ➖
+                diProxyClosure(SuperClass::class, true), // ➕
             ]
         );
 
@@ -226,7 +226,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         [$res21, $res22] = \call_user_func_array($fn, $this->resolveParameters());
 
         $this->assertNotSame($res11, $res21);
-        $this->assertSame($res12, $res22); // because diProxyClosure(SuperClass::class, ✔ true ✔)
+        $this->assertSame($res12, $res22); // because diProxyClosure(SuperClass::class, true)
     }
 
     public function testResolveArgumentVariadicByIndex(): void
