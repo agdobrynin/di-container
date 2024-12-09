@@ -16,7 +16,7 @@ final class AsClosure implements DiAttributeInterface
     public function __construct(private string $id)
     {
         if ('' === \trim($id)) {
-            throw new AutowireAttributeException('Attribute #['.__CLASS__.'] argument [id] must be a non-empty string.');
+            throw new AutowireAttributeException('Attribute #[AsClosure] must has parameter $id a non-empty string.');
         }
     }
 
