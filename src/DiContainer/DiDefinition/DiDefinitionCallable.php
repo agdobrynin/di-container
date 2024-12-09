@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
@@ -13,7 +14,7 @@ use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-final class DiDefinitionCallable implements DiDefinitionAutowireInterface
+final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface
 {
     use CallableParserTrait;
     use ParametersResolverTrait;

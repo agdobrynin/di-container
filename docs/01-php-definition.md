@@ -75,10 +75,10 @@ $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-comp
 ##### diAutowire - автоматическое создание объекта и внедрения зависимостей.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use function \Kaspi\DiContainer\diAutowire;
 
-diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
+diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 Аргументы:
 - `$definition` - имя класса представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
@@ -129,10 +129,10 @@ $definitions = [
 ##### diCallable - получение результата обработки `callable` типа.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use function \Kaspi\DiContainer\diCallable; 
 
-diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
+diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 Аргументы:
 - `$definition` - значение которое `DiContainer` может преобразовать в [callable тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
