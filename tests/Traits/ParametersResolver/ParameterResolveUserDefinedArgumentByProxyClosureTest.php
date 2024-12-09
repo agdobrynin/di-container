@@ -11,23 +11,23 @@ use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
-use function Kaspi\DiContainer\diAsClosure;
+use function Kaspi\DiContainer\diProxyClosure;
 
 /**
- * @covers \Kaspi\DiContainer\diAsClosure
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionClosure
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
+ * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  *
  * @internal
  */
-class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
+class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
 
-    public function testResolveArgumentNoneVariadicAsClosureByName(): void
+    public function testResolveArgumentNoneVariadicName(): void
     {
         $fn = static fn (\Closure $item) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -48,7 +48,7 @@ class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments(
-            item: diAsClosure(MoreSuperClass::class),
+            item: diProxyClosure(MoreSuperClass::class),
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
@@ -57,7 +57,7 @@ class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
         $this->assertInstanceOf(MoreSuperClass::class, $res());
     }
 
-    public function testResolveArgumentNoneVariadicAsClosureByIndex(): void
+    public function testResolveArgumentNoneVariadicByIndex(): void
     {
         $fn = static fn (\Closure $item) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -78,7 +78,7 @@ class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments(
-            diAsClosure(MoreSuperClass::class),
+            diProxyClosure(MoreSuperClass::class),
         );
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
@@ -87,7 +87,7 @@ class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
         $this->assertInstanceOf(MoreSuperClass::class, $res());
     }
 
-    public function testResolveArgumentVariadicAsClosureByName(): void
+    public function testResolveArgumentVariadicByName(): void
     {
         $fn = static fn (\Closure ...$item) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -121,8 +121,8 @@ class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
         // 🚩 test data
         $this->bindArguments(
             item: [
-                diAsClosure(MoreSuperClass::class),
-                diAsClosure(SuperClass::class),
+                diProxyClosure(MoreSuperClass::class),
+                diProxyClosure(SuperClass::class),
             ]
         );
 
@@ -134,7 +134,7 @@ class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
         $this->assertInstanceOf(SuperClass::class, $res2());
     }
 
-    public function testResolveArgumentVariadicAsClosureByIndex(): void
+    public function testResolveArgumentVariadicByIndex(): void
     {
         $fn = static fn (\Closure ...$item) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -167,8 +167,8 @@ class ParameterResolveByUserDefinedArgumentByAsClosureTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments(
-            diAsClosure(SuperClass::class),
-            diAsClosure(MoreSuperClass::class),
+            diProxyClosure(SuperClass::class),
+            diProxyClosure(MoreSuperClass::class),
         );
 
         [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters());

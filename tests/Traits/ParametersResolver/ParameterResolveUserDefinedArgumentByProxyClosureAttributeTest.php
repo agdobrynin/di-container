@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
-use Kaspi\DiContainer\Attributes\AsClosure;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -13,29 +13,29 @@ use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\AsClosure
- * @covers \Kaspi\DiContainer\diAsClosure
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionClosure
+ * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
+ * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
-class ParameterResolveByUserDefinedArgumentByAsClosureAttributeTest extends TestCase
+class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
 
-    public function testResolveArgumentNoneVariadicAsClosureAttribute(): void
+    public function testResolveArgumentNoneVariadicAttribute(): void
     {
         /**
          * @param \Closure(): MoreSuperClass $item
          */
         $fn = static fn (
-            #[AsClosure(MoreSuperClass::class)]
+            #[ProxyClosure(MoreSuperClass::class)]
             \Closure $item
         ) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
@@ -62,11 +62,11 @@ class ParameterResolveByUserDefinedArgumentByAsClosureAttributeTest extends Test
         $this->assertInstanceOf(MoreSuperClass::class, $res());
     }
 
-    public function testResolveArgumentVariadicAsClosureByAttribute(): void
+    public function testResolveArgumentVariadicByAttribute(): void
     {
         $fn = static fn (
-            #[AsClosure(MoreSuperClass::class)]
-            #[AsClosure(SuperClass::class)]
+            #[ProxyClosure(MoreSuperClass::class)]
+            #[ProxyClosure(SuperClass::class)]
             \Closure ...$item
         ) => $item;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();

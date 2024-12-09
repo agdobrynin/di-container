@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\DiDefinition\DiDefinitionClosure;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -172,7 +174,7 @@ trait ParametersResolverTrait
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
-        if ($argumentDefinition instanceof DiDefinitionClosureInterface) {
+        if ($argumentDefinition instanceof DiDefinitionProxyClosureInterface) {
             return $argumentDefinition->setContainer($this->getContainer())->invoke();
         }
 
@@ -277,10 +279,10 @@ trait ParametersResolverTrait
     protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
     {
         $injects = $this->getInjectAttribute($parameter);
-        $asClosures = $this->getAsClosureAttribute($parameter);
+        $asClosures = $this->getProxyClosureAttribute($parameter);
 
         if ($injects->valid() && $asClosures->valid()) {
-            throw new AutowireAttributeException('Cannot use attributes #[Inject], #[AsClosure] together.');
+            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
         }
 
         if ($injects->valid()) {
@@ -294,7 +296,7 @@ trait ParametersResolverTrait
         }
 
         foreach ($asClosures as $asClosure) {
-            yield (new DiDefinitionClosure($asClosure->getIdentifier()))
+            yield (new DiDefinitionProxyClosure($asClosure->getIdentifier()))
                 ->setContainer($this->getContainer())
                 ->invoke()
             ;

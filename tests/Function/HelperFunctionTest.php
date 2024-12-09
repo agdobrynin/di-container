@@ -6,18 +6,17 @@ namespace Tests\Function;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use PHPUnit\Framework\TestCase;
 
-use function Kaspi\DiContainer\diAsClosure;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diReference;
 
 /**
- * @covers \Kaspi\DiContainer\diAsClosure
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
@@ -25,6 +24,7 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diReference
  *
  * @internal
@@ -55,11 +55,11 @@ class HelperFunctionTest extends TestCase
         $this->assertTrue($def->isSingleton());
     }
 
-    public function testFunctionDiAsClosure(): void
+    public function testFunctionDiProxyClosure(): void
     {
-        $def = diAsClosure(self::class);
+        $def = diProxyClosure(self::class);
 
-        $this->assertInstanceOf(DiDefinitionClosureInterface::class, $def);
+        $this->assertInstanceOf(DiDefinitionProxyClosureInterface::class, $def);
     }
 
     public function testDepricatedFunctionDiReference(): void

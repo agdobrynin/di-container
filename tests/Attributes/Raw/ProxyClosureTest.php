@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Attributes\Raw;
 
-use Kaspi\DiContainer\Attributes\AsClosure;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\AsClosure
+ * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  *
  * @internal
  */
-class AsClosureTest extends TestCase
+class ProxyClosureTest extends TestCase
 {
     public function successIdsDataProvider(): \Generator
     {
@@ -27,9 +27,9 @@ class AsClosureTest extends TestCase
     /**
      * @dataProvider successIdsDataProvider
      */
-    public function testAsClosureSuccess(string $id, string $expect): void
+    public function testSuccess(string $id, string $expect): void
     {
-        $asClosureAttr = new AsClosure($id);
+        $asClosureAttr = new ProxyClosure($id);
 
         $this->assertEquals($expect, $asClosureAttr->getIdentifier());
     }
@@ -44,11 +44,11 @@ class AsClosureTest extends TestCase
     /**
      * @dataProvider failIdsDataProvider
      */
-    public function testAsClosureFailure(string $id): void
+    public function testFailure(string $id): void
     {
         $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessageMatches('/Attribute #\[AsClosure\] must has parameter \$id a non-empty string/');
+        $this->expectExceptionMessageMatches('/Attribute .+ProxyClosure.+ must has the parameter \$id a non-empty string/');
 
-        new AsClosure($id);
+        new ProxyClosure($id);
     }
 }

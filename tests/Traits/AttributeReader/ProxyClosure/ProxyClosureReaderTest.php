@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Tests\Traits\AttributeReader\AsClosure;
+namespace Tests\Traits\AttributeReader\ProxyClosure;
 
-use Kaspi\DiContainer\Attributes\AsClosure;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\AsClosure
+ * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
  */
-class AsClosureReaderTest extends TestCase
+class ProxyClosureReaderTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use AttributeReaderTrait;
@@ -29,14 +29,14 @@ class AsClosureReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
-        $this->assertFalse($this->getAsClosureAttribute($p)->valid());
+        $this->assertFalse($this->getProxyClosureAttribute($p)->valid());
     }
 
     public function testManyAsClosureNonVariadicParameter(): void
     {
         $f = static fn (
-            #[AsClosure('ok')]
-            #[AsClosure('ok2')]
+            #[ProxyClosure('ok')]
+            #[ProxyClosure('ok2')]
             string $a
         ) => '';
         $p = new \ReflectionParameter($f, 0);
@@ -44,23 +44,23 @@ class AsClosureReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
 
-        $this->getAsClosureAttribute($p)->valid();
+        $this->getProxyClosureAttribute($p)->valid();
     }
 
     public function testInjectNonVariadicParameter(): void
     {
         $f = static fn (
-            #[AsClosure('ok')]
+            #[ProxyClosure('ok')]
             string $a
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
-        $injects = $this->getAsClosureAttribute($p);
+        $injects = $this->getProxyClosureAttribute($p);
 
         $this->assertTrue($injects->valid());
         $injects->rewind();
 
-        $this->assertInstanceOf(AsClosure::class, $injects->current());
+        $this->assertInstanceOf(ProxyClosure::class, $injects->current());
         $this->assertEquals('ok', $injects->current()->getIdentifier());
 
         $injects->next(); // One element Inject for argument $a in function $f.
@@ -71,14 +71,14 @@ class AsClosureReaderTest extends TestCase
     public function testInjectVariadicParameter(): void
     {
         $f = static fn (
-            #[AsClosure('one')]
-            #[AsClosure('two')]
-            #[AsClosure('three')]
+            #[ProxyClosure('one')]
+            #[ProxyClosure('two')]
+            #[ProxyClosure('three')]
             string ...$a
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
-        $injects = $this->getAsClosureAttribute($p);
+        $injects = $this->getProxyClosureAttribute($p);
 
         $this->assertTrue($injects->valid());
 

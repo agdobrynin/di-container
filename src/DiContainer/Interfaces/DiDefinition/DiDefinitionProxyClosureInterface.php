@@ -10,7 +10,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-interface DiDefinitionClosureInterface extends DiDefinitionInterface
+interface DiDefinitionProxyClosureInterface extends DiDefinitionInterface
 {
     public function setContainer(ContainerInterface $container): static;
 

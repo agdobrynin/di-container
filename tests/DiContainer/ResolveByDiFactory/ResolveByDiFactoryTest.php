@@ -64,7 +64,7 @@ class ResolveByDiFactoryTest extends TestCase
         $container = new DiContainer(config: $config);
 
         $this->expectException(ContainerException::class);
-        $this->expectExceptionMessageMatches('/Attribute #\[DiFactory\] must has parameter \$id as class-string.+DiFactoryInterface interface\. Got\: \'service\.one\'/');
+        $this->expectExceptionMessageMatches('/Attribute .+DiFactory.+ must has the parameter \$id as class-string.+DiFactoryInterface interface\. Got\: \'service\.one\'/');
 
         $container->get(MyClassFailDiFactory::class);
     }

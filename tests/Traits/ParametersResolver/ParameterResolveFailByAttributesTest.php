@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
-use Kaspi\DiContainer\Attributes\AsClosure;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\AsClosure
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
@@ -30,7 +30,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
     {
         $fn = static fn (
             #[Inject]
-            #[AsClosure('someService')]
+            #[ProxyClosure('someService')]
             $iterator
         ) => $iterator;
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionClosureInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 
-final class DiDefinitionClosure implements DiDefinitionClosureInterface
+final class DiDefinitionProxyClosure implements DiDefinitionProxyClosureInterface
 {
     use PsrContainerTrait;
 

@@ -6,8 +6,8 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 
@@ -66,12 +66,12 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diAsClosure')) { // @codeCoverageIgnore
+if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
     /**
      * @phan-suppress PhanUnreferencedFunction
      */
-    function diAsClosure(string $definition): DiDefinitionClosure
+    function diProxyClosure(string $definition): DiDefinitionProxyClosure
     {
-        return new DiDefinitionClosure($definition);
+        return new DiDefinitionProxyClosure($definition);
     }
 } // @codeCoverageIgnore

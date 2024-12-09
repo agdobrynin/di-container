@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\Attributes\AsClosure;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 
@@ -41,7 +41,7 @@ trait AttributeReaderTrait
 
         if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
             throw new AutowireAttributeException(
-                'The attribute #[Inject] can only be applied once per non-variadic parameter.'
+                'The attribute #['.Inject::class.'] can only be applied once per non-variadic parameter.'
             );
         }
 
@@ -59,11 +59,11 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<AsClosure>
+     * @return \Generator<ProxyClosure>
      */
-    public function getAsClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    public function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
-        $attributes = $reflectionParameter->getAttributes(AsClosure::class);
+        $attributes = $reflectionParameter->getAttributes(ProxyClosure::class);
 
         if ([] === $attributes) {
             return;
@@ -71,7 +71,7 @@ trait AttributeReaderTrait
 
         if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
             throw new AutowireAttributeException(
-                'The attribute #[AsClosure] can only be applied once per non-variadic parameter.'
+                'The attribute #['.ProxyClosure::class.'] can only be applied once per non-variadic parameter.'
             );
         }
 

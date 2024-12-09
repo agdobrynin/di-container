@@ -8,7 +8,7 @@ use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
 #[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
-final class AsClosure implements DiAttributeInterface
+final class ProxyClosure implements DiAttributeInterface
 {
     /**
      * @param class-string|non-empty-string $id class name or container identifier
@@ -16,7 +16,7 @@ final class AsClosure implements DiAttributeInterface
     public function __construct(private string $id)
     {
         if ('' === \trim($id)) {
-            throw new AutowireAttributeException('Attribute #[AsClosure] must has parameter $id a non-empty string.');
+            throw new AutowireAttributeException('Attribute #['.self::class.'] must has the parameter $id a non-empty string.');
         }
     }
 
