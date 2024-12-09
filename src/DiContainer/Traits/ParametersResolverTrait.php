@@ -119,31 +119,7 @@ trait ParametersResolverTrait
 
             try {
                 if ($this->isUseAttribute()) {
-                    $injects = $this->getInjectAttribute($parameter);
-                    $asClosures = $this->getAsClosureAttribute($parameter);
-
-                    if ($injects->valid() && $asClosures->valid()) {
-                        throw new AutowireAttributeException('Cannot use attributes #[Inject], #[AsClosure] together.');
-                    }
-
-                    if ($injects->valid()) {
-                        foreach ($injects as $inject) {
-                            $dependencies[] = $inject->getIdentifier()
-                                ? $this->getContainer()->get($inject->getIdentifier())
-                                : $this->getContainer()->get($parameter->getName());
-                        }
-
-                        continue;
-                    }
-
-                    if ($asClosures->valid()) {
-                        foreach ($asClosures as $asClosure) {
-                            $dependencies[] = (new DiDefinitionClosure($asClosure->getIdentifier()))
-                                ->setContainer($this->getContainer())
-                                ->invoke()
-                            ;
-                        }
-
+                    if (\array_push($dependencies, ...$this->attemptApplyAttributes($parameter))) {
                         continue;
                     }
                 }
@@ -291,5 +267,32 @@ trait ParametersResolverTrait
         }
 
         return \array_slice($this->arguments, $argumentNameOrIndex);
+    }
+
+    protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
+    {
+        $injects = $this->getInjectAttribute($parameter);
+        $asClosures = $this->getAsClosureAttribute($parameter);
+
+        if ($injects->valid() && $asClosures->valid()) {
+            throw new AutowireAttributeException('Cannot use attributes #[Inject], #[AsClosure] together.');
+        }
+
+        if ($injects->valid()) {
+            foreach ($injects as $inject) {
+                yield $inject->getIdentifier()
+                    ? $this->getContainer()->get($inject->getIdentifier())
+                    : $this->getContainer()->get($parameter->getName());
+            }
+
+            return;
+        }
+
+        foreach ($asClosures as $asClosure) {
+            yield (new DiDefinitionClosure($asClosure->getIdentifier()))
+                ->setContainer($this->getContainer())
+                ->invoke()
+            ;
+        }
     }
 }
