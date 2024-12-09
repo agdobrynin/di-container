@@ -47,7 +47,7 @@ class AsClosureTest extends TestCase
     public function testAsClosureFailure(string $id): void
     {
         $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessage('must be a non-empty string');
+        $this->expectExceptionMessageMatches('/Attribute #\[AsClosure\] must has parameter \$id a non-empty string/');
 
         new AsClosure($id);
     }
