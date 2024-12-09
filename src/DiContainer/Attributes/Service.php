@@ -16,7 +16,7 @@ final class Service implements DiAttributeServiceInterface
     public function __construct(private string $id, private bool $isSingleton = false)
     {
         if ('' === \trim($id)) {
-            throw new AutowireAttributeException('Attribute #['.__CLASS__.'] argument [id] must be a non-empty string.');
+            throw new AutowireAttributeException('Attribute #[Service] parameter $id must be a non-empty string.');
         }
     }
 
