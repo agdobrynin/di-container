@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\Attributes\AsClosure;
-use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -125,9 +123,7 @@ trait ParametersResolverTrait
                     $asClosureValid = $this->getAsClosureAttribute($parameter)->valid();
 
                     if ($injectValid && $asClosureValid) {
-                        throw new AutowireAttributeException(
-                            \sprintf('Cannot use attributes %s, %s together.', Inject::class, AsClosure::class)
-                        );
+                        throw new AutowireAttributeException('Cannot use attributes #[Inject], #[AsClosure] together.');
                     }
 
                     if ($injectValid) {

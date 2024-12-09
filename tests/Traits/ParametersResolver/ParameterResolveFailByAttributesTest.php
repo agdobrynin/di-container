@@ -38,7 +38,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->setUseAttribute(true);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use attributes .+Inject, .+AsClosure together/');
+        $this->expectExceptionMessageMatches('/Cannot use attributes.+together/');
 
         $this->resolveParameters();
     }
