@@ -118,10 +118,9 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($this->isUseAttribute()) {
-                    if (\array_push($dependencies, ...$this->attemptApplyAttributes($parameter))) {
-                        continue;
-                    }
+                if ($this->isUseAttribute()
+                    && \array_push($dependencies, ...$this->attemptApplyAttributes($parameter))) {
+                    continue;
                 }
 
                 $parameterType = $this->getParameterTypeByReflection($parameter);
