@@ -57,6 +57,58 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $this->assertInstanceOf(MoreSuperClass::class, $res());
     }
 
+    public function testResolveArgumentNoneVariadicByNameIsSingleton(): void
+    {
+        $fn = static fn (\Closure $item) => $item;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->method('has')
+            ->with(MoreSuperClass::class)
+            ->willReturn(true)
+        ;
+        $mockContainer->method('get')
+            ->with(MoreSuperClass::class)
+            ->willReturn(new MoreSuperClass())
+        ;
+
+        $this->setContainer($mockContainer);
+
+        // 🚩 test data
+        $this->bindArguments(
+            item: diProxyClosure(MoreSuperClass::class, true),
+        );
+
+        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $this->assertSame($res, \call_user_func_array($fn, $this->resolveParameters()));
+    }
+
+    public function testResolveArgumentNoneVariadicByNameIsNoneSingleton(): void
+    {
+        $fn = static fn (\Closure $item) => $item;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->method('has')
+            ->with(MoreSuperClass::class)
+            ->willReturn(true)
+        ;
+        $mockContainer->method('get')
+            ->with(MoreSuperClass::class)
+            ->willReturn(new MoreSuperClass())
+        ;
+
+        $this->setContainer($mockContainer);
+
+        // 🚩 test data
+        $this->bindArguments(
+            item: diProxyClosure(MoreSuperClass::class, false),
+        );
+
+        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $this->assertNotSame($res, \call_user_func_array($fn, $this->resolveParameters()));
+    }
+
     public function testResolveArgumentNoneVariadicByIndex(): void
     {
         $fn = static fn (\Closure $item) => $item;
@@ -132,6 +184,49 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $this->assertInstanceOf(\Closure::class, $res2);
         $this->assertInstanceOf(MoreSuperClass::class, $res1());
         $this->assertInstanceOf(SuperClass::class, $res2());
+    }
+
+    public function testResolveArgumentVariadicByNameAndIsSingleton(): void
+    {
+        $fn = static fn (\Closure ...$item) => $item;
+        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer->method('has')
+            ->with(self::logicalOr(
+                MoreSuperClass::class,
+                SuperClass::class
+            ))
+            ->willReturn(
+                true
+            )
+        ;
+        $mockContainer->method('get')
+            ->with(self::logicalOr(
+                MoreSuperClass::class,
+                SuperClass::class
+            ))
+            ->willReturn(
+                new MoreSuperClass(),
+                new SuperClass()
+            )
+        ;
+
+        $this->setContainer($mockContainer);
+
+        // 🚩 test data
+        $this->bindArguments(
+            item: [
+                diProxyClosure(MoreSuperClass::class, false),
+                diProxyClosure(SuperClass::class, true),
+            ]
+        );
+
+        [$res11, $res12] = \call_user_func_array($fn, $this->resolveParameters());
+        [$res21, $res22] = \call_user_func_array($fn, $this->resolveParameters());
+
+        $this->assertNotSame($res11, $res21);
+        $this->assertSame($res12, $res22); // because diProxyClosure(SuperClass::class, ✔ true ✔)
     }
 
     public function testResolveArgumentVariadicByIndex(): void
