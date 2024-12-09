@@ -119,15 +119,15 @@ trait ParametersResolverTrait
 
             try {
                 if ($this->isUseAttribute()) {
-                    $injectValid = $this->getInjectAttribute($parameter)->valid();
-                    $asClosureValid = $this->getAsClosureAttribute($parameter)->valid();
+                    $injects = $this->getInjectAttribute($parameter);
+                    $asClosures = $this->getAsClosureAttribute($parameter);
 
-                    if ($injectValid && $asClosureValid) {
+                    if ($injects->valid() && $asClosures->valid()) {
                         throw new AutowireAttributeException('Cannot use attributes #[Inject], #[AsClosure] together.');
                     }
 
-                    if ($injectValid) {
-                        foreach ($this->getInjectAttribute($parameter) as $inject) {
+                    if ($injects->valid()) {
+                        foreach ($injects as $inject) {
                             $dependencies[] = $inject->getIdentifier()
                                 ? $this->getContainer()->get($inject->getIdentifier())
                                 : $this->getContainer()->get($parameter->getName());
@@ -136,8 +136,8 @@ trait ParametersResolverTrait
                         continue;
                     }
 
-                    if ($asClosureValid) {
-                        foreach ($this->getAsClosureAttribute($parameter) as $asClosure) {
+                    if ($asClosures->valid()) {
+                        foreach ($asClosures as $asClosure) {
                             $dependencies[] = (new DiDefinitionClosure($asClosure->getIdentifier()))
                                 ->setContainer($this->getContainer())
                                 ->invoke()
