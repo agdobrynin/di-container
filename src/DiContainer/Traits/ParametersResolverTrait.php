@@ -268,6 +268,12 @@ trait ParametersResolverTrait
         return \array_slice($this->arguments, $argumentNameOrIndex);
     }
 
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws AutowireExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
     protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
     {
         $injects = $this->getInjectAttribute($parameter);
