@@ -10,16 +10,16 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 
 // @todo Remove alias when remove function diReference.
 \class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
     }
@@ -27,9 +27,19 @@ if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     // @phan-suppress-next-line PhanUnreferencedFunction
-    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
+    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {
         return new DiDefinitionCallable($definition, $isSingleton);
+    }
+} // @codeCoverageIgnore
+
+if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
+    /**
+     * @phan-suppress PhanUnreferencedFunction
+     */
+    function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionInvokableInterface
+    {
+        return new DiDefinitionProxyClosure($definition, $isSingleton);
     }
 } // @codeCoverageIgnore
 
@@ -66,15 +76,5 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
     function diValue(mixed $value): DiDefinitionInterface
     {
         return new DiDefinitionValue($value);
-    }
-} // @codeCoverageIgnore
-
-if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
-    /**
-     * @phan-suppress PhanUnreferencedFunction
-     */
-    function diProxyClosure(string $definition): DiDefinitionProxyClosureInterface
-    {
-        return new DiDefinitionProxyClosure($definition);
     }
 } // @codeCoverageIgnore

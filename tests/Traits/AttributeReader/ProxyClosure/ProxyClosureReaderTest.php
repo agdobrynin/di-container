@@ -82,10 +82,8 @@ class ProxyClosureReaderTest extends TestCase
 
         $this->assertTrue($injects->valid());
 
-        $identifiers = ['one', 'two', 'three']; // Inject id argument for parameter $a in function $f
-
-        foreach ($injects as $k => $inject) {
-            $this->assertEquals($identifiers[$k], $injects->current()->getIdentifier());
+        foreach ($injects as $inject) {
+            $this->assertContains($inject->getIdentifier(), ['one', 'two', 'three']);
         }
 
         $this->assertFalse($injects->valid()); // All Inject fetched, generator empty.

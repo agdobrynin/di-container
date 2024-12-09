@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Function;
 
-use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -35,7 +35,7 @@ class HelperFunctionTest extends TestCase
     {
         $def = diGet('ok');
 
-        $this->assertInstanceOf(DiDefinitionInterface::class, $def);
+        $this->assertInstanceOf(DiDefinitionGet::class, $def);
         $this->assertEquals('ok', $def->getDefinition());
     }
 
@@ -43,7 +43,7 @@ class HelperFunctionTest extends TestCase
     {
         $def = diCallable(static fn () => 'ok', true);
 
-        $this->assertInstanceOf(DiDefinitionAutowireInterface::class, $def);
+        $this->assertInstanceOf(DiDefinitionCallable::class, $def);
         $this->assertTrue($def->isSingleton());
     }
 
@@ -51,7 +51,7 @@ class HelperFunctionTest extends TestCase
     {
         $def = diAutowire(self::class, true);
 
-        $this->assertInstanceOf(DiDefinitionAutowireInterface::class, $def);
+        $this->assertInstanceOf(DiDefinitionAutowire::class, $def);
         $this->assertTrue($def->isSingleton());
     }
 
@@ -59,14 +59,14 @@ class HelperFunctionTest extends TestCase
     {
         $def = diProxyClosure(self::class);
 
-        $this->assertInstanceOf(DiDefinitionProxyClosureInterface::class, $def);
+        $this->assertInstanceOf(DiDefinitionProxyClosure::class, $def);
     }
 
-    public function testDepricatedFunctionDiReference(): void
+    public function testDeprecatedFunctionDiReference(): void
     {
         $def = diReference('ok');
 
-        $this->assertInstanceOf(DiDefinitionReference::class, $def);
+        $this->assertInstanceOf(DiDefinitionGet::class, $def);
         $this->assertEquals('ok', $def->getDefinition());
     }
 }

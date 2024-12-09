@@ -12,9 +12,8 @@ use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -174,11 +173,7 @@ trait ParametersResolverTrait
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
-        if ($argumentDefinition instanceof DiDefinitionProxyClosureInterface) {
-            return $argumentDefinition->setContainer($this->getContainer())->invoke();
-        }
-
-        if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
+        if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
             $id = $parameter->isVariadic()
                 ? \sprintf('%s#%d', $parameter->getName(), self::$variadicPosition++)
                 : $parameter->getName();

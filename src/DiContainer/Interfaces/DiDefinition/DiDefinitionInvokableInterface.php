@@ -10,8 +10,14 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-interface DiDefinitionProxyClosureInterface extends DiDefinitionInterface
+interface DiDefinitionInvokableInterface extends DiDefinitionInterface
 {
+    public function isSingleton(): ?bool;
+
+    public function setUseAttribute(?bool $useAttribute): static;
+
+    public function isUseAttribute(): bool;
+
     public function setContainer(ContainerInterface $container): static;
 
     /**
@@ -20,11 +26,9 @@ interface DiDefinitionProxyClosureInterface extends DiDefinitionInterface
     public function getContainer(): ContainerInterface;
 
     /**
-     * @return \Closure(): mixed
-     *
      * @throws AutowireExceptionInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function invoke(): \Closure;
+    public function invoke(): mixed;
 }

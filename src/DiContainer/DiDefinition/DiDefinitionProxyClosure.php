@@ -5,17 +5,24 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
+use Kaspi\DiContainer\Traits\UseAttributeTrait;
 
-final class DiDefinitionProxyClosure implements DiDefinitionProxyClosureInterface
+final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface
 {
     use PsrContainerTrait;
+    use UseAttributeTrait;
 
     /**
      * @param non-empty-string $definition
      */
-    public function __construct(private string $definition) {}
+    public function __construct(private string $definition, private ?bool $isSingleton = null) {}
+
+    public function isSingleton(): ?bool
+    {
+        return $this->isSingleton;
+    }
 
     public function invoke(): \Closure
     {

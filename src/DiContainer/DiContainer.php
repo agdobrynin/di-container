@@ -16,9 +16,9 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -44,7 +44,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected array $definitions = [];
 
     /**
-     * @var array<class-string|non-empty-string, DiDefinitionAutowireInterface|DiDefinitionInterface>
+     * @var array<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface>
      */
     protected array $diResolvedDefinition = [];
 
@@ -172,7 +172,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             $diDefinition = $this->resolveDefinition($id);
 
-            if ($diDefinition instanceof DiDefinitionAutowireInterface) {
+            if ($diDefinition instanceof DiDefinitionInvokableInterface) {
                 // Configure definition.
                 $diDefinition->setContainer($this)
                     ->setUseAttribute($this->config?->isUseAttribute())
@@ -203,7 +203,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface
+    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionInvokableInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
             $hasDefinition = \array_key_exists($id, $this->definitions);
