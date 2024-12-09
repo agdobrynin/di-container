@@ -17,7 +17,7 @@ final class DiFactory implements DiAttributeServiceInterface
     public function __construct(private string $id, private bool $isSingleton = false)
     {
         if (!\is_a($id, DiFactoryInterface::class, true)) {
-            throw new AutowireAttributeException('Attribute #['.self::class.'] must has the parameter $id as class-string. Class must implement '.DiFactoryInterface::class.' interface. Got: \''.$id.'\'');
+            throw new AutowireAttributeException('The attribute #['.self::class.'] must have an $id parameter as class-string. Class must have implement '.DiFactoryInterface::class.' interface. Got: \''.$id.'\'');
         }
     }
 

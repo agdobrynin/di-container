@@ -47,7 +47,7 @@ class ProxyClosureTest extends TestCase
     public function testFailure(string $id): void
     {
         $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessageMatches('/Attribute .+ProxyClosure.+ must has the parameter \$id a non-empty string/');
+        $this->expectExceptionMessageMatches('/The attribute .+ProxyClosure.+ must have an \$id parameter that is a non-empty string/');
 
         new ProxyClosure($id);
     }

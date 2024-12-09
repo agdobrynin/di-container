@@ -16,7 +16,7 @@ final class ProxyClosure implements DiAttributeInterface
     public function __construct(private string $id)
     {
         if ('' === \trim($id)) {
-            throw new AutowireAttributeException('Attribute #['.self::class.'] must has the parameter $id a non-empty string.');
+            throw new AutowireAttributeException('The attribute #['.self::class.'] must have an $id parameter that is a non-empty string.');
         }
     }
 
