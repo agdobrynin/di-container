@@ -18,7 +18,11 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 \class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
-    // @phan-suppress-next-line PhanUnreferencedFunction
+    /**
+     * @phan-suppress PhanUnreferencedFunction
+     *
+     * @param class-string $definition
+     */
     function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
@@ -36,6 +40,8 @@ if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
 if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
     /**
      * @phan-suppress PhanUnreferencedFunction
+     *
+     * @param class-string $definition
      */
     function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionInvokableInterface
     {
