@@ -120,7 +120,9 @@ trait ParametersResolverTrait
 
             try {
                 if ($this->isUseAttribute()
-                    && \array_push($dependencies, ...$this->attemptApplyAttributes($parameter))) {
+                    && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                    \array_push($dependencies, ...$attributes);
+
                     continue;
                 }
 
