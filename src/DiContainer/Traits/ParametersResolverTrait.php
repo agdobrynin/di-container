@@ -293,7 +293,10 @@ trait ParametersResolverTrait
         }
 
         foreach ($asClosures as $asClosure) {
-            yield $this->resolveInputArgument($parameter, new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton()));
+            yield $this->resolveInputArgument(
+                $parameter,
+                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
+            );
         }
     }
 }
