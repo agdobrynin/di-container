@@ -266,6 +266,7 @@ $container = (new DiContainerFactory())->make($definition);
 Определение для отложенной инициализации сервиса через Closure тип.
 
 ```php
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use function Kaspi\DiContainer\diProxyClosure;
 
 diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionInvokableInterface
