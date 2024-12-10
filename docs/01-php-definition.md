@@ -84,7 +84,7 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionArguments
 - `$definition` - имя класса представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
 
-> 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
+> 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`.
 > Можно указать аргументы для "определения" через метод:
 > - `bindArguments(mixed ...$argument)`
 > 
@@ -138,7 +138,7 @@ diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefi
 - `$definition` - значение которое `DiContainer` может преобразовать в [callable тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
 - `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
 
-> 🔌 Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
+> 🔌 Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`.
 > Можно указать аргументы для "определения" через метод:
 > - `bindArguments(mixed ...$argument)`
 >
@@ -253,6 +253,62 @@ $definition = [
 
 $container = (new DiContainerFactory())->make($definition);
 ```
+
+##### diProxyClosure - объявление для отложенной инициализации сервиса через Closure тип.
+
+```php
+use function Kaspi\DiContainer\diProxyClosure;
+
+diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionInvokableInterface
+```
+Такое объявление сервиса пригодится для «тяжелых» зависимостей,
+требующих длительного времени инициализации или ресурсоёмких вычислений.
+
+Пример для отложенной инициализации сервиса:
+```php
+// Класс с «тяжелыми» зависимостями,
+// много ресурсов на инициализацию.
+class SomeClass {
+    /**
+     * 🚩 Подсказка для IDE при авто-дополении (autocomplete).
+     * @param Closure(): HeavyDependency $heavyDependency
+     */
+    public function __construct(
+        private \Closure $heavyDependency,
+        private LiteDependency $liteDependency,
+    ) {}
+    
+    public function doHeavyDependency() {
+        ($this->heavyDependency)()->doMakeHeavy();
+    }
+    
+    public function doLiteDependency() {
+        $this->liteDependency->doMakeLite();
+    }
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\diProxyClosure;
+
+$definition = [
+    diAutowire(SomeClass::class)
+        ->bindArguments(
+            heavyDependency: diProxyClosure(HeavyDependency::class),
+        )
+];
+
+$container = (new DiContainerFactory())->make($definition);
+
+// ...
+
+$container->get(SomeClass::class);
+```
+При таком объявлении сервис `$heavyDependency` будет инициализирован
+только после обращения к свойству `SomeClass::$heavyDependency`
+а не в момент разрешения зависимости `SomeClass::class`.
+
+> 📝 
 
 ## Внедрение значений зависимостей аргументов по ссылке на другой идентификатор контейнера.
 
