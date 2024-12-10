@@ -254,7 +254,9 @@ $definition = [
 $container = (new DiContainerFactory())->make($definition);
 ```
 
-##### diProxyClosure - определение для отложенной инициализации сервиса через Closure тип.
+##### diProxyClosure
+
+Определение для отложенной инициализации сервиса через Closure тип.
 
 ```php
 use function Kaspi\DiContainer\diProxyClosure;
