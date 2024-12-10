@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 
-final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionIdentifierInterface
+final class DiDefinitionAutowire implements DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface
 {
     use ParametersResolverTrait;
     use PsrContainerTrait;

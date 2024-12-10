@@ -8,9 +8,10 @@
 > приоритет имеют php-атрибуты чем php-определения.
 
 Доступные атрибуты:
-- **[Inject](#inject)** - внедрение зависимости в аргументы конструктора, метода класса.
+- **[Inject](#inject)** - внедрение зависимости в параметры конструктора, метода класса.
 - **[Service](#service)** - определение для интерфейса какой класс будет вызван и разрешен в контейнере.
 - **[DiFactory](#difactory)** - фабрика для c помощью которой разрешается зависимость класса. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
+- **[ProxyClosure](#proxyclosure)** - внедрение зависимости в параметры с отложенной инициализацией через функцию обратного вызова `\Closure`.
 
 ## Inject
 
@@ -416,4 +417,76 @@ $container = (new DiContainerFactory())->make();
 $myClass = $container->get(SuperClass::class);
 print $myClass->name; // Piter
 print $myClass->age; // 22
+```
+## ProxyClosure
+
+Реализация ленивой инициализации параметров класса (зависимости) через функцию обратного вызова.
+
+```php
+use Kaspi\DiContainer\Attributes\ProxyClosure;
+
+#[ProxyClosure(
+    id: '', // Класс реализующий сервис который необходимо разрешить отложенно
+    isSingleton: false,  // сервис создаётся как Singleton
+)]
+```
+
+Такое объявление сервиса пригодится для «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмких вычислений.
+
+> Подробное объяснение использования [ProxyClosure](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#diproxyclosure)
+
+Пример для отложенной инициализации сервиса через атрибут `#[ProxyClosure]`:
+
+```php
+// Класс с «тяжёлыми» зависимостями, много ресурсов на инициализацию.
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\ProxyClosure;
+
+class HeavyDependency {
+    public function __construct(...) {}
+    public function doMake() {}
+}
+
+class ClassWithHeavyDependency {
+    /**
+     * @param Closure(): HeavyDependency $heavyDependency
+     */
+    public function __construct(
+        /**
+         * 🚩 Подсказка для IDE при авто-дополении (autocomplete).
+         * @param Closure(): HeavyDependency $heavyDependency
+         */
+        #[ProxyClosure(HeavyDependency::class)]
+        private \Closure $heavyDependency,
+        private LiteDependency $liteDependency,
+    ) {}
+    
+    public function doHeavyDependency() {
+        ($this->heavyDependency)()->doMake();
+    }
+    
+    public function doLiteDependency() {
+        $this->liteDependency->doMakeLite();
+    }
+}
+```
+
+> 📝 Для подсказок IDE autocomplete используйте
+> PhpDocBlock над конструктором: 
+> `@param Closure(): HeavyDependency $heavyDependency`
+
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make();
+
+// свойство ClassWithHeavyDependency::$heavyDependency
+// ещё не инициализировано.
+$classWithHeavyDependency = $container->get(App\Services\ClassWithHeavyDependency::class);
+
+// Внутри метода инициализируется
+// свойство ClassWithHeavyDependency::$heavyDependency
+// через Closure вызов (callback функция) 
+$classWithHeavyDependency->doHeavyDependency();
 ```

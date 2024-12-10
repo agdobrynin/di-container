@@ -7,8 +7,8 @@ namespace Kaspi\DiContainer\Attributes;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 
-#[\Attribute(\Attribute::TARGET_CLASS)]
-final class Service implements DiAttributeServiceInterface
+#[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
+final class ProxyClosure implements DiAttributeServiceInterface
 {
     /**
      * @param class-string|non-empty-string $id class name or container identifier
