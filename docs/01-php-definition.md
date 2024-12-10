@@ -261,6 +261,8 @@ use function Kaspi\DiContainer\diProxyClosure;
 
 diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionInvokableInterface
 ```
+Реализация ленивой инициализации зависимости через функцию обратного вызова.
+
 Такое объявление сервиса пригодится для «тяжёлых» зависимостей,
 требующих длительного времени инициализации или ресурсоёмких вычислений.
 
@@ -272,7 +274,7 @@ class HeavyDependency {
     public function doMake() {}
 }
 
-class SomeClass {
+class ClassWithHeavyDependency {
     /**
      * @param Closure(): HeavyDependency $heavyDependency
      */
@@ -295,7 +297,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use function Kaspi\DiContainer\diProxyClosure;
 
 $definition = [
-    diAutowire(SomeClass::class)
+    diAutowire(ClassWithHeavyDependency::class)
         ->bindArguments(
             heavyDependency: diProxyClosure(HeavyDependency::class),
         )
@@ -305,15 +307,18 @@ $container = (new DiContainerFactory())->make($definition);
 
 // ...
 
-$someClass = $container->get(SomeClass::class); // свойство SomeClass::$heavyDependency
-                                                // ещё не инициализировано.
-$someClass->doHeavyDependency();// Внутри метода инициализируется
-                                // свойство SomeClass::$heavyDependency
-                                // через Closure вызов (callback функция) 
+// свойство ClassWithHeavyDependency::$heavyDependency
+// ещё не инициализировано.
+$someClass = $container->get(ClassWithHeavyDependency::class);
+
+// Внутри метода инициализируется
+// свойство ClassWithHeavyDependency::$heavyDependency
+// через Closure вызов (callback функция) 
+$someClass->doHeavyDependency();
 ```
 При таком объявлении сервис `$heavyDependency` будет инициализирован
-только после обращения к свойству `SomeClass::$heavyDependency`
-а не в момент разрешения зависимости `SomeClass::class`.
+только после обращения к свойству `ClassWithHeavyDependency::$heavyDependency`
+а не в момент разрешения зависимости `ClassWithHeavyDependency::class`.
 
 > 📝 Для подсказок IDE autocomplete можно использовать PhpDocBlock:
 > ```php
