@@ -2,18 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\FromDocs\PhpDefinitions;
+namespace Tests\FromDocs\PhpAttribute;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
-use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithHeavyDependency;
-use Tests\FromDocs\PhpDefinitions\Fixtures\HeavyDependency;
-
-use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diProxyClosure;
+use Tests\FromDocs\PhpAttribute\Fixtures\ClassWithHeavyDependency;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -28,17 +25,9 @@ class DiProxyClosureTest extends TestCase
 {
     public function testDiProxyClosure(): void
     {
-        $definition = [
-            diAutowire(ClassWithHeavyDependency::class)
-                ->bindArguments(
-                    heavyDependency: diProxyClosure(HeavyDependency::class),
-                ),
-        ];
-
-        // Not use Attribute
+        // use Attribute
         $container = new DiContainer(
-            definitions: $definition,
-            config: new DiContainerConfig(useAttribute: false),
+            config: new DiContainerConfig(useAttribute: true),
         );
 
         // свойство ClassWithHeavyDependency::$heavyDependency
