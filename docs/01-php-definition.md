@@ -66,25 +66,27 @@ $container->get('feedback.show-recipient'); // FALSE
 $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
 ```
 > _Так же для некоторых случаев может понадобиться определение без обработки «как есть»,
-> то нужно использовать функцию-хэлпер [diValue](#divalue---объявление-аргумента-или-определения-без-обработки--как-есть)._ 
+> то нужно использовать функцию-хэлпер [diValue](#divalue)._ 
 
 #### Объявления через функции-хэлперы:
 
 > 📑 Функции-хэлперы имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
 
-##### diAutowire - автоматическое создание объекта и внедрения зависимостей.
+##### diAutowire
+
+Автоматическое создание объекта и внедрения зависимостей.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use function \Kaspi\DiContainer\diAutowire;
 
-diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
+diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 Аргументы:
 - `$definition` - имя класса представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
-- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
+- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект.
 
-> 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
+> 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`.
 > Можно указать аргументы для "определения" через метод:
 > - `bindArguments(mixed ...$argument)`
 > 
@@ -126,19 +128,21 @@ $definitions = [
         ->bindArguments(dsn: 'sqlite::memory:'),
 ];
 ```
-##### diCallable - получение результата обработки `callable` типа.
+##### diCallable
+
+Получение результата обработки `callable` типа.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use function \Kaspi\DiContainer\diCallable; 
 
-diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionAutowireInterface
+diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 Аргументы:
 - `$definition` - значение которое `DiContainer` может преобразовать в [callable тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
 - `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
 
-> 🔌 Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionAutowireInterface`.
+> 🔌 Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`.
 > Можно указать аргументы для "определения" через метод:
 > - `bindArguments(mixed ...$argument)`
 >
@@ -190,7 +194,8 @@ var_dump($container->get('services.one') instanceof App\Services\ServiceOne); //
 >   'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key'),
 > ];
 > ```
-##### diGet - объявление аргумента или определения как ссылки на другой идентификатор контейнера.
+##### diGet
+Определение аргумента как ссылки на другой идентификатор контейнера.
 
 ```php
 use function \Kaspi\DiContainer\diGet;
@@ -221,7 +226,9 @@ $definitions = [
 ];
 ```
 
-##### diValue - объявление аргумента или определения без обработки — «как есть».
+##### diValue
+
+Определение аргумента без обработки — «как есть».
 
 ```php
 use function \Kaspi\DiContainer\diValue;
@@ -254,10 +261,91 @@ $definition = [
 $container = (new DiContainerFactory())->make($definition);
 ```
 
+##### diProxyClosure
+
+Определение для отложенной инициализации сервиса через Closure тип.
+
+```php
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use function Kaspi\DiContainer\diProxyClosure;
+
+diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionInvokableInterface
+```
+Реализация ленивой инициализации зависимости через функцию обратного вызова.
+
+Такое объявление сервиса пригодится для «тяжёлых» зависимостей,
+требующих длительного времени инициализации или ресурсоёмких вычислений.
+
+Пример для отложенной инициализации сервиса:
+```php
+// Класс с «тяжёлыми» зависимостями, много ресурсов на инициализацию.
+class HeavyDependency {
+    public function __construct(...) {}
+    public function doMake() {}
+}
+
+class ClassWithHeavyDependency {
+    /**
+     * @param Closure(): HeavyDependency $heavyDependency
+     */
+    public function __construct(
+        private \Closure $heavyDependency,
+        private LiteDependency $liteDependency,
+    ) {}
+    
+    public function doHeavyDependency() {
+        ($this->heavyDependency)()->doMake();
+    }
+    
+    public function doLiteDependency() {
+        $this->liteDependency->doMakeLite();
+    }
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\diProxyClosure;
+
+$definition = [
+    diAutowire(ClassWithHeavyDependency::class)
+        ->bindArguments(
+            heavyDependency: diProxyClosure(HeavyDependency::class),
+        )
+];
+
+$container = (new DiContainerFactory())->make($definition);
+
+// ...
+
+// свойство ClassWithHeavyDependency::$heavyDependency
+// ещё не инициализировано.
+$classWithHeavyDep = $container->get(ClassWithHeavyDependency::class);
+
+// Внутри метода инициализируется
+// свойство ClassWithHeavyDependency::$heavyDependency
+// через Closure вызов (callback функция) 
+$classWithHeavyDep->doHeavyDependency();
+```
+При таком объявлении сервис `$heavyDependency` будет инициализирован
+только после обращения к свойству `ClassWithHeavyDependency::$heavyDependency`
+а не в момент разрешения зависимости `ClassWithHeavyDependency::class`.
+
+> 📝 Для подсказок IDE autocomplete можно использовать PhpDocBlock:
+> ```php
+>  /**
+>   * 🚩 Подсказка для IDE при авто-дополении (autocomplete).
+>   * @param Closure(): HeavyDependency $heavyDependency
+>   */
+>   public function __construct(
+>       private \Closure $heavyDependency,
+>       private LiteDependency $liteDependency,
+>   ) {}
+> ```
+
 ## Внедрение значений зависимостей аргументов по ссылке на другой идентификатор контейнера.
 
 Для внедрения зависимостей в аргументы по ссылке используется
-функция-хэлпер [diGet](#diget---объявление-аргумента-или-определения-как-ссылки-на-другой-идентификатор-контейнера).
+функция-хэлпер [diGet](#diget).
 
 ```php
 // Объявление класса

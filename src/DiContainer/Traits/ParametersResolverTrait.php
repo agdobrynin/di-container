@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -102,8 +105,7 @@ trait ParametersResolverTrait
             if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                 if ($parameter->isVariadic()) {
                     foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
-                        $resolvedVal = $this->resolveInputArgument($parameter, $definitionItem);
-                        $dependencies[] = $resolvedVal;
+                        $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
                     }
 
                     continue;
@@ -117,13 +119,9 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($this->isUseAttribute() && ($injectAttribute = $this->getInjectAttribute($parameter))
-                    && $injectAttribute->valid()) {
-                    foreach ($injectAttribute as $inject) {
-                        $dependencies[] = $inject->getIdentifier()
-                            ? $this->getContainer()->get($inject->getIdentifier())
-                            : $this->getContainer()->get($parameter->getName());
-                    }
+                if ($this->isUseAttribute()
+                    && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                    \array_push($dependencies, ...$attributes);
 
                     continue;
                 }
@@ -177,7 +175,7 @@ trait ParametersResolverTrait
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
-        if ($argumentDefinition instanceof DiDefinitionAutowireInterface) {
+        if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
             $id = $parameter->isVariadic()
                 ? \sprintf('%s#%d', $parameter->getName(), self::$variadicPosition++)
                 : $parameter->getName();
@@ -267,5 +265,38 @@ trait ParametersResolverTrait
         }
 
         return \array_slice($this->arguments, $argumentNameOrIndex);
+    }
+
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws AutowireExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
+    protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
+    {
+        $injects = $this->getInjectAttribute($parameter);
+        $asClosures = $this->getProxyClosureAttribute($parameter);
+
+        if ($injects->valid() && $asClosures->valid()) {
+            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
+        }
+
+        if ($injects->valid()) {
+            foreach ($injects as $inject) {
+                yield $inject->getIdentifier()
+                    ? $this->getContainer()->get($inject->getIdentifier())
+                    : $this->getContainer()->get($parameter->getName());
+            }
+
+            return;
+        }
+
+        foreach ($asClosures as $asClosure) {
+            yield $this->resolveInputArgument(
+                $parameter,
+                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
+            );
+        }
     }
 }

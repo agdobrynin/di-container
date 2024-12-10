@@ -7,12 +7,13 @@ namespace Tests\Function;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diReference;
 
 /**
@@ -23,6 +24,7 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diReference
  *
  * @internal
@@ -53,11 +55,18 @@ class HelperFunctionTest extends TestCase
         $this->assertTrue($def->isSingleton());
     }
 
-    public function testDepricatedFunctionDiReference(): void
+    public function testFunctionDiProxyClosure(): void
+    {
+        $def = diProxyClosure(self::class);
+
+        $this->assertInstanceOf(DiDefinitionProxyClosure::class, $def);
+    }
+
+    public function testDeprecatedFunctionDiReference(): void
     {
         $def = diReference('ok');
 
-        $this->assertInstanceOf(DiDefinitionReference::class, $def);
+        $this->assertInstanceOf(DiDefinitionGet::class, $def);
         $this->assertEquals('ok', $def->getDefinition());
     }
 }

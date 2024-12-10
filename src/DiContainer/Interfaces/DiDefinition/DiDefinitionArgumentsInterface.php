@@ -4,13 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-
-interface DiDefinitionAutowireInterface extends DiDefinitionInterface
+interface DiDefinitionArgumentsInterface
 {
     /**
      * Add input argument by index or name.
@@ -18,12 +12,12 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      *
      * ⚠ This method replaces the previously defined argument with the same name.
      *
-     * @deprecated Use method bindArguments(). This method will remove next major release.
-     *
-     * @param int|non-empty-string                                      $name
-     * @param DiDefinitionAutowireInterface|DiDefinitionInterface|mixed $value
+     * @param int|non-empty-string                                                                      $name
+     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed $value
      *
      * @return $this
+     *
+     * @deprecated Use method bindArguments(). This method will remove next major release.
      */
     public function addArgument(int|string $name, mixed $value): static;
 
@@ -59,27 +53,9 @@ interface DiDefinitionAutowireInterface extends DiDefinitionInterface
      *
      * ⚠ This method replaces all previously defined arguments.
      *
+     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed $argument
+     *
      * @return $this
      */
     public function bindArguments(mixed ...$argument): static;
-
-    public function isSingleton(): ?bool;
-
-    public function setUseAttribute(?bool $useAttribute): static;
-
-    public function isUseAttribute(): bool;
-
-    public function setContainer(ContainerInterface $container): static;
-
-    /**
-     * @throws ContainerNeedSetExceptionInterface
-     */
-    public function getContainer(): ContainerInterface;
-
-    /**
-     * @throws AutowireExceptionInterface
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function invoke(): mixed;
 }
