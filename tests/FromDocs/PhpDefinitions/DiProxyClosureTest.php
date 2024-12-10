@@ -43,6 +43,11 @@ class DiProxyClosureTest extends TestCase
 
         $this->assertInstanceOf(ClassWithHeavyDependency::class, $someClass);
 
+        $this->assertEquals(
+            \Closure::class,
+            (new \ReflectionProperty($someClass, 'heavyDependency'))->getType()->getName()
+        );
+
         $this->assertEquals('doMake in LiteDependency', $someClass->doLiteDependency());
 
         // Внутри метода инициализируется
