@@ -59,4 +59,16 @@ class DiProxyClosureTest extends TestCase
         // через Closure вызов (callback функция)
         $this->assertEquals('doMake in HeavyDependency', $someClass->doHeavyDependency());
     }
+
+    public function testProxyClosureAsDefinition(): void
+    {
+        $definition = [
+            'service-one' => diProxyClosure(HeavyDependency::class),
+        ];
+
+        $container = new DiContainer($definition, new DiContainerConfig(useAttribute: false));
+
+        $this->assertInstanceOf(\Closure::class, $container->get('service-one'));
+        $this->assertInstanceOf(HeavyDependency::class, $container->get('service-one')());
+    }
 }
