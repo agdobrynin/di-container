@@ -490,3 +490,53 @@ $classWithHeavyDependency = $container->get(App\Services\ClassWithHeavyDependenc
 // через Closure вызов (callback функция) 
 $classWithHeavyDependency->doHeavyDependency();
 ```
+
+## Пример #1
+
+Заполнение коллекции на основе callback функции:
+```php
+namespace App\Rules;
+
+interface RuleInterface {}
+
+class RuleA implements RuleInterface {}
+class RuleB implements RuleInterface {}
+```
+```php
+namespace App\Services;
+
+use App\Rules\RuleInterface;
+use Kaspi\DiContainer\Attributes\Inject;
+
+class IterableArg
+{
+    /**
+     * @param RuleInterface[] $rules
+     */
+    public function __construct(
+        #[Inject('services.rule-list')]
+        private iterable $rules
+    ) {}
+}
+```
+```php
+use App\Rules\{RuleA, RuleB}; 
+use App\Services\IterableArg;
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make([
+    'services.rule-list' => static fn (RuleA $a, RuleB $b) => \func_get_args(),
+]);
+
+$class = $container->get(IterableArg::class);
+```
+> 📝 Если требуется чтобы сервис `services.rule-list` был объявлен как `isSingleton`
+> необходимо использовать функцию-хэлпер `diCallable`
+> ```php
+> $definitions = [
+>   'services.rule-list' => diCallable(
+>       definition: static fn (RuleA $a, RuleB $b) => \func_get_args(),
+>       isSingleton: true
+>   ),
+> ];
+> ```

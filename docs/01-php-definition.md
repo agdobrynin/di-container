@@ -784,3 +784,60 @@ $apiV2 = \Kaspi\DiContainer\diAutowire(MyApiRequest::class)
 ```
 - Такой вызов работает как `DiContainer::get`, но будет каждый раз выполнять разрешение зависимостей и создание **нового объекта**;
 - Подстановка аргументов для создания объекта так же может быть каждый раз разной;
+
+### Пример #3
+Заполнение коллекции на основе callback функции:
+```php
+namespace App\Rules;
+
+interface RuleInterface {}
+
+class RuleA implements RuleInterface {}
+class RuleB implements RuleInterface {}
+class RuleC implements RuleInterface {}
+```
+```php
+namespace App\Services;
+
+use App\Rules\RuleInterface;
+
+class IterableArg
+{
+    /**
+     * @param RuleInterface[] $rules
+     */
+    public function __construct(private iterable $rules) {}
+}
+```
+```php
+use App\Rules\{RuleA, RuleB, RuleC}; 
+use App\Services\IterableArg;
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definitions = [
+    'services.rule-list' => static fn (RuleA $a, RuleB $b, RuleC $c) => \func_get_args(),
+    
+    // ... many definitions ...
+    
+    diAutowire(IterableArg::class)
+        ->bindArguments(
+            // в параметр $rules передать сервис по ссылке
+            rules: diGet('services.rule-list')
+        ),
+];
+
+
+$container = (new DiContainerFactory())->make($definitions);
+
+$class = $container->get(IterableArg::class);
+```
+> 📝 Если требуется чтобы сервис `services.rule-list` был объявлен как `isSingleton`
+> необходимо использовать функцию-хэлпер `diCallable`
+> ```php
+> $definitions = [
+>   'services.rule-list' => diCallable(
+>       definition: static fn (RuleA $a, RuleB $b, RuleC $c) => \func_get_args(),
+>       isSingleton: true
+>   ),
+> ];
+> ```

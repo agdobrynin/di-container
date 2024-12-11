@@ -37,4 +37,25 @@ class ExamplesTest extends TestCase
         $this->assertEquals(50, $c->get(SumInterface::class)->getInit());
         $this->assertEquals(10, $c->get(Sum::class)->getInit());
     }
+
+    public function testExample2(): void
+    {
+        $container = (new DiContainerFactory())->make();
+
+        $sum1 = diAutowire(Sum::class)
+            ->bindArguments(init: 50)
+            ->setContainer($container)
+            ->invoke()
+        ;
+
+        $sum2 = diAutowire(Sum::class)
+            ->bindArguments(init: 20)
+            ->setContainer($container)
+            ->invoke()
+        ;
+
+        $this->assertNotSame($sum1, $sum2);
+        $this->assertEquals(50, $sum1->getInit());
+        $this->assertEquals(20, $sum2->getInit());
+    }
 }
