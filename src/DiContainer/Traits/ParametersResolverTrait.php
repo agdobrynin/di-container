@@ -108,7 +108,7 @@ trait ParametersResolverTrait
                         $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
                     }
 
-                    continue;
+                    break; // Variadic Parameter has last position
                 }
 
                 $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$argumentNameOrIndex]);

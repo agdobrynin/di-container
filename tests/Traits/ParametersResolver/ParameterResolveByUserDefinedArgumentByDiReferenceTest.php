@@ -50,7 +50,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
     public function testUserDefinedArgumentByManydiGetVariadicByName(): void
     {
-        $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
+        $fn = static fn (string $name, \ArrayIterator ...$iterator) => [$name, $iterator];
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
@@ -73,10 +73,12 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
                 diGet('services.icon-iterator.two'),
                 diGet('services.icon-iterator.one'),
             ],
+            name: 'Piter'
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        [$name, $res] = \call_user_func_array($fn, $this->resolveParameters());
 
+        $this->assertEquals('Piter', $name);
         $this->assertCount(2, $res);
 
         $this->assertInstanceOf(\ArrayIterator::class, $res[0]);
@@ -88,7 +90,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
     public function testUserDefinedArgumentByManydiGetVariadicByIndex(): void
     {
-        $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
+        $fn = static fn (string $name, \ArrayIterator ...$iterator) => [$name, $iterator];
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
@@ -107,12 +109,14 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->setContainer($mockContainer);
         // 🚩 test data
         $this->bindArguments(
+            'Ivan',
             diGet('services.icon-iterator.two'),
             diGet('services.icon-iterator.one'),
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        [$name, $res] = \call_user_func_array($fn, $this->resolveParameters());
 
+        $this->assertEquals('Ivan', $name);
         $this->assertCount(2, $res);
 
         $this->assertInstanceOf(\ArrayIterator::class, $res[0]);
