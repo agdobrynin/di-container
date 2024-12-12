@@ -86,6 +86,8 @@ trait ParametersResolverTrait
         return $this;
     }
 
+    abstract public function getContainer(): ContainerInterface;
+
     /**
      * @throws AutowireAttributeException
      * @throws AutowireExceptionInterface
@@ -160,8 +162,6 @@ trait ParametersResolverTrait
 
         return $dependencies;
     }
-
-    abstract protected function getContainer(): ContainerInterface;
 
     /**
      * @throws NotFoundExceptionInterface
