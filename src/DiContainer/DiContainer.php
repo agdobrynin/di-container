@@ -121,12 +121,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             throw new ContainerAlreadyRegisteredException("Definition identifier [{$id}] already registered in container.");
         }
 
-        if ($definition instanceof DiDefinitionInterface) {
-            $this->definitions[$id] = $definition;
-
-            return $this;
-        }
-
         $this->definitions[$id] = $definition;
 
         return $this;
@@ -213,16 +207,15 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 $reflectionClass = new \ReflectionClass($id);
 
                 if ($reflectionClass->isInterface()) {
-                    if ($this->config?->isUseAttribute()) {
-                        if ($service = $this->getServiceAttribute($reflectionClass)) {
-                            $this->checkCyclicalDependencyCall($service->getIdentifier());
-                            $this->resolvingDependencies[$service->getIdentifier()] = true;
+                    if ($this->config?->isUseAttribute()
+                        && $service = $this->getServiceAttribute($reflectionClass)) {
+                        $this->checkCyclicalDependencyCall($service->getIdentifier());
+                        $this->resolvingDependencies[$service->getIdentifier()] = true;
 
-                            try {
-                                return $this->diResolvedDefinition[] = $this->resolveDefinition($service->getIdentifier());
-                            } finally {
-                                unset($this->resolvingDependencies[$service->getIdentifier()]);
-                            }
+                        try {
+                            return $this->diResolvedDefinition[] = $this->resolveDefinition($service->getIdentifier());
+                        } finally {
+                            unset($this->resolvingDependencies[$service->getIdentifier()]);
                         }
                     }
 
