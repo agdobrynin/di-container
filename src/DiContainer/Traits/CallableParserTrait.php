@@ -14,12 +14,14 @@ trait CallableParserTrait
 {
     use PsrContainerTrait;
 
+    abstract public function getContainer(): ContainerInterface;
+
     /**
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function parseCallable(array|callable|string $definition): callable
+    protected function parseCallable(array|callable|string $definition): callable
     {
         if (\is_callable($definition)) {
             return $definition;
@@ -53,6 +55,4 @@ trait CallableParserTrait
 
         throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
     }
-
-    abstract public function getContainer(): ContainerInterface;
 }
