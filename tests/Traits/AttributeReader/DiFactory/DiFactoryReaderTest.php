@@ -25,7 +25,9 @@ class DiFactoryReaderTest extends TestCase
     public function setUp(): void
     {
         $this->reader = new class {
-            use AttributeReaderTrait;
+            use AttributeReaderTrait {
+                getDiFactoryAttribute as public;
+            }
             use PsrContainerTrait; // abstract method cover.
         };
     }
@@ -35,7 +37,7 @@ class DiFactoryReaderTest extends TestCase
         $this->reader = null;
     }
 
-    public function testHasOneAttribute()
+    public function testHasOneAttribute(): void
     {
         $attribute = $this->reader->getDiFactoryAttribute(new \ReflectionClass(Main::class));
 

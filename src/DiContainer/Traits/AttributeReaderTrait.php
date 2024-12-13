@@ -14,14 +14,14 @@ trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
-    public function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
+    protected function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
         return ($attribute = $reflectionClass->getAttributes(DiFactory::class)[0] ?? null)
             ? $attribute->newInstance()
             : null;
     }
 
-    public function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
+    protected function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
         return ($attribute = $reflectionClass->getAttributes(Service::class)[0] ?? null)
             ? $attribute->newInstance()
@@ -31,7 +31,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<Inject>
      */
-    public function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    protected function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(Inject::class);
 
@@ -61,7 +61,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<ProxyClosure>
      */
-    public function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    protected function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(ProxyClosure::class);
 

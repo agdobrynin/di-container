@@ -25,7 +25,10 @@ class ServiceReaderTest extends TestCase
     public function setUp(): void
     {
         $this->reader = new class {
-            use AttributeReaderTrait;
+            use AttributeReaderTrait {
+                getServiceAttribute as public;
+                getDiFactoryAttribute as public;
+            }
             use PsrContainerTrait; // abstract method cover.
         };
     }
@@ -35,7 +38,7 @@ class ServiceReaderTest extends TestCase
         $this->reader = null;
     }
 
-    public function testHasOneAttribute()
+    public function testHasOneAttribute(): void
     {
         $attribute = $this->reader->getServiceAttribute(new \ReflectionClass(MainInterface::class));
 

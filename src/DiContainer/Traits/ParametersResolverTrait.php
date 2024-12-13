@@ -86,6 +86,8 @@ trait ParametersResolverTrait
         return $this;
     }
 
+    abstract public function getContainer(): ContainerInterface;
+
     /**
      * @throws AutowireAttributeException
      * @throws AutowireExceptionInterface
@@ -93,7 +95,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    public function resolveParameters(): array
+    protected function resolveParameters(): array
     {
         // Check valid user defined arguments
         $this->validateInputArguments();
@@ -160,8 +162,6 @@ trait ParametersResolverTrait
 
         return $dependencies;
     }
-
-    abstract public function getContainer(): ContainerInterface;
 
     /**
      * @throws NotFoundExceptionInterface

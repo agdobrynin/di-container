@@ -10,7 +10,9 @@ trait ParameterTypeByReflectionTrait
 {
     use PsrContainerTrait;
 
-    public function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
+    abstract public function getContainer(): ContainerInterface;
+
+    protected function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
     {
         $reflectionType = $reflectionParameter->getType();
 
@@ -30,6 +32,4 @@ trait ParameterTypeByReflectionTrait
 
         return null;
     }
-
-    abstract public function getContainer(): ContainerInterface;
 }
