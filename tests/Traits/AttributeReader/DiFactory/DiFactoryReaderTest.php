@@ -26,7 +26,7 @@ class DiFactoryReaderTest extends TestCase
     {
         $this->reader = new class {
             use AttributeReaderTrait {
-                AttributeReaderTrait::getDiFactoryAttribute as public;
+                getDiFactoryAttribute as public;
             }
             use PsrContainerTrait; // abstract method cover.
         };
