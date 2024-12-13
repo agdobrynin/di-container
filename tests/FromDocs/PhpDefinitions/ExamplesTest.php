@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\FromDocs\PhpDefinitions;
 
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Sum;
 use Tests\FromDocs\PhpDefinitions\Fixtures\SumInterface;
@@ -42,13 +43,13 @@ class ExamplesTest extends TestCase
     {
         $container = (new DiContainerFactory())->make();
 
-        $sum1 = diAutowire(Sum::class)
+        $sum1 = (new DiDefinitionAutowire(Sum::class))
             ->bindArguments(init: 50)
             ->setContainer($container)
             ->invoke()
         ;
 
-        $sum2 = diAutowire(Sum::class)
+        $sum2 = (new DiDefinitionAutowire(Sum::class))
             ->bindArguments(init: 20)
             ->setContainer($container)
             ->invoke()
