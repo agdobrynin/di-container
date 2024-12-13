@@ -26,8 +26,8 @@ class ServiceReaderTest extends TestCase
     {
         $this->reader = new class {
             use AttributeReaderTrait {
-                AttributeReaderTrait::getServiceAttribute as public;
-                AttributeReaderTrait::getDiFactoryAttribute as public;
+                getServiceAttribute as public;
+                getDiFactoryAttribute as public;
             }
             use PsrContainerTrait; // abstract method cover.
         };
