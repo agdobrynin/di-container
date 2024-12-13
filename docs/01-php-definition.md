@@ -783,6 +783,7 @@ $apiV1 = (new DiDefinitionAutowire(MyApiRequest::class))
 $apiV2 = (new DiDefinitionAutowire(MyApiRequest::class))
    ->bindArguments(endpoint: 'http://www.site.com/apiv2/')
   ->setContainer($container)
+  ->setUseAttribute(true) // ✔ использовать php-атрибуты
   ->invoke();
 ```
 - Такой вызов работает как `DiContainer::get`, но будет каждый раз выполнять разрешение зависимостей и создание **нового объекта**;
