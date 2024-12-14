@@ -11,7 +11,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
@@ -106,10 +105,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function set(string $id, mixed $definition): static
     {
-        // Only check empty string.
-        if ('' === \trim($id)) {
-            throw new DiDefinitionException('Definition identifier must be a non-empty string.');
-        }
+        $this->validateIdentifier($id);
 
         if (\array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException("Definition identifier [{$id}] already registered in container.");

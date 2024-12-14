@@ -10,6 +10,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 trait DefinitionIdentifierTrait
 {
     /**
+     * @phan-suppress PhanPartialTypeMismatchReturn
+     *
      * @throws DiDefinitionException
      */
     protected function getIdentifier(mixed $identifier, mixed $definition): string
@@ -22,5 +24,12 @@ trait DefinitionIdentifierTrait
                 \sprintf('Definition identifier must be a non-empty string. Definition [%s].', \get_debug_type($definition))
             )
         };
+    }
+
+    protected function validateIdentifier(string $identifier): void
+    {
+        if ('' === \trim($identifier)) {
+            throw new DiDefinitionException('Definition identifier must be a non-empty string.');
+        }
     }
 }
