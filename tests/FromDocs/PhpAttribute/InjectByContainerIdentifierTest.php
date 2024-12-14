@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
+use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\MyFileByContainerIdentifier;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\DefinitionsLoader
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
@@ -36,22 +38,10 @@ class InjectByContainerIdentifierTest extends TestCase
      */
     public function testByContainerIdentifier(string $env, string $fileName): void
     {
-        $configFromFiles = (static function (string ...$file): \Generator {
-            foreach ($file as $srcFile) {
-                $src = require $srcFile;
-
-                if ($src instanceof \Closure) {
-                    yield from $src();
-                } elseif (\is_array($src)) {
-                    yield from $src;
-                } else {
-                    throw new \InvalidArgumentException('Unexpected value from file: '.$srcFile);
-                }
-            }
-        });
-
-        $fileList = \glob(__DIR__.'/Fixtures/config/*.php');
-        $container = (new DiContainerFactory())->make($configFromFiles(...$fileList));
+        $definitions = (new DefinitionsLoader(false))->load(
+            ...\glob(__DIR__.'/Fixtures/config/*.php')
+        );
+        $container = (new DiContainerFactory())->make($definitions);
 
         \putenv('APP_TEST_FILE');
         \putenv('APP_TEST_FILE='.$env);
