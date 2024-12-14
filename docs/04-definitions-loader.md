@@ -1,4 +1,4 @@
-# DefinitionCollector
+# DefinitionsLoader
 Собирает все определения для контейнера зависимостей из разных файлов (_dependency definitions_).
 
 Предусмотрено два режима сборки:
