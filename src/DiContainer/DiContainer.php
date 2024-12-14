@@ -16,7 +16,6 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
@@ -25,6 +24,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
+use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -34,6 +34,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     use AttributeReaderTrait {
         setContainer as private;
     }
+    use DefinitionIdentifierTrait;
 
     /**
      * Default singleton for definitions.
@@ -73,16 +74,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         $this->isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
         foreach ($definitions as $identifier => $definition) {
-            $key = match (true) {
-                \is_string($identifier) => $identifier,
-                \is_string($definition) => $definition,
-                $definition instanceof DiDefinitionIdentifierInterface => $definition->getIdentifier(),
-                default => throw new DiDefinitionException(
-                    \sprintf('Definition identifier must be a non-empty string. Definition [%s].', \get_debug_type($definition))
-                )
-            };
-
-            $this->set(id: $key, definition: $definition); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            $this->set($this->getIdentifier($identifier, $definition), $definition); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
         }
     }
 
