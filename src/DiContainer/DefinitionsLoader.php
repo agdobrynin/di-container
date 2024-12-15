@@ -12,11 +12,11 @@ class DefinitionsLoader
 {
     use DefinitionIdentifierTrait;
 
-    private \ArrayIterator $iterator;
+    private \ArrayIterator $configDefinitions;
 
     public function __construct()
     {
-        $this->iterator = new \ArrayIterator();
+        $this->configDefinitions = new \ArrayIterator();
     }
 
     /**
@@ -39,13 +39,13 @@ class DefinitionsLoader
                     );
                 }
 
-                if (!$overrideDefinitions && $this->iterator->offsetExists($identifier)) {
+                if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
                     throw new ContainerAlreadyRegisteredException(
                         \sprintf('Invalid definition in file "%s". Reason: Definition with identifier "%s" is already registered', $srcFile, $identifier)
                     );
                 }
 
-                $this->iterator->offsetSet($identifier, $definition);
+                $this->configDefinitions->offsetSet($identifier, $definition);
             }
         }
 
@@ -57,7 +57,9 @@ class DefinitionsLoader
      */
     public function definitions(): iterable
     {
-        yield from $this->iterator;
+        $this->configDefinitions->rewind();
+
+        yield from $this->configDefinitions;
     }
 
     private function getIterator(string $srcFile): \Generator
