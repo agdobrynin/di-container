@@ -12,15 +12,18 @@ class DefinitionsLoader
 {
     use DefinitionIdentifierTrait;
 
-    public function __construct(private bool $overrideDefinitions = false) {}
+    private \ArrayIterator $iterator;
+
+    public function __construct()
+    {
+        $this->iterator = new \ArrayIterator();
+    }
 
     /**
      * @phan-suppress PhanUnreferencedPublicMethod
      */
-    public function load(string ...$file): iterable
+    public function load(bool $overrideDefinitions, string ...$file): void
     {
-        $iterator = new \ArrayIterator();
-
         foreach ($file as $srcFile) {
             if (!\file_exists($srcFile) || !\is_readable($srcFile)) {
                 throw new \InvalidArgumentException(\sprintf('File "%s" does not exist or is not readable', $srcFile));
@@ -46,16 +49,22 @@ class DefinitionsLoader
                     );
                 }
 
-                if (!$this->overrideDefinitions && $iterator->offsetExists($identifier)) {
+                if (!$overrideDefinitions && $this->iterator->offsetExists($identifier)) {
                     throw new ContainerAlreadyRegisteredException(
                         \sprintf('Invalid definition in file "%s". Reason: Definition with identifier "%s" is already registered', $srcFile, $identifier)
                     );
                 }
 
-                $iterator->offsetSet($identifier, $definition);
+                $this->iterator->offsetSet($identifier, $definition);
             }
         }
+    }
 
-        yield from $iterator;
+    /**
+     * @phan-suppress PhanUnreferencedPublicMethod
+     */
+    public function definitions(): iterable
+    {
+        yield from $this->iterator;
     }
 }
