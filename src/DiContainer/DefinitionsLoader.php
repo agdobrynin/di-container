@@ -22,7 +22,7 @@ class DefinitionsLoader
     /**
      * @phan-suppress PhanUnreferencedPublicMethod
      */
-    public function load(bool $overrideDefinitions, string ...$file): void
+    public function load(bool $overrideDefinitions, string ...$file): static
     {
         foreach ($file as $srcFile) {
             if (!\file_exists($srcFile) || !\is_readable($srcFile)) {
@@ -58,6 +58,8 @@ class DefinitionsLoader
                 $this->iterator->offsetSet($identifier, $definition);
             }
         }
+
+        return $this;
     }
 
     /**
