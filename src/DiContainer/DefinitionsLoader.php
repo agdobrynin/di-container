@@ -72,7 +72,7 @@ class DefinitionsLoader
             \is_iterable($content) => yield from $content,
             $content instanceof \Closure && \is_iterable($content()) => yield from $content(),
             default => throw new \InvalidArgumentException(
-                \sprintf('File "%s" return not valid format. File must be return any iterable type or callback function with return type generator.', $srcFile)
+                \sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile)
             )
         };
     }
