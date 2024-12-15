@@ -186,14 +186,22 @@ $container->get(TestClass::class)->container instanceof DiContainer; // true
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerFactory;
 
-$loader = new DefinitionsLoader(overrideDefinitions: false);
-$definitions = $loader->load(
+$loader = new DefinitionsLoader();
+
+$loader->load(
+    overrideDefinitions: false,
     __DIR__.'/config/base_services.php',
     __DIR__.'/config/prod_services.php',
-    __DIR__.'/config/dev_services.php',
 );
 
-$container = (new DiContainerFactory())->make($definitions);
+if ('dev' === \getenv('APP_ENV')) {
+    $loader->load(
+        overrideDefinitions: true,
+        __DIR__.'/config/dev_services.php'
+    );
+}
+
+$container = (new DiContainerFactory())->make($loader->definitions());
 ```
 
 Подробное описание использования [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
