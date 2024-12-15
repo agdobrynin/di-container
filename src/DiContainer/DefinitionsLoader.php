@@ -26,7 +26,7 @@ class DefinitionsLoader
     {
         foreach ($file as $srcFile) {
             if (!\file_exists($srcFile) || !\is_readable($srcFile)) {
-                throw new \InvalidArgumentException(\sprintf('File "%s" does not exist or is not readable', $srcFile));
+                throw new \InvalidArgumentException(\sprintf('The file "%s" does not exist or is not readable', $srcFile));
             }
 
             foreach ($this->getIterator($srcFile) as $identifier => $definition) {
@@ -62,7 +62,9 @@ class DefinitionsLoader
 
     private function getIterator(string $srcFile): \Generator
     {
+        \ob_start();
         $content = require $srcFile;
+        \ob_get_clean(); // @phan-suppress-current-line PhanPluginUseReturnValueInternalKnown
 
         return match (true) {
             \is_iterable($content) => yield from $content,
