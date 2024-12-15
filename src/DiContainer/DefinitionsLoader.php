@@ -68,7 +68,7 @@ class DefinitionsLoader
 
         return match (true) {
             \is_iterable($content) => yield from $content,
-            $content instanceof \Closure && $content() instanceof \Generator => yield from $content(),
+            $content instanceof \Closure && \is_iterable($content()) => yield from $content(),
             default => throw new \InvalidArgumentException(
                 \sprintf('File "%s" return not valid format. File must be return any iterable type or callback function with return type generator.', $srcFile)
             )
