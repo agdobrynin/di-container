@@ -29,17 +29,7 @@ class DefinitionsLoader
                 throw new \InvalidArgumentException(\sprintf('File "%s" does not exist or is not readable', $srcFile));
             }
 
-            $content = require $srcFile;
-
-            $fnSrc = static fn () => match (true) {
-                $content instanceof \Closure => yield from $content(),
-                \is_array($content) => yield from $content,
-                default => throw new \InvalidArgumentException(
-                    \sprintf('File "%s" return not valid format. File must be return an array or callback function with generator type.', $srcFile)
-                ),
-            };
-
-            foreach ($fnSrc() as $identifier => $definition) {
+            foreach ($this->getIterator($srcFile) as $identifier => $definition) {
                 try {
                     $identifier = $this->getIdentifier($identifier, $definition);
                     $this->validateIdentifier($identifier);
@@ -68,5 +58,18 @@ class DefinitionsLoader
     public function definitions(): iterable
     {
         yield from $this->iterator;
+    }
+
+    private function getIterator(string $srcFile): \Generator
+    {
+        $content = require $srcFile;
+
+        return match (true) {
+            \is_iterable($content) => yield from $content,
+            $content instanceof \Closure && $content() instanceof \Generator => yield from $content(),
+            default => throw new \InvalidArgumentException(
+                \sprintf('File "%s" return not valid format. File must be return any iterable type or callback function with return type generator.', $srcFile)
+            )
+        };
     }
 }

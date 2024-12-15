@@ -179,31 +179,7 @@ $container->get(TestClass::class)->container instanceof DiContainer; // true
 ```
 
 ### DefinitionsLoader
-Загрузка из нескольких файлов конфигурации для контейнера зависимостей.
-
-Короткий пример:
-```php
-use Kaspi\DiContainer\DefinitionsLoader;
-use Kaspi\DiContainer\DiContainerFactory;
-
-$loader = new DefinitionsLoader();
-
-$loader->load(
-    overrideDefinitions: false,
-    __DIR__.'/config/base_services.php',
-    __DIR__.'/config/prod_services.php',
-);
-
-if ('dev' === \getenv('APP_ENV')) {
-    $loader->load(
-        overrideDefinitions: true,
-        __DIR__.'/config/dev_services.php'
-    );
-}
-
-$container = (new DiContainerFactory())->make($loader->definitions());
-```
-
+🛠 Загрузка из нескольких файлов конфигурации для контейнера зависимостей.
 Подробное описание использования [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
 
 ### Подробное описание конфигурирования и использования
