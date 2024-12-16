@@ -31,7 +31,7 @@ Kaspi\DiContainer\DefinitionsLoader::load(
         diAutowire(ReportMaker::class)
             ->bindArguments(
                 mailFrom: 'admin.repost@example.com',
-                storage: diGet('services.report-storage')
+                storage: diGet(ReportStorage::class)
             ),
         // other services
     ];
@@ -42,7 +42,7 @@ Kaspi\DiContainer\DefinitionsLoader::load(
     
     // Использую callback функцию и генератор
     return static function (): Generator {
-        yield 'services.report-storage' => diAutowire(ReportStorage::class)
+        yield diAutowire(ReportStorage::class)
             ->bindArguments(dir: '/var/reports/');
     
         // ... many other services
@@ -55,7 +55,7 @@ Kaspi\DiContainer\DefinitionsLoader::load(
     
     // Использую callback функцию и генератор
     return static function (): Generator {
-        yield 'services.report-storage' => diAutowire(ReportStorage::class)
+        yield diAutowire(ReportStorage::class)
             ->bindArguments(dir: sys_get_temp_dir())
         ;
         // ... many other services
