@@ -178,11 +178,15 @@ $container = (new DiContainerFactory())->make();
 $container->get(TestClass::class)->container instanceof DiContainer; // true
 ```
 
+### DefinitionsLoader
+🛠 Загрузка конфигурации для контейнера зависимостей из нескольких файлов.
+Подробное описание использования [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
+
 ### Подробное описание конфигурирования и использования
 
 * [DiContainer с конфигурированием на основе php-определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md).
 * [DiContainer c конфигурированием через PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
-* [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений. 
+* [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода
