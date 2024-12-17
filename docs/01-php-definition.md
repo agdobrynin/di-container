@@ -773,18 +773,24 @@ class MyApiRequest {
 ```php
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 
-// SomeDependency $dependency будет разрешено контейнером
+/** @var MyApiRequest $apiV1 */
 $apiV1 = (new DiDefinitionAutowire(MyApiRequest::class))
+    // SomeDependency $dependency будет разрешено контейнером
    ->bindArguments(endpoint: 'http://www.site.com/apiv1/')
   ->setContainer($container)
   ->invoke();
+  
+$apiV1->request(); // выполнить запрос
 
-// SomeDependency $dependency будет разрешено контейнером
+/** @var MyApiRequest $apiV2 */
 $apiV2 = (new DiDefinitionAutowire(MyApiRequest::class))
+    // SomeDependency $dependency будет разрешено контейнером
    ->bindArguments(endpoint: 'http://www.site.com/apiv2/')
   ->setContainer($container)
   ->setUseAttribute(true) // ✔ использовать php-атрибуты
   ->invoke();
+
+$apiV2->request(); // выполнить запрос
 ```
 - Такой вызов работает как `DiContainer::get`, но будет каждый раз выполнять разрешение зависимостей и создание **нового объекта**;
 - Подстановка аргументов для создания объекта так же может быть каждый раз разной;
