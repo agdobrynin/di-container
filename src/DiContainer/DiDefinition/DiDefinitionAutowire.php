@@ -5,25 +5,40 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 
-final class DiDefinitionAutowire implements DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface
+final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface
 {
     use ParametersResolverTrait;
     use PsrContainerTrait;
 
     private \ReflectionClass $reflectionClass;
 
+    /**
+     * Methods for setup service via setters.
+     *
+     * @var array<non-empty-string, array>
+     */
+    private array $setup = [];
+
     public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
         if ($this->definition instanceof \ReflectionClass) {
             $this->reflectionClass = $this->definition;
         }
+    }
+
+    public function setup(string $method, ...$argument): static
+    {
+        // @todo maybe use one method twice?
+        $this->setup[$method] = $argument;
+
+        return $this;
     }
 
     public function isSingleton(): ?bool
@@ -39,11 +54,23 @@ final class DiDefinitionAutowire implements DiDefinitionArgumentsInterface, DiDe
 
         $this->reflectionParameters ??= $this->reflectionClass->getConstructor()?->getParameters() ?? [];
 
-        if ([] === $this->reflectionParameters) {
-            return $this->reflectionClass->newInstanceWithoutConstructor();
+        /**
+         * @var object $object
+         */
+        $object = [] === $this->reflectionParameters
+            ? $this->reflectionClass->newInstanceWithoutConstructor()
+            : $this->reflectionClass->newInstanceArgs($this->resolveParameters());
+
+        foreach ($this->setup as $method => $argument) {
+            if (!$this->reflectionClass->hasMethod($method)) {
+                throw new AutowireException(\sprintf('The "%s" method does not exist', $method));
+            }
+
+            // $object->{$method}(...$argument);
+            throw new \LogicException('Setup not implemented yet.');
         }
 
-        return $this->reflectionClass->newInstanceArgs($this->resolveParameters());
+        return $object;
     }
 
     /**
