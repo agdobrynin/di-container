@@ -47,6 +47,8 @@ trait ParametersResolverTrait
     /**
      * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
      *
+     * @phan-suppress PhanReadOnlyPrivateProperty
+     *
      * @var array<non-empty-string, mixed>
      */
     private array $resolvedArguments = [];
@@ -160,9 +162,7 @@ trait ParametersResolverTrait
                     $identifier .= \sprintf('#%d', self::$variadicPosition++);
                 }
 
-                return \array_key_exists($identifier, $this->resolvedArguments)
-                    ? $this->resolvedArguments[$identifier]
-                    : ($this->resolvedArguments[$identifier] = $invokeDefinition());
+                return $this->resolvedArguments[$identifier] ??= $invokeDefinition();
             }
 
             return $invokeDefinition();
