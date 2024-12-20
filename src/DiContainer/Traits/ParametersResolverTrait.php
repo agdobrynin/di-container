@@ -206,9 +206,53 @@ trait ParametersResolverTrait
     }
 
     /**
+     * @throws NotFoundExceptionInterface
+     * @throws AutowireExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
+    protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
+    {
+        $injects = $this->getInjectAttribute($parameter);
+        $asClosures = $this->getProxyClosureAttribute($parameter);
+
+        if ($injects->valid() && $asClosures->valid()) {
+            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
+        }
+
+        if ($injects->valid()) {
+            foreach ($injects as $inject) {
+                yield $inject->getIdentifier()
+                    ? $this->getContainer()->get($inject->getIdentifier())
+                    : $this->getContainer()->get($parameter->getName());
+            }
+
+            return;
+        }
+
+        foreach ($asClosures as $asClosure) {
+            yield $this->resolveInputArgument(
+                $parameter,
+                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
+            );
+        }
+    }
+
+    private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
+    {
+        if (\is_string($argumentNameOrIndex)) {
+            return \is_array($this->arguments[$argumentNameOrIndex])
+                ? $this->arguments[$argumentNameOrIndex]
+                : [$this->arguments[$argumentNameOrIndex]];
+        }
+
+        return \array_slice($this->arguments, $argumentNameOrIndex);
+    }
+
+    /**
      * @throws AutowireExceptionInterface
      */
-    protected function validateInputArguments(): void
+    private function validateInputArguments(): void
     {
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
@@ -243,7 +287,7 @@ trait ParametersResolverTrait
         }
     }
 
-    protected function getArgumentByNameOrIndex(\ReflectionParameter $parameter): false|int|string
+    private function getArgumentByNameOrIndex(\ReflectionParameter $parameter): false|int|string
     {
         if ([] === $this->arguments) {
             return false;
@@ -254,49 +298,5 @@ trait ParametersResolverTrait
             \array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
             default => false,
         };
-    }
-
-    protected function getInputVariadicArgument(int|string $argumentNameOrIndex): array
-    {
-        if (\is_string($argumentNameOrIndex)) {
-            return \is_array($this->arguments[$argumentNameOrIndex])
-                ? $this->arguments[$argumentNameOrIndex]
-                : [$this->arguments[$argumentNameOrIndex]];
-        }
-
-        return \array_slice($this->arguments, $argumentNameOrIndex);
-    }
-
-    /**
-     * @throws NotFoundExceptionInterface
-     * @throws AutowireExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
-     * @throws ContainerExceptionInterface
-     */
-    protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
-    {
-        $injects = $this->getInjectAttribute($parameter);
-        $asClosures = $this->getProxyClosureAttribute($parameter);
-
-        if ($injects->valid() && $asClosures->valid()) {
-            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
-        }
-
-        if ($injects->valid()) {
-            foreach ($injects as $inject) {
-                yield $inject->getIdentifier()
-                    ? $this->getContainer()->get($inject->getIdentifier())
-                    : $this->getContainer()->get($parameter->getName());
-            }
-
-            return;
-        }
-
-        foreach ($asClosures as $asClosure) {
-            yield $this->resolveInputArgument(
-                $parameter,
-                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
-            );
-        }
     }
 }
