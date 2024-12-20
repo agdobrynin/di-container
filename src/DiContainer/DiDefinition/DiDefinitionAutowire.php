@@ -75,7 +75,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
 
         foreach ($this->setup as $method => $arguments) {
             if (!$reflectionClass->hasMethod($method)) {
-                throw new AutowireException(\sprintf('The "%s" method does not exist', $method));
+                throw new AutowireException(\sprintf('The method "%s" does not exist', $method));
             }
             // setup property for resolving parameters in method
             if ($this->reflectionParameters = $reflectionClass->getMethod($method)->getParameters()) {
