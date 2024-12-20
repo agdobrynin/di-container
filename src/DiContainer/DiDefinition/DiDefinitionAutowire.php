@@ -24,7 +24,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
     /**
      * Methods for setup service via setters.
      *
-     * @var array<non-empty-string, array>
+     * @var array<non-empty-string, array<int|non-empty-string, mixed>>
      */
     private array $setup = [];
 
@@ -37,8 +37,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
 
     public function setup(string $method, ...$argument): static
     {
-        // @todo maybe use one method twice?
-        $this->setup[$method] = $argument;
+        if (!isset($this->setup[$method])) {
+            $this->setup[$method] = [];
+        }
+
+        $this->setup[$method][] = $argument;
 
         return $this;
     }
@@ -55,7 +58,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         if (!$reflectionClass->isInstantiable()) {
             throw new AutowireException(\sprintf('The [%s] class is not instantiable', $reflectionClass->getName()));
         }
-
+        // setup property for resolving parameters in constructor
         $this->reflectionParameters ??= $reflectionClass->getConstructor()?->getParameters() ?? [];
         $this->arguments = $this->getBindArguments();
 
@@ -66,13 +69,21 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             ? $reflectionClass->newInstanceWithoutConstructor()
             : $reflectionClass->newInstanceArgs($this->resolveParameters());
 
-        foreach ($this->setup as $method => $argument) {
+        if ([] === $this->setup) {
+            return $object;
+        }
+
+        foreach ($this->setup as $method => $arguments) {
             if (!$reflectionClass->hasMethod($method)) {
                 throw new AutowireException(\sprintf('The "%s" method does not exist', $method));
             }
-
-            // $object->{$method}(...$argument);
-            throw new \LogicException('Setup not implemented yet.');
+            // setup property for resolving parameters in method
+            if ($this->reflectionParameters = $reflectionClass->getMethod($method)->getParameters()) {
+                foreach ($arguments as $argument) {
+                    $this->arguments = $argument;
+                    $reflectionClass->getMethod($method)->invokeArgs($object, $this->resolveParameters());
+                }
+            }
         }
 
         return $object;
