@@ -35,12 +35,8 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         }
     }
 
-    public function setup(string $method, ...$argument): static
+    public function setup(string $method, mixed ...$argument): static
     {
-        if (!isset($this->setup[$method])) {
-            $this->setup[$method] = [];
-        }
-
         $this->setup[$method][] = $argument;
 
         return $this;
