@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -16,6 +17,7 @@ use function Kaspi\DiContainer\diProxyClosure;
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
  * @covers \Kaspi\DiContainer\diProxyClosure
+ * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  *
  * @internal
@@ -23,6 +25,7 @@ use function Kaspi\DiContainer\diProxyClosure;
 class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
 {
     // 🔥 Test Trait 🔥
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
@@ -50,6 +53,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $this->bindArguments(
             item: diProxyClosure(MoreSuperClass::class),
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -78,6 +82,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $this->bindArguments(
             item: diProxyClosure(MoreSuperClass::class, true),
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
         $this->assertSame($res, \call_user_func_array($fn, $this->resolveParameters()));
@@ -104,6 +109,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $this->bindArguments(
             item: diProxyClosure(MoreSuperClass::class, false),
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
         $this->assertNotSame($res, \call_user_func_array($fn, $this->resolveParameters()));
@@ -132,6 +138,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $this->bindArguments(
             diProxyClosure(MoreSuperClass::class),
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -177,6 +184,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
                 diProxyClosure(SuperClass::class),
             ]
         );
+        $this->arguments = $this->getBindArguments();
 
         [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -221,6 +229,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
                 diProxyClosure(SuperClass::class, true), // ➕
             ]
         );
+        $this->arguments = $this->getBindArguments();
 
         [$res11, $res12] = \call_user_func_array($fn, $this->resolveParameters());
         [$res21, $res22] = \call_user_func_array($fn, $this->resolveParameters());
@@ -265,6 +274,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             diProxyClosure(SuperClass::class),
             diProxyClosure(MoreSuperClass::class),
         );
+        $this->arguments = $this->getBindArguments();
 
         [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters());
 

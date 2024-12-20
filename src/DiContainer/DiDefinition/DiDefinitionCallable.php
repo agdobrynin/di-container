@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
@@ -16,6 +17,7 @@ use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface
 {
+    use BindArgumentsTrait;
     use CallableParserTrait;
     use ParametersResolverTrait;
     use PsrContainerTrait;
@@ -50,6 +52,8 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         if ([] === $this->reflectionParameters) {
             return \call_user_func($this->parsedDefinition);
         }
+
+        $this->arguments = $this->getBindArguments();
 
         return \call_user_func_array($this->parsedDefinition, $this->resolveParameters());
     }

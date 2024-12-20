@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,7 @@ use function Kaspi\DiContainer\diGet;
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
@@ -23,6 +25,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use ParametersResolverTrait;
+    use BindArgumentsTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
 
@@ -37,10 +40,12 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
             ->willReturn(new \ArrayIterator(array: ['🚀', '🔥']))
         ;
         $this->setContainer($mockContainer);
-        // 🚩 test data
-        $this->bindArguments(
+        // 🚩 test data (inject arguments for ParameterResolverTrait)
+        $this->arguments = $this->bindArguments(
             iterator: diGet('services.icon-iterator'),
-        );
+        )
+            ->getBindArguments()
+        ;
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -68,13 +73,15 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->bindArguments(
+        $this->arguments = $this->bindArguments(
             iterator: [
                 diGet('services.icon-iterator.two'),
                 diGet('services.icon-iterator.one'),
             ],
             name: 'Piter'
-        );
+        )
+            ->getBindArguments()
+        ;
 
         [$name, $res] = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -108,11 +115,13 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->bindArguments(
+        $this->arguments = $this->bindArguments(
             'Ivan',
             diGet('services.icon-iterator.two'),
             diGet('services.icon-iterator.one'),
-        );
+        )
+            ->getBindArguments()
+        ;
 
         [$name, $res] = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -146,10 +155,12 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->bindArguments(
+        $this->arguments = $this->bindArguments(
             diGet('services.icon-iterator.one'),
             diGet('services.icon-iterator.two')
-        );
+        )
+            ->getBindArguments()
+        ;
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 

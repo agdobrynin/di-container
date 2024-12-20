@@ -9,11 +9,13 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 
 final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface
 {
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     use PsrContainerTrait;
 
@@ -55,6 +57,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         }
 
         $this->reflectionParameters ??= $reflectionClass->getConstructor()?->getParameters() ?? [];
+        $this->arguments = $this->getBindArguments();
 
         /**
          * @var object $object

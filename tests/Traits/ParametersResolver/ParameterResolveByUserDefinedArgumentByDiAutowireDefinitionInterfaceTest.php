@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,7 @@ use function Kaspi\DiContainer\diGet;
 class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest extends TestCase
 {
     // 🔥 Test Trait 🔥
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
@@ -48,6 +50,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             class: diAutowire(ClassWithDependency::class)
                 ->bindArguments(dependency: 'aaaa')
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -67,6 +70,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             diAutowire(ClassWithDependency::class)
                 ->bindArguments('aaaa')
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -94,6 +98,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 diAutowire(SuperDiFactory::class),
             ]
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -123,6 +128,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 diAutowire(MoreSuperClass::class),
             ]
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -145,6 +151,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 diAutowire(MoreSuperClass::class, true),
             ]
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -185,6 +192,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 diGet('services.super.two'),
             ]
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -217,6 +225,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             diGet('services.super.one'),
             diGet('services.super.two')
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 

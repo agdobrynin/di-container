@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -15,6 +16,7 @@ use function Kaspi\DiContainer\diValue;
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
@@ -25,6 +27,7 @@ use function Kaspi\DiContainer\diValue;
 class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 {
     // 🔥 Test Trait 🔥
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
@@ -40,6 +43,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments(['aaa', 'bbb', 'ccc']);
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -57,6 +61,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments(iterator: ['aaa', 'bbb', 'ccc']);
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -78,6 +83,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
             ['aaa', 'bbb', 'ccc'],
             ['ddd', 'eee', 'fff'],
         );
+        $this->arguments = $this->getBindArguments();
 
         [$str ,$iter] = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -101,6 +107,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
             ['aaa', 'bbb', 'ccc'],
             ['ddd', 'eee', 'fff'],
         ]);
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -121,6 +128,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments(iterator: diValue(['aaa', 'bbb', 'ccc']));
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -140,6 +148,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments('aaa', 'bbb', 'ccc');
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -161,6 +170,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         // 🚩 test data, unsorted parameter names
         $this->bindArguments(word: ['aaa', 'bbb', 'ccc'], numbers: [1_000, 10_000]);
+        $this->arguments = $this->getBindArguments();
 
         [$numbers, $word] = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -189,6 +199,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments('Hello', numbers: [1_000, 10_000]);
+        $this->arguments = $this->getBindArguments();
 
         [$str, $super, $numbers] = \call_user_func_array($fn, $this->resolveParameters());
 

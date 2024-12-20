@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -12,6 +13,7 @@ use Psr\Container\ContainerInterface;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
@@ -20,6 +22,7 @@ use Psr\Container\ContainerInterface;
 class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends TestCase
 {
     // 🔥 Test Trait 🔥
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
@@ -35,6 +38,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(iterator: ['aaa', 'bbb', 'ccc']);
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -57,6 +61,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
                 ['ddd', 'eee', 'fff'],
             ]
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -79,6 +84,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->bindArguments(
             str: 'hi my darling'
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -101,6 +107,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
             ['aaa', 'bbb', 'ccc'],
             ['ddd', 'eee', 'fff'],
         );
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -117,6 +124,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(words: new DiDefinitionValue(['hello', 'world', '!']));
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 
@@ -131,6 +139,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(new DiDefinitionValue(['hello', 'world', '!']));
+        $this->arguments = $this->getBindArguments();
 
         $res = \call_user_func_array($fn, $this->resolveParameters());
 

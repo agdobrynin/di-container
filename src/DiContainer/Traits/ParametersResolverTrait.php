@@ -31,6 +31,13 @@ trait ParametersResolverTrait
     protected static int $variadicPosition = 0;
 
     /**
+     * User defined input arguments.
+     *
+     * @var array<int|string, mixed>
+     */
+    protected array $arguments;
+
+    /**
      * @var \ReflectionParameter[]
      */
     protected array $reflectionParameters;
@@ -39,52 +46,6 @@ trait ParametersResolverTrait
      * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
      */
     protected array $resolvedArguments = [];
-
-    /**
-     * User defined parameters by parameter name.
-     *
-     * @var array<int|string, mixed>
-     */
-    protected array $arguments = [];
-
-    /**
-     * @deprecated Use method bindArguments(). This method will remove next major release.
-     *
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
-     */
-    public function addArgument(int|string $name, mixed $value): static
-    {
-        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
-
-        $this->arguments[$name] = $value;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated Use method bindArguments(). This method will remove next major release.
-     *
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
-     */
-    public function addArguments(array $arguments): static
-    {
-        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
-        $this->arguments = $arguments;
-
-        return $this;
-    }
-
-    /**
-     * @phan-suppress PhanTypeMismatchReturn
-     */
-    public function bindArguments(mixed ...$argument): static
-    {
-        $this->arguments = $argument;
-
-        return $this;
-    }
 
     abstract public function getContainer(): ContainerInterface;
 
@@ -254,12 +215,18 @@ trait ParametersResolverTrait
      */
     private function validateInputArguments(): void
     {
+        if (!isset($this->arguments)) {
+            $this->arguments = [];
+
+            return;
+        }
+
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
             $hasVariadic = [] !== \array_filter($this->reflectionParameters, static fn (\ReflectionParameter $parameter) => $parameter->isVariadic());
 
             if (!$hasVariadic && \count($this->arguments) > \count($parameters)) {
-                throw new AutowireAttributeException(
+                throw new AutowireException(
                     \sprintf(
                         'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
                         \implode(', ', \array_keys($this->arguments)),

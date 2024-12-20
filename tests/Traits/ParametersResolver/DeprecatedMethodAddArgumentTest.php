@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -25,6 +26,7 @@ use function Kaspi\DiContainer\diAutowire;
  */
 class DeprecatedMethodAddArgumentTest extends TestCase
 {
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     use PsrContainerTrait;
 
@@ -34,6 +36,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArgument('iterator', []);
+        $this->arguments = $this->getBindArguments();
 
         $this->assertEquals([], \call_user_func_array($fn, $this->resolveParameters()));
     }
@@ -44,6 +47,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArgument('iterator', [[], []]);
+        $this->arguments = $this->getBindArguments();
 
         $this->assertEquals([[], []], \call_user_func_array($fn, $this->resolveParameters()));
     }
@@ -54,6 +58,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArgument('a', []);
+        $this->arguments = $this->getBindArguments();
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Invalid input argument name "a"');
@@ -67,6 +72,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArguments(['iterator' => [], 'val' => 'value']);
+        $this->arguments = $this->getBindArguments();
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Too many input arguments');
@@ -85,10 +91,10 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->addArguments([
+        $this->arguments = $this->addArguments([
             'value',
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
-        ]);
+        ])->getBindArguments();
 
         $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
     }
@@ -107,6 +113,8 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->addArgument(0, 'value');
         $this->addArgument(1, diAutowire(SuperClass::class));
 
+        $this->arguments = $this->getBindArguments();
+
         $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
     }
 
@@ -116,9 +124,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
 
-        $this->addArguments([
+        $this->arguments = $this->addArguments([
             'iterator' => ['ok'],
-        ]);
+        ])->getBindArguments();
 
         $this->assertEquals(['ok', null], \call_user_func_array($fn, $this->resolveParameters()));
     }
@@ -129,7 +137,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
 
-        $this->addArguments([]);
+        $this->arguments = $this->addArguments([])->getBindArguments();
 
         $this->assertEquals(['app'], \call_user_func_array($fn, $this->resolveParameters()));
     }
