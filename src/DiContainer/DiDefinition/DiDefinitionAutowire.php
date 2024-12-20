@@ -48,21 +48,23 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
 
     public function invoke(): mixed
     {
-        if (!$this->getDefinition()->isInstantiable()) {
-            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $this->reflectionClass->getName()));
+        $reflectionClass = $this->getDefinition();
+
+        if (!$reflectionClass->isInstantiable()) {
+            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $reflectionClass->getName()));
         }
 
-        $this->reflectionParameters ??= $this->reflectionClass->getConstructor()?->getParameters() ?? [];
+        $this->reflectionParameters ??= $reflectionClass->getConstructor()?->getParameters() ?? [];
 
         /**
          * @var object $object
          */
         $object = [] === $this->reflectionParameters
-            ? $this->reflectionClass->newInstanceWithoutConstructor()
-            : $this->reflectionClass->newInstanceArgs($this->resolveParameters());
+            ? $reflectionClass->newInstanceWithoutConstructor()
+            : $reflectionClass->newInstanceArgs($this->resolveParameters());
 
         foreach ($this->setup as $method => $argument) {
-            if (!$this->reflectionClass->hasMethod($method)) {
+            if (!$reflectionClass->hasMethod($method)) {
                 throw new AutowireException(\sprintf('The "%s" method does not exist', $method));
             }
 
@@ -78,12 +80,8 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
      */
     public function getDefinition(): \ReflectionClass
     {
-        if ($this->definition instanceof \ReflectionClass) {
-            return $this->reflectionClass;
-        }
-
         try {
-            return $this->reflectionClass = new \ReflectionClass($this->definition);
+            return $this->reflectionClass ??= new \ReflectionClass($this->definition);
         } catch (\ReflectionException $e) {
             throw new AutowireException(message: $e->getMessage());
         }
