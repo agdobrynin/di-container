@@ -38,14 +38,18 @@ trait ParametersResolverTrait
     protected array $arguments;
 
     /**
+     * Reflected parameters from function or method.
+     *
      * @var \ReflectionParameter[]
      */
     protected array $reflectionParameters;
 
     /**
      * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
+     *
+     * @var array<non-empty-string, mixed>
      */
-    protected array $resolvedArguments = [];
+    private array $resolvedArguments = [];
 
     abstract public function getContainer(): ContainerInterface;
 
@@ -130,33 +134,38 @@ trait ParametersResolverTrait
      * @throws ContainerExceptionInterface
      * @throws AutowireExceptionInterface
      */
-    protected function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
+    private function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
         if ($argumentDefinition instanceof DiDefinitionGet) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
-            $id = $parameter->isVariadic()
-                ? \sprintf('%s#%d', $parameter->getName(), self::$variadicPosition++)
-                : $parameter->getName();
+            $invokeDefinition = function () use ($argumentDefinition) {
+                // Configure definition and invoke definition.
+                $object = $argumentDefinition->setContainer($this->getContainer())
+                    ->setUseAttribute($this->isUseAttribute())
+                    ->invoke()
+                ;
 
-            if (isset($this->resolvedArguments[$id])) {
-                return $this->resolvedArguments[$id];
+                return $object instanceof DiFactoryInterface
+                    ? $object($this->getContainer())
+                    : $object;
+            };
+
+            if ($argumentDefinition->isSingleton()) {
+                $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
+
+                if ($parameter->isVariadic()) {
+                    $identifier .= \sprintf('#%d', self::$variadicPosition++);
+                }
+
+                return \array_key_exists($identifier, $this->resolvedArguments)
+                    ? $this->resolvedArguments[$identifier]
+                    : ($this->resolvedArguments[$identifier] = $invokeDefinition());
             }
 
-            // Configure definition.
-            $argumentDefinition->setContainer($this->getContainer())
-                ->setUseAttribute($this->isUseAttribute())
-            ;
-
-            $objectResult = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
-                ? $o($this->getContainer())
-                : $o;
-
-            return $argumentDefinition->isSingleton()
-                ? $this->resolvedArguments[$id] = $objectResult
-                : $objectResult;
+            return $invokeDefinition();
         }
 
         if ($argumentDefinition instanceof DiDefinitionInterface) {
@@ -172,7 +181,7 @@ trait ParametersResolverTrait
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
+    private function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
     {
         $injects = $this->getInjectAttribute($parameter);
         $asClosures = $this->getProxyClosureAttribute($parameter);
