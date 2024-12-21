@@ -1,6 +1,6 @@
 # 📦 DiContainer с конфигурированием на основе php-определений
 
-Получение существующего класса и разрешение встроенных типов параметров в конструкторе:
+Получение существующего класса и разрешение параметров в конструкторе:
 
 ```php
 // Определения для DiContainer как array
@@ -9,14 +9,23 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
-    // класс PDO создать единожды и всегда возвращать тот же объект
-    diAutowire(\PDO::class, isSingleton: true)
-        // с аргументом $dsn в конструкторе.
-        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
+    // хэлпер-функция для объявления тип зависимости
+    diAutowire(
+        // получить класс \PDO 
+        definition: \PDO::class,
+        // всегда возвращать тот же объект
+        isSingleton: true
+        )
+            // установить параметр $dsn в конструкторе 'sqlite:/tmp/my.db'.
+            ->bindArguments(dsn: 'sqlite:/tmp/my.db')
+            // Вызвать метод "setAttribute" и предать параметры в него
+            ->setup('setAttribute', \PDO::ATTR_CASE, \PDO::CASE_UPPER),
 ];
 
 $config = new DiContainerConfig();
 $container = new DiContainer(definitions: $definitions, config: $config);
+// либо можно использовать фабрику с конфигураций по умолчанию
+// $container = (new DiContainerFactory())->make($definitions)
 ```
 ```php
 // Объявление класса
@@ -39,6 +48,14 @@ var_dump(
     \spl_object_id($myClass->pdo) === \spl_object_id($myClassTwo->pdo)
 ); // true
 ```
+> 🧙‍♂️ Для пример выше фактически будет выполнен следующий php код:
+> ```php
+> $pdo = new \PDO(dns: 'sqlite:/tmp/my.db');
+> $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_UPPER);
+> $service = new App\MyClass($pdo);
+> $service->pdo->query('...') // готовый сервис для использования
+> ```
+
 🚩 Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/01-01-pdo.php)
 
 ### Объявления для определений контейнера:
