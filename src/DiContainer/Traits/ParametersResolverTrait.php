@@ -143,17 +143,11 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
-            $invokeDefinition = function () use ($argumentDefinition) {
-                // Configure definition and invoke definition.
-                $object = $argumentDefinition->setContainer($this->getContainer())
-                    ->setUseAttribute($this->isUseAttribute())
-                    ->invoke()
-                ;
-
-                return $object instanceof DiFactoryInterface
-                    ? $object($this->getContainer())
-                    : $object;
-            };
+            // Configure definition and invoke definition.
+            $argumentDefinition->setContainer($this->getContainer())->setUseAttribute($this->isUseAttribute());
+            $object = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
+                ? $o($this->getContainer())
+                : $o;
 
             if ($argumentDefinition->isSingleton()) {
                 $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
@@ -162,10 +156,10 @@ trait ParametersResolverTrait
                     $identifier .= \sprintf('#%d', self::$variadicPosition++);
                 }
 
-                return $this->resolvedArguments[$identifier] ??= $invokeDefinition();
+                return $this->resolvedArguments[$identifier] ??= $object;
             }
 
-            return $invokeDefinition();
+            return $object;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInterface) {
