@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -15,6 +16,7 @@ use function Kaspi\DiContainer\diValue;
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
@@ -25,6 +27,7 @@ use function Kaspi\DiContainer\diValue;
 class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 {
     // 🔥 Test Trait 🔥
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
@@ -32,7 +35,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentAsArrayNonVariadicByIndexSuccess(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -41,7 +44,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments(['aaa', 'bbb', 'ccc']);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertEquals(['aaa', 'bbb', 'ccc'], $res);
     }
@@ -49,7 +52,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentAsArrayNonVariadicByNameSuccess(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -58,7 +61,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments(iterator: ['aaa', 'bbb', 'ccc']);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertEquals(['aaa', 'bbb', 'ccc'], $res);
     }
@@ -66,7 +69,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentAsArrayVariadicByIndexSuccess(): void
     {
         $fn = static fn (string $val, iterable ...$iterator) => [$val, $iterator];
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::never())->method('get');
@@ -79,7 +82,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
             ['ddd', 'eee', 'fff'],
         );
 
-        [$str ,$iter] = \call_user_func_array($fn, $this->resolveParameters());
+        [$str ,$iter] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertEquals('my way', $str);
         $this->assertCount(2, $iter);
@@ -90,7 +93,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentAsArrayVariadicByNameSuccess(): void
     {
         $fn = static fn (iterable ...$iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -102,7 +105,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
             ['ddd', 'eee', 'fff'],
         ]);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
 
@@ -113,7 +116,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentOneVariadicByNameWrappedByDiValue(): void
     {
         $fn = static fn (iterable ...$iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -122,7 +125,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments(iterator: diValue(['aaa', 'bbb', 'ccc']));
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(1, $res);
 
@@ -132,7 +135,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentAsStringVariadicByIndexSuccess(): void
     {
         $fn = static fn (string ...$word) => $word;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -141,7 +144,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments('aaa', 'bbb', 'ccc');
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(3, $res);
 
@@ -153,7 +156,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentAsStringVariadicByNameSuccess(): void
     {
         $fn = static fn (array $numbers, string ...$word) => [$numbers, $word];
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -162,7 +165,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data, unsorted parameter names
         $this->bindArguments(word: ['aaa', 'bbb', 'ccc'], numbers: [1_000, 10_000]);
 
-        [$numbers, $word] = \call_user_func_array($fn, $this->resolveParameters());
+        [$numbers, $word] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $numbers);
         $this->assertEquals(1_000, $numbers[0]);
@@ -178,7 +181,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     public function testUserDefinedArgumentAsStdClassByIndexAndName(): void
     {
         $fn = static fn (string $str, SuperClass $super, array $numbers) => [$str, $super, $numbers];
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())->method('get')
@@ -190,7 +193,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments('Hello', numbers: [1_000, 10_000]);
 
-        [$str, $super, $numbers] = \call_user_func_array($fn, $this->resolveParameters());
+        [$str, $super, $numbers] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertEquals('Hello', $str);
         $this->assertEquals([1000, 10000], $numbers);

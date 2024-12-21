@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
@@ -16,6 +17,7 @@ use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface
 {
+    use BindArgumentsTrait;
     use CallableParserTrait;
     use ParametersResolverTrait;
     use PsrContainerTrait;
@@ -26,6 +28,11 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      * @var callable
      */
     private $parsedDefinition;
+
+    /**
+     * @var \ReflectionParameter[]
+     */
+    private array $reflectedFunctionParameters;
 
     public function __construct(array|callable|string $definition, private ?bool $isSingleton = null)
     {
@@ -45,13 +52,13 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     public function invoke(): mixed
     {
-        $this->reflectionParameters ??= $this->reflectParameters();
+        $this->reflectedFunctionParameters ??= $this->reflectParameters();
 
-        if ([] === $this->reflectionParameters) {
+        if ([] === $this->reflectedFunctionParameters) {
             return \call_user_func($this->parsedDefinition);
         }
 
-        return \call_user_func_array($this->parsedDefinition, $this->resolveParameters());
+        return \call_user_func_array($this->parsedDefinition, $this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
     }
 
     public function getDefinition(): callable
