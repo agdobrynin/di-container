@@ -881,6 +881,8 @@ namespace App\Services;
 
 use App\Rules\RuleInterface;
 
+class OtherClass {}
+
 class Rules
 {
     /**
@@ -888,7 +890,7 @@ class Rules
      */
     private $rules;
 
-    public function addRule(RuleInterface $rule): static {
+    public function addRule(OtherClass $other, RuleInterface $rule): static {
         $this->rules[] = $rule;
         
         return $this;
@@ -904,14 +906,17 @@ class Rules
 ```
 ```php
 use App\Rules\{RuleA, RuleB, RuleC};
-use App\Services\Rules;
+use App\Services\{Rules, OtherClass};
 use Kaspi\DiContainer\{diAutowire, diGet, DiContainerFactory};
 
 $definitions = [
+    'services.other' => diAutowire(OtherClass::class),
     diAutowire(Rules::class)
-        ->setup('addRule', diGet(RuleA::class))
-        ->setup('addRule', diGet(RuleB::class))
-        ->setup('addRule', diGet(RuleC::class))
+        // использую именованный аргумент для передачи в метод
+        ->setup('addRule', rule: diGet(RuleA::class))
+        ->setup('addRule', rule: diGet(RuleB::class))
+        // передаю по индексу аргументы в метод
+        ->setup('addRule', diGet('services.other'), diGet(RuleC::class))
 ];
 
 
