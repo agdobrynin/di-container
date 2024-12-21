@@ -33,57 +33,53 @@ class DeprecatedMethodAddArgumentTest extends TestCase
     public function testAddArgumentNonVariadicSuccess(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArgument('iterator', []);
-        $this->arguments = $this->getBindArguments();
 
-        $this->assertEquals([], \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertEquals([], \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
     }
 
     public function testAddArgumentVariadicSuccess(): void
     {
         $fn = static fn (iterable ...$iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArgument('iterator', [[], []]);
-        $this->arguments = $this->getBindArguments();
 
-        $this->assertEquals([[], []], \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertEquals([[], []], \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
     }
 
     public function testAddArgumentFailByName(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArgument('a', []);
-        $this->arguments = $this->getBindArguments();
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Invalid input argument name "a"');
 
-        $this->resolveParameters();
+        $this->resolveParameters($this->getBindArguments(), $reflectionParameters);
     }
 
     public function testAddArgumentFailByCount(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->addArguments(['iterator' => [], 'val' => 'value']);
-        $this->arguments = $this->getBindArguments();
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Too many input arguments');
 
-        $this->resolveParameters();
+        $this->resolveParameters($this->getBindArguments(), $reflectionParameters);
     }
 
     public function testAddArgumentsWithoutNames(): void
     {
         $fn = static fn (string $value, SuperClass $class) => 'ok';
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())
@@ -91,18 +87,18 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->arguments = $this->addArguments([
+        $this->addArguments([
             'value',
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
-        ])->getBindArguments();
+        ]);
 
-        $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
     }
 
     public function testAddArgumentByIndex(): void
     {
         $fn = static fn (string $value, SuperClass $class) => 'ok';
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())
@@ -113,32 +109,30 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->addArgument(0, 'value');
         $this->addArgument(1, diAutowire(SuperClass::class));
 
-        $this->arguments = $this->getBindArguments();
-
-        $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertEquals('ok', \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
     }
 
     public function testAddArgumentsSuccess(): void
     {
         $fn = static fn (iterable $iterator, ?string $value = null) => \array_merge((array) $iterator, [$value]);
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
 
-        $this->arguments = $this->addArguments([
+        $this->addArguments([
             'iterator' => ['ok'],
-        ])->getBindArguments();
+        ]);
 
-        $this->assertEquals(['ok', null], \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertEquals(['ok', null], \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
     }
 
     public function testNoUserDefinedArgumentSuccess(): void
     {
         $fn = static fn (array $array = [], string $value = 'app') => $array + [$value];
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
 
-        $this->arguments = $this->addArguments([])->getBindArguments();
+        $this->addArguments([])->getBindArguments();
 
-        $this->assertEquals(['app'], \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertEquals(['app'], \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
     }
 }

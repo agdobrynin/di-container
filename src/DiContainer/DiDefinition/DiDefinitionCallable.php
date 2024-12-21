@@ -29,6 +29,11 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     private $parsedDefinition;
 
+    /**
+     * @var \ReflectionParameter[]
+     */
+    private array $reflectedFunctionParameters;
+
     public function __construct(array|callable|string $definition, private ?bool $isSingleton = null)
     {
         $this->definition = $definition;
@@ -47,15 +52,13 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     public function invoke(): mixed
     {
-        $this->reflectionParameters ??= $this->reflectParameters();
+        $this->reflectedFunctionParameters ??= $this->reflectParameters();
 
-        if ([] === $this->reflectionParameters) {
+        if ([] === $this->reflectedFunctionParameters) {
             return \call_user_func($this->parsedDefinition);
         }
 
-        $this->arguments = $this->getBindArguments();
-
-        return \call_user_func_array($this->parsedDefinition, $this->resolveParameters());
+        return \call_user_func_array($this->parsedDefinition, $this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
     }
 
     public function getDefinition(): callable

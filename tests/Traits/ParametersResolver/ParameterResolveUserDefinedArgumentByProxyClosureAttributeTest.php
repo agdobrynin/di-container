@@ -38,7 +38,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
             #[ProxyClosure(MoreSuperClass::class)]
             \Closure $item
         ) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->setUseAttribute(true);
 
@@ -54,10 +54,10 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertInstanceOf(\Closure::class, $res);
-        $this->assertNotSame($res, \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertNotSame($res, \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters)));
         $this->assertInstanceOf(MoreSuperClass::class, $res());
     }
 
@@ -70,7 +70,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
             #[ProxyClosure(MoreSuperClass::class, true)]
             \Closure $item
         ) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->setUseAttribute(true);
 
@@ -86,9 +86,9 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
-        $this->assertSame($res, \call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertSame($res, \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters)));
     }
 
     public function testResolveArgumentVariadicByAttribute(): void
@@ -98,7 +98,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
             #[ProxyClosure(SuperClass::class)]
             \Closure ...$item
         ) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -127,7 +127,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         $this->setContainer($mockContainer);
         $this->setUseAttribute(true);
 
-        [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters());
+        [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertInstanceOf(\Closure::class, $res1);
         $this->assertInstanceOf(\Closure::class, $res2);
@@ -142,7 +142,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
             #[ProxyClosure(SuperClass::class, true)]
             \Closure ...$item
         ) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->method('has')
@@ -166,8 +166,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         $this->setContainer($mockContainer);
         $this->setUseAttribute(true);
 
-        [$res11, $res12] = \call_user_func_array($fn, $this->resolveParameters());
-        [$res21, $res22] = \call_user_func_array($fn, $this->resolveParameters());
+        [$res11, $res12] = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        [$res21, $res22] = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertNotSame($res11, $res21);
         $this->assertSame($res12, $res22);

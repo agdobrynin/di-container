@@ -28,21 +28,21 @@ trait ParametersResolverTrait
     use PsrContainerTrait;
     use UseAttributeTrait;
 
-    protected static int $variadicPosition = 0;
+    private static int $variadicPosition = 0;
 
     /**
      * User defined input arguments.
      *
      * @var array<int|string, mixed>
      */
-    protected array $arguments;
+    private array $arguments;
 
     /**
      * Reflected parameters from function or method.
      *
      * @var \ReflectionParameter[]
      */
-    protected array $reflectionParameters;
+    private array $reflectionParameters;
 
     /**
      * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
@@ -56,14 +56,19 @@ trait ParametersResolverTrait
     abstract public function getContainer(): ContainerInterface;
 
     /**
+     * @param \ReflectionParameter[] $reflectionParameters
+     *
      * @throws AutowireAttributeException
      * @throws AutowireExceptionInterface
      * @throws CallCircularDependencyException
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveParameters(): array
+    protected function resolveParameters(array $inputArguments, array $reflectionParameters): array
     {
+        $this->arguments = $inputArguments;
+        $this->reflectionParameters = $reflectionParameters;
+
         // Check valid user defined arguments
         $this->validateInputArguments();
 
@@ -218,12 +223,6 @@ trait ParametersResolverTrait
      */
     private function validateInputArguments(): void
     {
-        if (!isset($this->arguments)) {
-            $this->arguments = [];
-
-            return;
-        }
-
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
             $hasVariadic = [] !== \array_filter($this->reflectionParameters, static fn (\ReflectionParameter $parameter) => $parameter->isVariadic());

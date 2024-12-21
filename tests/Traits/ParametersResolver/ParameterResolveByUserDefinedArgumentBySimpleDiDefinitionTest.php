@@ -30,7 +30,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
     public function testUserDefinedArgumentByDiValueNonVariadicSuccess(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -38,9 +38,8 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(iterator: ['aaa', 'bbb', 'ccc']);
-        $this->arguments = $this->getBindArguments();
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertEquals(['aaa', 'bbb', 'ccc'], $res);
     }
@@ -48,7 +47,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
     public function testUserDefinedArgumentByManyDiValueVariadicSuccess(): void
     {
         $fn = static fn (iterable ...$iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -61,9 +60,8 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
                 ['ddd', 'eee', 'fff'],
             ]
         );
-        $this->arguments = $this->getBindArguments();
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
 
@@ -74,7 +72,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
     public function testUserDefinedArgumentVariadicOneByName(): void
     {
         $fn = static fn (string ...$str) => $str;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -84,9 +82,8 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         $this->bindArguments(
             str: 'hi my darling'
         );
-        $this->arguments = $this->getBindArguments();
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(1, $res);
 
@@ -96,7 +93,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
     public function testUserDefinedArgumentByIndexVariadicSuccess(): void
     {
         $fn = static fn (iterable ...$iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -107,9 +104,8 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
             ['aaa', 'bbb', 'ccc'],
             ['ddd', 'eee', 'fff'],
         );
-        $this->arguments = $this->getBindArguments();
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
 
@@ -120,13 +116,12 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
     public function testUserDefinedArgumentByDefinitionValueByName(): void
     {
         $fn = static fn (array $words) => $words;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         // 🚩 test data
         $this->bindArguments(words: new DiDefinitionValue(['hello', 'world', '!']));
-        $this->arguments = $this->getBindArguments();
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(3, $res);
         $this->assertEquals(['hello', 'world', '!'], $res);
@@ -135,13 +130,12 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
     public function testUserDefinedArgumentByDefinitionValueByIndex(): void
     {
         $fn = static fn (array $words) => $words;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         // 🚩 test data
         $this->bindArguments(new DiDefinitionValue(['hello', 'world', '!']));
-        $this->arguments = $this->getBindArguments();
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(3, $res);
         $this->assertEquals(['hello', 'world', '!'], $res);

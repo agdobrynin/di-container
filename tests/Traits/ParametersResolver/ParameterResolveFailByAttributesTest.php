@@ -33,13 +33,13 @@ class ParameterResolveFailByAttributesTest extends TestCase
             #[ProxyClosure('someService')]
             $iterator
         ) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $this->setUseAttribute(true);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot use attributes.+together/');
 
-        $this->resolveParameters();
+        $this->resolveParameters([], $reflectionParameters);
     }
 }

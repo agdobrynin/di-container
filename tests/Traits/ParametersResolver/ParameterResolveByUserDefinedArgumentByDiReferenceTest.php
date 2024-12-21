@@ -32,7 +32,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
     public function testUserDefinedArgumentBydiGetNonVariadicSuccessByName(): void
     {
         $fn = static fn (\ArrayIterator $iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -41,13 +41,11 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         ;
         $this->setContainer($mockContainer);
         // 🚩 test data (inject arguments for ParameterResolverTrait)
-        $this->arguments = $this->bindArguments(
+        $this->bindArguments(
             iterator: diGet('services.icon-iterator'),
-        )
-            ->getBindArguments()
-        ;
+        );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertInstanceOf(\ArrayIterator::class, $res);
         $this->assertEquals(['🚀', '🔥'], $res->getArrayCopy());
@@ -56,7 +54,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
     public function testUserDefinedArgumentByManydiGetVariadicByName(): void
     {
         $fn = static fn (string $name, \ArrayIterator ...$iterator) => [$name, $iterator];
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -73,17 +71,15 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->arguments = $this->bindArguments(
+        $this->bindArguments(
             iterator: [
                 diGet('services.icon-iterator.two'),
                 diGet('services.icon-iterator.one'),
             ],
             name: 'Piter'
-        )
-            ->getBindArguments()
-        ;
+        );
 
-        [$name, $res] = \call_user_func_array($fn, $this->resolveParameters());
+        [$name, $res] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertEquals('Piter', $name);
         $this->assertCount(2, $res);
@@ -98,7 +94,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
     public function testUserDefinedArgumentByManydiGetVariadicByIndex(): void
     {
         $fn = static fn (string $name, \ArrayIterator ...$iterator) => [$name, $iterator];
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -115,15 +111,13 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->arguments = $this->bindArguments(
+        $this->bindArguments(
             'Ivan',
             diGet('services.icon-iterator.two'),
             diGet('services.icon-iterator.one'),
-        )
-            ->getBindArguments()
-        ;
+        );
 
-        [$name, $res] = \call_user_func_array($fn, $this->resolveParameters());
+        [$name, $res] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertEquals('Ivan', $name);
         $this->assertCount(2, $res);
@@ -138,7 +132,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
     public function testUserDefinedArgumentByOnediGetVariadicByIndex(): void
     {
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -155,14 +149,12 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
 
         $this->setContainer($mockContainer);
         // 🚩 test data
-        $this->arguments = $this->bindArguments(
+        $this->bindArguments(
             diGet('services.icon-iterator.one'),
             diGet('services.icon-iterator.two')
-        )
-            ->getBindArguments()
-        ;
+        );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
 

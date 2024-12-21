@@ -68,16 +68,13 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         }
 
         $this->reflectionConstructorParams ??= $reflectionClass->getConstructor()?->getParameters() ?? [];
-        // setup property for resolving parameters in constructor
-        $this->reflectionParameters = $this->reflectionConstructorParams;
-        $this->arguments = $this->getBindArguments();
 
         /**
          * @var object $object
          */
         $object = [] === $this->reflectionConstructorParams
             ? $reflectionClass->newInstanceWithoutConstructor()
-            : $reflectionClass->newInstanceArgs($this->resolveParameters());
+            : $reflectionClass->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->reflectionConstructorParams));
 
         if ([] === $this->setup) {
             return $object;
@@ -92,10 +89,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
 
             if ($this->reflectionMethodParams[$method]) {
                 foreach ($arguments as $argument) {
-                    // setup property for resolving parameters in method
-                    $this->reflectionParameters = $this->reflectionMethodParams[$method];
-                    $this->arguments = $argument;
-                    $reflectionClass->getMethod($method)->invokeArgs($object, $this->resolveParameters());
+                    $reflectionClass->getMethod($method)
+                        ->invokeArgs($object, $this->resolveParameters($argument, $this->reflectionMethodParams[$method]))
+                    ;
                 }
             }
         }
