@@ -77,26 +77,39 @@ $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-comp
 Автоматическое создание объекта и внедрения зависимостей.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 use function \Kaspi\DiContainer\diAutowire;
 
-diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
+diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupInterface
 ```
 Аргументы:
 - `$definition` - имя класса представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект.
 
-> 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`.
+> 🔌 Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionSetupInterface`.
 > Можно указать аргументы для "определения" через метод:
-> - `bindArguments(mixed ...$argument)`
+> - `diAutowire(...)->bindArguments(mixed ...$argument)`
 > 
 > ❗ метод перезаписывает ранее определенные аргументы.
 > 
 > Можно указывать имена параметров используя именованные аргументы
 > ```php
 > // имена параметров $var1 = 'value 1', $var2 = 'value 2' 
-> bindArguments(var1: 'value 1', var2: 'value 2')
+> diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 > ```
+> 📝 для `bindArguments` будет работать авто-подстановка для параметров (_autowire_)
+
+> Можно указать дополнительную настройку сервиса через методы класса (setters)
+> * `diAutowire(...)->setup(string $method, mixed ...$argument)`
+> 
+> 📝 для `setup` также будет работать авто-подстановка для параметров (_autowire_)
+>
+> Можно указывать имена аргументов используя именованные аргументы
+> ```php
+> // имена параметров $var1 = 'value 1', $var2 = 'value 2' 
+> diAutowire(...)->setup('classMethod', var1: 'value 1', var2: 'value 2')
+> ```
+> ✔ [пример использования `setup`](#пример-4)
 
 При конфигурировании если не нужен идентификатор контейнера отличный от имени определения, то можно указать так:
 
@@ -851,3 +864,64 @@ $class = $container->get(IterableArg::class);
 >   ),
 > ];
 > ```
+
+### Пример #4
+Использование дополнительной настройки сервиса через методы сеттеры (_setters_):
+```php
+namespace App\Rules;
+
+interface RuleInterface {}
+
+class RuleA implements RuleInterface {}
+class RuleB implements RuleInterface {}
+class RuleC implements RuleInterface {}
+```
+```php
+namespace App\Services;
+
+use App\Rules\RuleInterface;
+
+class OtherClass {}
+
+class Rules
+{
+    /**
+     * @param RuleInterface[] $rules
+     */
+    private $rules;
+
+    public function addRule(OtherClass $other, RuleInterface $rule): static {
+        $this->rules[] = $rule;
+        
+        return $this;
+    }
+    
+    /**
+     * @return RuleInterface[]
+     */
+    public function getRules(): array {
+        return $this->rules;
+    }
+}
+```
+```php
+use App\Rules\{RuleA, RuleB, RuleC};
+use App\Services\{Rules, OtherClass};
+use Kaspi\DiContainer\{diAutowire, diGet, DiContainerFactory};
+
+$definitions = [
+    'services.other' => diAutowire(OtherClass::class),
+    diAutowire(Rules::class)
+        // использую именованный аргумент для передачи в метод
+        ->setup('addRule', rule: diGet(RuleA::class))
+        ->setup('addRule', rule: diGet(RuleB::class))
+        // передаю по индексу аргументы в метод
+        ->setup('addRule', diGet('services.other'), diGet(RuleC::class))
+];
+
+
+$container = (new DiContainerFactory())->make($definitions);
+
+$class = $container->get(Rules::class);
+$class->getRules(); // массив содержащий классы RuleA, RuleB, RuleC
+```

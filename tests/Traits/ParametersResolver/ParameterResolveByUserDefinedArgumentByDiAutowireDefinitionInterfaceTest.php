@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,7 @@ use function Kaspi\DiContainer\diGet;
 class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest extends TestCase
 {
     // 🔥 Test Trait 🔥
+    use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
     use PsrContainerTrait;
@@ -38,7 +40,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
     public function testResolveByAutowireDefinitionNonVariadicByName(): void
     {
         $fn = static fn (ClassWithDependency $class) => $class;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $this->setContainer($mockContainer);
@@ -49,7 +51,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 ->bindArguments(dependency: 'aaaa')
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertInstanceOf(ClassWithDependency::class, $res);
     }
@@ -57,7 +59,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
     public function testResolveByAutowireDefinitionNonVariadicByIndex(): void
     {
         $fn = static fn (ClassWithDependency $class) => $class;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $this->setContainer($mockContainer);
@@ -68,7 +70,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 ->bindArguments('aaaa')
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertInstanceOf(ClassWithDependency::class, $res);
     }
@@ -76,7 +78,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
     public function testResolveByAutowireDefinitionVariadicByArrayByName(): void
     {
         $fn = static fn (SuperInterface ...$item) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -95,7 +97,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(SuperClass::class, $res[0]);
@@ -104,14 +106,14 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         // none-singleton
         $this->assertNotSame(
             $res[0],
-            \call_user_func_array($fn, $this->resolveParameters())[0]
+            \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters))[0]
         );
     }
 
     public function testResolveByAutowireDefinitionVariadicByArrayByIndex(): void
     {
         $fn = static fn (SuperInterface ...$item) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $this->setContainer($mockContainer);
@@ -124,7 +126,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertInstanceOf(SuperClass::class, $res[0]);
         $this->assertInstanceOf(MoreSuperClass::class, $res[1]);
@@ -133,7 +135,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
     public function testResolveByAutowireDefinitionVariadicByArrayAndSingletonByName(): void
     {
         $fn = static fn (SuperInterface ...$item) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $this->setContainer($mockContainer);
@@ -146,7 +148,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(SuperClass::class, $res[0]);
@@ -155,14 +157,14 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         // is singleton
         $this->assertSame(
             $res[0],
-            \call_user_func_array($fn, $this->resolveParameters())[0]
+            \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters))[0]
         );
     }
 
     public function testResolveByAutowireDefinitionVariadicByDiGetAkaTagByName(): void
     {
         $fn = static fn (SuperInterface ...$item) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -186,7 +188,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(MoreSuperClass::class, $res[0]);
@@ -196,7 +198,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
     public function testResolveByAutowireDefinitionVariadicByDiGetAkaTagByIndex(): void
     {
         $fn = static fn (SuperInterface ...$item) => $item;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -218,7 +220,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             diGet('services.super.two')
         );
 
-        $res = \call_user_func_array($fn, $this->resolveParameters());
+        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(MoreSuperClass::class, $res[0]);

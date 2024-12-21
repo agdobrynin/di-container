@@ -13,6 +13,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 
 // @todo Remove alias when remove function diReference.
 \class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
@@ -23,7 +24,7 @@ if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
      *
      * @param class-string $definition
      */
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
     }

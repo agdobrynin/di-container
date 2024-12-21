@@ -32,7 +32,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
     public function testParameterResolveByType(): void
     {
         $fn = static fn (\ArrayIterator $array) => $array;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -43,14 +43,14 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->assertInstanceOf(
             \ArrayIterator::class,
-            \call_user_func_array($fn, $this->resolveParameters())
+            \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters))
         );
     }
 
     public function testParameterResolveByName(): void
     {
         $fn = static fn ($myArrayIterator) => $myArrayIterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -61,14 +61,14 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->assertInstanceOf(
             \ArrayIterator::class,
-            \call_user_func_array($fn, $this->resolveParameters())
+            \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters))
         );
     }
 
     public function testParameterResolveByNameVariadicParameterString(): void
     {
         $fn = static fn (SuperClass $superClass, string ...$word) => [$superClass, $word];
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer
@@ -86,7 +86,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters();
+        $params = $this->resolveParameters([], $reflectionParameters);
 
         $this->assertCount(2, $params);
         $this->assertInstanceOf(SuperClass::class, $params[0]);
@@ -99,7 +99,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
     public function testParameterResolveByNameVariadicParameterArray(): void
     {
         $fn = static fn (array ...$phrase) => $phrase;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer
@@ -113,7 +113,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters();
+        $params = $this->resolveParameters([], $reflectionParameters);
 
         $this->assertCount(1, $params);
         $this->assertEquals(
@@ -125,7 +125,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
     public function testParameterResolveByNameNonVariadicParameterArray(): void
     {
         $fn = static fn (array $phrase) => $phrase;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer
@@ -139,7 +139,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters();
+        $params = $this->resolveParameters([], $reflectionParameters);
 
         $this->assertEquals(
             ['one', 'two', 'three'],
@@ -150,7 +150,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
     public function testParameterResolveByTypeNotFoundAndSetDefaultValue(): void
     {
         $fn = static fn (?SomeClass $someClass = null) => $someClass;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -159,13 +159,13 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->assertNull(\call_user_func_array($fn, $this->resolveParameters()));
+        $this->assertNull(\call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters)));
     }
 
     public function testParameterResolveByTypeWithVariadic(): void
     {
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -175,7 +175,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->setContainer($mockContainer);
         $this->assertInstanceOf(
             \ArrayIterator::class,
-            \call_user_func_array($fn, $this->resolveParameters())[0]
+            \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters))[0]
         );
     }
 
@@ -183,7 +183,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
     {
         // SuperClass not registered in container.
         $fn = static fn (SuperClass $superClass) => $superClass;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -195,14 +195,14 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass.+Not found/');
 
-        $this->resolveParameters();
+        $this->resolveParameters([], $reflectionParameters);
     }
 
     public function testParameterResolveByTypeThrowWhenResolveDependency(): void
     {
         // SuperClass is registered in container, but fire throw when resolve in container.
         $fn = static fn (SuperClass $superClass) => $superClass;
-        $this->reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -214,6 +214,6 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass.+some error/');
 
-        $this->resolveParameters();
+        $this->resolveParameters([], $reflectionParameters);
     }
 }

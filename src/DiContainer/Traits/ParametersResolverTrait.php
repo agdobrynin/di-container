@@ -28,75 +28,47 @@ trait ParametersResolverTrait
     use PsrContainerTrait;
     use UseAttributeTrait;
 
-    protected static int $variadicPosition = 0;
+    private static int $variadicPosition = 0;
 
     /**
-     * @var \ReflectionParameter[]
-     */
-    protected array $reflectionParameters;
-
-    /**
-     * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
-     */
-    protected array $resolvedArguments = [];
-
-    /**
-     * User defined parameters by parameter name.
+     * User defined input arguments.
      *
      * @var array<int|string, mixed>
      */
-    protected array $arguments = [];
+    private array $arguments;
 
     /**
-     * @deprecated Use method bindArguments(). This method will remove next major release.
+     * Reflected parameters from function or method.
      *
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
+     * @var \ReflectionParameter[]
      */
-    public function addArgument(int|string $name, mixed $value): static
-    {
-        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
-
-        $this->arguments[$name] = $value;
-
-        return $this;
-    }
+    private array $reflectionParameters;
 
     /**
-     * @deprecated Use method bindArguments(). This method will remove next major release.
+     * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
      *
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
+     * @phan-suppress PhanReadOnlyPrivateProperty
+     *
+     * @var array<non-empty-string, mixed>
      */
-    public function addArguments(array $arguments): static
-    {
-        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
-        $this->arguments = $arguments;
-
-        return $this;
-    }
-
-    /**
-     * @phan-suppress PhanTypeMismatchReturn
-     */
-    public function bindArguments(mixed ...$argument): static
-    {
-        $this->arguments = $argument;
-
-        return $this;
-    }
+    private array $resolvedArguments = [];
 
     abstract public function getContainer(): ContainerInterface;
 
     /**
+     * @param \ReflectionParameter[] $reflectionParameters
+     *
      * @throws AutowireAttributeException
      * @throws AutowireExceptionInterface
      * @throws CallCircularDependencyException
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveParameters(): array
+    protected function resolveParameters(array $inputArguments, array $reflectionParameters): array
     {
+        $this->arguments = $inputArguments;
+        $this->reflectionParameters = $reflectionParameters;
+
         // Check valid user defined arguments
         $this->validateInputArguments();
 
@@ -169,33 +141,30 @@ trait ParametersResolverTrait
      * @throws ContainerExceptionInterface
      * @throws AutowireExceptionInterface
      */
-    protected function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
+    private function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
         if ($argumentDefinition instanceof DiDefinitionGet) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
-            $id = $parameter->isVariadic()
-                ? \sprintf('%s#%d', $parameter->getName(), self::$variadicPosition++)
-                : $parameter->getName();
-
-            if (isset($this->resolvedArguments[$id])) {
-                return $this->resolvedArguments[$id];
-            }
-
-            // Configure definition.
-            $argumentDefinition->setContainer($this->getContainer())
-                ->setUseAttribute($this->isUseAttribute())
-            ;
-
-            $objectResult = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
+            // Configure definition and invoke definition.
+            $argumentDefinition->setContainer($this->getContainer())->setUseAttribute($this->isUseAttribute());
+            $object = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
                 ? $o($this->getContainer())
                 : $o;
 
-            return $argumentDefinition->isSingleton()
-                ? $this->resolvedArguments[$id] = $objectResult
-                : $objectResult;
+            if ($argumentDefinition->isSingleton()) {
+                $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
+
+                if ($parameter->isVariadic()) {
+                    $identifier .= \sprintf('#%d', self::$variadicPosition++);
+                }
+
+                return $this->resolvedArguments[$identifier] ??= $object;
+            }
+
+            return $object;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInterface) {
@@ -206,16 +175,60 @@ trait ParametersResolverTrait
     }
 
     /**
+     * @throws NotFoundExceptionInterface
+     * @throws AutowireExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
+    private function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
+    {
+        $injects = $this->getInjectAttribute($parameter);
+        $asClosures = $this->getProxyClosureAttribute($parameter);
+
+        if ($injects->valid() && $asClosures->valid()) {
+            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
+        }
+
+        if ($injects->valid()) {
+            foreach ($injects as $inject) {
+                yield $inject->getIdentifier()
+                    ? $this->getContainer()->get($inject->getIdentifier())
+                    : $this->getContainer()->get($parameter->getName());
+            }
+
+            return;
+        }
+
+        foreach ($asClosures as $asClosure) {
+            yield $this->resolveInputArgument(
+                $parameter,
+                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
+            );
+        }
+    }
+
+    private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
+    {
+        if (\is_string($argumentNameOrIndex)) {
+            return \is_array($this->arguments[$argumentNameOrIndex])
+                ? $this->arguments[$argumentNameOrIndex]
+                : [$this->arguments[$argumentNameOrIndex]];
+        }
+
+        return \array_slice($this->arguments, $argumentNameOrIndex);
+    }
+
+    /**
      * @throws AutowireExceptionInterface
      */
-    protected function validateInputArguments(): void
+    private function validateInputArguments(): void
     {
         if ([] !== $this->arguments) {
             $parameters = \array_column($this->reflectionParameters, 'name');
             $hasVariadic = [] !== \array_filter($this->reflectionParameters, static fn (\ReflectionParameter $parameter) => $parameter->isVariadic());
 
             if (!$hasVariadic && \count($this->arguments) > \count($parameters)) {
-                throw new AutowireAttributeException(
+                throw new AutowireException(
                     \sprintf(
                         'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
                         \implode(', ', \array_keys($this->arguments)),
@@ -243,7 +256,7 @@ trait ParametersResolverTrait
         }
     }
 
-    protected function getArgumentByNameOrIndex(\ReflectionParameter $parameter): false|int|string
+    private function getArgumentByNameOrIndex(\ReflectionParameter $parameter): false|int|string
     {
         if ([] === $this->arguments) {
             return false;
@@ -254,49 +267,5 @@ trait ParametersResolverTrait
             \array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
             default => false,
         };
-    }
-
-    protected function getInputVariadicArgument(int|string $argumentNameOrIndex): array
-    {
-        if (\is_string($argumentNameOrIndex)) {
-            return \is_array($this->arguments[$argumentNameOrIndex])
-                ? $this->arguments[$argumentNameOrIndex]
-                : [$this->arguments[$argumentNameOrIndex]];
-        }
-
-        return \array_slice($this->arguments, $argumentNameOrIndex);
-    }
-
-    /**
-     * @throws NotFoundExceptionInterface
-     * @throws AutowireExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
-     * @throws ContainerExceptionInterface
-     */
-    protected function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
-    {
-        $injects = $this->getInjectAttribute($parameter);
-        $asClosures = $this->getProxyClosureAttribute($parameter);
-
-        if ($injects->valid() && $asClosures->valid()) {
-            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
-        }
-
-        if ($injects->valid()) {
-            foreach ($injects as $inject) {
-                yield $inject->getIdentifier()
-                    ? $this->getContainer()->get($inject->getIdentifier())
-                    : $this->getContainer()->get($parameter->getName());
-            }
-
-            return;
-        }
-
-        foreach ($asClosures as $asClosure) {
-            yield $this->resolveInputArgument(
-                $parameter,
-                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
-            );
-        }
     }
 }
