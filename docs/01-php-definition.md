@@ -889,7 +889,7 @@ $class = $container->get(IterableArg::class);
 > ```
 
 ### Пример #4
-Использование дополнительной настройки сервиса через методы сеттеры (_setters_):
+Использование дополнительной настройки сервиса через сеттер-методы (_setter methods_):
 ```php
 namespace App\Rules;
 
@@ -936,9 +936,10 @@ $definitions = [
     'services.other' => diAutowire(OtherClass::class),
     diAutowire(Rules::class)
         // использую именованный аргумент для передачи в метод
+        // параметр $other в методе будет заполнен через механизм autowire
         ->setup('addRule', rule: diGet(RuleA::class))
         ->setup('addRule', rule: diGet(RuleB::class))
-        // передаю по индексу аргументы в метод
+        // передаю по индексу все аргументы в метод
         ->setup('addRule', diGet('services.other'), diGet(RuleC::class))
 ];
 
