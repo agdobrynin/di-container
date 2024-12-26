@@ -66,6 +66,10 @@ trait ParametersResolverTrait
      */
     protected function resolveParameters(array $inputArguments, array $reflectionParameters): array
     {
+        if ([] === $inputArguments && [] === $reflectionParameters) {
+            return [];
+        }
+
         $this->arguments = $inputArguments;
         $this->reflectionParameters = $reflectionParameters;
 
@@ -230,9 +234,9 @@ trait ParametersResolverTrait
             if (!$hasVariadic && \count($this->arguments) > \count($parameters)) {
                 throw new AutowireException(
                     \sprintf(
-                        'Too many input arguments "%s". Definition '.__CLASS__.' has arguments: "%s"',
+                        'Too many input arguments. Input index or name arguments "%s". Definition parameters: %s',
                         \implode(', ', \array_keys($this->arguments)),
-                        \implode(', ', $parameters)
+                        ($p = \implode(', ', $parameters)) ? '"'.$p.'"' : 'without input parameters'
                     )
                 );
             }

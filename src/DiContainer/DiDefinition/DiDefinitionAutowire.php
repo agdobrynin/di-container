@@ -61,38 +61,28 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
 
     public function invoke(): mixed
     {
-        $reflectionClass = $this->getDefinition();
-
-        if (!$reflectionClass->isInstantiable()) {
-            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $reflectionClass->getName()));
-        }
-
-        $this->reflectionConstructorParams ??= $reflectionClass->getConstructor()?->getParameters() ?? [];
-
         /**
          * @var object $object
          */
-        $object = [] === $this->reflectionConstructorParams
-            ? $reflectionClass->newInstanceWithoutConstructor()
-            : $reflectionClass->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->reflectionConstructorParams));
+        $object = [] === $this->getConstructorParams()
+            ? $this->getDefinition()->newInstanceWithoutConstructor()
+            : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->getConstructorParams()));
 
         if ([] === $this->setup) {
             return $object;
         }
 
         foreach ($this->setup as $method => $arguments) {
-            if (!$reflectionClass->hasMethod($method)) {
+            if (!$this->getDefinition()->hasMethod($method)) {
                 throw new AutowireException(\sprintf('The method "%s" does not exist', $method));
             }
 
-            $this->reflectionMethodParams[$method] ??= $reflectionClass->getMethod($method)->getParameters();
+            $this->reflectionMethodParams[$method] ??= $this->getDefinition()->getMethod($method)->getParameters();
 
-            if ($this->reflectionMethodParams[$method]) {
-                foreach ($arguments as $argument) {
-                    $reflectionClass->getMethod($method)
-                        ->invokeArgs($object, $this->resolveParameters($argument, $this->reflectionMethodParams[$method]))
-                    ;
-                }
+            foreach ($arguments as $argument) {
+                $this->getDefinition()->getMethod($method)
+                    ->invokeArgs($object, $this->resolveParameters($argument, $this->reflectionMethodParams[$method]))
+                ;
             }
         }
 
@@ -116,5 +106,20 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return \is_string($this->definition)
             ? $this->definition
             : $this->reflectionClass->getName();
+    }
+
+    private function getConstructorParams(): array
+    {
+        if (isset($this->reflectionConstructorParams)) {
+            return $this->reflectionConstructorParams;
+        }
+
+        $reflectionClass = $this->getDefinition();
+
+        if (!$reflectionClass->isInstantiable()) {
+            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $reflectionClass->getName()));
+        }
+
+        return $this->reflectionConstructorParams = $reflectionClass->getConstructor()?->getParameters() ?? [];
     }
 }
