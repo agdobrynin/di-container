@@ -9,6 +9,7 @@ class SetupClass
     private ?string $name = null;
     private ?string $previousName = null;
     private array $parameters = [];
+    private int $inc;
 
     public function getName(): ?string
     {
@@ -34,5 +35,15 @@ class SetupClass
     public function getPreviousName(): ?string
     {
         return $this->previousName;
+    }
+
+    public function incInc(): void
+    {
+        isset($this->inc) ? $this->inc++ : $this->inc = 1;
+    }
+
+    public function getInc(): int
+    {
+        return $this->inc;
     }
 }

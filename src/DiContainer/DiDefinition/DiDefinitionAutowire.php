@@ -79,12 +79,10 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
 
             $this->reflectionMethodParams[$method] ??= $this->getDefinition()->getMethod($method)->getParameters();
 
-            if ($this->reflectionMethodParams[$method]) {
-                foreach ($arguments as $argument) {
-                    $this->getDefinition()->getMethod($method)
-                        ->invokeArgs($object, $this->resolveParameters($argument, $this->reflectionMethodParams[$method]))
-                    ;
-                }
+            foreach ($arguments as $argument) {
+                $this->getDefinition()->getMethod($method)
+                    ->invokeArgs($object, $this->resolveParameters($argument, $this->reflectionMethodParams[$method]))
+                ;
             }
         }
 

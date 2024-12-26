@@ -40,12 +40,25 @@ class SetupTest extends TestCase
     public function testSetupMethodNotExist(): void
     {
         $def = (new DiDefinitionAutowire(SetupClass::class))
-            ->setup('methodNotExist', 100, 200)
+            ->setup('methodNotExist')
         ;
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('The method "methodNotExist" does not exist');
 
         $def->invoke();
+    }
+
+    public function testSetupWithoutParameters(): void
+    {
+        $def = (new DiDefinitionAutowire(SetupClass::class))
+            ->setup('incInc')
+            ->setup('incInc')
+            ->setup('incInc')
+        ;
+
+        $class = $def->invoke();
+
+        $this->assertEquals(3, $class->getInc());
     }
 }
