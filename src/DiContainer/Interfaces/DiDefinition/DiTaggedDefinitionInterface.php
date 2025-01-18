@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 interface DiTaggedDefinitionInterface
 {
     /**
-     * Get bound tags.
+     * Get bound tags with options.
      *
      * @todo Add doc block.
      *
