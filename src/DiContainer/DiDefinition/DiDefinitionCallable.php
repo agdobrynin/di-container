@@ -67,6 +67,29 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     }
 
     /**
+     * @return $this
+     */
+    public function bindTag(string $name, int $priority = 0): static
+    {
+        // TODO: Implement bindTag() method.
+
+        return $this;
+    }
+
+    /**
+     * @return non-empty-string[]
+     */
+    public function getTags(): array
+    {
+        // TODO: Implement getTags() method.
+    }
+
+    public function hasTag(string $name): bool
+    {
+        // TODO: Implement hasTag() method.
+    }
+
+    /**
      * @return \ReflectionParameter[]
      *
      * @throws ContainerExceptionInterface

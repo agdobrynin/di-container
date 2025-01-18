@@ -58,4 +58,27 @@ interface DiDefinitionArgumentsInterface
      * @return $this
      */
     public function bindArguments(mixed ...$argument): static;
+
+    /**
+     * Bind tag for services.
+     *
+     * @todo Add dock block.
+     */
+    public function bindTag(string $name, int $priority = 0): static;
+
+    /**
+     * Get bound tags.
+     *
+     * @todo Add doc block.
+     *
+     * @return non-empty-string[]
+     */
+    public function getTags(): array;
+
+    /**
+     * Has tag.
+     *
+     * @todo Add doc block.
+     */
+    public function hasTag(string $name): bool;
 }
