@@ -64,21 +64,21 @@ interface DiDefinitionArgumentsInterface
      *
      * @todo Add dock block.
      */
-    public function bindTag(string $name, int $priority = 0): static;
+    public function bindTag(string $name, array $options): static;
 
     /**
      * Get bound tags.
      *
      * @todo Add doc block.
      *
-     * @return non-empty-string[]
+     * @return array<non-empty-string, array>
      */
     public function getTags(): array;
 
     /**
-     * Has tag.
+     * Get tag options.
      *
      * @todo Add doc block.
      */
-    public function hasTag(string $name): bool;
+    public function getTag(string $name): ?array;
 }

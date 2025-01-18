@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -21,6 +22,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     use CallableParserTrait;
     use ParametersResolverTrait;
     use PsrContainerTrait;
+    use TagsTrait;
 
     private $definition;
 
@@ -64,29 +66,6 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     public function getDefinition(): callable
     {
         return $this->parsedDefinition ??= $this->parseCallable($this->definition);
-    }
-
-    /**
-     * @return $this
-     */
-    public function bindTag(string $name, int $priority = 0): static
-    {
-        // TODO: Implement bindTag() method.
-
-        return $this;
-    }
-
-    /**
-     * @return non-empty-string[]
-     */
-    public function getTags(): array
-    {
-        // TODO: Implement getTags() method.
-    }
-
-    public function hasTag(string $name): bool
-    {
-        // TODO: Implement hasTag() method.
     }
 
     /**

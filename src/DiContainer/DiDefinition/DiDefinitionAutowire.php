@@ -12,12 +12,14 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
+use Kaspi\DiContainer\Traits\TagsTrait;
 
 final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface
 {
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     use PsrContainerTrait;
+    use TagsTrait;
 
     private \ReflectionClass $reflectionClass;
 
@@ -106,29 +108,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return \is_string($this->definition)
             ? $this->definition
             : $this->reflectionClass->getName();
-    }
-
-    /**
-     * @return $this
-     */
-    public function bindTag(string $name, int $priority = 0): static
-    {
-        // TODO: Implement bindTag() method.
-
-        return $this;
-    }
-
-    /**
-     * @return non-empty-string[]
-     */
-    public function getTags(): array
-    {
-        // TODO: Implement getTags() method.
-    }
-
-    public function hasTag(string $name): bool
-    {
-        // TODO: Implement hasTag() method.
     }
 
     private function getConstructorParams(): array
