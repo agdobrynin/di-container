@@ -63,6 +63,8 @@ interface DiDefinitionArgumentsInterface
      * Bind tag for services.
      *
      * @todo Add dock block.
+     * @param non-empty-string                                        $name
+     * @param array<non-empty-string, array<non-empty-string, mixed>> $options
      */
     public function bindTag(string $name, array $options): static;
 }
