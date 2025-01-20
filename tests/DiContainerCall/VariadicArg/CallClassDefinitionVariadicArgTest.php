@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall\VariadicArg;
 
-use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainerCall\VariadicArg\Fixtures\Talk;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordHello;
@@ -19,6 +16,8 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\Inject::getIdentifier
+ * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
@@ -31,9 +30,6 @@ use function Kaspi\DiContainer\diGet;
  *
  * @internal
  */
-#[CoversClass(Inject::class)]
-#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
-#[CoversFunction('\Kaspi\DiContainer\diGet')]
 class CallClassDefinitionVariadicArgTest extends TestCase
 {
     public function testCallStaticMethodWithoutAttributePassArgumentBydiGet(): void

@@ -6,31 +6,27 @@ namespace Tests\DiContainerCall\WrongDefinition;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait;
-use Kaspi\DiContainer\Traits\UseAttributeTrait;
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 
 /**
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
+ *
  * @internal
  */
-#[CoversClass(DiDefinitionCallable::class)]
-#[CoversClass(DiDefinitionAutowire::class)]
-#[CoversClass(DiContainerConfig::class)]
-#[CoversClass(DiContainer::class)]
-#[CoversClass(UseAttributeTrait::class)]
-#[CoversClass(ParameterTypeByReflectionTrait::class)]
 class MainTest extends TestCase
 {
-    public static function dataProviderWrongDefinition(): \Generator
+    public function dataProviderWrongDefinition(): \Generator
     {
         yield 'empty string' => [
             '',
-            'Unresolvable dependency',
+            'Unresolvable dependency []',
         ];
 
         yield 'some random string' => [
@@ -60,7 +56,7 @@ class MainTest extends TestCase
 
         yield 'is not callable because method not exist' => [
             [self::class, 'method'],
-            'Unresolvable dependency',
+            'Definition is not callable',
         ];
 
         yield 'instance of object without method' => [
@@ -69,8 +65,12 @@ class MainTest extends TestCase
         ];
     }
 
-    #[DataProvider('dataProviderWrongDefinition')]
-    public function testWrongDefinitionAsString(mixed $definition, string $expectMessage): void
+    /**
+     * @dataProvider dataProviderWrongDefinition
+     *
+     * @param mixed $definition
+     */
+    public function testWrongDefinitionAsString($definition, string $expectMessage): void
     {
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage($expectMessage);

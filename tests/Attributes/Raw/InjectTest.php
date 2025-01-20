@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Attributes\Raw;
 
 use Kaspi\DiContainer\Attributes\Inject;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\Inject
+ *
  * @internal
  */
-#[CoversClass(Inject::class)]
 class InjectTest extends TestCase
 {
     public function testInjectHasIdentifier(): void

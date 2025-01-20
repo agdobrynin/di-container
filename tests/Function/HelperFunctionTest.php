@@ -8,9 +8,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -20,17 +17,18 @@ use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diReference;
 
 /**
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\diCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\diProxyClosure
+ * @covers \Kaspi\DiContainer\diReference
+ *
  * @internal
  */
-#[CoversFunction('diReference')]
-#[CoversFunction('diProxyClosure')]
-#[CoversFunction('diGet')]
-#[CoversClass(DiDefinitionValue::class)]
-#[CoversClass(DiDefinitionGet::class)]
-#[CoversClass(DiDefinitionCallable::class)]
-#[CoversClass(DiDefinitionAutowire::class)]
-#[CoversFunction('diCallable')]
-#[CoversFunction('diAutowire')]
 class HelperFunctionTest extends TestCase
 {
     public function testFunctiondiGet(): void
