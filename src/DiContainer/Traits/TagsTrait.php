@@ -10,6 +10,7 @@ trait TagsTrait
 
     /**
      * @phan-suppress PhanTypeMismatchReturn
+     * @phan-suppress PhanUnreferencedPublicMethod
      *
      * @return $this
      */
