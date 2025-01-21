@@ -11,7 +11,7 @@ interface DiTaggedDefinitionInterface
      *
      * @todo Add doc block.
      *
-     * @return array<non-empty-string, array>
+     * @return array<non-empty-string, array<non-empty-string, mixed>>
      */
     public function getTags(): array;
 
