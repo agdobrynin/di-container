@@ -32,4 +32,14 @@ interface DiContainerInterface extends ContainerInterface
      * @throws DiDefinitionExceptionInterface
      */
     public function set(string $id, mixed $definition): static;
+
+    /**
+     * Get tagged services.
+     *
+     * @param non-empty-string $tag
+     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function getTaggedAs(string $tag, bool $lazy): iterable;
 }
