@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -133,6 +134,25 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function getContainer(): ContainerInterface
     {
         return $this; // @codeCoverageIgnore
+    }
+
+    public function getTaggedAs(string $tag, bool $lazy = true): iterable
+    {
+        $taggedServices = [];
+
+        foreach ($this->definitions as $id => $definition) {
+            if ($definition instanceof DiTaggedDefinitionInterface && $definition->getTag($tag)) {
+                $taggedServices[] = $id; // @todo sort by options['priority' => intValue]
+            }
+        }
+
+        if ($lazy) {
+            foreach ($taggedServices as $id) {
+                yield $this->get($id);
+            }
+        } else {
+            return \array_map(fn (mixed $id) => $this->get($id), $taggedServices);
+        }
     }
 
     /**
