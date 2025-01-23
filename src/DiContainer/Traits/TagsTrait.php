@@ -21,6 +21,9 @@ trait TagsTrait
         return $this;
     }
 
+    /**
+     * @phan-suppress PhanUnreferencedPublicMethod
+     */
     public function getTags(): array
     {
         return $this->tags;
