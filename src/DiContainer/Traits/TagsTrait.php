@@ -33,4 +33,14 @@ trait TagsTrait
     {
         return $this->tags[$name] ?? null;
     }
+
+    public function hasTag(string $name): bool
+    {
+        return isset($this->tags[$name]);
+    }
+
+    public function getOptionPriority(string $name): int
+    {
+        return $this->getTag($name)['priority'] ?? 0;
+    }
 }
