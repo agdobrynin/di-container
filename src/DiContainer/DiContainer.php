@@ -138,11 +138,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function getTaggedAs(string $tag, bool $lazy = true): iterable
     {
-        if ($lazy) {
-            foreach ($this->getServicesTaggedAs($tag) as $id => $taggedDefinition) {
-                yield $this->get($id);
-            }
-        } else {
+        if (!$lazy) {
             $services = [];
 
             foreach ($this->getServicesTaggedAs($tag) as $id => $taggedDefinition) {
@@ -150,6 +146,10 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             return $services;
+        }
+
+        foreach ($this->getServicesTaggedAs($tag) as $id => $taggedDefinition) {
+            yield $this->get($id);
         }
     }
 
