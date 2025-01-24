@@ -60,9 +60,7 @@ interface DiDefinitionArgumentsInterface
     public function bindArguments(mixed ...$argument): static;
 
     /**
-     * Bind tag for services.
-     *
-     * @todo Add dock block.
+     * Bind tag for services with meta-data.
      *
      * @param non-empty-string               $name
      * @param array<non-empty-string, mixed> $options
