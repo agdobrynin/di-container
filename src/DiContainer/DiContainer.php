@@ -138,20 +138,15 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
     public function getTaggedAs(string $tag, bool $lazy = true): iterable
     {
-        $taggedServices = [];
-
-        foreach ($this->definitions as $id => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface && $definition->getTag($tag)) {
-                $taggedServices[] = $id; // @todo sort by options['priority' => intValue]
-            }
-        }
-
         if ($lazy) {
-            foreach ($taggedServices as $id) {
+            foreach ($this->getServicesTaggedAs($tag) as $id) {
                 yield $this->get($id);
             }
         } else {
-            return \array_map(fn (mixed $id) => $this->get($id), $taggedServices);
+            return \array_map(
+                fn (string $id) => $this->get($id),
+                \iterator_to_array($this->getServicesTaggedAs($tag))
+            );
         }
     }
 
@@ -282,5 +277,21 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             throw new CallCircularDependencyException('Trying call cyclical dependency. Call dependencies: '.$callPath);
         }
+    }
+
+    /**
+     * @return \Generator<string>
+     */
+    protected function getServicesTaggedAs(string $tag): \Generator
+    {
+        $taggedServices = [];
+
+        foreach (yield from $this->definitions as $id => $definition) {
+            if ($definition instanceof DiTaggedDefinitionInterface && $definition->getTag($tag)) {
+                $taggedServices[] = $id; // @todo sort by options['priority' => intValue]
+            }
+        }
+
+        yield from $taggedServices;
     }
 }
