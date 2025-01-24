@@ -12,8 +12,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 // @todo Remove alias when remove function diReference.
 \class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
@@ -44,7 +44,7 @@ if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgn
      *
      * @param class-string $definition
      */
-    function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionInvokableInterface
+    function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionProxyClosure($definition, $isSingleton);
     }
@@ -80,7 +80,7 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
     /**
      * @phan-suppress PhanUnreferencedFunction
      */
-    function diValue(mixed $value): DiDefinitionInterface
+    function diValue(mixed $value): DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionValue($value);
     }
