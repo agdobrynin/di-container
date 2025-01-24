@@ -6,12 +6,13 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Kaspi\DiContainer\Traits\UseAttributeTrait;
 
-final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, DiTaggedDefinitionInterface
+final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
 {
     use PsrContainerTrait;
     use UseAttributeTrait;
