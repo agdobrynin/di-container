@@ -139,14 +139,17 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     public function getTaggedAs(string $tag, bool $lazy = true): iterable
     {
         if ($lazy) {
-            foreach ($this->getServicesTaggedAs($tag) as $id) {
+            foreach ($this->getServicesTaggedAs($tag) as $id => $taggedDefinition) {
                 yield $this->get($id);
             }
         } else {
-            return \array_map(
-                fn (string $id) => $this->get($id),
-                \iterator_to_array($this->getServicesTaggedAs($tag))
-            );
+            $services = [];
+
+            foreach ($this->getServicesTaggedAs($tag) as $id => $taggedDefinition) {
+                $services[] = $this->get($id);
+            }
+
+            return $services;
         }
     }
 
@@ -280,16 +283,22 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     }
 
     /**
-     * @return \Generator<string>
+     * @return \Generator<string, DiTaggedDefinitionInterface>
      */
     protected function getServicesTaggedAs(string $tag): \Generator
     {
-        $taggedServices = [];
+        $taggedServices = \array_filter(
+            $this->definitions,
+            static fn ($definition) => $definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($tag)
+        );
 
-        foreach (yield from $this->definitions as $id => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface && $definition->getTag($tag)) {
-                $taggedServices[] = $id; // @todo sort by options['priority' => intValue]
-            }
+        // Operation through tag options
+        if ([] !== $taggedServices) {
+            // sorting by priority key in options
+            \uasort(
+                $taggedServices,
+                static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $a->getOptionPriority($tag) <=> $b->getOptionPriority($tag)
+            );
         }
 
         yield from $taggedServices;

@@ -18,7 +18,21 @@ interface DiTaggedDefinitionInterface
     /**
      * Get tag options.
      *
-     * @todo Add doc block.
+     * @param non-empty-string $name
      */
     public function getTag(string $name): ?array;
+
+    /**
+     * Has tag.
+     *
+     * @param non-empty-string $name
+     */
+    public function hasTag(string $name): bool;
+
+    /**
+     * Get priority option for tag.
+     *
+     * @param non-empty-string $name
+     */
+    public function getOptionPriority(string $name): int;
 }
