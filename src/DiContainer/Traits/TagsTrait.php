@@ -31,12 +31,14 @@ trait TagsTrait
 
     public function getTag(string $name): ?array
     {
-        return $this->tags[$name] ?? null;
+        return $this->hasTag($name)
+            ? $this->tags[$name]
+            : null;
     }
 
     public function hasTag(string $name): bool
     {
-        return isset($this->tags[$name]);
+        return [] !== $this->tags && isset($this->tags[$name]);
     }
 
     public function getOptionPriority(string $name): int
