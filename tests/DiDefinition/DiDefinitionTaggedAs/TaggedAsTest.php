@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use PHPUnit\Framework\TestCase;
 
+use function Kaspi\DiContainer\diTaggedAs;
 use function Kaspi\DiContainer\diValue;
 
 /**
@@ -19,6 +20,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\TagsTrait
  */
@@ -121,5 +123,24 @@ class TaggedAsTest extends TestCase
         $this->assertEquals('services.one', $taggedServices->current());
         $taggedServices->next();
         $this->assertFalse($taggedServices->valid());
+    }
+
+    public function testTaggedAsServicesFromContainer(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'one' => diValue('services.one')->bindTag('tags.system.voters', ['priority' => 20]),
+            'two' => diValue('services.two'),
+            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 0]),
+            'voters' => diTaggedAs('tags.system.voters'),
+        ]);
+
+        $voters = $container->get('voters');
+
+        $this->assertTrue($voters->valid());
+        $this->assertEquals('services.three', $voters->current());
+        $voters->next();
+        $this->assertEquals('services.one', $voters->current());
+        $voters->next();
+        $this->assertFalse($voters->valid());
     }
 }
