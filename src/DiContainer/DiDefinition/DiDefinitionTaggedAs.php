@@ -56,11 +56,11 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
                 $services[] = $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
             }
 
-            return $services;
-        }
-
-        foreach ($taggedServices as $id => $taggedDefinition) {
-            yield $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
+            yield from $services;
+        } else {
+            foreach ($taggedServices as $id => $taggedDefinition) {
+                yield $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
+            }
         }
     }
 

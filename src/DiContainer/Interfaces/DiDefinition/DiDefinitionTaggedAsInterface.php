@@ -21,6 +21,8 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
     /**
      * @param iterable<non-empty-string, DiDefinitionInterface> $definitions
      *
+     * @return iterable<int, mixed>
+     *
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
