@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -15,6 +16,7 @@ use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diReference;
+use function Kaspi\DiContainer\diTaggedAs;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -26,6 +28,7 @@ use function Kaspi\DiContainer\diReference;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diReference
+ * @covers \Kaspi\DiContainer\diTaggedAs
  *
  * @internal
  */
@@ -60,6 +63,13 @@ class HelperFunctionTest extends TestCase
         $def = diProxyClosure(self::class);
 
         $this->assertInstanceOf(DiDefinitionProxyClosure::class, $def);
+    }
+
+    public function testFunctionDiTaggedAs(): void
+    {
+        $def = diTaggedAs('tags.security.voters');
+
+        $this->assertInstanceOf(DiDefinitionTaggedAs::class, $def);
     }
 
     public function testDeprecatedFunctionDiReference(): void

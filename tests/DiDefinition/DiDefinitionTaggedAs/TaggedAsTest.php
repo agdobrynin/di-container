@@ -1,0 +1,125 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\DiDefinition\DiDefinitionTaggedAs;
+
+use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use PHPUnit\Framework\TestCase;
+
+use function Kaspi\DiContainer\diValue;
+
+/**
+ * @internal
+ *
+ * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\TagsTrait
+ */
+class TaggedAsTest extends TestCase
+{
+    public function testTaggedAsEmpty(): void
+    {
+        $taggedAs = new DiDefinitionTaggedAs('tags.empty', true);
+
+        $this->assertEquals('tags.empty', $taggedAs->getDefinition());
+    }
+
+    public function testTaggedAsWithTagsOptions(): void
+    {
+        /** @var DiDefinitionValue $taggedAs */
+        $taggedAs = diValue('services.one')
+            ->bindTag('tags.system.voters')
+            ->bindTag('services.one', ['priority' => 100, 'meta-data' => ['1', '2']])
+        ;
+
+        $this->assertEquals(
+            [
+                'tags.system.voters' => ['priority' => 0],
+                'services.one' => ['priority' => 100, 'meta-data' => ['1', '2']],
+            ],
+            $taggedAs->getTags()
+        );
+
+        $this->assertEquals(['priority' => 0], $taggedAs->getTag('tags.system.voters'));
+        $this->assertEquals(0, $taggedAs->getOptionPriority('tags.system.voters'));
+
+        $this->assertEquals(100, $taggedAs->getOptionPriority('services.one'));
+
+        $this->assertNull($taggedAs->getTag('tags.non-existent-tag'));
+        $this->assertEquals(0, $taggedAs->getOptionPriority('tags.non-existent-tag'));
+    }
+
+    public function testTaggedAsServicesWithoutPriorityAndLazy(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'one' => diValue('services.one')->bindTag('tags.system.voters'),
+            'two' => diValue('services.two'),
+            'three' => diValue('services.three')->bindTag('tags.system.voters'),
+        ]);
+
+        $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', true))
+            ->setContainer($container)
+        ;
+
+        $taggedServices = $taggedAs->getServicesTaggedAs($container->getDefinitions());
+
+        $this->assertTrue($taggedServices->valid());
+        $this->assertEquals('services.one', $taggedServices->current());
+        $taggedServices->next();
+        $this->assertEquals('services.three', $taggedServices->current());
+        // test options (meta-data) of tag
+        $taggedServices->next();
+        $this->assertFalse($taggedServices->valid());
+    }
+
+    public function testTaggedAsServicesWithPriorityAndLazy(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'one' => diValue('services.one')->bindTag('tags.system.voters', ['priority' => 20]),
+            'two' => diValue('services.two'),
+            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 0]),
+        ]);
+
+        $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', true))
+            ->setContainer($container)
+        ;
+
+        $taggedServices = $taggedAs->getServicesTaggedAs($container->getDefinitions());
+
+        $this->assertTrue($taggedServices->valid());
+        $this->assertEquals('services.three', $taggedServices->current());
+        $taggedServices->next();
+        $this->assertEquals('services.one', $taggedServices->current());
+        $taggedServices->next();
+        $this->assertFalse($taggedServices->valid());
+    }
+
+    public function testTaggedAsServicesWithPriorityNotLazy(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            'one' => diValue('services.one')->bindTag('tags.system.voters', ['priority' => 20]),
+            'two' => diValue('services.two'),
+            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 0]),
+        ]);
+
+        $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', false)) // 🚩 lazy FALSE
+            ->setContainer($container)
+        ;
+
+        $taggedServices = $taggedAs->getServicesTaggedAs($container->getDefinitions());
+
+        $this->assertTrue($taggedServices->valid());
+        $this->assertEquals('services.three', $taggedServices->current());
+        $taggedServices->next();
+        $this->assertEquals('services.one', $taggedServices->current());
+        $taggedServices->next();
+        $this->assertFalse($taggedServices->valid());
+    }
+}
