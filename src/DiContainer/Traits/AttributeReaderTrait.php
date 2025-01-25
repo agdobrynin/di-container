@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 
 trait AttributeReaderTrait
@@ -72,6 +73,25 @@ trait AttributeReaderTrait
         if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
             throw new AutowireAttributeException(
                 'The attribute #['.ProxyClosure::class.'] can only be applied once per non-variadic parameter.'
+            );
+        }
+
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
+        }
+    }
+
+    protected function getTaggedAsAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    {
+        $attributes = $reflectionParameter->getAttributes(TaggedAs::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
+        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
+            throw new AutowireAttributeException(
+                'The attribute #['.TaggedAs::class.'] can only be applied once per non-variadic parameter.'
             );
         }
 
