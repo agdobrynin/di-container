@@ -17,7 +17,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -47,7 +47,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected array $definitions = [];
 
     /**
-     * @var array<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface>
+     * @var array<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
      */
     protected array $diResolvedDefinition = [];
 
@@ -136,20 +136,12 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         return $this; // @codeCoverageIgnore
     }
 
-    public function getTaggedAs(string $tag, bool $lazy = true): iterable
+    public function getDefinitions(): iterable
     {
-        if (!$lazy) {
-            $services = [];
-
-            foreach ($this->getServicesTaggedAs($tag) as $id => $taggedDefinition) {
-                $services[] = $this->get($id);
+        foreach ($this->definitions as $id => $definition) {
+            if ($definition instanceof DiDefinitionInterface) {
+                yield $id => $definition;
             }
-
-            return $services;
-        }
-
-        foreach ($this->getServicesTaggedAs($tag) as $id => $taggedDefinition) {
-            yield $this->get($id);
         }
     }
 
@@ -191,6 +183,12 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                     : $object;
             }
 
+            if ($diDefinition instanceof DiDefinitionTaggedAsInterface) {
+                return $diDefinition->setContainer($this)
+                    ->getServicesTaggedAs($this->getDefinitions())
+                ;
+            }
+
             return $this->resolved[$id] = $diDefinition->getDefinition();
         } catch (AutowireExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
             throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
@@ -205,7 +203,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionInvokableInterface
+    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
             $hasDefinition = \array_key_exists($id, $this->definitions);
@@ -280,27 +278,5 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             throw new CallCircularDependencyException('Trying call cyclical dependency. Call dependencies: '.$callPath);
         }
-    }
-
-    /**
-     * @return \Generator<string, DiTaggedDefinitionInterface>
-     */
-    protected function getServicesTaggedAs(string $tag): \Generator
-    {
-        $taggedServices = \array_filter(
-            $this->definitions,
-            static fn ($definition) => $definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($tag)
-        );
-
-        // Operation through tag options
-        if ([] !== $taggedServices) {
-            // sorting by priority key in options
-            \uasort(
-                $taggedServices,
-                static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $a->getOptionPriority($tag) <=> $b->getOptionPriority($tag)
-            );
-        }
-
-        yield from $taggedServices;
     }
 }

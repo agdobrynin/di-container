@@ -9,9 +9,11 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
@@ -83,5 +85,15 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
     function diValue(mixed $value): DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionValue($value);
+    }
+} // @codeCoverageIgnore
+
+if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
+    /**
+     * @phan-suppress PhanUnreferencedFunction
+     */
+    function diTaggedAs(string $tag, bool $lazy = true): DiDefinitionNoArgumentsInterface
+    {
+        return new DiDefinitionTaggedAs($tag, $lazy);
     }
 } // @codeCoverageIgnore

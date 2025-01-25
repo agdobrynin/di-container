@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -34,12 +37,9 @@ interface DiContainerInterface extends ContainerInterface
     public function set(string $id, mixed $definition): static;
 
     /**
-     * Get tagged services.
+     * Get definitions form container.
      *
-     * @param non-empty-string $tag
-     *
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
      */
-    public function getTaggedAs(string $tag, bool $lazy): iterable;
+    public function getDefinitions(): iterable;
 }
