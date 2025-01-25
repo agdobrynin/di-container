@@ -43,6 +43,6 @@ trait TagsTrait
 
     public function getOptionPriority(string $name): int
     {
-        return $this->getTag($name)['priority'] ?? 0;
+        return (int) ($this->getTag($name)['priority'] ?? 0);
     }
 }
