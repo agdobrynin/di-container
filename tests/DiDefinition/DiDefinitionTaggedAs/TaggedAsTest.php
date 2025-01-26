@@ -70,7 +70,7 @@ class TaggedAsTest extends TestCase
             ->setContainer($container)
         ;
 
-        $taggedServices = $taggedAs->getServicesTaggedAs($container->getDefinitions());
+        $taggedServices = $taggedAs->getServicesTaggedAs();
 
         $this->assertTrue($taggedServices->valid());
         $this->assertEquals('services.one', $taggedServices->current());
@@ -93,7 +93,7 @@ class TaggedAsTest extends TestCase
             ->setContainer($container)
         ;
 
-        $taggedServices = $taggedAs->getServicesTaggedAs($container->getDefinitions());
+        $taggedServices = $taggedAs->getServicesTaggedAs();
 
         $this->assertTrue($taggedServices->valid());
         $this->assertEquals('services.three', $taggedServices->current());
@@ -115,7 +115,7 @@ class TaggedAsTest extends TestCase
             ->setContainer($container)
         ;
 
-        $taggedServices = $taggedAs->getServicesTaggedAs($container->getDefinitions());
+        $taggedServices = $taggedAs->getServicesTaggedAs();
 
         $this->assertTrue($taggedServices->valid());
         $this->assertEquals('services.three', $taggedServices->current());

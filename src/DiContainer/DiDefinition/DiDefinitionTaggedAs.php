@@ -29,11 +29,11 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function getServicesTaggedAs(iterable $definitions): iterable
+    public function getServicesTaggedAs(): iterable
     {
         $taggedServices = [];
 
-        foreach ($definitions as $id => $definition) {
+        foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
             if ($definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($this->getDefinition())) {
                 $taggedServices[$id] = $definition;
             }
