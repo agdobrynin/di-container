@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
 {
-    public function setContainer(ContainerInterface $container): static;
+    public function setContainer(DiContainerInterface $container): static;
 
     /**
      * @throws ContainerNeedSetExceptionInterface
      */
-    public function getContainer(): ContainerInterface;
+    public function getContainer(): DiContainerInterface;
 
     /**
      * @param iterable<non-empty-string, DiDefinitionInterface> $definitions

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\ClassWithDependency;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
@@ -35,14 +35,14 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testResolveByAutowireDefinitionNonVariadicByName(): void
     {
         $fn = static fn (ClassWithDependency $class) => $class;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $this->setContainer($mockContainer);
 
         // 🚩 test data
@@ -61,7 +61,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $fn = static fn (ClassWithDependency $class) => $class;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $this->setContainer($mockContainer);
 
         // 🚩 test data
@@ -80,7 +80,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $fn = static fn (SuperInterface ...$item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
             ->with(MoreSuperClass::class)
@@ -115,7 +115,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $fn = static fn (SuperInterface ...$item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $this->setContainer($mockContainer);
 
         // 🚩 test data
@@ -137,7 +137,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $fn = static fn (SuperInterface ...$item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $this->setContainer($mockContainer);
 
         // 🚩 test data
@@ -166,7 +166,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $fn = static fn (SuperInterface ...$item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
             ->with(self::logicalOr(
@@ -200,7 +200,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $fn = static fn (SuperInterface ...$item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
             ->with(self::logicalOr(

@@ -11,15 +11,15 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiTaggedDefinitionInterface
 {
     use BindArgumentsTrait;
     use ParametersResolverTrait;
-    use PsrContainerTrait;
+    use DiContainerTrait;
     use TagsTrait;
 
     private \ReflectionClass $reflectionClass;

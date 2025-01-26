@@ -6,7 +6,7 @@ namespace Tests\Traits\AttributeReader\DiFactory;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\Main;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\MainFirstDiFactory;
@@ -28,7 +28,7 @@ class DiFactoryReaderTest extends TestCase
             use AttributeReaderTrait {
                 getDiFactoryAttribute as public;
             }
-            use PsrContainerTrait; // abstract method cover.
+            use DiContainerTrait; // abstract method cover.
         };
     }
 

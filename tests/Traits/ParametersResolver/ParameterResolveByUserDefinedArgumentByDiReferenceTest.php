@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 
 use function Kaspi\DiContainer\diGet;
 
@@ -16,8 +16,8 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
+ * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
  * @internal
  */
@@ -27,14 +27,14 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
     use ParametersResolverTrait;
     use BindArgumentsTrait;
     // 🧨 need for abstract method getContainer.
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testUserDefinedArgumentBydiGetNonVariadicSuccessByName(): void
     {
         $fn = static fn (\ArrayIterator $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with('services.icon-iterator')
             ->willReturn(new \ArrayIterator(array: ['🚀', '🔥']))
@@ -56,7 +56,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $fn = static fn (string $name, \ArrayIterator ...$iterator) => [$name, $iterator];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
             ->with($this->logicalOr(
@@ -96,7 +96,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $fn = static fn (string $name, \ArrayIterator ...$iterator) => [$name, $iterator];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
             ->with(self::logicalOr(
@@ -134,7 +134,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
             ->with(self::logicalOr(

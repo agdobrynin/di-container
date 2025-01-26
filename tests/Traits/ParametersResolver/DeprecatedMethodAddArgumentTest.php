@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -17,9 +17,9 @@ use function Kaspi\DiContainer\diAutowire;
 /**
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
@@ -28,7 +28,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 {
     use BindArgumentsTrait;
     use ParametersResolverTrait;
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testAddArgumentNonVariadicSuccess(): void
     {
@@ -81,7 +81,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $fn = static fn (string $value, SuperClass $class) => 'ok';
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())
             ->method('get')
         ;
@@ -100,7 +100,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $fn = static fn (string $value, SuperClass $class) => 'ok';
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())
             ->method('get')
         ;

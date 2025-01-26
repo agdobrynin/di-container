@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 trait CallableParserTrait
 {
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
-    abstract public function getContainer(): ContainerInterface;
+    abstract public function getContainer(): DiContainerInterface;
 
     /**
      * @throws ContainerExceptionInterface
