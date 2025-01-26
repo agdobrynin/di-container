@@ -7,8 +7,6 @@ namespace Kaspi\DiContainer\Interfaces;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -26,15 +24,6 @@ interface DiContainerInterface extends ContainerInterface
      * @throws ContainerExceptionInterface Error while retrieving the entry.*
      */
     public function get(string $id): mixed;
-
-    /**
-     * @param class-string|non-empty-string $id
-     * @param mixed|object                  $definition
-     *
-     * @throws ContainerAlreadyRegisteredExceptionInterface
-     * @throws DiDefinitionExceptionInterface
-     */
-    public function set(string $id, mixed $definition): static;
 
     /**
      * Get definitions form container.
