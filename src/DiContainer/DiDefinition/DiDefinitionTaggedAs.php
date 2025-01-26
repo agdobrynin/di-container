@@ -42,10 +42,14 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
         // Operation through tag options
         if ([] !== $taggedServices) {
             $tag = $this->getDefinition();
-            // sorting by priority key in options
+
+            /*
+             * 🚩 Sorting by 'priority' key in tag options.
+             * Tag with higher number in 'priority' key being early in list.
+             */
             \uasort(
                 $taggedServices,
-                static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $a->getOptionPriority($tag) <=> $b->getOptionPriority($tag)
+                static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $b->getOptionPriority($tag) <=> $a->getOptionPriority($tag)
             );
         }
 

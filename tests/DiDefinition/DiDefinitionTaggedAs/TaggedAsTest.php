@@ -86,7 +86,7 @@ class TaggedAsTest extends TestCase
         $container = (new DiContainerFactory())->make([
             'one' => diValue('services.one')->bindTag('tags.system.voters', ['priority' => 20]),
             'two' => diValue('services.two'),
-            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 0]),
+            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 100]),
         ]);
 
         $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', true))
@@ -106,9 +106,9 @@ class TaggedAsTest extends TestCase
     public function testTaggedAsServicesWithPriorityNotLazy(): void
     {
         $container = (new DiContainerFactory())->make([
-            'one' => diValue('services.one')->bindTag('tags.system.voters', ['priority' => 20]),
+            'one' => diValue('services.one')->bindTag('tags.system.voters'),
             'two' => diValue('services.two'),
-            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 0]),
+            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 1000]),
         ]);
 
         $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', false)) // 🚩 lazy FALSE
@@ -128,9 +128,9 @@ class TaggedAsTest extends TestCase
     public function testTaggedAsServicesFromContainer(): void
     {
         $container = (new DiContainerFactory())->make([
-            'one' => diValue('services.one')->bindTag('tags.system.voters', ['priority' => 20]),
+            'one' => diValue('services.one')->bindTag('tags.system.voters', ['priority' => 99]),
             'two' => diValue('services.two'),
-            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 0]),
+            'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 1000]),
             'voters' => diTaggedAs('tags.system.voters'),
         ]);
 
