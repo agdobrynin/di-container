@@ -81,6 +81,9 @@ trait AttributeReaderTrait
         }
     }
 
+    /**
+     * @return \Generator<TaggedAs>
+     */
     protected function getTaggedAsAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(TaggedAs::class);
