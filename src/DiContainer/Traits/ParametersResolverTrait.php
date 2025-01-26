@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
@@ -188,26 +189,42 @@ trait ParametersResolverTrait
     {
         $injects = $this->getInjectAttribute($parameter);
         $asClosures = $this->getProxyClosureAttribute($parameter);
+        $taggedAs = $this->getTaggedAsAttribute($parameter);
 
-        if ($injects->valid() && $asClosures->valid()) {
-            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
-        }
+        if ($injects->valid() xor $asClosures->valid() xor $taggedAs->valid()) {
+            if ($injects->valid()) {
+                foreach ($injects as $inject) {
+                    yield $inject->getIdentifier()
+                        ? $this->getContainer()->get($inject->getIdentifier())
+                        : $this->getContainer()->get($parameter->getName());
+                }
 
-        if ($injects->valid()) {
-            foreach ($injects as $inject) {
-                yield $inject->getIdentifier()
-                    ? $this->getContainer()->get($inject->getIdentifier())
-                    : $this->getContainer()->get($parameter->getName());
+                return;
+            }
+
+            if ($asClosures->valid()) {
+                foreach ($asClosures as $asClosure) {
+                    yield $this->resolveInputArgument(
+                        $parameter,
+                        new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
+                    );
+                }
+
+                return;
+            }
+
+            foreach ($taggedAs as $tagged) {
+                yield (new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy()))
+                    ->setContainer($this->getContainer())
+                    ->getServicesTaggedAs([])
+                ; // @todo not implemented yet.
             }
 
             return;
         }
 
-        foreach ($asClosures as $asClosure) {
-            yield $this->resolveInputArgument(
-                $parameter,
-                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
-            );
+        if ($injects->valid() || $asClosures->valid()) {
+            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
         }
     }
 
