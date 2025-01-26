@@ -19,13 +19,11 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
     public function getContainer(): DiContainerInterface;
 
     /**
-     * @param iterable<non-empty-string, DiDefinitionInterface> $definitions
-     *
      * @return iterable<int, mixed>
      *
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function getServicesTaggedAs(iterable $definitions): iterable;
+    public function getServicesTaggedAs(): iterable;
 }

@@ -216,8 +216,8 @@ trait ParametersResolverTrait
             foreach ($taggedAs as $tagged) {
                 yield (new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy()))
                     ->setContainer($this->getContainer())
-                    ->getServicesTaggedAs([])
-                ; // @todo not implemented yet.
+                    ->getServicesTaggedAs()
+                ;
             }
 
             return;

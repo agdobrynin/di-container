@@ -186,7 +186,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if ($diDefinition instanceof DiDefinitionTaggedAsInterface) {
                 return $diDefinition->setContainer($this)
-                    ->getServicesTaggedAs($this->getDefinitions())
+                    ->getServicesTaggedAs()
                 ;
             }
 

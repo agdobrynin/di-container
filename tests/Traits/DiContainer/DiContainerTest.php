@@ -10,7 +10,7 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
+ * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  *
  * @internal
  */
