@@ -132,7 +132,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
     }
 
-    public function getContainer(): ContainerInterface
+    public function getContainer(): DiContainerInterface
     {
         return $this; // @codeCoverageIgnore
     }

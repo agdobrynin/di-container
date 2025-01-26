@@ -13,20 +13,20 @@ use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 trait ParametersResolverTrait
 {
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
-    use PsrContainerTrait;
+    use DiContainerTrait;
     use UseAttributeTrait;
 
     private static int $variadicPosition = 0;
@@ -54,7 +54,7 @@ trait ParametersResolverTrait
      */
     private array $resolvedArguments = [];
 
-    abstract public function getContainer(): ContainerInterface;
+    abstract public function getContainer(): DiContainerInterface;
 
     /**
      * @param \ReflectionParameter[] $reflectionParameters

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
@@ -28,14 +28,14 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testResolveArgumentNoneVariadicName(): void
     {
         $fn = static fn (\Closure $item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::once())
             ->method('has')
             ->with(MoreSuperClass::class)
@@ -65,7 +65,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $fn = static fn (\Closure $item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('has')
             ->with(MoreSuperClass::class)
             ->willReturn(true)
@@ -91,7 +91,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $fn = static fn (\Closure $item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('has')
             ->with(MoreSuperClass::class)
             ->willReturn(true)
@@ -117,7 +117,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $fn = static fn (\Closure $item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::once())
             ->method('has')
             ->with(MoreSuperClass::class)
@@ -147,7 +147,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $fn = static fn (\Closure ...$item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('has')
             ->with(self::logicalOr(
@@ -193,7 +193,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
     {
         $fn = static fn (\Closure ...$item) => $item;
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('has')
             ->with(self::logicalOr(
                 MoreSuperClass::class,
@@ -241,7 +241,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $fn = static fn (\Closure ...$item) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('has')
             ->with(self::logicalOr(

@@ -6,11 +6,11 @@ namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 /**
@@ -27,14 +27,14 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
     // 🔥 Test Trait 🔥
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testParameterResolveByType(): void
     {
         $fn = static fn (\ArrayIterator $array) => $array;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(\ArrayIterator::class)
             ->willReturn(new \ArrayIterator())
@@ -52,7 +52,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn ($myArrayIterator) => $myArrayIterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with('myArrayIterator')
             ->willReturn(new \ArrayIterator())
@@ -70,7 +70,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (SuperClass $superClass, string ...$word) => [$superClass, $word];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer
             ->expects(self::exactly(2))
             ->method('get')
@@ -101,7 +101,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (array ...$phrase) => $phrase;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer
             ->expects($this->once())
             ->method('get')
@@ -127,7 +127,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (array $phrase) => $phrase;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer
             ->expects($this->once())
             ->method('get')
@@ -152,7 +152,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (?SomeClass $someClass = null) => $someClass;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(SomeClass::class)
             ->willThrowException(new NotFoundException())
@@ -167,7 +167,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (\ArrayIterator ...$iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(\ArrayIterator::class)
             ->willReturn(new \ArrayIterator())
@@ -185,7 +185,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (SuperClass $superClass) => $superClass;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(SuperClass::class)
             ->willThrowException(new NotFoundException('Not found SuperClass'))
@@ -204,7 +204,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $fn = static fn (SuperClass $superClass) => $superClass;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(SuperClass::class)
             ->willThrowException(new AutowireException('some error'))

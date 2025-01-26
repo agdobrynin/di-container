@@ -2,34 +2,36 @@
 
 declare(strict_types=1);
 
-namespace Tests\Traits\PsrContainer;
+namespace Tests\Traits\DiContainer;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 
 /**
  * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  *
  * @internal
  */
-class PsrContainerTest extends TestCase
+class DiContainerTest extends TestCase
 {
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
-    public function testPsrContainerSet(): void
+    public function testDiContainerSet(): void
     {
-        $container = new class implements ContainerInterface {
-            public function get(string $id) {}
+        $container = new class implements DiContainerInterface {
+            public function get(string $id): mixed {}
 
             public function has(string $id): bool {}
+
+            public function getDefinitions(): iterable {}
         };
 
         $this->assertInstanceOf(self::class, $this->setContainer($container));
     }
 
-    public function testPsrContainerGetException(): void
+    public function testDiContainerGetException(): void
     {
         $this->expectException(ContainerNeedSetExceptionInterface::class);
         $this->expectExceptionMessage('Need set container implementation');

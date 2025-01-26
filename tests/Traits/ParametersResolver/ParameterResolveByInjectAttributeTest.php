@@ -7,10 +7,10 @@ namespace Tests\Traits\ParametersResolver;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperDiFactory;
@@ -19,9 +19,9 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
+ * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
@@ -31,7 +31,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
     // 🔥 Test Trait 🔥
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testParameterResolveTypedArgumentByInjectAttributeWithEmptyIdentifier(): void
     {
@@ -41,7 +41,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')->with(\ArrayIterator::class)
             ->willReturn(new \ArrayIterator(['✔', '❤']))
@@ -65,7 +65,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
         $this->setUseAttribute(true);
@@ -85,7 +85,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ) => $super;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->atLeast(2))
             ->method('get')
             ->with($this->logicalOr(
@@ -115,7 +115,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ) => $super;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')
             ->with(SuperDiFactory::class)
@@ -138,7 +138,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ) => $parameter;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')
             ->with('parameter')
@@ -160,7 +160,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ) => $parameter;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')
             ->with('parameter')
@@ -183,7 +183,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ) => $parameter;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')
             ->with('parameter')
@@ -205,7 +205,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         ): array => $name;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')
             ->with('names')
@@ -231,7 +231,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         );
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')
             ->with('names')

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 use function Kaspi\DiContainer\diValue;
@@ -17,9 +17,9 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
+ * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
  * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
@@ -30,14 +30,14 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     // 🧨 need for abstract method getContainer.
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testUserDefinedArgumentAsArrayNonVariadicByIndexSuccess(): void
     {
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
 
@@ -54,7 +54,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
 
@@ -71,7 +71,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $fn = static fn (string $val, iterable ...$iterator) => [$val, $iterator];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::never())->method('get');
         $this->setContainer($mockContainer);
 
@@ -95,7 +95,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $fn = static fn (iterable ...$iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
 
@@ -118,7 +118,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $fn = static fn (iterable ...$iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
 
@@ -137,7 +137,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $fn = static fn (string ...$word) => $word;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
 
@@ -158,7 +158,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $fn = static fn (array $numbers, string ...$word) => [$numbers, $word];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
         $this->setContainer($mockContainer);
 
@@ -183,7 +183,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $fn = static fn (string $str, SuperClass $super, array $numbers) => [$str, $super, $numbers];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())->method('get')
             ->with(SuperClass::class)
             ->willReturn(new SuperClass())

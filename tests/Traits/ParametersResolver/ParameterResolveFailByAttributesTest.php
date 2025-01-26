@@ -7,8 +7,8 @@ namespace Tests\Traits\ParametersResolver;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +24,7 @@ use PHPUnit\Framework\TestCase;
 class ParameterResolveFailByAttributesTest extends TestCase
 {
     use ParametersResolverTrait;
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testCannotUseAttributeAsClosureAndInjectTogether(): void
     {
