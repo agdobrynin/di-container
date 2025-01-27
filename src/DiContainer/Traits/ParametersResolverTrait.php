@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
+use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
@@ -191,6 +192,10 @@ trait ParametersResolverTrait
         $asClosures = $this->getProxyClosureAttribute($parameter);
         $taggedAs = $this->getTaggedAsAttribute($parameter);
 
+        if (!$injects->valid() && !$asClosures->valid() && !$taggedAs->valid()) {
+            return;
+        }
+
         if ($injects->valid() xor $asClosures->valid() xor $taggedAs->valid()) {
             if ($injects->valid()) {
                 foreach ($injects as $inject) {
@@ -223,9 +228,14 @@ trait ParametersResolverTrait
             return;
         }
 
-        if ($injects->valid() || $asClosures->valid()) {
-            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
-        }
+        throw new AutowireAttributeException(
+            \sprintf(
+                'Cannot use attributes #[%s], #[%s], #[%s] together.',
+                Inject::class,
+                ProxyClosure::class,
+                TaggedAs::class
+            )
+        );
     }
 
     private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
