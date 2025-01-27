@@ -34,7 +34,7 @@ class ServiceTest extends TestCase
     public function testServiceWithEmptyId(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('must have an $id parameter that is a non-empty string');
+        $this->expectExceptionMessage('The $id parameter must be a non-empty string');
 
         new Service('');
     }
@@ -42,7 +42,7 @@ class ServiceTest extends TestCase
     public function testServiceWithSpacesId(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('must have an $id parameter that is a non-empty string');
+        $this->expectExceptionMessage('The $id parameter must be a non-empty string');
 
         new Service('      ');
     }

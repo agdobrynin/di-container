@@ -16,7 +16,7 @@ final class TaggedAs implements DiAttributeInterface
     public function __construct(private string $name, private bool $isLazy = true)
     {
         if ('' === \trim($name)) {
-            throw new AutowireAttributeException('The attribute #['.self::class.'] must have an $name parameter that is a non-empty string.');
+            throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
     }
 
