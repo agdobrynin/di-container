@@ -40,7 +40,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->setUseAttribute(true);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use attributes.+together/');
+        $this->expectExceptionMessageMatches('/Only one of the attributes.+must be declared/');
 
         $this->resolveParameters([], $reflectionParameters);
     }
@@ -57,7 +57,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->setUseAttribute(true);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use attributes.+together/');
+        $this->expectExceptionMessageMatches('/Only one of the attributes.+must be declared/');
 
         $this->resolveParameters([], $reflectionParameters);
     }
@@ -75,9 +75,8 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->setUseAttribute(true);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use attributes.+together/');
+        $this->expectExceptionMessageMatches('/Only one of the attributes.+must be declared/');
 
         $this->resolveParameters([], $reflectionParameters);
-
     }
 }
