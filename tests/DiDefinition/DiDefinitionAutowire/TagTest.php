@@ -13,6 +13,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefaul
 /**
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -43,6 +44,7 @@ class TagTest extends TestCase
     public function testTagsByPhpAttribute(): void
     {
         $def = new DiDefinitionAutowire(TaggedClassBindTagTwoDefault::class);
+        $def->setUseAttribute(true);
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
@@ -55,6 +57,7 @@ class TagTest extends TestCase
         $def = (new DiDefinitionAutowire(TaggedClassBindTagTwoDefault::class))
             ->bindTag('tags.handlers.magic', ['priority' => 100, 'exclude.compile' => true])
         ;
+        $def->setUseAttribute(true);
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
@@ -67,6 +70,7 @@ class TagTest extends TestCase
         $def = (new DiDefinitionAutowire(TaggedClassBindTagTwo::class))
             ->bindTag('tags.security')
         ;
+        $def->setUseAttribute(true);
 
         $this->assertTrue($def->hasTag('tags.security'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.security'));
@@ -88,5 +92,23 @@ class TagTest extends TestCase
             ],
             $def->getTags()
         );
+    }
+
+    public function testTagsByPhpAttributesAndUnsetUseAttribute(): void
+    {
+        $def = (new DiDefinitionAutowire(TaggedClassBindTagTwo::class))
+            ->bindTag('tags.security')
+        ;
+        $def->setUseAttribute(true);
+
+        $this->assertTrue($def->hasTag('tags.security'));
+        $this->assertTrue($def->hasTag('tags.handlers.one'));
+        $this->assertTrue($def->hasTag('tags.validator.two'));
+
+        $def->setUseAttribute(false);
+
+        $this->assertTrue($def->hasTag('tags.security'));
+        $this->assertFalse($def->hasTag('tags.handlers.one'));
+        $this->assertFalse($def->hasTag('tags.validator.two'));
     }
 }

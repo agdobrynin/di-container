@@ -21,7 +21,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
 {
     use AttributeReaderTrait;
     use BindArgumentsTrait;
-    use ParametersResolverTrait;
+    use ParametersResolverTrait {
+        setUseAttribute as private internalSetUseAttribute;
+    }
     use DiContainerTrait;
     use TagsTrait {
         getTags as private internalGetTags;
@@ -138,9 +140,22 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return $this->internalHasTag($name);
     }
 
+    public function setUseAttribute(?bool $useAttribute): static
+    {
+        if (!$useAttribute && isset($this->tagAttributes)) {
+            foreach ($this->tagAttributes as $tagAttribute) {
+                unset($this->tags[$tagAttribute->getIdentifier()]);
+            }
+        }
+
+        $this->internalSetUseAttribute($useAttribute);
+
+        return $this;
+    }
+
     private function attemptsReadTagAttribute(): void
     {
-        if (!isset($this->tagAttributes)) {
+        if (!isset($this->tagAttributes) && $this->isUseAttribute()) {
             $this->tagAttributes = [];
 
             foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
