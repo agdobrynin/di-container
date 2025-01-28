@@ -9,8 +9,6 @@ interface DiTaggedDefinitionInterface
     /**
      * Get bound tags with options.
      *
-     * @todo Add doc block.
-     *
      * @return array<non-empty-string, array<non-empty-string, mixed>>
      */
     public function getTags(): array;
