@@ -155,9 +155,7 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionTaggedAsInterface) {
-            return $argumentDefinition->setContainer($this->getContainer())
-                ->getServicesTaggedAs()
-            ;
+            return $argumentDefinition->setContainer($this->getContainer())->getServicesTaggedAs();
         }
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
