@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -151,6 +152,12 @@ trait ParametersResolverTrait
     {
         if ($argumentDefinition instanceof DiDefinitionGet) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
+        }
+
+        if ($argumentDefinition instanceof DiDefinitionTaggedAsInterface) {
+            return $argumentDefinition->setContainer($this->getContainer())
+                ->getServicesTaggedAs()
+            ;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
