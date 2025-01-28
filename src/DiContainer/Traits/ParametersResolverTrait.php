@@ -196,7 +196,8 @@ trait ParametersResolverTrait
             return;
         }
 
-        if ($injects->valid() xor $asClosures->valid() xor $taggedAs->valid()) {
+        if (($injects->valid() xor $asClosures->valid() xor $taggedAs->valid())
+            && !($injects->valid() && $asClosures->valid() && $taggedAs->valid())) {
             if ($injects->valid()) {
                 foreach ($injects as $inject) {
                     yield $inject->getIdentifier()
@@ -230,7 +231,7 @@ trait ParametersResolverTrait
 
         throw new AutowireAttributeException(
             \sprintf(
-                'Cannot use attributes #[%s], #[%s], #[%s] together.',
+                'Only one of the attributes #[%s], #[%s] or #[%s] must be declared.',
                 Inject::class,
                 ProxyClosure::class,
                 TaggedAs::class
