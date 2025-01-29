@@ -39,19 +39,21 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
             }
         }
 
-        // Operation through tag options
-        if ([] !== $taggedServices) {
-            $tag = $this->getDefinition();
-
-            /*
-             * 🚩 Sorting by 'priority' key in tag options.
-             * Tag with higher number in 'priority' key being early in list.
-             */
-            \uasort(
-                $taggedServices,
-                static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $b->getOptionPriority($tag) <=> $a->getOptionPriority($tag)
-            );
+        if ([] === $taggedServices) {
+            return [];
         }
+
+        // Operation through tag options
+        $tag = $this->getDefinition();
+
+        /*
+         * 🚩 Sorting by 'priority' key in tag options.
+         * Tag with higher number in 'priority' key being early in list.
+         */
+        \uasort(
+            $taggedServices,
+            static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $b->getOptionPriority($tag) <=> $a->getOptionPriority($tag)
+        );
 
         if (!$this->lazy) {
             $services = [];
@@ -60,17 +62,22 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
                 $services[] = $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
             }
 
-            yield from $services;
-        } else {
-            foreach ($taggedServices as $id => $taggedDefinition) {
-                yield $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
-            }
+            return $services;
         }
+
+        return $this->getTaggedServicesLazy($taggedServices);
     }
 
     public function getDefinition(): string
     {
         return $this->tag;
+    }
+
+    private function getTaggedServicesLazy(array $taggedServices): \Generator
+    {
+        foreach ($taggedServices as $id => $taggedDefinition) {
+            yield $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
+        }
     }
 
     /**
