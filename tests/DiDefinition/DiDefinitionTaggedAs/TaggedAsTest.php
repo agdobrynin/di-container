@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionTaggedAs;
 
+use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
@@ -26,11 +27,25 @@ use function Kaspi\DiContainer\diValue;
  */
 class TaggedAsTest extends TestCase
 {
-    public function testTaggedAsEmpty(): void
+    public function testTaggedAsEmptyLazy(): void
     {
-        $taggedAs = new DiDefinitionTaggedAs('tags.empty', true);
+        $taggedAs = (new DiDefinitionTaggedAs('tags.empty', true))
+            ->setContainer(new DiContainer())
+        ;
 
         $this->assertEquals('tags.empty', $taggedAs->getDefinition());
+        // return generator because definition marked as lazy.
+        $this->assertFalse($taggedAs->getServicesTaggedAs()->valid());
+    }
+
+    public function testTaggedAsEmptyNotLazy(): void
+    {
+        $taggedAs = (new DiDefinitionTaggedAs('tags.empty', false))
+            ->setContainer(new DiContainer())
+        ;
+
+        $this->assertIsArray($taggedAs->getServicesTaggedAs());
+        $this->assertCount(0, $taggedAs->getServicesTaggedAs());
     }
 
     public function testTaggedAsWithTagsOptions(): void
