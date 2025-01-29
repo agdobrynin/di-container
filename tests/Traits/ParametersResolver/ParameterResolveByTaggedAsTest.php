@@ -45,7 +45,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
         );
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('getDefinitions')
+        $mockContainer->expects(self::once())
+            ->method('getDefinitions')
             ->willReturn([
                 (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
@@ -55,7 +56,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
-        $mockContainer->method('get')
+        $mockContainer->expects(self::exactly(2))
+            ->method('get')
             ->with(self::logicalOr(
                 ClassWithDependency::class,
                 MoreSuperClass::class,
@@ -93,7 +95,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
         );
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('getDefinitions')
+        $mockContainer->expects(self::exactly(2))
+            ->method('getDefinitions')
             ->willReturn([
                 (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
@@ -103,7 +106,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
-        $mockContainer->method('get')
+        $mockContainer->expects(self::exactly(3))
+            ->method('get')
             ->with(self::logicalOr(
                 ClassWithDependency::class,
                 MoreSuperClass::class,
@@ -142,7 +146,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('getDefinitions')
+        $mockContainer->expects(self::once())
+            ->method('getDefinitions')
             ->willReturn([
                 (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
@@ -152,7 +157,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
-        $mockContainer->method('get')
+        $mockContainer->expects(self::exactly(2))
+            ->method('get')
             ->with(self::logicalOr(
                 ClassWithDependency::class,
                 MoreSuperClass::class,
@@ -187,7 +193,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('getDefinitions')
+        $mockContainer->expects(self::exactly(2))
+            ->method('getDefinitions')
             ->willReturn([
                 (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
@@ -197,7 +204,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
-        $mockContainer->method('get')
+        $mockContainer->expects(self::exactly(3))
+            ->method('get')
             ->with(self::logicalOr(
                 ClassWithDependency::class,
                 MoreSuperClass::class,
