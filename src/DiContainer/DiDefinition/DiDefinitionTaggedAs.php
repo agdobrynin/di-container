@@ -40,7 +40,9 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
         }
 
         if ([] === $taggedServices) {
-            return [];
+            return $this->lazy
+                ? (static function () { yield from []; })()
+                : [];
         }
 
         // Operation through tag options
