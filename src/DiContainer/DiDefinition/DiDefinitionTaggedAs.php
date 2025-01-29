@@ -67,7 +67,7 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
             return $services;
         }
 
-        return $this->getTaggedServicesLazy($taggedServices);
+        return $this->getServicesAsLazy($taggedServices);
     }
 
     public function getDefinition(): string
@@ -75,7 +75,7 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
         return $this->tag;
     }
 
-    private function getTaggedServicesLazy(array $taggedServices): \Generator
+    private function getServicesAsLazy(array $taggedServices): \Generator
     {
         foreach ($taggedServices as $id => $taggedDefinition) {
             yield $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
