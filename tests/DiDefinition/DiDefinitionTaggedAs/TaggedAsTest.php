@@ -30,7 +30,10 @@ class TaggedAsTest extends TestCase
     public function testTaggedAsEmptyLazy(): void
     {
         $taggedAs = (new DiDefinitionTaggedAs('tags.empty', true))
-            ->setContainer(new DiContainer())
+            ->setContainer(new DiContainer([
+                's1' => diValue(['ok']),
+                's2' => diValue(['ok-ko']),
+            ]))
         ;
 
         $this->assertEquals('tags.empty', $taggedAs->getDefinition());
@@ -41,7 +44,10 @@ class TaggedAsTest extends TestCase
     public function testTaggedAsEmptyNotLazy(): void
     {
         $taggedAs = (new DiDefinitionTaggedAs('tags.empty', false))
-            ->setContainer(new DiContainer())
+            ->setContainer(new DiContainer([
+                's1' => diValue(['ok']),
+                's2' => diValue(['ok-ko']),
+            ]))
         ;
 
         $this->assertIsArray($taggedAs->getServicesTaggedAs());
