@@ -116,13 +116,10 @@ class TaggedAsTest extends TestCase
         ;
 
         $taggedServices = $taggedAs->getServicesTaggedAs();
+        $this->assertCount(2, $taggedServices);
 
-        $this->assertTrue($taggedServices->valid());
-        $this->assertEquals('services.three', $taggedServices->current());
-        $taggedServices->next();
-        $this->assertEquals('services.one', $taggedServices->current());
-        $taggedServices->next();
-        $this->assertFalse($taggedServices->valid());
+        $this->assertEquals('services.three', $taggedServices[0]);
+        $this->assertEquals('services.one', $taggedServices[1]);
     }
 
     public function testTaggedAsServicesFromContainer(): void
@@ -135,7 +132,6 @@ class TaggedAsTest extends TestCase
         ]);
 
         $voters = $container->get('voters');
-
         $this->assertTrue($voters->valid());
         $this->assertEquals('services.three', $voters->current());
         $voters->next();
