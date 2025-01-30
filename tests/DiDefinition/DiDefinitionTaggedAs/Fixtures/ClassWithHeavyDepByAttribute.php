@@ -6,10 +6,13 @@ namespace Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
+/**
+ * @template T of Closure():HeavyDepInterface
+ */
 class ClassWithHeavyDepByAttribute
 {
     /**
-     * @param iterable<int, Closure():HeavyDepInterface> $collectionHeavyDep
+     * @param \Generator<T> $collectionHeavyDep
      */
     public function __construct(
         #[TaggedAs('tags.heavy.dep')]
@@ -17,9 +20,9 @@ class ClassWithHeavyDepByAttribute
     ) {}
 
     /**
-     * @return iterable<int, Closure():HeavyDepInterface>
+     * @return \Generator<T>
      */
-    public function getDep(): iterable
+    public function getDep(): \Generator
     {
         yield from $this->collectionHeavyDep;
     }

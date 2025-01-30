@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures;
 
+/**
+ * @template T of Closure():HeavyDepInterface
+ */
 class ClassWithHeavyDep
 {
     /**
-     * @param iterable<int, \Closure(): HeavyDepInterface> $collectionHeavyDep
+     * @param iterable<int, T> $collectionHeavyDep
      */
     public function __construct(private iterable $collectionHeavyDep) {}
 
     /**
-     * @return iterable<int, \Closure(): HeavyDepInterface>
+     * @return \Generator<T>
      */
-    public function getDep(): iterable
+    public function getDep(): \Generator
     {
         yield from $this->collectionHeavyDep;
     }

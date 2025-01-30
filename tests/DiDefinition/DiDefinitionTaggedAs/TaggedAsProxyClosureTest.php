@@ -37,21 +37,21 @@ class TaggedAsProxyClosureTest extends TestCase
     {
         $container = $this->makeContainer(ClassWithHeavyDep::class, true);
 
-        $services = $container->get(ClassWithHeavyDep::class)->getDep();
+        $service = $container->get(ClassWithHeavyDep::class)->getDep();
 
-        $this->assertIsIterable($services);
+        $this->assertIsIterable($service);
 
-        $firstService = $services->current();
-        $this->assertInstanceOf(\Closure::class, $firstService);
-        $this->assertInstanceOf(HeavyDepTwo::class, ($firstService)());
+        $this->assertInstanceOf(\Closure::class, $service->current());
+        $this->assertInstanceOf(HeavyDepTwo::class, ($service->current())());
 
-        $services->next();
-        $secondService = $services->current();
-        $this->assertInstanceOf(\Closure::class, $secondService);
-        $this->assertInstanceOf(HeavyDepOne::class, ($secondService)());
+        $service->next();
 
-        $services->next();
-        $this->assertFalse($services->valid());
+        $this->assertInstanceOf(\Closure::class, $service->current());
+        $this->assertInstanceOf(HeavyDepOne::class, ($service->current())());
+
+        $service->next();
+
+        $this->assertFalse($service->valid());
     }
 
     public function testGetTaggedByAttributesLazy(): void
@@ -66,21 +66,20 @@ class TaggedAsProxyClosureTest extends TestCase
                 ->bindTag('tags.other', ['priority' => 0]),
         ]);
 
-        $services = $container->get(ClassWithHeavyDepByAttribute::class)->getDep();
+        $service = $container->get(ClassWithHeavyDepByAttribute::class)->getDep();
 
-        $this->assertIsIterable($services);
+        $this->assertIsIterable($service);
 
-        $firstService = $services->current();
-        $this->assertInstanceOf(\Closure::class, $firstService);
-        $this->assertInstanceOf(HeavyDepTwo::class, ($firstService)());
+        $this->assertInstanceOf(\Closure::class, $service->current());
+        $this->assertInstanceOf(HeavyDepTwo::class, ($service->current())());
 
-        $services->next();
-        $secondService = $services->current();
+        $service->next();
+        $secondService = $service->current();
         $this->assertInstanceOf(\Closure::class, $secondService);
         $this->assertInstanceOf(HeavyDepOne::class, ($secondService)());
 
-        $services->next();
-        $this->assertFalse($services->valid());
+        $service->next();
+        $this->assertFalse($service->valid());
     }
 
     public function testGetTaggedByArgumentsNotLazy(): void
