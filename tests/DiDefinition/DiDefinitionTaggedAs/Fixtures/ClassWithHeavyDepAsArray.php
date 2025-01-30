@@ -7,12 +7,12 @@ namespace Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures;
 class ClassWithHeavyDepAsArray
 {
     /**
-     * @param array<\Closure(): HeavyDepInterface> $collectionHeavyDep
+     * @param array<int, Closure():HeavyDepInterface> $collectionHeavyDep
      */
     public function __construct(private array $collectionHeavyDep) {}
 
     /**
-     * @return array<\Closure(): HeavyDepInterface>
+     * @return array<int, Closure():HeavyDepInterface>
      */
     public function getDep(): array
     {

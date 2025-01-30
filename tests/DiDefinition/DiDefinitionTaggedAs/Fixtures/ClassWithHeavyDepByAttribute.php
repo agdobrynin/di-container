@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 class ClassWithHeavyDepByAttribute
 {
     /**
-     * @param iterable<int, \Closure(): HeavyDepInterface> $collectionHeavyDep
+     * @param iterable<int, Closure():HeavyDepInterface> $collectionHeavyDep
      */
     public function __construct(
         #[TaggedAs('tags.heavy.dep')]
@@ -17,7 +17,7 @@ class ClassWithHeavyDepByAttribute
     ) {}
 
     /**
-     * @return iterable<int, \Closure(): HeavyDepInterface>
+     * @return iterable<int, Closure():HeavyDepInterface>
      */
     public function getDep(): iterable
     {

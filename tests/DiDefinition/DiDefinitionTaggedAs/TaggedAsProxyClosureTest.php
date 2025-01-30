@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\ClassWithHeavyDep;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\ClassWithHeavyDepAsArray;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\ClassWithHeavyDepByAttribute;
-use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeavyDepInterface;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeavyDepOne;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeavyDepTwo;
 
@@ -38,21 +37,18 @@ class TaggedAsProxyClosureTest extends TestCase
     {
         $container = $this->makeContainer(ClassWithHeavyDep::class, true);
 
-        /**
-         * @var \Generator<\Closure(): HeavyDepInterface> $services
-         */
         $services = $container->get(ClassWithHeavyDep::class)->getDep();
 
         $this->assertIsIterable($services);
 
         $firstService = $services->current();
         $this->assertInstanceOf(\Closure::class, $firstService);
-        $this->assertInstanceOf(HeavyDepTwo::class, $firstService());
+        $this->assertInstanceOf(HeavyDepTwo::class, ($firstService)());
 
         $services->next();
         $secondService = $services->current();
         $this->assertInstanceOf(\Closure::class, $secondService);
-        $this->assertInstanceOf(HeavyDepOne::class, $secondService());
+        $this->assertInstanceOf(HeavyDepOne::class, ($secondService)());
 
         $services->next();
         $this->assertFalse($services->valid());
@@ -70,21 +66,18 @@ class TaggedAsProxyClosureTest extends TestCase
                 ->bindTag('tags.other', ['priority' => 0]),
         ]);
 
-        /**
-         * @var \Generator<\Closure(): HeavyDepInterface> $services
-         */
         $services = $container->get(ClassWithHeavyDepByAttribute::class)->getDep();
 
         $this->assertIsIterable($services);
 
         $firstService = $services->current();
         $this->assertInstanceOf(\Closure::class, $firstService);
-        $this->assertInstanceOf(HeavyDepTwo::class, $firstService());
+        $this->assertInstanceOf(HeavyDepTwo::class, ($firstService)());
 
         $services->next();
         $secondService = $services->current();
         $this->assertInstanceOf(\Closure::class, $secondService);
-        $this->assertInstanceOf(HeavyDepOne::class, $secondService());
+        $this->assertInstanceOf(HeavyDepOne::class, ($secondService)());
 
         $services->next();
         $this->assertFalse($services->valid());
@@ -94,18 +87,15 @@ class TaggedAsProxyClosureTest extends TestCase
     {
         $container = $this->makeContainer(ClassWithHeavyDepAsArray::class, false);
 
-        /**
-         * @var array<\Closure(): HeavyDepInterface> $services
-         */
         $services = $container->get(ClassWithHeavyDepAsArray::class)->getDep();
 
         $this->assertCount(2, $services);
 
         $this->assertInstanceOf(\Closure::class, $services[0]);
-        $this->assertInstanceOf(HeavyDepTwo::class, $services[0]());
+        $this->assertInstanceOf(HeavyDepTwo::class, ($services[0])());
 
         $this->assertInstanceOf(\Closure::class, $services[1]);
-        $this->assertInstanceOf(HeavyDepOne::class, $services[1]());
+        $this->assertInstanceOf(HeavyDepOne::class, ($services[1])());
     }
 
     protected function makeContainer(string $classWithHeavyDep, bool $isLazy): DiContainer
