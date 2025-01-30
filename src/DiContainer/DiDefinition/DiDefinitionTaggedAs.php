@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
@@ -35,7 +36,7 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
      */
     public function getServicesTaggedAs(): iterable
     {
-        $this->isInterface ??= \interface_exists($this->getDefinition());
+        $this->isInterface ??= \interface_exists($this->tag);
         $taggedServices = $this->isInterface ? $this->getTaggedByInterface() : $this->getTaggedByTag();
 
         if (!$taggedServices->valid()) {
@@ -75,42 +76,41 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
     }
 
     /**
+     * @return \Generator<non-empty-string, DiDefinitionInterface>
+     *
      * @throws ContainerNeedSetExceptionInterface
      */
     private function getTaggedByTag(): \Generator
     {
-        $taggedServices = [];
-        $tag = $this->getDefinition();
+        $taggedServices = new \SplPriorityQueue();
+        $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
         foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($tag)) {
-                $taggedServices[$id] = $definition;
+            if ($definition instanceof DiTaggedDefinitionInterface
+                && $definition->hasTag($this->tag)) {
+                // 🚩 Tag with higher number in 'priority' key being early in list.
+                $taggedServices->insert([$id, $definition], $definition->getOptionPriority($this->tag));
             }
         }
 
-        // Operation through tag options
-        /*
-         * 🚩 Sorting by 'priority' key in tag options.
-         * Tag with higher number in 'priority' key being early in list.
-         */
-        \uasort(
-            $taggedServices,
-            static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $b->getOptionPriority($tag) <=> $a->getOptionPriority($tag)
-        );
+        foreach ($taggedServices as $taggedDefinition) {
+            [$id, $definition] = $taggedDefinition;
 
-        yield from $taggedServices;
+            yield $id => $definition;
+        }
     }
 
     /**
+     * @return \Generator<non-empty-string, DiDefinitionAutowire>
+     *
      * @throws ContainerNeedSetExceptionInterface
      */
     private function getTaggedByInterface(): \Generator
     {
-        $tag = $this->getDefinition();
-
         foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
             try {
-                if ($definition instanceof DiDefinitionAutowire && $definition->getDefinition()->implementsInterface($tag)) {
+                if ($definition instanceof DiDefinitionAutowire
+                    && $definition->getDefinition()->implementsInterface($this->tag)) {
                     yield $id => $definition;
                 }
             } catch (AutowireExceptionInterface $e) {
