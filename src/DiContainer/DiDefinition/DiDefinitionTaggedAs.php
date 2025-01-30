@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
@@ -18,6 +20,8 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
 {
     use DiContainerTrait;
     use DefinitionIdentifierTrait;
+
+    private bool $isInterface;
 
     /**
      * @param non-empty-string $tag
@@ -31,30 +35,14 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
      */
     public function getServicesTaggedAs(): iterable
     {
-        $taggedServices = [];
-        $tag = $this->getDefinition();
+        $this->isInterface ??= \interface_exists($this->getDefinition());
+        $taggedServices = $this->isInterface ? $this->getTaggedByInterface() : $this->getTaggedByTag();
 
-        foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($tag)) {
-                $taggedServices[$id] = $definition;
-            }
-        }
-
-        if ([] === $taggedServices) {
+        if (!$taggedServices->valid()) {
             return $this->lazy
                 ? (static function () { yield from []; })()
                 : [];
         }
-
-        // Operation through tag options
-        /*
-         * 🚩 Sorting by 'priority' key in tag options.
-         * Tag with higher number in 'priority' key being early in list.
-         */
-        \uasort(
-            $taggedServices,
-            static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $b->getOptionPriority($tag) <=> $a->getOptionPriority($tag)
-        );
 
         if (!$this->lazy) {
             $services = [];
@@ -74,10 +62,60 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
         return $this->tag;
     }
 
-    private function getServicesAsLazy(array $taggedServices): \Generator
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     */
+    private function getServicesAsLazy(iterable $taggedServices): \Generator
     {
         foreach ($taggedServices as $id => $taggedDefinition) {
             yield $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
+        }
+    }
+
+    /**
+     * @throws ContainerNeedSetExceptionInterface
+     */
+    private function getTaggedByTag(): \Generator
+    {
+        $taggedServices = [];
+        $tag = $this->getDefinition();
+
+        foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
+            if ($definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($tag)) {
+                $taggedServices[$id] = $definition;
+            }
+        }
+
+        // Operation through tag options
+        /*
+         * 🚩 Sorting by 'priority' key in tag options.
+         * Tag with higher number in 'priority' key being early in list.
+         */
+        \uasort(
+            $taggedServices,
+            static fn (DiTaggedDefinitionInterface $a, DiTaggedDefinitionInterface $b) => $b->getOptionPriority($tag) <=> $a->getOptionPriority($tag)
+        );
+
+        yield from $taggedServices;
+    }
+
+    /**
+     * @throws ContainerNeedSetExceptionInterface
+     */
+    private function getTaggedByInterface(): \Generator
+    {
+        $tag = $this->getDefinition();
+
+        foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
+            try {
+                if ($definition instanceof DiDefinitionAutowire && $definition->getDefinition()->implementsInterface($tag)) {
+                    yield $id => $definition;
+                }
+            } catch (AutowireExceptionInterface $e) {
+                throw new ContainerException(message: $e->getMessage(), previous: $e);
+            }
         }
     }
 
