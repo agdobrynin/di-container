@@ -20,7 +20,7 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
     use DiContainerTrait;
     use DefinitionIdentifierTrait;
 
-    private bool $isInterface;
+    private bool $tagIsInterface;
 
     /**
      * @param non-empty-string $tag
@@ -34,8 +34,8 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
      */
     public function getServicesTaggedAs(): iterable
     {
-        $this->isInterface ??= \interface_exists($this->tag);
-        $containerIdentifiers = $this->isInterface
+        $this->tagIsInterface ??= \interface_exists($this->tag);
+        $containerIdentifiers = $this->tagIsInterface
             ? $this->getContainerIdentifiersOfTaggedServiceByInterface()
             : $this->getContainerIdentifiersOfTaggedServiceByTag();
 
