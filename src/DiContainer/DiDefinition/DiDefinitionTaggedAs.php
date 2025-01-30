@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\ContainerException;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
@@ -37,9 +35,11 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
     public function getServicesTaggedAs(): iterable
     {
         $this->isInterface ??= \interface_exists($this->tag);
-        $taggedServices = $this->isInterface ? $this->getTaggedByInterface() : $this->getTaggedByTag();
+        $containerIdentifiers = $this->isInterface
+            ? $this->getContainerIdentifiersOfTaggedServiceByInterface()
+            : $this->getContainerIdentifiersOfTaggedServiceByTag();
 
-        if (!$taggedServices->valid()) {
+        if (!$containerIdentifiers->valid()) {
             return $this->lazy
                 ? (static function () { yield from []; })()
                 : [];
@@ -48,14 +48,15 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
         if (!$this->lazy) {
             $services = [];
 
-            foreach ($taggedServices as $id => $taggedDefinition) {
-                $services[] = $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
+            while ($containerIdentifiers->valid()) {
+                $services[] = $this->getContainer()->get($containerIdentifiers->current());
+                $containerIdentifiers->next();
             }
 
             return $services;
         }
 
-        return $this->getServicesAsLazy($taggedServices);
+        return $this->getServicesAsLazy($containerIdentifiers);
     }
 
     public function getDefinition(): string
@@ -64,66 +65,59 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
     }
 
     /**
+     * @param \Generator<non-empty-string> $containerIdentifiers
+     *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      */
-    private function getServicesAsLazy(iterable $taggedServices): \Generator
+    private function getServicesAsLazy(\Generator $containerIdentifiers): \Generator
     {
-        foreach ($taggedServices as $id => $taggedDefinition) {
-            yield $this->getContainer()->get($this->tryGetIdentifier($id, $taggedDefinition));
+        while ($containerIdentifiers->valid()) {
+            yield $this->getContainer()->get($containerIdentifiers->current());
+            $containerIdentifiers->next();
         }
     }
 
     /**
-     * @return \Generator<non-empty-string, DiDefinitionInterface>
+     * @return \Generator<non-empty-string>
      *
      * @throws ContainerNeedSetExceptionInterface
      */
-    private function getTaggedByTag(): \Generator
+    private function getContainerIdentifiersOfTaggedServiceByTag(): \Generator
     {
         $taggedServices = new \SplPriorityQueue();
         $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
-        foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
+        foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             if ($definition instanceof DiTaggedDefinitionInterface
                 && $definition->hasTag($this->tag)) {
                 // 🚩 Tag with higher number in 'priority' key being early in list.
-                $taggedServices->insert([$id, $definition], $definition->getOptionPriority($this->tag));
+                $taggedServices->insert($containerIdentifier, $definition->getOptionPriority($this->tag));
             }
         }
 
-        foreach ($taggedServices as $taggedDefinition) {
-            [$id, $definition] = $taggedDefinition;
-
-            yield $id => $definition;
+        foreach ($taggedServices as $containerIdentifier) {
+            yield $containerIdentifier;
         }
     }
 
     /**
-     * @return \Generator<non-empty-string, DiDefinitionAutowire>
+     * @return \Generator<non-empty-string>
      *
      * @throws ContainerNeedSetExceptionInterface
      */
-    private function getTaggedByInterface(): \Generator
+    private function getContainerIdentifiersOfTaggedServiceByInterface(): \Generator
     {
-        foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
+        foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
                 if ($definition instanceof DiDefinitionAutowire
                     && $definition->getDefinition()->implementsInterface($this->tag)) {
-                    yield $id => $definition;
+                    yield $containerIdentifier;
                 }
             } catch (AutowireExceptionInterface $e) {
                 throw new ContainerException(message: $e->getMessage(), previous: $e);
             }
         }
-    }
-
-    /**
-     * @throws DiDefinitionException
-     */
-    private function tryGetIdentifier(mixed $id, mixed $definition): string
-    {
-        return $this->getIdentifier($id, $definition);
     }
 }
