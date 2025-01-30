@@ -48,11 +48,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         $mockContainer->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
-                (new DiDefinitionAutowire(MoreSuperClass::class))
+                MoreSuperClass::class => (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
-                (new DiDefinitionAutowire(SuperClass::class))
+                SuperClass::class => (new DiDefinitionAutowire(SuperClass::class))
                     ->bindTag('tags.tag-two'),
-                (new DiDefinitionAutowire(ClassWithDependency::class))
+                ClassWithDependency::class => (new DiDefinitionAutowire(ClassWithDependency::class))
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
@@ -98,11 +98,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         $mockContainer->expects(self::exactly(2))
             ->method('getDefinitions')
             ->willReturn([
-                (new DiDefinitionAutowire(MoreSuperClass::class))
+                MoreSuperClass::class => (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
-                (new DiDefinitionAutowire(SuperClass::class))
+                SuperClass::class => (new DiDefinitionAutowire(SuperClass::class))
                     ->bindTag('tags.tag-two'),
-                (new DiDefinitionAutowire(ClassWithDependency::class))
+                ClassWithDependency::class => (new DiDefinitionAutowire(ClassWithDependency::class))
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
@@ -149,11 +149,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         $mockContainer->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
-                (new DiDefinitionAutowire(MoreSuperClass::class))
+                MoreSuperClass::class => (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
-                (new DiDefinitionAutowire(SuperClass::class))
+                SuperClass::class => (new DiDefinitionAutowire(SuperClass::class))
                     ->bindTag('tags.tag-two'),
-                (new DiDefinitionAutowire(ClassWithDependency::class))
+                ClassWithDependency::class => (new DiDefinitionAutowire(ClassWithDependency::class))
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
@@ -196,11 +196,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         $mockContainer->expects(self::exactly(2))
             ->method('getDefinitions')
             ->willReturn([
-                (new DiDefinitionAutowire(MoreSuperClass::class))
+                MoreSuperClass::class => (new DiDefinitionAutowire(MoreSuperClass::class))
                     ->bindTag('tags.tag-one'),
-                (new DiDefinitionAutowire(SuperClass::class))
+                SuperClass::class => (new DiDefinitionAutowire(SuperClass::class))
                     ->bindTag('tags.tag-two'),
-                (new DiDefinitionAutowire(ClassWithDependency::class))
+                ClassWithDependency::class => (new DiDefinitionAutowire(ClassWithDependency::class))
                     ->bindTag('tags.tag-one', ['priority' => 100]),
             ])
         ;
