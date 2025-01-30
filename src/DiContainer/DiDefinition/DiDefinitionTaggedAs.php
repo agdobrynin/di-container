@@ -32,9 +32,10 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
     public function getServicesTaggedAs(): iterable
     {
         $taggedServices = [];
+        $tag = $this->getDefinition();
 
         foreach ($this->getContainer()->getDefinitions() as $id => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($this->getDefinition())) {
+            if ($definition instanceof DiTaggedDefinitionInterface && $definition->hasTag($tag)) {
                 $taggedServices[$id] = $definition;
             }
         }
@@ -46,8 +47,6 @@ class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitio
         }
 
         // Operation through tag options
-        $tag = $this->getDefinition();
-
         /*
          * 🚩 Sorting by 'priority' key in tag options.
          * Tag with higher number in 'priority' key being early in list.
