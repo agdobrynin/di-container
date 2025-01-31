@@ -15,7 +15,7 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
+final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
     use DiContainerTrait;
     use DefinitionIdentifierTrait;

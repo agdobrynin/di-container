@@ -8,7 +8,7 @@ use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 
-class DefinitionsLoader
+final class DefinitionsLoader
 {
     use DefinitionIdentifierTrait;
 
