@@ -18,12 +18,12 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     use UseAttributeTrait;
     use TagsTrait;
 
-    private string $verifyContainerIdentifier;
+    private string $verifyDefinition;
 
     /**
-     * @param non-empty-string $containerIdentifier
+     * @param non-empty-string $definition
      */
-    public function __construct(private string $containerIdentifier, private ?bool $isSingleton = null) {}
+    public function __construct(private string $definition, private ?bool $isSingleton = null) {}
 
     public function isSingleton(): ?bool
     {
@@ -43,8 +43,8 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
 
     public function getDefinition(): string
     {
-        return $this->verifyContainerIdentifier ??= '' === \trim($this->containerIdentifier)
+        return $this->verifyDefinition ??= '' === \trim($this->definition)
             ? throw new AutowireException(\sprintf('Definition for %s must be non-empty string.', __CLASS__))
-            : $this->containerIdentifier;
+            : $this->definition;
     }
 }
