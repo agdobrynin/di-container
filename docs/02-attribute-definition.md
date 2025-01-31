@@ -1,4 +1,4 @@
-# 🔑 DiContainer c конфигурированием через PHP атрибуты
+# #️⃣ DiContainer c конфигурированием через PHP атрибуты
 
 [В конфигурации контейнера](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#конфигурирование_dicontainer) по умолчанию параметр `useAttribute` включён.
 
@@ -12,6 +12,8 @@
 - **[Service](#service)** - определение для интерфейса какой класс будет вызван и разрешен в контейнере.
 - **[DiFactory](#difactory)** - фабрика для c помощью которой разрешается зависимость класса. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
 - **[ProxyClosure](#proxyclosure)** - внедрение зависимости в параметры с отложенной инициализацией через функцию обратного вызова `\Closure`.
+- **[Tag](#tag)** - определение тегов для класса.
+- **[TaggedAs](#taggedas)** - внедрение тэгированных определений в параметры конструктора, метода класса.
 
 ## Inject
 
@@ -491,9 +493,71 @@ $classWithHeavyDependency = $container->get(App\Services\ClassWithHeavyDependenc
 $classWithHeavyDependency->doHeavyDependency();
 ```
 
-## Пример #1
+## Tag
+Применятся к классу для определения тега.
 
+```php
+use Kaspi\DiContainer\Attributes\Tag;
+#[Tag(
+    name: '', // имя тега
+    options: ['priority' => 0] // метаданные для тэга (есть значение по умолчанию)
+)]
+```
+Можно указать несколько атрибутов для класса:
+```php
+use Kaspi\DiContainer\Attributes\Tag; 
+namespace App\Any;
+
+#[Tag(name: 'tags.services.group-one')]
+#[Tag(name: 'tags.services.group-two', options: ['priority' => 1000])]
+class SomeClass {}
+```
+
+Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+
+## TaggedAs
+Получение коллекции (списка) сервисов и определений отмеченных тегом.
+
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+#[TaggedAs(
+    name: '', // имя тега
+    isLazy: true // получить коллекцию как ленивую (отложенная инициализация)
+)]
+```
+
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+class AnyClass {
+    public function __construct(
+        // будет получено как коллекция через тип \Generator
+        // с ленивой инициализацией сервисов
+        #[TaggedAs(name: 'tags.services.group-two')]
+        private iterable $services
+    ) {}
+}
+```
+Чтобы запполнить параметр с типом `array` необходимо указать параметр `$isLazy` как `false`:
+
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+class AnyClass {
+    public function __construct(
+        // будет получено массив (все сервисы уже получены)
+        #[TaggedAs(name: 'tags.services.group-two', isLazy: false)]
+        private array $services 
+    ) {}
+}
+```
+Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+
+## Пример #1
 Заполнение коллекции на основе callback функции:
+
+> 🚩 Похожий функционал можно реализовать [через тегированные определения](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 ```php
 namespace App\Rules;
 
