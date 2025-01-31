@@ -18,6 +18,8 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     use UseAttributeTrait;
     use TagsTrait;
 
+    private string $verifyDefinition;
+
     /**
      * @param non-empty-string $definition
      */
@@ -31,7 +33,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     public function invoke(): \Closure
     {
         if (!$this->getContainer()->has($this->getDefinition())) {
-            throw new AutowireException(\sprintf('Definition "%s" does not exist', $this->definition));
+            throw new AutowireException(\sprintf('Definition "%s" does not exist', $this->getDefinition()));
         }
 
         return function () { // @phan-suppress-current-line PhanUnreferencedClosure
@@ -41,10 +43,8 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
 
     public function getDefinition(): string
     {
-        if ('' !== \trim($this->definition)) {
-            return $this->definition;
-        }
-
-        throw new AutowireException(\sprintf('Definition for %s must be non-empty string.', __CLASS__));
+        return $this->verifyDefinition ??= '' === \trim($this->definition)
+            ? throw new AutowireException(\sprintf('Definition for %s must be non-empty string.', __CLASS__))
+            : $this->definition;
     }
 }
