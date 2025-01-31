@@ -105,6 +105,8 @@ class TaggedAsProxyClosureTest extends TestCase
                 ->bindTag('tags.ok-ko'),
             'heavy.one' => diProxyClosure(HeavyDepOne::class)
                 ->bindTag('tags.heavy.dep'),
+            'heavy.heavy-dep-too-class' => diProxyClosure(HeavyDepTwo::class)
+                ->bindTag('tags.single'), // no tag 'tags.heavy.dep'
             'heavy.two' => diProxyClosure(HeavyDepTwo::class)
                 ->bindTag('tags.heavy.dep', ['priority' => 100]),
         ]);
