@@ -347,6 +347,10 @@ use function Kaspi\DiContainer\diProxyClosure;
 
 diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
 ```
+Аргументы:
+
+- `$definition` - имя определения или идентификатора контейнера которое содержит сервис.
+- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
 
 > 🔌 Функция `diProxyClosure` возвращает объект реализующий интерфейс `DiDefinitionTagArgumentInterface`
 > предоставляющий метод:
@@ -424,14 +428,17 @@ $classWithHeavyDep->doHeavyDependency();
 > ```
 
 ##### diTaggedAs
-Определение для получения тегированных сервисов.
+Определение для получения сервисов отмеченных тегом.
+Применяется для параметров с типом `iterable` и `array`.
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use function Kaspi\DiContainer\diTaggedAs;
 
-
 diTaggedAs(string $tag, bool $lazy = true): DiDefinitionNoArgumentsInterface
 ```
+Аргументы:
+- `$tag` - имя тега на сервисах которые нужно собрать из контейнера.
+- `$lazy` - получать сервисы только во время обращения или сразу все.
 ```php
 namespace App\Srv;
 
@@ -444,11 +451,18 @@ final class MyClass {
 use Kaspi\DiContainer\DiContainerFactor;
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
-$container = (new DiContainerFactory())
-    ->make([
-        diAutowire(MyClass::class)
-            ->bindArguments(rules: diTaggedAs('tags.lite-rules'))
-])
+$container = (new DiContainerFactory())->make([
+    diAutowire(App\Srv\MyClass::class)
+        ->bindArguments(rules: diTaggedAs('tags.lite-rules')),
+    diAutowire(App\Rules\RuleA::class)
+        ->bindTag('tags.lite-rules'),
+    diAutowire(App\Rules\RuleB::class),
+    diAutowire(App\Rules\RuleC::class)
+        ->bindTag('tags.lite-rules'),
+]);
+
+$myClass = $container->get(App\Srv\MyClass::class);
+// $myClass->rules содержит классы RuleA, RuleC
 ```
 Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
