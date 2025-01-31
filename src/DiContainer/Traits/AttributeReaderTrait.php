@@ -41,11 +41,7 @@ trait AttributeReaderTrait
             return;
         }
 
-        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowireAttributeException(
-                'The attribute #['.Inject::class.'] can only be applied once per non-variadic parameter.'
-            );
-        }
+        $this->checkVariadic($reflectionParameter, \count($attributes), Inject::class);
 
         foreach ($attributes as $attribute) {
             /** @var Inject $inject */
@@ -71,11 +67,7 @@ trait AttributeReaderTrait
             return;
         }
 
-        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowireAttributeException(
-                'The attribute #['.ProxyClosure::class.'] can only be applied once per non-variadic parameter.'
-            );
-        }
+        $this->checkVariadic($reflectionParameter, \count($attributes), ProxyClosure::class);
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
@@ -93,11 +85,7 @@ trait AttributeReaderTrait
             return;
         }
 
-        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowireAttributeException(
-                'The attribute #['.TaggedAs::class.'] can only be applied once per non-variadic parameter.'
-            );
-        }
+        $this->checkVariadic($reflectionParameter, \count($attributes), TaggedAs::class);
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
@@ -117,6 +105,15 @@ trait AttributeReaderTrait
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
+        }
+    }
+
+    private function checkVariadic(\ReflectionParameter $reflectionParameter, int $countAttributes, string $attribute): void
+    {
+        if ($countAttributes > 1 && !$reflectionParameter->isVariadic()) {
+            throw new AutowireAttributeException(
+                \sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
+            );
         }
     }
 }

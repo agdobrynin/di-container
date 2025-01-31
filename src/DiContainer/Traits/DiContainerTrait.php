@@ -28,7 +28,9 @@ trait DiContainerTrait
     public function getContainer(): DiContainerInterface
     {
         if (!isset($this->container)) {
-            throw new ContainerNeedSetException('Need set container implementation. Use method setContainer() in '.__CLASS__.' class.');
+            throw new ContainerNeedSetException(
+                \sprintf('Need set container implementation. Use method setContainer() in %s class.', __CLASS__)
+            );
         }
 
         return $this->container;

@@ -175,7 +175,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         $reflectionClass = $this->getDefinition();
 
         if (!$reflectionClass->isInstantiable()) {
-            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $reflectionClass->getName()));
+            throw new AutowireException(
+                \sprintf('The [%s] class is not instantiable', $reflectionClass->getName())
+            );
         }
 
         return $this->reflectionConstructorParams = $reflectionClass->getConstructor()?->getParameters() ?? [];

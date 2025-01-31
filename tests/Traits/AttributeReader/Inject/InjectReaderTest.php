@@ -14,9 +14,10 @@ use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getInjectAttribute
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
+ * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */
