@@ -30,7 +30,7 @@ class DiDefinitionReferenceTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be a non-empty string');
 
-        new DiDefinitionGet($definition);
+        (new DiDefinitionGet($definition))->getDefinition();
     }
 
     public function dataProviderDefinitionSuccess(): \Generator
@@ -49,6 +49,8 @@ class DiDefinitionReferenceTest extends TestCase
      */
     public function testDiDefinitionReferenceSuccess(string $definition, string $expect): void
     {
-        $this->assertEquals($expect, (new DiDefinitionGet($definition))->getDefinition());
+        $def = new DiDefinitionGet($definition);
+
+        $this->assertEquals($expect, $def->getDefinition());
     }
 }
