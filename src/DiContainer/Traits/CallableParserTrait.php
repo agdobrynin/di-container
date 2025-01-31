@@ -37,14 +37,18 @@ trait CallableParserTrait
             return $parsedDefinition;
         }
 
-        throw new DiDefinitionCallableException('Definition is not callable. Got: '.\var_export($definition, true));
+        throw new DiDefinitionCallableException(
+            \sprintf('Definition is not callable. Got: %s', \var_export($definition, true))
+        );
     }
 
     private function parseDefinitions(array|string $argument): array
     {
         if (\is_array($argument)) {
             if (!isset($argument[0], $argument[1])) {
-                throw new DiDefinitionCallableException('When the definition is an array, two array elements must be provided. Got: '.\var_export($argument, true));
+                throw new DiDefinitionCallableException(
+                    \sprintf('When the definition is an array, two array elements must be provided. Got: %s', \var_export($argument, true))
+                );
             }
 
             return [$argument[0], $argument[1]];

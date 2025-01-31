@@ -31,7 +31,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     public function invoke(): \Closure
     {
         if (!$this->getContainer()->has($this->getDefinition())) {
-            throw new AutowireException("Definition \"{$this->definition}\" does not exist");
+            throw new AutowireException(\sprintf('Definition "%s" does not exist', $this->definition));
         }
 
         return function () { // @phan-suppress-current-line PhanUnreferencedClosure
@@ -45,6 +45,6 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
             return $this->definition;
         }
 
-        throw new AutowireException('Definition for '.__CLASS__.' must be non-empty string.');
+        throw new AutowireException(\sprintf('Definition for %s must be non-empty string.', __CLASS__));
     }
 }

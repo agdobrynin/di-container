@@ -110,7 +110,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->validateIdentifier($id);
 
         if (\array_key_exists($id, $this->definitions)) {
-            throw new ContainerAlreadyRegisteredException("Definition identifier [{$id}] already registered in container.");
+            throw new ContainerAlreadyRegisteredException(
+                \sprintf('Definition identifier [%s] already registered in container.', $id)
+            );
         }
 
         $this->definitions[$id] = $definition;
@@ -159,7 +161,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if (!$this->has($id)) {
-                throw new NotFoundException("Unresolvable dependency [{$id}].");
+                throw new NotFoundException(\sprintf('Unresolvable dependency [%s].', $id));
             }
 
             $this->checkCyclicalDependencyCall($id);
@@ -226,7 +228,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         }
                     }
 
-                    throw new NotFoundException('Definition not found for identifier '.$id);
+                    throw new NotFoundException(\sprintf('Definition not found for identifier %s', $id));
                 }
 
                 if ($this->config?->isUseAttribute()
@@ -277,7 +279,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if (\array_key_exists($id, $this->resolvingDependencies)) {
             $callPath = \implode(' -> ', \array_keys($this->resolvingDependencies)).' -> '.$id;
 
-            throw new CallCircularDependencyException('Trying call cyclical dependency. Call dependencies: '.$callPath);
+            throw new CallCircularDependencyException(
+                \sprintf('Trying call cyclical dependency. Call dependencies: %s', $callPath)
+            );
         }
     }
 }
