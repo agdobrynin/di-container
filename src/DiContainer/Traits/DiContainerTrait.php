@@ -10,7 +10,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 
 trait DiContainerTrait
 {
-    protected DiContainerInterface $container;
+    private DiContainerInterface $container;
 
     /**
      * @phan-suppress PhanTypeMismatchReturn
