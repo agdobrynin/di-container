@@ -13,9 +13,11 @@ use Tests\DiDefinition\DiDefinitionCallable\Fixtures\CallableArgument;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MainClass;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diCallable;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
@@ -65,13 +67,13 @@ class DiDefinitionTest extends TestCase
         $this->assertEquals('ok 😀', $def->invoke());
     }
 
-    public function testCallableMethodArguments(): void
+    public function testCallableByContainer(): void
     {
-        $def = (new DiDefinitionCallable(CallableArgument::class))
-            ->bindArguments(name: 'ok')
-        ;
-        $def->setContainer(new DiContainer(config: new DiContainerConfig()));
+        $container = new DiContainer([
+            'say.hu' => diCallable(CallableArgument::class)
+                ->bindArguments('ok'),
+        ], new DiContainerConfig());
 
-        $this->assertEquals('ok 😀', $def->invoke());
+        $this->assertEquals('ok 😀', $container->get('say.hu'));
     }
 }

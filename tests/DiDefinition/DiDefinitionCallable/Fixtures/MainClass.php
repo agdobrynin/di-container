@@ -12,4 +12,9 @@ class MainClass
     {
         return $this->serviceName;
     }
+
+    public static function imStatic(string $str): string
+    {
+        return '❤'.$str;
+    }
 }
