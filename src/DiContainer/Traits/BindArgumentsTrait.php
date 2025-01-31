@@ -11,7 +11,7 @@ trait BindArgumentsTrait
      *
      * @var array<int|string, mixed>
      */
-    protected array $bindArguments = [];
+    private array $bindArguments = [];
 
     /**
      * @deprecated Use method bindArguments(). This method will remove next major release.
@@ -52,7 +52,7 @@ trait BindArgumentsTrait
         return $this;
     }
 
-    protected function getBindArguments(): array
+    private function getBindArguments(): array
     {
         return $this->bindArguments;
     }

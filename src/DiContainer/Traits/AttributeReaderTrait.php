@@ -16,14 +16,14 @@ trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
-    protected function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
+    private function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
         return ($attribute = $reflectionClass->getAttributes(DiFactory::class)[0] ?? null)
             ? $attribute->newInstance()
             : null;
     }
 
-    protected function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
+    private function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
         return ($attribute = $reflectionClass->getAttributes(Service::class)[0] ?? null)
             ? $attribute->newInstance()
@@ -33,7 +33,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<Inject>
      */
-    protected function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(Inject::class);
 
@@ -59,7 +59,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<ProxyClosure>
      */
-    protected function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(ProxyClosure::class);
 
@@ -77,7 +77,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<TaggedAs>
      */
-    protected function getTaggedAsAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getTaggedAsAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(TaggedAs::class);
 
@@ -95,7 +95,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<Tag>
      */
-    protected function getTagAttribute(\ReflectionClass $reflectionClass): \Generator
+    private function getTagAttribute(\ReflectionClass $reflectionClass): \Generator
     {
         $attributes = $reflectionClass->getAttributes(Tag::class);
 

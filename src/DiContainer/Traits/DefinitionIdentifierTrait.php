@@ -14,7 +14,7 @@ trait DefinitionIdentifierTrait
      *
      * @throws DiDefinitionException
      */
-    protected function getIdentifier(mixed $identifier, mixed $definition): string
+    private function getIdentifier(mixed $identifier, mixed $definition): string
     {
         return match (true) {
             \is_string($identifier) => $identifier,
@@ -26,7 +26,7 @@ trait DefinitionIdentifierTrait
         };
     }
 
-    protected function validateIdentifier(string $identifier): void
+    private function validateIdentifier(string $identifier): void
     {
         if ('' === \trim($identifier)) {
             throw new DiDefinitionException('Definition identifier must be a non-empty string.');

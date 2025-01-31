@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer\Traits;
 
 trait UseAttributeTrait
 {
-    protected bool $useAttribute = false;
+    private bool $useAttribute = false;
 
     public function isUseAttribute(): bool
     {

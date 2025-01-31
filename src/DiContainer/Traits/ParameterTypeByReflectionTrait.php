@@ -12,7 +12,7 @@ trait ParameterTypeByReflectionTrait
 
     abstract public function getContainer(): DiContainerInterface;
 
-    protected function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
+    private function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
     {
         $reflectionType = $reflectionParameter->getType();
 

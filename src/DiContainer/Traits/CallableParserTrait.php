@@ -21,7 +21,7 @@ trait CallableParserTrait
      * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    protected function parseCallable(array|callable|string $definition): callable
+    private function parseCallable(array|callable|string $definition): callable
     {
         if (\is_callable($definition)) {
             return $definition;

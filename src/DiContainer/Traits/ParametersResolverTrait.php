@@ -67,7 +67,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveParameters(array $inputArguments, array $reflectionParameters): array
+    private function resolveParameters(array $inputArguments, array $reflectionParameters): array
     {
         if ([] === $inputArguments && [] === $reflectionParameters) {
             return [];
