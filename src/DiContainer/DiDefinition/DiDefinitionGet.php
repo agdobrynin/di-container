@@ -9,18 +9,20 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
 final class DiDefinitionGet implements DiDefinitionInterface
 {
+    private string $validContainerIdentifier;
+
     /**
      * @param non-empty-string $containerIdentifier
      */
-    public function __construct(private string $containerIdentifier)
-    {
-        if ('' === \trim($containerIdentifier)) {
-            throw new DiDefinitionException('Definition identifier must be a non-empty string.');
-        }
-    }
+    public function __construct(private string $containerIdentifier) {}
 
+    /**
+     * @throws DiDefinitionException
+     */
     public function getDefinition(): string
     {
-        return $this->containerIdentifier;
+        return $this->validContainerIdentifier ??= '' === \trim($this->containerIdentifier)
+            ? throw new DiDefinitionException('Definition identifier must be a non-empty string.')
+            : $this->containerIdentifier;
     }
 }
