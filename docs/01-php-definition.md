@@ -110,7 +110,7 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupInte
 > Интерфейс представляет методы:
 >   - `bindArguments` - аргументы для конструктора класса
 >   - `setup` - вызов метода класса с параметрами (_setter method_)
->   - `bindTag` - добавляет тэг с мета-данными для определения
+>   - `bindTag` - добавляет тег с мета-данными для определения
 > 
 > Аргументы для конструктора:
 > - `diAutowire(...)->bindArguments(mixed ...$argument)`
@@ -156,8 +156,6 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupInte
 > * `diAutowire(...)->bindTag(string $name, array $options)`
 > ```php
 >   diAutowire(...)
->       ->bindArguments(...)
->       ->setup(...)
 >       ->bindTag('tags.rules', ['priority' => 100])
 > ```
 > 📝 для параметра `$options` определено значение по умолчанию `['priority' => 0]` описывающее приоритет сортировки тэгированных определений.
@@ -165,7 +163,7 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupInte
 > Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
 
-При конфигурировании если не нужен идентификатор контейнера отличный от имени определения, то можно указать так:
+При конфигурировании идентификатор контейнера может быть сформирован на основе определения:
 
 ```php
 use function Kaspi\DiContainer\diAutowire;
@@ -183,7 +181,7 @@ $definitions = [
         ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
 ];
 ```
-Если необходим другой идентификатор, то можно указывать так:
+Если необходим другой идентификатор контейнера, то можно указывать так:
 ```php
 use function Kaspi\DiContainer\diAutowire;
 
@@ -454,15 +452,18 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 $container = (new DiContainerFactory())->make([
     diAutowire(App\Srv\MyClass::class)
         ->bindArguments(rules: diTaggedAs('tags.lite-rules')),
+
     diAutowire(App\Rules\RuleA::class)
         ->bindTag('tags.lite-rules'),
+
     diAutowire(App\Rules\RuleB::class),
+
     diAutowire(App\Rules\RuleC::class)
-        ->bindTag('tags.lite-rules'),
+        ->bindTag('tags.lite-rules', ['priority' => 100]),
 ]);
 
 $myClass = $container->get(App\Srv\MyClass::class);
-// $myClass->rules содержит классы RuleA, RuleC
+// $myClass->rules содержит классы отсортированные по 'priority' - RuleC, RuleA
 ```
 Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
