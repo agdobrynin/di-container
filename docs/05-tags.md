@@ -1,5 +1,5 @@
 # 🔖 Работа с тегами в контейнере
-Теги позволяют расширить возможности работы с зарегистрированными сервисами
+Теги позволяют расширить возможности работы с зарегистрированными сервисами,
 собирая сервисы в коллекции (_списки_) и применяется для параметров с типом `iterable` и `array`.
 
 Любое определение в контейнере может быть отмечено
@@ -8,17 +8,27 @@
 
 Тегирование сервисов можно произвести при объявлении в стиле [php-определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md)
 или используя [PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
-> ✏ При использовании тегирования через PHP атрибуты необходимо чтобы
+
+> #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере через хэлпер функцию `diAutowire`
 
-На каждое определение можно объявлять множество тегов.
-
-Для получения тегированных сервисов на аргументы (_конструктор, метода или аргументы функции_) нужно использовать
+Для получения тегированных сервисов на аргументы (_параметры - конструктора, метода или аргументы функции_) нужно использовать:
 - `diTaggedAs` - [функцию хэлпер](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas) при php определениях 
 - `#[TaggedAs]` - [php атрибут](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas) 
 
+### Ленивая коллекция
+Особенности получения коллекции в том что по-умолчанию
+коллекция будет получена как "ленивая" - инициализация тегированного сервиса в коллекции происходит
+только в тот момент когда к нему будет обращение.
+
+Для "ленивой" коллекции необходимо чтобы тип параметра
+куда будет помещена коллекция был `iterable`.
+В случае если тип параметра куда будет помещена коллекция `array`
+то тогда необходимо отметить что коллекция "не ленивая" - все сервисы
+будут инициализированы и помещены в возвращаемый массив.
+
 ## Объявление тега через php определение.
-Для указания тегов для определения можно использовать метод:
+Для указания тегов для определения используется метод:
 
 * `bindTag(string $name, array $options)`
 
@@ -28,8 +38,11 @@
 - `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`
 - `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface`
 
+> 📝 метод `bindTag` имеет параметр `$options` со значением по умолчанию
+> `['priority' => 0]` описывающее [приоритет сортировки](#приоритет-в-коллекции)
+> тегированных определений.
 
-Пример использования с хэлпер-функцией:
+Пример использования с хэлпер-функцией `diAutowire`:
 ```php
 // определение классов
 class One {}
@@ -58,38 +71,178 @@ $class = $container->get(ServicesAny::class);
 // теперь в свойстве `services` содержится итерируемая коллекция
 // из классов One, Two
 ```
-> ⚠ Если тип аргумента `array` то необходимо указать что коллекцию получить как "не ленивую":
+> ⚠ Если тип аргумента на который добавляется тегированная коллекция `array`
+> то необходимо указать что коллекцию получить как "не ленивую":
 > ```php
 > use function Kaspi\DiContainer\diTaggedAs;
 > 
 > diTaggedAs(tag: 'tags.services-any', isLazy: false)
 > ```
 
-> 📝 для параметра `$options` определено значение по умолчанию
-> `['priority' => 0]` описывающее [приоритет сортировки](#приоритет-в-коллекции)
-> тегированных определений.
-
-
 ## Объявление тега через php атрибут.
+Для указания тегов для класса необходимо использовать php атрибут `#[Tag]`:
+
+```php
+use Kaspi\DiContainer\Attributes\Tag; 
+namespace App\Any;
+
+#[Tag(name: 'tags.services.group-one')]
+#[Tag(name: 'tags.services.group-two')]
+class One {}
+
+#[Tag('tags.services.group-two', options: ['priority' => 1000])]
+class Two {}
+```
+Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]`:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+namespace App\Services;
+
+class GroupTwo {
+    public function __construct(
+        #[TaggedAs('tags.services.group-two')]
+        private iterable $services
+    ) {}
+}
+```
+> #️⃣ При использовании тегирования через PHP атрибуты
+> необходимо чтобы класс использующий `#[Tag]` был зарегистрирован
+> в контейнере через хэлпер функцию diAutowire
+
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+$definitions = [
+    diAutowire(One::class),
+    diAutowire(Two::class),
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+$class = $container->get(GroupTwo::class);
+// теперь в свойстве `services` содержится итерируемая коллекция
+// из классов Two, One - такой порядок обусловлен значением 'priority'
+```
+
+## Interface как имя тега.
+В качестве имени тега можно использовать имя интерфейса (**FQCN**)
+реализуемого классами. Чтобы такой подход сработал необходимо
+чтобы класс реализующий запрашиваемый интерфейс был объявлен через функцию хэлпер `diAutowire`.
+
+📃 Пример использования через php определения:
+```php
+// Определение классов
+namespace App\Rules;
+
+interface RuleInterface {}
+
+class RuleA implements RuleInterface {}
+
+class RuleB implements RuleInterface {}
+
+class RuleC {}
+```
+
+```php
+namespace App\Services;
+
+class SrvRules {
+    public function __construct(
+        private iterable $rules
+    ) {}
+}
+```
+
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use App\Rules\{RuleA, RuleB, RuleC, RuleInterface};
+use App\Services\SrvRules;
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+// Объявить классы 
+$definitions = [
+    diAutowire(RuleA::class),
+    diAutowire(RuleB::class),
+    diAutowire(RuleC::class),
+    diAutowire(SrvRules::class)
+        ->bindArguments(rules: diTaggedAs(RuleInterface::class))
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+$class = $container->get(SrvRules::class);
+// теперь в свойстве `rules` содержится итерируемая коллекция
+// из классов RuleA, RuleB - так как они имплементируют RuleInterface
+```
+#️⃣ Пример использования через php атрибуты:
+
+```php
+// Определение классов
+namespace App\Rules;
+
+interface RuleInterface {}
+
+class RuleA implements RuleInterface {}
+
+class RuleB implements RuleInterface {}
+
+class RuleC {}
+```
+
+```php
+use App\Rules\RuleInterface;
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+namespace App\Services;
+
+class SrvRules {
+    public function __construct(
+        #[TaggedAs(RuleInterface::class)]
+        private iterable $rules
+    ) {}
+}
+```
+
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use App\Rules\{RuleA, RuleB, RuleC};
+use App\Services\SrvRules;
+use function Kaspi\DiContainer\diAutowire;
+
+// Объявить классы 
+$definitions = [
+    diAutowire(RuleA::class),
+    diAutowire(RuleB::class),
+    diAutowire(RuleC::class),
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+$class = $container->get(SrvRules::class);
+// теперь в свойстве `rules` содержится итерируемая коллекция (\Generator)
+// из классов RuleA, RuleB - так как они имплементируют RuleInterface
+```
 
 ## Приоритет в коллекции.
 Приоритет это положительное или отрицательное целое число,
 которое по умолчанию равно 0.
 **Чем больше значение приоритета, тем выше сервис будет расположен в коллекции.**
 
-В параметре `$options` ключ `priority` является зарезервированным с помощью которого сортируются сервисы в коллекции.
+У метода `bindTag` для php-определений и у php атрибута `#[Tag]`
+определен параметр `$options` как массив.
+В массиве мета-данных ключ `priority` является зарезервированным
+с помощью которого сортируются сервисы в коллекции.
 
 Для php-определений:
 ```php
-use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diTaggedAs;
+use function \Kaspi\DiContainer\diAutowire;
+use function \Kaspi\DiContainer\diTaggedAs;
 
 $definitions = [
    diAutowire(App\Rules\RuleA::class)
-        ->bindTag('tags.rules', ['priority' => 10]),
+        ->bindTag(name: 'tags.rules', options: ['priority' => 10]),
    //...
    diAutowire(App\Rules\RuleC::class)
-        ->bindTag('tags.rules', ['priority' => 100]),
+        ->bindTag(name: 'tags.rules', options: ['priority' => 100]),
     // ...
     diAutowire(App\Rules\Rules::class)
         ->bindArguments(rules: diTaggedAs('tags.rules'))     
@@ -103,7 +256,8 @@ $definitions = [
 ```php
 namespace App\Rules;
 
-use Kaspi\DiContainer\Attributes\Tag;use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Attributes\TaggedAs;
 
 #[Tag(name: 'tags.rules', options: ['priority' => 10])]
 class RuleA {}
