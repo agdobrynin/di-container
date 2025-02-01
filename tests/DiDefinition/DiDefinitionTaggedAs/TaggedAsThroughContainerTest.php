@@ -135,4 +135,26 @@ class TaggedAsThroughContainerTest extends TestCase
         $this->assertInstanceOf(HeavyDepTwo::class, $res[0]);
         $this->assertInstanceOf(HeavyDepOne::class, $res[1]);
     }
+
+    public function testOverrideDiTaggedAsPhpAttributeTaggedAs(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(AnyClass::class)
+                // override by php-attribute #[TaggedAs('tags.handler-attribute')]
+                ->bindArguments(tagged: diTaggedAs('tags.heavy-dep')),
+            diAutowire(HeavyDepOne::class)
+                ->bindTag('tags.heavy-dep'),
+            diAutowire(HeaveDepWithDependency::class)
+                ->bindArguments(someDep: [1, 2, 3])
+                ->bindTag('tags.handler-attribute'),
+            diAutowire(HeavyDepTwo::class)
+                ->bindTag('tags.heavy-dep', ['priority' => 100]),
+        ]);
+        $res = $container->get(AnyClass::class);
+
+        $this->assertTrue($res->tagged->valid());
+        $this->assertInstanceOf(HeaveDepWithDependency::class, $res->tagged->current());
+        $res->tagged->next();
+        $this->assertFalse($res->tagged->valid());
+    }
 }

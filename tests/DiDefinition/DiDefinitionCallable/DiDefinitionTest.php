@@ -22,7 +22,7 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */

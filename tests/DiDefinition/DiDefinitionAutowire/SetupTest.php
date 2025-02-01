@@ -11,6 +11,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
