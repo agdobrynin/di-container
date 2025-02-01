@@ -116,14 +116,15 @@ class DeprecatedMethodAddArgumentTest extends TestCase
     public function testAddArgumentsSuccess(): void
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('get')
+        $mockContainer->expects(self::once())
+            ->method('get')
             ->willThrowException(new NotFoundException(''))
         ;
 
         $fn = static fn (iterable $iterator, ?string $value = null) => \array_merge((array) $iterator, [$value]);
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
-        $this->setContainer($this->createMock(DiContainerInterface::class));
+        $this->setContainer($mockContainer);
 
         $this->addArguments([
             'iterator' => ['ok'],
@@ -135,8 +136,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
     public function testNoUserDefinedArgumentSuccess(): void
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('get')
-            ->willThrowException(new NotFoundException())
+        $mockContainer->expects(self::exactly(2))
+            ->method('get')
+            ->willThrowException(new NotFoundException(''))
         ;
 
         $fn = static fn (array $array = [], string $value = 'app') => $array + [$value];
