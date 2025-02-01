@@ -25,7 +25,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     /**
      * @param non-empty-string $tag
      */
-    public function __construct(private string $tag, private bool $lazy = true) {}
+    public function __construct(private string $tag, private bool $isLazy = true) {}
 
     /**
      * @throws ContainerNeedSetExceptionInterface
@@ -40,12 +40,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             : $this->getContainerIdentifiersOfTaggedServiceByTag();
 
         if (!$containerIdentifiers->valid()) {
-            return $this->lazy
+            return $this->isLazy
                 ? (static function () { yield from []; })()
                 : [];
         }
 
-        if (!$this->lazy) {
+        if (!$this->isLazy) {
             $services = [];
 
             while ($containerIdentifiers->valid()) {
