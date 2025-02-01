@@ -245,7 +245,7 @@ trait ParametersResolverTrait
 
         throw new AutowireAttributeException(
             \sprintf(
-                'Only one of the attributes #[%s], #[%s] or #[%s] must be declared.',
+                'Only one of the attributes #[%s], #[%s] or #[%s] may be declared.',
                 Inject::class,
                 ProxyClosure::class,
                 TaggedAs::class
@@ -291,8 +291,9 @@ trait ParametersResolverTrait
                 if (\is_string($name) && !\in_array($name, $parameters, true)) {
                     throw new AutowireAttributeException(
                         \sprintf(
-                            'Invalid input argument name "%s" at position #%d. Definition '.__CLASS__.' has arguments: "%s"',
+                            'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
                             $name,
+                            __CLASS__,
                             $argumentPosition,
                             \implode(', ', $parameters)
                         )
