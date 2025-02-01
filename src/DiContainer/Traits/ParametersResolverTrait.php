@@ -83,30 +83,30 @@ trait ParametersResolverTrait
         self::$variadicPosition = 0;
 
         foreach ($this->reflectionParameters as $parameter) {
-            if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
-                // PHP attributes have higher priority than PHP definitions
-                if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                    \array_push($dependencies, ...$attributes);
+            $autowireException = null;
+
+            try {
+                if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
+                    // PHP attributes have higher priority than PHP definitions
+                    if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                        \array_push($dependencies, ...$attributes);
+
+                        continue;
+                    }
+
+                    if ($parameter->isVariadic()) {
+                        foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
+                            $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
+                        }
+
+                        break; // Variadic Parameter has last position
+                    }
+
+                    $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$argumentNameOrIndex]);
 
                     continue;
                 }
 
-                if ($parameter->isVariadic()) {
-                    foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
-                        $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
-                    }
-
-                    break; // Variadic Parameter has last position
-                }
-
-                $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$argumentNameOrIndex]);
-
-                continue;
-            }
-
-            $autowireException = null;
-
-            try {
                 if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                     \array_push($dependencies, ...$attributes);
 
@@ -120,7 +120,7 @@ trait ParametersResolverTrait
                     : $this->getContainer()->get($parameterType->getName());
 
                 continue;
-            } catch (AutowireAttributeException|CallCircularDependencyException $e) {
+            } catch (AutowireAttributeException|CallCircularDependencyException|ContainerNeedSetExceptionInterface $e) {
                 throw $e;
             } catch (AutowireExceptionInterface|ContainerExceptionInterface $e) {
                 $autowireException = $e;

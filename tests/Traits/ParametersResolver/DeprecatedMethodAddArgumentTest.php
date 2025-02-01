@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -114,9 +115,15 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentsSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('get')
+            ->willThrowException(new NotFoundException(''))
+        ;
+
         $fn = static fn (iterable $iterator, ?string $value = null) => \array_merge((array) $iterator, [$value]);
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
+        $this->setContainer($this->createMock(DiContainerInterface::class));
 
         $this->addArguments([
             'iterator' => ['ok'],
@@ -127,9 +134,15 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testNoUserDefinedArgumentSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('get')
+            ->willThrowException(new NotFoundException())
+        ;
+
         $fn = static fn (array $array = [], string $value = 'app') => $array + [$value];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
         $this->setUseAttribute(false);
+        $this->setContainer($mockContainer);
 
         $this->addArguments([])->getBindArguments();
 
