@@ -60,7 +60,9 @@ $class = $container->get(ServicesAny::class);
 ```
 > ⚠ Если тип аргумента `array` то необходимо указать что коллекцию получить как "не ленивую":
 > ```php
-> diTaggedAs(name: 'tags.services-any', lazy: false)
+> use function Kaspi\DiContainer\diTaggedAs;
+> 
+> diTaggedAs(tag: 'tags.services-any', isLazy: false)
 > ```
 
 > 📝 для параметра `$options` определено значение по умолчанию

@@ -432,7 +432,7 @@ $classWithHeavyDep->doHeavyDependency();
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use function Kaspi\DiContainer\diTaggedAs;
 
-diTaggedAs(string $tag, bool $lazy = true): DiDefinitionNoArgumentsInterface
+diTaggedAs(string $tag, bool $isLazy = true): DiDefinitionNoArgumentsInterface
 ```
 Аргументы:
 - `$tag` - имя тега на сервисах которые нужно собрать из контейнера.
