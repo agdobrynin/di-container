@@ -86,9 +86,7 @@ trait ParametersResolverTrait
             if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                 // PHP attributes have higher priority than PHP definitions
                 if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                    foreach ($attributes as $val) {
-                        $dependencies[] = $val;
-                    }
+                    \array_push($dependencies, ...$attributes);
 
                     continue;
                 }
@@ -109,8 +107,7 @@ trait ParametersResolverTrait
             $autowireException = null;
 
             try {
-                if ($this->isUseAttribute()
-                    && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                     \array_push($dependencies, ...$attributes);
 
                     continue;
