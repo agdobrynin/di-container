@@ -84,6 +84,15 @@ trait ParametersResolverTrait
 
         foreach ($this->reflectionParameters as $parameter) {
             if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
+                // PHP attributes have higher priority than PHP definitions
+                if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                    foreach ($attributes as $val) {
+                        $dependencies[] = $val;
+                    }
+
+                    continue;
+                }
+
                 if ($parameter->isVariadic()) {
                     foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
                         $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);

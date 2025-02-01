@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiContainerCall;
 
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
@@ -27,45 +28,48 @@ use function Kaspi\DiContainer\diAutowire;
  */
 class CallClassDefinitionTest extends TestCase
 {
-    public function testCallWithArgumentsInvokeClass(): void
+    public function testCallWithArgumentsInvokeClassWithoutPhpAttribute(): void
     {
-        $container = (new DiContainerFactory())->make([
+        $config = new DiContainerConfig(useAttribute: false);
+        $container = new DiContainer([
             diAutowire(ClassWithSimplePublicProperty::class)
                 // bind by name
                 ->bindArguments(publicProperty: 'Ready'),
-        ]);
+        ], $config);
 
         $res = $container->call(ClassWithSimplePublicProperty::class, ['append' => '🚀']);
 
         $this->assertEquals('Ready invoke 🚀', $res);
     }
 
-    public function testCallInvokeClassArgumentDefaultValue(): void
+    public function testCallInvokeClassArgumentDefaultValueWithoutPhpAttribute(): void
     {
-        $container = (new DiContainerFactory())->make([
+        $config = new DiContainerConfig(useAttribute: false);
+        $container = new DiContainer([
             diAutowire(ClassWithSimplePublicProperty::class)
                 // bind by index
                 ->bindArguments('Ready'),
-        ]);
+        ], $config);
 
         $res = $container->call(ClassWithSimplePublicProperty::class);
 
         $this->assertEquals('Ready', $res);
     }
 
-    public function testCallWithArgumentsClassWithNoneStaticMethodAsString(): void
+    public function testCallWithArgumentsClassWithNoneStaticMethodAsStringWithoutPhpAttribute(): void
     {
-        $container = (new DiContainerFactory())->make([
+        $config = new DiContainerConfig(useAttribute: false);
+        $container = new DiContainer([
             diAutowire(ClassWithSimplePublicProperty::class)
                 ->bindArguments(publicProperty: 'Start'),
-        ]);
+        ], $config);
 
         $res = $container->call(ClassWithSimplePublicProperty::class.'::method', ['append' => '🚩']);
 
         $this->assertEquals('Start method 🚩', $res);
     }
 
-    public function testCallWithArgumentsClassWithNoneStaticMethodAsArray(): void
+    public function testCallWithArgumentsClassWithNoneStaticMethodAsArrayWithoutPhpAttribute(): void
     {
         $container = new DiContainer([
             // global definition when resolve class container will get dependency by argument name.
