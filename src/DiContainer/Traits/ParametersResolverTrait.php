@@ -161,7 +161,10 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionTaggedAsInterface) {
-            return $argumentDefinition->setContainer($this->getContainer())->getServicesTaggedAs();
+            return $argumentDefinition->setContainer($this->getContainer())
+                ->setUseAttribute($this->isUseAttribute())
+                ->getServicesTaggedAs()
+            ;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
@@ -233,6 +236,7 @@ trait ParametersResolverTrait
             foreach ($taggedAs as $tagged) {
                 yield (new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy()))
                     ->setContainer($this->getContainer())
+                    ->setUseAttribute(true)
                     ->getServicesTaggedAs()
                 ;
             }

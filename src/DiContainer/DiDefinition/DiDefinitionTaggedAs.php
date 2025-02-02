@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
@@ -12,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
+use Kaspi\DiContainer\Traits\UseAttributeTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -19,6 +21,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 {
     use DiContainerTrait;
     use DefinitionIdentifierTrait;
+    use UseAttributeTrait;
 
     private bool $tagIsInterface;
 
@@ -90,8 +93,15 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface
-                && $definition->hasTag($this->tag)) {
+            if (false === ($definition instanceof DiTaggedDefinitionInterface)) {
+                continue;
+            }
+
+            if ($definition instanceof DiDefinitionInvokableInterface) {
+                $definition->setUseAttribute($this->isUseAttribute());
+            }
+
+            if ($definition->hasTag($this->tag)) {
                 // 🚩 Tag with higher number in 'priority' key being early in list.
                 $taggedServices->insert($containerIdentifier, $definition->getOptionPriority($this->tag));
             }
