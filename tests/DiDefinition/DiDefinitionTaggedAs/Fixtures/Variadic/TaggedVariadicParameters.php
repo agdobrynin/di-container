@@ -6,6 +6,13 @@ namespace Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Variadic;
 
 class TaggedVariadicParameters
 {
-    public function __construct(
-    ) {}
+    public iterable $variadic;
+
+    /**
+     * @param iterable<OneInterface[]|TwoInterface[]> ...$variadic
+     */
+    public function __construct(iterable ...$variadic)
+    {
+        $this->variadic = $variadic;
+    }
 }
