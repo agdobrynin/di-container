@@ -539,8 +539,7 @@ class AnyClass {
     ) {}
 }
 ```
-Чтобы заполнить параметр с типом `array` необходимо указать параметр `$isLazy` как `false`:
-
+Чтобы заполнить параметр с типом `array` необходимо указать аргумент `$isLazy` как `false`:
 ```php
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
@@ -549,6 +548,18 @@ class AnyClass {
         // будет получено массив (все сервисы уже получены)
         #[TaggedAs(name: 'tags.services.group-two', isLazy: false)]
         private array $services 
+    ) {}
+}
+```
+Атрибут можно применять так же **параметрам переменной длинны**:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+class AnyService {
+    public function __construct(
+        #[TaggedAs('tags.word-group.first', false)]
+        #[TaggedAs('tags.word-group.second', false)]
+        array ...$wordGroup
     ) {}
 }
 ```

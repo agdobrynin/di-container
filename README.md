@@ -12,7 +12,7 @@ composer require kaspi/di-container
 - **Autowire** - контейнер автоматически создаёт и внедряет зависимости.
 - Поддержка "**zero configuration for dependency injection**" - когда ненужно объявлять зависимость если класс существуют и может быть запрошен по "PSR-4 auto loading" с автоматическим внедрением зависимостей.
 - Поддержка **Php-атрибутов** для конфигурирования сервисов в контейнере.
-- Поддержка тегов (_tags_) для определений и сервисов в контейнере.
+- **Поддержка тегов** (_tags_) для определений и сервисов в контейнере.
 ## Быстрый старт
 Определения классов:
 ```php
@@ -108,7 +108,7 @@ $post->title = 'Publication about DiContainer';
 
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
 $container->call(
-    definition: [App\Controllers\PostController::class,'send'],
+    definition: [App\Controllers\PostController::class, 'send'],
     arguments: ['post' => $post]
 );
 
@@ -119,8 +119,10 @@ $container->call(
 
 ### Конфигурирование DiContainer
 
-Для конфигурирования параметров используется класс:
-`Kaspi\DiContainer\DiContainerConfig::class` который имплементируют интерфейс `Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
+Для конфигурирования контейнера используется класс
+`Kaspi\DiContainer\DiContainerConfig::class`
+который имплементируют интерфейс
+`Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
 
 ```php
 use Kaspi\DiContainer\{DiContainerConfig, DiContainer};

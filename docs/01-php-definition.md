@@ -228,7 +228,11 @@ diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefi
 namespace App\Services;
 
 class ServiceOne {
-    public function __construct(string $apiKey) {}
+    public function __construct(private string $apiKey, private bool $debug) {}
+
+    public static function makeForTest(string $apiKey): self {
+        return new self($apiKey, true)
+    }
     // some methods here
 }
 ```
@@ -238,9 +242,13 @@ use function \Kaspi\DiContainer\diCallable;
 
 $definitions = [
     'services.one' => diCallable(
-        definition: static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key'),
+        definition: static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key', false),
         isSingleton: true,
-    )
+    ),
+    'services.two' => diCallable(
+        definition: [App\Services\ServiceOne::class, 'makeForTest'],
+        isSingleton: false, 
+    )->bindArguments('my-other-api-key'),
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -248,6 +256,7 @@ $container = (new DiContainerFactory())->make($definitions);
 // ...
 
 var_dump($container->get('services.one') instanceof App\Services\ServiceOne); // true
+var_dump($container->get('services.two') instanceof App\Services\ServiceOne); // true
 ```
 
 > 🚩 Поддерживаемые [типы](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
@@ -257,7 +266,7 @@ var_dump($container->get('services.one') instanceof App\Services\ServiceOne); //
 > ```php
 > // для примера выше
 > $definitions = [
->   'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key'),
+>   'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key', debug: false),
 > ];
 > ```
 ##### diGet
@@ -322,6 +331,7 @@ class ParameterIterableVariadic
 }
 ```
 ```php
+use Kaspi\DiContainer\DiContainerFactory;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diValue;
 
@@ -331,6 +341,38 @@ $definition = [
 ];
 
 $container = (new DiContainerFactory())->make($definition);
+```
+Пример использования тегов для хэлпер функции `diValue`:
+```php
+namespace App\Notifications;
+
+class CompanyStaff {
+    public function __construct(private array $emails) {}
+    //...
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs, diValue};
+
+$definitions = [
+    'admin.email.tasks' => diValue('runner@company.inc')
+        ->bindTag('tags.system-emails'),
+
+    'admin.email.report' => diValue('vasiliy@company.inc')
+        ->bindTag('tags.system-emails'),
+
+    'admin.email.stock' => diValue('stock@company.inc')
+        ->bindTag('tags.system-emails'),
+
+    diAutowire(App\Notifications\CompanyStaff::class)
+        ->bindArguments(emails: diTaggedAs(tag: 'tags.system-emails', isLazy: false)),
+];
+
+$container = (new DiContainerFactory())->make($definition);
+
+$notifyStaff = $container->get(App\Notifications\CompanyStaff::class);
+// $notifyStaff->emails массив ['runner@company.inc', 'vasiliy@company.inc', 'stock@company.inc']
 ```
 
 ##### diProxyClosure

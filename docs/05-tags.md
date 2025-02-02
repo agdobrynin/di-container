@@ -18,14 +18,14 @@
 
 ### Ленивая коллекция
 Особенности получения коллекции в том что по-умолчанию
-коллекция будет получена как "ленивая" - инициализация тегированного сервиса в коллекции происходит
-только в тот момент когда к нему будет обращение.
+она будет получена как "ленивая" - инициализация тегированного сервиса происходит
+только когда к нему произойдёт обращение.
 
 Для "ленивой" коллекции необходимо чтобы тип параметра
-куда будет помещена коллекция был `iterable`.
-В случае если тип параметра куда будет помещена коллекция `array`
-то тогда необходимо отметить что коллекция "не ленивая" - все сервисы
-будут инициализированы и помещены в возвращаемый массив.
+куда будет помещена результат был `iterable`.
+В случае если тип параметра `array` куда будет помещён результат
+то тогда необходимо отметить что коллекция "не ленивая", таким образом
+сервисы будут инициализированы в виде массива.
 
 ## Объявление тега через php определение.
 Для указания тегов для определения используется метод:
@@ -71,13 +71,58 @@ $class = $container->get(ServicesAny::class);
 // теперь в свойстве `services` содержится итерируемая коллекция
 // из классов One, Two
 ```
-> ⚠ Если тип аргумента на который добавляется тегированная коллекция `array`
-> то необходимо указать что коллекцию получить как "не ленивую":
+> ⚠ Если тип аргумента куда добавляется тегированная коллекция `array`
+> то необходимо указать "не ленивое" получение:
 > ```php
 > use function Kaspi\DiContainer\diTaggedAs;
 > 
 > diTaggedAs(tag: 'tags.services-any', isLazy: false)
 > ```
+#### Получение тегированных сервисов можно применять так же **параметрам переменной длинны**:
+```php
+class AnyService {
+    public function __construct(
+        array ...$srvGroup
+    ) {}
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+$definitions = [
+    diAutowire(One::class)
+        ->bindTag(name: 'tags.ser-group-1'),
+
+    diAutowire(Two::class)
+        ->bindTag(name: 'tags.ser-group-1'),
+
+    diAutowire(Three::class)
+        ->bindTag(name: 'tags.ser-group-2'),
+
+    diAutowire(Four::class)
+        ->bindTag(name: 'tags.ser-group-2'),
+
+    diAutowire(AnyService::class)
+        ->bindArguments(
+            srvGroup: [
+                // аргумент имеет тип array то $isLazy=false
+                diTaggedAs('tags.ser-group-1', false),
+                diTaggedAs('tags.ser-group-2', false),
+            ]
+        ),
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+$class = $container->get(AnyService::class);
+/**
+ * Эквивалент вызова:
+ * $class = new AnyService(
+ *  [new One, new Two],
+ *  [new Three, new Four]
+ * )
+ */
+```
 
 ## Объявление тега через php атрибут.
 Для указания тегов для класса необходимо использовать php атрибут `#[Tag]`:
@@ -124,7 +169,53 @@ $class = $container->get(GroupTwo::class);
 // теперь в свойстве `services` содержится итерируемая коллекция
 // из классов Two, One - такой порядок обусловлен значением 'priority'
 ```
+#### Получение тегированных сервисов можно применять так же **параметрам переменной длинны**:
+```php
+use Kaspi\DiContainer\Attributes\{Tag, TaggedAs};
 
+class AnyService {
+    public function __construct(
+        // аргумент имеет тип array то $isLazy=false
+        #[TaggedAs('tags.ser-group-1', false)]
+        #[TaggedAs('tags.ser-group-2', false)]
+        array ...$srvGroup
+    ) {}
+}
+
+#[Tag('tags.ser-group-1')]
+class One {}
+
+#[Tag('tags.ser-group-1')]
+class Two {}
+
+#[Tag('tags.ser-group-2')]
+class Three {}
+
+#[Tag('tags.ser-group-2')]
+class Four {}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+$definitions = [
+    // Объявить класс чтобы была возможность работы с атрибутом #[Tag]
+    diAutowire(One::class),
+    diAutowire(Two::class),
+    diAutowire(Three::class),
+    diAutowire(Four::class),
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+$class = $container->get(AnyService::class);
+/**
+ * Эквивалент вызова:
+ * $class = new AnyService(
+ *  [new One, new Two],
+ *  [new Three, new Four]
+ * )
+ */
+```
 ## Interface как имя тега.
 В качестве имени тега можно использовать имя интерфейса (**FQCN**)
 реализуемого классами. Чтобы такой подход сработал необходимо
