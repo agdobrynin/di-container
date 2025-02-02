@@ -25,8 +25,6 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
  *
  * @internal
  */

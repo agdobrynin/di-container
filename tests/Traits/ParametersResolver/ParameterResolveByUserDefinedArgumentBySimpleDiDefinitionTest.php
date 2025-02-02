@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -12,11 +13,12 @@ use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -35,6 +37,10 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
+        $mockContainer->expects($this->once())
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig())
+        ;
         $this->setContainer($mockContainer);
 
         // 🚩 test data
@@ -121,6 +127,12 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(words: new DiDefinitionValue(['hello', 'world', '!']));
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig())
+        ;
+        $this->setContainer($mockContainer);
 
         $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
@@ -135,6 +147,12 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(new DiDefinitionValue(['hello', 'world', '!']));
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig())
+        ;
+        $this->setContainer($mockContainer);
 
         $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 

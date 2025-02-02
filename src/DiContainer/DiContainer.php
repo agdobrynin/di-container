@@ -126,7 +126,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return (new DiDefinitionCallable($definition))
                 ->bindArguments(...$arguments)
                 ->setContainer($this)
-                ->setUseAttribute($this->config?->isUseAttribute())
                 ->invoke()
             ;
         } catch (AutowireExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
@@ -176,11 +175,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if ($diDefinition instanceof DiDefinitionInvokableInterface) {
                 // Configure definition.
-                $diDefinition->setContainer($this)
-                    ->setUseAttribute($this->config?->isUseAttribute())
-                ;
-
-                $object = ($o = $diDefinition->invoke()) instanceof DiFactoryInterface
+                $object = ($o = $diDefinition->setContainer($this)->invoke()) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
 
@@ -193,7 +188,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if ($diDefinition instanceof DiDefinitionTaggedAsInterface) {
                 return $diDefinition->setContainer($this)
-                    ->setUseAttribute($this->config?->isUseAttribute())
                     ->getServicesTaggedAs()
                 ;
             }

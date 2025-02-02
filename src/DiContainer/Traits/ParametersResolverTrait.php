@@ -29,7 +29,6 @@ trait ParametersResolverTrait
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
     use DiContainerTrait;
-    use UseAttributeTrait;
 
     private static int $variadicPosition = 0;
 
@@ -88,7 +87,8 @@ trait ParametersResolverTrait
             try {
                 if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                     // PHP attributes have higher priority than PHP definitions
-                    if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                    if ($this->getContainer()->getConfig()?->isUseAttribute()
+                        && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                         \array_push($dependencies, ...$attributes);
 
                         continue;
@@ -107,7 +107,8 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                if ($this->isUseAttribute() && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                if ($this->getContainer()->getConfig()?->isUseAttribute()
+                    && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                     \array_push($dependencies, ...$attributes);
 
                     continue;
@@ -162,15 +163,13 @@ trait ParametersResolverTrait
 
         if ($argumentDefinition instanceof DiDefinitionTaggedAsInterface) {
             return $argumentDefinition->setContainer($this->getContainer())
-                ->setUseAttribute($this->isUseAttribute())
                 ->getServicesTaggedAs()
             ;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
-            // Configure definition and invoke definition.
-            $argumentDefinition->setContainer($this->getContainer())->setUseAttribute($this->isUseAttribute());
-            $object = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
+            $o = $argumentDefinition->setContainer($this->getContainer())->invoke();
+            $object = $o instanceof DiFactoryInterface
                 ? $o($this->getContainer())
                 : $o;
 
@@ -234,11 +233,10 @@ trait ParametersResolverTrait
             }
 
             foreach ($taggedAs as $tagged) {
-                yield (new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy()))
-                    ->setContainer($this->getContainer())
-                    ->setUseAttribute(true)
-                    ->getServicesTaggedAs()
-                ;
+                yield $this->resolveInputArgument(
+                    $parameter,
+                    new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy())
+                );
             }
 
             return;

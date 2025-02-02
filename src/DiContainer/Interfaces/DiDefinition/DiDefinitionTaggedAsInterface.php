@@ -18,10 +18,6 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
      */
     public function getContainer(): DiContainerInterface;
 
-    public function setUseAttribute(?bool $useAttribute): static;
-
-    public function isUseAttribute(): bool;
-
     /**
      * @return iterable<int, mixed>
      *

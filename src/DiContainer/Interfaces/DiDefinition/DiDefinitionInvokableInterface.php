@@ -14,10 +14,6 @@ interface DiDefinitionInvokableInterface extends DiDefinitionInterface
 {
     public function isSingleton(): ?bool;
 
-    public function setUseAttribute(?bool $useAttribute): static;
-
-    public function isUseAttribute(): bool;
-
     public function setContainer(DiContainerInterface $container): static;
 
     /**

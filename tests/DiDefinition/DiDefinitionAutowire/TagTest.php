@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagOne;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwo;
@@ -12,8 +14,8 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefaul
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Tag
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -21,9 +23,11 @@ class TagTest extends TestCase
 {
     public function testTagsByBindTag(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
             ->bindTag('tags.handler-one')
             ->bindTag('tags.handler-two', ['priority' => 1000, 'exclude.compile' => true])
+            ->setContainer($mockContainer)
         ;
 
         $this->assertEquals(
@@ -43,8 +47,13 @@ class TagTest extends TestCase
 
     public function testTagsByPhpAttribute(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')->willReturn(
+            new DiContainerConfig()
+        );
+
         $def = new DiDefinitionAutowire(TaggedClassBindTagTwoDefault::class);
-        $def->setUseAttribute(true);
+        $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
@@ -54,10 +63,15 @@ class TagTest extends TestCase
 
     public function testTagsOverrideTagByPhpAttribute(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')->willReturn(
+            new DiContainerConfig()
+        );
+
         $def = (new DiDefinitionAutowire(TaggedClassBindTagTwoDefault::class))
             ->bindTag('tags.handlers.magic', ['priority' => 100, 'exclude.compile' => true])
         ;
-        $def->setUseAttribute(true);
+        $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
@@ -67,10 +81,15 @@ class TagTest extends TestCase
 
     public function testTagsByPhpAttributes(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')->willReturn(
+            new DiContainerConfig()
+        );
+
         $def = (new DiDefinitionAutowire(TaggedClassBindTagTwo::class))
             ->bindTag('tags.security')
         ;
-        $def->setUseAttribute(true);
+        $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.security'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.security'));
@@ -96,19 +115,18 @@ class TagTest extends TestCase
 
     public function testTagsByPhpAttributesAndUnsetUseAttribute(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')->willReturn(
+            new DiContainerConfig()
+        );
+
         $def = (new DiDefinitionAutowire(TaggedClassBindTagTwo::class))
             ->bindTag('tags.security')
         ;
-        $def->setUseAttribute(true);
+        $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.security'));
         $this->assertTrue($def->hasTag('tags.handlers.one'));
         $this->assertTrue($def->hasTag('tags.validator.two'));
-
-        $def->setUseAttribute(false);
-
-        $this->assertTrue($def->hasTag('tags.security'));
-        $this->assertFalse($def->hasTag('tags.handlers.one'));
-        $this->assertFalse($def->hasTag('tags.validator.two'));
     }
 }

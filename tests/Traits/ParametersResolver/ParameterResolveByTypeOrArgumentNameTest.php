@@ -17,7 +17,6 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */

@@ -16,7 +16,6 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */

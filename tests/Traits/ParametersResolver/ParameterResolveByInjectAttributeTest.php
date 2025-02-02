@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -18,11 +19,11 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -46,8 +47,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->method('get')->with(\ArrayIterator::class)
             ->willReturn(new \ArrayIterator(['✔', '❤']))
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $params = $this->resolveParameters([], $reflectionParameters);
         $this->assertEquals(
@@ -67,8 +71,12 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
+
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $this->expectException(AutowireAttributeException::class);
         $this->expectExceptionMessage('once per non-variadic parameter');
@@ -97,8 +105,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
                 new MoreSuperClass(),
             )
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
@@ -121,8 +132,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->with(SuperDiFactory::class)
             ->willReturn(new SuperClass())
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
@@ -144,8 +158,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->with('parameter')
             ->willReturn(new \stdClass())
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
@@ -166,8 +183,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->with('parameter')
             ->willThrowException(new NotFoundException('Not found'))
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+object\|string \$parameter.+Not found/');
@@ -189,8 +209,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->with('parameter')
             ->willThrowException(new NotFoundException('Not found'))
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
@@ -211,8 +234,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->with('names')
             ->willReturn(['Ivan', 'Piter'])
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
@@ -237,8 +263,11 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             ->with('names')
             ->willReturn(['IvaN', 'PiteR'])
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 

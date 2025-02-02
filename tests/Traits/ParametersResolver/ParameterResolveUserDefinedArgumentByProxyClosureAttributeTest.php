@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Attributes\ProxyClosure;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
@@ -14,11 +15,11 @@ use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -40,8 +41,6 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         ) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $this->setUseAttribute(true);
-
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('has')
             ->with(MoreSuperClass::class)
@@ -50,6 +49,9 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         $mockContainer->method('get')
             ->with(MoreSuperClass::class)
             ->willReturn(new MoreSuperClass())
+        ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig())
         ;
 
         $this->setContainer($mockContainer);
@@ -72,8 +74,6 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         ) => $item;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $this->setUseAttribute(true);
-
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('has')
             ->with(MoreSuperClass::class)
@@ -82,6 +82,9 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         $mockContainer->method('get')
             ->with(MoreSuperClass::class)
             ->willReturn(new MoreSuperClass())
+        ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig())
         ;
 
         $this->setContainer($mockContainer);
@@ -123,9 +126,11 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
                 new SuperClass()
             )
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig())
+        ;
 
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
@@ -162,9 +167,13 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
                 new SuperClass()
             )
         ;
+        $mockContainer->method('getConfig')
+            ->willReturn(
+                new DiContainerConfig()
+            )
+        ;
 
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         [$res11, $res12] = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
         [$res21, $res22] = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
