@@ -31,4 +31,6 @@ interface DiContainerInterface extends ContainerInterface
      * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
      */
     public function getDefinitions(): iterable;
+
+    public function getConfig(): ?DiContainerConfigInterface;
 }

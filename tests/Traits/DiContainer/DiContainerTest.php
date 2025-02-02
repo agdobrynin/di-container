@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\DiContainer;
 
+use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
@@ -26,6 +27,11 @@ class DiContainerTest extends TestCase
             public function has(string $id): bool {}
 
             public function getDefinitions(): iterable {}
+
+            public function getConfig(): ?DiContainerConfigInterface
+            {
+                return null;
+            }
         };
 
         $this->assertInstanceOf(self::class, $this->setContainer($container));

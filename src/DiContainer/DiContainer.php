@@ -148,6 +148,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
     }
 
+    public function getConfig(): ?DiContainerConfigInterface
+    {
+        return $this->config;
+    }
+
     /**
      * Resolve dependencies.
      *
