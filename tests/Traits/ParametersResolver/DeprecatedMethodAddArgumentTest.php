@@ -21,7 +21,6 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -33,6 +32,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentNonVariadicSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -43,6 +45,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentVariadicSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable ...$iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -53,6 +58,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentFailByName(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -66,6 +74,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentFailByCount(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -123,7 +134,6 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
         $fn = static fn (iterable $iterator, ?string $value = null) => \array_merge((array) $iterator, [$value]);
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
-        $this->setUseAttribute(false);
         $this->setContainer($mockContainer);
 
         $this->addArguments([
@@ -143,7 +153,6 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
         $fn = static fn (array $array = [], string $value = 'app') => $array + [$value];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
-        $this->setUseAttribute(false);
         $this->setContainer($mockContainer);
 
         $this->addArguments([])->getBindArguments();

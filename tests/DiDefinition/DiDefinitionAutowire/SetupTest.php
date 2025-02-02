@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -19,12 +19,15 @@ class SetupTest extends TestCase
 {
     public function testSetupSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+
         $def = (new DiDefinitionAutowire(SetupClass::class))
             ->setup('setName', newName: 'Vasiliy') // first set name
             ->setup('setName', 'Piter') // override set name
             ->setup('setParameters', paramName: 'key1', parameters: ['One', 'Two', 'Three'])
             ->setup('setParameters', 'key2', ['Four', 'Five', 'Six'])
         ;
+        $def->setContainer($mockContainer);
 
         /**
          * @var SetupClass $class

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -19,11 +20,11 @@ use function Kaspi\DiContainer\diTaggedAs;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\Traits\DefinitionIdentifierTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -67,8 +68,12 @@ class ParameterResolveByTaggedAsTest extends TestCase
                 new MoreSuperClass(),
             )
         ;
+        $mockContainer
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: false))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(false);
 
         $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
@@ -119,8 +124,12 @@ class ParameterResolveByTaggedAsTest extends TestCase
                 new SuperClass(),
             )
         ;
+        $mockContainer
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: false))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(false);
 
         [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
@@ -168,8 +177,12 @@ class ParameterResolveByTaggedAsTest extends TestCase
                 new MoreSuperClass(),
             )
         ;
+        $mockContainer
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
@@ -217,8 +230,12 @@ class ParameterResolveByTaggedAsTest extends TestCase
                 new SuperClass(),
             )
         ;
+        $mockContainer
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
         $this->setContainer($mockContainer);
-        $this->setUseAttribute(true);
 
         [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 

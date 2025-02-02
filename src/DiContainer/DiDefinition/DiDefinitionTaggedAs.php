@@ -13,7 +13,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\UseAttributeTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -21,7 +20,6 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 {
     use DiContainerTrait;
     use DefinitionIdentifierTrait;
-    use UseAttributeTrait;
 
     private bool $tagIsInterface;
 
@@ -98,7 +96,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
 
             if ($definition instanceof DiDefinitionInvokableInterface) {
-                $definition->setUseAttribute($this->isUseAttribute());
+                $definition->setContainer($this->getContainer());
             }
 
             if ($definition->hasTag($this->tag)) {

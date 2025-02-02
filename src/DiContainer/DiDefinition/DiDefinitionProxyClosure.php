@@ -10,12 +10,10 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
-use Kaspi\DiContainer\Traits\UseAttributeTrait;
 
 final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
 {
     use DiContainerTrait;
-    use UseAttributeTrait;
     use TagsTrait;
 
     private string $verifyDefinition;

@@ -30,7 +30,6 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  */
 class TaggedAsThroughContainerTest extends TestCase
 {
