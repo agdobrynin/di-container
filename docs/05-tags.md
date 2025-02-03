@@ -348,13 +348,16 @@ $definitions = [
 namespace App\Rules;
 
 use Kaspi\DiContainer\Attributes\Tag;
-use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\TaggedAs;use function Kaspi\DiContainer\diAutowire;
 
 #[Tag(name: 'tags.rules', options: ['priority' => 10])]
 class RuleA {}
 
-#[Tag(name: 'tags.rules', options: ['priority' => 100])]
+#[Tag(name: 'tags.rules-other', options: ['priority' => 100])]
 class RuleB {}
+
+#[Tag(name: 'tags.rules', options: ['priority' => 100])]
+class RuleC {}
 
 class Rules {
     public function __construct(
@@ -365,6 +368,7 @@ class Rules {
 
 $definitions = [
    diAutowire(App\Rules\RuleA::class),
+   diAutowire(App\Rules\RuleB::class),
    diAutowire(App\Rules\RuleC::class),
 ];
 // при получении коллекции отсортированные по приоритету
