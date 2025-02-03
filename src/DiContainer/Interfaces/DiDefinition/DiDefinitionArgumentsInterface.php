@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
-interface DiDefinitionArgumentsInterface
+interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterface
 {
     /**
      * Add input argument by index or name.

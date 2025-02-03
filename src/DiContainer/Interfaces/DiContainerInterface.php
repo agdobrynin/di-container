@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -25,11 +26,11 @@ interface DiContainerInterface extends ContainerInterface
     public function get(string $id): mixed;
 
     /**
-     * @param class-string|non-empty-string $id
-     * @param mixed|object                  $definition
+     * Get definitions form container.
      *
-     * @throws ContainerAlreadyRegisteredExceptionInterface
-     * @throws DiDefinitionExceptionInterface
+     * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
      */
-    public function set(string $id, mixed $definition): static;
+    public function getDefinitions(): iterable;
+
+    public function getConfig(): ?DiContainerConfigInterface;
 }

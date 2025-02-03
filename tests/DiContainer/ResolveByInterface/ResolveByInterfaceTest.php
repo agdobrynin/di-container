@@ -31,7 +31,6 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\CallableParserTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */

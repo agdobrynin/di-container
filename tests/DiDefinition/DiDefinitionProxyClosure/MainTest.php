@@ -7,9 +7,9 @@ namespace Tests\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\ContainerNeedSetException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
@@ -65,7 +65,7 @@ class MainTest extends TestCase
 
     public function testContainerDefinitionHasNot(): void
     {
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::once())->method('has')
             ->with('ok')
             ->willReturn(false)
@@ -82,7 +82,7 @@ class MainTest extends TestCase
 
     public function testContainerDefinitionHas(): void
     {
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::once())->method('has')
             ->with('ok')
             ->willReturn(true)
@@ -98,7 +98,7 @@ class MainTest extends TestCase
 
     public function testContainerDefinitionHasAndResolveSuccess(): void
     {
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::once())->method('has')
             ->with('ok')
             ->willReturn(true)

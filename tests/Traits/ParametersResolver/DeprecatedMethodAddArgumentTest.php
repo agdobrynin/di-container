@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -17,10 +18,9 @@ use function Kaspi\DiContainer\diAutowire;
 /**
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait
  *
  * @internal
  */
@@ -28,10 +28,13 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 {
     use BindArgumentsTrait;
     use ParametersResolverTrait;
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
     public function testAddArgumentNonVariadicSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -42,6 +45,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentVariadicSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable ...$iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -52,6 +58,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentFailByName(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -65,6 +74,9 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentFailByCount(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->setContainer($mockContainer);
+
         $fn = static fn (iterable $iterator) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
@@ -81,7 +93,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $fn = static fn (string $value, SuperClass $class) => 'ok';
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())
             ->method('get')
         ;
@@ -100,7 +112,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $fn = static fn (string $value, SuperClass $class) => 'ok';
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())
             ->method('get')
         ;
@@ -114,9 +126,15 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testAddArgumentsSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->expects(self::once())
+            ->method('get')
+            ->willThrowException(new NotFoundException(''))
+        ;
+
         $fn = static fn (iterable $iterator, ?string $value = null) => \array_merge((array) $iterator, [$value]);
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
-        $this->setUseAttribute(false);
+        $this->setContainer($mockContainer);
 
         $this->addArguments([
             'iterator' => ['ok'],
@@ -127,9 +145,15 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
     public function testNoUserDefinedArgumentSuccess(): void
     {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->expects(self::exactly(2))
+            ->method('get')
+            ->willThrowException(new NotFoundException(''))
+        ;
+
         $fn = static fn (array $array = [], string $value = 'app') => $array + [$value];
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
-        $this->setUseAttribute(false);
+        $this->setContainer($mockContainer);
 
         $this->addArguments([])->getBindArguments();
 

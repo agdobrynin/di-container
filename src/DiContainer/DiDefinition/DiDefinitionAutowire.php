@@ -4,20 +4,29 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
+use Kaspi\DiContainer\Traits\TagsTrait;
 
-final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface
+final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiTaggedDefinitionInterface
 {
+    use AttributeReaderTrait;
     use BindArgumentsTrait;
     use ParametersResolverTrait;
-    use PsrContainerTrait;
+    use DiContainerTrait;
+    use TagsTrait {
+        getTags as private internalGetTags;
+        hasTag as private internalHasTag;
+    }
 
     private \ReflectionClass $reflectionClass;
 
@@ -39,6 +48,13 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
      * @var array<non-empty-string, array<int|non-empty-string, mixed>>
      */
     private array $setup = [];
+
+    /**
+     * Php attributes on class.
+     *
+     * @var Tag[]
+     */
+    private array $tagAttributes;
 
     public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
@@ -108,6 +124,33 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             : $this->reflectionClass->getName();
     }
 
+    public function getTags(): array
+    {
+        $this->attemptsReadTagAttribute();
+
+        return $this->internalGetTags();
+    }
+
+    public function hasTag(string $name): bool
+    {
+        $this->attemptsReadTagAttribute();
+
+        return $this->internalHasTag($name);
+    }
+
+    private function attemptsReadTagAttribute(): void
+    {
+        if (!isset($this->tagAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
+            $this->tagAttributes = [];
+
+            foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
+                $this->tagAttributes[] = $tagAttribute;
+                // 🚩 Php-attribute override existing tag defined by <bindTag> (see documentation.)
+                $this->bindTag($tagAttribute->getIdentifier(), $tagAttribute->getOptions());
+            }
+        }
+    }
+
     private function getConstructorParams(): array
     {
         if (isset($this->reflectionConstructorParams)) {
@@ -117,7 +160,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         $reflectionClass = $this->getDefinition();
 
         if (!$reflectionClass->isInstantiable()) {
-            throw new AutowireException(\sprintf('The [%s] class is not instantiable', $reflectionClass->getName()));
+            throw new AutowireException(
+                \sprintf('The [%s] class is not instantiable', $reflectionClass->getName())
+            );
         }
 
         return $this->reflectionConstructorParams = $reflectionClass->getConstructor()?->getParameters() ?? [];

@@ -12,7 +12,7 @@ composer require kaspi/di-container
 - **Autowire** - контейнер автоматически создаёт и внедряет зависимости.
 - Поддержка "**zero configuration for dependency injection**" - когда ненужно объявлять зависимость если класс существуют и может быть запрошен по "PSR-4 auto loading" с автоматическим внедрением зависимостей.
 - Поддержка **Php-атрибутов** для конфигурирования сервисов в контейнере.
-
+- **Поддержка тегов** (_tags_) для определений и сервисов в контейнере.
 ## Быстрый старт
 Определения классов:
 ```php
@@ -108,7 +108,7 @@ $post->title = 'Publication about DiContainer';
 
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
 $container->call(
-    definition: [App\Controllers\PostController::class,'send'],
+    definition: [App\Controllers\PostController::class, 'send'],
     arguments: ['post' => $post]
 );
 
@@ -119,8 +119,10 @@ $container->call(
 
 ### Конфигурирование DiContainer
 
-Для конфигурирования параметров используется класс:
-`Kaspi\DiContainer\DiContainerConfig::class` который имплементируют интерфейс `Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
+Для конфигурирования контейнера используется класс
+`Kaspi\DiContainer\DiContainerConfig::class`
+который имплементируют интерфейс
+`Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
 
 ```php
 use Kaspi\DiContainer\{DiContainerConfig, DiContainer};
@@ -178,15 +180,16 @@ $container = (new DiContainerFactory())->make();
 $container->get(TestClass::class)->container instanceof DiContainer; // true
 ```
 
-### DefinitionsLoader
-🛠 Загрузка конфигурации для контейнера зависимостей из нескольких файлов.
+### 📁 DefinitionsLoader
+Загрузка конфигурации для контейнера зависимостей из нескольких файлов.
 Подробное описание использования [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
 
-### Подробное описание конфигурирования и использования
+### 🧰 Подробное описание конфигурирования и использования
 
 * [DiContainer с конфигурированием на основе php-определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md).
 * [DiContainer c конфигурированием через PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
 * [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
+* [Тэгирование определений и сервисов](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода

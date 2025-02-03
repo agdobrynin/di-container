@@ -6,27 +6,29 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
+use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 trait ParametersResolverTrait
 {
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
-    use PsrContainerTrait;
-    use UseAttributeTrait;
+    use DiContainerTrait;
 
     private static int $variadicPosition = 0;
 
@@ -53,7 +55,7 @@ trait ParametersResolverTrait
      */
     private array $resolvedArguments = [];
 
-    abstract public function getContainer(): ContainerInterface;
+    abstract public function getContainer(): DiContainerInterface;
 
     /**
      * @param \ReflectionParameter[] $reflectionParameters
@@ -64,7 +66,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveParameters(array $inputArguments, array $reflectionParameters): array
+    private function resolveParameters(array $inputArguments, array $reflectionParameters): array
     {
         if ([] === $inputArguments && [] === $reflectionParameters) {
             return [];
@@ -80,24 +82,32 @@ trait ParametersResolverTrait
         self::$variadicPosition = 0;
 
         foreach ($this->reflectionParameters as $parameter) {
-            if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
-                if ($parameter->isVariadic()) {
-                    foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
-                        $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
-                    }
-
-                    break; // Variadic Parameter has last position
-                }
-
-                $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$argumentNameOrIndex]);
-
-                continue;
-            }
-
             $autowireException = null;
 
             try {
-                if ($this->isUseAttribute()
+                if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
+                    // PHP attributes have higher priority than PHP definitions
+                    if ($this->getContainer()->getConfig()?->isUseAttribute()
+                        && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                        \array_push($dependencies, ...$attributes);
+
+                        continue;
+                    }
+
+                    if ($parameter->isVariadic()) {
+                        foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
+                            $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
+                        }
+
+                        break; // Variadic Parameter has last position
+                    }
+
+                    $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$argumentNameOrIndex]);
+
+                    continue;
+                }
+
+                if ($this->getContainer()->getConfig()?->isUseAttribute()
                     && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                     \array_push($dependencies, ...$attributes);
 
@@ -111,7 +121,7 @@ trait ParametersResolverTrait
                     : $this->getContainer()->get($parameterType->getName());
 
                 continue;
-            } catch (AutowireAttributeException|CallCircularDependencyException $e) {
+            } catch (AutowireAttributeException|CallCircularDependencyException|ContainerNeedSetExceptionInterface $e) {
                 throw $e;
             } catch (AutowireExceptionInterface|ContainerExceptionInterface $e) {
                 $autowireException = $e;
@@ -151,10 +161,15 @@ trait ParametersResolverTrait
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
+        if ($argumentDefinition instanceof DiDefinitionTaggedAsInterface) {
+            return $argumentDefinition->setContainer($this->getContainer())
+                ->getServicesTaggedAs()
+            ;
+        }
+
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
-            // Configure definition and invoke definition.
-            $argumentDefinition->setContainer($this->getContainer())->setUseAttribute($this->isUseAttribute());
-            $object = ($o = $argumentDefinition->invoke()) instanceof DiFactoryInterface
+            $o = $argumentDefinition->setContainer($this->getContainer())->invoke();
+            $object = $o instanceof DiFactoryInterface
                 ? $o($this->getContainer())
                 : $o;
 
@@ -188,27 +203,53 @@ trait ParametersResolverTrait
     {
         $injects = $this->getInjectAttribute($parameter);
         $asClosures = $this->getProxyClosureAttribute($parameter);
+        $taggedAs = $this->getTaggedAsAttribute($parameter);
 
-        if ($injects->valid() && $asClosures->valid()) {
-            throw new AutowireAttributeException('Cannot use attributes #['.Inject::class.'], #['.ProxyClosure::class.'] together.');
+        if (!$injects->valid() && !$asClosures->valid() && !$taggedAs->valid()) {
+            return;
         }
 
-        if ($injects->valid()) {
-            foreach ($injects as $inject) {
-                yield $inject->getIdentifier()
-                    ? $this->getContainer()->get($inject->getIdentifier())
-                    : $this->getContainer()->get($parameter->getName());
+        if (($injects->valid() xor $asClosures->valid() xor $taggedAs->valid())
+            && !($injects->valid() && $asClosures->valid() && $taggedAs->valid())) {
+            if ($injects->valid()) {
+                foreach ($injects as $inject) {
+                    yield $inject->getIdentifier()
+                        ? $this->getContainer()->get($inject->getIdentifier())
+                        : $this->getContainer()->get($parameter->getName());
+                }
+
+                return;
+            }
+
+            if ($asClosures->valid()) {
+                foreach ($asClosures as $asClosure) {
+                    yield $this->resolveInputArgument(
+                        $parameter,
+                        new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
+                    );
+                }
+
+                return;
+            }
+
+            foreach ($taggedAs as $tagged) {
+                yield $this->resolveInputArgument(
+                    $parameter,
+                    new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy())
+                );
             }
 
             return;
         }
 
-        foreach ($asClosures as $asClosure) {
-            yield $this->resolveInputArgument(
-                $parameter,
-                new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
-            );
-        }
+        throw new AutowireAttributeException(
+            \sprintf(
+                'Only one of the attributes #[%s], #[%s] or #[%s] may be declared.',
+                Inject::class,
+                ProxyClosure::class,
+                TaggedAs::class
+            )
+        );
     }
 
     private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
@@ -249,8 +290,9 @@ trait ParametersResolverTrait
                 if (\is_string($name) && !\in_array($name, $parameters, true)) {
                     throw new AutowireAttributeException(
                         \sprintf(
-                            'Invalid input argument name "%s" at position #%d. Definition '.__CLASS__.' has arguments: "%s"',
+                            'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
                             $name,
+                            __CLASS__,
                             $argumentPosition,
                             \implode(', ', $parameters)
                         )

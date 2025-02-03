@@ -15,8 +15,6 @@ use Psr\Container\ContainerExceptionInterface;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
  *
  * @internal
  */

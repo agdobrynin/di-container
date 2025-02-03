@@ -15,8 +15,10 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -28,7 +30,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class DiContainer implements DiContainerInterface, DiContainerCallInterface
+class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     use AttributeReaderTrait {
         setContainer as private;
@@ -46,7 +48,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
     protected array $definitions = [];
 
     /**
-     * @var array<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface>
+     * @var array<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
      */
     protected array $diResolvedDefinition = [];
 
@@ -108,7 +110,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         $this->validateIdentifier($id);
 
         if (\array_key_exists($id, $this->definitions)) {
-            throw new ContainerAlreadyRegisteredException("Definition identifier [{$id}] already registered in container.");
+            throw new ContainerAlreadyRegisteredException(
+                \sprintf('Definition identifier [%s] already registered in container.', $id)
+            );
         }
 
         $this->definitions[$id] = $definition;
@@ -122,7 +126,6 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             return (new DiDefinitionCallable($definition))
                 ->bindArguments(...$arguments)
                 ->setContainer($this)
-                ->setUseAttribute($this->config?->isUseAttribute())
                 ->invoke()
             ;
         } catch (AutowireExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
@@ -130,9 +133,23 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         }
     }
 
-    public function getContainer(): ContainerInterface
+    public function getContainer(): DiContainerInterface
     {
         return $this; // @codeCoverageIgnore
+    }
+
+    public function getDefinitions(): iterable
+    {
+        foreach ($this->definitions as $id => $definition) {
+            if ($definition instanceof DiDefinitionInterface) {
+                yield $id => $definition;
+            }
+        }
+    }
+
+    public function getConfig(): ?DiContainerConfigInterface
+    {
+        return $this->config;
     }
 
     /**
@@ -148,7 +165,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
             }
 
             if (!$this->has($id)) {
-                throw new NotFoundException("Unresolvable dependency [{$id}].");
+                throw new NotFoundException(\sprintf('Unresolvable dependency [%s].', $id));
             }
 
             $this->checkCyclicalDependencyCall($id);
@@ -158,11 +175,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
 
             if ($diDefinition instanceof DiDefinitionInvokableInterface) {
                 // Configure definition.
-                $diDefinition->setContainer($this)
-                    ->setUseAttribute($this->config?->isUseAttribute())
-                ;
-
-                $object = ($o = $diDefinition->invoke()) instanceof DiFactoryInterface
+                $object = ($o = $diDefinition->setContainer($this)->invoke()) instanceof DiFactoryInterface
                     ? $o($this)
                     : $o;
 
@@ -171,6 +184,12 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                 return $isSingleton
                     ? $this->resolved[$id] = $object
                     : $object;
+            }
+
+            if ($diDefinition instanceof DiDefinitionTaggedAsInterface) {
+                return $diDefinition->setContainer($this)
+                    ->getServicesTaggedAs()
+                ;
             }
 
             return $this->resolved[$id] = $diDefinition->getDefinition();
@@ -187,7 +206,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionInvokableInterface
+    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface
     {
         if (!isset($this->diResolvedDefinition[$id])) {
             $hasDefinition = \array_key_exists($id, $this->definitions);
@@ -209,7 +228,7 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
                         }
                     }
 
-                    throw new NotFoundException('Definition not found for identifier '.$id);
+                    throw new NotFoundException(\sprintf('Definition not found for identifier %s', $id));
                 }
 
                 if ($this->config?->isUseAttribute()
@@ -260,7 +279,9 @@ class DiContainer implements DiContainerInterface, DiContainerCallInterface
         if (\array_key_exists($id, $this->resolvingDependencies)) {
             $callPath = \implode(' -> ', \array_keys($this->resolvingDependencies)).' -> '.$id;
 
-            throw new CallCircularDependencyException('Trying call cyclical dependency. Call dependencies: '.$callPath);
+            throw new CallCircularDependencyException(
+                \sprintf('Trying call cyclical dependency. Call dependencies: %s', $callPath)
+            );
         }
     }
 }

@@ -15,6 +15,7 @@ use Tests\DiContainerCall\CircularReference\Fixtures\ThirdClass;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diTaggedAs;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -24,10 +25,10 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::isUseAttribute
- * @covers \Kaspi\DiContainer\Traits\UseAttributeTrait::setUseAttribute
  *
  * @internal
  */
@@ -112,6 +113,30 @@ class MainTest extends TestCase
         $container->call(
             [ClassWithMethod::class, 'method'],
             ['service' => diAutowire(ThirdClass::class)]
+        );
+    }
+
+    public function testCircularInMethodByTaggedAsWithoutAttribute(): void
+    {
+        $definitions = [
+            diAutowire(FirstClass::class),
+            diAutowire(SecondClass::class),
+            diAutowire(ThirdClass::class)
+                ->bindTag('tag-one'),
+            diAutowire(ClassWithMethod::class),
+        ];
+
+        $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
+        $container = new DiContainer($definitions, $config);
+
+        $this->expectException(CallCircularDependencyException::class);
+        $this->expectExceptionMessageMatches(
+            '/cyclical dependency.+ThirdClass.+FirstClass.+SecondClass.+ThirdClass/'
+        );
+
+        $container->call(
+            [ClassWithMethod::class, 'method'],
+            ['service' => diTaggedAs('tag-one', false)]
         );
     }
 }

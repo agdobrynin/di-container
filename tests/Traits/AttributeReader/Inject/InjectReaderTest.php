@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\Inject;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\PsrContainerTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getInjectAttribute
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterTypeByReflection
- * @covers \Kaspi\DiContainer\Traits\PsrContainerTrait
+ * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
+ * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
+ * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */
@@ -24,7 +25,7 @@ class InjectReaderTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use AttributeReaderTrait;
-    use PsrContainerTrait; // 🧨 need for abstract method getContainer in AttributeReaderTrait.
+    use DiContainerTrait; // 🧨 need for abstract method getContainer in AttributeReaderTrait.
 
     public function testNoneInject(): void
     {
@@ -117,7 +118,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('has')->with(SuperClass::class)
             ->willReturn(true)

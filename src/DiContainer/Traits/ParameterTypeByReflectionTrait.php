@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Psr\Container\ContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 trait ParameterTypeByReflectionTrait
 {
-    use PsrContainerTrait;
+    use DiContainerTrait;
 
-    abstract public function getContainer(): ContainerInterface;
+    abstract public function getContainer(): DiContainerInterface;
 
-    protected function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
+    private function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
     {
         $reflectionType = $reflectionParameter->getType();
 

@@ -8,20 +8,22 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 
 trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
-    protected function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
+    private function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
         return ($attribute = $reflectionClass->getAttributes(DiFactory::class)[0] ?? null)
             ? $attribute->newInstance()
             : null;
     }
 
-    protected function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
+    private function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
         return ($attribute = $reflectionClass->getAttributes(Service::class)[0] ?? null)
             ? $attribute->newInstance()
@@ -31,7 +33,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<Inject>
      */
-    protected function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(Inject::class);
 
@@ -39,11 +41,7 @@ trait AttributeReaderTrait
             return;
         }
 
-        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowireAttributeException(
-                'The attribute #['.Inject::class.'] can only be applied once per non-variadic parameter.'
-            );
-        }
+        $this->checkVariadic($reflectionParameter, \count($attributes), Inject::class);
 
         foreach ($attributes as $attribute) {
             /** @var Inject $inject */
@@ -61,7 +59,7 @@ trait AttributeReaderTrait
     /**
      * @return \Generator<ProxyClosure>
      */
-    protected function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
         $attributes = $reflectionParameter->getAttributes(ProxyClosure::class);
 
@@ -69,14 +67,53 @@ trait AttributeReaderTrait
             return;
         }
 
-        if (!$reflectionParameter->isVariadic() && \count($attributes) > 1) {
-            throw new AutowireAttributeException(
-                'The attribute #['.ProxyClosure::class.'] can only be applied once per non-variadic parameter.'
-            );
+        $this->checkVariadic($reflectionParameter, \count($attributes), ProxyClosure::class);
+
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
+        }
+    }
+
+    /**
+     * @return \Generator<TaggedAs>
+     */
+    private function getTaggedAsAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    {
+        $attributes = $reflectionParameter->getAttributes(TaggedAs::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
+        $this->checkVariadic($reflectionParameter, \count($attributes), TaggedAs::class);
+
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
+        }
+    }
+
+    /**
+     * @return \Generator<Tag>
+     */
+    private function getTagAttribute(\ReflectionClass $reflectionClass): \Generator
+    {
+        $attributes = $reflectionClass->getAttributes(Tag::class);
+
+        if ([] === $attributes) {
+            return;
         }
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
+        }
+    }
+
+    private function checkVariadic(\ReflectionParameter $reflectionParameter, int $countAttributes, string $attribute): void
+    {
+        if ($countAttributes > 1 && !$reflectionParameter->isVariadic()) {
+            throw new AutowireAttributeException(
+                \sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
+            );
         }
     }
 }
