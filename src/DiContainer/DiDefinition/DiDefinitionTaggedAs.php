@@ -117,15 +117,24 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     private function getContainerIdentifiersOfTaggedServiceByInterface(): \Generator
     {
+        $taggedServices = new \SplPriorityQueue();
+        $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
+
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
                 if ($definition instanceof DiDefinitionAutowire
                     && $definition->getDefinition()->implementsInterface($this->tag)) {
-                    yield $containerIdentifier;
+                    $definition->setContainer($this->getContainer());
+                    // 🚩 The tag with the highest number is at the beginning of the list.
+                    $taggedServices->insert($containerIdentifier, $definition->getOptionPriority($this->tag));
                 }
             } catch (AutowireExceptionInterface $e) {
                 throw new ContainerException(message: $e->getMessage(), previous: $e);
             }
+        }
+
+        foreach ($taggedServices as $containerIdentifier) {
+            yield $containerIdentifier;
         }
     }
 }
