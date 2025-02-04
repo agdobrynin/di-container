@@ -47,4 +47,19 @@ class TagTest extends TestCase
 
         $this->assertEquals(['priority' => 100, 'meta-data' => ['foo' => 'bar']], $tag->getOptions());
     }
+
+    public function testConstructorParamsOverrideOptionPriorityAndDefaultPriorityMethod(): void
+    {
+        $tag = new Tag(
+            'tags.handler-one',
+            ['priority' => 100, 'defaultPriorityMethod' => ['foo' => 'bar']],
+            1000,
+            'getPriority'
+        );
+
+        $this->assertEquals([
+            'priority' => 1000,
+            'defaultPriorityMethod' => 'getPriority',
+        ], $tag->getOptions());
+    }
 }
