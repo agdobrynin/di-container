@@ -100,7 +100,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
 
             if ($definition->hasTag($this->tag)) {
-                // 🚩 Tag with higher number in 'priority' key being early in list.
+                // 🚩 The tag with the highest number is at the beginning of the list.
                 $taggedServices->insert($containerIdentifier, $definition->getOptionPriority($this->tag));
             }
         }

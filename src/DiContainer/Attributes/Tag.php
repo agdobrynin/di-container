@@ -10,14 +10,12 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
 final class Tag implements DiAttributeInterface
 {
-    private array $normalizedOptions;
-
     /**
      * @param non-empty-string $name tag name
      */
     public function __construct(
         private string $name,
-        private array $options = ['priority' => 0],
+        private array $options = [],
         private ?int $priority = null,
         private ?string $priorityMethod = null
     ) {
@@ -31,20 +29,18 @@ final class Tag implements DiAttributeInterface
         return $this->name;
     }
 
+    public function getPriority(): ?int
+    {
+        return $this->priority;
+    }
+
+    public function getPriorityMethod(): ?string
+    {
+        return $this->priorityMethod;
+    }
+
     public function getOptions(): array
     {
-        if (!isset($this->normalizedOptions)) {
-            $this->normalizedOptions = $this->options;
-
-            if (null !== $this->priority) {
-                $this->normalizedOptions['priority'] = $this->priority;
-            }
-
-            if (null !== $this->priorityMethod) {
-                $this->normalizedOptions['priorityMethod'] = $this->priorityMethod;
-            }
-        }
-
-        return $this->normalizedOptions;
+        return $this->options;
     }
 }

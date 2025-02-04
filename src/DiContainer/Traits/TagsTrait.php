@@ -17,7 +17,7 @@ trait TagsTrait
      *
      * @return $this
      */
-    public function bindTag(string $name, array $options = ['priority' => 0], ?int $priority = null, ?string $priorityMethod = null): static
+    public function bindTag(string $name, array $options = [], ?int $priority = null, ?string $priorityMethod = null): static
     {
         $this->tags[$name] = $options;
 

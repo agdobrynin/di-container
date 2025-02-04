@@ -25,21 +25,22 @@ class TagTest extends TestCase
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
-            ->bindTag('tags.handler-one')
+            ->bindTag('tags.handler-one', priority: 50)
             ->bindTag('tags.handler-two', ['priority' => 1000, 'exclude.compile' => true])
             ->setContainer($mockContainer)
         ;
 
         $this->assertEquals(
             [
-                'tags.handler-one' => ['priority' => 0],
+                'tags.handler-one' => ['priority' => 50],
                 'tags.handler-two' => ['priority' => 1000, 'exclude.compile' => true],
             ],
             $def->getTags()
         );
 
         $this->assertTrue($def->hasTag('tags.handler-one'));
-        $this->assertEquals(['priority' => 0], $def->getTag('tags.handler-one'));
+        $this->assertEquals(['priority' => 50], $def->getTag('tags.handler-one'));
+        $this->assertEquals(50, $def->getOptionPriority('tags.handler-one'));
         $this->assertTrue($def->hasTag('tags.handler-two'));
         $this->assertEquals(['priority' => 1000, 'exclude.compile' => true], $def->getTag('tags.handler-two'));
         $this->assertEquals(1000, $def->getOptionPriority('tags.handler-two'));
@@ -56,9 +57,9 @@ class TagTest extends TestCase
         $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
-        $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.handlers.magic'));
-        $this->assertEquals(['tags.handlers.magic' => ['priority' => 0]], $def->getTags());
+        $this->assertEquals([], $def->getTag('tags.handlers.magic'));
+        $this->assertNull($def->getOptionPriority('tags.handlers.magic'));
+        $this->assertEquals(['tags.handlers.magic' => []], $def->getTags());
     }
 
     public function testTagsOverrideTagByPhpAttribute(): void
@@ -74,9 +75,9 @@ class TagTest extends TestCase
         $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
-        $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.handlers.magic'));
-        $this->assertEquals(['tags.handlers.magic' => ['priority' => 0]], $def->getTags());
+        $this->assertEquals([], $def->getTag('tags.handlers.magic'));
+        $this->assertNull($def->getOptionPriority('tags.handlers.magic'));
+        $this->assertEquals(['tags.handlers.magic' => []], $def->getTags());
     }
 
     public function testTagsByPhpAttributes(): void
@@ -87,7 +88,7 @@ class TagTest extends TestCase
         );
 
         $def = (new DiDefinitionAutowire(TaggedClassBindTagTwo::class))
-            ->bindTag('tags.security', [])
+            ->bindTag('tags.security')
         ;
         $def->setContainer($mockContainer);
 

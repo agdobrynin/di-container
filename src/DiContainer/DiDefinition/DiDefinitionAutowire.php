@@ -151,7 +151,12 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
                 $this->tagAttributes[] = $tagAttribute;
                 // 🚩 Php-attribute override existing tag defined by <bindTag> (see documentation.)
-                $this->bindTag($tagAttribute->getIdentifier(), $tagAttribute->getOptions());
+                $this->bindTag(
+                    $tagAttribute->getIdentifier(),
+                    $tagAttribute->getOptions(),
+                    $tagAttribute->getPriority(),
+                    $tagAttribute->getPriorityMethod()
+                );
             }
         }
     }

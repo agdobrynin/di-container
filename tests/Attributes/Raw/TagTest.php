@@ -38,7 +38,9 @@ class TagTest extends TestCase
         $tag = new Tag('tags.handler-one');
 
         $this->assertEquals('tags.handler-one', $tag->getIdentifier());
-        $this->assertEquals(['priority' => 0], $tag->getOptions());
+        $this->assertEquals([], $tag->getOptions());
+        $this->assertNull($tag->getPriority());
+        $this->assertNull($tag->getPriorityMethod());
     }
 
     public function testTagOptions(): void
@@ -58,8 +60,11 @@ class TagTest extends TestCase
         );
 
         $this->assertEquals([
-            'priority' => 1000,
-            'priorityMethod' => 'getPriority',
+            'priority' => 100,
+            'priorityMethod' => ['foo' => 'bar'],
         ], $tag->getOptions());
+
+        $this->assertEquals(1000, $tag->getPriority());
+        $this->assertEquals('getPriority', $tag->getPriorityMethod());
     }
 }
