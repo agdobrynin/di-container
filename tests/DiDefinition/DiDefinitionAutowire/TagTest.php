@@ -87,13 +87,13 @@ class TagTest extends TestCase
         );
 
         $def = (new DiDefinitionAutowire(TaggedClassBindTagTwo::class))
-            ->bindTag('tags.security')
+            ->bindTag('tags.security', [])
         ;
         $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.security'));
-        $this->assertEquals(['priority' => 0], $def->getTag('tags.security'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.security'));
+        $this->assertEquals([], $def->getTag('tags.security'));
+        $this->assertNull($def->getOptionPriority('tags.security'));
 
         $this->assertTrue($def->hasTag('tags.handlers.one'));
         $this->assertEquals(['priority' => 100, 'validated' => true], $def->getTag('tags.handlers.one'));
@@ -101,11 +101,11 @@ class TagTest extends TestCase
 
         $this->assertTrue($def->hasTag('tags.validator.two'));
         $this->assertEquals(['login' => 'required|min:5'], $def->getTag('tags.validator.two'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.validator.two'));
+        $this->assertNull($def->getOptionPriority('tags.validator.two'));
 
         $this->assertEquals(
             [
-                'tags.security' => ['priority' => 0],
+                'tags.security' => [],
                 'tags.handlers.one' => ['priority' => 100, 'validated' => true],
                 'tags.validator.two' => ['login' => 'required|min:5'],
             ],
@@ -126,7 +126,12 @@ class TagTest extends TestCase
         $def->setContainer($mockContainer);
 
         $this->assertTrue($def->hasTag('tags.security'));
+        $this->assertEquals(0, $def->getOptionPriority('tags.security'));
+
         $this->assertTrue($def->hasTag('tags.handlers.one'));
+        $this->assertEquals(100, $def->getOptionPriority('tags.handlers.one'));
+
         $this->assertTrue($def->hasTag('tags.validator.two'));
+        $this->assertNull($def->getOptionPriority('tags.validator.two'));
     }
 }

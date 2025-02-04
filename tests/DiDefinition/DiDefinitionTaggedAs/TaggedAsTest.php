@@ -70,6 +70,6 @@ class TaggedAsTest extends TestCase
         $this->assertEquals(100, $taggedAs->getOptionPriority('services.one'));
 
         $this->assertNull($taggedAs->getTag('tags.non-existent-tag'));
-        $this->assertEquals(0, $taggedAs->getOptionPriority('tags.non-existent-tag'));
+        $this->assertNull($taggedAs->getOptionPriority('tags.non-existent-tag'));
     }
 }

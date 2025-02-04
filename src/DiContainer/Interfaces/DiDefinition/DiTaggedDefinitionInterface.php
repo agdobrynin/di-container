@@ -29,8 +29,9 @@ interface DiTaggedDefinitionInterface
 
     /**
      * Get priority option for tag.
+     * If the priority is not defined, the method must return null.
      *
      * @param non-empty-string $name
      */
-    public function getOptionPriority(string $name): int;
+    public function getOptionPriority(string $name): ?int;
 }

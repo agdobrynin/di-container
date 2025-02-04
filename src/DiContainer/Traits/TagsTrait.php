@@ -41,8 +41,10 @@ trait TagsTrait
         return [] !== $this->tags && isset($this->tags[$name]);
     }
 
-    public function getOptionPriority(string $name): int
+    public function getOptionPriority(string $name): ?int
     {
-        return (int) ($this->getTag($name)['priority'] ?? 0);
+        return \array_key_exists('priority', $this->getTag($name) ?? [])
+            ? (int) $this->getTag($name)['priority'] // @phan-suppress-current-line PhanTypeArraySuspiciousNullable
+            : null;
     }
 }
