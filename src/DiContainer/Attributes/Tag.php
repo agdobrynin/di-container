@@ -10,11 +10,17 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
 final class Tag implements DiAttributeInterface
 {
+    private array $normalizedOptions;
+
     /**
      * @param non-empty-string $name tag name
      */
-    public function __construct(private string $name, private array $options = ['priority' => 0])
-    {
+    public function __construct(
+        private string $name,
+        private array $options = ['priority' => 0],
+        private ?int $priority = null,
+        private ?string $defaultPriorityMethod = null
+    ) {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
@@ -27,6 +33,18 @@ final class Tag implements DiAttributeInterface
 
     public function getOptions(): array
     {
-        return $this->options;
+        if (!isset($this->normalizedOptions)) {
+            $this->normalizedOptions = $this->options;
+
+            if (null !== $this->priority) {
+                $this->normalizedOptions['priority'] = $this->priority;
+            }
+
+            if (null !== $this->defaultPriorityMethod) {
+                $this->normalizedOptions['defaultPriorityMethod'] = $this->defaultPriorityMethod;
+            }
+        }
+
+        return $this->normalizedOptions;
     }
 }
