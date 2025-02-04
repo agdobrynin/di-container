@@ -12,5 +12,5 @@ interface DiDefinitionTagArgumentInterface
      * @param non-empty-string               $name
      * @param array<non-empty-string, mixed> $options
      */
-    public function bindTag(string $name, array $options): static;
+    public function bindTag(string $name, array $options, ?int $priority, ?string $defaultPriorityMethod): static;
 }

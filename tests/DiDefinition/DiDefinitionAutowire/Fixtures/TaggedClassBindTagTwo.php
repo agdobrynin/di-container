@@ -6,6 +6,12 @@ namespace Tests\DiDefinition\DiDefinitionAutowire\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Tag;
 
-#[Tag('tags.handlers.one', ['priority' => 100, 'validated' => true])]
+#[Tag('tags.handlers.one', options: ['validated' => true], defaultPriorityMethod: 'tagPriority')]
 #[Tag('tags.validator.two', ['login' => 'required|min:5'])]
-class TaggedClassBindTagTwo {}
+class TaggedClassBindTagTwo
+{
+    public static function tagPriority(): int
+    {
+        return 100;
+    }
+}

@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
@@ -138,6 +139,10 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return $this->internalHasTag($name);
     }
 
+    /**
+     * @throws AutowireExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
+     */
     private function attemptsReadTagAttribute(): void
     {
         if (!isset($this->tagAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {

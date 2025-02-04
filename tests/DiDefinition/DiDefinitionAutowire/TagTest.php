@@ -96,7 +96,7 @@ class TagTest extends TestCase
         $this->assertNull($def->getOptionPriority('tags.security'));
 
         $this->assertTrue($def->hasTag('tags.handlers.one'));
-        $this->assertEquals(['priority' => 100, 'validated' => true], $def->getTag('tags.handlers.one'));
+        $this->assertEquals(['defaultPriorityMethod' => 'tagPriority', 'validated' => true], $def->getTag('tags.handlers.one'));
         $this->assertEquals(100, $def->getOptionPriority('tags.handlers.one'));
 
         $this->assertTrue($def->hasTag('tags.validator.two'));
@@ -106,7 +106,7 @@ class TagTest extends TestCase
         $this->assertEquals(
             [
                 'tags.security' => [],
-                'tags.handlers.one' => ['priority' => 100, 'validated' => true],
+                'tags.handlers.one' => ['defaultPriorityMethod' => 'tagPriority', 'validated' => true],
                 'tags.validator.two' => ['login' => 'required|min:5'],
             ],
             $def->getTags()
