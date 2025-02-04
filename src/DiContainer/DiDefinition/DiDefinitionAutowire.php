@@ -56,6 +56,8 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
      */
     private array $tagAttributes;
 
+    private ?string $priorityTaggedMethod = null;
+
     public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
         if ($this->definition instanceof \ReflectionClass) {
@@ -166,5 +168,10 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         }
 
         return $this->reflectionConstructorParams = $reflectionClass->getConstructor()?->getParameters() ?? [];
+    }
+
+    public function priorityTaggedMethod(?string $method): static
+    {
+        $this->priorityTaggedMethod = $method;
     }
 }

@@ -42,7 +42,7 @@ class TagTest extends TestCase
         $this->assertEquals(['priority' => 0], $def->getTag('tags.handler-one'));
         $this->assertTrue($def->hasTag('tags.handler-two'));
         $this->assertEquals(['priority' => 1000, 'exclude.compile' => true], $def->getTag('tags.handler-two'));
-        $this->assertEquals(1000, $def->getOptionPriority('tags.handler-two'));
+        $this->assertEquals(1000, $def->getPriority('tags.handler-two'));
     }
 
     public function testTagsByPhpAttribute(): void
@@ -57,7 +57,7 @@ class TagTest extends TestCase
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.handlers.magic'));
+        $this->assertEquals(0, $def->getPriority('tags.handlers.magic'));
         $this->assertEquals(['tags.handlers.magic' => ['priority' => 0]], $def->getTags());
     }
 
@@ -75,7 +75,7 @@ class TagTest extends TestCase
 
         $this->assertTrue($def->hasTag('tags.handlers.magic'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.handlers.magic'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.handlers.magic'));
+        $this->assertEquals(0, $def->getPriority('tags.handlers.magic'));
         $this->assertEquals(['tags.handlers.magic' => ['priority' => 0]], $def->getTags());
     }
 
@@ -93,15 +93,15 @@ class TagTest extends TestCase
 
         $this->assertTrue($def->hasTag('tags.security'));
         $this->assertEquals(['priority' => 0], $def->getTag('tags.security'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.security'));
+        $this->assertEquals(0, $def->getPriority('tags.security'));
 
         $this->assertTrue($def->hasTag('tags.handlers.one'));
         $this->assertEquals(['priority' => 100, 'validated' => true], $def->getTag('tags.handlers.one'));
-        $this->assertEquals(100, $def->getOptionPriority('tags.handlers.one'));
+        $this->assertEquals(100, $def->getPriority('tags.handlers.one'));
 
         $this->assertTrue($def->hasTag('tags.validator.two'));
         $this->assertEquals(['login' => 'required|min:5'], $def->getTag('tags.validator.two'));
-        $this->assertEquals(0, $def->getOptionPriority('tags.validator.two'));
+        $this->assertEquals(0, $def->getPriority('tags.validator.two'));
 
         $this->assertEquals(
             [
