@@ -26,13 +26,13 @@ class BindTagTest extends TestCase
     {
         $this->bindTag(
             'tag1',
-            options: ['priority' => 10, 'defaultPriorityMethod' => 'myMethod'],
+            options: ['priority' => 10, 'priorityMethod' => 'myMethod'],
             priority: 1000,
-            defaultPriorityMethod: 'getPriority'
+            priorityMethod: 'getPriority'
         );
 
         $this->assertEquals(
-            ['priority' => 1000, 'defaultPriorityMethod' => 'getPriority'],
+            ['priority' => 1000, 'priorityMethod' => 'getPriority'],
             $this->getTag('tag1')
         );
 
@@ -52,7 +52,7 @@ class BindTagTest extends TestCase
 
         $definition = (new DiDefinitionAutowire(new \ReflectionClass($class)))
             ->setContainer($mockContainer)
-            ->bindTag('tag1', priority: 1000, defaultPriorityMethod: 'getPriority')
+            ->bindTag('tag1', priority: 1000, priorityMethod: 'getPriority')
         ;
 
         $this->assertEquals(50, $definition->getOptionPriority('tag1'));
@@ -137,13 +137,13 @@ class BindTagTest extends TestCase
     /**
      * @dataProvider dataProvidePriorityByMethod
      */
-    public function testGetPriorityByMethodExceptionEmptyMethodName(object $class, string $defaultPriorityMethod, string $exceptionMessage): void
+    public function testGetPriorityByMethodExceptionEmptyMethodName(object $class, string $priorityMethod, string $exceptionMessage): void
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
 
         $definition = (new DiDefinitionAutowire(new \ReflectionClass($class)))
             ->setContainer($mockContainer)
-            ->bindTag('tag1', defaultPriorityMethod: $defaultPriorityMethod)
+            ->bindTag('tag1', priorityMethod: $priorityMethod)
         ;
 
         $this->expectException(AutowireExceptionInterface::class);

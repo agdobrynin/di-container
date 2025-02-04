@@ -19,7 +19,7 @@ final class Tag implements DiAttributeInterface
         private string $name,
         private array $options = ['priority' => 0],
         private ?int $priority = null,
-        private ?string $defaultPriorityMethod = null
+        private ?string $priorityMethod = null
     ) {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
@@ -40,8 +40,8 @@ final class Tag implements DiAttributeInterface
                 $this->normalizedOptions['priority'] = $this->priority;
             }
 
-            if (null !== $this->defaultPriorityMethod) {
-                $this->normalizedOptions['defaultPriorityMethod'] = $this->defaultPriorityMethod;
+            if (null !== $this->priorityMethod) {
+                $this->normalizedOptions['priorityMethod'] = $this->priorityMethod;
             }
         }
 

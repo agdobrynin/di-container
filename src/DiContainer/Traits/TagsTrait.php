@@ -17,7 +17,7 @@ trait TagsTrait
      *
      * @return $this
      */
-    public function bindTag(string $name, array $options = ['priority' => 0], ?int $priority = null, ?string $defaultPriorityMethod = null): static
+    public function bindTag(string $name, array $options = ['priority' => 0], ?int $priority = null, ?string $priorityMethod = null): static
     {
         $this->tags[$name] = $options;
 
@@ -25,8 +25,8 @@ trait TagsTrait
             $this->tags[$name]['priority'] = $priority;
         }
 
-        if (null !== $defaultPriorityMethod) {
-            $this->tags[$name]['defaultPriorityMethod'] = $defaultPriorityMethod;
+        if (null !== $priorityMethod) {
+            $this->tags[$name]['priorityMethod'] = $priorityMethod;
         }
 
         return $this;
@@ -60,32 +60,32 @@ trait TagsTrait
             return null;
         }
 
-        if (DiDefinitionAutowire::class === static::class && \array_key_exists('defaultPriorityMethod', $options)) {
-            $defaultPriorityMethod = $options['defaultPriorityMethod'];
+        if (DiDefinitionAutowire::class === static::class && \array_key_exists('priorityMethod', $options)) {
+            $priorityMethod = $options['priorityMethod'];
 
-            if ('' === \trim($defaultPriorityMethod)) {
-                throw new AutowireException('The option "defaultPriorityMethod" must be non-empty string');
+            if ('' === \trim($priorityMethod)) {
+                throw new AutowireException('The option "priorityMethod" must be non-empty string');
             }
 
             $reflectionClass = static::getDefinition(); // @phan-suppress-current-line PhanUndeclaredStaticMethod
 
-            if (!$reflectionClass->hasMethod($defaultPriorityMethod)) {
+            if (!$reflectionClass->hasMethod($priorityMethod)) {
                 throw new AutowireException(
-                    \sprintf('The options has "defaultPriorityMethod" but method "%s" does not exist', $defaultPriorityMethod)
+                    \sprintf('The options has "priorityMethod" but method "%s" does not exist', $priorityMethod)
                 );
             }
 
-            $method = $reflectionClass->getMethod($defaultPriorityMethod);
+            $method = $reflectionClass->getMethod($priorityMethod);
 
             if (!$method->isPublic()) {
                 throw new AutowireException(
-                    \sprintf('The options has "defaultPriorityMethod" but method "%s" must be declared as public', $defaultPriorityMethod)
+                    \sprintf('The options has "priorityMethod" but method "%s" must be declared as public', $priorityMethod)
                 );
             }
 
             if (!$method->isStatic()) {
                 throw new AutowireException(
-                    \sprintf('The options has "defaultPriorityMethod" but method "%s" must be declared as static', $defaultPriorityMethod)
+                    \sprintf('The options has "priorityMethod" but method "%s" must be declared as static', $priorityMethod)
                 );
             }
 
