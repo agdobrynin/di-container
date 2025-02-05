@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\TaggedDefaultPriorityMethod\Fixtures;
 
-use Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod;
+use Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod;
 
-#[TaggedDefaultPriorityMethod(defaultPriorityMethod: '')]
+#[TagDefaultPriorityMethod(defaultPriorityMethod: '')]
 final class TaggedClassWithEmptyDef {}

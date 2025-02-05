@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\TaggedDefaultPriorityMethod;
 
-use Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod;
+use Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
@@ -13,7 +13,7 @@ use Tests\Traits\AttributeReader\TaggedDefaultPriorityMethod\Fixtures\TaggedClas
 use Tests\Traits\AttributeReader\TaggedDefaultPriorityMethod\Fixtures\TaggedClassWithEmptyDef;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod
+ * @covers \Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  *
@@ -27,7 +27,7 @@ class TaggedDefaultPriorityMethodTest extends TestCase
     {
         $this->reader = new class {
             use AttributeReaderTrait {
-                getTagDefaultPriorityTaggedMethod as public;
+                getTagDefaultPriorityMethod as public;
             }
             use DiContainerTrait; // abstract method cover.
         };
@@ -35,22 +35,22 @@ class TaggedDefaultPriorityMethodTest extends TestCase
 
     public function testReadAttribute(): void
     {
-        $res = $this->reader->getTagDefaultPriorityTaggedMethod(new \ReflectionClass(TaggedClass::class));
+        $res = $this->reader->getTagDefaultPriorityMethod(new \ReflectionClass(TaggedClass::class));
 
-        $this->assertInstanceOf(TaggedDefaultPriorityMethod::class, $res);
+        $this->assertInstanceOf(TagDefaultPriorityMethod::class, $res);
         $this->assertEquals('getPriority', $res->getIdentifier());
     }
 
     public function testReadAttributeWithEmptyIdentifier(): void
     {
-        $res = $this->reader->getTagDefaultPriorityTaggedMethod(new \ReflectionClass(TaggedClassWithEmptyDef::class));
+        $res = $this->reader->getTagDefaultPriorityMethod(new \ReflectionClass(TaggedClassWithEmptyDef::class));
 
-        $this->assertInstanceOf(TaggedDefaultPriorityMethod::class, $res);
+        $this->assertInstanceOf(TagDefaultPriorityMethod::class, $res);
         $this->assertEquals('', $res->getIdentifier());
     }
 
     public function testReadAttributeEmpty(): void
     {
-        $this->assertNull($this->reader->getTagDefaultPriorityTaggedMethod(new \ReflectionClass(EmptyClass::class)));
+        $this->assertNull($this->reader->getTagDefaultPriorityMethod(new \ReflectionClass(EmptyClass::class)));
     }
 }

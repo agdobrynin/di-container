@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\TaggedDefaultPriorityMethod\Fixtures;
 
-use Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod;
+use Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod;
 
-#[TaggedDefaultPriorityMethod(defaultPriorityMethod: 'getPriority')]
+#[TagDefaultPriorityMethod(defaultPriorityMethod: 'getPriority')]
 final class TaggedClass
 {
     public static function getPriority(): string

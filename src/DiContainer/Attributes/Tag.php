@@ -13,7 +13,7 @@ final class Tag implements DiAttributeInterface
     /**
      * @param non-empty-string $name tag name
      */
-    public function __construct(private string $name, private array $options = [], private null|int|string $priority = null, private ?string $priorityTaggedMethod = null)
+    public function __construct(private string $name, private array $options = [], private null|int|string $priority = null, private ?string $priorityTagMethod = null)
     {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
@@ -35,8 +35,8 @@ final class Tag implements DiAttributeInterface
         return $this->priority;
     }
 
-    public function getPriorityTaggedMethod(): ?string
+    public function getPriorityTagMethod(): ?string
     {
-        return $this->priorityTaggedMethod;
+        return $this->priorityTagMethod;
     }
 }

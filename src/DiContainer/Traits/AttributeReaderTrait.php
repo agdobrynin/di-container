@@ -9,8 +9,8 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod;
 use Kaspi\DiContainer\Attributes\TaggedAs;
-use Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 
 trait AttributeReaderTrait
@@ -109,9 +109,9 @@ trait AttributeReaderTrait
         }
     }
 
-    private function getTagDefaultPriorityTaggedMethod(\ReflectionClass $reflectionClass): ?TaggedDefaultPriorityMethod
+    private function getTagDefaultPriorityMethod(\ReflectionClass $reflectionClass): ?TagDefaultPriorityMethod
     {
-        return ($attribute = $reflectionClass->getAttributes(TaggedDefaultPriorityMethod::class)[0] ?? null)
+        return ($attribute = $reflectionClass->getAttributes(TagDefaultPriorityMethod::class)[0] ?? null)
             ? $attribute->newInstance()
             : null;
     }

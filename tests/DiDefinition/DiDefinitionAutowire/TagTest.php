@@ -25,21 +25,21 @@ class TagTest extends TestCase
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
-            ->bindTag('tags.handler-one', priorityTaggedMethod: 'getTaggedPriority')
+            ->bindTag('tags.handler-one', priorityTagMethod: 'getTagPriority')
             ->bindTag('tags.handler-two', ['exclude.compile' => true], priority: 1000)
             ->setContainer($mockContainer)
         ;
 
         $this->assertEquals(
             [
-                'tags.handler-one' => ['priorityTaggedMethod' => 'getTaggedPriority'],
+                'tags.handler-one' => ['priorityTagMethod' => 'getTagPriority'],
                 'tags.handler-two' => ['priority' => 1000, 'exclude.compile' => true],
             ],
             $def->getTags()
         );
 
         $this->assertTrue($def->hasTag('tags.handler-one'));
-        $this->assertEquals(['priorityTaggedMethod' => 'getTaggedPriority'], $def->getTag('tags.handler-one'));
+        $this->assertEquals(['priorityTagMethod' => 'getTagPriority'], $def->getTag('tags.handler-one'));
         $this->assertTrue($def->hasTag('tags.handler-two'));
         $this->assertEquals(['priority' => 1000, 'exclude.compile' => true], $def->getTag('tags.handler-two'));
         $this->assertEquals(1000, $def->geTagPriority('tags.handler-two'));

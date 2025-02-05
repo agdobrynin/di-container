@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Attributes\Raw;
 
-use Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod;
+use Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod
+ * @covers \Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod
  *
  * @internal
  */
@@ -26,6 +26,6 @@ class TaggedDefaultPriorityMethodTest extends TestCase
      */
     public function testTaggedDefaultPriorityMethod(string $methodName): void
     {
-        $this->assertEquals($methodName, (new TaggedDefaultPriorityMethod($methodName))->getIdentifier());
+        $this->assertEquals($methodName, (new TagDefaultPriorityMethod($methodName))->getIdentifier());
     }
 }
