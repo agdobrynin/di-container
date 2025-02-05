@@ -14,7 +14,7 @@ trait TagsTrait
      *
      * @return $this
      */
-    public function bindTag(string $name, array $options = [], ?int $priority = null): static
+    public function bindTag(string $name, array $options = [], null|int|string $priority = null): static
     {
         $this->tags[$name] = $options;
 
@@ -45,12 +45,12 @@ trait TagsTrait
         return [] !== $this->tags && isset($this->tags[$name]);
     }
 
-    public function geTagPriority(string $name): ?int
+    public function geTagPriority(string $name): null|int|string
     {
         $options = $this->getTag($name);
 
-        return $options && \array_key_exists('priority', $options) && !\is_null($priority = $options['priority'])
-            ? (int) $priority
+        return $options && \array_key_exists('priority', $options) && (\is_int($priority = $options['priority']) || \is_string($priority))
+            ? $priority
             : null;
     }
 }

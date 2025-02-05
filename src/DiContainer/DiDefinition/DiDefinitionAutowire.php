@@ -132,7 +132,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             : $this->reflectionClass->getName();
     }
 
-    public function bindTag(string $name, array $options = [], ?int $priority = null, ?string $priorityTaggedMethod = null): static
+    public function bindTag(string $name, array $options = [], null|int|string $priority = null, ?string $priorityTaggedMethod = null): static
     {
         if (null !== $priorityTaggedMethod) {
             $options['priorityTaggedMethod'] = $priorityTaggedMethod;
@@ -164,7 +164,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return $this->internalHasTag($name);
     }
 
-    public function geTagPriority(string $name): ?int
+    public function geTagPriority(string $name): null|int|string
     {
         if (null !== ($priority = $this->internalGeTagPriority($name))) {
             return $priority;

@@ -34,5 +34,5 @@ interface DiTaggedDefinitionInterface
      *
      * @param non-empty-string $name
      */
-    public function geTagPriority(string $name): ?int;
+    public function geTagPriority(string $name): null|int|string;
 }

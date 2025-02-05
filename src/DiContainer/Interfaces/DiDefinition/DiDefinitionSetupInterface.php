@@ -34,12 +34,12 @@ interface DiDefinitionSetupInterface extends DiDefinitionArgumentsInterface
      *
      * @param non-empty-string               $name                 tag name
      * @param array<non-empty-string, mixed> $options              tag's meta-data
-     * @param null|int                       $priority             priority for sorting tag collection
+     * @param null|int|string                $priority             priority for sorting tag collection
      * @param null|string                    $priorityTaggedMethod method return priority value
      *
      * @return $this
      */
-    public function bindTag(string $name, array $options, ?int $priority, ?string $priorityTaggedMethod = null): static;
+    public function bindTag(string $name, array $options, null|int|string $priority, ?string $priorityTaggedMethod = null): static;
 
     public function bindTaggedDefaultPriorityMethod(?string $priorityTaggedMethod): static;
 }

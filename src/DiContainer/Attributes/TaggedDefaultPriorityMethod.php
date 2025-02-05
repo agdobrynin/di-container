@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer\Attributes;
 
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
-#[\Attribute(\Attribute::TARGET_PARAMETER)]
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class TaggedDefaultPriorityMethod implements DiAttributeInterface
 {
     public function __construct(private string $defaultPriorityMethod) {}
