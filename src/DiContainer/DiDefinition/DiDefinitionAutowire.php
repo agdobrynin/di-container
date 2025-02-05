@@ -198,7 +198,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return null;
     }
 
-    private function invokePriorityMethod(string $priorityMethod, string $whereMethod): int
+    private function invokePriorityMethod(string $priorityMethod, string $whereMethod): null|int|string
     {
         if (!$this->getDefinition()->hasMethod($priorityMethod)) {
             throw new AutowireException(\sprintf('%s but method "%s" does not exist', $whereMethod, $priorityMethod));
@@ -214,7 +214,21 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             throw new AutowireException(\sprintf('%s but method "%s" must be declared as static', $whereMethod, $priorityMethod));
         }
 
-        return (int) $method->invoke(null);
+        $rt = $method->getReturnType();
+
+        $types = match (true) {
+            $rt instanceof \ReflectionNamedType => [$rt->getName()],
+            $rt instanceof \ReflectionUnionType => \array_map(static fn ($type) => $type->getName(), $rt->getTypes()),
+            default => null,
+        };
+
+        if (null === $types || \array_diff($types, ['string', 'int', 'null'])) {
+            throw new AutowireException(
+                \sprintf('%s method "%s" must return types string, int or null. Got return type: %s', $whereMethod, $priorityMethod, \implode(', ', $types))
+            );
+        }
+
+        return $method->invoke(null);
     }
 
     private function attemptsReadTagAttribute(): void
