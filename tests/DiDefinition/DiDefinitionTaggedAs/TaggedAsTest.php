@@ -65,11 +65,11 @@ class TaggedAsTest extends TestCase
         );
 
         $this->assertEquals(['priority' => 0], $taggedAs->getTag('tags.system.voters'));
-        $this->assertEquals(0, $taggedAs->getPriority('tags.system.voters'));
+        $this->assertEquals(0, $taggedAs->getOptionPriority('tags.system.voters'));
 
-        $this->assertEquals(100, $taggedAs->getPriority('services.one'));
+        $this->assertEquals(100, $taggedAs->getOptionPriority('services.one'));
 
         $this->assertNull($taggedAs->getTag('tags.non-existent-tag'));
-        $this->assertEquals(0, $taggedAs->getPriority('tags.non-existent-tag'));
+        $this->assertEquals(0, $taggedAs->getOptionPriority('tags.non-existent-tag'));
     }
 }

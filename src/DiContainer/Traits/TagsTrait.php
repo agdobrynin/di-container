@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-
 trait TagsTrait
 {
     private array $tags = [];
@@ -16,13 +14,9 @@ trait TagsTrait
      *
      * @return $this
      */
-    public function bindTag(string $name, array $options = [], ?int $priority = null): static
+    public function bindTag(string $name, array $options = ['priority' => 0]): static
     {
         $this->tags[$name] = $options;
-
-        if (null !== $priority) {
-            $this->tags[$name]['priority'] = $priority;
-        }
 
         return $this;
     }
@@ -47,22 +41,8 @@ trait TagsTrait
         return [] !== $this->tags && isset($this->tags[$name]);
     }
 
-    public function getPriority(string $name): ?int
+    public function getOptionPriority(string $name): int
     {
-        $options = $this->getTag($name);
-
-        if (empty($this->priorityTaggedMethod) || DiDefinitionAutowire::class !== static::class) {
-            return \array_key_exists('priority', $options)
-                ? (int) $options['priority']
-                : null;
-        }
-
-        /** @var \ReflectionClass $reflectionClass */
-        $reflectionClass = static::getDefinition(); // @phan-suppress-current-line
-        $callableMethod = $reflectionClass->getName().'::'.$this->priorityTaggedMethod;
-
-        return \is_callable($callableMethod)
-            ? (int) $callableMethod()
-            : null;
+        return (int) ($this->getTag($name)['priority'] ?? 0);
     }
 }

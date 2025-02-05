@@ -92,8 +92,8 @@ if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     /**
      * @phan-suppress PhanUnreferencedFunction
      */
-    function diTaggedAs(string $tag, bool $isLazy = true, ?string $defaultPriorityStaticMethod = null): DiDefinitionNoArgumentsInterface
+    function diTaggedAs(string $tag, bool $isLazy = true): DiDefinitionNoArgumentsInterface
     {
-        return new DiDefinitionTaggedAs($tag, $isLazy, $defaultPriorityStaticMethod);
+        return new DiDefinitionTaggedAs($tag, $isLazy);
     }
 } // @codeCoverageIgnore

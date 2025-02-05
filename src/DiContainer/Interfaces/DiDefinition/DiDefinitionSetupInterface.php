@@ -28,12 +28,4 @@ interface DiDefinitionSetupInterface extends DiDefinitionArgumentsInterface
      * @return $this
      */
     public function setup(string $method, mixed ...$argument): static;
-
-    /**
-     * Set default priority in tagged services.
-     * If priority not defined for tag, try getting priority through method.
-     *
-     * @return $this
-     */
-    public function priorityTaggedMethod(?string $method): static;
 }

@@ -32,5 +32,5 @@ interface DiTaggedDefinitionInterface
      *
      * @param non-empty-string $name
      */
-    public function getPriority(string $name): ?int;
+    public function getOptionPriority(string $name): int;
 }
