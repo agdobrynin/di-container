@@ -17,6 +17,8 @@ interface DiTaggedDefinitionInterface
      * Get tag options.
      *
      * @param non-empty-string $name
+     *
+     * @return null|array<non-empty-string, mixed>
      */
     public function getTag(string $name): ?array;
 
@@ -28,9 +30,9 @@ interface DiTaggedDefinitionInterface
     public function hasTag(string $name): bool;
 
     /**
-     * Get priority option for tag.
+     * Get priority for tag.
      *
      * @param non-empty-string $name
      */
-    public function getOptionPriority(string $name): int;
+    public function geTagPriority(string $name): ?int;
 }

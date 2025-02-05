@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\TaggedDefaultPriorityMethod;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 
 trait AttributeReaderTrait
@@ -106,6 +107,13 @@ trait AttributeReaderTrait
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
         }
+    }
+
+    private function getTagDefaultPriorityTaggedMethod(\ReflectionClass $reflectionClass): ?TaggedDefaultPriorityMethod
+    {
+        return ($attribute = $reflectionClass->getAttributes(TaggedDefaultPriorityMethod::class)[0] ?? null)
+            ? $attribute->newInstance()
+            : null;
     }
 
     private function checkVariadic(\ReflectionParameter $reflectionParameter, int $countAttributes, string $attribute): void

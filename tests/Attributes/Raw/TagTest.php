@@ -38,7 +38,7 @@ class TagTest extends TestCase
         $tag = new Tag('tags.handler-one');
 
         $this->assertEquals('tags.handler-one', $tag->getIdentifier());
-        $this->assertEquals(['priority' => 0], $tag->getOptions());
+        $this->assertEquals([], $tag->getOptions());
     }
 
     public function testTagOptions(): void

@@ -52,7 +52,7 @@ class TaggedAsTest extends TestCase
     {
         /** @var DiDefinitionValue $taggedAs */
         $taggedAs = diValue('services.one')
-            ->bindTag('tags.system.voters')
+            ->bindTag('tags.system.voters', priority: 0)
             ->bindTag('services.one', ['priority' => 100, 'meta-data' => ['1', '2']])
         ;
 
@@ -65,11 +65,11 @@ class TaggedAsTest extends TestCase
         );
 
         $this->assertEquals(['priority' => 0], $taggedAs->getTag('tags.system.voters'));
-        $this->assertEquals(0, $taggedAs->getOptionPriority('tags.system.voters'));
+        $this->assertEquals(0, $taggedAs->geTagPriority('tags.system.voters'));
 
-        $this->assertEquals(100, $taggedAs->getOptionPriority('services.one'));
+        $this->assertEquals(100, $taggedAs->geTagPriority('services.one'));
 
         $this->assertNull($taggedAs->getTag('tags.non-existent-tag'));
-        $this->assertEquals(0, $taggedAs->getOptionPriority('tags.non-existent-tag'));
+        $this->assertNull($taggedAs->geTagPriority('tags.non-existent-tag'));
     }
 }

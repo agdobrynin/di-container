@@ -28,4 +28,18 @@ interface DiDefinitionSetupInterface extends DiDefinitionArgumentsInterface
      * @return $this
      */
     public function setup(string $method, mixed ...$argument): static;
+
+    /**
+     * Bind tag for services with meta-data.
+     *
+     * @param non-empty-string               $name                 tag name
+     * @param array<non-empty-string, mixed> $options              tag's meta-data
+     * @param null|int                       $priority             priority for sorting tag collection
+     * @param null|string                    $priorityTaggedMethod method return priority value
+     *
+     * @return $this
+     */
+    public function bindTag(string $name, array $options, ?int $priority, ?string $priorityTaggedMethod = null): static;
+
+    public function bindTaggedDefaultPriorityMethod(?string $priorityTaggedMethod): static;
 }
