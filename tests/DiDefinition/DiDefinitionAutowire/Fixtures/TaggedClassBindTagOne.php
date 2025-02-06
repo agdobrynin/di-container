@@ -10,4 +10,10 @@ class TaggedClassBindTagOne
     {
         return 1000;
     }
+
+    public static function getTaggedPriorityReturnEmpty() {}
+
+    public static function getTaggedPriorityReturnArray(): array {}
+
+    public static function getTaggedPriorityReturnUnionWrong(): null|array|\ReflectionClass|string {}
 }

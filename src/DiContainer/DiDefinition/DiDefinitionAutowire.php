@@ -195,11 +195,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             }
 
             $message = \sprintf(
-                '%s. "%s::%s()" method must be declared with public and static modifiers. Return type must be %s.%s',
+                '%s "%s::%s()" method must be declared with public and static modifiers. Return type must be %s.%s',
                 $howGetPriority,
                 $reflectionClass->getName(),
                 $priorityMethod,
-                \implode($supportReturnTypes),
+                \implode(', ', $supportReturnTypes),
                 isset($types) ? ' Got return type: '.\implode(', ', $types) : ''
             );
 
@@ -216,7 +216,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         $types = match (true) {
             $rt instanceof \ReflectionNamedType => [$rt->getName()],
             $rt instanceof \ReflectionUnionType => \array_map(static fn ($t) => $t->getName(), $rt->getTypes()),
-            default => ['void'],
+            default => ['undefined'],
         };
 
         return \array_diff($types, $type);
