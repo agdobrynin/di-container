@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -106,7 +107,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
             if ($definition->hasTag($this->tag)) {
                 // 🚩 Tag with higher priority early in list.
-                if ($definition instanceof DiDefinitionAutowire) {
+                if ($definition instanceof DiTaggedDefinitionAutowireInterface) {
                     $taggedServices->insert(
                         $containerIdentifier,
                         $definition->geTagPriority($this->tag, $this->defaultPriorityMethod, $this->requireDefaultPriorityMethod)
@@ -137,7 +138,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
-                if ($definition instanceof DiDefinitionAutowire
+                if ($definition instanceof DiTaggedDefinitionAutowireInterface
                     && $definition->getDefinition()->implementsInterface($this->tag)) {
                     $definition->setContainer($this->getContainer());
                     // 🚩 Tag with higher priority early in list.
