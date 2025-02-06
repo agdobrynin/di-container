@@ -106,7 +106,17 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
             if ($definition->hasTag($this->tag)) {
                 // 🚩 Tag with higher priority early in list.
-                $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag));
+                if ($definition instanceof DiDefinitionAutowire) {
+                    $taggedServices->insert(
+                        $containerIdentifier,
+                        $definition->geTagPriority($this->tag, $this->defaultPriorityMethod, $this->requireDefaultPriorityMethod)
+                    );
+                } else {
+                    $taggedServices->insert(
+                        $containerIdentifier,
+                        $definition->geTagPriority($this->tag)
+                    );
+                }
             }
         }
 
