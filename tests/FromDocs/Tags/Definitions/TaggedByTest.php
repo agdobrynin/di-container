@@ -61,7 +61,7 @@ class TaggedByTest extends TestCase
             diAutowire(RuleA::class)
                 ->bindTag(name: 'tags.rules', options: ['priority' => 10]),
             diAutowire(RuleB::class)
-                ->bindTag(name: 'tags.other-rules', options: ['priority' => 20]),
+                ->bindTag(name: 'tags.other-rules', priority: 20),
             diAutowire(RuleC::class)
                 ->bindTag(name: 'tags.rules', options: ['priority' => 100]),
             diAutowire(SrvRules::class)

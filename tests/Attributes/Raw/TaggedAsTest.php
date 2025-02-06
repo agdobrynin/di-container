@@ -33,18 +33,20 @@ class TaggedAsTest extends TestCase
         new TaggedAs($name);
     }
 
-    public function testTaggedAsDefaultLazy(): void
+    public function testTaggedAsDefault(): void
     {
         $tag = new TaggedAs('tags.handler-one');
 
         $this->assertEquals('tags.handler-one', $tag->getIdentifier());
         $this->assertTrue($tag->isLazy());
+        $this->assertNull($tag->getDefaultPriorityMethod());
     }
 
-    public function testTaggedAsLazy(): void
+    public function testTaggedAsLazyAndDefaultPriorityMethod(): void
     {
-        $tag = new TaggedAs('tags.handler-one', false);
+        $tag = new TaggedAs('tags.handler-one', false, 'getPriority');
 
         $this->assertFalse($tag->isLazy());
+        $this->assertEquals('getPriority', $tag->getDefaultPriorityMethod());
     }
 }
