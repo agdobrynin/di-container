@@ -40,12 +40,4 @@ interface DiDefinitionSetupInterface extends DiDefinitionArgumentsInterface
      * @return $this
      */
     public function bindTag(string $name, array $options, null|int|string $priority, ?string $priorityTagMethod = null): static;
-
-    /**
-     * Define method in php-class witch return priority value if tag not define.
-     * It actual for collect services by FQCN.
-     *
-     * @return $this
-     */
-    public function bindTagDefaultPriorityMethod(?string $defaultPriorityTagMethod): static;
 }

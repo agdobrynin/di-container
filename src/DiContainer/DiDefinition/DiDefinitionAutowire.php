@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Attributes\Tag;
-use Kaspi\DiContainer\Attributes\TagDefaultPriorityMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
@@ -55,14 +54,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
     /**
      * Php attributes on class.
      *
-     * @var Tag|TagDefaultPriorityMethod[]
+     * @var Tag[]
      */
     private array $tagAttributes;
-
-    /**
-     * When priority option in tag not defined this method will return priority value from class.
-     */
-    private ?string $defaultPriorityTagMethod = null;
 
     public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
@@ -143,13 +137,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return $this;
     }
 
-    public function bindTagDefaultPriorityMethod(?string $defaultPriorityTagMethod): static
-    {
-        $this->defaultPriorityTagMethod = $defaultPriorityTagMethod;
-
-        return $this;
-    }
-
     public function getTags(): array
     {
         $this->attemptsReadTagAttribute();
@@ -164,7 +151,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return $this->internalHasTag($name);
     }
 
-    public function geTagPriority(string $name): null|int|string
+    public function geTagPriority(string $name, ?string $defaultPriorityTagMethod = null): null|int|string
     {
         if (null !== ($priority = $this->internalGeTagPriority($name))) {
             return $priority;
@@ -177,16 +164,17 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             $priorityTagMethod = $tagOptions['priorityTagMethod'];
             $howGetPriority = \sprintf('Get priority by option "priorityTagMethod" for tag "%s"', $name);
 
-            if (!\is_string($priorityTagMethod)) {
-                throw new AutowireException($howGetPriority.'. The value option must be a string.');
+            if (!\is_string($priorityTagMethod) || '' === \trim($priorityTagMethod)) {
+                throw new AutowireException($howGetPriority.'. The value option must be non-empty string.');
             }
 
             return $this->invokePriorityMethod($priorityTagMethod, $howGetPriority);
         }
 
-        if (null !== $this->defaultPriorityTagMethod) {
+        if (null !== $defaultPriorityTagMethod
+            && $this->getDefinition()->hasMethod($defaultPriorityTagMethod)) {
             return $this->invokePriorityMethod(
-                $this->defaultPriorityTagMethod,
+                $defaultPriorityTagMethod,
                 \sprintf('Get priority by option "defaultPriorityTagMethod" for class "%s"', $this->getDefinition()->getName())
             );
         }
@@ -194,14 +182,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return null;
     }
 
+    /**
+     * @param non-empty-string $priorityMethod
+     */
     private function invokePriorityMethod(string $priorityMethod, string $howGetPriority): null|int|string
     {
-        if ('' === \trim($priorityMethod)) {
-            throw new AutowireException(
-                \sprintf('%s. The value option must be non-empty string.', $howGetPriority)
-            );
-        }
-
         $reflectionClass = $this->getDefinition();
 
         if (!$reflectionClass->isInstantiable()) {
@@ -267,11 +252,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
                     $tagAttribute->getPriority(),
                     $tagAttribute->getPriorityTagMethod()
                 );
-            }
-
-            if ($defaultPriorityTagMethod = $this->getTagDefaultPriorityMethod($this->getDefinition())) {
-                $this->tagAttributes[] = $defaultPriorityTagMethod;
-                $this->defaultPriorityTagMethod = $defaultPriorityTagMethod->getIdentifier();
             }
         }
     }

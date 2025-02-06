@@ -26,7 +26,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     /**
      * @param non-empty-string $tag
      */
-    public function __construct(private string $tag, private bool $isLazy = true) {}
+    public function __construct(private string $tag, private bool $isLazy = true, private ?string $defaultPriorityMethod = null) {}
 
     /**
      * @throws ContainerNeedSetExceptionInterface
@@ -126,7 +126,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     && $definition->getDefinition()->implementsInterface($this->tag)) {
                     $definition->setContainer($this->getContainer());
                     // 🚩 Tag with higher number in 'priority' key being early in list.
-                    $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag));
+                    $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag, $this->defaultPriorityMethod));
                 }
             } catch (AutowireExceptionInterface $e) {
                 throw new ContainerException(message: $e->getMessage(), previous: $e);
