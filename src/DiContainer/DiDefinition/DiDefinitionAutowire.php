@@ -151,7 +151,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return $this->internalHasTag($name);
     }
 
-    public function geTagPriority(string $name, ?string $defaultPriorityTagMethod = null): null|int|string
+    public function geTagPriority(string $name, ?string $defaultPriorityTagMethod = null, bool $requireDefaultPriorityMethod = false): null|int|string
     {
         if (null !== ($priority = $this->internalGeTagPriority($name))) {
             return $priority;
@@ -161,22 +161,20 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         $tagOptions = $this->getTag($name);
 
         if ($tagOptions && isset($tagOptions['priorityTagMethod'])) {
-            $priorityTagMethod = $tagOptions['priorityTagMethod'];
-            $howGetPriority = \sprintf('Get priority by option "priorityTagMethod" for tag "%s"', $name);
+            $priorityTagMethodFromOptions = $tagOptions['priorityTagMethod'];
+            $howGetPriority = \sprintf('Get priority by option "priorityTagMethod" for tag "%s".', $name);
 
-            if (!\is_string($priorityTagMethod) || '' === \trim($priorityTagMethod)) {
-                throw new AutowireException($howGetPriority.'. The value option must be non-empty string.');
+            if (!\is_string($priorityTagMethodFromOptions) || '' === \trim($priorityTagMethodFromOptions)) {
+                throw new AutowireException($howGetPriority.' The value option must be non-empty string.');
             }
 
-            return $this->invokePriorityMethod($priorityTagMethod, $howGetPriority);
+            return $this->invokePriorityMethod($priorityTagMethodFromOptions, true, $name, $howGetPriority);
         }
 
-        if (null !== $defaultPriorityTagMethod
-            && $this->getDefinition()->hasMethod($defaultPriorityTagMethod)) {
-            return $this->invokePriorityMethod(
-                $defaultPriorityTagMethod,
-                \sprintf('Get priority by option "defaultPriorityTagMethod" for class "%s"', $this->getDefinition()->getName())
-            );
+        if (null !== $defaultPriorityTagMethod) {
+            $howGetPriority = \sprintf('Get priority by option "defaultPriorityTagMethod" for class "%s".', $this->getDefinition()->getName());
+
+            return $this->invokePriorityMethod($defaultPriorityTagMethod, $requireDefaultPriorityMethod, $name, $howGetPriority);
         }
 
         return null;
@@ -185,57 +183,43 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
     /**
      * @param non-empty-string $priorityMethod
      */
-    private function invokePriorityMethod(string $priorityMethod, string $howGetPriority): null|int|string
+    private function invokePriorityMethod(string $priorityMethod, bool $requirePriorityMethod, string $tag, string $howGetPriority): null|int|string
     {
         $reflectionClass = $this->getDefinition();
+        $isCallable = \is_callable([$reflectionClass->name, $priorityMethod]);
+        $supportReturnTypes = ['int', 'string', 'null'];
 
-        if (!$reflectionClass->isInstantiable()) {
-            throw new AutowireException(
-                \sprintf('%s. "%s" is not instantiable.', $howGetPriority, $reflectionClass->getName())
-            );
-        }
+        if (!$isCallable || ($types = $this->diffReturnType($reflectionClass->getMethod($priorityMethod), ...$supportReturnTypes))) {
+            if (!$requirePriorityMethod) {
+                return null;
+            }
 
-        if (!$reflectionClass->hasMethod($priorityMethod)) {
-            throw new AutowireException(
-                \sprintf('%s. "%s::%s()" does not exist.', $howGetPriority, $reflectionClass->getName(), $priorityMethod)
-            );
-        }
-
-        $method = $reflectionClass->getMethod($priorityMethod);
-
-        if (!$method->isPublic()) {
-            throw new AutowireException(
-                \sprintf('%s. "%s::%s()" must be declared as public.', $howGetPriority, $reflectionClass->getName(), $priorityMethod)
-            );
-        }
-
-        if (!$method->isStatic()) {
-            throw new AutowireException(
-                \sprintf('%s. "%s::%s()" must be declared as static.', $howGetPriority, $reflectionClass->getName(), $priorityMethod)
-            );
-        }
-
-        $rt = $method->getReturnType();
-
-        $types = match (true) {
-            $rt instanceof \ReflectionNamedType => [$rt->getName()],
-            $rt instanceof \ReflectionUnionType => \array_map(static fn ($type) => $type->getName(), $rt->getTypes()),
-            default => null,
-        };
-
-        if (null === $types || \array_diff($types, ['string', 'int', 'null'])) {
             $message = \sprintf(
-                '%s. "%s::%s()" must return types string, int or null. Got return type: %s',
+                '%s. "%s::%s()" method must be declared with public and static modifiers. Return type must be %s.%s',
                 $howGetPriority,
                 $reflectionClass->getName(),
                 $priorityMethod,
-                \implode(', ', $types)
+                \implode($supportReturnTypes),
+                isset($types) ? ' Got return type: '.\implode(', ', $types) : ''
             );
 
             throw new AutowireException($message);
         }
 
-        return $method->invoke(null);
+        return \call_user_func([$reflectionClass->name, $priorityMethod], $tag, $this->getTag($tag));
+    }
+
+    private function diffReturnType(\ReflectionMethod $reflectionMethod, string ...$type): array
+    {
+        $rt = $reflectionMethod->getReturnType();
+
+        $types = match (true) {
+            $rt instanceof \ReflectionNamedType => [$rt->getName()],
+            $rt instanceof \ReflectionUnionType => \array_map(static fn ($t) => $t->getName(), $rt->getTypes()),
+            default => ['void'],
+        };
+
+        return \array_diff($types, $type);
     }
 
     private function attemptsReadTagAttribute(): void
@@ -250,7 +234,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
                     $tagAttribute->getIdentifier(),
                     $tagAttribute->getOptions(),
                     $tagAttribute->getPriority(),
-                    $tagAttribute->getPriorityTagMethod()
+                    $tagAttribute->getPriorityTagMethod(),
                 );
             }
         }

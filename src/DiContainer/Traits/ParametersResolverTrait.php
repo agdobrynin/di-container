@@ -235,7 +235,12 @@ trait ParametersResolverTrait
             foreach ($taggedAs as $tagged) {
                 yield $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy(), $tagged->getDefaultPriorityMethod())
+                    new DiDefinitionTaggedAs(
+                        $tagged->getIdentifier(),
+                        $tagged->isLazy(),
+                        $tagged->getDefaultPriorityMethod(),
+                        $tagged->isRequireDefaultPriorityMethod()
+                    )
                 );
             }
 
