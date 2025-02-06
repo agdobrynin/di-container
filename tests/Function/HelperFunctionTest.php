@@ -24,6 +24,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
@@ -65,9 +66,16 @@ class HelperFunctionTest extends TestCase
         $this->assertInstanceOf(DiDefinitionProxyClosure::class, $def);
     }
 
-    public function testFunctionDiTaggedAs(): void
+    public function testFunctionDiTaggedAsWithDefaultParams(): void
     {
         $def = diTaggedAs('tags.security.voters');
+
+        $this->assertInstanceOf(DiDefinitionTaggedAs::class, $def);
+    }
+
+    public function testFunctionDiTaggedAsWithAllParams(): void
+    {
+        $def = diTaggedAs('tags.security.voters', false, 'getPriorityForCollection', true);
 
         $this->assertInstanceOf(DiDefinitionTaggedAs::class, $def);
     }
