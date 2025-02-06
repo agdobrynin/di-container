@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 
-final class DiDefinitionGet implements DiDefinitionInterface
+final class DiDefinitionGet implements DiDefinitionLinkInterface
 {
     private string $validContainerIdentifier;
 

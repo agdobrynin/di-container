@@ -7,7 +7,6 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -17,6 +16,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -157,7 +157,7 @@ trait ParametersResolverTrait
      */
     private function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
-        if ($argumentDefinition instanceof DiDefinitionGet) {
+        if ($argumentDefinition instanceof DiDefinitionLinkInterface) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
         }
 
