@@ -100,7 +100,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
 
             if ($definition->hasTag($this->tag)) {
-                // 🚩 Tag with higher number in 'priority' key being early in list.
+                // 🚩 Tag with higher priority early in list.
                 $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag));
             }
         }
@@ -125,7 +125,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 if ($definition instanceof DiDefinitionAutowire
                     && $definition->getDefinition()->implementsInterface($this->tag)) {
                     $definition->setContainer($this->getContainer());
-                    // 🚩 Tag with higher number in 'priority' key being early in list.
+                    // 🚩 Tag with higher priority early in list.
                     $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag, $this->defaultPriorityMethod));
                 }
             } catch (AutowireExceptionInterface $e) {
