@@ -94,7 +94,7 @@ $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-comp
 Автоматическое создание объекта и внедрения зависимостей.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use function \Kaspi\DiContainer\diAutowire;
 
 diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupInterface

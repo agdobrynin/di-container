@@ -6,7 +6,7 @@ namespace Tests\Tag\DefaultPriorityMethod\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Tag;
 
-#[Tag(name: 'tags.one', options: [], priorityTagMethod: 'getPriority')]
+#[Tag(name: 'tags.one', options: [], priorityMethod: 'getPriority')]
 final class TaggedOne implements TaggedInterface
 {
     public static function getPriority(): int
