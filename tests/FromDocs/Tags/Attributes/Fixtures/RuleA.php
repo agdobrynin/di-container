@@ -7,4 +7,11 @@ namespace Tests\FromDocs\Tags\Attributes\Fixtures;
 use Kaspi\DiContainer\Attributes\Tag;
 
 #[Tag(name: 'tags.rules', priority: 10)]
-class RuleA implements RuleInterface {}
+#[Tag(name: 'tags.rules.priorityMethod', priorityTagMethod: 'getPriority')]
+class RuleA implements RuleInterface
+{
+    public static function getPriority(): string
+    {
+        return 'AAA';
+    }
+}

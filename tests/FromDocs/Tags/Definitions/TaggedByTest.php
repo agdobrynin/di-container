@@ -14,6 +14,7 @@ use Tests\FromDocs\Tags\Definitions\Fixtures\RuleInterface;
 use Tests\FromDocs\Tags\Definitions\Fixtures\ServicesAnyArray;
 use Tests\FromDocs\Tags\Definitions\Fixtures\ServicesAnyIterable;
 use Tests\FromDocs\Tags\Definitions\Fixtures\SrvRules;
+use Tests\FromDocs\Tags\Definitions\Fixtures\SrvRulesPriorityByMethod;
 use Tests\FromDocs\Tags\Definitions\Fixtures\Two;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -127,5 +128,36 @@ class TaggedByTest extends TestCase
         $this->assertInstanceOf(One::class, $class->services[0]);
         $this->assertInstanceOf(Two::class, $class->services[1]);
         $this->assertFalse(isset($class->services[2]));
+    }
+
+    public function testTaggedByTagWithPriorityByMethod(): void
+    {
+        $definitions = [
+            diAutowire(SrvRulesPriorityByMethod::class)
+                ->bindArguments(
+                    rules: diTaggedAs(
+                        'tags.rules',
+                        false,
+                        defaultPriorityMethod: 'getCollectionPriority'
+                    )
+                ),
+            diAutowire(One::class),
+            diAutowire(RuleA::class)
+                ->bindTag(name: 'tags.rules', priorityTagMethod: 'getPriority'),
+            diAutowire(RuleB::class)
+                ->bindTag(name: 'tags.rules', priorityTagMethod: 'getPriorityOther'),
+            diAutowire(RuleC::class)
+                ->bindTag(name: 'tags.rules'),
+            diAutowire(Two::class),
+        ];
+
+        $container = (new DiContainerFactory())->make($definitions);
+        $srv = $container->get(SrvRulesPriorityByMethod::class);
+
+        $this->assertCount(3, $srv->rules);
+
+        $this->assertInstanceOf(RuleB::class, $srv->rules[0]);
+        $this->assertInstanceOf(RuleC::class, $srv->rules[1]);
+        $this->assertInstanceOf(RuleA::class, $srv->rules[2]);
     }
 }
