@@ -30,7 +30,7 @@ interface DiContainerInterface extends ContainerInterface
     /**
      * Get definitions form container.
      *
-     * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionLinkInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionAutowireInterface>
+     * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionAutowireInterface|DiDefinitionLinkInterface>
      */
     public function getDefinitions(): iterable;
 

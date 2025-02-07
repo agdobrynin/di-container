@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 
 interface DiTaggedDefinitionAutowireInterface extends DiTaggedDefinitionInterface
 {
@@ -18,9 +17,6 @@ interface DiTaggedDefinitionAutowireInterface extends DiTaggedDefinitionInterfac
      */
     public function geTagPriority(string $name, ?string $defaultPriorityTagMethod = null, bool $requireDefaultPriorityMethod = false): null|int|string;
 
-    /**
-     * @throws AutowireExceptionInterface
-     */
     public function getDefinition(): \ReflectionClass;
 
     public function setContainer(DiContainerInterface $container): static;
