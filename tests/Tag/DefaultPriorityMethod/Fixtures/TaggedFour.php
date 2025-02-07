@@ -6,21 +6,21 @@ namespace Tests\Tag\DefaultPriorityMethod\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Tag;
 
-#[Tag(name: 'tags.one', options: [], priorityTagMethod: 'getPriority')]
-final class TaggedOne implements TaggedInterface
+#[Tag(name: 'tags.tag-a', options: [], priority: 3, priorityTagMethod: 'getPriority')]
+final class TaggedFour implements TaggedInterface
 {
-    public static function getPriority(): int
+    public static function getPriority(): ?int
     {
-        return 10;
+        return null;
     }
 
     public static function getTaggedInterfacePriority(): string
     {
-        return 'group1:1';
+        return 'group1:100';
     }
 
     public static function getOneOfPriority(): int
     {
-        return 1_000;
+        return 10_000;
     }
 }

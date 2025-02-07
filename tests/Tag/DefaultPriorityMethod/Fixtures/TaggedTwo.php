@@ -14,8 +14,8 @@ final class TaggedTwo implements TaggedInterface
         return 100;
     }
 
-    public static function getCollectionPriority(): int
+    public static function getTaggedInterfacePriority(): string
     {
-        return 1;
+        return 'group1:101';
     }
 }

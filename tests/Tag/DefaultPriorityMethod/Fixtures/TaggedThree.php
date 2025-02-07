@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Tag\DefaultPriorityMethod\Fixtures;
 
-final class Three
+final class TaggedThree
 {
     public static function getPriority(): int
     {

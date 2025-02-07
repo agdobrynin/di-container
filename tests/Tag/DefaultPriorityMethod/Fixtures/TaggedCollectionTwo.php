@@ -6,10 +6,10 @@ namespace Tests\Tag\DefaultPriorityMethod\Fixtures;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
-final class TaggedCollectionOne
+final class TaggedCollectionTwo
 {
     public function __construct(
-        #[TaggedAs(TaggedInterface::class, defaultPriorityMethod: 'getTaggedInterfacePriority')]
+        #[TaggedAs(TaggedInterface::class, defaultPriorityMethod: 'getOneOfPriority')]
         public iterable $items
     ) {}
 }
