@@ -139,7 +139,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
                 if ($definition instanceof DiTaggedDefinitionAutowireInterface
-                    && $definition->getDefinition()->implementsInterface($this->tag)) {
+                    && ($reflectionClass = $definition->getDefinition()) instanceof \ReflectionClass
+                    && $reflectionClass->implementsInterface($this->tag)) {
                     $definition->setContainer($this->getContainer());
                     // 🚩 Tag with higher priority early in list.
                     $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag, $this->defaultPriorityMethod, $this->requireDefaultPriorityMethod));
