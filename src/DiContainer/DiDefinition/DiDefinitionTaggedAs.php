@@ -17,6 +17,8 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+use function Kaspi\DiContainer\tagOptions;
+
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
     use DiContainerTrait;
@@ -106,18 +108,17 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
 
             if ($definition->hasTag($this->tag)) {
-                // 🚩 Tag with higher priority early in list.
+                $operationOptions = [];
+
                 if ($definition instanceof DiTaggedDefinitionAutowireInterface) {
-                    $taggedServices->insert(
-                        $containerIdentifier,
-                        $definition->geTagPriority($this->tag, $this->defaultPriorityMethod, $this->requireDefaultPriorityMethod)
-                    );
-                } else {
-                    $taggedServices->insert(
-                        $containerIdentifier,
-                        $definition->geTagPriority($this->tag)
+                    $operationOptions = tagOptions(
+                        defaultPriorityMethod: $this->defaultPriorityMethod,
+                        requireDefaultPriorityMethod: $this->requireDefaultPriorityMethod
                     );
                 }
+
+                // 🚩 Tag with higher priority early in list.
+                $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag, $operationOptions));
             }
         }
 
@@ -142,7 +143,16 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     && $definition->getDefinition()->implementsInterface($this->tag)) { // @phan-suppress-current-line PhanPossiblyNonClassMethodCall
                     $definition->setContainer($this->getContainer());
                     // 🚩 Tag with higher priority early in list.
-                    $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag, $this->defaultPriorityMethod, $this->requireDefaultPriorityMethod));
+                    $taggedServices->insert(
+                        $containerIdentifier,
+                        $definition->geTagPriority(
+                            $this->tag,
+                            tagOptions(
+                                defaultPriorityMethod: $this->defaultPriorityMethod,
+                                requireDefaultPriorityMethod: $this->requireDefaultPriorityMethod
+                            )
+                        )
+                    );
                 }
             } catch (AutowireExceptionInterface $e) {
                 throw new ContainerException(message: $e->getMessage(), previous: $e);

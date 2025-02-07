@@ -26,6 +26,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
+ * @covers \Kaspi\DiContainer\tagOptions
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  */
 class AsAttributeTest extends TestCase

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
-interface DiDefinitionSetupInterface extends DiDefinitionArgumentsInterface
+interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInterface
 {
     /**
      * Call setter method for class with input arguments.
@@ -28,16 +28,4 @@ interface DiDefinitionSetupInterface extends DiDefinitionArgumentsInterface
      * @return $this
      */
     public function setup(string $method, mixed ...$argument): static;
-
-    /**
-     * Bind tag for services with meta-data.
-     *
-     * @param non-empty-string               $name              tag name
-     * @param array<non-empty-string, mixed> $options           tag's meta-data
-     * @param null|int|string                $priority          priority for sorting tag collection
-     * @param null|string                    $priorityTagMethod method return priority value for tag $name
-     *
-     * @return $this
-     */
-    public function bindTag(string $name, array $options, null|int|string $priority, ?string $priorityTagMethod = null): static;
 }

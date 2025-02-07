@@ -12,9 +12,9 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 // @todo Remove alias when remove function diReference.
@@ -26,7 +26,7 @@ if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
      *
      * @param class-string $definition
      */
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAutowireInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
     }
@@ -97,3 +97,16 @@ if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
         return new DiDefinitionTaggedAs($tag, $isLazy, $defaultPriorityMethod, $requireDefaultPriorityMethod);
     }
 } // @codeCoverageIgnore
+
+if (!\function_exists('Kaspi\DiContainer\tagOptions')) {
+    function tagOptions(
+        ?string $priorityMethod = null,
+        ?string $defaultPriorityMethod = null,
+        ?bool $requireDefaultPriorityMethod = null,
+    ): array {
+        return
+            (null !== $priorityMethod ? ['priorityMethod' => $priorityMethod] : [])
+            + (null !== $defaultPriorityMethod ? ['defaultPriorityMethod' => $defaultPriorityMethod] : [])
+            + (null !== $defaultPriorityMethod && null !== $requireDefaultPriorityMethod ? ['requireDefaultPriorityMethod' => $requireDefaultPriorityMethod] : []);
+    }
+}

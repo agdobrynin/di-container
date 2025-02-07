@@ -19,6 +19,7 @@ use Tests\FromDocs\Tags\Definitions\Fixtures\Two;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;
+use function Kaspi\DiContainer\tagOptions;
 
 /**
  * @internal
@@ -30,6 +31,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\tagOptions
  */
 class TaggedByTest extends TestCase
 {
@@ -143,9 +145,9 @@ class TaggedByTest extends TestCase
                 ),
             diAutowire(One::class),
             diAutowire(RuleA::class)
-                ->bindTag(name: 'tags.rules', priorityTagMethod: 'getPriority'),
+                ->bindTag(name: 'tags.rules', options: tagOptions(priorityMethod: 'getPriority')),
             diAutowire(RuleB::class)
-                ->bindTag(name: 'tags.rules', priorityTagMethod: 'getPriorityOther'),
+                ->bindTag(name: 'tags.rules', options: tagOptions(priorityMethod: 'getPriorityOther')),
             diAutowire(RuleC::class)
                 ->bindTag(name: 'tags.rules'),
             diAutowire(Two::class),

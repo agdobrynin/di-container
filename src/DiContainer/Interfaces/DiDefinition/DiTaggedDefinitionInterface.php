@@ -34,5 +34,12 @@ interface DiTaggedDefinitionInterface
      *
      * @param non-empty-string $name
      */
-    public function geTagPriority(string $name): null|int|string;
+    public function geTagPriority(string $name, array $operationOptions = []): null|int|string;
+
+    /**
+     * @param array<non-empty-string, mixed> $options
+     *
+     * @return $this
+     */
+    public function bindTag(string $name, array $options = [], null|int|string $priority = null): static;
 }
