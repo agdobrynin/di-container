@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -29,7 +30,7 @@ interface DiContainerInterface extends ContainerInterface
     /**
      * Get definitions form container.
      *
-     * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionAutowireInterface>
+     * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionAutowireInterface|DiDefinitionLinkInterface>
      */
     public function getDefinitions(): iterable;
 
