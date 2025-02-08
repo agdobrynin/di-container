@@ -154,7 +154,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             $priorityTagMethodFromOptions = $tagOptions['priorityMethod'];
             $howGetPriority = \sprintf('Get priority by option "priorityMethod" for tag "%s".', $name);
 
-            return $this->invokePriorityMethod($priorityTagMethodFromOptions, true, $name, $howGetPriority);
+            return $this->invokePriorityMethod($priorityTagMethodFromOptions, true, [$name => $tagOptions], $howGetPriority);
         }
 
         $defaultPriorityMethod = ($tagOptions['defaultPriorityMethod'] ?? null);
@@ -163,13 +163,13 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             $howGetPriority = \sprintf('Get priority by option "defaultPriorityMethod" for class "%s".', $this->getDefinition()->getName());
             $defaultPriorityMethodIsRequired = (bool) ($tagOptions['defaultPriorityMethodIsRequired'] ?? null);
 
-            return $this->invokePriorityMethod($defaultPriorityMethod, $defaultPriorityMethodIsRequired, $name, $howGetPriority);
+            return $this->invokePriorityMethod($defaultPriorityMethod, $defaultPriorityMethodIsRequired, [$name => $tagOptions], $howGetPriority);
         }
 
         return null;
     }
 
-    private function invokePriorityMethod(mixed $priorityMethod, bool $requirePriorityMethod, string $tag, string $howGetPriority): null|int|string
+    private function invokePriorityMethod(mixed $priorityMethod, bool $requirePriorityMethod, array $tagWithOptions, string $howGetPriority): null|int|string
     {
         if (!\is_string($priorityMethod) || '' === \trim($priorityMethod)) {
             throw new AutowireException($howGetPriority.' The value option must be non-empty string.');
@@ -196,7 +196,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             throw new AutowireException($message);
         }
 
-        return \call_user_func([$reflectionClass->name, $priorityMethod], $tag, $this->getTag($tag));
+        return \call_user_func([$reflectionClass->name, $priorityMethod], $tagWithOptions);
     }
 
     private function diffReturnType(\ReflectionMethod $reflectionMethod, string ...$type): array
