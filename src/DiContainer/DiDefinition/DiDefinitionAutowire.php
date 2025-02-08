@@ -148,7 +148,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         $this->attemptsReadTagAttribute();
-        $tagOptions = $this->getTag($name);
+        $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
 
         if ($tagOptions && isset($tagOptions['priorityMethod'])) {
             $priorityTagMethodFromOptions = $tagOptions['priorityMethod'];
@@ -157,11 +157,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             return $this->invokePriorityMethod($priorityTagMethodFromOptions, true, $name, $howGetPriority);
         }
 
-        $defaultPriorityMethod = ($operationOptions['defaultPriorityMethod'] ?? null);
+        $defaultPriorityMethod = ($tagOptions['defaultPriorityMethod'] ?? null);
 
         if (null !== $defaultPriorityMethod) {
             $howGetPriority = \sprintf('Get priority by option "defaultPriorityMethod" for class "%s".', $this->getDefinition()->getName());
-            $defaultPriorityMethodIsRequired = (bool) ($operationOptions['defaultPriorityMethodIsRequired'] ?? null);
+            $defaultPriorityMethodIsRequired = (bool) ($tagOptions['defaultPriorityMethodIsRequired'] ?? null);
 
             return $this->invokePriorityMethod($defaultPriorityMethod, $defaultPriorityMethodIsRequired, $name, $howGetPriority);
         }
