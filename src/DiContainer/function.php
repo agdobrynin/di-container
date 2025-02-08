@@ -98,7 +98,7 @@ if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\tagOptions')) {
+if (!\function_exists('Kaspi\DiContainer\tagOptions')) { // @codeCoverageIgnore
     function tagOptions(
         ?string $priorityMethod = null,
         ?string $defaultPriorityMethod = null,
@@ -109,4 +109,4 @@ if (!\function_exists('Kaspi\DiContainer\tagOptions')) {
             + (null !== $defaultPriorityMethod ? ['defaultPriorityMethod' => $defaultPriorityMethod] : [])
             + (null !== $defaultPriorityMethod && null !== $defaultPriorityMethodIsRequired ? ['defaultPriorityMethodIsRequired' => $defaultPriorityMethodIsRequired] : []);
     }
-}
+} // @codeCoverageIgnore
