@@ -113,7 +113,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 if ($definition instanceof DiTaggedDefinitionAutowireInterface) {
                     $operationOptions = tagOptions(
                         defaultPriorityMethod: $this->defaultPriorityMethod,
-                        requireDefaultPriorityMethod: $this->requireDefaultPriorityMethod
+                        defaultPriorityMethodIsRequired: $this->requireDefaultPriorityMethod
                     );
                 }
 
@@ -149,7 +149,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                             $this->tag,
                             tagOptions(
                                 defaultPriorityMethod: $this->defaultPriorityMethod,
-                                requireDefaultPriorityMethod: $this->requireDefaultPriorityMethod
+                                defaultPriorityMethodIsRequired: $this->requireDefaultPriorityMethod
                             )
                         )
                     );

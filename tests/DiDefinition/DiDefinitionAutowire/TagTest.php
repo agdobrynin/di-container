@@ -216,7 +216,24 @@ class TagTest extends TestCase
         $this->assertNull($def->geTagPriority('tags.handler-one', tagOptions(defaultPriorityMethod: 'getTaggedPriorityNonExist')));
     }
 
-    public function testGetPriorityByDefaultPriorityTagMethodFailIsRequiredTrue(): void
+    public static function dataProviderDefaultPriorityTagMethodWrong(): \Generator
+    {
+        yield 'method not exist and is required set by `tagOptions`' => [
+            tagOptions(defaultPriorityMethod: 'getTaggedPriorityNonExist', defaultPriorityMethodIsRequired: true),
+        ];
+
+        yield 'method not exist and is required with raw array' => [
+            [
+                'defaultPriorityMethod' => 'getTaggedPriorityNonExist',
+                'defaultPriorityMethodIsRequired' => new \stdClass(), // convert to boolean
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataProviderDefaultPriorityTagMethodWrong
+     */
+    public function testGetPriorityByDefaultPriorityTagMethodFailIsRequiredTrue(array $tagOptions): void
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
@@ -227,7 +244,7 @@ class TagTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('method must be declared with public and static modifiers. Return type must be int, string, null');
 
-        $def->geTagPriority('tags.handler-one', tagOptions(defaultPriorityMethod: 'getTaggedPriorityNonExist', requireDefaultPriorityMethod: true));
+        $def->geTagPriority('tags.handler-one', $tagOptions);
     }
 
     public static function dataProviderWrongReturnType(): \Generator

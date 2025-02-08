@@ -161,9 +161,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         if (null !== $defaultPriorityMethod) {
             $howGetPriority = \sprintf('Get priority by option "defaultPriorityMethod" for class "%s".', $this->getDefinition()->getName());
-            $requireDefaultPriorityMethod = (bool) ($operationOptions['requireDefaultPriorityMethod'] ?? null);
+            $defaultPriorityMethodIsRequired = (bool) ($operationOptions['defaultPriorityMethodIsRequired'] ?? null);
 
-            return $this->invokePriorityMethod($defaultPriorityMethod, $requireDefaultPriorityMethod, $name, $howGetPriority);
+            return $this->invokePriorityMethod($defaultPriorityMethod, $defaultPriorityMethodIsRequired, $name, $howGetPriority);
         }
 
         return null;
