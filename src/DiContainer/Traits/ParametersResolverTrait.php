@@ -239,7 +239,7 @@ trait ParametersResolverTrait
                         $tagged->getIdentifier(),
                         $tagged->isLazy(),
                         $tagged->getDefaultPriorityMethod(),
-                        $tagged->isRequireDefaultPriorityMethod()
+                        $tagged->isDefaultPriorityMethodIsRequired()
                     )
                 );
             }
