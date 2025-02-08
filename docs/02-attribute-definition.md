@@ -31,6 +31,9 @@ use Kaspi\DiContainer\Attributes\Inject;
             // по имени аргумента используя имя аргумента как идентификатор в контейнере.
 )]
 ```
+```php
+Kaspi\DiContainer\Attributes\Inject(string $id = '')
+```
 
 ### Атрибут #[Inject] для получения по идентификатору контейнера в конструкторе:
 
@@ -122,7 +125,7 @@ var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
-#### Атрибут #[Inject] для аргументов переменной длины по идентификатору контейнера
+### Атрибут #[Inject] для аргументов переменной длины по идентификатору контейнера
 
 ```php
 namespace App\Rules;
@@ -273,9 +276,15 @@ use Kaspi\DiContainer\Attributes\Service;
 #[Service(
     id: '', // Класс реализующий интерфейс
             // или идентификатор контейнера.
+    isSingleton: false // Зарегистрировать как singleton сервис
 )]
 ```
-
+```php
+Kaspi\DiContainer\Attributes\Service(
+    string $id,
+    bool $isSingleton = false
+)
+```
 ```php
 // Объявление классов
 use Kaspi\DiContainer\Attributes\InjectByReference;
@@ -376,10 +385,15 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 
 #[DiFactory(
     id: '', // Класс реализующий интерфейс Kaspi\DiContainer\Interfaces\DiFactoryInterface
-    isSingleton: false,  // сервис создаётся как Singleton
+    isSingleton: false,  // сервис создаётся как singleton
 )]
 ```
-
+```php
+Kaspi\DiContainer\Attributes\DiFactory(
+    string $id,
+    bool $isSingleton = false
+)
+```
 ```php
 // Определение класса
 use Kaspi\DiContainer\Attributes\DiFactory
@@ -432,7 +446,12 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
     isSingleton: false,  // сервис создаётся как Singleton
 )]
 ```
-
+```php
+Kaspi\DiContainer\Attributes\ProxyClosure(
+    string $id,
+    bool $isSingleton = false
+)
+```
 Такое объявление сервиса пригодится для «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмких вычислений.
 
 > Подробное объяснение использования [ProxyClosure](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#diproxyclosure)
@@ -499,17 +518,37 @@ $classWithHeavyDependency->doHeavyDependency();
 ```php
 use Kaspi\DiContainer\Attributes\Tag;
 #[Tag(
-    name: '', // имя тега
-    options: ['priority' => 0] // метаданные для тэга (есть значение по умолчанию)
+    name: '', // обязательное имя тега
+    options: [], // метаданные для тега
+    priority: null, // приоритет для сортировки в коллекции тегов
+    priorityMethod: null // метод класса для сортировки в коллекции тегов если неуказан 'priority'
 )]
 ```
+```php
+Kaspi\DiContainer\Attributes\Tag(
+    string $name,
+    array $options = [],
+    int|null|string $priority = null,
+    ?string $priorityMethod = null
+)
+```
+
+> Метод указанный в аргументе `$priorityMethod` должен быть объявлен как `public static function`
+> и возвращать тип `int`, `string` или `null`.
+> В качестве аргументов метод принимает два параметра:
+>  - `string $tag` - имя тега;
+>  - `array $options` - метаданные тега;
+
+> 📝 [Информация о сортировке по приоритету](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+> для аргументов `priority`, `priorityMethod`.
+
 Можно указать несколько атрибутов для класса:
 ```php
 use Kaspi\DiContainer\Attributes\Tag; 
 namespace App\Any;
 
-#[Tag(name: 'tags.services.group-one')]
-#[Tag(name: 'tags.services.group-two', options: ['priority' => 1000])]
+#[Tag(name: 'tags.services.group-one', priorityMethod: 'getPriority')]
+#[Tag(name: 'tags.services.group-two', priority: 1000)]
 class SomeClass {}
 ```
 
@@ -517,15 +556,35 @@ class SomeClass {}
 
 ## TaggedAs
 Получение коллекции (списка) сервисов и определений отмеченных тегом.
+Прикрепление тегов в стиле php определенй через метод `bindTag` через хэлпер функций
+или через [php атрибут `#[Tag]`](#tag) у тегированного класса.
 
 ```php
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
 #[TaggedAs(
     name: '', // имя тега
-    isLazy: true // получить коллекцию как ленивую (отложенная инициализация)
+    isLazy: true, // получить коллекцию как ленивую (отложенная инициализация)
+    defaultPriorityMethod: null // метод класса для сортировки в коллекции
+                                //если у тегированого сервиса не указан 'priority' или 'priorityMethod'
 )]
 ```
+```php
+Kaspi\DiContainer\Attributes\TaggedAs(
+    string $name,
+    bool $isLazy = true,
+    ?string $defaultPriorityMethod = null
+)
+```
+
+> Метод указанный в аргументе `$defaultPriorityMethod` должен быть объявлен как `public static function`
+> и возвращать тип `int`, `string` или `null`.
+> В качестве аргументов метод принимает два параметра:
+>  - `string $tag` - имя тега;
+>  - `array $options` - метаданные тега;
+>
+>  Подробнее [о приоритизации в коллекцции](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+
 Пример получение «ленивой» коллекции из сервисов отмеченных тегом `tags.services.group-two`:
 ```php
 use Kaspi\DiContainer\Attributes\TaggedAs;
@@ -535,6 +594,16 @@ class AnyClass {
         // будет получено как коллекция через тип \Generator
         // с ленивой инициализацией сервисов
         #[TaggedAs(name: 'tags.services.group-two')]
+        private iterable $services
+    ) {}
+}
+
+class SomeService {
+    public function __construct(
+        #[TaggedAs(
+            name: SomeInterface::class,
+            defaultPriorityMethod: 'getPriorityForSomeInterface'
+        )]
         private iterable $services
     ) {}
 }
