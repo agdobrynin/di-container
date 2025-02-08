@@ -47,7 +47,7 @@ trait TagsTrait
 
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {
-        $options = ($this->getTag($name) ?? []) + $operationOptions;
+        $options = $operationOptions + ($this->getTag($name) ?? []);
 
         return $options && \array_key_exists('priority', $options) && (\is_int($priority = $options['priority']) || \is_string($priority))
             ? $priority
