@@ -32,11 +32,13 @@ interface DiTaggedDefinitionInterface
     /**
      * Get priority for tag.
      *
-     * @param non-empty-string $name
+     * @param non-empty-string               $name
+     * @param array<non-empty-string, mixed> $operationOptions temporary options (meta-data) for operation
      */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string;
 
     /**
+     * @param non-empty-string               $name
      * @param array<non-empty-string, mixed> $options
      *
      * @return $this

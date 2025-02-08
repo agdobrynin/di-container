@@ -104,8 +104,7 @@ if (!\function_exists('Kaspi\DiContainer\tagOptions')) { // @codeCoverageIgnore
         ?string $defaultPriorityMethod = null,
         ?bool $defaultPriorityMethodIsRequired = null,
     ): array {
-        return
-            (null !== $priorityMethod ? ['priorityMethod' => $priorityMethod] : [])
+        return (null !== $priorityMethod ? ['priorityMethod' => $priorityMethod] : [])
             + (null !== $defaultPriorityMethod ? ['defaultPriorityMethod' => $defaultPriorityMethod] : [])
             + (null !== $defaultPriorityMethod && null !== $defaultPriorityMethodIsRequired ? ['defaultPriorityMethodIsRequired' => $defaultPriorityMethodIsRequired] : []);
     }
