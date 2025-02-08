@@ -102,11 +102,11 @@ if (!\function_exists('Kaspi\DiContainer\tagOptions')) {
     function tagOptions(
         ?string $priorityMethod = null,
         ?string $defaultPriorityMethod = null,
-        ?bool $requireDefaultPriorityMethod = null,
+        ?bool $defaultPriorityMethodIsRequired = null,
     ): array {
         return
             (null !== $priorityMethod ? ['priorityMethod' => $priorityMethod] : [])
             + (null !== $defaultPriorityMethod ? ['defaultPriorityMethod' => $defaultPriorityMethod] : [])
-            + (null !== $defaultPriorityMethod && null !== $requireDefaultPriorityMethod ? ['requireDefaultPriorityMethod' => $requireDefaultPriorityMethod] : []);
+            + (null !== $defaultPriorityMethod && null !== $defaultPriorityMethodIsRequired ? ['defaultPriorityMethodIsRequired' => $defaultPriorityMethodIsRequired] : []);
     }
 }
