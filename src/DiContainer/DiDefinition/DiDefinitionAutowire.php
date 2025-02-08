@@ -148,28 +148,28 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         $this->attemptsReadTagAttribute();
-        $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
 
-        if ($tagOptions && isset($tagOptions['priorityMethod'])) {
-            $priorityTagMethodFromOptions = $tagOptions['priorityMethod'];
+        if (($tagOptions = $this->getTag($name)) && isset($tagOptions['priorityMethod'])) {
+            $tagOptions = $operationOptions + $this->getTag($name);
             $howGetPriority = \sprintf('Get priority by option "priorityMethod" for tag "%s".', $name);
 
-            return $this->invokePriorityMethod($priorityTagMethodFromOptions, true, [$name => $tagOptions], $howGetPriority);
+            return $this->invokePriorityMethod($tagOptions['priorityMethod'], true, $name, $tagOptions, $howGetPriority);
         }
 
-        $defaultPriorityMethod = ($tagOptions['defaultPriorityMethod'] ?? null);
+        $defaultPriorityMethod = ($operationOptions['defaultPriorityMethod'] ?? null);
 
         if (null !== $defaultPriorityMethod) {
+            $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
             $howGetPriority = \sprintf('Get priority by option "defaultPriorityMethod" for class "%s".', $this->getDefinition()->getName());
             $defaultPriorityMethodIsRequired = (bool) ($tagOptions['defaultPriorityMethodIsRequired'] ?? null);
 
-            return $this->invokePriorityMethod($defaultPriorityMethod, $defaultPriorityMethodIsRequired, [$name => $tagOptions], $howGetPriority);
+            return $this->invokePriorityMethod($defaultPriorityMethod, $defaultPriorityMethodIsRequired, $name, $tagOptions, $howGetPriority);
         }
 
         return null;
     }
 
-    private function invokePriorityMethod(mixed $priorityMethod, bool $requirePriorityMethod, array $tagWithOptions, string $howGetPriority): null|int|string
+    private function invokePriorityMethod(mixed $priorityMethod, bool $requirePriorityMethod, string $tag, array $tagOptions, string $howGetPriority): null|int|string
     {
         if (!\is_string($priorityMethod) || '' === \trim($priorityMethod)) {
             throw new AutowireException($howGetPriority.' The value option must be non-empty string.');
@@ -196,7 +196,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             throw new AutowireException($message);
         }
 
-        return \call_user_func([$reflectionClass->name, $priorityMethod], $tagWithOptions);
+        return \call_user_func([$reflectionClass->name, $priorityMethod], $tag, $tagOptions);
     }
 
     private function diffReturnType(\ReflectionMethod $reflectionMethod, string ...$type): array
