@@ -17,8 +17,6 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-use function Kaspi\DiContainer\tagOptions;
-
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
     use DiContainerTrait;
@@ -32,8 +30,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     public function __construct(
         private string $tag,
         private bool $isLazy = true,
-        private ?string $defaultPriorityMethod = null,
-        private bool $defaultPriorityMethodIsRequired = false
+        private ?string $defaultPriorityMethod = null
     ) {}
 
     /**
@@ -111,10 +108,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 $operationOptions = [];
 
                 if ($definition instanceof DiTaggedDefinitionAutowireInterface) {
-                    $operationOptions = tagOptions(
-                        defaultPriorityMethod: $this->defaultPriorityMethod,
-                        defaultPriorityMethodIsRequired: $this->defaultPriorityMethodIsRequired
-                    );
+                    $operationOptions['defaultPriorityMethod'] = $this->defaultPriorityMethod;
                 }
 
                 // 🚩 Tag with higher priority early in list.
@@ -147,10 +141,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                         $containerIdentifier,
                         $definition->geTagPriority(
                             $this->tag,
-                            tagOptions(
-                                defaultPriorityMethod: $this->defaultPriorityMethod,
-                                defaultPriorityMethodIsRequired: $this->defaultPriorityMethodIsRequired
-                            )
+                            ['defaultPriorityMethod' => $this->defaultPriorityMethod]
                         )
                     );
                 }

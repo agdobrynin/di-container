@@ -13,13 +13,10 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagOne;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwo;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefault;
 
-use function Kaspi\DiContainer\tagOptions;
-
 /**
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\tagOptions
  *
  * @internal
  */
@@ -29,7 +26,7 @@ class TagTest extends TestCase
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
-            ->bindTag('tags.handler-one', tagOptions(priorityMethod: 'getTaggedPriority'))
+            ->bindTag('tags.handler-one', ['priorityMethod' => 'getTaggedPriority'])
             ->bindTag('tags.handler-two', ['exclude.compile' => true], priority: 1000)
             ->bindTag('tags.handler-three')
             ->setContainer($mockContainer)
@@ -154,7 +151,7 @@ class TagTest extends TestCase
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
-            ->bindTag('tags.handler-one', tagOptions(priorityMethod: $priorityTagMethod))
+            ->bindTag('tags.handler-one', ['priorityMethod' => $priorityTagMethod])
             ->setContainer($mockContainer)
         ;
 
@@ -166,9 +163,9 @@ class TagTest extends TestCase
 
     public static function dataProviderPriorityTagMethodByOptionsWrongType(): \Generator
     {
-        yield 'empty string' => [tagOptions(priorityMethod: '')];
+        yield 'empty string' => [['priorityMethod' => '']];
 
-        yield 'string with sapces' => [tagOptions(priorityMethod: '   ')];
+        yield 'string with spaces' => [['priorityMethod' => '   ']];
 
         yield 'array' => [['priorityMethod' => ['method']]];
 
@@ -202,7 +199,7 @@ class TagTest extends TestCase
             ->setContainer($mockContainer)
         ;
 
-        $this->assertEquals(1000, $def->geTagPriority('tags.handler-one', tagOptions(defaultPriorityMethod: 'getTaggedPriority')));
+        $this->assertEquals(1000, $def->geTagPriority('tags.handler-one', ['defaultPriorityMethod' => 'getTaggedPriority']));
     }
 
     public function testGetPriorityByDefaultPriorityTagMethodFailIsRequiredFalse(): void
@@ -213,38 +210,7 @@ class TagTest extends TestCase
             ->setContainer($mockContainer)
         ;
 
-        $this->assertNull($def->geTagPriority('tags.handler-one', tagOptions(defaultPriorityMethod: 'getTaggedPriorityNonExist')));
-    }
-
-    public static function dataProviderDefaultPriorityTagMethodWrong(): \Generator
-    {
-        yield 'method not exist and is required set by `tagOptions`' => [
-            tagOptions(defaultPriorityMethod: 'getTaggedPriorityNonExist', defaultPriorityMethodIsRequired: true),
-        ];
-
-        yield 'method not exist and is required with raw array' => [
-            [
-                'defaultPriorityMethod' => 'getTaggedPriorityNonExist',
-                'defaultPriorityMethodIsRequired' => new \stdClass(), // convert to boolean
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider dataProviderDefaultPriorityTagMethodWrong
-     */
-    public function testGetPriorityByDefaultPriorityTagMethodFailIsRequiredTrue(array $tagOptions): void
-    {
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
-            ->bindTag('tags.handler-one')
-            ->setContainer($mockContainer)
-        ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('method must be declared with public and static modifiers. Return type must be int, string, null');
-
-        $def->geTagPriority('tags.handler-one', $tagOptions);
+        $this->assertNull($def->geTagPriority('tags.handler-one', ['defaultPriorityMethod' => 'getTaggedPriorityNonExist']));
     }
 
     public static function dataProviderWrongReturnType(): \Generator
@@ -263,7 +229,7 @@ class TagTest extends TestCase
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire($class))
-            ->bindTag('tags.handler-one', options: tagOptions(priorityMethod: $method))
+            ->bindTag('tags.handler-one', options: ['priorityMethod' => $method])
             ->setContainer($mockContainer)
         ;
 

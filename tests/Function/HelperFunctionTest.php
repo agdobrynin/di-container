@@ -17,7 +17,6 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diReference;
 use function Kaspi\DiContainer\diTaggedAs;
-use function Kaspi\DiContainer\tagOptions;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -31,7 +30,6 @@ use function Kaspi\DiContainer\tagOptions;
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\tagOptions
  *
  * @internal
  */
@@ -88,29 +86,5 @@ class HelperFunctionTest extends TestCase
 
         $this->assertInstanceOf(DiDefinitionGet::class, $def);
         $this->assertEquals('ok', $def->getDefinition());
-    }
-
-    public static function dataProviderFunctionTagOptions(): \Generator
-    {
-        yield 'all empty' => [[], []];
-
-        yield 'has priority method only' => [['priorityMethod' => 'getPriority', 'defaultPriorityMethod' => null], ['priorityMethod' => 'getPriority']];
-
-        yield 'has default priority method only' => [['defaultPriorityMethod' => 'getCollectionPriority'], ['defaultPriorityMethod' => 'getCollectionPriority']];
-
-        yield 'has default priority method with required' => [['defaultPriorityMethod' => 'getCollectionPriority', 'defaultPriorityMethodIsRequired' => true], ['defaultPriorityMethod' => 'getCollectionPriority', 'defaultPriorityMethodIsRequired' => true]];
-
-        yield 'has default priority method required only' => [['defaultPriorityMethodIsRequired' => true], []];
-    }
-
-    /**
-     * @dataProvider dataProviderFunctionTagOptions
-     *
-     * @param mixed $args
-     * @param mixed $expected
-     */
-    public function testFunctionTagOptions($args, $expected): void
-    {
-        $this->assertEquals($expected, tagOptions(...$args));
     }
 }

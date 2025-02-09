@@ -97,15 +97,3 @@ if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
         return new DiDefinitionTaggedAs($tag, $isLazy, $defaultPriorityMethod);
     }
 } // @codeCoverageIgnore
-
-if (!\function_exists('Kaspi\DiContainer\tagOptions')) { // @codeCoverageIgnore
-    function tagOptions(
-        ?string $priorityMethod = null,
-        ?string $defaultPriorityMethod = null,
-        ?bool $defaultPriorityMethodIsRequired = null,
-    ): array {
-        return (null !== $priorityMethod ? ['priorityMethod' => $priorityMethod] : [])
-            + (null !== $defaultPriorityMethod ? ['defaultPriorityMethod' => $defaultPriorityMethod] : [])
-            + (null !== $defaultPriorityMethod && null !== $defaultPriorityMethodIsRequired ? ['defaultPriorityMethodIsRequired' => $defaultPriorityMethodIsRequired] : []);
-    }
-} // @codeCoverageIgnore

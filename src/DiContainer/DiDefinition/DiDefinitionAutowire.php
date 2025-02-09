@@ -17,8 +17,6 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
-use function Kaspi\DiContainer\tagOptions;
-
 final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiTaggedDefinitionAutowireInterface
 {
     use AttributeReaderTrait;
@@ -161,9 +159,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         if (null !== $defaultPriorityMethod) {
             $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
             $howGetPriority = \sprintf('Get priority by option "defaultPriorityMethod" for class "%s".', $this->getDefinition()->getName());
-            $defaultPriorityMethodIsRequired = (bool) ($tagOptions['defaultPriorityMethodIsRequired'] ?? null);
 
-            return $this->invokePriorityMethod($defaultPriorityMethod, $defaultPriorityMethodIsRequired, $name, $tagOptions, $howGetPriority);
+            return $this->invokePriorityMethod($defaultPriorityMethod, false, $name, $tagOptions, $howGetPriority);
         }
 
         return null;
@@ -222,7 +219,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 // 🚩 Php-attribute override existing tag defined by <bindTag> (see documentation.)
                 $this->bindTag(
                     name: $tagAttribute->getIdentifier(),
-                    options: tagOptions(priorityMethod: $tagAttribute->getPriorityMethod()) + $tagAttribute->getOptions(),
+                    options: ($tagAttribute->getPriorityMethod() ? ['priorityMethod' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
                     priority: $tagAttribute->getPriority(),
                 );
             }
