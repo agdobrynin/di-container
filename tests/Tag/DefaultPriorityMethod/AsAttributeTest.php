@@ -64,7 +64,7 @@ class AsAttributeTest extends TestCase
             diAutowire(TaggedTwo::class),
         ]);
 
-        // defaultPriorityMethod: 'getOneOfPriority'
+        // priorityDefaultMethod: 'getOneOfPriority'
         $collection = $container->get(TaggedCollectionTwo::class);
 
         $this->assertIsIterable($collection->items);
@@ -75,7 +75,7 @@ class AsAttributeTest extends TestCase
         $this->assertInstanceOf(TaggedOne::class, $collection->items->current());
         $this->assertEquals(1_000, $collection->items->current()->getOneOfPriority());
         $collection->items->next();
-        // class without defaultPriorityMethod: 'getOneOfPriority'
+        // class without priorityDefaultMethod: 'getOneOfPriority'
         $this->assertInstanceOf(TaggedTwo::class, $collection->items->current());
         $this->assertFalse((new \ReflectionClass($collection->items->current()))->hasMethod('getOneOfPriority'));
 

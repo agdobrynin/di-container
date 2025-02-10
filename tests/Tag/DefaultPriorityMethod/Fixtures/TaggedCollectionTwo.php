@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 final class TaggedCollectionTwo
 {
     public function __construct(
-        #[TaggedAs(TaggedInterface::class, defaultPriorityMethod: 'getOneOfPriority')]
+        #[TaggedAs(TaggedInterface::class, priorityDefaultMethod: 'getOneOfPriority')]
         public iterable $items
     ) {}
 }

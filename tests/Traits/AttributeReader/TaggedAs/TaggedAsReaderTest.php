@@ -81,6 +81,6 @@ class TaggedAsReaderTest extends TestCase
 
         $this->assertEquals('tags.voters-security', $res->current()->getIdentifier());
         $this->assertFalse($res->current()->isLazy());
-        $this->assertEquals('getCollectionPriority', $res->current()->getDefaultPriorityMethod());
+        $this->assertEquals('getCollectionPriority', $res->current()->getPriorityDefaultMethod());
     }
 }

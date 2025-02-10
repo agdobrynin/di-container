@@ -44,6 +44,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 namespace App;
 
 class MyDb {
+
     public function __construct(
         #[Inject('services.pdo-env')]
         public \PDO $pdo
@@ -57,11 +58,17 @@ use function Kaspi\DiContainer\{diAutowire, diCallable};
 return [
     'services.pdo-prod' => diAutowire(PDO::class)
         ->bindArguments(dsn: 'sqlite:/data/prod/db.db'),
+
     'services.pdo-local' => diAutowire(PDO::class)
         ->bindArguments(dsn: 'sqlite:/tmp/db.db'),
+
+    'services.pdo-test' => diAutowire(PDO::class)
+        ->bindArguments(dsn: 'sqlite::memory:'),
+
     'services.pdo-env' => diCallable(
         definition: static fn (ContainerInterface $container) => match (\getenv('APP_PDO')) {
             'prod' => $container->get('services.pdo-prod'),
+            'test' => $container->get('services.pdo-test'),
             default => $container->get('services.pdo-local')
         },
         isSingleton: true,
@@ -92,9 +99,11 @@ namespace App\Rules;
 interface RuleInterface {}
 
 class RuleA implements RuleInterface {}
+
 class RuleB implements RuleInterface {}
 
 class RuleGenerator {
+
     private iterable $rules;
 
     public function __construct(
@@ -133,6 +142,7 @@ namespace App\Rules;
 interface RuleInterface {}
 
 class RuleA implements RuleInterface {}
+
 class RuleB implements RuleInterface {}
 
 class RuleGenerator {
@@ -165,6 +175,7 @@ $definitions = [
             return $a
         }
     ),
+
     'services.rules.b' => diAutowire(App\Rules\RuleB::class),
 ];
 
@@ -191,10 +202,13 @@ use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 namespace App\Rules;
 
 interface RuleInterface {}
+
 class RuleA implements RuleInterface {}
+
 class RuleB implements RuleInterface {}
 
 class RulesDiFactory implements DiFactoryInterface {
+
     public function __construct(
         private RuleA $ruleA,
     ) {}
@@ -206,6 +220,7 @@ class RulesDiFactory implements DiFactoryInterface {
 }
 
 class RuleGenerator {
+
     private iterable $rules;
 
     public function __construct(
@@ -247,6 +262,7 @@ interface RuleInterface {}
 class RuleA implements RuleInterface {}
 
 class RuleGenerator {
+
     public function __construct(
         #[Inject(RuleA::class)]
         public RuleInterface $inputRule
@@ -301,6 +317,7 @@ interface CustomLoggerInterface {
 // Класс реализующий CustomLoggerInterface.
 
 class CustomLogger implements CustomLoggerInterface {
+
     public function __construct(
         protected string $file,
     ) {}
@@ -313,6 +330,7 @@ class CustomLogger implements CustomLoggerInterface {
 // Класс внедряющий зависимость по CustomLoggerInterface
 
 class MyLogger {
+
     public function __construct(
         // Контейнер найдёт интерфейс
         // и проверит у него php-атрибут Service.
@@ -353,12 +371,14 @@ interface MyInterface {}
 // ...
 
 class SuperClass {
+
     public function __construct(public MyInterface $my) {}
 }
 
 // ...
 
 class SuperSrv implements MyInterface {
+
     public function changeConfig(array $config) {
         //...
     }
@@ -417,10 +437,12 @@ use Psr\Container\ContainerInterface;
 
 class FactorySuperClass implements DiFactoryInterface
 {
+
     public function __invoke(ContainerInterface $container): App\SuperClass
     {
         return new App\SuperClass('Piter', 22);
     }
+
 }
 ```
 
@@ -565,19 +587,21 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 #[TaggedAs(
     name: '', // имя тега
     isLazy: true, // получить коллекцию как ленивую (отложенная инициализация)
-    defaultPriorityMethod: null // метод класса для сортировки в коллекции
-                                //если у тегированого сервиса не указан 'priority' или 'priorityMethod'
+    priorityDefaultMethod: null // метод класса для сортировки в коллекции
+                                //если у тегированого сервиса не указан
+                                // 'priority' или 'priorityMethod'
+                                // или опциия у тега 'priority.method'
 )]
 ```
 ```php
 Kaspi\DiContainer\Attributes\TaggedAs(
     string $name,
     bool $isLazy = true,
-    ?string $defaultPriorityMethod = null
+    ?string $priorityDefaultMethod = null
 )
 ```
 
-> Метод указанный в аргументе `$defaultPriorityMethod` должен быть объявлен как `public static function`
+> Метод указанный в аргументе `$priorityDefaultMethod` должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
 > В качестве аргументов метод принимает два параметра:
 >  - `string $tag` - имя тега;
@@ -590,22 +614,26 @@ Kaspi\DiContainer\Attributes\TaggedAs(
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
 class AnyClass {
+
     public function __construct(
         // будет получено как коллекция через тип \Generator
         // с ленивой инициализацией сервисов
         #[TaggedAs(name: 'tags.services.group-two')]
         private iterable $services
     ) {}
+
 }
 
 class SomeService {
+
     public function __construct(
         #[TaggedAs(
             name: SomeInterface::class,
-            defaultPriorityMethod: 'getPriorityForSomeInterface'
+            priorityDefaultMethod: 'getPriorityForSomeInterface'
         )]
         private iterable $services
     ) {}
+
 }
 ```
 Чтобы заполнить параметр с типом `array` необходимо указать аргумент `$isLazy` как `false`:
@@ -613,11 +641,13 @@ class SomeService {
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
 class AnyClass {
+
     public function __construct(
         // будет получено массив (все сервисы уже получены)
         #[TaggedAs(name: 'tags.services.group-two', isLazy: false)]
         private array $services 
     ) {}
+
 }
 ```
 Атрибут можно применять так же **параметрам переменной длинны**:
@@ -625,11 +655,13 @@ class AnyClass {
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
 class AnyService {
+
     public function __construct(
         #[TaggedAs('tags.word-group.first', false)]
         #[TaggedAs('tags.word-group.second', false)]
         array ...$wordGroup
     ) {}
+
 }
 ```
 Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
@@ -644,6 +676,7 @@ namespace App\Rules;
 interface RuleInterface {}
 
 class RuleA implements RuleInterface {}
+
 class RuleB implements RuleInterface {}
 ```
 ```php

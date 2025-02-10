@@ -12,7 +12,7 @@ final class RuleTaggedByInterface
      * @param RuleInterface[] $rules
      */
     public function __construct(
-        #[TaggedAs(RuleInterface::class, defaultPriorityMethod: 'getPriority')]
+        #[TaggedAs(RuleInterface::class, priorityDefaultMethod: 'getPriority')]
         private iterable $rules
     ) {}
 

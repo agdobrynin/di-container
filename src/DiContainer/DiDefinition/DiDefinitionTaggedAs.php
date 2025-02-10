@@ -30,7 +30,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     public function __construct(
         private string $tag,
         private bool $isLazy = true,
-        private ?string $defaultPriorityMethod = null
+        private ?string $priorityDefaultMethod = null
     ) {}
 
     /**
@@ -108,7 +108,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 $operationOptions = [];
 
                 if ($definition instanceof DiTaggedDefinitionAutowireInterface) {
-                    $operationOptions['defaultPriorityMethod'] = $this->defaultPriorityMethod;
+                    $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
                 }
 
                 // 🚩 Tag with higher priority early in list.
@@ -141,7 +141,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                         $containerIdentifier,
                         $definition->geTagPriority(
                             $this->tag,
-                            ['defaultPriorityMethod' => $this->defaultPriorityMethod]
+                            ['priority.default_method' => $this->priorityDefaultMethod]
                         )
                     );
                 }

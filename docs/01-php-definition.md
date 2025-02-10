@@ -17,7 +17,9 @@ $definitions = [
         isSingleton: true
         )
             // установить параметр $dsn в конструкторе 'sqlite:/tmp/my.db'.
-            ->bindArguments(dsn: 'sqlite:/tmp/my.db')
+            ->bindArguments(
+                dsn: 'sqlite:/tmp/my.db'
+            )
             // Вызвать метод "setAttribute" и предать параметры в него
             ->setup('setAttribute', \PDO::ATTR_CASE, \PDO::CASE_UPPER),
 ];
@@ -173,13 +175,17 @@ $definitions = [
     // идентификатор контейнера сформируется
     // из имени класса включая пространство имен
     diAutowire(\PDO::class)
-        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
+        ->bindArguments(
+            dsn: 'sqlite:/tmp/my.db'
+        ),
     )
 ];
 // эквивалентно
 $definitions = [
     \PDO::class => diAutowire(\PDO::class)
-        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
+        ->bindArguments(
+            dsn: 'sqlite:/tmp/my.db'
+        ),
 ];
 ```
 Если необходим другой идентификатор контейнера, то можно указывать так:
@@ -189,10 +195,15 @@ use function Kaspi\DiContainer\diAutowire;
 $definitions = [
     // $container->get('pdo-in-tmp-file')
     'pdo-in-tmp-file' => diAutowire(\PDO::class)
-        ->bindArguments(dsn: 'sqlite:/tmp/my.db'),
+        ->bindArguments(
+            dsn: 'sqlite:/tmp/my.db'
+        ),
+
     // $container->get('pdo-in-memory')
     'pdo-in-memory' => diAutowire(\PDO::class)
-        ->bindArguments(dsn: 'sqlite::memory:'),
+        ->bindArguments(
+            dsn: 'sqlite::memory:'
+        ),
 ];
 ```
 #### diCallable
@@ -255,10 +266,12 @@ $definitions = [
         definition: static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key', false),
         isSingleton: true,
     ),
+
     'services.two' => diCallable(
         definition: [App\Services\ServiceOne::class, 'makeForTest'],
         isSingleton: false, 
-    )->bindArguments('my-other-api-key'),
+    )
+        ->bindArguments('my-other-api-key'),
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -300,6 +313,7 @@ $definitions = [
         definition: static function () {
             return match (getenv('APP_ENV')) {
                 'prod' => 'sqlite:/databases/my-app/app.db',
+                'test' => 'sqlite::memory:',
                 default => 'sqlite:/tmp/mydb.db',  
             };
         },
@@ -359,7 +373,9 @@ use function Kaspi\DiContainer\diValue;
 
 $definition = [
     diAutowire(ParameterIterableVariadic::class)
-        ->bindArguments(parameter: diValue(['ok']))
+        ->bindArguments(
+            parameter: diValue(['ok'])
+        )
 ];
 
 $container = (new DiContainerFactory())->make($definition);
@@ -388,7 +404,12 @@ $definitions = [
         ->bindTag('tags.system-emails'),
 
     diAutowire(App\Notifications\CompanyStaff::class)
-        ->bindArguments(emails: diTaggedAs(tag: 'tags.system-emails', isLazy: false)),
+        ->bindArguments(
+            emails: diTaggedAs(
+                tag: 'tags.system-emails',
+                isLazy: false
+            )
+        ),
 ];
 
 $container = (new DiContainerFactory())->make($definition);
@@ -503,16 +524,16 @@ $classWithHeavyDep->doHeavyDependency();
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use function Kaspi\DiContainer\diTaggedAs;
 
-diTaggedAs(string $tag, bool $isLazy = true, ?string $defaultPriorityMethod = null): DiDefinitionNoArgumentsInterface
+diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null): DiDefinitionNoArgumentsInterface
 ```
 Аргументы:
 - `$tag` - имя тега на сервисах которые нужно собрать из контейнера.
 - `$isLazy` - получать сервисы только во время обращения или сразу всё.
-- `$defaultPriorityMethod` - если получаемый сервис является php классом
+- `$priorityDefaultMethod` - если получаемый сервис является php классом
 и у него не определен `priority` или `priorityMethod`, то будет выполнена попытка
 получить значение `priority` через вызов указанного метода.
 
-> Метод `$defaultPriorityMethod` должен быть объявлен как `public static function`
+> Метод `$priorityDefaultMethod` должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
 > В качестве аргументов метод принимает два параметра:
 >  - `string $tag` - имя тега;
@@ -537,7 +558,9 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 $container = (new DiContainerFactory())->make([
     diAutowire(App\Srv\MyClass::class)
-        ->bindArguments(rules: diTaggedAs('tags.lite-rules')),
+        ->bindArguments(
+            rules: diTaggedAs('tags.lite-rules')
+        ),
 
     diAutowire(App\Rules\RuleA::class)
         ->bindTag('tags.lite-rules'),
@@ -586,9 +609,14 @@ $definitions = [
     
     // внедрение зависимости аргумента по ссылке на контейнер-id
     diAutowire(App\MyUsers::class)
-        ->bindArguments(users: diGet('data'), type: 'Some value')
+        ->bindArguments(
+            users: diGet('data'), type: 'Some value'
+        ),
+
     diAutowire(App\MyEmployers::class)
-        ->bindArguments(employers: diGet('data'), type: 'Other value'),
+        ->bindArguments(
+            employers: diGet('data'), type: 'Other value'
+        ),
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -601,6 +629,7 @@ use App\{MyUsers, MyEmployers};
 /** @var MyUsers::class $users */
 $users = $container->get(MyUsers::class);
 print implode(',', $users->users); // user1, user2
+
 /** @var MyEmployers::class $employers */
 $employers = $container->get(MyEmployers::class);
 print implode(',', $employers->employers); // user1, user2
@@ -614,6 +643,7 @@ print implode(',', $employers->employers); // user1, user2
 namespace App;
 
 class ServiceLocation {
+
     public function __construct(public string $locationCity) {}
 }
 ```
@@ -640,6 +670,7 @@ use Psr\Log\LoggerInterface;
 namespace App;
 
 class MyLogger {
+
     public function __construct(protected LoggerInterface $logger) {}
     
     public function logger(): LoggerInterface {
@@ -693,6 +724,7 @@ namespace App;
 interface ClassInterface {}
 
 class ClassFirst implements ClassInterface {
+
     public function __construct(public string $file) {}
 }
 ```
@@ -754,6 +786,7 @@ use Psr\Container\ContainerInterface;
 namespace App;
 
 class  MyClass {
+
     public function __construct(private Db $db) {}
     // ...
 }
@@ -761,6 +794,7 @@ class  MyClass {
 // ....
 
 class FactoryMyClass implements DiFactoryInterface {
+
     public function __invoke(ContainerInterface $container): MyClass {
         return new MyClass(new Db(...));
     }    
@@ -797,6 +831,7 @@ $container->get(App\MyClass::class); // instance of App\MyClass
 namespace App;
 
 class ServiceLocation {
+
     public function __construct(public string $city) {}
 }
 
@@ -804,6 +839,7 @@ class ServiceLocation {
 
 class ClassWithStaticMethods
 {
+
     public static function doSomething(
         ServiceLocation $serviceLocation // Внедрение зависимости по типу
     ): \stdClass {
@@ -861,6 +897,7 @@ class RuleB implements RuleInterface {}
 class RuleC implements RuleInterface {}
 
 class RuleGenerator {
+
     private iterable $rules;
 
     public function __construct(RuleInterface ...$inputRule) {
@@ -880,6 +917,7 @@ use function Kaspi\DiContainer\{diAutowire, diGet};
 
 $definition = [
     'ruleC' => diAutowire(App\Rules\RuleC::class),
+
     diAutowire(App\Rules\RuleGenerator::class)
         ->bindArguments(
             // имя параметра $inputRule в конструкторе
@@ -920,7 +958,9 @@ $definition = [
    // Передать в параметр с индексом 0 значение.
    ->bindArguments(
        diAutowire(App\Rules\RuleB::class),
+
        diAutowire(App\Rules\RuleA::class),
+
        diGet('ruleC'), // <-- получение по ссылке
    );
 ```
@@ -940,6 +980,7 @@ interface SumInterface {
 }
 
 class Sum implements SumInterface {
+
     public function __construct(private int $init) {}
 
     public function getInit(): int {
@@ -956,6 +997,7 @@ use function Kaspi\DiContainer\diAutowire;
 $definition = [
     App\SumInterface::class => diAutowire(App\Sum::class)
         ->bindArguments(init: 50),
+
     diAutowire(App\Sum::class)
         ->bindArguments(init: 10),
 ];
@@ -970,6 +1012,7 @@ print $c->get(App\Sum::class)->getInit(); // 10
 Создание объекта без сохранения результата в контейнере.
 ```php
 class MyApiRequest {
+
     public function __construct(
          private SomeDependency $dependency,
          private string $endpoint
@@ -1016,7 +1059,9 @@ namespace App\Rules;
 interface RuleInterface {}
 
 class RuleA implements RuleInterface {}
+
 class RuleB implements RuleInterface {}
+
 class RuleC implements RuleInterface {}
 ```
 ```php
@@ -1073,7 +1118,9 @@ namespace App\Rules;
 interface RuleInterface {}
 
 class RuleA implements RuleInterface {}
+
 class RuleB implements RuleInterface {}
+
 class RuleC implements RuleInterface {}
 ```
 ```php
@@ -1119,7 +1166,6 @@ $definitions = [
         // передаю по индексу все аргументы в метод
         ->setup('addRule', diGet('services.other'), diGet(RuleC::class))
 ];
-
 
 $container = (new DiContainerFactory())->make($definitions);
 

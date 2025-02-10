@@ -238,7 +238,7 @@ trait ParametersResolverTrait
                     new DiDefinitionTaggedAs(
                         $tagged->getIdentifier(),
                         $tagged->isLazy(),
-                        $tagged->getDefaultPriorityMethod()
+                        $tagged->getPriorityDefaultMethod()
                     )
                 );
             }

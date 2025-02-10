@@ -138,14 +138,14 @@ class TaggedByTest extends TestCase
                     rules: diTaggedAs(
                         'tags.rules',
                         false,
-                        defaultPriorityMethod: 'getCollectionPriority'
+                        priorityDefaultMethod: 'getCollectionPriority'
                     )
                 ),
             diAutowire(One::class),
             diAutowire(RuleA::class)
-                ->bindTag(name: 'tags.rules', options: ['priorityMethod' => 'getPriority']),
+                ->bindTag(name: 'tags.rules', options: ['priority.method' => 'getPriority']),
             diAutowire(RuleB::class)
-                ->bindTag(name: 'tags.rules', options: ['priorityMethod' => 'getPriorityOther']),
+                ->bindTag(name: 'tags.rules', options: ['priority.method' => 'getPriorityOther']),
             diAutowire(RuleC::class)
                 ->bindTag(name: 'tags.rules'),
             diAutowire(Two::class),

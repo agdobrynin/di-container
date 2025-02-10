@@ -39,7 +39,7 @@ class TaggedAsTest extends TestCase
 
         $this->assertEquals('tags.handler-one', $tag->getIdentifier());
         $this->assertTrue($tag->isLazy());
-        $this->assertNull($tag->getDefaultPriorityMethod());
+        $this->assertNull($tag->getPriorityDefaultMethod());
     }
 
     public function testTaggedAsLazyAndDefaultPriorityMethod(): void
@@ -47,6 +47,6 @@ class TaggedAsTest extends TestCase
         $tag = new TaggedAs('tags.handler-one', false, 'getPriority');
 
         $this->assertFalse($tag->isLazy());
-        $this->assertEquals('getPriority', $tag->getDefaultPriorityMethod());
+        $this->assertEquals('getPriority', $tag->getPriorityDefaultMethod());
     }
 }

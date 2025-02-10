@@ -6,7 +6,7 @@
 одним или несколькими тегами.
 Каждый тег может содержать мета-данные переданные в виде массива.
 
-Тегирование сервисов можно произвести при объявлении в стиле [php-определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md)
+Тегирование сервисов можно произвести при объявлении в стиле [php определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md)
 или используя [PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
 
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
@@ -45,18 +45,50 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 - `$options` - метаданные для тега
 - `$priority` - [приоритет в коллекции](#приоритет-в-коллекции) тегов
 
-🔔 Аргумент `$options` может содержать дополнительные метаданные
+🤝 Соглашение по именованию тегов и ключей массива у аргумента `$options`.
+- использовать строчные буквы
+- разделять символом подчеркивание "_" части имени если определение состоит из нескольких слов.
+- разделять символом точка "." группы в определении
+
+Например:
+```php
+use function Kaspi\DiContainer\diAutowire;
+// в стиле php определений
+diAutowire(SomeClass::class)
+    ->bindTag(
+        'tags.any_service',
+         options: [
+            'some_info.data' => 'foo',
+            'some_info.current_value' => 'baz',
+        ]
+     );
+```
+```php
+// через php атрибуты
+use Kaspi\DiContainer\Attributes\Tag;
+ 
+#[Tag(
+    'tags.any_service',
+    options: [
+        'some_info.data' => 'foo',
+        'some_info.current_value' => 'baz',
+    ]
+)]
+final class SomeClass {}
+```
+
+> 🔔 Аргумент `$options` может содержать дополнительные метаданные
 для устанавливаемого тега представленные массивом.
 Ключ массива `$options` это непустая строка, а значение это простой php тип (_`string`, `bool`, `null` или `array` из этих типов_).
 
-> ⚠ Для аргумента `$options` зарезервирован ключ массива `priorityMethod` - значение типа `string`.
+> ⚠ Для аргумента `$options` зарезервирован ключ массива `priority.method` - значение типа `string`.
 > ```php
-> ['priorityMethod' => 'someValue']
+> ['priority.method' => 'someValue']
 > ```
 > Значение это метод класса возвращающий приоритет (_priority_) для тега если не определен `priority`.
 > Метод должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
-> В качестве аргументов метод принимает два параметра:
+> В приведенном выше примере метод "someValue" принимает два аргумента:
 >  - `string $tag` - имя тега;
 >  - `array $options` - метаданные тега;
 >
@@ -70,7 +102,9 @@ class One {}
 class Two {}
 
 class ServicesAny {
+
     public function __construct(private iterable $services) {}
+
 }
 ```
 ```php
@@ -79,11 +113,13 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 $definitions = [
     diAutowire(One::class)
-        ->bindTag(name: 'tags.services-any'),
+        ->bindTag(name: 'tags.service_any'),
+
     diAutowire(Two::class)
-        ->bindTag(name: 'tags.services-any'),
+        ->bindTag(name: 'tags.service_any'),
+
     diAutowire(ServicesAny::class)
-        ->bindArguments(services: diTaggedAs('tags.services-any')),
+        ->bindArguments(services: diTaggedAs('tags.service_any')),
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -96,14 +132,16 @@ $class = $container->get(ServicesAny::class);
 > ```php
 > use function Kaspi\DiContainer\diTaggedAs;
 > 
-> diTaggedAs(tag: 'tags.services-any', isLazy: false)
+> diTaggedAs(tag: 'tags.service_any', isLazy: false)
 > ```
 #### Получение тегированных сервисов можно применять так же **параметрам переменной длинны**:
 ```php
 class AnyService {
+
     public function __construct(
         array ...$srvGroup
     ) {}
+
 }
 ```
 ```php
@@ -112,23 +150,23 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 $definitions = [
     diAutowire(One::class)
-        ->bindTag(name: 'tags.ser-group-1'),
+        ->bindTag(name: 'tags.group_1'),
 
     diAutowire(Two::class)
-        ->bindTag(name: 'tags.ser-group-1'),
+        ->bindTag(name: 'tags.group_1'),
 
     diAutowire(Three::class)
-        ->bindTag(name: 'tags.ser-group-2'),
+        ->bindTag(name: 'tags.group_2'),
 
     diAutowire(Four::class)
-        ->bindTag(name: 'tags.ser-group-2'),
+        ->bindTag(name: 'tags.group_2'),
 
     diAutowire(AnyService::class)
         ->bindArguments(
             srvGroup: [
                 // аргумент имеет тип array то $isLazy=false
-                diTaggedAs('tags.ser-group-1', false),
-                diTaggedAs('tags.ser-group-2', false),
+                diTaggedAs('tags.group_1', false),
+                diTaggedAs('tags.group_2', false),
             ]
         ),
 ];
@@ -136,11 +174,8 @@ $definitions = [
 $container = (new DiContainerFactory())->make($definitions);
 $class = $container->get(AnyService::class);
 /**
- * Эквивалент вызова:
- * $class = new AnyService(
- *  [new One, new Two],
- *  [new Three, new Four]
- * )
+ * В свойстве AnyService::$srvGroup[0] будут классы One, Two.
+ * В свойстве AnyService::$srvGroup[1] будут классы Three, Four.
  */
 ```
 
@@ -151,11 +186,11 @@ $class = $container->get(AnyService::class);
 use Kaspi\DiContainer\Attributes\Tag; 
 namespace App\Any;
 
-#[Tag(name: 'tags.services.group-one')]
-#[Tag(name: 'tags.services.group-two', priority: 5)]
+#[Tag(name: 'tags.services.group_one')]
+#[Tag(name: 'tags.services.group_two', priority: 5)]
 class One {}
 
-#[Tag('tags.services.group-two', priority: 10)]
+#[Tag('tags.services.group_two', priority: 10)]
 class Two {}
 ```
 Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]` ([описание атрибута](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas)):
@@ -165,10 +200,12 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 namespace App\Services;
 
 class GroupTwo {
+
     public function __construct(
-        #[TaggedAs('tags.services.group-two')]
+        #[TaggedAs('tags.services.group_two')]
         private iterable $services
     ) {}
+
 }
 ```
 > #️⃣ При использовании тегирования через PHP атрибуты
@@ -180,8 +217,11 @@ use Kaspi\DiContainer\DiContainerFactory;
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 $definitions = [
+
     diAutowire(One::class),
+
     diAutowire(Two::class),
+
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -195,24 +235,26 @@ $class = $container->get(GroupTwo::class);
 use Kaspi\DiContainer\Attributes\{Tag, TaggedAs};
 
 class AnyService {
+
     public function __construct(
         // аргумент имеет тип array то $isLazy=false
-        #[TaggedAs('tags.ser-group-1', false)]
-        #[TaggedAs('tags.ser-group-2', false)]
+        #[TaggedAs('tags.group_1', false)]
+        #[TaggedAs('tags.group_2', false)]
         array ...$srvGroup
     ) {}
+
 }
 
-#[Tag('tags.ser-group-1')]
+#[Tag('tags.group_1')]
 class One {}
 
-#[Tag('tags.ser-group-1')]
+#[Tag('tags.group_1')]
 class Two {}
 
-#[Tag('tags.ser-group-2')]
+#[Tag('tags.group_2')]
 class Three {}
 
-#[Tag('tags.ser-group-2')]
+#[Tag('tags.group_2')]
 class Four {}
 ```
 ```php
@@ -222,8 +264,11 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 $definitions = [
     // Объявить класс чтобы была возможность работы с атрибутом #[Tag]
     diAutowire(One::class),
+
     diAutowire(Two::class),
+
     diAutowire(Three::class),
+
     diAutowire(Four::class),
 ];
 
@@ -259,9 +304,11 @@ class RuleC {}
 namespace App\Services;
 
 class SrvRules {
+
     public function __construct(
         private iterable $rules
     ) {}
+
 }
 ```
 
@@ -273,14 +320,19 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 // Объявить классы 
 $definitions = [
+
     diAutowire(RuleA::class),
+
     diAutowire(RuleB::class),
+
     diAutowire(RuleC::class),
+
     diAutowire(SrvRules::class)
         ->bindArguments(
             // собрать объявленные классы реализующие интерфейс.
             rules: diTaggedAs(RuleInterface::class)
         )
+
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -292,11 +344,13 @@ $class = $container->get(SrvRules::class);
 > сервисов не определен и может быть любым.
 > 
 > Если нужен определенный порядок можно воспользоваться
-> аргументом `$defaultPriorityMethod` у хэлпер функции:
+> аргументом `$priorityDefaultMethod` у хэлпер функции:
 > ```php
->   diTaggedAs(RuleInterface::class, defaultPriorityMethod: 'methodPriority')
+> use function Kaspi\DiContainer\diTaggedAs;
+> 
+> diTaggedAs(RuleInterface::class, priorityDefaultMethod: 'methodPriority')
 > ```
-> 🗨 подробнее в разделе [приоритет сервисов в коллекции](#опции-prioritymethod-и-defaultprioritymethod-для-приоритизации-в-коллекции).
+> 🗨 подробнее в разделе [приоритет сервисов в коллекции](#prioritymethod-и-prioritydefaultmethod-для-приоритизации-в-коллекции).
 
 ### #️⃣ Использование через php атрибуты
 
@@ -320,10 +374,12 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 namespace App\Services;
 
 class SrvRules {
+
     public function __construct(
         #[TaggedAs(RuleInterface::class)]
         private iterable $rules
     ) {}
+
 }
 ```
 
@@ -335,9 +391,13 @@ use function Kaspi\DiContainer\diAutowire;
 
 // Объявить классы 
 $definitions = [
+
     diAutowire(RuleA::class),
+
     diAutowire(RuleB::class),
+
     diAutowire(RuleC::class),
+
 ];
 
 $container = (new DiContainerFactory())->make($definitions);
@@ -349,11 +409,11 @@ $class = $container->get(SrvRules::class);
 > сервисов не определен и может быть любым.
 >
 > Если нужен определенный порядок можно воспользоваться
-> аргументом `defaultPriorityMethod` у php атрибута:
+> аргументом `priorityDefaultMethod` у php атрибута:
 > ```php
->   #[TaggedAs(RuleInterface::class, defaultPriorityMethod: 'methodPriority')]
+> #[TaggedAs(RuleInterface::class, priorityDefaultMethod: 'methodPriority')]
 > ```
-> 🗨 подробнее в разделе [приоритет сервисов в коллекции](#опции-prioritymethod-и-defaultprioritymethod-для-приоритизации-в-коллекции).
+> 🗨 подробнее в разделе [приоритет сервисов в коллекции](#prioritymethod-и-prioritydefaultmethod-для-приоритизации-в-коллекции).
 
 
 ## Приоритет в коллекции.
@@ -371,12 +431,12 @@ $class = $container->get(SrvRules::class);
 то будет выполнена попытка получить значение `priority`
 через вызов указанного метода.
 3. Если при получении коллекции через `diTaggedAs` или через php атрибут `#[TaggedAs]`
-указан параметр `defaultPriorityMethod` и получаемый элемент является php классом
+указан параметр `priorityDefaultMethod` и получаемый элемент является php классом
 то будет выполнена попытка получить значение `priority` через вызов
-метода указанного в `defaultPriorityMethod`.
+метода указанного в `priorityDefaultMethod`.
 4. если не нашлось подходящих методов получения то `priority` будет `null`
 
-> 🚩 Метод указанный в `priorityMethod` и `defaultPriorityMethod`
+> 🚩 Метод указанный в `priorityMethod` и `priorityDefaultMethod`
 > должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
 > В качестве аргументов метод принимает два параметра:
@@ -450,10 +510,12 @@ class RuleB implements RuleInterface {}
 class RuleC {} implements RuleInterface {}
 
 class Rules {
+
     public function __construct(
         #[TaggedAs('tags.rules')]
         private iterable $rules
     ) {}
+
 }
 ```
 
@@ -461,9 +523,13 @@ class Rules {
 use function Kaspi\DiContainer\diAutowire;
 
 $definitions = [
+
    diAutowire(App\Rules\RuleA::class),
+
    diAutowire(App\Rules\RuleB::class),
+
    diAutowire(App\Rules\RuleC::class),
+
 ];
 // при получении коллекции в Rules::$rules отсортированные по приоритету
 // 1 - RuleC - priority === 100
@@ -471,13 +537,16 @@ $definitions = [
 // 3 - RuleB - priority === null
 ```
 
-### Опции `priorityMethod` и `defaultPriorityMethod`  для приоритизации в коллекции.
+### `priorityMethod` и `priorityDefaultMethod` для приоритизации в коллекции.
 
 #### 🐘 В стиле php определений
 
-Использовать метаданные в аргументе `$options` [у метода `bindTag`](#-объявление-тега-через-php-определение)
-`priorityMethod` как указание приоритета:
-
+Использовать метаданные в аргументе `$options` указав в массиве ключ `priority.method` [у метода `bindTag`](#-объявление-тега-через-php-атрибут)
+как указание приоритета:
+```php
+['priority.method' => 'methodName']
+```
+Пример использования значения `priority.method`:
 ```php
 // Определение классов
 namespace App\Rules;
@@ -487,18 +556,23 @@ interface RuleInterface {
 }
 
 class RuleA implements RuleInterface {
+
     public static function getPriority(): int {
         return 10;
     }
+
 }
 
 class RuleB implements RuleInterface {
+
     public static function getPriority(): int {
         return 0;
     }
+
 }
 
 class RuleC {
+
     public static function getPriorityForCollection(string $tag): string|int|null {
         return match ($tag) {
             'tags.rules' => 100,
@@ -506,8 +580,10 @@ class RuleC {
             default => null,
         };
     }
+
 }
 ```
+
 ```php
 use function \Kaspi\DiContainer\diAutowire;
 use function \Kaspi\DiContainer\diTaggedAs;
@@ -516,25 +592,26 @@ $definitions = [
    diAutowire(App\Rules\RuleA::class) // реализует метод интерфейса RuleInterface::getPriority
         ->bindTag(
             name: 'tags.rules',
-            options: ['priorityMethod' => 'getPriority']
+            options: ['priority.method' => 'getPriority']
         ),
-   
+
    diAutowire(App\Rules\RuleB::class) // реализует метод интерфейса RuleInterface::getPriority
         ->bindTag(
             name: 'tags.rules',
-            options: ['priorityMethod' => 'getPriority']
+            options: ['priority.method' => 'getPriority']
         ),
 
    diAutowire(App\Rules\RuleC::class)
         ->bindTag(name: 'tags.rules'), // не указываем явно данные как получать `priority`
+                                       // метод по умолчанию будет указан в `diTaggedAs`.
 
     diAutowire(App\Rules\Rules::class)
         ->bindArguments(
             rules: diTaggedAs(
                 'tags.rules',
-                // если нет `priority` и `priorityMethod`
+                // если нет `priority` и `priority.method`
                 // попробовать вызвать метод - className::getPriorityForCollection() 
-                defaultPriorityMethod: 'getPriorityForCollection'
+                priorityDefaultMethod: 'getPriorityForCollection'
             )
         )
 ];
@@ -543,7 +620,7 @@ $definitions = [
 // 2 - RuleA::getPriority() === 10
 // 3 - RuleB::getPriority() === 0
 ```
-### #️⃣ Черкз php атрибуты
+### #️⃣ Через php атрибуты
 
 Использовать аргумент `$priorityMethod` у php атрибута `#[Tag]`
 как указание приоритета:
@@ -556,20 +633,25 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 
 #[Tag(name: 'tags.rules', priorityMethod: 'getPriority')]
 class RuleA {
+
     public static function getPriority(): int {
         return 10;
     }
+
 }
 
 #[Tag(name: 'tags.rules', priorityMethod: 'getPriority')]
 class RuleB {
+
     public static function getPriority(): int {
         return 0;
     }
+
 }
 
 #[Tag(name: 'tags.rules')] // без явного указания priority и priorityMethod
 class RuleC {
+
     public static function getPriorityForCollection(string $tag): string|int|null {
         return match ($tag) {
             'tags.rules' => 100,
@@ -577,24 +659,31 @@ class RuleC {
             default => null,
         };
     }
+
 }
 
 class Rules {
+
     public function __construct(
         #[TaggedAs(
             'tags.rules',
             // если не объявлен `priority` и `priorityMethod`
-            // вызвать если есть `getPriorityForCollection`
-            defaultPriorityMethod: 'getPriorityForCollection'
+            // то попытаться вызвать метод `getPriorityForCollection` у тегированного класса
+            priorityDefaultMethod: 'getPriorityForCollection'
         )]
         private iterable $rules
     ) {}
+
 }
 
 $definitions = [
+
    diAutowire(App\Rules\RuleA::class),
+
    diAutowire(App\Rules\RuleB::class),
+
    diAutowire(App\Rules\RuleC::class),
+
 ];
 // при получении коллекции отсортированные по приоритету
 // 1 - RuleC::getPriorityForCollection() === 100

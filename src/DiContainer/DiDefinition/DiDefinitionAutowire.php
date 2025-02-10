@@ -147,20 +147,20 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         $this->attemptsReadTagAttribute();
 
-        if (($tagOptions = $this->getTag($name)) && isset($tagOptions['priorityMethod'])) {
+        if (($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
             $tagOptions = $operationOptions + $this->getTag($name);
-            $howGetPriority = \sprintf('Get priority by option "priorityMethod" for tag "%s".', $name);
+            $howGetPriority = \sprintf('Get priority by option "priority.method" for tag "%s".', $name);
 
-            return $this->invokePriorityMethod($tagOptions['priorityMethod'], true, $name, $tagOptions, $howGetPriority);
+            return $this->invokePriorityMethod($tagOptions['priority.method'], true, $name, $tagOptions, $howGetPriority);
         }
 
-        $defaultPriorityMethod = ($operationOptions['defaultPriorityMethod'] ?? null);
+        $priorityDefaultMethod = ($operationOptions['priority.default_method'] ?? null);
 
-        if (null !== $defaultPriorityMethod) {
+        if (null !== $priorityDefaultMethod) {
             $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
-            $howGetPriority = \sprintf('Get priority by option "defaultPriorityMethod" for class "%s".', $this->getDefinition()->getName());
+            $howGetPriority = \sprintf('Get priority by option "priority.default.method" for class "%s".', $this->getDefinition()->getName());
 
-            return $this->invokePriorityMethod($defaultPriorityMethod, false, $name, $tagOptions, $howGetPriority);
+            return $this->invokePriorityMethod($priorityDefaultMethod, false, $name, $tagOptions, $howGetPriority);
         }
 
         return null;
@@ -219,7 +219,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 // 🚩 Php-attribute override existing tag defined by <bindTag> (see documentation.)
                 $this->bindTag(
                     name: $tagAttribute->getIdentifier(),
-                    options: ($tagAttribute->getPriorityMethod() ? ['priorityMethod' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
+                    options: ($tagAttribute->getPriorityMethod() ? ['priority.method' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
                     priority: $tagAttribute->getPriority(),
                 );
             }

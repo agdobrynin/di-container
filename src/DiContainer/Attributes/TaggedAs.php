@@ -16,7 +16,7 @@ final class TaggedAs implements DiAttributeInterface
     public function __construct(
         private string $name,
         private bool $isLazy = true,
-        private ?string $defaultPriorityMethod = null,
+        private ?string $priorityDefaultMethod = null,
     ) {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
@@ -33,8 +33,8 @@ final class TaggedAs implements DiAttributeInterface
         return $this->isLazy;
     }
 
-    public function getDefaultPriorityMethod(): ?string
+    public function getPriorityDefaultMethod(): ?string
     {
-        return $this->defaultPriorityMethod;
+        return $this->priorityDefaultMethod;
     }
 }
