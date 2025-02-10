@@ -65,7 +65,7 @@ class TaggedAsReaderTest extends TestCase
     {
         $fn = static fn (
             #[TaggedAs('tags.handlers-opa')]
-            #[TaggedAs('tags.voters-security', false)]
+            #[TaggedAs('tags.voters-security', false, 'getCollectionPriority')]
             ...$tagged
         ) => [];
         $p = new \ReflectionParameter($fn, 0);
@@ -81,5 +81,6 @@ class TaggedAsReaderTest extends TestCase
 
         $this->assertEquals('tags.voters-security', $res->current()->getIdentifier());
         $this->assertFalse($res->current()->isLazy());
+        $this->assertEquals('getCollectionPriority', $res->current()->getPriorityDefaultMethod());
     }
 }

@@ -85,6 +85,11 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         }
 
         if (\is_string($this->parsedDefinition) && \strpos($this->parsedDefinition, '::') > 0) {
+            if (\PHP_VERSION_ID >= 80400) {
+                // @phan-suppress-next-line PhanUndeclaredStaticMethod
+                return \ReflectionMethod::createFromMethodName($this->parsedDefinition)->getParameters(); // @codeCoverageIgnore
+            }
+
             return (new \ReflectionMethod($this->parsedDefinition))->getParameters();
         }
 

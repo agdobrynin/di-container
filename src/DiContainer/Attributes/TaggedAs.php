@@ -13,8 +13,11 @@ final class TaggedAs implements DiAttributeInterface
     /**
      * @param non-empty-string $name tag name
      */
-    public function __construct(private string $name, private bool $isLazy = true)
-    {
+    public function __construct(
+        private string $name,
+        private bool $isLazy = true,
+        private ?string $priorityDefaultMethod = null,
+    ) {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
@@ -28,5 +31,10 @@ final class TaggedAs implements DiAttributeInterface
     public function isLazy(): bool
     {
         return $this->isLazy;
+    }
+
+    public function getPriorityDefaultMethod(): ?string
+    {
+        return $this->priorityDefaultMethod;
     }
 }

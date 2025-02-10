@@ -7,5 +7,5 @@ namespace Tests\Traits\AttributeReader\Tag\Fixtures;
 use Kaspi\DiContainer\Attributes\Tag;
 
 #[Tag('tags.handler-one')]
-#[Tag('tags.handler-two', ['priority' => 100])]
+#[Tag('tags.handler-two', ['priority' => 100], priority: 150)]
 class TaggedClass {}

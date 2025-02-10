@@ -6,10 +6,10 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -17,7 +17,7 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
-final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiTaggedDefinitionInterface
+final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiTaggedDefinitionAutowireInterface
 {
     use AttributeReaderTrait;
     use BindArgumentsTrait;
@@ -26,6 +26,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
     use TagsTrait {
         getTags as private internalGetTags;
         hasTag as private internalHasTag;
+        geTagPriority as private internalGeTagPriority;
     }
 
     private \ReflectionClass $reflectionClass;
@@ -138,6 +139,76 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
         return $this->internalHasTag($name);
     }
 
+    public function geTagPriority(string $name, array $operationOptions = []): null|int|string
+    {
+        if (null !== ($priority = $this->internalGeTagPriority($name))) {
+            return $priority;
+        }
+
+        $this->attemptsReadTagAttribute();
+
+        if (($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
+            $tagOptions = $this->getTag($name) + $operationOptions;
+            $howGetPriority = \sprintf('Get priority by option "priority.method" for tag "%s".', $name);
+
+            return $this->invokePriorityMethod($tagOptions['priority.method'], true, $name, $tagOptions, $howGetPriority);
+        }
+
+        $priorityDefaultMethod = ($operationOptions['priority.default_method'] ?? null);
+
+        if (null !== $priorityDefaultMethod) {
+            $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
+            $howGetPriority = \sprintf('Get priority by option "priority.default.method" for class "%s".', $this->getDefinition()->getName());
+
+            return $this->invokePriorityMethod($priorityDefaultMethod, false, $name, $tagOptions, $howGetPriority);
+        }
+
+        return null;
+    }
+
+    private function invokePriorityMethod(mixed $priorityMethod, bool $requirePriorityMethod, string $tag, array $tagOptions, string $howGetPriority): null|int|string
+    {
+        if (!\is_string($priorityMethod) || '' === \trim($priorityMethod)) {
+            throw new AutowireException($howGetPriority.' The value option must be non-empty string.');
+        }
+
+        $reflectionClass = $this->getDefinition();
+        $isCallable = \is_callable([$reflectionClass->name, $priorityMethod]);
+        $supportReturnTypes = ['int', 'string', 'null'];
+
+        if (!$isCallable || ($types = $this->diffReturnType($reflectionClass->getMethod($priorityMethod), ...$supportReturnTypes))) {
+            if (!$requirePriorityMethod) {
+                return null;
+            }
+
+            $message = \sprintf(
+                '%s "%s::%s()" method must be declared with public and static modifiers. Return type must be %s.%s',
+                $howGetPriority,
+                $reflectionClass->getName(),
+                $priorityMethod,
+                \implode(', ', $supportReturnTypes),
+                isset($types) ? ' Got return type: '.\implode(', ', $types) : ''
+            );
+
+            throw new AutowireException($message);
+        }
+
+        return \call_user_func([$reflectionClass->name, $priorityMethod], $tag, $tagOptions);
+    }
+
+    private function diffReturnType(\ReflectionMethod $reflectionMethod, string ...$type): array
+    {
+        $rt = $reflectionMethod->getReturnType();
+
+        $types = match (true) {
+            $rt instanceof \ReflectionNamedType => [$rt->getName()],
+            $rt instanceof \ReflectionUnionType => \array_map(static fn ($t) => $t->getName(), $rt->getTypes()),
+            default => ['undefined'],
+        };
+
+        return \array_diff($types, $type);
+    }
+
     private function attemptsReadTagAttribute(): void
     {
         if (!isset($this->tagAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
@@ -146,7 +217,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupInterface, DiDefini
             foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
                 $this->tagAttributes[] = $tagAttribute;
                 // 🚩 Php-attribute override existing tag defined by <bindTag> (see documentation.)
-                $this->bindTag($tagAttribute->getIdentifier(), $tagAttribute->getOptions());
+                $this->bindTag(
+                    name: $tagAttribute->getIdentifier(),
+                    options: ($tagAttribute->getPriorityMethod() ? ['priority.method' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
+                    priority: $tagAttribute->getPriority(),
+                );
             }
         }
     }

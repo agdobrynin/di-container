@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
-interface DiDefinitionSetupInterface extends DiDefinitionArgumentsInterface
+interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInterface
 {
     /**
      * Call setter method for class with input arguments.

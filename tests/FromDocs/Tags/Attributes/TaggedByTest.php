@@ -12,6 +12,7 @@ use Tests\FromDocs\Tags\Attributes\Fixtures\One;
 use Tests\FromDocs\Tags\Attributes\Fixtures\RuleA;
 use Tests\FromDocs\Tags\Attributes\Fixtures\RuleB;
 use Tests\FromDocs\Tags\Attributes\Fixtures\RuleC;
+use Tests\FromDocs\Tags\Attributes\Fixtures\SrvPriorityTagByMethodRules;
 use Tests\FromDocs\Tags\Attributes\Fixtures\SrvPriorityTagRules;
 use Tests\FromDocs\Tags\Attributes\Fixtures\SrvRules;
 use Tests\FromDocs\Tags\Attributes\Fixtures\Three;
@@ -97,5 +98,26 @@ class TaggedByTest extends TestCase
         $this->assertCount(2, $classGroupOne->services);
         $this->assertInstanceOf(Three::class, $classGroupOne->services[0]); // priority = 10
         $this->assertInstanceOf(One::class, $classGroupOne->services[1]); // default priority = 0
+    }
+
+    public function testTaggedByTagNameWithPriorityByMethod(): void
+    {
+        $definitions = [
+            diAutowire(One::class),
+            diAutowire(RuleA::class),
+            diAutowire(RuleB::class),
+            diAutowire(RuleC::class),
+            diAutowire(Two::class),
+            diAutowire(Three::class),
+        ];
+
+        $container = (new DiContainerFactory())->make($definitions);
+        $srv = $container->get(SrvPriorityTagByMethodRules::class);
+
+        $this->assertCount(3, $srv->rules);
+
+        $this->assertInstanceOf(RuleB::class, $srv->rules[0]);
+        $this->assertInstanceOf(RuleC::class, $srv->rules[1]);
+        $this->assertInstanceOf(RuleA::class, $srv->rules[2]);
     }
 }

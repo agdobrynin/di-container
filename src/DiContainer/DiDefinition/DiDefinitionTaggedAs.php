@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -26,7 +27,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     /**
      * @param non-empty-string $tag
      */
-    public function __construct(private string $tag, private bool $isLazy = true) {}
+    public function __construct(
+        private string $tag,
+        private bool $isLazy = true,
+        private ?string $priorityDefaultMethod = null
+    ) {}
 
     /**
      * @throws ContainerNeedSetExceptionInterface
@@ -100,8 +105,14 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
 
             if ($definition->hasTag($this->tag)) {
-                // 🚩 Tag with higher number in 'priority' key being early in list.
-                $taggedServices->insert($containerIdentifier, $definition->getOptionPriority($this->tag));
+                $operationOptions = [];
+
+                if ($definition instanceof DiTaggedDefinitionAutowireInterface) {
+                    $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
+                }
+
+                // 🚩 Tag with higher priority early in list.
+                $taggedServices->insert($containerIdentifier, $definition->geTagPriority($this->tag, $operationOptions));
             }
         }
 
@@ -117,15 +128,30 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     private function getContainerIdentifiersOfTaggedServiceByInterface(): \Generator
     {
+        $taggedServices = new \SplPriorityQueue();
+        $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
+
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
-                if ($definition instanceof DiDefinitionAutowire
-                    && $definition->getDefinition()->implementsInterface($this->tag)) {
-                    yield $containerIdentifier;
+                if ($definition instanceof DiTaggedDefinitionAutowireInterface
+                    && $definition->getDefinition()->implementsInterface($this->tag)) { // @phan-suppress-current-line PhanPossiblyNonClassMethodCall
+                    $definition->setContainer($this->getContainer());
+                    // 🚩 Tag with higher priority early in list.
+                    $taggedServices->insert(
+                        $containerIdentifier,
+                        $definition->geTagPriority(
+                            $this->tag,
+                            ['priority.default_method' => $this->priorityDefaultMethod]
+                        )
+                    );
                 }
             } catch (AutowireExceptionInterface $e) {
                 throw new ContainerException(message: $e->getMessage(), previous: $e);
             }
+        }
+
+        foreach ($taggedServices as $containerIdentifier) {
+            yield $containerIdentifier;
         }
     }
 }
