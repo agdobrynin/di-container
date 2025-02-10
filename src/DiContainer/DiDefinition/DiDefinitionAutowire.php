@@ -148,7 +148,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         $this->attemptsReadTagAttribute();
 
         if (($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
-            $tagOptions = $operationOptions + $this->getTag($name);
+            $tagOptions = $this->getTag($name) + $operationOptions;
             $howGetPriority = \sprintf('Get priority by option "priority.method" for tag "%s".', $name);
 
             return $this->invokePriorityMethod($tagOptions['priority.method'], true, $name, $tagOptions, $howGetPriority);
