@@ -125,9 +125,9 @@ class TaggedByTest extends TestCase
         // из классов One, Two
 
         $this->assertCount(2, $class->services);
-        $this->assertInstanceOf(One::class, $class->services[0]);
-        $this->assertInstanceOf(Two::class, $class->services[1]);
-        $this->assertFalse(isset($class->services[2]));
+        $this->assertInstanceOf(One::class, \current($class->services));
+        $this->assertInstanceOf(Two::class, \next($class->services));
+        $this->assertFalse(\next($class->services));
     }
 
     public function testTaggedByTagWithPriorityByMethod(): void
@@ -137,7 +137,7 @@ class TaggedByTest extends TestCase
                 ->bindArguments(
                     rules: diTaggedAs(
                         'tags.rules',
-                        false,
+                        false, // 🚩 get services as array
                         priorityDefaultMethod: 'getCollectionPriority'
                     )
                 ),
@@ -156,8 +156,9 @@ class TaggedByTest extends TestCase
 
         $this->assertCount(3, $srv->rules);
 
-        $this->assertInstanceOf(RuleB::class, $srv->rules[0]);
-        $this->assertInstanceOf(RuleC::class, $srv->rules[1]);
-        $this->assertInstanceOf(RuleA::class, $srv->rules[2]);
+        $this->assertInstanceOf(RuleB::class, \current($srv->rules));
+        $this->assertInstanceOf(RuleC::class, \next($srv->rules));
+        $this->assertInstanceOf(RuleA::class, \next($srv->rules));
+        $this->assertFalse(\next($srv->rules));
     }
 }

@@ -55,7 +55,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $services = [];
 
             while ($containerIdentifiers->valid()) {
-                $services[] = $this->getContainer()->get($containerIdentifiers->current());
+                $containerIdentifier = $containerIdentifiers->current();
+                $services[$containerIdentifier] = $this->getContainer()->get($containerIdentifier);
                 $containerIdentifiers->next();
             }
 
@@ -80,7 +81,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     private function getServicesAsLazy(\Generator $containerIdentifiers): \Generator
     {
         while ($containerIdentifiers->valid()) {
-            yield $this->getContainer()->get($containerIdentifiers->current());
+            $containerIdentifier = $containerIdentifiers->current();
+
+            yield $containerIdentifier => $this->getContainer()->get($containerIdentifier);
             $containerIdentifiers->next();
         }
     }

@@ -90,11 +90,13 @@ class TaggedAsProxyClosureTest extends TestCase
 
         $this->assertCount(2, $services);
 
-        $this->assertInstanceOf(\Closure::class, $services[0]);
-        $this->assertInstanceOf(HeavyDepTwo::class, ($services[0])());
+        // access by key as container identifier
+        $this->assertInstanceOf(\Closure::class, $services['heavy.two']);
+        $this->assertInstanceOf(HeavyDepTwo::class, ($services['heavy.two'])());
 
-        $this->assertInstanceOf(\Closure::class, $services[1]);
-        $this->assertInstanceOf(HeavyDepOne::class, ($services[1])());
+        // access by key as container identifier
+        $this->assertInstanceOf(\Closure::class, $services['heavy.one']);
+        $this->assertInstanceOf(HeavyDepOne::class, ($services['heavy.one'])());
     }
 
     protected function makeContainer(string $classWithHeavyDep, bool $isLazy): DiContainer

@@ -93,8 +93,9 @@ class TaggedAsThroughContainerTest extends TestCase
         $taggedServices = $taggedAs->getServicesTaggedAs();
         $this->assertCount(2, $taggedServices);
 
-        $this->assertEquals('services.three', $taggedServices[0]);
-        $this->assertEquals('services.one', $taggedServices[1]);
+        // access by key as container identifier
+        $this->assertEquals('services.three', $taggedServices['three']);
+        $this->assertEquals('services.one', $taggedServices['one']);
     }
 
     public function testTaggedAsServicesFromContainer(): void
@@ -131,8 +132,9 @@ class TaggedAsThroughContainerTest extends TestCase
         $res = $container->get(ClassWithHeavyDepByAttributeAsArray::class)->getDep();
 
         $this->assertCount(2, $res);
-        $this->assertInstanceOf(HeavyDepTwo::class, $res[0]);
-        $this->assertInstanceOf(HeavyDepOne::class, $res[1]);
+        // access by key as container identifier
+        $this->assertInstanceOf(HeavyDepTwo::class, $res[HeavyDepTwo::class]);
+        $this->assertInstanceOf(HeavyDepOne::class, $res[HeavyDepOne::class]);
     }
 
     public function testOverrideDiTaggedAsPhpAttributeTaggedAs(): void
@@ -153,6 +155,7 @@ class TaggedAsThroughContainerTest extends TestCase
 
         $this->assertTrue($res->tagged->valid());
         $this->assertInstanceOf(HeaveDepWithDependency::class, $res->tagged->current());
+        $this->assertEquals(HeaveDepWithDependency::class, $res->tagged->key()); // check key of tagged service
         $res->tagged->next();
         $this->assertFalse($res->tagged->valid());
     }
