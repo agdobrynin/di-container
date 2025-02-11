@@ -208,65 +208,65 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface
     {
-        if (!isset($this->diResolvedDefinition[$id])) {
-            $hasDefinition = \array_key_exists($id, $this->definitions);
-
-            if (!$hasDefinition) {
-                // @todo come up with a test for throw ReflectionException
-                $reflectionClass = new \ReflectionClass($id);
-
-                if ($reflectionClass->isInterface()) {
-                    if ($this->config?->isUseAttribute()
-                        && $service = $this->getServiceAttribute($reflectionClass)) {
-                        $this->checkCyclicalDependencyCall($service->getIdentifier());
-                        $this->resolvingDependencies[$service->getIdentifier()] = true;
-
-                        try {
-                            return $this->diResolvedDefinition[] = $this->resolveDefinition($service->getIdentifier());
-                        } finally {
-                            unset($this->resolvingDependencies[$service->getIdentifier()]);
-                        }
-                    }
-
-                    throw new NotFoundException(\sprintf('Definition not found for identifier %s', $id));
-                }
-
-                if ($this->config?->isUseAttribute()
-                    && $factory = $this->getDiFactoryAttribute($reflectionClass)) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
-                        $factory->getIdentifier(),
-                        $factory->isSingleton()
-                    );
-                }
-
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->isSingletonDefault);
-            }
-
-            $rawDefinition = $this->definitions[$id];
-
-            if ($rawDefinition instanceof DiDefinitionLinkInterface) {
-                $this->checkCyclicalDependencyCall($rawDefinition->getDefinition());
-                $this->resolvingDependencies[$rawDefinition->getDefinition()] = true;
-
-                try {
-                    return $this->resolveDefinition($rawDefinition->getDefinition());
-                } finally {
-                    unset($this->resolvingDependencies[$rawDefinition->getDefinition()]);
-                }
-            }
-
-            if ($rawDefinition instanceof DiDefinitionInterface) {
-                return $this->diResolvedDefinition[$id] = $rawDefinition;
-            }
-
-            if ($rawDefinition instanceof \Closure) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $this->isSingletonDefault);
-            }
-
-            return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
+        if (isset($this->diResolvedDefinition[$id])) {
+            return $this->diResolvedDefinition[$id];
         }
 
-        return $this->diResolvedDefinition[$id];
+        $hasDefinition = \array_key_exists($id, $this->definitions);
+
+        if (!$hasDefinition) {
+            // @todo come up with a test for throw ReflectionException
+            $reflectionClass = new \ReflectionClass($id);
+
+            if ($reflectionClass->isInterface()) {
+                if ($this->config?->isUseAttribute()
+                    && $service = $this->getServiceAttribute($reflectionClass)) {
+                    $this->checkCyclicalDependencyCall($service->getIdentifier());
+                    $this->resolvingDependencies[$service->getIdentifier()] = true;
+
+                    try {
+                        return $this->diResolvedDefinition[] = $this->resolveDefinition($service->getIdentifier());
+                    } finally {
+                        unset($this->resolvingDependencies[$service->getIdentifier()]);
+                    }
+                }
+
+                throw new NotFoundException(\sprintf('Definition not found for identifier %s', $id));
+            }
+
+            if ($this->config?->isUseAttribute()
+                && $factory = $this->getDiFactoryAttribute($reflectionClass)) {
+                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
+                    $factory->getIdentifier(),
+                    $factory->isSingleton()
+                );
+            }
+
+            return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->isSingletonDefault);
+        }
+
+        $rawDefinition = $this->definitions[$id];
+
+        if ($rawDefinition instanceof DiDefinitionLinkInterface) {
+            $this->checkCyclicalDependencyCall($rawDefinition->getDefinition());
+            $this->resolvingDependencies[$rawDefinition->getDefinition()] = true;
+
+            try {
+                return $this->resolveDefinition($rawDefinition->getDefinition());
+            } finally {
+                unset($this->resolvingDependencies[$rawDefinition->getDefinition()]);
+            }
+        }
+
+        if ($rawDefinition instanceof DiDefinitionInterface) {
+            return $this->diResolvedDefinition[$id] = $rawDefinition;
+        }
+
+        if ($rawDefinition instanceof \Closure) {
+            return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $this->isSingletonDefault);
+        }
+
+        return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
     }
 
     protected function isContainer(string $id): bool
