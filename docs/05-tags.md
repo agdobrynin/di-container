@@ -547,7 +547,14 @@ $definitions = [
 ```
 
 ### `priorityMethod` и `priorityDefaultMethod` для приоритизации в коллекции.
+Указать приоритет тега в коллекции `priority` можно альтернативным способами если определение в контейнере является php-классом:
 
+- `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
+- `priorityDefaultMethod` – метод указанный через
+[хэлпер функцию `diTaggedAs`](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
+или через [php атрибут #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas)
+который **может быть реализован** в тегированном php классе возвращающий `priority`.
+ 
 #### 🐘 В стиле php определений
 
 Использовать метаданные в аргументе `$options` указав в массиве ключ `priority.method` [у метода `bindTag`](#-объявление-тега-в-стиле-php-определений)
@@ -658,7 +665,9 @@ class RuleB {
 
 }
 
-#[Tag(name: 'tags.rules')] // без явного указания priority и priorityMethod
+// 🚩 без явного указания priority и priorityMethod
+// приоритет может быть получен через priorityDefaultMethod
+#[Tag(name: 'tags.rules')]
 class RuleC {
 
     public static function getPriorityForCollection(string $tag): string|int|null {
