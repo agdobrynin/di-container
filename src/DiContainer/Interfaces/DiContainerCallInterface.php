@@ -11,7 +11,7 @@ use Psr\Container\NotFoundExceptionInterface;
 interface DiContainerCallInterface
 {
     /**
-     * @param <class-string, string|null>[]|class-string|string|callable $definition
+     * @param array<class-string, null|non-empty-string>|callable|class-string|non-empty-string $definition
      *
      * @throws ContainerExceptionInterface
      * @throws CallCircularDependencyException

@@ -12,6 +12,10 @@ trait TagsTrait
      * @phan-suppress PhanTypeMismatchReturn
      * @phan-suppress PhanUnreferencedPublicMethod
      *
+     * @param non-empty-string               $name
+     * @param array<non-empty-string, mixed> $options
+     * @param null|int|non-empty-string      $priority
+     *
      * @return $this
      */
     public function bindTag(string $name, array $options = [], null|int|string $priority = null): static

@@ -8,6 +8,9 @@ use Kaspi\DiContainer\Interfaces\DiContainerFactoryInterface;
 
 final class DiContainerFactory implements DiContainerFactoryInterface // @phan-suppress-current-line PhanUnreferencedClass
 {
+    /**
+     * @param iterable<non-empty-string, mixed> $definitions
+     */
     public function make(iterable $definitions = []): DiContainer
     {
         $config = new DiContainerConfig(

@@ -11,7 +11,7 @@ interface DiDefinitionTagArgumentInterface
      *
      * @param non-empty-string               $name     tag name
      * @param array<non-empty-string, mixed> $options  tag's meta-data
-     * @param null|int|string                $priority priority for sorting tag collection
+     * @param null|int|non-empty-string      $priority priority for sorting tag collection
      *
      * @return $this
      */

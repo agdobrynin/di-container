@@ -40,6 +40,7 @@ interface DiTaggedDefinitionInterface
     /**
      * @param non-empty-string               $name
      * @param array<non-empty-string, mixed> $options
+     * @param null|int|non-empty-string      $priority
      *
      * @return $this
      */

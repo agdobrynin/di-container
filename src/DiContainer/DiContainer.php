@@ -19,6 +19,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -105,6 +106,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             || $this->isContainer($id);
     }
 
+    /**
+     * @param class-string|non-empty-string                                                                   $id
+     * @param DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface|mixed|object $definition
+     */
     public function set(string $id, mixed $definition): static
     {
         $this->validateIdentifier($id);
@@ -120,6 +125,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this;
     }
 
+    /**
+     * @param array<class-string, null|non-empty-string>|callable|class-string|non-empty-string $definition
+     */
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
@@ -138,6 +146,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this; // @codeCoverageIgnore
     }
 
+    /**
+     * @return iterable<non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionLinkInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionAutowireInterface>
+     */
     public function getDefinitions(): iterable
     {
         foreach ($this->definitions as $id => $definition) {

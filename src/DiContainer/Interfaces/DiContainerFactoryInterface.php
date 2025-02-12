@@ -9,7 +9,7 @@ use Psr\Container\ContainerExceptionInterface;
 interface DiContainerFactoryInterface
 {
     /**
-     * @param iterable<string, mixed> $definitions
+     * @param iterable<non-empty-string, mixed> $definitions
      *
      * @throws ContainerExceptionInterface
      */
