@@ -587,17 +587,22 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 #[TaggedAs(
     name: '', // имя тега
     isLazy: true, // получить коллекцию как ленивую (отложенная инициализация)
-    priorityDefaultMethod: null // метод класса для сортировки в коллекции
+    priorityDefaultMethod: null, // метод класса для сортировки в коллекции
                                 //если у тегированого сервиса не указан
                                 // 'priority' или 'priorityMethod'
                                 // или опциия у тега 'priority.method'
+    useKeys: true, // использовать в качестве ключа элемента
+                   // строковое значение (идентификатор контейнера),
+                   // иначе будет целое число в порядке возрастания. 
+                                
 )]
 ```
 ```php
 Kaspi\DiContainer\Attributes\TaggedAs(
     string $name,
     bool $isLazy = true,
-    ?string $priorityDefaultMethod = null
+    ?string $priorityDefaultMethod = null,
+    bool $useKeys = true,
 )
 ```
 
@@ -608,6 +613,12 @@ Kaspi\DiContainer\Attributes\TaggedAs(
 >  - `array $options` - метаданные тега;
 >
 >  Подробнее [о приоритизации в коллекцции](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+
+> По умолчанию в качестве ключа элемента в коллекции используется идентификатор
+> определения в контейнере (_container identifier_).
+> Если значение `$useKeys = false` то ключ элемента в коллекции будет представлен целым числом.
+> Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+
 
 Пример получение «ленивой» коллекции из сервисов отмеченных тегом `tags.services.group-two`:
 ```php

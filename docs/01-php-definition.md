@@ -407,7 +407,8 @@ $definitions = [
         ->bindArguments(
             emails: diTaggedAs(
                 tag: 'tags.system-emails',
-                isLazy: false
+                isLazy: false,
+                useKeys: false // 🚩 не использовать строковые ключи коллекции
             )
         ),
 ];
@@ -417,6 +418,9 @@ $container = (new DiContainerFactory())->make($definition);
 $notifyStaff = $container->get(App\Notifications\CompanyStaff::class);
 // $notifyStaff->emails массив ['runner@company.inc', 'vasiliy@company.inc', 'stock@company.inc']
 ```
+
+> 🚩 Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+
 #### diProxyClosure
 
 Определение для отложенной инициализации сервиса через Closure тип.
@@ -524,7 +528,7 @@ $classWithHeavyDep->doHeavyDependency();
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use function Kaspi\DiContainer\diTaggedAs;
 
-diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null): DiDefinitionNoArgumentsInterface
+diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true): DiDefinitionNoArgumentsInterface
 ```
 Аргументы:
 - `$tag` - имя тега на сервисах которые нужно собрать из контейнера.
@@ -532,6 +536,11 @@ diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = nu
 - `$priorityDefaultMethod` - если получаемый сервис является php классом
 и у него не определен `priority` или `priorityMethod`, то будет выполнена попытка
 получить значение `priority` через вызов указанного метода.
+- `$useKeys` - использовать именованные строковые ключи в коллекции.
+По умолчанию в качестве ключа элемента в коллекции используется идентификатор
+определения в контейнере (_container identifier_).
+Если значение `$useKeys = false` то ключ элемента в коллекции будет представлен целым числом.
+Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 > Метод `$priorityDefaultMethod` должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
@@ -572,7 +581,8 @@ $container = (new DiContainerFactory())->make([
 ]);
 
 $myClass = $container->get(App\Srv\MyClass::class);
-// $myClass->rules содержит классы отсортированные по 'priority' - RuleC, RuleA
+// $myClass->rules содержит итерируемую коллекцию классов
+// отсортированные по 'priority' - RuleC, RuleA
 ```
 > Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
