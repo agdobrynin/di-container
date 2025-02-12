@@ -51,8 +51,12 @@ class TaggedAsTest extends TestCase
         $res = $container->get(ClassWithTaggedArg::class);
 
         $this->assertCount(2, $res->tagged);
-        $this->assertEquals('yes 😀', $res->tagged[0]);
-        $this->assertEquals('❤ola!', $res->tagged[1]);
+        $this->assertEquals('yes 😀', \current($res->tagged));
+        \next($res->tagged);
+        $this->assertEquals('❤ola!', \current($res->tagged));
+        // key of tagged service
+        $this->assertEquals('❤ola!', $res->tagged['someName1']);
+        $this->assertEquals('yes 😀', $res->tagged['someNameAny']);
     }
 
     public function testTaggedAsThroughContainerByAttributes(): void
@@ -73,8 +77,13 @@ class TaggedAsTest extends TestCase
         $res = $container->get(ClassWithTaggedArg::class);
 
         $this->assertEquals('yes 😀', $res->tagged->current());
+        // get key of service
+        $this->assertEquals('someNameAny', $res->tagged->key());
+
         $res->tagged->next();
         $this->assertEquals('❤ola!', $res->tagged->current());
+        $this->assertEquals('someName1', $res->tagged->key());
+
         $res->tagged->next();
         $this->assertFalse($res->tagged->valid());
     }

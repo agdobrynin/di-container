@@ -71,9 +71,15 @@ class TaggedByTest extends TestCase
         // 2 - RuleA
         $this->assertIsIterable($class->rules);
         $this->assertInstanceOf(RuleC::class, $class->rules->current());
+        $this->assertEquals(RuleC::class, $class->rules->key()); // check key of tagged service
+
         $class->rules->next();
+
         $this->assertInstanceOf(RuleA::class, $class->rules->current());
+        $this->assertEquals(RuleA::class, $class->rules->key());
+
         $class->rules->next();
+
         $this->assertFalse($class->rules->valid());
     }
 
@@ -96,8 +102,8 @@ class TaggedByTest extends TestCase
 
         $classGroupOne = $container->get(GroupOne::class);
         $this->assertCount(2, $classGroupOne->services);
-        $this->assertInstanceOf(Three::class, $classGroupOne->services[0]); // priority = 10
-        $this->assertInstanceOf(One::class, $classGroupOne->services[1]); // default priority = 0
+        $this->assertInstanceOf(Three::class, $classGroupOne->services[Three::class]); // priority = 10
+        $this->assertInstanceOf(One::class, $classGroupOne->services[One::class]); // default priority = 0
     }
 
     public function testTaggedByTagNameWithPriorityByMethod(): void
@@ -116,8 +122,9 @@ class TaggedByTest extends TestCase
 
         $this->assertCount(3, $srv->rules);
 
-        $this->assertInstanceOf(RuleB::class, $srv->rules[0]);
-        $this->assertInstanceOf(RuleC::class, $srv->rules[1]);
-        $this->assertInstanceOf(RuleA::class, $srv->rules[2]);
+        // access by key of tagged service
+        $this->assertInstanceOf(RuleB::class, $srv->rules[RuleB::class]);
+        $this->assertInstanceOf(RuleC::class, $srv->rules[RuleC::class]);
+        $this->assertInstanceOf(RuleA::class, $srv->rules[RuleA::class]);
     }
 }

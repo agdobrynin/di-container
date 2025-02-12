@@ -17,10 +17,16 @@ final class TaggedAs implements DiAttributeInterface
         private string $name,
         private bool $isLazy = true,
         private ?string $priorityDefaultMethod = null,
+        private bool $useKeys = true,
     ) {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
+    }
+
+    public function isUseKeys(): bool
+    {
+        return $this->useKeys;
     }
 
     public function getIdentifier(): string

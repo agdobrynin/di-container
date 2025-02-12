@@ -30,7 +30,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     public function __construct(
         private string $tag,
         private bool $isLazy = true,
-        private ?string $priorityDefaultMethod = null
+        private ?string $priorityDefaultMethod = null,
+        private bool $useKeys = true,
     ) {}
 
     /**
@@ -55,7 +56,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $services = [];
 
             while ($containerIdentifiers->valid()) {
-                $services[] = $this->getContainer()->get($containerIdentifiers->current());
+                $containerIdentifier = $containerIdentifiers->current();
+                $this->useKeys
+                    ? $services[$containerIdentifier] = $this->getContainer()->get($containerIdentifier)
+                    : $services[] = $this->getContainer()->get($containerIdentifier);
                 $containerIdentifiers->next();
             }
 
@@ -80,7 +84,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     private function getServicesAsLazy(\Generator $containerIdentifiers): \Generator
     {
         while ($containerIdentifiers->valid()) {
-            yield $this->getContainer()->get($containerIdentifiers->current());
+            $containerIdentifier = $containerIdentifiers->current();
+
+            $this->useKeys
+                ? yield $containerIdentifier => $this->getContainer()->get($containerIdentifier)
+                : yield $this->getContainer()->get($containerIdentifier);
             $containerIdentifiers->next();
         }
     }
