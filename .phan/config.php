@@ -79,7 +79,7 @@ return [
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
     // This does not affect checks of array keys. See `scalar_array_key_cast`.
-    'scalar_implicit_cast' => false,
+    'scalar_implicit_cast' => true,
 
     // If enabled, any scalar array keys (int, string)
     // are treated as if they can cast to each other.

@@ -11,7 +11,8 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 final class Tag implements DiAttributeInterface
 {
     /**
-     * @param non-empty-string $name tag name
+     * @param non-empty-string                         $name tag name
+     * @param array<non-empty-string, scalar|scalar[]> $options tag's meta-data
      */
     public function __construct(private string $name, private array $options = [], private null|int|string $priority = null, private ?string $priorityMethod = null)
     {

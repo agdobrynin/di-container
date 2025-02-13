@@ -11,7 +11,8 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 final class TaggedAs implements DiAttributeInterface
 {
     /**
-     * @param non-empty-string $name tag name
+     * @param non-empty-string      $name tag name
+     * @param null|non-empty-string $priorityDefaultMethod
      */
     public function __construct(
         private string $name,
