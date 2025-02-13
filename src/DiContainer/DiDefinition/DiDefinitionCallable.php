@@ -37,6 +37,9 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     private array $reflectedFunctionParameters;
 
+    /**
+     * @param callable|non-empty-array<non-empty-string, non-empty-string>|non-empty-string $definition
+     */
     public function __construct(array|callable|string $definition, private ?bool $isSingleton = null)
     {
         $this->definition = $definition;
@@ -86,14 +89,12 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
         if (\is_string($this->parsedDefinition) && \strpos($this->parsedDefinition, '::') > 0) {
             if (\PHP_VERSION_ID >= 80400) {
-                // @phan-suppress-next-line PhanUndeclaredStaticMethod
                 return \ReflectionMethod::createFromMethodName($this->parsedDefinition)->getParameters(); // @codeCoverageIgnore
             }
 
             return (new \ReflectionMethod($this->parsedDefinition))->getParameters();
         }
 
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
         return (new \ReflectionFunction($this->parsedDefinition))->getParameters();
     }
 }

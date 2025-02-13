@@ -25,7 +25,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     private bool $tagIsInterface;
 
     /**
-     * @param non-empty-string $tag
+     * @param non-empty-string      $tag
+     * @param null|non-empty-string $priorityDefaultMethod
      */
     public function __construct(
         private string $tag,
@@ -142,7 +143,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
                 if ($definition instanceof DiTaggedDefinitionAutowireInterface
-                    && $definition->getDefinition()->implementsInterface($this->tag)) { // @phan-suppress-current-line PhanPossiblyNonClassMethodCall
+                    && $definition->getDefinition()->implementsInterface($this->tag)) {
                     $definition->setContainer($this->getContainer());
                     // 🚩 Tag with higher priority early in list.
                     $taggedServices->insert(

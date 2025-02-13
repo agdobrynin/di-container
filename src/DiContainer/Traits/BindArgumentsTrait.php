@@ -9,15 +9,12 @@ trait BindArgumentsTrait
     /**
      * User defined parameters by parameter name.
      *
-     * @var array<int|string, mixed>
+     * @var array<int|non-empty-string, mixed>
      */
     private array $bindArguments = [];
 
     /**
      * @deprecated Use method bindArguments(). This method will remove next major release.
-     *
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
      */
     public function addArgument(int|string $name, mixed $value): static
     {
@@ -30,9 +27,6 @@ trait BindArgumentsTrait
 
     /**
      * @deprecated Use method bindArguments(). This method will remove next major release.
-     *
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
      */
     public function addArguments(array $arguments): static
     {
@@ -42,16 +36,16 @@ trait BindArgumentsTrait
         return $this;
     }
 
-    /**
-     * @phan-suppress PhanTypeMismatchReturn
-     */
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArguments = $argument;
+        $this->bindArguments = $argument; // @phpstan-ignore assign.propertyType
 
         return $this;
     }
 
+    /**
+     * @return array<int|non-empty-string, mixed>
+     */
     private function getBindArguments(): array
     {
         return $this->bindArguments;

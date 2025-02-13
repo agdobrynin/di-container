@@ -10,8 +10,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 trait DefinitionIdentifierTrait
 {
     /**
-     * @phan-suppress PhanPartialTypeMismatchReturn
-     *
      * @throws DiDefinitionException
      */
     private function getIdentifier(mixed $identifier, mixed $definition): string

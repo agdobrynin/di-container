@@ -12,24 +12,33 @@ trait ParameterTypeByReflectionTrait
 
     abstract public function getContainer(): DiContainerInterface;
 
-    private function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?\ReflectionNamedType
+    /**
+     * @return null|non-empty-string
+     */
+    private function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?string
     {
-        $reflectionType = $reflectionParameter->getType();
+        $type = $reflectionParameter->getType();
 
-        if ($reflectionType instanceof \ReflectionNamedType && !$reflectionType->isBuiltin()) {
-            return $reflectionParameter->getType();
+        if (null === $type || ($type instanceof \ReflectionNamedType && $type->isBuiltin())) {
+            return null;
         }
 
-        if ($reflectionType instanceof \ReflectionUnionType) {
-            foreach ($reflectionType->getTypes() as $type) {
-                // Get first available non builtin type e.g.
-                // __construct(string|Class1|Class2 $dependency) if container identifier Class1 has will return 'Class1'
-                if (!$type->isBuiltin() && $this->getContainer()->has($type->getName())) {
-                    return $type;
+        if ($type instanceof \ReflectionUnionType) {
+            foreach ($type->getTypes() as $t) { // @phpstan-ignore-line
+                /**
+                 * @phpstan-var \ReflectionNamedType $t
+                 * @phpstan-var non-empty-string $name
+                 */
+                $name = $t->getName();
+
+                if (!$t->isBuiltin() && $this->getContainer()->has($name)) {
+                    return $name;
                 }
             }
+
+            return null;
         }
 
-        return null;
+        return $type->getName(); // @phpstan-ignore-line
     }
 }

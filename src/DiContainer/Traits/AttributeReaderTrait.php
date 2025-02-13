@@ -18,16 +18,12 @@ trait AttributeReaderTrait
 
     private function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
-        return ($attribute = $reflectionClass->getAttributes(DiFactory::class)[0] ?? null)
-            ? $attribute->newInstance()
-            : null;
+        return ($reflectionClass->getAttributes(DiFactory::class)[0] ?? null)?->newInstance();
     }
 
     private function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
-        return ($attribute = $reflectionClass->getAttributes(Service::class)[0] ?? null)
-            ? $attribute->newInstance()
-            : null;
+        return ($reflectionClass->getAttributes(Service::class)[0] ?? null)?->newInstance();
     }
 
     /**
@@ -48,7 +44,7 @@ trait AttributeReaderTrait
             $inject = $attribute->newInstance();
 
             if ('' === $inject->getIdentifier()
-                && $type = $this->getParameterTypeByReflection($reflectionParameter)?->getName()) {
+                && $type = $this->getParameterTypeByReflection($reflectionParameter)) {
                 $inject = new Inject($type);
             }
 

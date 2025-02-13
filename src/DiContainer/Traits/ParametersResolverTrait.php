@@ -49,8 +49,6 @@ trait ParametersResolverTrait
     /**
      * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
      *
-     * @phan-suppress PhanReadOnlyPrivateProperty
-     *
      * @var array<non-empty-string, mixed>
      */
     private array $resolvedArguments = [];
@@ -58,7 +56,10 @@ trait ParametersResolverTrait
     abstract public function getContainer(): DiContainerInterface;
 
     /**
-     * @param \ReflectionParameter[] $reflectionParameters
+     * @param array<int|non-empty-string, mixed> $inputArguments
+     * @param \ReflectionParameter[]             $reflectionParameters
+     *
+     * @return list<mixed>
      *
      * @throws AutowireAttributeException
      * @throws AutowireExceptionInterface
@@ -118,7 +119,7 @@ trait ParametersResolverTrait
 
                 $dependencies[] = null === $parameterType
                     ? $this->getContainer()->get($parameter->getName())
-                    : $this->getContainer()->get($parameterType->getName());
+                    : $this->getContainer()->get($parameterType);
 
                 continue;
             } catch (AutowireAttributeException|CallCircularDependencyException|ContainerNeedSetExceptionInterface $e) {
@@ -137,7 +138,7 @@ trait ParametersResolverTrait
             $declaredFunction = $parameter->getDeclaringFunction()->getName();
             $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
             $messageParameter = $parameter.' in '.$where;
-            $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException?->getMessage()}";
+            $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException->getMessage()}";
 
             if ($autowireException instanceof NotFoundExceptionInterface) {
                 throw new NotFoundException(message: $message, previous: $autowireException);
@@ -257,6 +258,9 @@ trait ParametersResolverTrait
         );
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
     {
         if (\is_string($argumentNameOrIndex)) {

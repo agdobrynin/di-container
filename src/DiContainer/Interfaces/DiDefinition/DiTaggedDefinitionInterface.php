@@ -9,7 +9,7 @@ interface DiTaggedDefinitionInterface
     /**
      * Get bound tags with options.
      *
-     * @return array<non-empty-string, array<non-empty-string, mixed>>
+     * @return array<non-empty-string, array<non-empty-string,array<scalar>|scalar>>
      */
     public function getTags(): array;
 
@@ -32,15 +32,17 @@ interface DiTaggedDefinitionInterface
     /**
      * Get priority for tag.
      *
-     * @param non-empty-string               $name
-     * @param array<non-empty-string, mixed> $operationOptions temporary options (meta-data) for operation
+     * @param non-empty-string                             $name
+     * @param array<non-empty-string,array<scalar>|scalar> $operationOptions temporary options (meta-data) for operation
      */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string;
 
     /**
-     * @param non-empty-string               $name
-     * @param array<non-empty-string, mixed> $options
-     * @param null|int|non-empty-string      $priority
+     * Bind tag for services with meta-data.
+     *
+     * @param non-empty-string                              $name     tag name
+     * @param array<non-empty-string, array<scalar>|scalar> $options  tag's meta-data
+     * @param null|int|non-empty-string                     $priority priority for sorting tag collection
      *
      * @return $this
      */

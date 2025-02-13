@@ -6,16 +6,12 @@ namespace Kaspi\DiContainer\Traits;
 
 trait TagsTrait
 {
+    /**
+     * @var array<non-empty-string, array<non-empty-string,array<scalar>|scalar>>
+     */
     private array $tags = [];
 
     /**
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
-     *
-     * @param non-empty-string               $name
-     * @param array<non-empty-string, mixed> $options
-     * @param null|int|non-empty-string      $priority
-     *
      * @return $this
      */
     public function bindTag(string $name, array $options = [], null|int|string $priority = null): static
@@ -30,7 +26,7 @@ trait TagsTrait
     }
 
     /**
-     * @phan-suppress PhanUnreferencedPublicMethod
+     * @return array<non-empty-string, array<non-empty-string,array<scalar>|scalar>>
      */
     public function getTags(): array
     {
@@ -49,6 +45,10 @@ trait TagsTrait
         return [] !== $this->tags && isset($this->tags[$name]);
     }
 
+    /**
+     * @param non-empty-string                             $name
+     * @param array<non-empty-string,array<scalar>|scalar> $operationOptions
+     */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {
         $options = $operationOptions + ($this->getTag($name) ?? []);

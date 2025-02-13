@@ -9,9 +9,9 @@ interface DiDefinitionTagArgumentInterface
     /**
      * Bind tag for services with meta-data.
      *
-     * @param non-empty-string               $name     tag name
-     * @param array<non-empty-string, mixed> $options  tag's meta-data
-     * @param null|int|non-empty-string      $priority priority for sorting tag collection
+     * @param non-empty-string                              $name     tag name
+     * @param array<non-empty-string, array<scalar>|scalar> $options  tag's meta-data
+     * @param null|int|non-empty-string                     $priority priority for sorting tag collection
      *
      * @return $this
      */

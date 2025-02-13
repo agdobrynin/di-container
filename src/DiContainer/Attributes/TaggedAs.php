@@ -11,7 +11,7 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 final class TaggedAs implements DiAttributeInterface
 {
     /**
-     * @param non-empty-string      $name tag name
+     * @param non-empty-string      $name                  tag name
      * @param null|non-empty-string $priorityDefaultMethod
      */
     public function __construct(
@@ -30,6 +30,9 @@ final class TaggedAs implements DiAttributeInterface
         return $this->useKeys;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getIdentifier(): string
     {
         return $this->name;
@@ -40,6 +43,9 @@ final class TaggedAs implements DiAttributeInterface
         return $this->isLazy;
     }
 
+    /**
+     * @return null|non-empty-string
+     */
     public function getPriorityDefaultMethod(): ?string
     {
         return $this->priorityDefaultMethod;

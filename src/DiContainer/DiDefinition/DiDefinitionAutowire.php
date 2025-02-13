@@ -6,10 +6,8 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -39,8 +37,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private array $reflectionConstructorParams;
 
     /**
-     * @phan-suppress PhanReadOnlyPrivateProperty
-     *
      * @var array<non-empty-string, array<int, \ReflectionParameter>>
      */
     private array $reflectionMethodParams;
@@ -67,9 +63,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     }
 
     /**
-     * @param non-empty-string                                                                          $method
-     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed $argument
-     *
      * @return $this
      */
     public function setup(string $method, mixed ...$argument): static
@@ -147,6 +140,10 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return $this->internalHasTag($name);
     }
 
+    /**
+     * @param non-empty-string                             $name
+     * @param array<non-empty-string,array<scalar>|scalar> $operationOptions
+     */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {
         if (null !== ($priority = $this->internalGeTagPriority($name))) {

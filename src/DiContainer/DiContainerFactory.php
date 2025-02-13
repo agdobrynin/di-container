@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Interfaces\DiContainerFactoryInterface;
 
-final class DiContainerFactory implements DiContainerFactoryInterface // @phan-suppress-current-line PhanUnreferencedClass
+final class DiContainerFactory implements DiContainerFactoryInterface
 {
     /**
      * @param iterable<non-empty-string, mixed> $definitions

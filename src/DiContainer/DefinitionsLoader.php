@@ -19,9 +19,6 @@ final class DefinitionsLoader
         $this->configDefinitions = new \ArrayIterator();
     }
 
-    /**
-     * @phan-suppress PhanUnreferencedPublicMethod
-     */
     public function load(bool $overrideDefinitions, string ...$file): static
     {
         foreach ($file as $srcFile) {
@@ -52,9 +49,6 @@ final class DefinitionsLoader
         return $this;
     }
 
-    /**
-     * @phan-suppress PhanUnreferencedPublicMethod
-     */
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
@@ -66,7 +60,7 @@ final class DefinitionsLoader
     {
         \ob_start();
         $content = require $srcFile;
-        \ob_get_clean(); // @phan-suppress-current-line PhanPluginUseReturnValueInternalKnown
+        \ob_get_clean();
 
         return match (true) {
             \is_iterable($content) => yield from $content,

@@ -53,7 +53,7 @@ interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterfac
      *
      * ⚠ This method replaces all previously defined arguments.
      *
-     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed $argument
+     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed ...$argument
      *
      * @return $this
      */

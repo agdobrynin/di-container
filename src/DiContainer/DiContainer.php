@@ -76,7 +76,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
         foreach ($definitions as $identifier => $definition) {
-            $this->set($this->getIdentifier($identifier, $definition), $definition); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            $this->set($this->getIdentifier($identifier, $definition), $definition);
         }
     }
 

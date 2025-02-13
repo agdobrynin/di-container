@@ -22,8 +22,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
-     * @phan-suppress PhanUnreferencedFunction
-     *
      * @param class-string $definition
      */
     function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAutowireInterface
@@ -33,7 +31,9 @@ if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
-    // @phan-suppress-next-line PhanUnreferencedFunction
+    /**
+     * @param callable|non-empty-array<non-empty-string, non-empty-string>|non-empty-string $definition
+     */
     function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {
         return new DiDefinitionCallable($definition, $isSingleton);
@@ -42,8 +42,6 @@ if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
     /**
-     * @phan-suppress PhanUnreferencedFunction
-     *
      * @param class-string $definition
      */
     function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
@@ -56,9 +54,7 @@ if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
     /**
      * @deprecated Function diReference() was deprecated, used diGet()
      *
-     * @phan-suppress PhanUnreferencedFunction
-     * @phan-suppress PhanUndeclaredClassMethod
-     * @phan-suppress PhanUndeclaredTypeReturnType
+     * @param non-empty-string $containerIdentifier
      */
     function diReference(string $containerIdentifier): DiDefinitionReference
     {
@@ -70,7 +66,7 @@ if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
     /**
-     * @phan-suppress PhanUnreferencedFunction
+     * @param non-empty-string $containerIdentifier
      */
     function diGet(string $containerIdentifier): DiDefinitionInterface
     {
@@ -79,9 +75,6 @@ if (!\function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
-    /**
-     * @phan-suppress PhanUnreferencedFunction
-     */
     function diValue(mixed $value): DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionValue($value);
@@ -90,7 +83,8 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     /**
-     * @phan-suppress PhanUnreferencedFunction
+     * @param non-empty-string      $tag
+     * @param null|non-empty-string $priorityDefaultMethod
      */
     function diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true): DiDefinitionNoArgumentsInterface
     {

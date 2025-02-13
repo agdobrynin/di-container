@@ -20,6 +20,9 @@ final class ProxyClosure implements DiAttributeServiceInterface
         }
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getIdentifier(): string
     {
         return $this->id;

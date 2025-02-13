@@ -17,6 +17,8 @@ trait CallableParserTrait
     abstract public function getContainer(): DiContainerInterface;
 
     /**
+     * @param callable|non-empty-list<non-empty-string|object>|non-empty-string $definition
+     *
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -42,6 +44,11 @@ trait CallableParserTrait
         );
     }
 
+    /**
+     * @param list<non-empty-string|object>|non-empty-string $argument
+     *
+     * @return non-empty-list<non-empty-string|object>
+     */
     private function parseDefinitions(array|string $argument): array
     {
         if (\is_array($argument)) {
@@ -55,7 +62,16 @@ trait CallableParserTrait
         }
 
         if (\strpos($argument, '::') > 0) {
-            return \explode('::', $argument, 2);
+            /** @var non-empty-list<non-empty-string> $r */
+            $r = [$c, $m] = \explode('::', $argument, 2);
+
+            if ('' === $c || '' === $m) {
+                throw new DiDefinitionCallableException(
+                    \sprintf('Wrong callable definition present. Got: %s', $argument)
+                );
+            }
+
+            return $r;
         }
 
         return [$argument, '__invoke'];
