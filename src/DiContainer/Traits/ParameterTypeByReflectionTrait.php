@@ -15,11 +15,9 @@ trait ParameterTypeByReflectionTrait
     /**
      * @return null|non-empty-string
      */
-    private function getParameterTypeByReflection(\ReflectionParameter $reflectionParameter): ?string
+    private function getParameterTypeByReflection(\ReflectionNamedType|\ReflectionUnionType $type): ?string
     {
-        $type = $reflectionParameter->getType();
-
-        if (null === $type || ($type instanceof \ReflectionNamedType && $type->isBuiltin())) {
+        if ($type instanceof \ReflectionNamedType && $type->isBuiltin()) {
             return null;
         }
 

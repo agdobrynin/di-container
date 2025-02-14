@@ -115,11 +115,13 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                $parameterType = $this->getParameterTypeByReflection($parameter);
+                $strType = ($type = $parameter->getType())
+                        ? $this->getParameterTypeByReflection($type)
+                        : null;
 
-                $dependencies[] = null === $parameterType
+                $dependencies[] = null === $strType
                     ? $this->getContainer()->get($parameter->getName())
-                    : $this->getContainer()->get($parameterType);
+                    : $this->getContainer()->get($strType);
 
                 continue;
             } catch (AutowireAttributeException|CallCircularDependencyException|ContainerNeedSetExceptionInterface $e) {

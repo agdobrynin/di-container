@@ -44,8 +44,9 @@ trait AttributeReaderTrait
             $inject = $attribute->newInstance();
 
             if ('' === $inject->getIdentifier()
-                && $type = $this->getParameterTypeByReflection($reflectionParameter)) {
-                $inject = new Inject($type);
+                && ($type = $reflectionParameter->getType())
+                && ($strType = $this->getParameterTypeByReflection($type))) {
+                $inject = new Inject($strType);
             }
 
             yield $inject;
