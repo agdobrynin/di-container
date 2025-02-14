@@ -19,7 +19,7 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
     public function getContainer(): DiContainerInterface;
 
     /**
-     * @return iterable<int, mixed>
+     * @return iterable<non-empty-string|non-negative-int, mixed>
      *
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface

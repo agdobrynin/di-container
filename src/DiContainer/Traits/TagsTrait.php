@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+
+/**
+ * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
+ * @phpstan-import-type Tags from DiTaggedDefinitionInterface
+ */
 trait TagsTrait
 {
     /**
-     * @var array<non-empty-string, array<non-empty-string,array<scalar>|scalar>>
+     * @var array<non-empty-string, TagOptions>
      */
     private array $tags = [];
 
@@ -26,7 +33,7 @@ trait TagsTrait
     }
 
     /**
-     * @return array<non-empty-string, array<non-empty-string,array<scalar>|scalar>>
+     * @return Tags
      */
     public function getTags(): array
     {
@@ -46,8 +53,8 @@ trait TagsTrait
     }
 
     /**
-     * @param non-empty-string                             $name
-     * @param array<non-empty-string,array<scalar>|scalar> $operationOptions
+     * @param non-empty-string $name
+     * @param TagOptions       $operationOptions
      */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {

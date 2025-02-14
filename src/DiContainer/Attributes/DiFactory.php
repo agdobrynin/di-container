@@ -12,7 +12,7 @@ use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 final class DiFactory implements DiAttributeServiceInterface
 {
     /**
-     * @param class-string<DiFactoryInterface>|non-empty-string $id
+     * @param class-string<DiFactoryInterface> $id
      */
     public function __construct(private string $id, private bool $isSingleton = false)
     {
@@ -23,6 +23,9 @@ final class DiFactory implements DiAttributeServiceInterface
         }
     }
 
+    /**
+     * @return class-string
+     */
     public function getIdentifier(): string
     {
         return $this->id;

@@ -12,7 +12,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterfac
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
-use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -20,7 +19,6 @@ use Psr\Container\NotFoundExceptionInterface;
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
     use DiContainerTrait;
-    use DefinitionIdentifierTrait;
 
     private bool $tagIsInterface;
 
@@ -43,6 +41,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     public function getServicesTaggedAs(): iterable
     {
         $this->tagIsInterface ??= \interface_exists($this->tag);
+
+        /**
+         * @var \Generator<non-empty-string> $containerIdentifiers
+         */
         $containerIdentifiers = $this->tagIsInterface
             ? $this->getContainerIdentifiersOfTaggedServiceByInterface()
             : $this->getContainerIdentifiersOfTaggedServiceByTag();
@@ -84,13 +86,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     private function getServicesAsLazy(\Generator $containerIdentifiers): \Generator
     {
-        while ($containerIdentifiers->valid()) {
-            $containerIdentifier = $containerIdentifiers->current();
-
-            $this->useKeys
-                ? yield $containerIdentifier => $this->getContainer()->get($containerIdentifier)
-                : yield $this->getContainer()->get($containerIdentifier);
-            $containerIdentifiers->next();
+        foreach ($containerIdentifiers as $containerIdentifier) {
+            if ($this->useKeys) {
+                yield $containerIdentifier => $this->getContainer()->get($containerIdentifier);
+            } else {
+                yield $this->getContainer()->get($containerIdentifier);
+            }
         }
     }
 
@@ -104,6 +105,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $taggedServices = new \SplPriorityQueue();
         $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
+        /** @var non-empty-string $containerIdentifier */
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             if (false === ($definition instanceof DiTaggedDefinitionInterface)) {
                 continue;
@@ -125,6 +127,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
+        /** @var non-empty-string $containerIdentifier */
         foreach ($taggedServices as $containerIdentifier) {
             yield $containerIdentifier;
         }
@@ -140,6 +143,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $taggedServices = new \SplPriorityQueue();
         $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
+        /** @var non-empty-string $containerIdentifier */
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
                 if ($definition instanceof DiTaggedDefinitionAutowireInterface
@@ -159,6 +163,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
+        /** @var non-empty-string $containerIdentifier */
         foreach ($taggedServices as $containerIdentifier) {
             yield $containerIdentifier;
         }

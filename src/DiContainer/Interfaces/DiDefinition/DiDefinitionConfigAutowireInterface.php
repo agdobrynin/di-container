@@ -23,7 +23,7 @@ interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInter
      *      // bind parameters by index Class->classMethod('value 1', 'value 2')
      *
      * @param non-empty-string                                                                          $method
-     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed $argument
+     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed ...$argument
      *
      * @return $this
      */

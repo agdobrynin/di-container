@@ -21,7 +21,7 @@ final class ProxyClosure implements DiAttributeServiceInterface
     }
 
     /**
-     * @return non-empty-string
+     * @return class-string|non-empty-string
      */
     public function getIdentifier(): string
     {

@@ -32,7 +32,7 @@ if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     /**
-     * @param callable|non-empty-array<non-empty-string, non-empty-string>|non-empty-string $definition
+     * @param array{0: non-empty-string|object, 1?:non-empty-string}|callable|callable-string|\Closure|non-empty-string $definition
      */
     function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {

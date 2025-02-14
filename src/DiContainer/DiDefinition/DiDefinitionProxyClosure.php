@@ -16,6 +16,9 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     use DiContainerTrait;
     use TagsTrait;
 
+    /**
+     * @var non-empty-string
+     */
     private string $verifyDefinition;
 
     /**
@@ -39,6 +42,9 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
         };
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getDefinition(): string
     {
         return $this->verifyDefinition ??= '' === \trim($this->definition)

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
@@ -17,6 +18,10 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
+ * @phpstan-import-type ParsedCallable from DiContainerCallInterface
+ */
 final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface, DiTaggedDefinitionInterface
 {
     use BindArgumentsTrait;
@@ -25,10 +30,15 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     use DiContainerTrait;
     use TagsTrait;
 
+    /**
+     * @var NotParsedCallable|ParsedCallable
+     */
     private $definition;
 
     /**
-     * @var callable
+     * @var null|callable
+     *
+     * @phpstan-var ParsedCallable|null
      */
     private $parsedDefinition;
 
@@ -38,7 +48,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     private array $reflectedFunctionParameters;
 
     /**
-     * @param callable|non-empty-array<non-empty-string, non-empty-string>|non-empty-string $definition
+     * @param NotParsedCallable|ParsedCallable $definition
      */
     public function __construct(array|callable|string $definition, private ?bool $isSingleton = null)
     {
@@ -61,15 +71,18 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         $this->reflectedFunctionParameters ??= $this->reflectParameters();
 
         if ([] === $this->reflectedFunctionParameters) {
-            return \call_user_func($this->parsedDefinition);
+            return \call_user_func($this->getDefinition());
         }
 
-        return \call_user_func_array($this->parsedDefinition, $this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
+        return \call_user_func_array($this->getDefinition(), $this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
     }
 
+    /**
+     * @return callable|callable-string
+     */
     public function getDefinition(): callable
     {
-        return $this->parsedDefinition ??= $this->parseCallable($this->definition);
+        return $this->parsedDefinition ??= $this->parseCallable($this->definition); // @phpstan-ignore return.type
     }
 
     /**
@@ -81,20 +94,30 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     private function reflectParameters(): array
     {
-        $this->parsedDefinition ??= $this->parseCallable($this->definition);
+        if (\is_array($this->getDefinition())) {
+            /**
+             * @var non-empty-string|object $class
+             * @var non-empty-string        $method
+             */
+            [$class, $method] = $this->getDefinition();
 
-        if (\is_array($this->parsedDefinition)) {
-            return (new \ReflectionMethod($this->parsedDefinition[0], $this->parsedDefinition[1]))->getParameters();
+            return (new \ReflectionMethod($class, $method))->getParameters();
         }
 
-        if (\is_string($this->parsedDefinition) && \strpos($this->parsedDefinition, '::') > 0) {
+        if (\is_string($staticMethod = $this->getDefinition()) && \strpos($staticMethod, '::') > 0) {
             if (\PHP_VERSION_ID >= 80400) {
-                return \ReflectionMethod::createFromMethodName($this->parsedDefinition)->getParameters(); // @codeCoverageIgnore
+                // @codeCoverageIgnoreStart
+                // @phpstan-ignore method.nonObject, staticMethod.notFound, return.type
+                return \ReflectionMethod::createFromMethodName($staticMethod)->getParameters();
+                // @codeCoverageIgnoreEnd
             }
 
-            return (new \ReflectionMethod($this->parsedDefinition))->getParameters();
+            return (new \ReflectionMethod($this->getDefinition()))->getParameters();
         }
 
-        return (new \ReflectionFunction($this->parsedDefinition))->getParameters();
+        // @phpstan-return \ReflectionParameter[]
+        return (new \ReflectionFunction($this->getDefinition())) // @phpstan-ignore argument.type
+            ->getParameters()
+        ;
     }
 }

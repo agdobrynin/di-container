@@ -29,7 +29,6 @@ final class DefinitionsLoader
             foreach ($this->getIterator($srcFile) as $identifier => $definition) {
                 try {
                     $identifier = $this->getIdentifier($identifier, $definition);
-                    $this->validateIdentifier($identifier);
                 } catch (DiDefinitionException $e) {
                     throw new DiDefinitionException(
                         \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
@@ -49,6 +48,9 @@ final class DefinitionsLoader
         return $this;
     }
 
+    /**
+     * @phpstan-return \Generator
+     */
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();

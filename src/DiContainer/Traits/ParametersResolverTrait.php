@@ -35,7 +35,7 @@ trait ParametersResolverTrait
     /**
      * User defined input arguments.
      *
-     * @var array<int|string, mixed>
+     * @var array<non-empty-string|non-negative-int, mixed>
      */
     private array $arguments;
 
@@ -56,8 +56,8 @@ trait ParametersResolverTrait
     abstract public function getContainer(): DiContainerInterface;
 
     /**
-     * @param array<int|non-empty-string, mixed> $inputArguments
-     * @param \ReflectionParameter[]             $reflectionParameters
+     * @param array<non-empty-string|non-negative-int, mixed> $inputArguments
+     * @param \ReflectionParameter[]                          $reflectionParameters
      *
      * @return list<mixed>
      *
@@ -115,7 +115,8 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                $strType = ($type = $parameter->getType())
+                /** @var null|\ReflectionNamedType|\ReflectionUnionType $type */
+                $strType = null !== ($type = $parameter->getType())
                         ? $this->getParameterTypeByReflection($type)
                         : null;
 
@@ -261,7 +262,7 @@ trait ParametersResolverTrait
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return array<mixed>
      */
     private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
     {

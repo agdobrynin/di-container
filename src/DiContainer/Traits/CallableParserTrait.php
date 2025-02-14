@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
+use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * @phpstan-import-type ParsedCallable from DiContainerCallInterface
+ * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
+ */
 trait CallableParserTrait
 {
     use DiContainerTrait;
@@ -17,7 +22,7 @@ trait CallableParserTrait
     abstract public function getContainer(): DiContainerInterface;
 
     /**
-     * @param callable|non-empty-list<non-empty-string|object>|non-empty-string $definition
+     * @phpstan-param NotParsedCallable|ParsedCallable $definition
      *
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
@@ -31,8 +36,8 @@ trait CallableParserTrait
 
         $parsedDefinition = $this->parseDefinitions($definition);
 
-        if (\is_string($parsedDefinition[0])) {
-            $parsedDefinition[0] = $this->getContainer()->get($parsedDefinition[0]);
+        if (\is_string($containerIdentifier = $parsedDefinition[0])) {
+            $parsedDefinition[0] = $this->getContainer()->get($containerIdentifier);
         }
 
         if (\is_callable($parsedDefinition)) {
@@ -45,9 +50,9 @@ trait CallableParserTrait
     }
 
     /**
-     * @param list<non-empty-string|object>|non-empty-string $argument
+     * @phpstan-param  NotParsedCallable $argument
      *
-     * @return non-empty-list<non-empty-string|object>
+     * @return array{0: non-empty-string|object, 1: non-empty-string}
      */
     private function parseDefinitions(array|string $argument): array
     {
@@ -62,16 +67,16 @@ trait CallableParserTrait
         }
 
         if (\strpos($argument, '::') > 0) {
-            /** @var non-empty-list<non-empty-string> $r */
-            $r = [$c, $m] = \explode('::', $argument, 2);
+            /** @var array{0: non-empty-string, 1: non-empty-string} $classStaticMethod */
+            $classStaticMethod = [$class, $method] = \explode('::', $argument, 2);
 
-            if ('' === $c || '' === $m) {
+            if ('' === $class || '' === $method) {
                 throw new DiDefinitionCallableException(
                     \sprintf('Wrong callable definition present. Got: %s', $argument)
                 );
             }
 
-            return $r;
+            return $classStaticMethod;
         }
 
         return [$argument, '__invoke'];

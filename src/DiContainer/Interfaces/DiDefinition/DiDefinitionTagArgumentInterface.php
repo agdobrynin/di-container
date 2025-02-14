@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+/**
+ * @phpstan-type TagOptions array<non-empty-string, null|array<non-empty-string, null|scalar>|scalar>
+ */
 interface DiDefinitionTagArgumentInterface
 {
     /**
      * Bind tag for services with meta-data.
      *
-     * @param non-empty-string                              $name     tag name
-     * @param array<non-empty-string, array<scalar>|scalar> $options  tag's meta-data
-     * @param null|int|non-empty-string                     $priority priority for sorting tag collection
+     * @param non-empty-string $name    tag name
+     * @param TagOptions       $options tag's meta-data
      *
      * @return $this
      */

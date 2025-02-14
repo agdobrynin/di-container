@@ -12,7 +12,7 @@ interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterfac
      *
      * ⚠ This method replaces the previously defined argument with the same name.
      *
-     * @param int|non-empty-string                                                                      $name
+     * @param non-empty-string|non-negative-int                                                         $name
      * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed $value
      *
      * @return $this
@@ -38,7 +38,7 @@ interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterfac
      *
      * @deprecated Use method bindArguments(). This method will remove next major release.
      *
-     * @param array<non-empty-string, mixed> $arguments
+     * @param array<non-empty-string|non-negative-int, mixed> $arguments
      *
      * @return $this
      */
