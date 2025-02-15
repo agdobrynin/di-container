@@ -9,16 +9,19 @@ use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
+use Kaspi\DiContainer\Traits\StaticMethodInTaggedDefinitionTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 /**
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
+ * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
  */
 final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiTaggedDefinitionAutowireInterface
 {
@@ -26,9 +29,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     use DiContainerTrait;
+    use StaticMethodInTaggedDefinitionTrait;
     use TagsTrait {
         getTags as private internalGetTags;
         hasTag as private internalHasTag;
+        getTag as private internalGetTag;
         geTagPriority as private internalGeTagPriority;
     }
 
@@ -148,9 +153,16 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return $this->internalHasTag($name);
     }
 
+    public function getTag(string $name): ?array
+    {
+        $this->attemptsReadTagAttribute();
+
+        return $this->internalGetTag($name);
+    }
+
     /**
-     * @param non-empty-string                             $name
-     * @param array<non-empty-string,array<scalar>|scalar> $operationOptions
+     * @param non-empty-string $name
+     * @param TagOptions       $operationOptions
      */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {
@@ -160,80 +172,30 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         $this->attemptsReadTagAttribute();
 
-        if (($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
+        if ([] !== ($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
             $tagOptions = $this->getTag($name) + $operationOptions;
             $howGetPriority = \sprintf('Get priority by option "priority.method" for tag "%s".', $name);
 
-            return $this->invokePriorityMethod($tagOptions['priority.method'], true, $name, $tagOptions, $howGetPriority);
+            // @phpstan-ignore return.type
+            return self::invokeMethod($this, $tagOptions['priority.method'], true, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
         }
 
         $priorityDefaultMethod = ($operationOptions['priority.default_method'] ?? null);
 
         if (null !== $priorityDefaultMethod) {
             $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
-            $howGetPriority = \sprintf('Get priority by option "priority.default.method" for class "%s".', $this->getDefinition()->getName());
+            $howGetPriority = \sprintf('Get priority by option "priority.default_method" for class "%s".', $this->getDefinition()->getName());
 
-            return $this->invokePriorityMethod($priorityDefaultMethod, false, $name, $tagOptions, $howGetPriority);
+            // @phpstan-ignore return.type
+            return self::invokeMethod($this, $priorityDefaultMethod, false, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
         }
 
         return null;
     }
 
-    /**
-     * @param mixed[] $tagOptions
-     */
-    private function invokePriorityMethod(mixed $priorityMethod, bool $requirePriorityMethod, string $tag, array $tagOptions, string $howGetPriority): null|int|string
-    {
-        if (!\is_string($priorityMethod) || '' === \trim($priorityMethod)) {
-            throw new AutowireException($howGetPriority.' The value option must be non-empty string.');
-        }
-
-        $reflectionClass = $this->getDefinition();
-        // @phpstan-var callable $callableExpression
-        $callableExpression = [$reflectionClass->name, $priorityMethod];
-        $isCallable = \is_callable($callableExpression);
-        $supportReturnTypes = ['int', 'string', 'null'];
-
-        // @phpstan-ignore argument.type
-        if (!$isCallable || ($types = $this->diffReturnType($reflectionClass->getMethod($priorityMethod)->getReturnType(), ...$supportReturnTypes))) {
-            if (!$requirePriorityMethod) {
-                return null;
-            }
-
-            $message = \sprintf(
-                '%s "%s::%s()" method must be declared with public and static modifiers. Return type must be %s.%s',
-                $howGetPriority,
-                $reflectionClass->getName(),
-                $priorityMethod,
-                \implode(', ', $supportReturnTypes),
-                isset($types) ? ' Got return type: '.\implode(', ', $types) : ''
-            );
-
-            throw new AutowireException($message);
-        }
-
-        // @phpstan-ignore return.type
-        return \call_user_func($callableExpression, $tag, $tagOptions);
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function diffReturnType(null|\ReflectionNamedType|\ReflectionUnionType $rt, string ...$type): array
-    {
-        $fn = static fn (\ReflectionNamedType $t): string => $t->getName();
-
-        $types = match (true) {
-            $rt instanceof \ReflectionNamedType => [$rt->getName()],
-            $rt instanceof \ReflectionUnionType => \array_map($fn, $rt->getTypes()), // @phpstan-ignore argument.type
-            default => ['undefined'],
-        };
-
-        return \array_diff($types, $type);
-    }
-
     private function attemptsReadTagAttribute(): void
     {
+        // @phpstan-ignore booleanAnd.rightNotBoolean
         if (!isset($this->tagAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
             $this->tagAttributes = [];
 
@@ -242,7 +204,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 // 🚩 Php-attribute override existing tag defined by <bindTag> (see documentation.)
                 $this->bindTag(
                     name: $tagAttribute->getIdentifier(),
-                    options: ($tagAttribute->getPriorityMethod() ? ['priority.method' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
+                    options: (null !== $tagAttribute->getPriorityMethod() ? ['priority.method' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
                     priority: $tagAttribute->getPriority(),
                 );
             }
