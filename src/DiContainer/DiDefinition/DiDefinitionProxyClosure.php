@@ -16,6 +16,9 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     use DiContainerTrait;
     use TagsTrait;
 
+    /**
+     * @var non-empty-string
+     */
     private string $verifyDefinition;
 
     /**
@@ -34,11 +37,14 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
             throw new AutowireException(\sprintf('Definition "%s" does not exist', $this->getDefinition()));
         }
 
-        return function () { // @phan-suppress-current-line PhanUnreferencedClosure
+        return function () {
             return $this->container->get($this->getDefinition());
         };
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getDefinition(): string
     {
         return $this->verifyDefinition ??= '' === \trim($this->definition)

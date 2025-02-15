@@ -12,9 +12,6 @@ trait DiContainerTrait
 {
     private DiContainerInterface $container;
 
-    /**
-     * @phan-suppress PhanTypeMismatchReturn
-     */
     public function setContainer(DiContainerInterface $container): static
     {
         $this->container = $container;

@@ -19,9 +19,6 @@ final class DefinitionsLoader
         $this->configDefinitions = new \ArrayIterator();
     }
 
-    /**
-     * @phan-suppress PhanUnreferencedPublicMethod
-     */
     public function load(bool $overrideDefinitions, string ...$file): static
     {
         foreach ($file as $srcFile) {
@@ -32,7 +29,6 @@ final class DefinitionsLoader
             foreach ($this->getIterator($srcFile) as $identifier => $definition) {
                 try {
                     $identifier = $this->getIdentifier($identifier, $definition);
-                    $this->validateIdentifier($identifier);
                 } catch (DiDefinitionException $e) {
                     throw new DiDefinitionException(
                         \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
@@ -53,7 +49,7 @@ final class DefinitionsLoader
     }
 
     /**
-     * @phan-suppress PhanUnreferencedPublicMethod
+     * @phpstan-return \Generator
      */
     public function definitions(): iterable
     {
@@ -66,7 +62,7 @@ final class DefinitionsLoader
     {
         \ob_start();
         $content = require $srcFile;
-        \ob_get_clean(); // @phan-suppress-current-line PhanPluginUseReturnValueInternalKnown
+        \ob_get_clean();
 
         return match (true) {
             \is_iterable($content) => yield from $content,

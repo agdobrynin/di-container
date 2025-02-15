@@ -3,8 +3,11 @@ SHELL := /bin/sh
 test:
 	@docker-compose -f docker-compose.yml run --rm php ./vendor/bin/phpunit --no-coverage
 
+test-cover:
+	@docker-compose -f docker-compose.yml run --rm php ./vendor/bin/phpunit
+
 stat:
-	@docker-compose -f docker-compose.yml run --rm php vendor/bin/phan
+	@docker-compose -f docker-compose.yml run --rm php vendor/bin/phpstan
 
 fix:
 	@docker-compose -f docker-compose.yml run --rm php composer fix

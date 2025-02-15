@@ -9,6 +9,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 
 final class DiDefinitionGet implements DiDefinitionLinkInterface
 {
+    /**
+     * @var non-empty-string
+     */
     private string $validContainerIdentifier;
 
     /**
@@ -17,6 +20,8 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface
     public function __construct(private string $containerIdentifier) {}
 
     /**
+     * @return non-empty-string
+     *
      * @throws DiDefinitionException
      */
     public function getDefinition(): string

@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+
+/**
+ * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
+ * @phpstan-import-type Tags from DiTaggedDefinitionInterface
+ */
 trait TagsTrait
 {
+    /**
+     * @var array<non-empty-string, TagOptions>
+     */
     private array $tags = [];
 
     /**
-     * @phan-suppress PhanTypeMismatchReturn
-     * @phan-suppress PhanUnreferencedPublicMethod
-     *
      * @return $this
      */
     public function bindTag(string $name, array $options = [], null|int|string $priority = null): static
@@ -26,7 +33,7 @@ trait TagsTrait
     }
 
     /**
-     * @phan-suppress PhanUnreferencedPublicMethod
+     * @return Tags
      */
     public function getTags(): array
     {
@@ -45,6 +52,10 @@ trait TagsTrait
         return [] !== $this->tags && isset($this->tags[$name]);
     }
 
+    /**
+     * @param non-empty-string $name
+     * @param TagOptions       $operationOptions
+     */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {
         $options = $operationOptions + ($this->getTag($name) ?? []);

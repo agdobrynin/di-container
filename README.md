@@ -204,12 +204,12 @@ composer test
 
 ## Статический анализ кода
 
-Для статического анализа используем пакет [Phan](https://github.com/phan/phan).
-
-Запуск без PHP расширения [PHP AST](https://github.com/nikic/php-ast)
-
+Для статического анализа используем пакет [PHPStan](https://github.com/phpstan/phpstan).
 ```shell
-./vendor/bin/phan --allow-polyfill-parser
+composer stat
+```
+```shell
+./vendor/bin/phpstan
 ```
 
 ## Code style
@@ -225,26 +225,52 @@ composer fixer
 Указать образ с версией PHP можно в файле `.env` в ключе `PHP_IMAGE`. 
 По умолчанию контейнер собирается с образом `php:8.0-cli-alpine`.
 
-Собрать контейнер
+### Собрать контейнер
 ```shell
 docker-compose build
 ```
-Установить зависимости php composer-а:
+### Установить зависимости php composer-а:
 ```shell
 docker-compose run --rm php composer install
 ```
-Прогнать тесты с отчетом о покрытии кода
+🔔 Если установлен `make` в системе:
+```shell
+make install
+```
+### Тесты
+Запуск тестов без отчёта о покрытии кода:
+```shell
+docker-compose run --rm php vendor/bin/phpunit --no-coverage
+```
+🔔 Если установлен `make` в системе:
+```shell
+make test
+```
+Прогнать тесты с отчётом о покрытии кода:
 ```shell
 docker-compose run --rm php vendor/bin/phpunit
 ```
-⛑ pезультаты будут в папке `.coverage-html`
+🔔 Если установлен `make` в системе:
+```shell
+make test-cover
+```
+> ⛑ pезультаты будут в папке `.coverage-html`
 
-Статический анализ кода Phan (_static analyzer for PHP_)
+### Статический анализ кода PHPStan
 
 ```shell
-docker-compose run --rm php vendor/bin/phan
+docker-compose run --rm php vendor/bin/phpstan
 ```
-
+если установлен `make` в системе:
+```shell
+make stat
+```
+### Запуск комплексной проверки
+Если установлен `make` – запуск проверки code-style, stat analyzer, tests:
+```shell
+make all
+```
+### Другое
 Можно работать в shell оболочке в docker контейнере:
 ```shell
 docker-compose run --rm php sh

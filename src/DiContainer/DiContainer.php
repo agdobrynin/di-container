@@ -15,10 +15,12 @@ use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -30,6 +32,10 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
+ * @phpstan-import-type ParsedCallable from DiContainerCallInterface
+ */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     use AttributeReaderTrait {
@@ -63,7 +69,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected array $resolvingDependencies = [];
 
     /**
-     * @param iterable<class-string|non-empty-string, class-string|mixed> $definitions
+     * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      *
      * @throws DiDefinitionExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
@@ -75,7 +81,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
         foreach ($definitions as $identifier => $definition) {
-            $this->set($this->getIdentifier($identifier, $definition), $definition); // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            $this->set($this->getIdentifier($identifier, $definition), $definition);
         }
     }
 
@@ -84,10 +90,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      *
      * @param class-string<T>|non-empty-string $id
      *
-     * @return T
+     * @return mixed|T
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     *
+     * @phpstan-ignore method.templateTypeNotInParameter
      */
     public function get(string $id): mixed
     {
@@ -105,9 +113,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             || $this->isContainer($id);
     }
 
+    /**
+     * @param class-string|non-empty-string                                                            $id
+     * @param DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface|mixed $definition
+     */
     public function set(string $id, mixed $definition): static
     {
-        $this->validateIdentifier($id);
+        $this->getIdentifier($id, null); // check only $id
 
         if (\array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException(
@@ -120,6 +132,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this;
     }
 
+    /**
+     * @phpstan-param NotParsedCallable|ParsedCallable $definition
+     */
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         try {
@@ -138,6 +153,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this; // @codeCoverageIgnore
     }
 
+    /**
+     * @return iterable<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionLinkInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionAutowireInterface>
+     */
     public function getDefinitions(): iterable
     {
         foreach ($this->definitions as $id => $definition) {
@@ -154,6 +172,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * Resolve dependencies.
+     *
+     * @param class-string|non-empty-string $id
      *
      * @throws ContainerExceptionInterface
      */
@@ -201,6 +221,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
+     * @param class-string|non-empty-string $id
+     *
      * @throws AutowireExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
@@ -215,8 +237,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $hasDefinition = \array_key_exists($id, $this->definitions);
 
         if (!$hasDefinition) {
-            // @todo come up with a test for throw ReflectionException
-            $reflectionClass = new \ReflectionClass($id);
+            // @phpstan-ignore argument.type
+            $reflectionClass = new \ReflectionClass($id); // @todo come up with a test for throw ReflectionException
 
             if ($reflectionClass->isInterface()) {
                 if ($this->config?->isUseAttribute()
@@ -225,7 +247,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     $this->resolvingDependencies[$service->getIdentifier()] = true;
 
                     try {
-                        return $this->diResolvedDefinition[] = $this->resolveDefinition($service->getIdentifier());
+                        return $this->diResolvedDefinition[$service->getIdentifier()] = $this->resolveDefinition($service->getIdentifier());
                     } finally {
                         unset($this->resolvingDependencies[$service->getIdentifier()]);
                     }

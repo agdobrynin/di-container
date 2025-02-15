@@ -10,13 +10,16 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterfac
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
+/**
+ * @phpstan-import-type Tags from DiTaggedDefinitionInterface
+ */
 final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiTaggedDefinitionAutowireInterface
 {
     use AttributeReaderTrait;
@@ -37,16 +40,14 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private array $reflectionConstructorParams;
 
     /**
-     * @phan-suppress PhanReadOnlyPrivateProperty
-     *
-     * @var array<non-empty-string, array<int, \ReflectionParameter>>
+     * @var array<non-empty-string, list<\ReflectionParameter>>
      */
     private array $reflectionMethodParams;
 
     /**
      * Methods for setup service via setters.
      *
-     * @var array<non-empty-string, array<int|non-empty-string, mixed>>
+     * @var array<non-empty-string, array<non-empty-string|non-negative-int, mixed>>
      */
     private array $setup = [];
 
@@ -57,6 +58,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      */
     private array $tagAttributes;
 
+    /**
+     * @param class-string|\ReflectionClass $definition
+     */
     public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
         if ($this->definition instanceof \ReflectionClass) {
@@ -64,6 +68,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
     }
 
+    /**
+     * @return $this
+     */
     public function setup(string $method, mixed ...$argument): static
     {
         $this->setup[$method][] = $argument;
@@ -97,27 +104,29 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             $this->reflectionMethodParams[$method] ??= $this->getDefinition()->getMethod($method)->getParameters();
 
             foreach ($arguments as $argument) {
-                $this->getDefinition()->getMethod($method)
-                    ->invokeArgs($object, $this->resolveParameters($argument, $this->reflectionMethodParams[$method]))
-                ;
+                /**
+                 * @phpstan-var array<non-negative-int|non-empty-string, mixed> $argument
+                 */
+                $args = $this->resolveParameters($argument, $this->reflectionMethodParams[$method]);
+                $this->getDefinition()->getMethod($method)->invokeArgs($object, $args);
             }
         }
 
         return $object;
     }
 
-    /**
-     * @throws AutowireExceptionInterface
-     */
     public function getDefinition(): \ReflectionClass
     {
         try {
             return $this->reflectionClass ??= new \ReflectionClass($this->definition);
-        } catch (\ReflectionException $e) {
+        } catch (\ReflectionException $e) { // @phpstan-ignore catch.neverThrown
             throw new AutowireException(message: $e->getMessage());
         }
     }
 
+    /**
+     * @return class-string|non-empty-string
+     */
     public function getIdentifier(): string
     {
         return \is_string($this->definition)
@@ -139,6 +148,10 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return $this->internalHasTag($name);
     }
 
+    /**
+     * @param non-empty-string                             $name
+     * @param array<non-empty-string,array<scalar>|scalar> $operationOptions
+     */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {
         if (null !== ($priority = $this->internalGeTagPriority($name))) {
@@ -166,6 +179,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return null;
     }
 
+    /**
+     * @param mixed[] $tagOptions
+     */
     private function invokePriorityMethod(mixed $priorityMethod, bool $requirePriorityMethod, string $tag, array $tagOptions, string $howGetPriority): null|int|string
     {
         if (!\is_string($priorityMethod) || '' === \trim($priorityMethod)) {
@@ -173,10 +189,13 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         $reflectionClass = $this->getDefinition();
-        $isCallable = \is_callable([$reflectionClass->name, $priorityMethod]);
+        // @phpstan-var callable $callableExpression
+        $callableExpression = [$reflectionClass->name, $priorityMethod];
+        $isCallable = \is_callable($callableExpression);
         $supportReturnTypes = ['int', 'string', 'null'];
 
-        if (!$isCallable || ($types = $this->diffReturnType($reflectionClass->getMethod($priorityMethod), ...$supportReturnTypes))) {
+        // @phpstan-ignore argument.type
+        if (!$isCallable || ($types = $this->diffReturnType($reflectionClass->getMethod($priorityMethod)->getReturnType(), ...$supportReturnTypes))) {
             if (!$requirePriorityMethod) {
                 return null;
             }
@@ -193,16 +212,20 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             throw new AutowireException($message);
         }
 
-        return \call_user_func([$reflectionClass->name, $priorityMethod], $tag, $tagOptions);
+        // @phpstan-ignore return.type
+        return \call_user_func($callableExpression, $tag, $tagOptions);
     }
 
-    private function diffReturnType(\ReflectionMethod $reflectionMethod, string ...$type): array
+    /**
+     * @return array<string>
+     */
+    private function diffReturnType(null|\ReflectionNamedType|\ReflectionUnionType $rt, string ...$type): array
     {
-        $rt = $reflectionMethod->getReturnType();
+        $fn = static fn (\ReflectionNamedType $t): string => $t->getName();
 
         $types = match (true) {
             $rt instanceof \ReflectionNamedType => [$rt->getName()],
-            $rt instanceof \ReflectionUnionType => \array_map(static fn ($t) => $t->getName(), $rt->getTypes()),
+            $rt instanceof \ReflectionUnionType => \array_map($fn, $rt->getTypes()), // @phpstan-ignore argument.type
             default => ['undefined'],
         };
 
@@ -226,6 +249,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
     }
 
+    /**
+     * @return \ReflectionParameter[]
+     */
     private function getConstructorParams(): array
     {
         if (isset($this->reflectionConstructorParams)) {

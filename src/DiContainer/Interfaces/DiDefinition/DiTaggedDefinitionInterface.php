@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+/**
+ * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
+ *
+ * @phpstan-type Tags array<non-empty-string, TagOptions>
+ */
 interface DiTaggedDefinitionInterface
 {
     /**
      * Get bound tags with options.
      *
-     * @return array<non-empty-string, array<non-empty-string, mixed>>
+     * @return Tags
      */
     public function getTags(): array;
 
@@ -18,7 +23,7 @@ interface DiTaggedDefinitionInterface
      *
      * @param non-empty-string $name
      *
-     * @return null|array<non-empty-string, mixed>
+     * @return null|TagOptions
      */
     public function getTag(string $name): ?array;
 
@@ -32,14 +37,17 @@ interface DiTaggedDefinitionInterface
     /**
      * Get priority for tag.
      *
-     * @param non-empty-string               $name
-     * @param array<non-empty-string, mixed> $operationOptions temporary options (meta-data) for operation
+     * @param non-empty-string $name
+     * @param TagOptions       $operationOptions temporary options (meta-data) for operation
      */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string;
 
     /**
-     * @param non-empty-string               $name
-     * @param array<non-empty-string, mixed> $options
+     * Bind tag for services with meta-data.
+     *
+     * @param non-empty-string $name     tag name
+     * @param TagOptions       $options  tag's meta-data
+     * @param null|int|string  $priority priority for sorting tag collection
      *
      * @return $this
      */

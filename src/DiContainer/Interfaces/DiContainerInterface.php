@@ -18,12 +18,14 @@ interface DiContainerInterface extends ContainerInterface
     /**
      * @template T of object
      *
-     * @param class-string<T>|string $id
+     * @param class-string<T>|non-empty-string $id
      *
      * @return T
      *
      * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
      * @throws ContainerExceptionInterface Error while retrieving the entry.*
+     *
+     * @phpstan-ignore method.templateTypeNotInParameter
      */
     public function get(string $id): mixed;
 

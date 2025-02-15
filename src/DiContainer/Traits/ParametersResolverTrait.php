@@ -35,7 +35,7 @@ trait ParametersResolverTrait
     /**
      * User defined input arguments.
      *
-     * @var array<int|string, mixed>
+     * @var array<non-empty-string|non-negative-int, mixed>
      */
     private array $arguments;
 
@@ -49,8 +49,6 @@ trait ParametersResolverTrait
     /**
      * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
      *
-     * @phan-suppress PhanReadOnlyPrivateProperty
-     *
      * @var array<non-empty-string, mixed>
      */
     private array $resolvedArguments = [];
@@ -58,7 +56,10 @@ trait ParametersResolverTrait
     abstract public function getContainer(): DiContainerInterface;
 
     /**
-     * @param \ReflectionParameter[] $reflectionParameters
+     * @param array<non-empty-string|non-negative-int, mixed> $inputArguments
+     * @param \ReflectionParameter[]                          $reflectionParameters
+     *
+     * @return list<mixed>
      *
      * @throws AutowireAttributeException
      * @throws AutowireExceptionInterface
@@ -114,11 +115,14 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                $parameterType = $this->getParameterTypeByReflection($parameter);
+                /** @var null|\ReflectionNamedType|\ReflectionUnionType $type */
+                $strType = null !== ($type = $parameter->getType())
+                        ? $this->getParameterTypeByReflection($type)
+                        : null;
 
-                $dependencies[] = null === $parameterType
+                $dependencies[] = null === $strType
                     ? $this->getContainer()->get($parameter->getName())
-                    : $this->getContainer()->get($parameterType->getName());
+                    : $this->getContainer()->get($strType);
 
                 continue;
             } catch (AutowireAttributeException|CallCircularDependencyException|ContainerNeedSetExceptionInterface $e) {
@@ -137,7 +141,7 @@ trait ParametersResolverTrait
             $declaredFunction = $parameter->getDeclaringFunction()->getName();
             $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
             $messageParameter = $parameter.' in '.$where;
-            $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException?->getMessage()}";
+            $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException->getMessage()}";
 
             if ($autowireException instanceof NotFoundExceptionInterface) {
                 throw new NotFoundException(message: $message, previous: $autowireException);
@@ -257,6 +261,9 @@ trait ParametersResolverTrait
         );
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
     {
         if (\is_string($argumentNameOrIndex)) {
