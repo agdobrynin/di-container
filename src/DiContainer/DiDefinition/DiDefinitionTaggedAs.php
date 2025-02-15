@@ -24,13 +24,17 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     /**
      * @param non-empty-string      $tag
-     * @param null|non-empty-string $priorityDefaultMethod
+     * @param null|non-empty-string $priorityDefaultMethod priority from class::method()
+     * @param null|non-empty-string $key                   identifier of definition from meta-data
+     * @param null|non-empty-string $keyDefaultMethod      if $keyFromOptions not found try get it from class::method()
      */
     public function __construct(
         private string $tag,
         private bool $isLazy = true,
         private ?string $priorityDefaultMethod = null,
         private bool $useKeys = true,
+        private ?string $key = null,
+        private ?string $keyDefaultMethod = null,
     ) {}
 
     /**
