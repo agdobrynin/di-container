@@ -66,7 +66,7 @@ trait CallableParserTrait
             return [$argument[0], $argument[1]];
         }
 
-        if (\strpos($argument, '::') > 0) {
+        if (\str_contains($argument, '::')) {
             /** @var array{0: non-empty-string, 1: non-empty-string} $classStaticMethod */
             $classStaticMethod = [$class, $method] = \explode('::', $argument, 2);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\CallableParser;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
@@ -99,5 +100,25 @@ class CallableParserTest extends TestCase
 
         $this->assertIsCallable($parsedDefinition);
         $this->assertIsNotCallable($definition);
+    }
+
+    public static function dataProviderDefinitionAsStringWithDoubleColonNotValid(): \Generator
+    {
+        yield 'class and method is empty' => ['::'];
+
+        yield 'class is empty' => ['::method'];
+
+        yield 'method is empty' => ['class::'];
+    }
+
+    /**
+     * @dataProvider dataProviderDefinitionAsStringWithDoubleColonNotValid
+     */
+    public function testParseDefinitionAsStringWithDoubleColonNotValid(string $definition): void
+    {
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
+        $this->expectExceptionMessage('Wrong callable definition present. Got: '.$definition);
+
+        $this->parseDefinitions($definition);
     }
 }
