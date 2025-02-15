@@ -40,6 +40,11 @@ trait TagsTrait
         return $this->tags;
     }
 
+    /**
+     * @param non-empty-string $name
+     *
+     * @return null|TagOptions
+     */
     public function getTag(string $name): ?array
     {
         return $this->hasTag($name)
@@ -60,7 +65,7 @@ trait TagsTrait
     {
         $options = $operationOptions + ($this->getTag($name) ?? []);
 
-        return $options && \array_key_exists('priority', $options) && (\is_int($priority = $options['priority']) || \is_string($priority))
+        return [] !== $options && \array_key_exists('priority', $options) && (\is_int($priority = $options['priority']) || \is_string($priority))
             ? $priority
             : null;
     }

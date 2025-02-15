@@ -18,7 +18,7 @@ interface DiContainerInterface extends ContainerInterface
     /**
      * @template T of object
      *
-     * @param class-string<T>|non-empty-string $id
+     * @param class-string<T>|string $id
      *
      * @return T
      *
