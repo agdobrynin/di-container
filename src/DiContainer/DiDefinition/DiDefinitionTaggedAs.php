@@ -68,7 +68,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
             foreach ($items as [$containerIdentifier, $item]) {
                 $this->useKeys
-                    ? $services[$this->getIdentifierFromTag($containerIdentifier, $item)] = $this->getContainer()->get($containerIdentifier)
+                    ? $services[$this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item)] = $this->getContainer()->get($containerIdentifier)
                     : $services[] = $this->getContainer()->get($containerIdentifier);
             }
 
@@ -94,7 +94,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     {
         foreach ($items as [$containerIdentifier, $item]) {
             if ($this->useKeys) {
-                yield $this->getIdentifierFromTag($containerIdentifier, $item) => $this->getContainer()->get($containerIdentifier);
+                yield $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item) => $this->getContainer()->get($containerIdentifier);
             } else {
                 yield $this->getContainer()->get($containerIdentifier);
             }
@@ -180,7 +180,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @return non-empty-string
      */
-    private function getIdentifierFromTag(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
+    private function getKeyFromTagOptionsOrFromKeyDefaultMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
     {
         if (null !== $this->key) {
             $this->keyOptimized ??= '' === \trim($this->key)
@@ -212,13 +212,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
                 return $optionKey; // @phpstan-ignore return.type
             }
-
-            return $taggedAs instanceof DiDefinitionAutowireInterface
-                ? $this->getKeyByDefaultMethod($identifier, $taggedAs)
-                : $identifier;
         }
 
-        return $taggedAs instanceof DiDefinitionAutowireInterface
+        return null !== $this->keyDefaultMethod && $taggedAs instanceof DiDefinitionAutowireInterface
             ? $this->getKeyByDefaultMethod($identifier, $taggedAs)
             : $identifier;
     }
@@ -230,13 +226,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     private function getKeyByDefaultMethod(string $identifier, DiDefinitionAutowireInterface $taggedAs): string
     {
-        if (null === $this->keyDefaultMethod) {
-            return $identifier;
-        }
-        // @todo check method must be none-empty string?
-
         $howGetKeyOption = \sprintf('Get default key by "%s::%s()" for tag "%s".', $taggedAs->getDefinition()->name, $this->keyDefaultMethod, $this->tag);
-
         $key = self::callStaticMethod($taggedAs, $this->keyDefaultMethod, false, $howGetKeyOption, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
 
         // @phpstan-ignore return.type
