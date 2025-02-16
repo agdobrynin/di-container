@@ -70,6 +70,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             foreach ($items as [$containerIdentifier, $item]) {
                 if ($isUseKeys) {
                     $identifier = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
+                    // @todo if identifier already exist? override or throw an exception?
                     $services[$identifier] = $this->getContainer()->get($containerIdentifier);
                 } else {
                     $services[] = $this->getContainer()->get($containerIdentifier);
@@ -94,12 +95,13 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      * @throws NotFoundExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      */
-    private function getServicesAsLazy(\Generator $items): \Generator
+    private function getServicesAsLazy(\Generator $items): \Iterator
     {
         $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
 
         foreach ($items as [$containerIdentifier, $item]) {
             if ($isUseKeys) {
+                // @todo if identifier already exist? override or throw an exception?
                 $identifier = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
 
                 yield $identifier => $this->getContainer()->get($containerIdentifier);
