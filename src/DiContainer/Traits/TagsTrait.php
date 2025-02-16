@@ -40,11 +40,6 @@ trait TagsTrait
         return $this->tags;
     }
 
-    /**
-     * @param non-empty-string $name
-     *
-     * @return null|TagOptions
-     */
     public function getTag(string $name): ?array
     {
         return $this->hasTag($name)

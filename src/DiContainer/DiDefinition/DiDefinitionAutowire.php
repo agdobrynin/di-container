@@ -33,7 +33,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     use TagsTrait {
         getTags as private internalGetTags;
         hasTag as private internalHasTag;
-        getTag as private internalGetTag;
         geTagPriority as private internalGeTagPriority;
     }
 
@@ -151,13 +150,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         $this->attemptsReadTagAttribute();
 
         return $this->internalHasTag($name);
-    }
-
-    public function getTag(string $name): ?array
-    {
-        $this->attemptsReadTagAttribute();
-
-        return $this->internalGetTag($name);
     }
 
     /**
