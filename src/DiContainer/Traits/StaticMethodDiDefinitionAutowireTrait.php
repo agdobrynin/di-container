@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 
-trait StaticMethodInTaggedDefinitionTrait
+trait StaticMethodDiDefinitionAutowireTrait
 {
     /**
      * @param non-empty-string                          $where

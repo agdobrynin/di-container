@@ -16,7 +16,7 @@ use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\StaticMethodInTaggedDefinitionTrait;
+use Kaspi\DiContainer\Traits\StaticMethodDiDefinitionAutowireTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 /**
@@ -29,7 +29,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     use DiContainerTrait;
-    use StaticMethodInTaggedDefinitionTrait;
+    use StaticMethodDiDefinitionAutowireTrait;
     use TagsTrait {
         getTags as private internalGetTags;
         hasTag as private internalHasTag;
