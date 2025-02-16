@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\DiDefinitionAutowireTrait;
 use Psr\Container\ContainerExceptionInterface;
@@ -98,17 +99,19 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     private function getServicesAsLazy(\Generator $items): \Iterator
     {
         $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
+        $mapKetToContainerIdentifier = [];
 
         foreach ($items as [$containerIdentifier, $item]) {
             if ($isUseKeys) {
                 // @todo if identifier already exist? override or throw an exception?
                 $identifier = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-
-                yield $identifier => $this->getContainer()->get($containerIdentifier);
+                $mapKetToContainerIdentifier[$identifier] = $containerIdentifier;
             } else {
-                yield $this->getContainer()->get($containerIdentifier);
+                $mapKetToContainerIdentifier[] = $containerIdentifier;
             }
         }
+
+        return new LazyDefinitionIterator($this->getContainer(), $mapKetToContainerIdentifier);
     }
 
     /**

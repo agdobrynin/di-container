@@ -13,7 +13,7 @@ use Psr\Container\NotFoundExceptionInterface;
 final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \ArrayAccess
 {
     /**
-     * @param array<non-empty-string, non-empty-string> $mapKeyToContainerIdentifier key to container identifier
+     * @param array<non-empty-string|non-negative-int, non-empty-string> $mapKeyToContainerIdentifier key to container identifier
      */
     public function __construct(
         private ContainerInterface $container,
@@ -37,9 +37,9 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
     }
 
     /**
-     * @return null|non-empty-string
+     * @return null|non-empty-string|non-negative-int
      */
-    public function key(): ?string
+    public function key(): null|int|string
     {
         return \key($this->mapKeyToContainerIdentifier);
     }

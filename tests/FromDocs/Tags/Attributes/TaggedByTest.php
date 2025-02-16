@@ -31,6 +31,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
+ * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  */
 class TaggedByTest extends TestCase
 {
