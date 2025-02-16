@@ -16,11 +16,16 @@ use Psr\Container\ContainerInterface;
  */
 class ImmutableTest extends TestCase
 {
-    private object $container;
+    private ?object $container;
 
     public function setUp(): void
     {
         $this->container = $this->createMock(ContainerInterface::class);
+    }
+
+    public function tearDown(): void
+    {
+        $this->container = null;
     }
 
     public function testIsArrayAccessByOffsetUnset(): void
