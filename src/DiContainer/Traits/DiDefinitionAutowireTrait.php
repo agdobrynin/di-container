@@ -19,13 +19,12 @@ trait DiDefinitionAutowireTrait
             throw new AutowireException($where.' The value option must be non-empty string.');
         }
 
-        $reflectionClass = $definition->getDefinition();
         // @phpstan-var callable $callableExpression
-        $callableExpression = [$reflectionClass->name, $method];
+        $callableExpression = [$definition->getDefinition()->name, $method];
         $isCallable = \is_callable($callableExpression);
 
         // @phpstan-ignore argument.type
-        if (!$isCallable || [] !== ($types = static::diffReturnType($reflectionClass->getMethod($method)->getReturnType(), ...$supportReturnTypes))) {
+        if (!$isCallable || [] !== ($types = static::diffReturnType($definition->getDefinition()->getMethod($method)->getReturnType(), ...$supportReturnTypes))) {
             if (!$requireMethod) {
                 return null;
             }
@@ -33,7 +32,7 @@ trait DiDefinitionAutowireTrait
             $message = \sprintf(
                 '%s "%s::%s()" method must be declared with public and static modifiers. Return type must be %s.%s',
                 $where,
-                $reflectionClass->getName(),
+                $definition->getDefinition()->name,
                 $method,
                 \implode(', ', $supportReturnTypes),
                 isset($types) ? ' Got return type: '.\implode(', ', $types) : ''
