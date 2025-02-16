@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 
-interface DiTaggedDefinitionAutowireInterface extends DiTaggedDefinitionInterface
+interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
 {
     /**
      * @throws AutowireExceptionInterface
