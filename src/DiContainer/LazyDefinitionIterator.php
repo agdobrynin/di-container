@@ -26,8 +26,8 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
      */
     public function current(): mixed
     {
-        return null !== ($key = $this->key())
-            ? $this->container->get($key)
+        return false !== ($id = \current($this->mapKeyToContainerIdentifier))
+            ? $this->container->get($id)
             : null; // @todo may be throw an exception?
     }
 

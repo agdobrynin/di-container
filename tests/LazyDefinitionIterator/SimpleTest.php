@@ -15,11 +15,16 @@ use Psr\Container\ContainerInterface;
  */
 class SimpleTest extends TestCase
 {
-    private object $container;
+    private ?object $container;
 
     public function setUp(): void
     {
         $this->container = $this->createMock(ContainerInterface::class);
+    }
+
+    public function tearDown(): void
+    {
+        $this->container = null;
     }
 
     public function testIsIterableAndEmpty(): void
@@ -53,5 +58,20 @@ class SimpleTest extends TestCase
         $li = new LazyDefinitionIterator($this->container, ['ok' => 'something']);
 
         $this->assertTrue($li->has('ok'));
+    }
+
+    public function testByRewind(): void
+    {
+        $li = new LazyDefinitionIterator($this->container, ['foo' => 'bar', 'baz' => 'qux']);
+
+        $this->assertTrue($li->valid());
+        $this->assertEquals('foo', $li->key());
+        $li->next();
+        $this->assertEquals('baz', $li->key());
+        $li->next();
+        $this->assertFalse($li->valid());
+        $li->rewind();
+        $this->assertTrue($li->valid());
+        $this->assertEquals('foo', $li->key());
     }
 }
