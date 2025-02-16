@@ -29,8 +29,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     /**
      * @param non-empty-string      $tag
      * @param null|non-empty-string $priorityDefaultMethod priority from class::method()
-     * @param null|non-empty-string $key                   identifier of definition from meta-data
-     * @param null|non-empty-string $keyDefaultMethod      if $keyFromOptions not found try get it from class::method()
+     * @param null|non-empty-string $key                   identifier of tagged definition from tag options (meta-data)
+     * @param null|non-empty-string $keyDefaultMethod      if $key not found in tag options - try get it from class::method()
      */
     public function __construct(
         private string $tag,
@@ -68,9 +68,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
 
             foreach ($items as [$containerIdentifier, $item]) {
-                $isUseKeys
-                    ? $services[$this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item)] = $this->getContainer()->get($containerIdentifier)
-                    : $services[] = $this->getContainer()->get($containerIdentifier);
+                if ($isUseKeys) {
+                    $identifier = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
+                    $services[$identifier] = $this->getContainer()->get($containerIdentifier);
+                } else {
+                    $services[] = $this->getContainer()->get($containerIdentifier);
+                }
             }
 
             return $services;
@@ -97,7 +100,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         foreach ($items as [$containerIdentifier, $item]) {
             if ($isUseKeys) {
-                yield $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item) => $this->getContainer()->get($containerIdentifier);
+                $identifier = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
+
+                yield $identifier => $this->getContainer()->get($containerIdentifier);
             } else {
                 yield $this->getContainer()->get($containerIdentifier);
             }
@@ -186,9 +191,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     private function getKeyFromTagOptionsOrFromKeyDefaultMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
     {
         if (null !== $this->key) {
-            $this->keyOptimized ??= '' === \trim($this->key)
-                ? throw new AutowireException('Argument $key must be non-empty string.')
-                : $this->key;
+            $this->keyOptimized ??= '' !== \trim($this->key)
+                ? $this->key
+                : throw new AutowireException('Argument $key must be non-empty string.');
 
             $optionKey = $taggedAs->getTag($this->tag)[$this->keyOptimized] ?? null;
 
