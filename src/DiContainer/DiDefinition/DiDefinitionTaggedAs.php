@@ -65,9 +65,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         if (!$this->isLazy) {
             $services = [];
+            $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
 
             foreach ($items as [$containerIdentifier, $item]) {
-                $this->useKeys
+                $isUseKeys
                     ? $services[$this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item)] = $this->getContainer()->get($containerIdentifier)
                     : $services[] = $this->getContainer()->get($containerIdentifier);
             }
@@ -92,8 +93,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     private function getServicesAsLazy(\Generator $items): \Generator
     {
+        $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
+
         foreach ($items as [$containerIdentifier, $item]) {
-            if ($this->useKeys) {
+            if ($isUseKeys) {
                 yield $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item) => $this->getContainer()->get($containerIdentifier);
             } else {
                 yield $this->getContainer()->get($containerIdentifier);
