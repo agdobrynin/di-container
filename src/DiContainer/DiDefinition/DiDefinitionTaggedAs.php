@@ -14,14 +14,14 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\StaticMethodInTaggedDefinitionTrait;
+use Kaspi\DiContainer\Traits\StaticMethodDiDefinitionAutowireTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
     use DiContainerTrait;
-    use StaticMethodInTaggedDefinitionTrait;
+    use StaticMethodDiDefinitionAutowireTrait;
 
     private bool $tagIsInterface;
     private string $keyOptimized;
