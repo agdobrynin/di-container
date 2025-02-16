@@ -15,8 +15,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
+use Kaspi\DiContainer\Traits\DiDefinitionAutowireTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
-use Kaspi\DiContainer\Traits\StaticMethodDiDefinitionAutowireTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 /**
@@ -29,7 +29,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     use DiContainerTrait;
-    use StaticMethodDiDefinitionAutowireTrait;
+    use DiDefinitionAutowireTrait;
     use TagsTrait {
         getTags as private internalGetTags;
         hasTag as private internalHasTag;
@@ -177,7 +177,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             $howGetPriority = \sprintf('Get priority by option "priority.method" for tag "%s".', $name);
 
             // @phpstan-ignore return.type
-            return self::invokeMethod($this, $tagOptions['priority.method'], true, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
+            return self::callStaticMethod($this, $tagOptions['priority.method'], true, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
         }
 
         $priorityDefaultMethod = ($operationOptions['priority.default_method'] ?? null);
@@ -187,7 +187,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             $howGetPriority = \sprintf('Get priority by option "priority.default_method" for class "%s".', $this->getDefinition()->getName());
 
             // @phpstan-ignore return.type
-            return self::invokeMethod($this, $priorityDefaultMethod, false, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
+            return self::callStaticMethod($this, $priorityDefaultMethod, false, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
         }
 
         return null;

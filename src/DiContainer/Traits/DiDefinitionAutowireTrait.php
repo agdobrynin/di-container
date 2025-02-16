@@ -7,13 +7,13 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 
-trait StaticMethodDiDefinitionAutowireTrait
+trait DiDefinitionAutowireTrait
 {
     /**
      * @param non-empty-string                          $where
      * @param array<non-negative-int, non-empty-string> $supportReturnTypes
      */
-    private static function invokeMethod(DiDefinitionAutowireInterface $definition, mixed $method, bool $requireMethod, string $where, array $supportReturnTypes = ['int', 'string', 'null'], mixed ...$args): mixed
+    private static function callStaticMethod(DiDefinitionAutowireInterface $definition, mixed $method, bool $requireMethod, string $where, array $supportReturnTypes = ['int', 'string', 'null'], mixed ...$args): mixed
     {
         if (!\is_string($method) || '' === \trim($method)) {
             throw new AutowireException($where.' The value option must be non-empty string.');
