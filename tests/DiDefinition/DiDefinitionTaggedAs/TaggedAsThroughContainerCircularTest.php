@@ -30,6 +30,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  */
 class TaggedAsThroughContainerCircularTest extends TestCase
@@ -51,7 +52,7 @@ class TaggedAsThroughContainerCircularTest extends TestCase
         $this->expectException(CallCircularDependencyException::class);
         $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
 
-        $class->services->valid();
+        $class->services->current();
     }
 
     public function testCircularTaggedAsByPhpAttribute(): void
@@ -86,7 +87,7 @@ class TaggedAsThroughContainerCircularTest extends TestCase
         $this->expectException(CallCircularDependencyException::class);
         $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
 
-        $class->services->valid();
+        $class->services->current();
     }
 
     public function testCircularTaggedByInterfaceByPhpAttribute(): void
