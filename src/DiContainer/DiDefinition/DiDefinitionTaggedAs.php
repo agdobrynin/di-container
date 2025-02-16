@@ -6,10 +6,10 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -51,7 +51,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $this->tagIsInterface ??= \interface_exists($this->tag);
 
         /**
-         * @var \Generator<array{0: non-empty-string, 1: DiTaggedDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
+         * @var \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
          */
         $items = $this->tagIsInterface
             ? $this->getContainerIdentifiersOfTaggedServiceByInterface()
@@ -84,7 +84,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @param \Generator<array{0: non-empty-string, 1: DiTaggedDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
+     * @param \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -102,7 +102,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @return \Generator<array{0: non-empty-string, 1: DiTaggedDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
+     * @return \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
      *
      * @throws ContainerNeedSetExceptionInterface
      */
@@ -124,7 +124,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             if ($definition->hasTag($this->tag)) {
                 $operationOptions = [];
 
-                if ($definition instanceof DiTaggedDefinitionAutowireInterface) {
+                if ($definition instanceof DiDefinitionAutowireInterface) {
                     $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
                 }
 
@@ -133,14 +133,14 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
-        /** @var array{0: non-empty-string, 1: DiTaggedDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
+        /** @var array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
         foreach ($taggedServices as $item) {
             yield $item;
         }
     }
 
     /**
-     * @return \Generator<array{0: non-empty-string, 1: DiTaggedDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
+     * @return \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
      *
      * @throws ContainerNeedSetExceptionInterface
      */
@@ -152,7 +152,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         /** @var non-empty-string $containerIdentifier */
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             try {
-                if ($definition instanceof DiTaggedDefinitionAutowireInterface
+                if ($definition instanceof DiDefinitionAutowireInterface
                     && $definition->getDefinition()->implementsInterface($this->tag)) {
                     $definition->setContainer($this->getContainer());
                     // 🚩 Tag with higher priority early in list.
@@ -169,7 +169,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
-        /** @var array{0: non-empty-string, 1: DiTaggedDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
+        /** @var array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
         foreach ($taggedServices as $item) {
             yield $item;
         }
@@ -180,7 +180,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @return non-empty-string
      */
-    private function getIdentifierFromTag(string $identifier, DiTaggedDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
+    private function getIdentifierFromTag(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
     {
         if (null !== $this->key) {
             $this->keyOptimized ??= '' === \trim($this->key)
@@ -202,7 +202,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     );
                 }
 
-                if ($taggedAs instanceof DiTaggedDefinitionAutowireInterface && \str_starts_with($optionKey, 'self::')) {
+                if ($taggedAs instanceof DiDefinitionAutowireInterface && \str_starts_with($optionKey, 'self::')) {
                     $method = \explode('::', $optionKey)[1];
                     $howGetOptions = \sprintf('Get key by "%s::%s()" for tag "%s".', $taggedAs->getDefinition()->name, $method, $this->tag);
 
@@ -213,12 +213,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 return $optionKey; // @phpstan-ignore return.type
             }
 
-            return $taggedAs instanceof DiTaggedDefinitionAutowireInterface
+            return $taggedAs instanceof DiDefinitionAutowireInterface
                 ? $this->getKeyByDefaultMethod($identifier, $taggedAs)
                 : $identifier;
         }
 
-        return $taggedAs instanceof DiTaggedDefinitionAutowireInterface
+        return $taggedAs instanceof DiDefinitionAutowireInterface
             ? $this->getKeyByDefaultMethod($identifier, $taggedAs)
             : $identifier;
     }
@@ -228,7 +228,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @return non-empty-string
      */
-    private function getKeyByDefaultMethod(string $identifier, DiTaggedDefinitionAutowireInterface $taggedAs): string
+    private function getKeyByDefaultMethod(string $identifier, DiDefinitionAutowireInterface $taggedAs): string
     {
         if (null === $this->keyDefaultMethod) {
             return $identifier;
