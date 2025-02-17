@@ -43,8 +43,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     ) {}
 
     /**
-     * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
      * @throws NotFoundExceptionInterface
      */
     public function getServicesTaggedAs(): iterable
@@ -52,6 +52,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $this->tagIsInterface ??= \interface_exists($this->tag);
 
         /**
+         * Key as container identifier, value as container definition.
+         *
          * @var \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
          */
         $items = $this->tagIsInterface
@@ -59,20 +61,22 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             : $this->getContainerIdentifiersOfTaggedServiceByTag();
 
         if (!$items->valid()) {
+            // @phpstan-ignore return.type
             return $this->isLazy
-                ? (static function () { yield from []; })()
+                ? new LazyDefinitionIterator($this->getContainer(), [])
                 : [];
         }
 
+        $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
+
         if (!$this->isLazy) {
             $services = [];
-            $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
 
             foreach ($items as [$containerIdentifier, $item]) {
                 if ($isUseKeys) {
-                    $identifier = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
+                    $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
                     // @todo if identifier already exist? override or throw an exception?
-                    $services[$identifier] = $this->getContainer()->get($containerIdentifier);
+                    $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
                 } else {
                     $services[] = $this->getContainer()->get($containerIdentifier);
                 }
@@ -81,37 +85,24 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return $services;
         }
 
-        return $this->getServicesAsLazy($items);
+        $mapKeyCollectionToContainerIdentifier = [];
+
+        foreach ($items as [$containerIdentifier, $item]) {
+            if ($isUseKeys) {
+                // @todo if identifier already exist? override or throw an exception?
+                $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
+                $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
+            } else {
+                $mapKeyCollectionToContainerIdentifier[] = $containerIdentifier;
+            }
+        }
+
+        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier); // @phpstan-ignore return.type
     }
 
     public function getDefinition(): string
     {
         return $this->tag;
-    }
-
-    /**
-     * @param \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
-     *
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
-     */
-    private function getServicesAsLazy(\Generator $items): \Iterator
-    {
-        $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
-        $mapKetToContainerIdentifier = [];
-
-        foreach ($items as [$containerIdentifier, $item]) {
-            if ($isUseKeys) {
-                // @todo if identifier already exist? override or throw an exception?
-                $identifier = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-                $mapKetToContainerIdentifier[$identifier] = $containerIdentifier;
-            } else {
-                $mapKetToContainerIdentifier[] = $containerIdentifier;
-            }
-        }
-
-        return new LazyDefinitionIterator($this->getContainer(), $mapKetToContainerIdentifier);
     }
 
     /**
