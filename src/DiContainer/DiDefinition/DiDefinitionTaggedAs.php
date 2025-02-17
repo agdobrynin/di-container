@@ -197,7 +197,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 if (!\is_string($optionKey) || '' === \trim($optionKey)) {
                     throw new AutowireException(
                         \sprintf(
-                            'Tag option "%s" for container identifier "%s" with tag "%s". The value must be non-empty string. Got: "%s".',
+                            'Tag option "%s" for container identifier "%s" with tag "%s" has an error: the value must be non-empty string. Got: "%s".',
                             $this->keyOptimized,
                             $identifier,
                             $this->tag,
@@ -208,7 +208,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
                 if ($taggedAs instanceof DiDefinitionAutowireInterface && \str_starts_with($optionKey, 'self::')) {
                     $method = \explode('::', $optionKey)[1];
-                    $howGetOptions = \sprintf('Get key by "%s::%s()" for tag "%s".', $taggedAs->getDefinition()->name, $method, $this->tag);
+                    $howGetOptions = \sprintf('Get key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $method, $this->tag);
 
                     // @phpstan-ignore return.type
                     return self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
@@ -222,7 +222,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return $identifier;
         }
 
-        $howGetKeyOption = \sprintf('Get default key by "%s::%s()" for tag "%s".', $taggedAs->getDefinition()->name, $this->keyDefaultMethod, $this->tag);
+        $howGetKeyOption = \sprintf('Get default key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $this->keyDefaultMethod, $this->tag);
         $key = self::callStaticMethod($taggedAs, $this->keyDefaultMethod, false, $howGetKeyOption, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
 
         // @phpstan-ignore return.type
