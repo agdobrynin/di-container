@@ -188,4 +188,14 @@ class KeyTest extends TestCase
         $this->assertIsIterable($collection);
         $this->assertEquals(Two::class, $collection->key());
     }
+
+    public function testGetKeyCollectionWithPhpAttribute(): void
+    {
+
+    }
+
+    public function testGetKeyCollectionByMethodWithPhpAttribute(): void
+    {
+
+    }
 }
