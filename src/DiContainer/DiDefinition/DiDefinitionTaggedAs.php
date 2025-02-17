@@ -68,7 +68,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
 
         if (!$this->isLazy) {
-            // @phpstan-var array<non-empty-string, mixed> $services
+            // @phpstan-var array<non-empty-string|non-negative-int, mixed> $services
             $services = [];
 
             foreach ($items as [$containerIdentifier, $item]) {
