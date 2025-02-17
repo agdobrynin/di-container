@@ -35,6 +35,7 @@ class SimpleTest extends TestCase
         $this->assertFalse($li->valid());
         $this->assertNull($li->current());
         $this->assertNull($li->key());
+        $this->assertEquals(0, $li->count());
     }
 
     public function testArrayAccessMagicIsset(): void
@@ -64,6 +65,7 @@ class SimpleTest extends TestCase
     {
         $li = new LazyDefinitionIterator($this->container, ['foo' => 'bar', 'baz' => 'qux']);
 
+        $this->assertEquals(2, $li->count());
         $this->assertTrue($li->valid());
         $this->assertEquals('foo', $li->key());
         $li->next();
