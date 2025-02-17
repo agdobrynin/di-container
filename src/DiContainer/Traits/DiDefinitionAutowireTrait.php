@@ -30,12 +30,12 @@ trait DiDefinitionAutowireTrait
             }
 
             $message = \sprintf(
-                '%s "%s::%s()" method must be declared with public and static modifiers. Return type must be %s.%s',
+                '%s "%s::%s()" method must be exist and be declared with the public and static modifiers. Return type must be %s.%s',
                 $where,
                 $definition->getDefinition()->name,
                 $method,
-                \implode(', ', $supportReturnTypes),
-                isset($types) ? ' Got return type: '.\implode(', ', $types) : ''
+                '"'.\implode('", "', $supportReturnTypes).'"',
+                isset($types) ? ' Got return type: "'.\implode('", "', $types).'"' : ''
             );
 
             throw new AutowireException($message);
