@@ -64,13 +64,16 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
 
         if (!$this->isLazy) {
+            // @phpstan-var array<non-empty-string, mixed> $services
             $services = [];
 
             foreach ($items as [$containerIdentifier, $item]) {
                 if ($isUseKeys) {
                     $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-                    // @todo if identifier already exist? override or throw an exception?
-                    $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
+
+                    if (!isset($services[$keyCollection])) {
+                        $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
+                    }
                 } else {
                     $services[] = $this->getContainer()->get($containerIdentifier);
                 }
@@ -79,13 +82,16 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return $services;
         }
 
+        // @phpstan-var array<non-empty-string, none-empty-string> $services
         $mapKeyCollectionToContainerIdentifier = [];
 
         foreach ($items as [$containerIdentifier, $item]) {
             if ($isUseKeys) {
-                // @todo if identifier already exist? override or throw an exception?
                 $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-                $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
+
+                if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
+                    $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
+                }
             } else {
                 $mapKeyCollectionToContainerIdentifier[] = $containerIdentifier;
             }
