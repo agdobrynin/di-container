@@ -33,7 +33,7 @@ class SimpleTest extends TestCase
 
         $this->assertIsIterable($li);
         $this->assertFalse($li->valid());
-        $this->assertNull($li->current());
+        $this->assertFalse($li->current());
         $this->assertNull($li->key());
         $this->assertEquals(0, $li->count());
     }

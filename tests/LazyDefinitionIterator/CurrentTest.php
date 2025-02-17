@@ -48,6 +48,6 @@ class CurrentTest extends TestCase
 
         $li = new LazyDefinitionIterator($this->container, []);
 
-        $this->assertNull($li->current());
+        $this->assertFalse($li->current());
     }
 }

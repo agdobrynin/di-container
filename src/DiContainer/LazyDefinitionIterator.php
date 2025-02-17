@@ -10,6 +10,9 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * @template-covariant TValue
+ */
 final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \ArrayAccess, \Countable
 {
     /**
@@ -21,6 +24,8 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
     ) {}
 
     /**
+     * @return false|TValue
+     *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -28,7 +33,7 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
     {
         return false !== ($id = \current($this->mapKeyToContainerIdentifier))
             ? $this->container->get($id)
-            : null; // @todo may be throw an exception?
+            : false; // @todo may be throw an exception?
     }
 
     public function next(): void
@@ -55,6 +60,8 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
     }
 
     /**
+     * @return TValue
+     *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -78,6 +85,8 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
     }
 
     /**
+     * @return false|TValue
+     *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -85,7 +94,7 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
     {
         return \is_string($offset)
             ? $this->get($offset)
-            : null;
+            : false;
     }
 
     public function count(): int
