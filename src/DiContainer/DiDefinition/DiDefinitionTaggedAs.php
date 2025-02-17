@@ -218,18 +218,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
-        return null !== $this->keyDefaultMethod && $taggedAs instanceof DiDefinitionAutowireInterface
-            ? $this->getKeyByDefaultMethod($identifier, $taggedAs)
-            : $identifier;
-    }
+        if (null === $this->keyDefaultMethod || !($taggedAs instanceof DiDefinitionAutowireInterface)) {
+            return $identifier;
+        }
 
-    /**
-     * @param non-empty-string $identifier
-     *
-     * @return non-empty-string
-     */
-    private function getKeyByDefaultMethod(string $identifier, DiDefinitionAutowireInterface $taggedAs): string
-    {
         $howGetKeyOption = \sprintf('Get default key by "%s::%s()" for tag "%s".', $taggedAs->getDefinition()->name, $this->keyDefaultMethod, $this->tag);
         $key = self::callStaticMethod($taggedAs, $this->keyDefaultMethod, false, $howGetKeyOption, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
 
