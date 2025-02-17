@@ -41,9 +41,13 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     ) {}
 
     /**
+     * @return \ArrayAccess&\Countable&\Iterator&\Psr\Container\ContainerInterface
+     *
      * @throws ContainerExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      * @throws NotFoundExceptionInterface
+     *
+     * @phpstan-ignore method.childReturnType
      */
     public function getServicesTaggedAs(): iterable
     {
@@ -79,7 +83,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 }
             }
 
-            return $services;
+            return $services; // @phpstan-ignore return.type
         }
 
         // @phpstan-var array<non-empty-string, none-empty-string> $services
@@ -97,7 +101,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
-        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier); // @phpstan-ignore return.type
+        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier);
     }
 
     public function getDefinition(): string
