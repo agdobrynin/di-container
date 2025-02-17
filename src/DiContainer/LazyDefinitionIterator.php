@@ -10,7 +10,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \ArrayAccess
+final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \ArrayAccess, \Countable
 {
     /**
      * @param array<non-empty-string|non-negative-int, non-empty-string> $mapKeyToContainerIdentifier key to container identifier
@@ -86,6 +86,11 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
         return \is_string($offset)
             ? $this->get($offset)
             : null;
+    }
+
+    public function count(): int
+    {
+        return \count($this->mapKeyToContainerIdentifier);
     }
 
     public function offsetSet(mixed $offset, mixed $value): void
