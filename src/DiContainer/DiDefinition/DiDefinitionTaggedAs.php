@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
@@ -49,16 +47,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     public function getServicesTaggedAs(): iterable
     {
-        $this->tagIsInterface ??= \interface_exists($this->tag);
-
         /**
          * Key as container identifier, value as container definition.
          *
          * @var \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
          */
-        $items = $this->tagIsInterface
-            ? $this->getContainerIdentifiersOfTaggedServiceByInterface()
-            : $this->getContainerIdentifiersOfTaggedServiceByTag();
+        $items = $this->getContainerIdentifiersOfTaggedServiceByTag();
 
         if (!$items->valid()) {
             // @phpstan-ignore return.type
@@ -112,6 +106,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     private function getContainerIdentifiersOfTaggedServiceByTag(): \Generator
     {
+        $this->tagIsInterface ??= \interface_exists($this->tag);
         $taggedServices = new \SplPriorityQueue();
         $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
@@ -125,7 +120,16 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 $definition->setContainer($this->getContainer());
             }
 
-            if ($definition->hasTag($this->tag)) {
+            if (
+                (
+                    !$this->tagIsInterface && $definition->hasTag($this->tag)
+                )
+                || (
+                    $this->tagIsInterface
+                        && $definition instanceof DiDefinitionAutowireInterface
+                        && $definition->getDefinition()->implementsInterface($this->tag)
+                )
+            ) {
                 $operationOptions = [];
 
                 if ($definition instanceof DiDefinitionAutowireInterface) {
@@ -134,42 +138,6 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
                 // 🚩 Tag with higher priority early in list.
                 $taggedServices->insert([$containerIdentifier, $definition], $definition->geTagPriority($this->tag, $operationOptions));
-            }
-        }
-
-        /** @var array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
-        foreach ($taggedServices as $item) {
-            yield $item;
-        }
-    }
-
-    /**
-     * @return \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
-     *
-     * @throws ContainerNeedSetExceptionInterface
-     */
-    private function getContainerIdentifiersOfTaggedServiceByInterface(): \Generator
-    {
-        $taggedServices = new \SplPriorityQueue();
-        $taggedServices->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
-
-        /** @var non-empty-string $containerIdentifier */
-        foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
-            try {
-                if ($definition instanceof DiDefinitionAutowireInterface
-                    && $definition->getDefinition()->implementsInterface($this->tag)) {
-                    $definition->setContainer($this->getContainer());
-                    // 🚩 Tag with higher priority early in list.
-                    $taggedServices->insert(
-                        [$containerIdentifier, $definition],
-                        $definition->geTagPriority(
-                            $this->tag,
-                            ['priority.default_method' => $this->priorityDefaultMethod]
-                        )
-                    );
-                }
-            } catch (AutowireExceptionInterface $e) {
-                throw new ContainerException(message: $e->getMessage(), previous: $e);
             }
         }
 

@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 class ClassDepByAttributeWithInterfaceImplement
 {
     /**
-     * @param \Generator<HeavyDepInterface> $collection
+     * @param iterable<HeavyDepInterface> $collection
      */
     public function __construct(
         #[TaggedAs(HeavyDepInterface::class)]
@@ -17,10 +17,10 @@ class ClassDepByAttributeWithInterfaceImplement
     ) {}
 
     /**
-     * @return \Generator<HeavyDepInterface>
+     * @return iterable<HeavyDepInterface>
      */
-    public function getDep(): \Generator
+    public function getDep(): iterable
     {
-        yield from $this->collection;
+        return $this->collection;
     }
 }
