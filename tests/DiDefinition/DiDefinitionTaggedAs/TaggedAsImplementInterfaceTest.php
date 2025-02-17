@@ -96,6 +96,7 @@ class TaggedAsImplementInterfaceTest extends TestCase
         $this->expectExceptionMessage('Unresolvable dependency');
 
         $res->next();
+        $res->current();
     }
 
     public function testTaggedAsByArgumentWithExceptionWhenGetDefinition(): void

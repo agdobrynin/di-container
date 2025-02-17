@@ -85,9 +85,11 @@ if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     /**
      * @param non-empty-string      $tag
      * @param null|non-empty-string $priorityDefaultMethod
+     * @param null|non-empty-string $key
+     * @param null|non-empty-string $keyDefaultMethod
      */
-    function diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true): DiDefinitionNoArgumentsInterface
+    function diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true, ?string $key = null, ?string $keyDefaultMethod = null): DiDefinitionNoArgumentsInterface
     {
-        return new DiDefinitionTaggedAs($tag, $isLazy, $priorityDefaultMethod, $useKeys);
+        return new DiDefinitionTaggedAs($tag, $isLazy, $priorityDefaultMethod, $useKeys, $key, $keyDefaultMethod);
     }
 } // @codeCoverageIgnore
