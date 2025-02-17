@@ -234,7 +234,7 @@ class TagTest extends TestCase
         ;
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('method must be declared with public and static modifiers. Return type must be int, string, null');
+        $this->expectExceptionMessage('Return type must be "int", "string", "null"');
 
         $def->geTagPriority('tags.handler-one');
     }
