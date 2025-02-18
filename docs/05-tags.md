@@ -712,5 +712,69 @@ $definitions = [
 
 ## Использование ключей в коллекции.
 
-Если значение `$useKeys = false` то ключ элемента в коллекции будет представлен целым числом,
-индекс элемента в коллекции от нуля и больше.
+По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
+определений в контейнере (_container identifier - не пустая строка_).
+
+### Ключ целое число.
+Для получения в качестве ключей коллекции целыми числами (_последовательные значения от нуля и больше_)
+нужно указать в аргументе `$useKeys` значение `false`.
+
+Для хэлпер функции `diTaggedAs`:
+```php
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+$definition = [
+    diAutowire(ClassOne::class)
+        ->bindArguments(
+            diTaggedAs('tags.tag_one', useKeys: false) // ключи целые числа от 0 до n
+        )
+];
+```
+Для php атрибута `#[TaggedAs]`:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+class ClassOne {
+    public function __construct(
+        #[TaggedAs('tags.tag_one', useKeys: false)] // ключи целые числа
+        private iterable $items
+    ) {}
+}
+```
+### Ключ из метаданных тега.
+При определении тега можно добавить дополнительные данные (_метаданные_)
+через аргумент `$options`.
+Чтобы заменить ключ по умолчанию на другое строковое значение
+необходимо указать в аргументе `$key` имя ключа из метаданных тега.
+
+Для хэлпер функции `diTaggedAs`:
+```php
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+$definition = [
+    diAutowire(ServiceOne::class)
+        ->bindTag('tags.tag_one', options: ['key_as' => 'foo'])
+    // ...
+    diAutowire(ClassOne::class)
+        ->bindArguments(
+            diTaggedAs('tags.tag_one', key: 'key_as') // ключ будет получен из метаданных тега
+        )
+];
+```
+Для php атрибута `#[TaggedAs]`:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[Tag('tags.tag_one', options: ['key_as' => 'foo'])]
+class ServiceOne {}
+
+class ClassOne {
+    public function __construct(
+        #[TaggedAs('tags.tag_one', key: 'key_as')] // ключ будет получен из метаданных тега
+        private iterable $items
+    ) {}
+}
+```
+
+### Ключ из метода класса по-умолчанию.
