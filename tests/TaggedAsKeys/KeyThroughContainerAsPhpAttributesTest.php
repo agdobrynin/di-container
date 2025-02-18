@@ -64,4 +64,17 @@ class KeyThroughContainerAsPhpAttributesTest extends TestCase
         $this->assertInstanceOf(Fixures\Attributes\Two::class, $class->items['some_service.Dos']);
         $this->assertInstanceOf(Fixures\Attributes\Two::class, $class->items->get('some_service.Dos'));
     }
+
+    public function testLazyGetKeyByMethod(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(Fixures\Attributes\One::class),
+            diAutowire(Fixures\Attributes\Two::class),
+            diAutowire(Fixures\Attributes\Three::class),
+        ]);
+
+        $res = $container->call([Fixures\Attributes\TaggedServiceAsLazy::class, 'getKeyByMethod']);
+
+        $this->assertInstanceOf(Fixures\Attributes\Three::class, $res->get('signed_service'));
+    }
 }

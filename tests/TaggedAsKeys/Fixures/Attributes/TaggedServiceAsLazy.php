@@ -12,4 +12,11 @@ final class TaggedServiceAsLazy
         #[TaggedAs('tags.one', key: 'key', keyDefaultMethod: 'getKey')]
         public iterable $items
     ) {}
+
+    public static function getKeyByMethod(
+        #[TaggedAs('tags.other', key: 'key.method')]
+        iterable $items
+    ): iterable {
+        return $items;
+    }
 }
