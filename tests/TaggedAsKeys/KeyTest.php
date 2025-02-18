@@ -106,11 +106,6 @@ class KeyTest extends TestCase
             ])
         ;
 
-        $this->container->method('get')
-            ->with(One::class)
-            ->willReturn(new One())
-        ;
-
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
         $taggedAs->setContainer($this->container);
 
@@ -132,11 +127,6 @@ class KeyTest extends TestCase
             ])
         ;
 
-        $this->container->method('get')
-            ->with(One::class)
-            ->willReturn(new One())
-        ;
-
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
         $taggedAs->setContainer($this->container);
 
@@ -156,19 +146,15 @@ class KeyTest extends TestCase
             ])
         ;
 
-        $this->container->method('get')
-            ->with(self::logicalOr(One::class, Two::class))
-            ->willReturn(new One(), new Two())
-        ;
-
         $taggedAs = new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKey');
         $taggedAs->setContainer($this->container);
 
         $collection = $taggedAs->getServicesTaggedAs();
 
         $this->assertIsIterable($collection);
-        $this->assertInstanceOf(One::class, $collection[One::class]);
-        $this->assertInstanceOf(Two::class, $collection['services.key_default']);
+        $this->assertEquals(One::class, $collection->key());
+        $collection->next();
+        $this->assertEquals('services.key_default', $collection->key());
     }
 
     public function testGetKeyByDefaultMethodWrongReturnType(): void
@@ -178,11 +164,6 @@ class KeyTest extends TestCase
             ->willReturn([
                 Two::class => diAutowire(Two::class)->bindTag('tags.one'),
             ])
-        ;
-
-        $this->container->method('get')
-            ->with(self::logicalOr(Two::class))
-            ->willReturn(new Two())
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKeyWrongReturnType');
