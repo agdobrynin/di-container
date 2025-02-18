@@ -715,6 +715,46 @@ $definitions = [
 По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
 определений в контейнере (_container identifier - не пустая строка_).
 
+> ⚠ Если в коллекции тегированных определений встречаются одинаковые
+> ключи, то в коллекцию попадет определение с более высоким приоритетом (`priority`),
+> остальные определения с таким же значением ключа будут игнорированы.
+
+"Ленивая" (`$isLazy = true`) коллекция имплементирует следующие интерфейсы:
+
+- `\Iterator`
+- `\Psr\Container\ContainerInterface`
+- `\ArrayAccess`
+- `\Countable` 
+
+Что дает возможность доступа к элементам коллекции
+по именам ключей в стиле php массивов или в стиле `ContainerInterface`
+
+Пример доступа по имени ключа:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\Tag
+
+#[Tag('tags.tag_one', options: ['key_as' => 'write'])]
+class DoWrite {}
+
+class SomeService {
+    public function __construct(
+        #[TaggedAs('tags.tag_one', key: 'key_as')]
+        private iterable $items
+    ) {}
+    
+    public function doIt(string $name) {
+        // в стиле ContainerInterface
+        $class = $this->items->get('write');
+        // в стиле php массива
+        $class = $this->items['write'];
+    }
+}
+```
+> В стиле php массивов так же можно использовать
+> функции `isset`, `count`, в стиле `ContainerInterface`
+> доступны методы `has` и `get`
+
 ### Ключ целое число.
 Для получения в качестве ключей коллекции целыми числами (_последовательные значения от нуля и больше_)
 нужно указать в аргументе `$useKeys` значение `false`.
