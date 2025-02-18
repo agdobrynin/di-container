@@ -546,23 +546,20 @@ diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = nu
 и у него не определен `$key`, то будет выполнена попытка
 получить значение ключа тега через вызов указанного метода.
 
-Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+1. Подробнее [о приоритизации в коллекции](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+2. Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 > Метод `$priorityDefaultMethod` должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
 > В качестве аргументов метод принимает два параметра:
 >  - `string $tag` - имя тега;
 >  - `array $options` - метаданные тега;
->
->  Подробнее [о приоритизации в коллекции](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 > Метод `$keyDefaultMethod` должен быть объявлен как `public static function`
 > и возвращать тип `string`.
 > В качестве аргументов метод принимает два параметра:
 >  - `string $tag` - имя тега;
 >  - `array $options` - метаданные тега;
->
->  Подробнее [о ключах в коллекции](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%B9-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 **Пример использования хэлпер функции diTaggedAs для аргумента:**
 ```php
