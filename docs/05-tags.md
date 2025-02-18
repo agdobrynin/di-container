@@ -752,7 +752,7 @@ class SomeService {
 }
 ```
 > В стиле php массивов так же можно использовать
-> функции `isset`, `count`, в стиле `ContainerInterface`
+> функции `isset`, `count`. В стиле `ContainerInterface`
 > доступны методы `has` и `get`
 
 ### Ключ целое число.
