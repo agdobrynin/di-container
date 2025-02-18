@@ -43,11 +43,11 @@ trait AttributeReaderTrait
             /** @var Inject $inject */
             $inject = $attribute->newInstance();
 
-            if (!$inject->getIdentifier()
-                && ($type = $reflectionParameter->getType())
+            if ('' === $inject->getIdentifier()
+                && null !== ($type = $reflectionParameter->getType())
                 // PHPStan is not smart enough to parse such a condition.
                 // @phpstan-ignore-next-line
-                && ($strType = $this->getParameterTypeByReflection($type))) {
+                && null !== ($strType = $this->getParameterTypeByReflection($type))) {
                 $inject = new Inject($strType);
             }
 

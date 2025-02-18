@@ -12,17 +12,37 @@ final class TaggedAs implements DiAttributeInterface
 {
     /**
      * @param non-empty-string      $name                  tag name
-     * @param null|non-empty-string $priorityDefaultMethod
+     * @param null|non-empty-string $priorityDefaultMethod priority from class::method()
+     * @param null|non-empty-string $key                   identifier of definition from meta-data
+     * @param null|non-empty-string $keyDefaultMethod      if $keyFromOptions not found try get it from class::method()
      */
     public function __construct(
         private string $name,
         private bool $isLazy = true,
         private ?string $priorityDefaultMethod = null,
         private bool $useKeys = true,
+        private ?string $key = null,
+        private ?string $keyDefaultMethod = null,
     ) {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
+    }
+
+    /**
+     * @return null|non-empty-string
+     */
+    public function getKey(): ?string
+    {
+        return $this->key;
+    }
+
+    /**
+     * @return null|non-empty-string
+     */
+    public function getKeyDefaultMethod(): ?string
+    {
+        return $this->keyDefaultMethod;
     }
 
     public function isUseKeys(): bool

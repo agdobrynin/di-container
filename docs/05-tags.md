@@ -28,13 +28,14 @@
 сервисы будут инициализированы в виде массива.
 
 ### Ключ элемента в коллекции.
-По умолчанию в качестве ключа элемента в коллекции используется идентификатор
-определения в контейнере (_container identifier_). Это поведение можно изменить
-через аргумент `$useKeys` [в хэлпер функции diTaggedAs](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas).
+По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
+определений в контейнере (_container identifier - не пустая строка_). Это поведение можно изменить
+через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хэлпер функции diTaggedAs](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
+или у [php атрибута #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
+от идентификаторов определений представленные не пустыми строками
+или целыми числами (_последовательные значения от нуля и больше_).
 
-Если значение `$useKeys = false` то ключ элемента в коллекции будет представлен целым числом,
-идекс элемента в коллекции от нуля и больше.
+Больше информации [об использовании ключей в коллекции.](#использование-ключей-в-коллекции)
 
 ## 🐘 Объявление тега в стиле php определений.
 
@@ -547,7 +548,14 @@ $definitions = [
 ```
 
 ### `priorityMethod` и `priorityDefaultMethod` для приоритизации в коллекции.
+Указать приоритет тега в коллекции `priority` можно альтернативным способами если определение в контейнере является php-классом:
 
+- `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
+- `priorityDefaultMethod` – метод указанный через
+[хэлпер функцию `diTaggedAs`](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
+или через [php атрибут #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas)
+который **может быть реализован** в тегированном php классе возвращающий `priority`.
+ 
 #### 🐘 В стиле php определений
 
 Использовать метаданные в аргументе `$options` указав в массиве ключ `priority.method` [у метода `bindTag`](#-объявление-тега-в-стиле-php-определений)
@@ -658,7 +666,9 @@ class RuleB {
 
 }
 
-#[Tag(name: 'tags.rules')] // без явного указания priority и priorityMethod
+// 🚩 без явного указания priority и priorityMethod
+// приоритет может быть получен через priorityDefaultMethod
+#[Tag(name: 'tags.rules')]
 class RuleC {
 
     public static function getPriorityForCollection(string $tag): string|int|null {
@@ -699,3 +709,152 @@ $definitions = [
 // 2 - RuleA::getPriority() === 10
 // 3 - RuleB::getPriority() === 0 
 ```
+
+## Использование ключей в коллекции.
+
+По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
+определений в контейнере (_container identifier - не пустая строка_).
+
+> ⚠ Если в коллекции тегированных определений встречаются одинаковые
+> ключи, то в коллекцию попадет определение с более высоким приоритетом (`priority`),
+> остальные определения с таким же значением ключа будут игнорированы.
+
+"Ленивая" (`$isLazy = true`) коллекция реализует следующие интерфейсы:
+
+- `\Iterator`
+- `\Psr\Container\ContainerInterface`
+- `\ArrayAccess`
+- `\Countable` 
+
+Что дает возможность доступа к элементам коллекции
+по именам ключей в стиле php массивов или в стиле `ContainerInterface`
+
+Пример доступа по имени ключа:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\Tag
+
+#[Tag('tags.tag_one', options: ['key_as' => 'write'])]
+class DoWrite {}
+
+class SomeService {
+    public function __construct(
+        #[TaggedAs('tags.tag_one', key: 'key_as')]
+        private iterable $items
+    ) {}
+    
+    public function doIt(string $name) {
+        // в стиле ContainerInterface
+        $class = $this->items->get('write');
+        // в стиле php массива
+        $class = $this->items['write'];
+    }
+}
+```
+📝 [пример реализует получение ключа из метаданных тега](#ключ-из-метаданных-тега-как-непустая-строка)
+
+> В стиле php массивов так же можно использовать
+> функции `isset`, `count`. В стиле `ContainerInterface`
+> доступны методы `has` и `get`
+
+### Ключ целое число.
+Для получения в качестве ключей коллекции целыми числами (_последовательные значения от нуля и больше_)
+нужно указать в аргументе `$useKeys` значение `false`.
+
+Для хэлпер функции `diTaggedAs`:
+```php
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+$definition = [
+    diAutowire(ClassOne::class)
+        ->bindArguments(
+            diTaggedAs('tags.tag_one', useKeys: false) // ключи целые числа от 0 до n
+        )
+];
+```
+Для php атрибута `#[TaggedAs]`:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+class ClassOne {
+    public function __construct(
+        #[TaggedAs('tags.tag_one', useKeys: false)] // ключи целые числа
+        private iterable $items
+    ) {}
+}
+```
+### Ключ из метаданных тега как непустая строка.
+При определении тега можно добавить дополнительные данные (_метаданные_)
+через аргумент `$options`.
+Чтобы заменить ключ по умолчанию на другое строковое значение
+необходимо указать в аргументе `$key` имя ключа из метаданных тега.
+
+🐘 Для хэлпер функции `diTaggedAs`:
+```php
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+$definition = [
+    diAutowire(ServiceOne::class)
+        ->bindTag('tags.tag_one', options: ['key_as' => 'foo']),
+    
+    diAutowire(ServiceTwo::class)
+        ->bindTag('tags.tag_one', options: ['key_as' => 'baz']),
+
+    diAutowire(ClassOne::class)
+        ->bindArguments(
+            diTaggedAs('tags.tag_one', key: 'key_as') // ключ будет получен из метаданных тега
+        ),
+];
+// ...
+class ClassOne {
+    public function __construct(
+        private iterable $items
+    ) {}
+    
+    public function doFoo() {
+        $this->items->get('foo'); // в стиле ContainerInterface
+    }
+    
+    public function doBaz() {
+        $this->items['baz']; // в стиле php массива
+    }
+}
+
+```
+#️⃣ Для php атрибута `#[TaggedAs]`:
+```php
+use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[Tag('tags.tag_one', options: ['key_as' => 'foo'])]
+class ServiceOne {}
+
+#[Tag('tags.tag_one', options: ['key_as' => 'baz'])]
+class ServiceTwo {}
+
+class ClassOne {
+    public function __construct(
+        #[TaggedAs('tags.tag_one', key: 'key_as')] // ключ будет получен из метаданных тега
+        private iterable $items
+    ) {}
+    
+    public function doFoo() {
+        $this->items->get('foo'); // в стиле ContainerInterface
+    }
+    
+    public function doBaz() {
+        $this->items['baz']; // в стиле php массива
+    }
+}
+
+// ...
+
+$definition = [
+    diAutowire(ServiceOne::class),
+    
+    diAutowire(ServiceTwo::class),
+];
+```
+### Ключ из метаданных тега через метод класса.
+
+### Ключ из метода класса по-умолчанию.
