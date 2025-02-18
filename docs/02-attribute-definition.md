@@ -594,7 +594,10 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
     useKeys: true, // использовать в качестве ключа элемента
                    // строковое значение (идентификатор контейнера),
                    // иначе будет целое число в порядке возрастания. 
-                                
+    key: null, // ключ в коллекции отличный от идентификатора контейнера
+    keyDefaultMethod: null // ключ в коллекции отличный от идентификатора контейнера
+                           // получаемый через метод php класса при условии
+                           // что ключ не определен в тегированном сервисе                             
 )]
 ```
 ```php
@@ -603,24 +606,40 @@ Kaspi\DiContainer\Attributes\TaggedAs(
     bool $isLazy = true,
     ?string $priorityDefaultMethod = null,
     bool $useKeys = true,
+    ?string $key = null,
+    ?string $keyDefaultMethod = null,
 )
 ```
+Аргументы:
+- `$name` - имя тега на сервисах которые нужно собрать из контейнера.
+- `$isLazy` - получать сервисы только во время обращения или сразу всё.
+- `$priorityDefaultMethod` - если получаемый сервис является php классом
+  и у него не определен `priority` или `priorityMethod`, то будет выполнена попытка
+  получить значение `priority` через вызов указанного метода.
+- `$useKeys` - использовать именованные строковые ключи в коллекции.
+  По умолчанию в качестве ключа элемента в коллекции используется идентификатор
+  определения в контейнере (_container identifier_).
+- `$key` - использовать ключ в коллекции для элемента из опций тега (_метаданные из `$options` определенные у тега_).
+- `$keyDefaultMethod` - если получаемый сервис является php классом
+  и у него не определен `$key`, то будет выполнена попытка
+  получить значение ключа тега через вызов указанного метода.
 
-> Метод указанный в аргументе `$priorityDefaultMethod` должен быть объявлен как `public static function`
+1. Подробнее [о приоритизации в коллекции](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+2. Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+
+> Метод `$priorityDefaultMethod` должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
 > В качестве аргументов метод принимает два параметра:
 >  - `string $tag` - имя тега;
 >  - `array $options` - метаданные тега;
->
->  Подробнее [о приоритизации в коллекцции](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
-> По умолчанию в качестве ключа элемента в коллекции используется идентификатор
-> определения в контейнере (_container identifier_).
-> Если значение `$useKeys = false` то ключ элемента в коллекции будет представлен целым числом.
-> Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+> Метод `$keyDefaultMethod` должен быть объявлен как `public static function`
+> и возвращать тип `string`.
+> В качестве аргументов метод принимает два параметра:
+>  - `string $tag` - имя тега;
+>  - `array $options` - метаданные тега;
 
-
-Пример получение «ленивой» коллекции из сервисов отмеченных тегом `tags.services.group-two`:
+**Пример получение «ленивой» коллекции из сервисов отмеченных тегом `tags.services.group-two`:**
 ```php
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
