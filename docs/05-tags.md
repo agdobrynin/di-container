@@ -751,6 +751,8 @@ class SomeService {
     }
 }
 ```
+📝 [пример реализует получение ключа из метаданных тега](#ключ-из-метаданных-тега-как-непустая-строка)
+
 > В стиле php массивов так же можно использовать
 > функции `isset`, `count`. В стиле `ContainerInterface`
 > доступны методы `has` и `get`
@@ -781,27 +783,45 @@ class ClassOne {
     ) {}
 }
 ```
-### Ключ из метаданных тега.
+### Ключ из метаданных тега как непустая строка.
 При определении тега можно добавить дополнительные данные (_метаданные_)
 через аргумент `$options`.
 Чтобы заменить ключ по умолчанию на другое строковое значение
 необходимо указать в аргументе `$key` имя ключа из метаданных тега.
 
-Для хэлпер функции `diTaggedAs`:
+🐘 Для хэлпер функции `diTaggedAs`:
 ```php
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 $definition = [
     diAutowire(ServiceOne::class)
-        ->bindTag('tags.tag_one', options: ['key_as' => 'foo'])
-    // ...
+        ->bindTag('tags.tag_one', options: ['key_as' => 'foo']),
+    
+    diAutowire(ServiceTwo::class)
+        ->bindTag('tags.tag_one', options: ['key_as' => 'baz']),
+
     diAutowire(ClassOne::class)
         ->bindArguments(
             diTaggedAs('tags.tag_one', key: 'key_as') // ключ будет получен из метаданных тега
-        )
+        ),
 ];
+// ...
+class ClassOne {
+    public function __construct(
+        private iterable $items
+    ) {}
+    
+    public function doFoo() {
+        $this->items->get('foo'); // в стиле ContainerInterface
+    }
+    
+    public function doBaz() {
+        $this->items['baz']; // в стиле php массива
+    }
+}
+
 ```
-Для php атрибута `#[TaggedAs]`:
+#️⃣ Для php атрибута `#[TaggedAs]`:
 ```php
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Attributes\Tag;
@@ -809,12 +829,32 @@ use Kaspi\DiContainer\Attributes\Tag;
 #[Tag('tags.tag_one', options: ['key_as' => 'foo'])]
 class ServiceOne {}
 
+#[Tag('tags.tag_one', options: ['key_as' => 'baz'])]
+class ServiceTwo {}
+
 class ClassOne {
     public function __construct(
         #[TaggedAs('tags.tag_one', key: 'key_as')] // ключ будет получен из метаданных тега
         private iterable $items
     ) {}
+    
+    public function doFoo() {
+        $this->items->get('foo'); // в стиле ContainerInterface
+    }
+    
+    public function doBaz() {
+        $this->items['baz']; // в стиле php массива
+    }
 }
+
+// ...
+
+$definition = [
+    diAutowire(ServiceOne::class),
+    
+    diAutowire(ServiceTwo::class),
+];
 ```
+### Ключ из метаданных тега через метод класса.
 
 ### Ключ из метода класса по-умолчанию.
