@@ -639,7 +639,7 @@ Kaspi\DiContainer\Attributes\TaggedAs(
 >  - `string $tag` - имя тега;
 >  - `array $options` - метаданные тега;
 
-Пример получение «ленивой» коллекции из сервисов отмеченных тегом `tags.services.group-two`:
+**Пример получение «ленивой» коллекции из сервисов отмеченных тегом `tags.services.group-two`:**
 ```php
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
