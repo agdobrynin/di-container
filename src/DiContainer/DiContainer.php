@@ -236,6 +236,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         $hasDefinition = \array_key_exists($id, $this->definitions);
 
+        if ($hasDefinition
+            && !$this->definitions[$id] instanceof DiDefinitionLinkInterface
+            && $this->definitions[$id] instanceof DiDefinitionInterface) {
+            return $this->definitions[$id];
+        }
+
         if (!$hasDefinition) {
             // @phpstan-ignore argument.type
             $reflectionClass = new \ReflectionClass($id); // @todo come up with a test for throw ReflectionException
@@ -278,10 +284,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             } finally {
                 unset($this->resolvingDependencies[$rawDefinition->getDefinition()]);
             }
-        }
-
-        if ($rawDefinition instanceof DiDefinitionInterface) {
-            return $this->diResolvedDefinition[$id] = $rawDefinition;
         }
 
         if ($rawDefinition instanceof \Closure) {
