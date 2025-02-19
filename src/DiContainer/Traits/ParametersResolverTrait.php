@@ -205,60 +205,57 @@ trait ParametersResolverTrait
      */
     private function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
     {
-        $injects = $this->getInjectAttribute($parameter);
-        $asClosures = $this->getProxyClosureAttribute($parameter);
-        $taggedAs = $this->getTaggedAsAttribute($parameter);
+        $oneOfAttributes = [Inject::class, ProxyClosure::class, TaggedAs::class];
 
-        if (!$injects->valid() && !$asClosures->valid() && !$taggedAs->valid()) {
+        $attribute = \array_reduce(
+            $parameter->getAttributes(),
+            static function (array $attrs, \ReflectionAttribute $a) use ($oneOfAttributes) {
+                if (\in_array($a->getName(), $oneOfAttributes, true)) {
+                    $attrs[$a->getName()] = true;
+                }
+
+                return $attrs;
+            },
+            [],
+        );
+
+        if ([] === $attribute) {
             return;
         }
 
-        if (($injects->valid() xor $asClosures->valid() xor $taggedAs->valid())
-            && !($injects->valid() && $asClosures->valid() && $taggedAs->valid())) {
-            if ($injects->valid()) {
-                foreach ($injects as $inject) {
-                    yield $inject->getIdentifier()
-                        ? $this->getContainer()->get($inject->getIdentifier())
-                        : $this->getContainer()->get($parameter->getName());
-                }
+        if (\count($attribute) > 1) {
+            throw new AutowireAttributeException(
+                \sprintf('Only one of the attributes #[%s], #[%s] or #[%s] may be declared.', ...$oneOfAttributes)
+            );
+        }
 
-                return;
+        if (isset($attribute[Inject::class])) {
+            foreach ($this->getInjectAttribute($parameter) as $inject) {
+                yield $inject->getIdentifier()
+                    ? $this->getContainer()->get($inject->getIdentifier())
+                    : $this->getContainer()->get($parameter->getName());
             }
 
-            if ($asClosures->valid()) {
-                foreach ($asClosures as $asClosure) {
-                    yield $this->resolveInputArgument(
-                        $parameter,
-                        new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
-                    );
-                }
+            return;
+        }
 
-                return;
-            }
-
-            foreach ($taggedAs as $tagged) {
+        if (isset($attribute[ProxyClosure::class])) {
+            foreach ($this->getProxyClosureAttribute($parameter) as $asClosure) {
                 yield $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionTaggedAs(
-                        $tagged->getIdentifier(),
-                        $tagged->isLazy(),
-                        $tagged->getPriorityDefaultMethod(),
-                        $tagged->isUseKeys(),
-                    )
+                    new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
                 );
             }
 
             return;
         }
 
-        throw new AutowireAttributeException(
-            \sprintf(
-                'Only one of the attributes #[%s], #[%s] or #[%s] may be declared.',
-                Inject::class,
-                ProxyClosure::class,
-                TaggedAs::class
-            )
-        );
+        foreach ($this->getTaggedAsAttribute($parameter) as $tagged) {
+            yield $this->resolveInputArgument(
+                $parameter,
+                new DiDefinitionTaggedAs($tagged->getIdentifier(), $tagged->isLazy(), $tagged->getPriorityDefaultMethod(), $tagged->isUseKeys())
+            );
+        }
     }
 
     /**
