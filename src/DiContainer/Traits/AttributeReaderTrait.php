@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 
 trait AttributeReaderTrait
 {
@@ -24,6 +25,52 @@ trait AttributeReaderTrait
     private function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
         return ($reflectionClass->getAttributes(Service::class)[0] ?? null)?->newInstance();
+    }
+
+    /**
+     * @return \Generator<Inject>|\Generator<ProxyClosure>|\Generator<TaggedAs>
+     *
+     * @throws AutowireExceptionInterface
+     */
+    private function getAttributeOnParameter(\ReflectionParameter $reflectionParameter): \Generator
+    {
+        $oneOfAttributes = [Inject::class, ProxyClosure::class, TaggedAs::class];
+
+        $attribute = \array_reduce(
+            $reflectionParameter->getAttributes(),
+            static function (array $attrs, \ReflectionAttribute $a) use ($oneOfAttributes) {
+                if (\in_array($a->getName(), $oneOfAttributes, true)) {
+                    $attrs[$a->getName()] = true;
+                }
+
+                return $attrs;
+            },
+            [],
+        );
+
+        if ([] === $attribute) {
+            return;
+        }
+
+        if (\count($attribute) > 1) {
+            throw new AutowireAttributeException(
+                \sprintf('Only one of the attributes #[%s], #[%s] or #[%s] may be declared.', ...$oneOfAttributes)
+            );
+        }
+
+        if (isset($attribute[Inject::class])) {
+            yield from $this->getInjectAttribute($reflectionParameter);
+
+            return;
+        }
+
+        if (isset($attribute[ProxyClosure::class])) {
+            yield from $this->getProxyClosureAttribute($reflectionParameter);
+
+            return;
+        }
+
+        yield from $this->getTaggedAsAttribute($reflectionParameter);
     }
 
     /**

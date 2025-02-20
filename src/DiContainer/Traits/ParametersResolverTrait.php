@@ -6,7 +6,6 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
-use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -205,60 +204,31 @@ trait ParametersResolverTrait
      */
     private function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
     {
-        $injects = $this->getInjectAttribute($parameter);
-        $asClosures = $this->getProxyClosureAttribute($parameter);
-        $taggedAs = $this->getTaggedAsAttribute($parameter);
+        $attrs = $this->getAttributeOnParameter($parameter);
 
-        if (!$injects->valid() && !$asClosures->valid() && !$taggedAs->valid()) {
+        if (!$attrs->valid()) {
             return;
         }
 
-        if (($injects->valid() xor $asClosures->valid() xor $taggedAs->valid())
-            && !($injects->valid() && $asClosures->valid() && $taggedAs->valid())) {
-            if ($injects->valid()) {
-                foreach ($injects as $inject) {
-                    yield $inject->getIdentifier()
-                        ? $this->getContainer()->get($inject->getIdentifier())
-                        : $this->getContainer()->get($parameter->getName());
-                }
-
-                return;
-            }
-
-            if ($asClosures->valid()) {
-                foreach ($asClosures as $asClosure) {
-                    yield $this->resolveInputArgument(
-                        $parameter,
-                        new DiDefinitionProxyClosure($asClosure->getIdentifier(), $asClosure->isSingleton())
-                    );
-                }
-
-                return;
-            }
-
-            foreach ($taggedAs as $tagged) {
-                yield $this->resolveInputArgument(
+        foreach ($attrs as $attr) {
+            if ($attr instanceof Inject) {
+                $resolvedParam = $attr->getIdentifier()
+                    ? $this->getContainer()->get($attr->getIdentifier())
+                    : $this->getContainer()->get($parameter->getName());
+            } elseif ($attr instanceof ProxyClosure) {
+                $resolvedParam = $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionTaggedAs(
-                        $tagged->getIdentifier(),
-                        $tagged->isLazy(),
-                        $tagged->getPriorityDefaultMethod(),
-                        $tagged->isUseKeys(),
-                    )
+                    new DiDefinitionProxyClosure($attr->getIdentifier(), $attr->isSingleton())
+                );
+            } else {
+                $resolvedParam = $this->resolveInputArgument(
+                    $parameter,
+                    new DiDefinitionTaggedAs($attr->getIdentifier(), $attr->isLazy(), $attr->getPriorityDefaultMethod(), $attr->isUseKeys())
                 );
             }
 
-            return;
+            yield $resolvedParam;
         }
-
-        throw new AutowireAttributeException(
-            \sprintf(
-                'Only one of the attributes #[%s], #[%s] or #[%s] may be declared.',
-                Inject::class,
-                ProxyClosure::class,
-                TaggedAs::class
-            )
-        );
     }
 
     /**
