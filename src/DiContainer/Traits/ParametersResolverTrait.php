@@ -212,20 +212,22 @@ trait ParametersResolverTrait
 
         foreach ($attrs as $attr) {
             if ($attr instanceof Inject) {
-                yield $attr->getIdentifier()
+                $resolvedParam = $attr->getIdentifier()
                     ? $this->getContainer()->get($attr->getIdentifier())
                     : $this->getContainer()->get($parameter->getName());
             } elseif ($attr instanceof ProxyClosure) {
-                yield $this->resolveInputArgument(
+                $resolvedParam = $this->resolveInputArgument(
                     $parameter,
                     new DiDefinitionProxyClosure($attr->getIdentifier(), $attr->isSingleton())
                 );
             } else {
-                yield $this->resolveInputArgument(
+                $resolvedParam = $this->resolveInputArgument(
                     $parameter,
                     new DiDefinitionTaggedAs($attr->getIdentifier(), $attr->isLazy(), $attr->getPriorityDefaultMethod(), $attr->isUseKeys())
                 );
             }
+
+            yield $resolvedParam;
         }
     }
 
