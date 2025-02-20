@@ -214,7 +214,7 @@ trait ParametersResolverTrait
 
         foreach ($attrs as $attr) {
             if ($attr instanceof Inject) {
-                $resolvedParam = $attr->getIdentifier()
+                $resolvedParam = '' !== $attr->getIdentifier()
                     ? $this->getContainer()->get($attr->getIdentifier())
                     : $this->getContainer()->get($parameter->getName());
             } elseif ($attr instanceof ProxyClosure) {
@@ -225,7 +225,14 @@ trait ParametersResolverTrait
             } else {
                 $resolvedParam = $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionTaggedAs($attr->getIdentifier(), $attr->isLazy(), $attr->getPriorityDefaultMethod(), $attr->isUseKeys())
+                    new DiDefinitionTaggedAs(
+                        $attr->getIdentifier(),
+                        $attr->isLazy(),
+                        $attr->getPriorityDefaultMethod(),
+                        $attr->isUseKeys(),
+                        $attr->getKey(),
+                        $attr->getKeyDefaultMethod(),
+                    )
                 );
             }
 
