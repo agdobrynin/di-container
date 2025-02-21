@@ -87,9 +87,10 @@ $post->title = 'Publication about DiContainer';
 $postController = $container->get(App\Controllers\PostController::class);
 $postController->send($post);
 ```
+> [!NOTE]
 > Контейнер "пытается" самостоятельно определить запрашиваемую зависимость - является ли это классом или callable типом.
 
-🛠 Фактически `DiContainer` выполнит следующие действия для `App\Controllers\PostController`:
+`DiContainer` выполнит следующие действия для `App\Controllers\PostController`:
 
 ```php
 $post = new App\Controllers\PostController(
@@ -98,7 +99,8 @@ $post = new App\Controllers\PostController(
     )
 );
 ```
-🚩 Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/00-start.php)
+> [!TIP]
+> Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/00-start.php)
 
 Другой вариант для примера выше можно использовать для получения результата метод `call`:
 ```php
@@ -114,9 +116,11 @@ $container->call(
 );
 
 ```
-> 📝 [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
+> [!TIP]
+> Больше информации о [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
 
-🦄 Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples)
+> [!NOTE]
+> Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples)
 
 ### Конфигурирование DiContainer
 
@@ -149,13 +153,13 @@ use Kaspi\DiContainer\DiContainerFactory;
 $container = (new DiContainerFactory())->make(definitions: []);
 ```
 
-⚙ При попытке разрешить зависимость через метод `get` или аргумент конструктора, или метода:
-
-- `$container->get(Psr\Container\ContainerInterface::class);`
-- `$container->get(Kaspi\DiContainer\DiContainer::class);`
-- `$container->get(Kaspi\DiContainer\Interfaces\DiContainerInterface::class);`
-
-| будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
+> [!TIP]
+> При попытке разрешить зависимость через метод `get` или аргумент конструктора, или метода:
+> - `$container->get(Psr\Container\ContainerInterface::class);`
+> - `$container->get(Kaspi\DiContainer\DiContainer::class);`
+> - `$container->get(Kaspi\DiContainer\Interfaces\DiContainerInterface::class);`
+> 
+> будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
 
 ```php
 use Kaspi\DiContainer\DiContainerFactory;

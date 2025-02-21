@@ -87,6 +87,7 @@ trait ParametersResolverTrait
             try {
                 if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                     // PHP attributes have higher priority than PHP definitions
+                    // @phpstan-ignore booleanAnd.leftNotBoolean
                     if ($this->getContainer()->getConfig()?->isUseAttribute()
                         && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                         \array_push($dependencies, ...$attributes);
@@ -107,6 +108,7 @@ trait ParametersResolverTrait
                     continue;
                 }
 
+                // @phpstan-ignore booleanAnd.leftNotBoolean
                 if ($this->getContainer()->getConfig()?->isUseAttribute()
                     && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                     \array_push($dependencies, ...$attributes);
@@ -136,9 +138,9 @@ trait ParametersResolverTrait
                 continue;
             }
 
-            $declaredClass = $parameter->getDeclaringClass()?->getName() ?: '';
+            $declaredClass = null !== $parameter->getDeclaringClass() ? $parameter->getDeclaringClass()->getName() : '';
             $declaredFunction = $parameter->getDeclaringFunction()->getName();
-            $where = \implode('::', \array_filter([$declaredClass, $declaredFunction]));
+            $where = \implode('::', \array_filter([$declaredClass, $declaredFunction])); // @phpstan-ignore arrayFilter.strict
             $messageParameter = $parameter.' in '.$where;
             $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException->getMessage()}";
 
@@ -176,7 +178,7 @@ trait ParametersResolverTrait
                 ? $o($this->getContainer())
                 : $o;
 
-            if ($argumentDefinition->isSingleton()) {
+            if (true === $argumentDefinition->isSingleton()) {
                 $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
 
                 if ($parameter->isVariadic()) {
@@ -212,7 +214,7 @@ trait ParametersResolverTrait
 
         foreach ($attrs as $attr) {
             if ($attr instanceof Inject) {
-                $resolvedParam = $attr->getIdentifier()
+                $resolvedParam = '' !== $attr->getIdentifier()
                     ? $this->getContainer()->get($attr->getIdentifier())
                     : $this->getContainer()->get($parameter->getName());
             } elseif ($attr instanceof ProxyClosure) {
@@ -223,7 +225,14 @@ trait ParametersResolverTrait
             } else {
                 $resolvedParam = $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionTaggedAs($attr->getIdentifier(), $attr->isLazy(), $attr->getPriorityDefaultMethod(), $attr->isUseKeys())
+                    new DiDefinitionTaggedAs(
+                        $attr->getIdentifier(),
+                        $attr->isLazy(),
+                        $attr->getPriorityDefaultMethod(),
+                        $attr->isUseKeys(),
+                        $attr->getKey(),
+                        $attr->getKeyDefaultMethod(),
+                    )
                 );
             }
 
@@ -259,7 +268,7 @@ trait ParametersResolverTrait
                     \sprintf(
                         'Too many input arguments. Input index or name arguments "%s". Definition parameters: %s',
                         \implode(', ', \array_keys($this->arguments)),
-                        ($p = \implode(', ', $parameters)) ? '"'.$p.'"' : 'without input parameters'
+                        '' !== ($p = \implode(', ', $parameters)) ? '"'.$p.'"' : 'without input parameters'
                     )
                 );
             }

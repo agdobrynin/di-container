@@ -15,12 +15,12 @@ use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -54,17 +54,17 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected array $definitions = [];
 
     /**
-     * @var array<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
+     * @var array<class-string|string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
      */
     protected array $diResolvedDefinition = [];
 
     /**
-     * @var array<class-string|non-empty-string, mixed>
+     * @var array<class-string|string, mixed>
      */
     protected array $resolved = [];
 
     /**
-     * @var array<class-string|non-empty-string, bool>
+     * @var array<class-string|string, bool>
      */
     protected array $resolvingDependencies = [];
 
@@ -88,14 +88,14 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @template T of object
      *
-     * @param class-string<T>|non-empty-string $id
+     * @param class-string<T>|string $id
      *
      * @return mixed|T
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      *
-     * @phpstan-ignore method.templateTypeNotInParameter
+     * @phpstan-ignore method.childReturnType, method.templateTypeNotInParameter
      */
     public function get(string $id): mixed
     {
@@ -107,7 +107,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return \array_key_exists($id, $this->definitions)
             || \array_key_exists($id, $this->resolved)
             || (
-                $this->config?->isUseZeroConfigurationDefinition()
+                $this->config?->isUseZeroConfigurationDefinition() // @phpstan-ignore booleanAnd.leftNotBoolean
                 && (\class_exists($id) || \interface_exists($id))
             )
             || $this->isContainer($id);
@@ -154,7 +154,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @return iterable<class-string|non-empty-string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionLinkInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionAutowireInterface>
+     * @return iterable<class-string|non-empty-string, DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionLinkInterface|DiDefinitionTaggedAsInterface>
      */
     public function getDefinitions(): iterable
     {
@@ -173,7 +173,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * Resolve dependencies.
      *
-     * @param class-string|non-empty-string $id
+     * @param class-string|string $id
      *
      * @throws ContainerExceptionInterface
      */
@@ -221,7 +221,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @param class-string|non-empty-string $id
+     * @param class-string|string $id
      *
      * @throws AutowireExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -247,6 +247,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $reflectionClass = new \ReflectionClass($id); // @todo come up with a test for throw ReflectionException
 
             if ($reflectionClass->isInterface()) {
+                // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
                 if ($this->config?->isUseAttribute()
                     && $service = $this->getServiceAttribute($reflectionClass)) {
                     $this->checkCyclicalDependencyCall($service->getIdentifier());
@@ -262,6 +263,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 throw new NotFoundException(\sprintf('Definition not found for identifier %s', $id));
             }
 
+            // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
             if ($this->config?->isUseAttribute()
                 && $factory = $this->getDiFactoryAttribute($reflectionClass)) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(

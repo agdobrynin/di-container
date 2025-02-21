@@ -19,13 +19,13 @@
   $container->call('App\MyClass::someStaticMethod');
   $container->call(App\MyClass::class.'::someStaticMethod');
   ```
-- Метод у созданного класса `is_callable`
+- Метод у созданного класса [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
   ```php
-  $container->call([$classInstance, 'someMethod']);
+  $container->call([App\MyClass::class, 'someMethod']);
   ```
-- Класс реализующий метод __invoke() `is_callable`
+- Класс реализующий метод __invoke() [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
   ```php
-  $container->call($classInstance);
+  $container->call(App\MyClass::class);
   ```
 #### Класс с нестатическим методом (*)
 
@@ -37,19 +37,26 @@
   $container->call('App\MyClass::someMethod');
   ```
 
-> (*) при вызове будет создан экземпляр класса `App\MyClass::class` с разрешением
+> [!NOTE]
+> При вызове будет создан экземпляр класса `App\MyClass::class` с разрешением
 > зависимостей в конструкторе класса и затем будет исполнен указанный метод. Если метод
 > не указан, то будет попытка вызвать метод `__invoke` 
 
 
-Аргументы метода:
+Метод:
 ```php
 call(array|callable|string $definition, array $arguments = [])
 ```
+Аргументы:
+- `$definition` - значение преобразуемое к `callable` типу.
+- `$arguments` - аргументы для подстановки в `callable` определение.
 
-Метод может:
-- принимать аргументы по имени для подстановки в callable функцию. Ключ в `$arguements` должно соответствовать имени аргумента в вызываемом методе/функции.
-- внедрять зависимости через автоматическое разрешение зависимостей (autowire) при вызове
+> [!TIP]
+> Можно использовать именованные аргументы в `$arguments`
+> для подстановки.
+
+> [!TIP]
+> Для аргументов не объявленных в `$arguments` контейнер попытается разрешить зависимости самостоятельно.
 
 Абстрактный пример с контроллером:
 ```php
@@ -89,14 +96,14 @@ print $container->call(
 результат
 `The name Ivan saved!`
 
-Фактически `call` выполнит создание экземпляра класс `App\Controllers\PostController` с внедрением зависимостей в конструктор
-и вызовет метод `App\Controllers\PostController::store`
-
-```php
-// будет выполнено
-(new App\Controllers\PostController(serviceOne: new ServiceOne()))
-    ->post(name: 'Ivan')
-```
+> [!NOTE]
+> Фактически `call` выполнит создание экземпляра класс `App\Controllers\PostController` с внедрением зависимостей в конструктор
+> и вызовет метод `App\Controllers\PostController::store`
+> ```php
+> // будет выполнено
+> (new App\Controllers\PostController(serviceOne: new ServiceOne()))
+>    ->post(name: 'Ivan')
+> ```
 
 Абстрактный пример с `autowiring` и подстановкой дополнительных параметров при вызове функции:
 
@@ -119,12 +126,11 @@ $helperOne = static function(App\Service\ServiceOne $service, string $name) {
 // вызов callback с autowiring
 print $container->call($helperOne, ['name' => 'Vasiliy']); // The name Vasiliy saved! 
 ```
-
-
-```php
-// будет выполнено
-$helperOne(
-    new App\Service\ServiceOne(),
-    'Vasiliy'
-);
-```
+> [!NOTE]
+> будет выполнено
+> ```php
+> $helperOne(
+>     new App\Service\ServiceOne(),
+>     'Vasiliy'
+> );
+> ```
