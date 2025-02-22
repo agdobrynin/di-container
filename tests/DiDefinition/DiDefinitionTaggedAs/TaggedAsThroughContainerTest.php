@@ -9,6 +9,9 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\AnyClass;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\ClassWithHeavyDepByAttributeAsArray;
+use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\One;
+use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\TaggedAsCollection;
+use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\Two;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeaveDepWithDependency;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeavyDepOne;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeavyDepTwo;
@@ -20,6 +23,7 @@ use function Kaspi\DiContainer\diValue;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -159,5 +163,40 @@ class TaggedAsThroughContainerTest extends TestCase
         $this->assertEquals(HeaveDepWithDependency::class, $res->tagged->key()); // check key of tagged service
         $res->tagged->next();
         $this->assertFalse($res->tagged->valid());
+    }
+
+    public function testExcludePhpDefinition(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(One::class)
+                ->bindTag('tags.aaa'),
+            diAutowire(Two::class)
+                ->bindTag('tags.aaa'),
+            diAutowire(TaggedAsCollection::class)
+                ->bindArguments(items: diTaggedAs('tags.aaa'))
+                ->bindTag('tags.aaa'),
+        ]);
+
+        $items = $container->get(TaggedAsCollection::class)->items;
+
+        $this->assertCount(2, $items);
+        $this->assertInstanceOf(One::class, $items[One::class]);
+        $this->assertInstanceOf(Two::class, $items[Two::class]);
+    }
+
+    public function testExcludePhpAttribute(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(Fixtures\Exclude\Attribute\One::class),
+            diAutowire(Fixtures\Exclude\Attribute\Two::class),
+            diAutowire(Fixtures\Exclude\Attribute\Three::class),
+            diAutowire(Fixtures\Exclude\Attribute\TaggedAsCollection::class),
+        ]);
+
+        $items = $container->get(Fixtures\Exclude\Attribute\TaggedAsCollection::class)->items;
+
+        $this->assertCount(2, $items);
+        $this->assertTrue($items->has(Fixtures\Exclude\Attribute\One::class));
+        $this->assertTrue($items->has(Fixtures\Exclude\Attribute\Two::class));
     }
 }

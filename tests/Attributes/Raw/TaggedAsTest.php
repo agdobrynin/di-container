@@ -40,13 +40,23 @@ class TaggedAsTest extends TestCase
         $this->assertEquals('tags.handler-one', $tag->getIdentifier());
         $this->assertTrue($tag->isLazy());
         $this->assertNull($tag->getPriorityDefaultMethod());
+        $this->assertTrue($tag->isUseKeys());
+        $this->assertNull($tag->getKey());
+        $this->assertNull($tag->getKeyDefaultMethod());
+        $this->assertEquals([], $tag->getContainerIdExcludes());
+        $this->assertTrue($tag->isSelfExclude());
     }
 
-    public function testTaggedAsLazyAndDefaultPriorityMethod(): void
+    public function testTaggedAsNotDefault(): void
     {
-        $tag = new TaggedAs('tags.handler-one', false, 'getPriority');
+        $tag = new TaggedAs('tags.handler-one', false, 'getPriority', false, 'key', 'getKey', ['id1', 'id2'], false);
 
         $this->assertFalse($tag->isLazy());
         $this->assertEquals('getPriority', $tag->getPriorityDefaultMethod());
+        $this->assertFalse($tag->isUseKeys());
+        $this->assertEquals('key', $tag->getKey());
+        $this->assertEquals('getKey', $tag->getKeyDefaultMethod());
+        $this->assertEquals(['id1', 'id2'], $tag->getContainerIdExcludes());
+        $this->assertFalse($tag->isSelfExclude());
     }
 }
