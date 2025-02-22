@@ -26,4 +26,14 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
      * @throws NotFoundExceptionInterface
      */
     public function getServicesTaggedAs(): iterable;
+
+    /**
+     * Set calling service.
+     */
+    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static;
+
+    /**
+     * Calling service.
+     */
+    public function getCallingByService(): ?DiDefinitionAutowireInterface;
 }

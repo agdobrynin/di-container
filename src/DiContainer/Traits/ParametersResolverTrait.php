@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
@@ -167,6 +168,10 @@ trait ParametersResolverTrait
         }
 
         if ($argumentDefinition instanceof DiDefinitionTaggedAsInterface) {
+            if ($this instanceof DiDefinitionAutowireInterface) {
+                $argumentDefinition->setCallingByService($this);
+            }
+
             return $argumentDefinition->setContainer($this->getContainer())
                 ->getServicesTaggedAs()
             ;
@@ -232,6 +237,8 @@ trait ParametersResolverTrait
                         $attr->isUseKeys(),
                         $attr->getKey(),
                         $attr->getKeyDefaultMethod(),
+                        $attr->getContainerIdExcludes(),
+                        $attr->isSelfExclude(),
                     )
                 );
             }
