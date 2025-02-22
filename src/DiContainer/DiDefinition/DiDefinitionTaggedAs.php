@@ -32,7 +32,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      * @param null|non-empty-string  $priorityDefaultMethod priority from class::method()
      * @param null|non-empty-string  $key                   identifier of tagged definition from tag options (meta-data)
      * @param null|non-empty-string  $keyDefaultMethod      if $key not found in tag options - try get it from class::method()
-     * @param list<non-empty-string> $containerIdExcludes   exclude container identifiers from collection
+     * @param list<non-empty-string> $containerIdExclude    exclude container identifiers from collection
      * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     public function __construct(
@@ -42,7 +42,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         private bool $useKeys = true,
         private ?string $key = null,
         private ?string $keyDefaultMethod = null,
-        private array $containerIdExcludes = [],
+        private array $containerIdExclude = [],
         private bool $selfExclude = true,
     ) {}
 
@@ -141,7 +141,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         /** @var non-empty-string $containerIdentifier */
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
             if (false === ($definition instanceof DiTaggedDefinitionInterface)
-                || \in_array($containerIdentifier, $this->containerIdExcludes, true)
+                || \in_array($containerIdentifier, $this->containerIdExclude, true)
                 || ($this->selfExclude && $containerIdentifier === $this->getCallingByService()?->getDefinition()->getName())) {
                 continue;
             }

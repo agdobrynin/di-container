@@ -237,7 +237,7 @@ trait ParametersResolverTrait
                         $attr->isUseKeys(),
                         $attr->getKey(),
                         $attr->getKeyDefaultMethod(),
-                        $attr->getContainerIdExcludes(),
+                        $attr->getContainerIdExclude(),
                         $attr->isSelfExclude(),
                     )
                 );

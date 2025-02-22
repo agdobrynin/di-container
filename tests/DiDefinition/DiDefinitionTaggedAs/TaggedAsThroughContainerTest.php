@@ -11,6 +11,7 @@ use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\AnyClass;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\ClassWithHeavyDepByAttributeAsArray;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\One;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\TaggedAsCollection;
+use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\Three;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\Two;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeaveDepWithDependency;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\HeavyDepOne;
@@ -172,8 +173,10 @@ class TaggedAsThroughContainerTest extends TestCase
                 ->bindTag('tags.aaa'),
             diAutowire(Two::class)
                 ->bindTag('tags.aaa'),
+            diAutowire(Three::class)
+                ->bindTag('tags.aaa'),
             diAutowire(TaggedAsCollection::class)
-                ->bindArguments(items: diTaggedAs('tags.aaa'))
+                ->bindArguments(items: diTaggedAs('tags.aaa', containerIdExclude: [Two::class]))
                 ->bindTag('tags.aaa'),
         ]);
 
@@ -181,7 +184,7 @@ class TaggedAsThroughContainerTest extends TestCase
 
         $this->assertCount(2, $items);
         $this->assertInstanceOf(One::class, $items[One::class]);
-        $this->assertInstanceOf(Two::class, $items[Two::class]);
+        $this->assertInstanceOf(Three::class, $items[Three::class]);
     }
 
     public function testExcludePhpAttribute(): void

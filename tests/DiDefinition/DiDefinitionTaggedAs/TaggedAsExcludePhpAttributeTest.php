@@ -84,7 +84,7 @@ class TaggedAsExcludePhpAttributeTest extends TestCase
 
     public function testTaggedAsExcludeSelfTrueAndExcludeIds(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', containerIdExcludes: [One::class, Three::class]))
+        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', containerIdExclude: [One::class, Three::class]))
             ->setCallingByService(diAutowire(TaggedAsCollection::class))
         ;
         $taggedAs->setContainer($this->container);

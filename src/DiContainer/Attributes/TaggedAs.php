@@ -15,7 +15,7 @@ final class TaggedAs implements DiAttributeInterface
      * @param null|non-empty-string  $priorityDefaultMethod priority from class::method()
      * @param null|non-empty-string  $key                   identifier of definition from meta-data
      * @param null|non-empty-string  $keyDefaultMethod      if $keyFromOptions not found try get it from class::method()
-     * @param list<non-empty-string> $containerIdExcludes   exclude container identifiers from collection
+     * @param list<non-empty-string> $containerIdExclude    exclude container identifiers from collection
      * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     public function __construct(
@@ -25,7 +25,7 @@ final class TaggedAs implements DiAttributeInterface
         private bool $useKeys = true,
         private ?string $key = null,
         private ?string $keyDefaultMethod = null,
-        private array $containerIdExcludes = [],
+        private array $containerIdExclude = [],
         private bool $selfExclude = true,
     ) {
         if ('' === \trim($name)) {
@@ -36,9 +36,9 @@ final class TaggedAs implements DiAttributeInterface
     /**
      * @return list<non-empty-string>
      */
-    public function getContainerIdExcludes(): array
+    public function getContainerIdExclude(): array
     {
-        return $this->containerIdExcludes;
+        return $this->containerIdExclude;
     }
 
     public function isSelfExclude(): bool

@@ -11,7 +11,7 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 final class TaggedAsCollection
 {
     public function __construct(
-        #[TaggedAs('tags.aaa', containerIdExcludes: [Three::class])]
+        #[TaggedAs('tags.aaa', containerIdExclude: [Three::class])]
         public iterable $items
     ) {}
 }

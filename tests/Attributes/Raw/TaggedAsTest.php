@@ -43,7 +43,7 @@ class TaggedAsTest extends TestCase
         $this->assertTrue($tag->isUseKeys());
         $this->assertNull($tag->getKey());
         $this->assertNull($tag->getKeyDefaultMethod());
-        $this->assertEquals([], $tag->getContainerIdExcludes());
+        $this->assertEquals([], $tag->getContainerIdExclude());
         $this->assertTrue($tag->isSelfExclude());
     }
 
@@ -56,7 +56,7 @@ class TaggedAsTest extends TestCase
         $this->assertFalse($tag->isUseKeys());
         $this->assertEquals('key', $tag->getKey());
         $this->assertEquals('getKey', $tag->getKeyDefaultMethod());
-        $this->assertEquals(['id1', 'id2'], $tag->getContainerIdExcludes());
+        $this->assertEquals(['id1', 'id2'], $tag->getContainerIdExclude());
         $this->assertFalse($tag->isSelfExclude());
     }
 }
