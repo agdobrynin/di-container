@@ -22,7 +22,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
-     * @param class-string $definition
+     * @param class-string $definition Fully Qualified Class Name
      */
     function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAutowireInterface
     {
@@ -42,7 +42,7 @@ if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
     /**
-     * @param class-string $definition
+     * @param class-string $definition Fully Qualified Class Name
      */
     function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
     {
@@ -83,10 +83,12 @@ if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
 
 if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     /**
-     * @param non-empty-string      $tag
-     * @param null|non-empty-string $priorityDefaultMethod
-     * @param null|non-empty-string $key
-     * @param null|non-empty-string $keyDefaultMethod
+     * @param non-empty-string       $tag
+     * @param null|non-empty-string  $priorityDefaultMethod priority from class::method()
+     * @param null|non-empty-string  $key                   identifier of tagged definition from tag options (meta-data)
+     * @param null|non-empty-string  $keyDefaultMethod      if $key not found in tag options - try get it from class::method()
+     * @param list<non-empty-string> $containerIdExclude    exclude container identifiers from collection
+     * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     function diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true, ?string $key = null, ?string $keyDefaultMethod = null, array $containerIdExclude = [], bool $selfExclude = true): DiDefinitionNoArgumentsInterface
     {
