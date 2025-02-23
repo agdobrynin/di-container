@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Tag;
@@ -28,13 +29,13 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<Inject>|\Generator<ProxyClosure>|\Generator<TaggedAs>
+     * @return \Generator<Inject>|\Generator<InjectByCallable>|\Generator<ProxyClosure>|\Generator<TaggedAs>
      *
      * @throws AutowireExceptionInterface
      */
     private function getAttributeOnParameter(\ReflectionParameter $reflectionParameter): \Generator
     {
-        $oneOfAttributes = [Inject::class, ProxyClosure::class, TaggedAs::class];
+        $oneOfAttributes = [Inject::class, ProxyClosure::class, TaggedAs::class, InjectByCallable::class];
 
         $attribute = \array_reduce(
             $reflectionParameter->getAttributes(),
@@ -54,7 +55,7 @@ trait AttributeReaderTrait
 
         if (\count($attribute) > 1) {
             throw new AutowireAttributeException(
-                \sprintf('Only one of the attributes #[%s], #[%s] or #[%s] may be declared.', ...$oneOfAttributes)
+                \sprintf('Only one of the attributes %s may be declared.', '#['.\implode('], #[', $oneOfAttributes).']')
             );
         }
 
@@ -70,7 +71,13 @@ trait AttributeReaderTrait
             return;
         }
 
-        yield from $this->getTaggedAsAttribute($reflectionParameter);
+        if (isset($attribute[TaggedAs::class])) {
+            yield from $this->getTaggedAsAttribute($reflectionParameter);
+
+            return;
+        }
+
+        yield from $this->getInjectByCallableAttribute($reflectionParameter);
     }
 
     /**
@@ -132,6 +139,24 @@ trait AttributeReaderTrait
         }
 
         $this->checkVariadic($reflectionParameter, \count($attributes), TaggedAs::class);
+
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
+        }
+    }
+
+    /**
+     * @return \Generator<InjectByCallable>
+     */
+    private function getInjectByCallableAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    {
+        $attributes = $reflectionParameter->getAttributes(InjectByCallable::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
+        $this->checkVariadic($reflectionParameter, \count($attributes), InjectByCallable::class);
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();

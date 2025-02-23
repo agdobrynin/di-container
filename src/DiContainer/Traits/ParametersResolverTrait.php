@@ -6,6 +6,8 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
+use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -227,7 +229,7 @@ trait ParametersResolverTrait
                     $parameter,
                     new DiDefinitionProxyClosure($attr->getIdentifier(), $attr->isSingleton())
                 );
-            } else {
+            } elseif ($attr instanceof TaggedAs) {
                 $resolvedParam = $this->resolveInputArgument(
                     $parameter,
                     new DiDefinitionTaggedAs(
@@ -240,6 +242,11 @@ trait ParametersResolverTrait
                         $attr->getContainerIdExclude(),
                         $attr->isSelfExclude(),
                     )
+                );
+            } else {
+                $resolvedParam = $this->resolveInputArgument(
+                    $parameter,
+                    new DiDefinitionCallable($attr->getIdentifier(), $attr->isSingleton())
                 );
             }
 

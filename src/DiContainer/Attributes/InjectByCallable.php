@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
 #[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
@@ -12,7 +13,17 @@ final class InjectByCallable implements DiAttributeInterface
     /**
      * @param non-empty-string $callable
      */
-    public function __construct(private string $callable) {}
+    public function __construct(private string $callable, private bool $isSingleton = false)
+    {
+        if ('' === \trim($callable)) {
+            throw new AutowireAttributeException('The $callable parameter must be a non-empty string.');
+        }
+    }
+
+    public function isSingleton(): bool
+    {
+        return $this->isSingleton;
+    }
 
     /**
      * @return non-empty-string
