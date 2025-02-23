@@ -11,10 +11,12 @@ use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 final class TaggedAs implements DiAttributeInterface
 {
     /**
-     * @param non-empty-string      $name                  tag name
-     * @param null|non-empty-string $priorityDefaultMethod priority from class::method()
-     * @param null|non-empty-string $key                   identifier of definition from meta-data
-     * @param null|non-empty-string $keyDefaultMethod      if $keyFromOptions not found try get it from class::method()
+     * @param non-empty-string       $name                  tag name
+     * @param null|non-empty-string  $priorityDefaultMethod priority from class::method()
+     * @param null|non-empty-string  $key                   identifier of definition from meta-data
+     * @param null|non-empty-string  $keyDefaultMethod      if $keyFromOptions not found try get it from class::method()
+     * @param list<non-empty-string> $containerIdExclude    exclude container identifiers from collection
+     * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     public function __construct(
         private string $name,
@@ -23,10 +25,25 @@ final class TaggedAs implements DiAttributeInterface
         private bool $useKeys = true,
         private ?string $key = null,
         private ?string $keyDefaultMethod = null,
+        private array $containerIdExclude = [],
+        private bool $selfExclude = true,
     ) {
         if ('' === \trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
+    }
+
+    /**
+     * @return list<non-empty-string>
+     */
+    public function getContainerIdExclude(): array
+    {
+        return $this->containerIdExclude;
+    }
+
+    public function isSelfExclude(): bool
+    {
+        return $this->selfExclude;
     }
 
     /**

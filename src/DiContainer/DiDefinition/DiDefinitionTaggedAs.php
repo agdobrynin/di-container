@@ -25,11 +25,15 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     private bool $tagIsInterface;
     private string $keyOptimized;
 
+    private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
+
     /**
-     * @param non-empty-string      $tag
-     * @param null|non-empty-string $priorityDefaultMethod priority from class::method()
-     * @param null|non-empty-string $key                   identifier of tagged definition from tag options (meta-data)
-     * @param null|non-empty-string $keyDefaultMethod      if $key not found in tag options - try get it from class::method()
+     * @param non-empty-string       $tag
+     * @param null|non-empty-string  $priorityDefaultMethod priority from class::method()
+     * @param null|non-empty-string  $key                   identifier of tagged definition from tag options (meta-data)
+     * @param null|non-empty-string  $keyDefaultMethod      if $key not found in tag options - try get it from class::method()
+     * @param list<non-empty-string> $containerIdExclude    exclude container identifiers from collection
+     * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     public function __construct(
         private string $tag,
@@ -38,6 +42,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         private bool $useKeys = true,
         private ?string $key = null,
         private ?string $keyDefaultMethod = null,
+        private array $containerIdExclude = [],
+        private bool $selfExclude = true,
     ) {}
 
     /**
@@ -109,6 +115,18 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this->tag;
     }
 
+    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static
+    {
+        $this->callingByDefinitionAutowire = $definitionAutowire;
+
+        return $this;
+    }
+
+    public function getCallingByService(): ?DiDefinitionAutowireInterface
+    {
+        return $this->callingByDefinitionAutowire;
+    }
+
     /**
      * @return \Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
      *
@@ -122,7 +140,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         /** @var non-empty-string $containerIdentifier */
         foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
-            if (false === ($definition instanceof DiTaggedDefinitionInterface)) {
+            if (false === ($definition instanceof DiTaggedDefinitionInterface)
+                || \in_array($containerIdentifier, $this->containerIdExclude, true)
+                || ($this->selfExclude && $containerIdentifier === $this->getCallingByService()?->getDefinition()->getName())) {
                 continue;
             }
 
