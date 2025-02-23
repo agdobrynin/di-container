@@ -943,7 +943,7 @@ $container->get('doSomething'); // (object) ['name' => 'John Doe', 'age' => 32, 
 
 > [!TIP]
 > Поддерживаемые типы определений для `diCallable` описаны
-> [в разделе о методе `DiContainer::call`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
+> [в разделе о методе `DiContainer::call()`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
 
 ## Разрешение аргументов переменной длины
 
