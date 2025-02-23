@@ -24,12 +24,12 @@ class MainTest extends TestCase
     {
         yield 'empty string' => [
             '',
-            'Unresolvable dependency []',
+            'Definition is not callable',
         ];
 
         yield 'some random string' => [
             'service.ooo',
-            'Unresolvable dependency [service.ooo]',
+            'Definition is not callable. Got: \'service.ooo\'',
         ];
 
         yield 'empty array' => [
@@ -44,12 +44,12 @@ class MainTest extends TestCase
 
         yield 'no exist class with method as string' => [
             'SomeClass::method',
-            'Unresolvable dependency [SomeClass]',
+            'Definition is not callable. Got: \'SomeClass::method\'',
         ];
 
         yield 'no exist class with method as array' => [
             ['SomeClass', 'method'],
-            'Unresolvable dependency [SomeClass]',
+            'Definition is not callable. Got: array',
         ];
 
         yield 'is not callable because method not exist' => [

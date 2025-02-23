@@ -58,6 +58,10 @@ class CallableParserTest extends TestCase
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
+            ->method('has')->with(SuperClass::class)
+            ->willReturn(true)
+        ;
+        $mockContainer->expects($this->once())
             ->method('get')->with(SuperClass::class)
             ->willReturn(new SuperClass('srv'))
         ;
@@ -74,6 +78,10 @@ class CallableParserTest extends TestCase
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
+            ->method('has')->with(SuperClass::class)
+            ->willReturn(true)
+        ;
+        $mockContainer->expects($this->once())
             ->method('get')->with(SuperClass::class)
             ->willReturn(new SuperClass('srv'))
         ;
@@ -89,6 +97,10 @@ class CallableParserTest extends TestCase
     public function testDefinitionAsClassAsStringAndHiddenInvokeMethod(): void
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('has')->with(SuperClass::class)
+            ->willReturn(true)
+        ;
         $mockContainer->expects($this->once())
             ->method('get')->with(SuperClass::class)
             ->willReturn(new SuperClass('srv'))
