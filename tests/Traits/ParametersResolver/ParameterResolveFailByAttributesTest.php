@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
@@ -31,6 +32,22 @@ class ParameterResolveFailByAttributesTest extends TestCase
     use ParametersResolverTrait;
     use DiContainerTrait;
 
+    private ?object $mockContainer = null;
+
+    public function setUp(): void
+    {
+        $this->mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->mockContainer->expects(self::once())
+            ->method('getConfig')
+            ->willReturn(new DiContainerConfig())
+        ;
+    }
+
+    public function tearDown(): void
+    {
+        $this->mockContainer = null;
+    }
+
     public function testCannotUseAttributeAsClosureAndInjectTogether(): void
     {
         $fn = static fn (
@@ -40,12 +57,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         ) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->expects(self::once())
-            ->method('getConfig')
-            ->willReturn(new DiContainerConfig())
-        ;
-        $this->setContainer($mockContainer);
+        $this->setContainer($this->mockContainer);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
@@ -62,12 +74,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         ) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->expects(self::once())
-            ->method('getConfig')
-            ->willReturn(new DiContainerConfig())
-        ;
-        $this->setContainer($mockContainer);
+        $this->setContainer($this->mockContainer);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
@@ -81,16 +88,29 @@ class ParameterResolveFailByAttributesTest extends TestCase
             #[Inject('any.service')]
             #[ProxyClosure('someService')]
             #[TaggedAs('tags.handlers-one')]
+            #[InjectByCallable('func')]
             iterable $iterator
         ) => $iterator;
         $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
 
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->expects(self::once())
-            ->method('getConfig')
-            ->willReturn(new DiContainerConfig())
-        ;
-        $this->setContainer($mockContainer);
+        $this->setContainer($this->mockContainer);
+
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
+
+        $this->resolveParameters([], $reflectionParameters);
+    }
+
+    public function testCannotUseAttributeInjectAndInjectCallableTogether(): void
+    {
+        $fn = static fn (
+            #[Inject('any.service')]
+            #[InjectByCallable('func')]
+            iterable $iterator
+        ) => $iterator;
+        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+
+        $this->setContainer($this->mockContainer);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
