@@ -16,7 +16,9 @@ final class InjectByCallable implements DiAttributeInterface
     public function __construct(private string $callable, private bool $isSingleton = false)
     {
         if ('' === $callable || \str_contains($callable, ' ')) { // @phpstan-ignore identical.alwaysFalse
-            throw new AutowireAttributeException('The $callable parameter must be a non-empty string and must not contain spaces.');
+            throw new AutowireAttributeException(
+                \sprintf('The $callable parameter must be a non-empty string and must not contain spaces. Got: "%s"', $callable)
+            );
         }
     }
 
