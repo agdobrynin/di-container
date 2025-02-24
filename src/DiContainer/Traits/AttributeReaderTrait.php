@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 
 trait AttributeReaderTrait
 {
@@ -82,6 +83,9 @@ trait AttributeReaderTrait
 
     /**
      * @return \Generator<Inject>
+     *
+     * @throws AutowireExceptionInterface
+     * @throws ContainerNeedSetExceptionInterface
      */
     private function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
     {
@@ -98,10 +102,9 @@ trait AttributeReaderTrait
             $inject = $attribute->newInstance();
 
             if ('' === $inject->getIdentifier()
-                && null !== ($type = $reflectionParameter->getType())
                 // PHPStan is not smart enough to parse such a condition.
                 // @phpstan-ignore-next-line
-                && null !== ($strType = $this->getParameterTypeByReflection($type))) {
+                && null !== ($strType = $this->getParameterType($reflectionParameter))) {
                 $inject = new Inject($strType);
             }
 
