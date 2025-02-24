@@ -25,8 +25,8 @@ trait ParameterTypeByReflectionTrait
     {
         $type = $parameter->getType();
 
-        if (null === $type || ($type instanceof \ReflectionNamedType && $type->isBuiltin())) {
-            return null;
+        if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+            return $type->getName(); // @phpstan-ignore-line
         }
 
         if ($type instanceof \ReflectionUnionType) {
@@ -47,13 +47,11 @@ trait ParameterTypeByReflectionTrait
                 0 => null,
                 1 => $types[0],
                 default => throw new AutowireException(
-                    \sprintf('Cannot automatically resolve dependency please specify parameter for argument "$%s". Available type: %s.', $parameter->getName(), '"'.\implode('", "', $types)).'"'
+                    \sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available types: %s.', $parameter->getName(), '"'.\implode('", "', $types)).'"'
                 )
             };
         }
 
-        return $type instanceof \ReflectionNamedType // @phpstan-ignore-line
-            ? $type->getName()
-            : null;
+        return null;
     }
 }
