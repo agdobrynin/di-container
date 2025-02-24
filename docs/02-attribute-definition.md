@@ -34,6 +34,12 @@
 > то будет выполнена попытка разрешить зависимость
 > по имени аргумента, используя имя аргумента как идентификатор контейнера.
 
+> [!WARNING]
+> При разрешении зависимости для объединенного типа (_union type_)
+> может быть выброшено исключение, [для исправления этой ошибки
+> необходима конкретизация типа](#разрешение-зависимости-объединенного-типа-через-inject).
+
+
 ### Атрибут #[Inject] для получения по идентификатору контейнера в конструкторе:
 
 ```php
@@ -290,40 +296,40 @@ var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 #[InjectByCallable(string $callable, bool $isSingleton = false)]
 ```
 Аргумент:
-- `$callable` - `callable` тип для получения результата внедрения.
+- `$callable` - строка которая может быть преобразована к `callable` для получения результата внедрения.
 - `$isSingleton` - зарегистрировать как singleton сервис.
 
 > [!TIP]
 > Аргументы указанные в `callable` вызове могут быть разрешены
-> контейнером.
+> контейнером автоматически.
 
 
 Пример использования:
 ```php
 // Объявление классов
+namespace App;
+
 use Kaspi\DiContainer\Attributes\{Inject, InjectByCallable};
 
-namespace App\Services;
-
-class ServiceTwo {
-
-    public function __construct(
-        #[InjectByCallable('App\Services\ServiceOne::config')]
-        private ServiceOne $one
-    ) {}
-
-}
-
-class ServiceOne {
+class One {
     
     public function __construct(ptivate string $code) {}
     
     public static function config(
         #[Inject('config.secure_code')]
         string $configCode
-    ): ServiceOne {
+    ): One {
         return new self($configCode);
     }
+
+}
+
+class ServiceOne {
+
+    public function __construct(
+        #[InjectByCallable('App\One::config')]
+        private One $one
+    ) {}
 
 }
 ```
@@ -339,12 +345,13 @@ $container = (new DiContainerFactory())->make($definitions);
 ```
 ```php
 // Получение данных из контейнера
-$service = $container->get(App\Services\ServiceTwo::class);
+$service = $container->get(App\ServiceOne::class);
 ```
 > [!NOTE]
-> При получении сервиса `App\Services\ServiceTwo::class` в свойстве
-> `App\Services\ServiceTwo::$code` строка 'abc', которая получена через
-> вызов статического метода `App\Services\ServiceOne::config()`.
+> При получении сервиса `App\ServiceOne::class` в свойстве
+> `App\ServiceOne::$one` будет класс `App\One` у которого в свойстве
+> `App\One::$code` строка `'abc'` полученная через
+> вызов статического метода `App\One::config()`.
 
 > [!TIP]
 > Объявить строку для аргумента `$callable` у php атрибута `#[InjectByCallable]`
@@ -352,12 +359,16 @@ $service = $container->get(App\Services\ServiceTwo::class);
 > `::class`:
 > ```php
 > use Kaspi\DiContainer\Attributes\InjectByCallable;
-> use App\Services\ServiceOne;
+> use App\One;
+> 
+> class ServiceOne {
 >
->  public function __construct(
->        #[InjectByCallable(ServiceOne::class.'::config')]
->        private ServiceOne $one
+>   public function __construct(
+>        #[InjectByCallable(One::class.'::config')]
+>        private One $one
 >    ) {}
+> 
+> }
 > ```
 
 ## Service
@@ -735,6 +746,63 @@ class AnyService {
 ```
 > [!TIP]
 > Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+
+## Разрешение зависимости объединенного типа через #[Inject].
+
+Для объединенного типа (_union type_) контейнер попытается найти
+доступные определения, и если будет найдено несколько вариантов
+разрешения зависимости то будет выброшено исключение,
+которое сообщит о необходимости уточнить тип для аргумента.
+```php
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+class One {}
+
+class Two {}
+
+class Service {
+ 
+    public function __construct(
+        #[Inject]
+        private One|Two $dependency
+    ) {}
+
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make();
+
+$container->get(App\Service::class);
+```
+так как оба типа `App\One` и `App\Two` доступны для разрешения контейнером,
+то будет выброшено исключение `\Psr\Container\ContainerExceptionInterface`.
+В таком случае требуется конктретизировать тип:
+```php
+namespace App;
+
+class Service {
+ 
+    public function __construct(
+        #[Inject(Two::class)]
+        private One|Two $dependency
+    ) {}
+
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make();
+
+$container->get(App\Service::class);
+```
+> [!NOTE]
+> При получении сервиса `App\Service::class` в аргументе `App\Service::$dependency`
+> содержится класс `App\Two`.
 
 ## Пример #1
 Заполнение коллекции на основе callback функции:
