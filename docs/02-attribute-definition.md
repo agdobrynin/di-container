@@ -10,6 +10,7 @@
 
 Доступные атрибуты:
 - **[Inject](#inject)** - внедрение зависимости в параметры конструктора, метода класса.
+- **[InjectByCallable](#injectbycallable)** - внедрение зависимости в параметры конструктора, метода класса через `callable` тип.
 - **[Service](#service)** - определение для интерфейса какой класс будет вызван и разрешен в контейнере.
 - **[DiFactory](#difactory)** - фабрика для c помощью которой разрешается зависимость класса. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
 - **[ProxyClosure](#proxyclosure)** - внедрение зависимости в параметры с отложенной инициализацией через функцию обратного вызова `\Closure`.
@@ -279,6 +280,85 @@ $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
 
 var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 ```
+
+## InjectByCallable
+
+Применяется к аргументам конструктора класса, метода или функции через [`callable` тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
+на основе [вызова `DiContainer::call()`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md).
+
+```php
+#[InjectByCallable(string $callable, bool $isSingleton = false)]
+```
+Аргумент:
+- `$callable` - `callable` тип для получения результата внедрения.
+- `$isSingleton` - зарегистрировать как singleton сервис.
+
+> [!TIP]
+> Аргументы указанные в `callable` вызове могут быть разрешены
+> контейнером.
+
+
+Пример использования:
+```php
+// Объявление классов
+use Kaspi\DiContainer\Attributes\{Inject, InjectByCallable};
+
+namespace App\Services;
+
+class ServiceTwo {
+
+    public function __construct(
+        #[InjectByCallable('App\Services\ServiceOne::config')]
+        private ServiceOne $one
+    ) {}
+
+}
+
+class ServiceOne {
+    
+    public function __construct(ptivate string $code) {}
+    
+    public static function config(
+        #[Inject('config.secure_code')]
+        string $configCode
+    ): ServiceOne {
+        return new self($configCode);
+    }
+
+}
+```
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\DiContainerFactory;
+
+$definitions = [
+    'config.secure_code' => 'abc',
+];
+
+$container = (new DiContainerFactory())->make($definitions);
+```
+```php
+// Получение данных из контейнера
+$service = $container->get(App\Services\ServiceTwo::class);
+```
+> [!NOTE]
+> При получении сервиса `App\Services\ServiceTwo::class` в свойстве
+> `App\Services\ServiceTwo::$code` строка 'abc', которая получена через
+> вызов статического метода `App\Services\ServiceOne::config()`.
+
+> [!TIP]
+> Объявить строку для аргумента `$callable` у php атрибута `#[InjectByCallable]`
+> можно используя безопасное объявление через магическую константу
+> `::class`:
+> ```php
+> use Kaspi\DiContainer\Attributes\InjectByCallable;
+> use App\Services\ServiceOne;
+>
+>  public function __construct(
+>        #[InjectByCallable(ServiceOne::class.'::config')]
+>        private ServiceOne $one
+>    ) {}
+> ```
 
 ## Service
 

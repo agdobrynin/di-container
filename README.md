@@ -102,7 +102,7 @@ $post = new App\Controllers\PostController(
 > [!TIP]
 > Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/00-start.php)
 
-Другой вариант для примера выше можно использовать для получения результата метод `call`:
+Другой вариант для примера выше можно использовать для получения результата `DiContainer::call()`:
 ```php
 $post = new App\Models\Post();
 $post->title = 'Publication about DiContainer';
@@ -117,7 +117,7 @@ $container->call(
 
 ```
 > [!TIP]
-> Больше информации о [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
+> Больше информации о [DiContainer::call()](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
 
 > [!NOTE]
 > Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples)
@@ -193,7 +193,7 @@ $container->get(TestClass::class)->container instanceof DiContainer; // true
 
 * 🐘 [DiContainer с конфигурированием в стиле php определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md).
 * #️⃣ [DiContainer c конфигурированием через PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
-* 📦 [DiContainer::call](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
+* 📦 [DiContainer::call()](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
 * 🔖 [Тэгирование определений и сервисов](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
 ## Тесты

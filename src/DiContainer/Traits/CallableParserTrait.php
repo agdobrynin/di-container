@@ -36,7 +36,8 @@ trait CallableParserTrait
 
         $parsedDefinition = $this->parseDefinitions($definition);
 
-        if (\is_string($containerIdentifier = $parsedDefinition[0])) {
+        if (\is_string($containerIdentifier = $parsedDefinition[0])
+            && $this->getContainer()->has($containerIdentifier)) {
             $parsedDefinition[0] = $this->getContainer()->get($containerIdentifier);
         }
 
