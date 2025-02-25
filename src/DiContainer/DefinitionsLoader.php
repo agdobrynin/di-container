@@ -39,12 +39,30 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
                 if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
                     throw new ContainerAlreadyRegisteredException(
-                        \sprintf('Invalid definition in file "%s". Reason: Definition with identifier "%s" is already registered', $srcFile, $identifier)
+                        \sprintf('Invalid definition in file "%s". Reason: Definition with identifier "%s" is already registered.', $srcFile, $identifier)
                     );
                 }
 
                 $this->configDefinitions->offsetSet($identifier, $definition);
             }
+        }
+
+        return $this;
+    }
+
+    public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static
+    {
+        foreach ($definitions as $identifier => $definition) {
+            /** @var class-string|non-empty-string $identifier */
+            $identifier = $this->getIdentifier($identifier, $definition);
+
+            if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
+                throw new ContainerAlreadyRegisteredException(
+                    \sprintf('Definition with identifier "%s" is already registered.', $identifier)
+                );
+            }
+
+            $this->configDefinitions->offsetSet($identifier, $definition);
         }
 
         return $this;
