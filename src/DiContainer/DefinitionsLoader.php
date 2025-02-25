@@ -6,9 +6,10 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 
-final class DefinitionsLoader
+final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
     use DefinitionIdentifierTrait;
 
@@ -28,6 +29,7 @@ final class DefinitionsLoader
 
             foreach ($this->getIterator($srcFile) as $identifier => $definition) {
                 try {
+                    /** @var class-string|non-empty-string $identifier */
                     $identifier = $this->getIdentifier($identifier, $definition);
                 } catch (DiDefinitionException $e) {
                     throw new DiDefinitionException(
@@ -48,14 +50,11 @@ final class DefinitionsLoader
         return $this;
     }
 
-    /**
-     * @phpstan-return \Generator
-     */
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
 
-        yield from $this->configDefinitions;
+        yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
     private function getIterator(string $srcFile): \Generator
