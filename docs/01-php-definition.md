@@ -66,7 +66,17 @@ var_dump(
 > [!TIP]
 > Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/01-01-pdo.php)
 
-## Объявления для определений контейнера:
+## Объявления для определений контейнера.
+
+Доступны объявления:
+- [простые типы](#определения-для-простых-типов) 
+- хэлпер функции:
+   - [diAutowire](#diautowire) – php класс
+   - [diCallable](#dicallable) – `callable` тип
+   - [diGet](#diget) – ссылка на идентификатор контейнера
+   - [diValue](#divalue) – определение «как есть».
+   - [diProxyClosure](#diproxyclosure) – сервис через вызов `\Closure`
+   - [diTaggedAs](#ditaggedas) – тегированные определения
 
 ### Определения для простых типов
 
@@ -311,6 +321,11 @@ var_dump($container->get('services.two') instanceof App\Services\ServiceOne); //
 >   'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key', debug: false),
 > ];
 > ```
+
+> [!TIP]
+> Если у определения объявленного через `diCallable` присутствуют аргументы,
+> то они могут быть разрешены контейнером автоматически включая [использование php атрибутов](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
+
 #### diGet
 Определение как ссылки на другой идентификатор контейнера.
 
@@ -319,9 +334,12 @@ use function \Kaspi\DiContainer\diGet;
  
 diGet(string $containerIdentifier)
 ```
+Аргумент:
+- `$containerIdentifier` - содержит указание на идентификатор контейнера, или указание на php класс.
+
 > У хэлпер функции нет дополнительных методов.
 
-Пример:
+Пример с указанием на идентификатор контейнера:
 ```php
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
@@ -345,6 +363,70 @@ $definitions = [
         ->bindArguments(dsn: diGet('services.env-dsn')), // ссылка на определение
 ];
 ```
+Пример с указанием на php класс:
+```php
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+class One {}
+
+class Two {}
+
+class ServiceOne {
+ 
+    public function __construct(
+        private One $dependency,
+        private array $values,
+    ) {}
+
+}
+
+class ServiceTwo {
+ 
+    public function __construct(
+        private Two $dependency,
+        private array $values,
+    ) {}
+
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+$container = (new DiContainerFactory())->make([
+
+    'params.values' => ['One value', 'Two value'];
+    
+    // Singleton определение
+    diAutowire(App\One::class, isSingleton: true),
+    
+    // Singleton определение
+    diAutowire(App\Two::class, isSingleton: true),
+    
+    diAutowire(App\ServiceOne::class)
+        ->bindArguments(
+            dependency: diGet(App\One::class),
+            values: diGet('params.values') 
+        ),
+        
+    diAutowire(App\ServiceTwo::class)
+        ->bindArguments(
+            dependency: diGet(App\Two::class),
+            values: diGet('params.values') 
+        ),
+]);
+
+$container->get(App\Service::class);
+```
+> [!NOTE]
+> При получении сервиса `App\ServiceOne::class` в аргументе `App\ServiceOne::$dependency`
+> содержится класс `App\One`, в `App\ServiceOne::$values` массив `['One value', 'Two value']`.
+> 
+> Для сервиса `App\ServiceTwo::class` в аргументе `App\ServiceTwo::$dependency`
+> содержится класс `App\Two`, в `App\ServiceTwo::$values` массив `['One value', 'Two value']`.
+
 #### diValue
 
 Определение без обработки — «как есть».
@@ -632,64 +714,6 @@ $myClass = $container->get(App\Srv\MyClass::class);
 > [!TIP]
 > Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
-## Внедрение значений зависимостей по ссылке на другой идентификатор контейнера.
-
-Для внедрения зависимостей по ссылке используется
-хэлпер функция [diGet](#diget).
-
-```php
-// Объявление класса
-namespace App;
-
-class MyUsers {
-    public function __construct(public array $users, string $type) {}
-}
-
-class MyEmployers {
-    public function __construct(public array $employers, string $type) {}
-}
-```
-
-```php
-// Определения для DiContainer
-use App\{MyUsers, MyEmployers};
-use Kaspi\DiContainer\DiContainerFactory;
-
-use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diGet;
-
-$definitions = [
-    'data' => ['user1', 'user2'],
-    
-    // ... more definitions
-    
-    // внедрение зависимости аргумента по ссылке на контейнер-id
-    diAutowire(App\MyUsers::class)
-        ->bindArguments(
-            users: diGet('data'), type: 'Some value'
-        ),
-
-    diAutowire(App\MyEmployers::class)
-        ->bindArguments(
-            employers: diGet('data'), type: 'Other value'
-        ),
-];
-
-$container = (new DiContainerFactory())->make($definitions);
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-use App\{MyUsers, MyEmployers};
-
-/** @var MyUsers::class $users */
-$users = $container->get(MyUsers::class);
-print implode(',', $users->users); // user1, user2
-
-/** @var MyEmployers::class $employers */
-$employers = $container->get(MyEmployers::class);
-print implode(',', $employers->employers); // user1, user2
-```
 ## Внедрение значений зависимостей по имени аргументов
 
 Если контейнер не смог определить зависимость по типу аргумента, то будет
@@ -879,72 +903,6 @@ $container->get(App\MyClass::class); // instance of App\MyClass
 > Для класса реализующего интерфейс `DiFactoryInterface` так же могут быть
 > разрешены зависимости в конструкторе автоматически или на основе конфигурации.
 
-## Callable тип как определение (definition).
-
-Определения могут быть объявлены `callable` типом (см. [Callable](https://www.php.net/manual/ru/language.types.callable.php)), например такие —
-функция, функция обратного вызова (callback), статический метод класса.
-
-```php
-// определение класса
-namespace App;
-
-class ServiceLocation {
-
-    public function __construct(public string $city) {}
-}
-
-// ...
-
-class ClassWithStaticMethods
-{
-
-    public static function doSomething(
-        ServiceLocation $serviceLocation // Внедрение зависимости по типу
-    ): \stdClass {
-        return (object) [
-            'name' => 'John Doe',
-            'age' => 32,
-            'gender' => 'male',
-            'city' => $serviceLocation->city,
-        ];
-    }
-}
-```
-```php
-use Kaspi\DiContainer\Interfaces\{DiContainerFactory};
-use function Kaspi\DiContainer\{diAutowire, diCallable};
-
-$defServices = [
-    diAutowire(App\ServiceLocation::class)
-        ->bindArguments(city: 'Vice city'),
-];
-
-// ... many definitions ...
-
-$defCustom = [
-    // Статический метод класса является callable типом.
-    // При вызове метода автоматически внедрится зависимость по типу ServiceLocation. 
-    'doSomething' => diCallable('App\ClassWithStaticMethods::doSomething'),
-];
-
-$container = (new DiContainerFactory())->make(
-    \array_merge($defServices, $defCustom)
-);
-
-// ...
-
-// получение данных
-$container->get('doSomething'); // (object) ['name' => 'John Doe', 'age' => 32, 'gender' => 'male', 'city' => 'Vice city']
-```
-
-> [!TIP]
-> Если у определения объявленного через `diCallable` присутствуют аргументы,
-> то они могут быть разрешены контейнером автоматически включая [использование php атрибутов](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
-
-> [!TIP]
-> Поддерживаемые типы определений для `diCallable` описаны
-> [в разделе о методе `DiContainer::call()`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
-
 ## Разрешение аргументов переменной длины
 
 Если необходимо передать несколько аргументов для `variadic` параметра используя имя параметра
@@ -1028,6 +986,60 @@ $definition = [
 >       diGet('ruleC'), // <-- получение по ссылке
 >   );
 > ```
+
+## Разрешение зависимости объединенного типа.
+
+Для объединенного типа (_union type_) контейнер попытается найти
+доступные определения, и если будет найдено несколько вариантов
+разрешения зависимости то будет выброшено исключение,
+которое сообщит о необходимости уточнить тип для аргумента.
+
+```php
+namespace App;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+class One {}
+
+class Two {}
+
+class Service {
+ 
+    public function __construct(
+        private One|Two $dependency
+    ) {}
+
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make();
+
+$container->get(App\Service::class);
+```
+> [!WARNING]
+> Будет выброшено исключение `\Psr\Container\ContainerExceptionInterface`.
+>
+
+Для устранения ошибки необходимо конкретизировать тип для аргумента `$dependency`
+при конфигурировании контейнера:
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+$container = (new DiContainerFactory())->make([
+
+    diAutowire(App\Service::class)
+        ->bindArguments(dependency: diGet(App\Two::class))
+
+]);
+
+$container->get(App\Service::class);
+```
+> [!NOTE]
+> При получении сервиса `App\Service::class` в аргументе `App\Service::$dependency`
+> содержится класс `App\Two`
 
 ## Примеры использования для конфигурирования:
 

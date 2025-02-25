@@ -119,10 +119,7 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                /** @var null|\ReflectionNamedType|\ReflectionUnionType $type */
-                $strType = null !== ($type = $parameter->getType())
-                        ? $this->getParameterTypeByReflection($type)
-                        : null;
+                $strType = $this->getParameterType($parameter);
 
                 $dependencies[] = null === $strType
                     ? $this->getContainer()->get($parameter->getName())
