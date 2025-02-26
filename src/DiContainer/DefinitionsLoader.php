@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
+use Psr\Container\ContainerExceptionInterface;
 
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
@@ -27,23 +29,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 throw new \InvalidArgumentException(\sprintf('The file "%s" does not exist or is not readable', $srcFile));
             }
 
-            foreach ($this->getIterator($srcFile) as $identifier => $definition) {
-                try {
-                    /** @var class-string|non-empty-string $identifier */
-                    $identifier = $this->getIdentifier($identifier, $definition);
-                } catch (DiDefinitionException $e) {
-                    throw new DiDefinitionException(
-                        \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
-                    );
-                }
-
-                if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
-                    throw new ContainerAlreadyRegisteredException(
-                        \sprintf('Invalid definition in file "%s". Reason: Definition with identifier "%s" is already registered.', $srcFile, $identifier)
-                    );
-                }
-
-                $this->configDefinitions->offsetSet($identifier, $definition);
+            try {
+                $this->addDefinitions($overrideDefinitions, $this->getIterator($srcFile));
+            } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
+                throw new ContainerException(
+                    \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
+                );
             }
         }
 

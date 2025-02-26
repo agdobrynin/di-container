@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use Kaspi\DiContainer\DefinitionsLoader;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 
 /**
  * @covers \Kaspi\DiContainer\DefinitionsLoader
@@ -56,15 +55,16 @@ class DefinitionsLoaderTest extends TestCase
      */
     public function testDefinitionException(string $file): void
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Invalid definition in file "'.$file.'".');
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('~Invalid definition in file "'.$file.'".+Definition identifier must be a non-empty string~');
 
         (new DefinitionsLoader())->load(false, $file);
     }
 
     public function testOverrideDefinitionException(): void
     {
-        $this->expectException(ContainerAlreadyRegisteredException::class);
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('already registered');
 
         (new DefinitionsLoader())->load(
             false,

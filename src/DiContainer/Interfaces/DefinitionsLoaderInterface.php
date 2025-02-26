@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Psr\Container\ContainerExceptionInterface;
 
 interface DefinitionsLoaderInterface
 {
@@ -17,8 +18,7 @@ interface DefinitionsLoaderInterface
      * @return $this
      *
      * @throws \InvalidArgumentException
-     * @throws DiDefinitionExceptionInterface
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerExceptionInterface
      */
     public function load(bool $overrideDefinitions, string ...$file): static;
 
