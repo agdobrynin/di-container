@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
@@ -43,17 +44,31 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static
     {
+        $itemCount = 0;
+
         foreach ($definitions as $identifier => $definition) {
-            /** @var class-string|non-empty-string $identifier */
-            $identifier = $this->getIdentifier($identifier, $definition);
+            try {
+                /** @var class-string|non-empty-string $identifier */
+                $identifier = $this->getIdentifier($identifier, $definition);
+            } catch (DiDefinitionExceptionInterface $e) {
+                throw new DiDefinitionException(
+                    message: \sprintf('%s Item position #%d.', $e->getMessage(), $itemCount),
+                    previous: $e
+                );
+            }
 
             if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
                 throw new ContainerAlreadyRegisteredException(
-                    \sprintf('Definition with identifier "%s" is already registered.', $identifier)
+                    \sprintf(
+                        'Definition with identifier "%s" is already registered. Item position #%d.',
+                        $identifier,
+                        $itemCount
+                    )
                 );
             }
 
             $this->configDefinitions->offsetSet($identifier, $definition);
+            ++$itemCount;
         }
 
         return $this;
