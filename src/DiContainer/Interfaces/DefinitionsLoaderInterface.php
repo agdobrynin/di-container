@@ -36,4 +36,14 @@ interface DefinitionsLoaderInterface
      * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
      */
     public function definitions(): iterable;
+
+    /**
+     * Load classes from directories.
+     *
+     * @param list<non-empty-string> $src     find pathnames matching a pattern
+     * @param list<non-empty-string> $exclude exclude pathnames matching a pattern
+     *
+     * @return $this
+     */
+    public function resources(array $src, array $exclude = []): static;
 }

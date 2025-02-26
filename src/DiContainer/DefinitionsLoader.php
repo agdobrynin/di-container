@@ -81,6 +81,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
+    public function resources(array $src, array $exclude = []): static
+    {
+        return $this;
+    }
+
     private function getIteratorFromFile(string $srcFile): \Generator
     {
         \ob_start();
