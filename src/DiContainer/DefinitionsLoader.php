@@ -30,7 +30,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             try {
-                $this->addDefinitions($overrideDefinitions, $this->getIterator($srcFile));
+                $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
             } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
                 throw new ContainerException(
                     \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
@@ -66,7 +66,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    private function getIterator(string $srcFile): \Generator
+    private function getIteratorFromFile(string $srcFile): \Generator
     {
         \ob_start();
         $content = require $srcFile;
