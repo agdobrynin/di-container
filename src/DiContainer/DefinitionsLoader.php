@@ -32,6 +32,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             try {
                 $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
+                unset($srcFile);
             } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
                 throw new ContainerException(
                     \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
