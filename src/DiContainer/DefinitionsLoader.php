@@ -18,6 +18,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     private \ArrayIterator $configDefinitions;
 
+    /**
+     * @var array<non-empty-string, array{src: non-empty-string, exclude: string}>
+     */
+    private array $import;
+
     public function __construct()
     {
         $this->configDefinitions = new \ArrayIterator();
@@ -79,11 +84,21 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         $this->configDefinitions->rewind();
 
+        if (isset($this->import)) {
+            // @todo implement import definitions from files.
+            throw new \LogicException('Import class not implemented yet.');
+        }
+
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    public function resources(array $src, array $exclude = []): static
+    public function import(string $namespace, string $src, string $exclude = ''): static
     {
+        $this->import[$namespace] = [
+            'src' => $src,
+            'exclude' => $exclude,
+        ];
+
         return $this;
     }
 

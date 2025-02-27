@@ -13,6 +13,8 @@ use Psr\Container\ContainerExceptionInterface;
 interface DefinitionsLoaderInterface
 {
     /**
+     * Load definitions from configuration files.
+     *
      * @param non-empty-string ...$file
      *
      * @return $this
@@ -38,12 +40,13 @@ interface DefinitionsLoaderInterface
     public function definitions(): iterable;
 
     /**
-     * Load classes from directories.
+     * Import classes from directories.
      *
-     * @param list<non-empty-string> $src     find pathnames matching a pattern
-     * @param list<non-empty-string> $exclude exclude pathnames matching a pattern
+     * @param non-empty-string $namespace namespace of imported classes aka PSR-4 namespace
+     * @param non-empty-string $src       find pathnames matching a pattern
+     * @param string           $exclude   exclude pathnames matching a pattern
      *
      * @return $this
      */
-    public function resources(array $src, array $exclude = []): static;
+    public function import(string $namespace, string $src, string $exclude = ''): static;
 }
