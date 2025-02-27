@@ -7,8 +7,11 @@ namespace Kaspi\DiContainer;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Finder\FinderClass;
+use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderClassInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
 
@@ -19,7 +22,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private \ArrayIterator $configDefinitions;
 
     /**
-     * @var array<non-empty-string, array{src: non-empty-string, exclude: string}>
+     * @var array<non-empty-string, FinderClassInterface>
      */
     private array $import;
 
@@ -92,12 +95,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    public function import(string $namespace, string $src, string $exclude = ''): static
+    public function import(string $namespace, string $src, array $exclude = []): static
     {
-        $this->import[$namespace] = [
-            'src' => $src,
-            'exclude' => $exclude,
-        ];
+        $this->import[$namespace] ??= $this->import[$namespace] = (new FinderClass(
+            $namespace,
+            (new FinderFile($src, $exclude))->getFiles()
+        ));
 
         return $this;
     }
