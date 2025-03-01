@@ -95,11 +95,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    public function import(string $namespace, string $src, array $exclude = []): static
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = []): static
     {
         $this->import[$namespace] ??= $this->import[$namespace] = (new FinderClass(
             $namespace,
-            (new FinderFile($src, $exclude))->getFiles()
+            (new FinderFile($src, $excludeFilesRegExpPattern))->getFiles()
         ));
 
         return $this;

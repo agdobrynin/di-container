@@ -42,11 +42,14 @@ interface DefinitionsLoaderInterface
     /**
      * Import classes from directories.
      *
-     * @param non-empty-string       $namespace PSR-4 namespace preifx
-     * @param non-empty-string       $src       source directory
-     * @param list<non-empty-string> $exclude   exclude pathnames matching a pattern
+     * @param non-empty-string       $namespace                 PSR-4 namespace preifx
+     * @param non-empty-string       $src                       source directory
+     * @param list<non-empty-string> $excludeFilesRegExpPattern exclude files matching by regexp pattern
      *
      * @return $this
+     *
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
-    public function import(string $namespace, string $src, array $exclude = []): static;
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = []): static;
 }
