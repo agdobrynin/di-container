@@ -48,11 +48,11 @@ final class FinderClass implements FinderClassInterface
      */
     private function getClassesInFile(string $file, int &$keyOfClass): \Generator
     {
-        $code = \file_get_contents($file);
+        $code = @\file_get_contents($file);
 
         if (false === $code) {
             throw new \RuntimeException(
-                \sprintf('Cannot get file contents from "%s"', $file)
+                \sprintf('Cannot get file contents from "%s". Reason: %s', $file, \error_get_last()['message'] ?? 'Unknown')
             );
         }
 
