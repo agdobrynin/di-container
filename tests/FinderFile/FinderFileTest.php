@@ -43,11 +43,11 @@ class FinderFileTest extends TestCase
         $files = (new FinderFile(__DIR__.'/Fixtures'))->getFiles();
 
         $this->assertTrue($files->valid());
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current()->getRealPath());
 
         $files->next();
 
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current()->getRealPath());
 
         $files->next();
 
@@ -59,11 +59,11 @@ class FinderFileTest extends TestCase
         $files = (new FinderFile(__DIR__.'/Fixtures', extension: 'txt'))->getFiles();
 
         $this->assertTrue($files->valid());
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current()->getRealPath());
 
         $files->next();
 
-        $this->assertStringContainsString('FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/Doc.txt', $files->current());
+        $this->assertStringContainsString('FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/Doc.txt', $files->current()->getRealPath());
 
         $files->next();
 
@@ -75,23 +75,23 @@ class FinderFileTest extends TestCase
         $files = (new FinderFile(__DIR__.'/Fixtures', extension: null))->getFiles();
 
         $this->assertTrue($files->valid());
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current()->getRealPath());
 
         $files->next();
 
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current()->getRealPath());
 
         $files->next();
 
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current()->getRealPath());
 
         $files->next();
 
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/AnyFile', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/AnyFile', $files->current()->getRealPath());
 
         $files->next();
 
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/Doc.txt', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/Doc.txt', $files->current()->getRealPath());
 
         $files->next();
 
@@ -107,11 +107,11 @@ class FinderFileTest extends TestCase
         )
         )->getFiles();
 
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current()->getRealPath());
 
         $files->next();
 
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current());
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current()->getRealPath());
 
         $files->next();
 

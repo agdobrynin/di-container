@@ -50,7 +50,7 @@ final class FinderFile implements FinderFileInterface
                 && $entry->isFile()
                 && (null === $this->extension || $this->extension === \strtolower($entry->getExtension()))
             ) {
-                yield $realPath; // @phpstan-ignore generator.keyType
+                yield $entry; // @phpstan-ignore generator.keyType
             }
         }
     }

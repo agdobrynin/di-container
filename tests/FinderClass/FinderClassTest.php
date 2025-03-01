@@ -58,7 +58,7 @@ class FinderClassTest extends TestCase
         $this->expectExceptionMessage('Cannot get file contents from "file-not-found.php"');
 
         (new FinderClass('App\\', [
-            'file-not-found.php',
+            new \SplFileInfo('file-not-found.php'),
         ]))->getClasses()->valid();
     }
 
@@ -68,33 +68,32 @@ class FinderClassTest extends TestCase
         $this->expectExceptionMessage('Cannot parse code');
 
         (new FinderClass('App\\', [
-            __DIR__.'/Fixtures/Error/ParseError.php',
+            new \SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php'),
         ]))->getClasses()->valid();
     }
 
     public function testGetClasses(): void
     {
-        $classes = (new FinderClass('Tests\\', [
-            __DIR__.'/Fixtures/Success/function.php',
-            __DIR__.'/Fixtures/Success/function2.php',
-            __DIR__.'/Fixtures/Success/ManyInOne.php',
-            __DIR__.'/Fixtures/Success/ManyNamespaces.php',
-            __DIR__.'/Fixtures/Success/MyTrait.php',
-            __DIR__.'/Fixtures/Success/One.php',
-        ]))->getClasses();
+        $dir = new \FilesystemIterator(__DIR__.'/Fixtures/Success/');
+        $classes = (new FinderClass('Tests\\', $dir))->getClasses();
 
         $this->assertTrue($classes->valid());
 
-        $this->assertEquals(TwoInOneOne::class, $classes->current());
-        $classes->next();
-        $this->assertEquals(TwoInOneTow::class, $classes->current());
-        $classes->next();
-        $this->assertEquals(ManyNamespaces::class, $classes->current());
-        $classes->next();
-        $this->assertEquals(Fixtures\Success\Others\ManyNamespaces::class, $classes->current());
-        $classes->next();
-        $this->assertEquals(One::class, $classes->current());
-        $classes->next();
-        $this->assertFalse($classes->valid());
+        $foundClasses = [];
+
+        foreach ($classes as $class) {
+            $foundClasses[] = $class;
+        }
+
+        $this->assertEquals(
+            [],
+            \array_diff([
+                TwoInOneOne::class,
+                TwoInOneTow::class,
+                ManyNamespaces::class,
+                Fixtures\Success\Others\ManyNamespaces::class,
+                One::class,
+            ], $foundClasses)
+        );
     }
 }

@@ -9,8 +9,8 @@ use Kaspi\DiContainer\Interfaces\Finder\FinderClassInterface;
 final class FinderClass implements FinderClassInterface
 {
     /**
-     * @param non-empty-string                   $namespace PSR-4 namespace prefix
-     * @param iterable<non-negative-int, string> $files     files for parsing
+     * @param non-empty-string                         $namespace PSR-4 namespace prefix
+     * @param iterable<non-negative-int, \SplFileInfo> $files     files for parsing
      */
     public function __construct(
         private string $namespace,
@@ -46,9 +46,11 @@ final class FinderClass implements FinderClassInterface
      *
      * @throws \RuntimeException
      */
-    private function getClassesInFile(string $file, int &$keyOfClass): \Generator
+    private function getClassesInFile(\SplFileInfo $file, int &$keyOfClass): \Generator
     {
-        $code = @\file_get_contents($file);
+        if ($code = $file->getRealPath()) {
+            $code = @\file_get_contents($file->getRealPath());
+        }
 
         if (false === $code) {
             throw new \RuntimeException(
