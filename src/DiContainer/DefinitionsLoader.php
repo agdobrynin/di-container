@@ -88,8 +88,17 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions->rewind();
 
         if (isset($this->import)) {
-            // @todo implement import definitions from files.
-            throw new \LogicException('Import class not implemented yet.');
+            $iterator = new \AppendIterator();
+
+            foreach ($this->import as $finderClass) {
+                $iterator->append($finderClass->getClasses());
+            }
+
+            foreach ($iterator as $class) {
+                if (\is_string($class) && !$this->configDefinitions->offsetExists($class)) {
+                    yield $class => \Kaspi\DiContainer\diAutowire($class); // @phpstan-ignore generator.keyType, argument.type
+                }
+            }
         }
 
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
