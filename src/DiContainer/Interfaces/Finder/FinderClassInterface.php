@@ -7,9 +7,9 @@ namespace Kaspi\DiContainer\Interfaces\Finder;
 interface FinderClassInterface
 {
     /**
-     * @return iterable<non-negative-int, class-string>
+     * @return \Iterator<non-negative-int, class-string>
      *
      * @throws \RuntimeException
      */
-    public function getClasses(): iterable;
+    public function getClasses(): \Iterator;
 }

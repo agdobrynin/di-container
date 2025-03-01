@@ -30,7 +30,7 @@ final class FinderClass implements FinderClassInterface
         }
     }
 
-    public function getClasses(): iterable
+    public function getClasses(): \Iterator
     {
         $keyOfClass = 0;
 
