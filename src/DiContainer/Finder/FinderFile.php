@@ -15,7 +15,7 @@ final class FinderFile implements FinderFileInterface
     public function __construct(
         private string $src,
         private array $exclude = [],
-        private string $extension = 'php',
+        private ?string $extension = 'php',
     ) {
         $fixedSrc = \realpath($src);
 
@@ -42,7 +42,7 @@ final class FinderFile implements FinderFileInterface
             /** @var \DirectoryIterator $entry */
             if ($entry->isFile()
                 && \is_string($realPath = $entry->getRealPath())
-                && $this->extension === \strtolower($entry->getExtension())
+                && (null === $this->extension || $this->extension === \strtolower($entry->getExtension()))
                 && !$this->isExcluded($realPath)
             ) {
                 yield $realPath; // @phpstan-ignore generator.keyType
