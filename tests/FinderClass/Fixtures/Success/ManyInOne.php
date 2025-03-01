@@ -24,6 +24,11 @@ abstract class TwoInOneThree
     }
 }
 
+interface SomeInterface
+{
+    public function aaa(): string;
+}
+
 final class TwoInOneTow
 {
     public function __construct(private string $token) {}

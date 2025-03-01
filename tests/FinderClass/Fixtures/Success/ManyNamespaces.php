@@ -3,7 +3,12 @@
 declare(strict_types=1);
 
 namespace Tests\FinderClass\Fixtures\Success {
-    final class ManyNamespaces
+    interface WithTokenInterface
+    {
+        public function token(): string;
+    }
+
+    final class ManyNamespaces implements WithTokenInterface
     {
         public function __construct(private string $token) {}
 
@@ -15,7 +20,11 @@ namespace Tests\FinderClass\Fixtures\Success {
 }
 
 namespace Tests\FinderClass\Fixtures\Success\Others {
-    abstract class ManyNamespacesAbstract
+    interface GetTokenInterface
+    {
+        public function token(): string;
+    }
+    abstract class ManyNamespacesAbstract implements GetTokenInterface
     {
         private string $token;
 
