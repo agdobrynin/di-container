@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-class DefinitionsLoaderInportTest extends TestCase
+class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImport(): void
     {
