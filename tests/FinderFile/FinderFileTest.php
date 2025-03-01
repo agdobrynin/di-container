@@ -102,7 +102,7 @@ class FinderFileTest extends TestCase
     {
         $files = (new FinderFile(
             src: __DIR__.'/Fixtures',
-            exclude: ['tests/FinderFile/Fixtures/SubSubDirectory/', '/FileOne.php'],
+            excludeRegExpPattern: ['~/Fixtures.+SubSubDirectory/~', '~/FileOne.php$~'],
             extension: null
         )
         )->getFiles();
@@ -112,14 +112,6 @@ class FinderFileTest extends TestCase
         $files->next();
 
         $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current());
-
-        $files->next();
-
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/AnyFile', $files->current());
-
-        $files->next();
-
-        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectoryTwo/SubSubDirectory/Doc.txt', $files->current());
 
         $files->next();
 

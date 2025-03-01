@@ -9,12 +9,12 @@ use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 final class FinderFile implements FinderFileInterface
 {
     /**
-     * @param non-empty-string       $src     source directory
-     * @param list<non-empty-string> $exclude exclude pathnames matching a pattern
+     * @param non-empty-string       $src                  source directory
+     * @param list<non-empty-string> $excludeRegExpPattern exclude matching by regexp pattern
      */
     public function __construct(
         private string $src,
-        private array $exclude = [],
+        private array $excludeRegExpPattern = [],
         private ?string $extension = 'php',
     ) {
         $fixedSrc = \realpath($src);
@@ -45,10 +45,10 @@ final class FinderFile implements FinderFileInterface
 
         foreach ($iterator as $entry) {
             /** @var \DirectoryIterator $entry */
-            if ($entry->isFile()
-                && \is_string($realPath = $entry->getRealPath())
-                && (null === $this->extension || $this->extension === \strtolower($entry->getExtension()))
+            if (($realPath = $entry->getRealPath())
                 && !$this->isExcluded($realPath)
+                && $entry->isFile()
+                && (null === $this->extension || $this->extension === \strtolower($entry->getExtension()))
             ) {
                 yield $realPath; // @phpstan-ignore generator.keyType
             }
@@ -57,13 +57,12 @@ final class FinderFile implements FinderFileInterface
 
     private function isExcluded(string $fileRealPath): bool
     {
-        if ([] === $this->exclude) {
+        if ([] === $this->excludeRegExpPattern) {
             return false;
         }
 
-        foreach ($this->exclude as $partOfRealPath) {
-            // @todo How about regexp or glob expression?
-            if (\str_contains($fileRealPath, $partOfRealPath)) {
+        foreach ($this->excludeRegExpPattern as $partOfPregPattern) {
+            if (1 === \preg_match($partOfPregPattern, $fileRealPath)) {
                 return true;
             }
         }
