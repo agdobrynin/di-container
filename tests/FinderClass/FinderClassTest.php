@@ -6,6 +6,10 @@ namespace Tests\FinderClass;
 
 use Kaspi\DiContainer\Finder\FinderClass;
 use PHPUnit\Framework\TestCase;
+use Tests\FinderClass\Fixtures\Success\ManyNamespaces;
+use Tests\FinderClass\Fixtures\Success\One;
+use Tests\FinderClass\Fixtures\Success\TwoInOneOne;
+use Tests\FinderClass\Fixtures\Success\TwoInOneTow;
 
 /**
  * @covers \Kaspi\DiContainer\Finder\FinderClass
@@ -46,5 +50,51 @@ class FinderClassTest extends TestCase
         $this->expectExceptionMessage($expectMessage);
 
         new FinderClass($namespace, []);
+    }
+
+    public function testCannotOpenFile(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot get file contents from "file-not-found.php"');
+
+        (new FinderClass('App\\', [
+            'file-not-found.php',
+        ]))->getClasses()->valid();
+    }
+
+    public function testParsePhpException(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot parse code');
+
+        (new FinderClass('App\\', [
+            __DIR__.'/Fixtures/Error/ParseError.php',
+        ]))->getClasses()->valid();
+    }
+
+    public function testGetClasses(): void
+    {
+        $classes = (new FinderClass('Tests\\', [
+            __DIR__.'/Fixtures/Success/function.php',
+            __DIR__.'/Fixtures/Success/function2.php',
+            __DIR__.'/Fixtures/Success/ManyInOne.php',
+            __DIR__.'/Fixtures/Success/ManyNamespaces.php',
+            __DIR__.'/Fixtures/Success/MyTrait.php',
+            __DIR__.'/Fixtures/Success/One.php',
+        ]))->getClasses();
+
+        $this->assertTrue($classes->valid());
+
+        $this->assertEquals(TwoInOneOne::class, $classes->current());
+        $classes->next();
+        $this->assertEquals(TwoInOneTow::class, $classes->current());
+        $classes->next();
+        $this->assertEquals(ManyNamespaces::class, $classes->current());
+        $classes->next();
+        $this->assertEquals(Fixtures\Success\Others\ManyNamespaces::class, $classes->current());
+        $classes->next();
+        $this->assertEquals(One::class, $classes->current());
+        $classes->next();
+        $this->assertFalse($classes->valid());
     }
 }
