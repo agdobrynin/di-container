@@ -123,7 +123,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         if (\array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException(
-                \sprintf('Definition identifier [%s] already registered in container.', $id)
+                \sprintf('Definition identifier "%s" already registered in container.', $id)
             );
         }
 
@@ -185,7 +185,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if (!$this->has($id)) {
-                throw new NotFoundException(\sprintf('Unresolvable dependency [%s].', $id));
+                throw new NotFoundException(\sprintf('Unresolvable dependency "%s".', $id));
             }
 
             $this->checkCyclicalDependencyCall($id);
@@ -260,7 +260,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                throw new NotFoundException(\sprintf('Definition not found for identifier %s', $id));
+                throw new NotFoundException(\sprintf('Definition not found for identifier "%s"', $id));
             }
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean

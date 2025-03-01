@@ -5,14 +5,26 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Finder\FinderClass;
+use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderClassInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
+use Psr\Container\ContainerExceptionInterface;
 
-final class DefinitionsLoader
+final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
     use DefinitionIdentifierTrait;
 
     private \ArrayIterator $configDefinitions;
+
+    /**
+     * @var array<non-empty-string, FinderClassInterface>
+     */
+    private array $import;
 
     public function __construct()
     {
@@ -26,39 +38,83 @@ final class DefinitionsLoader
                 throw new \InvalidArgumentException(\sprintf('The file "%s" does not exist or is not readable', $srcFile));
             }
 
-            foreach ($this->getIterator($srcFile) as $identifier => $definition) {
-                try {
-                    $identifier = $this->getIdentifier($identifier, $definition);
-                } catch (DiDefinitionException $e) {
-                    throw new DiDefinitionException(
-                        \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
-                    );
-                }
-
-                if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
-                    throw new ContainerAlreadyRegisteredException(
-                        \sprintf('Invalid definition in file "%s". Reason: Definition with identifier "%s" is already registered', $srcFile, $identifier)
-                    );
-                }
-
-                $this->configDefinitions->offsetSet($identifier, $definition);
+            try {
+                $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
+                unset($srcFile);
+            } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
+                throw new ContainerException(
+                    \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
+                );
             }
         }
 
         return $this;
     }
 
-    /**
-     * @phpstan-return \Generator
-     */
+    public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static
+    {
+        $itemCount = 0;
+
+        foreach ($definitions as $identifier => $definition) {
+            try {
+                /** @var class-string|non-empty-string $identifier */
+                $identifier = $this->getIdentifier($identifier, $definition);
+            } catch (DiDefinitionExceptionInterface $e) {
+                throw new DiDefinitionException(
+                    message: \sprintf('%s Item position #%d.', $e->getMessage(), $itemCount),
+                    previous: $e
+                );
+            }
+
+            if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
+                throw new ContainerAlreadyRegisteredException(
+                    \sprintf(
+                        'Definition with identifier "%s" is already registered. Item position #%d.',
+                        $identifier,
+                        $itemCount
+                    )
+                );
+            }
+
+            $this->configDefinitions->offsetSet($identifier, $definition);
+            ++$itemCount;
+        }
+
+        return $this;
+    }
+
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
 
-        yield from $this->configDefinitions;
+        if (isset($this->import)) {
+            $iterator = new \AppendIterator();
+
+            foreach ($this->import as $finderClass) {
+                $iterator->append($finderClass->getClasses());
+            }
+
+            foreach ($iterator as $class) {
+                if (\is_string($class) && !$this->configDefinitions->offsetExists($class)) {
+                    yield $class => \Kaspi\DiContainer\diAutowire($class); // @phpstan-ignore generator.keyType, argument.type
+                }
+            }
+        }
+
+        yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    private function getIterator(string $srcFile): \Generator
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = []): static
+    {
+        $this->import[$namespace] ??= $this->import[$namespace] = (new FinderClass(
+            $namespace,
+            (new FinderFile($src, $excludeFilesRegExpPattern))->getFiles()
+        ));
+
+        return $this;
+    }
+
+    private function getIteratorFromFile(string $srcFile): \Generator
     {
         \ob_start();
         $content = require $srcFile;

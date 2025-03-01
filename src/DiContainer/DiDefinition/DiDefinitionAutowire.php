@@ -216,7 +216,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         if (!$reflectionClass->isInstantiable()) {
             throw new AutowireException(
-                \sprintf('The [%s] class is not instantiable', $reflectionClass->getName())
+                \sprintf('The "%s" class is not instantiable', $reflectionClass->getName())
             );
         }
 
