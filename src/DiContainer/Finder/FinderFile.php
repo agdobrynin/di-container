@@ -27,7 +27,7 @@ final class FinderFile implements FinderFileInterface
 
         if (!\is_dir($fixedSrc) || !\is_readable($fixedSrc)) {
             throw new \InvalidArgumentException(
-                \sprintf('Argument $src must be directory and readable. Got: "%s"', $fixedSrc)
+                \sprintf('Argument $src must be readable directory. Got: "%s"', $fixedSrc)
             );
         }
 
@@ -36,7 +36,12 @@ final class FinderFile implements FinderFileInterface
 
     public function getFiles(): iterable
     {
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->src));
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(
+                $this->src,
+                \FilesystemIterator::CURRENT_AS_FILEINFO | \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+            )
+        );
 
         foreach ($iterator as $entry) {
             /** @var \DirectoryIterator $entry */
@@ -57,6 +62,7 @@ final class FinderFile implements FinderFileInterface
         }
 
         foreach ($this->exclude as $partOfRealPath) {
+            // @todo How about regexp or glob expression?
             if (\str_contains($fileRealPath, $partOfRealPath)) {
                 return true;
             }
