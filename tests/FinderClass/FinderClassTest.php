@@ -55,7 +55,7 @@ class FinderClassTest extends TestCase
     public function testCannotOpenFile(): void
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Cannot get file contents from "file-not-found.php"');
+        $this->expectExceptionMessage('Failed to open stream');
 
         (new FinderClass('App\\', [
             new \SplFileInfo('file-not-found.php'),
