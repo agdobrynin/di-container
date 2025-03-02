@@ -31,7 +31,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions = new \ArrayIterator();
     }
 
-    public function load(bool $overrideDefinitions, string ...$file): static
+    public function load(bool $overrideDefinitions = false, string ...$file): static
     {
         foreach ($file as $srcFile) {
             if (!\file_exists($srcFile) || !\is_readable($srcFile)) {
@@ -104,11 +104,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = []): static
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static
     {
         $this->import[$namespace] ??= $this->import[$namespace] = (new FinderClass(
             $namespace,
-            (new FinderFile($src, $excludeFilesRegExpPattern))->getFiles()
+            (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
         ));
 
         return $this;

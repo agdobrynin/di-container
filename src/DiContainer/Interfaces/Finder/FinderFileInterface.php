@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Interfaces\Finder;
 interface FinderFileInterface
 {
     /**
-     * @return iterable<non-negative-int, \SplFileInfo>
+     * @return \Iterator<non-negative-int, \SplFileInfo>
      */
-    public function getFiles(): iterable;
+    public function getFiles(): \Iterator;
 }

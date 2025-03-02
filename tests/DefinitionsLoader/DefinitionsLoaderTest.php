@@ -32,7 +32,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('return not valid format');
 
-        (new DefinitionsLoader())->load(false, $file);
+        (new DefinitionsLoader())->load(file: $file);
     }
 
     public function testFileNotFound(): void
@@ -40,7 +40,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('does not exist or is not readable');
 
-        (new DefinitionsLoader())->load(false, 'f.php');
+        (new DefinitionsLoader())->load(file: 'f.php');
     }
 
     public function dataProvideDefinitionException(): \Generator
@@ -58,7 +58,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessageMatches('~Invalid definition in file "'.$file.'".+Definition identifier must be a non-empty string~');
 
-        (new DefinitionsLoader())->load(false, $file);
+        (new DefinitionsLoader())->load(file: $file);
     }
 
     public function testOverrideDefinitionException(): void
@@ -66,11 +66,9 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('already registered');
 
-        (new DefinitionsLoader())->load(
-            false,
-            __DIR__.'/Fixtures/config1.php',
-            __DIR__.'/Fixtures/config2.php',
-        );
+        (new DefinitionsLoader())->load(file: __DIR__.'/Fixtures/config1.php')
+            ->load(file: __DIR__.'/Fixtures/config2.php')
+        ;
     }
 
     public function testOverrideDefinition(): void

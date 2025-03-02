@@ -22,7 +22,7 @@ interface DefinitionsLoaderInterface
      * @throws \InvalidArgumentException
      * @throws ContainerExceptionInterface
      */
-    public function load(bool $overrideDefinitions, string ...$file): static;
+    public function load(bool $overrideDefinitions = false, string ...$file): static;
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
@@ -45,11 +45,12 @@ interface DefinitionsLoaderInterface
      * @param non-empty-string       $namespace                 PSR-4 namespace preifx
      * @param non-empty-string       $src                       source directory
      * @param list<non-empty-string> $excludeFilesRegExpPattern exclude files matching by regexp pattern
+     * @param list<non-empty-string> $availableExtensions       available files extensions, empty list available all files
      *
      * @return $this
      *
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
-    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = []): static;
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static;
 }

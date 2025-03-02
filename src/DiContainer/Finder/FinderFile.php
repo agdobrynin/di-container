@@ -11,11 +11,12 @@ final class FinderFile implements FinderFileInterface
     /**
      * @param non-empty-string       $src                  source directory
      * @param list<non-empty-string> $excludeRegExpPattern exclude matching by regexp pattern
+     * @param list<non-empty-string> $extensions           files extensions, empty list available all files
      */
     public function __construct(
         private string $src,
         private array $excludeRegExpPattern = [],
-        private ?string $extension = 'php',
+        private array $extensions = ['php'],
     ) {
         $fixedSrc = \realpath($src);
 
@@ -31,10 +32,11 @@ final class FinderFile implements FinderFileInterface
             );
         }
 
+        $this->extensions = \array_map('\strtolower', $extensions); // @phpstan-ignore assign.propertyType
         $this->src = $fixedSrc;
     }
 
-    public function getFiles(): iterable
+    public function getFiles(): \Iterator
     {
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator(
@@ -48,7 +50,7 @@ final class FinderFile implements FinderFileInterface
             if (($realPath = $entry->getRealPath())
                 && !$this->isExcluded($realPath)
                 && $entry->isFile()
-                && (null === $this->extension || $this->extension === \strtolower($entry->getExtension()))
+                && ([] === $this->extensions || \in_array(\strtolower($entry->getExtension()), $this->extensions, true))
             ) {
                 yield $entry; // @phpstan-ignore generator.keyType
             }

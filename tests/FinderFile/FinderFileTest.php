@@ -56,7 +56,7 @@ class FinderFileTest extends TestCase
 
     public function testFilesWithTxtExtension(): void
     {
-        $files = (new FinderFile(__DIR__.'/Fixtures', extension: 'txt'))->getFiles();
+        $files = (new FinderFile(__DIR__.'/Fixtures', extensions: ['txt']))->getFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current()->getRealPath());
@@ -70,9 +70,24 @@ class FinderFileTest extends TestCase
         $this->assertFalse($files->valid());
     }
 
+    public function testFilesWithTxtAndDocExtension(): void
+    {
+        $files = (new FinderFile(__DIR__.'/Fixtures', extensions: ['txt', 'doc']))->getFiles();
+
+        $this->assertEquals(
+            [
+                'document.doc',
+                'SomeFile.txt',
+                'Doc.txt',
+            ],
+            \array_diff(\array_map(static fn (\SplFileInfo $f) => $f->getFilename(), \iterator_to_array($files)), [
+            ]),
+        );
+    }
+
     public function testFilesWithIgnoreExtension(): void
     {
-        $files = (new FinderFile(__DIR__.'/Fixtures', extension: null))->getFiles();
+        $files = (new FinderFile(__DIR__.'/Fixtures', extensions: []))->getFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current()->getRealPath());
@@ -80,6 +95,10 @@ class FinderFileTest extends TestCase
         $files->next();
 
         $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current()->getRealPath());
+
+        $files->next();
+
+        $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/document.doc', $files->current()->getRealPath());
 
         $files->next();
 
@@ -102,8 +121,8 @@ class FinderFileTest extends TestCase
     {
         $files = (new FinderFile(
             src: __DIR__.'/Fixtures',
-            excludeRegExpPattern: ['~/Fixtures.+SubSubDirectory/~', '~/FileOne.php$~'],
-            extension: null
+            excludeRegExpPattern: ['~/Fixtures.+SubSubDirectory/~', '~/FileOne\.php$~', '~\.doc$~'],
+            extensions: []
         )
         )->getFiles();
 
