@@ -60,4 +60,15 @@ class DefinitionsLoaderImportTest extends TestCase
         // import
         $this->assertEquals('foo-bar-baz', $container->get(Fixtures\Import\Two::class)->getToken());
     }
+
+    public function testImportAlreadyExists(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('is already imported');
+
+        $loader->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import');
+    }
 }

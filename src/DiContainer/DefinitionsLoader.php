@@ -106,7 +106,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static
     {
-        $this->import[$namespace] ??= $this->import[$namespace] = (new FinderClass(
+        if (isset($this->import[$namespace])) {
+            throw new \InvalidArgumentException(
+                \sprintf('Namespace "%s" is already imported.', $namespace)
+            );
+        }
+
+        $this->import[$namespace] = (new FinderClass(
             $namespace,
             (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
         ));
