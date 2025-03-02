@@ -15,6 +15,8 @@ interface DefinitionsLoaderInterface
     /**
      * Load definitions from configuration files.
      *
+     * Method trow exception if container identifier already is registered.
+     *
      * @param non-empty-string ...$file
      *
      * @return $this
@@ -22,7 +24,19 @@ interface DefinitionsLoaderInterface
      * @throws \InvalidArgumentException
      * @throws ContainerExceptionInterface
      */
-    public function load(bool $overrideDefinitions = false, string ...$file): static;
+    public function load(string ...$file): static;
+
+    /**
+     * Load definitions from configuration files and override exist definitions.
+     *
+     * @param non-empty-string ...$file
+     *
+     * @return $this
+     *
+     * @throws \InvalidArgumentException
+     * @throws ContainerExceptionInterface
+     */
+    public function loadOverride(string ...$file): static;
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions

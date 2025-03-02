@@ -31,22 +31,16 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions = new \ArrayIterator();
     }
 
-    public function load(bool $overrideDefinitions = false, string ...$file): static
+    public function load(string ...$file): static
     {
-        foreach ($file as $srcFile) {
-            if (!\file_exists($srcFile) || !\is_readable($srcFile)) {
-                throw new \InvalidArgumentException(\sprintf('The file "%s" does not exist or is not readable', $srcFile));
-            }
+        $this->loadFormFile(false, ...$file);
 
-            try {
-                $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
-                unset($srcFile);
-            } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
-                throw new ContainerException(
-                    \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
-                );
-            }
-        }
+        return $this;
+    }
+
+    public function loadOverride(string ...$file): static
+    {
+        $this->loadFormFile(true, ...$file);
 
         return $this;
     }
@@ -133,5 +127,23 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 \sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile)
             )
         };
+    }
+
+    private function loadFormFile(bool $overrideDefinitions, string ...$file): void
+    {
+        foreach ($file as $srcFile) {
+            if (!\file_exists($srcFile) || !\is_readable($srcFile)) {
+                throw new \InvalidArgumentException(\sprintf('The file "%s" does not exist or is not readable', $srcFile));
+            }
+
+            try {
+                $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
+                unset($srcFile);
+            } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
+                throw new ContainerException(
+                    \sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
+                );
+            }
+        }
     }
 }

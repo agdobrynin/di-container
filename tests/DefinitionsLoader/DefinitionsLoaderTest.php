@@ -32,7 +32,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('return not valid format');
 
-        (new DefinitionsLoader())->load(file: $file);
+        (new DefinitionsLoader())->load($file);
     }
 
     public function testFileNotFound(): void
@@ -40,7 +40,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('does not exist or is not readable');
 
-        (new DefinitionsLoader())->load(file: 'f.php');
+        (new DefinitionsLoader())->load('f.php');
     }
 
     public function dataProvideDefinitionException(): \Generator
@@ -58,7 +58,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessageMatches('~Invalid definition in file "'.$file.'".+Definition identifier must be a non-empty string~');
 
-        (new DefinitionsLoader())->load(file: $file);
+        (new DefinitionsLoader())->load($file);
     }
 
     public function testOverrideDefinitionException(): void
@@ -66,18 +66,16 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('already registered');
 
-        (new DefinitionsLoader())->load(file: __DIR__.'/Fixtures/config1.php')
-            ->load(file: __DIR__.'/Fixtures/config2.php')
-        ;
+        (new DefinitionsLoader())->load(
+            __DIR__.'/Fixtures/config1.php',
+            __DIR__.'/Fixtures/config2.php'
+        );
     }
 
     public function testOverrideDefinition(): void
     {
-        $loader = (new DefinitionsLoader())->load(
-            true,
-            __DIR__.'/Fixtures/config1.php',
-            __DIR__.'/Fixtures/config2.php',
-        );
+        $loader = (new DefinitionsLoader())->load(__DIR__.'/Fixtures/config1.php');
+        $loader->loadOverride(__DIR__.'/Fixtures/config2.php');
 
         $this->assertEquals('ok2', $loader->definitions()->current()());
     }

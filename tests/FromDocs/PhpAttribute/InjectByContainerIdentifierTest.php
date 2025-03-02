@@ -38,7 +38,7 @@ class InjectByContainerIdentifierTest extends TestCase
     public function testByContainerIdentifier(string $env, string $fileName): void
     {
         $definitions = (new DefinitionsLoader())
-            ->load(...[false, ...\glob(__DIR__.'/Fixtures/config/*.php')])
+            ->load(...\glob(__DIR__.'/Fixtures/config/*.php'))
         ;
 
         $container = (new DiContainerFactory())->make($definitions->definitions());

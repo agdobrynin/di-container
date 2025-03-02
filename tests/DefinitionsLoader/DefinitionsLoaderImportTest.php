@@ -27,7 +27,7 @@ class DefinitionsLoaderImportTest extends TestCase
     {
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
-            ->load(file: __DIR__.'/Fixtures/Import/services.php')
+            ->load(__DIR__.'/Fixtures/Import/services.php')
         ;
 
         $container = (new DiContainerFactory())->make($loader->definitions());
@@ -64,7 +64,8 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportAlreadyExists(): void
     {
         $loader = (new DefinitionsLoader())
-            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import');
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
+        ;
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('is already imported');
