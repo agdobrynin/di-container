@@ -111,7 +111,7 @@ trait AttributeReaderTrait
             if ('' === $inject->getIdentifier()
                 // PHPStan is not smart enough to parse such a condition.
                 // @phpstan-ignore-next-line
-                && null !== ($strType = $this->getParameterType($reflectionParameter))) {
+                && null !== ($strType = $this->getParameterType($reflectionParameter, $this->getContainer()))) {
                 $inject = new Inject($strType);
             }
 

@@ -119,7 +119,7 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                $strType = $this->getParameterType($parameter);
+                $strType = $this->getParameterType($parameter, $this->getContainer());
 
                 $dependencies[] = null === $strType
                     ? $this->getContainer()->get($parameter->getName())

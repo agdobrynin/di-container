@@ -38,9 +38,7 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
-    use AttributeReaderTrait {
-        setContainer as private;
-    }
+    use AttributeReaderTrait;
     use DefinitionIdentifierTrait;
 
     /**

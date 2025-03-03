@@ -15,14 +15,12 @@ use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClassInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
     use DefinitionIdentifierTrait;
     use AttributeReaderTrait;
-    use DiContainerTrait;
 
     private \ArrayIterator $configDefinitions;
 
