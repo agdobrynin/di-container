@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use Kaspi\DiContainer\DefinitionsLoader;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 
 /**
  * @covers \Kaspi\DiContainer\DefinitionsLoader
@@ -33,7 +32,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('return not valid format');
 
-        (new DefinitionsLoader())->load(false, $file);
+        (new DefinitionsLoader())->load($file);
     }
 
     public function testFileNotFound(): void
@@ -41,7 +40,7 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('does not exist or is not readable');
 
-        (new DefinitionsLoader())->load(false, 'f.php');
+        (new DefinitionsLoader())->load('f.php');
     }
 
     public function dataProvideDefinitionException(): \Generator
@@ -56,30 +55,27 @@ class DefinitionsLoaderTest extends TestCase
      */
     public function testDefinitionException(string $file): void
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Invalid definition in file "'.$file.'".');
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('~Invalid definition in file "'.$file.'".+Definition identifier must be a non-empty string~');
 
-        (new DefinitionsLoader())->load(false, $file);
+        (new DefinitionsLoader())->load($file);
     }
 
     public function testOverrideDefinitionException(): void
     {
-        $this->expectException(ContainerAlreadyRegisteredException::class);
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('already registered');
 
         (new DefinitionsLoader())->load(
-            false,
             __DIR__.'/Fixtures/config1.php',
-            __DIR__.'/Fixtures/config2.php',
+            __DIR__.'/Fixtures/config2.php'
         );
     }
 
     public function testOverrideDefinition(): void
     {
-        $loader = (new DefinitionsLoader())->load(
-            true,
-            __DIR__.'/Fixtures/config1.php',
-            __DIR__.'/Fixtures/config2.php',
-        );
+        $loader = (new DefinitionsLoader())->load(__DIR__.'/Fixtures/config1.php');
+        $loader->loadOverride(__DIR__.'/Fixtures/config2.php');
 
         $this->assertEquals('ok2', $loader->definitions()->current()());
     }
