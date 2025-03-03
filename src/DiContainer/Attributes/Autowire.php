@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer\Attributes;
 
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 
-#[\Attribute(\Attribute::TARGET_CLASS)]
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
 final class Autowire implements DiAttributeServiceInterface
 {
     public function __construct(private string $id = '', private bool $isSingleton = false) {}
