@@ -51,6 +51,8 @@ interface DefinitionsLoaderInterface
 
     /**
      * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function definitions(): iterable;
 

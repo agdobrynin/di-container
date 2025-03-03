@@ -189,6 +189,9 @@ trait AttributeReaderTrait
         }
     }
 
+    /**
+     * @return \Generator<Autowire>
+     */
     private function getAutowireAttribute(\ReflectionClass $reflectionClass): \Generator
     {
         $attributes = $reflectionClass->getAttributes(Autowire::class);

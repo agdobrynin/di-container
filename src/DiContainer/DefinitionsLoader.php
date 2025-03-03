@@ -12,12 +12,17 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderClassInterface;
+use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
+use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Psr\Container\ContainerExceptionInterface;
 
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
     use DefinitionIdentifierTrait;
+    use AttributeReaderTrait;
+    use DiContainerTrait;
 
     private \ArrayIterator $configDefinitions;
 
@@ -88,9 +93,30 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 $iterator->append($finderClass->find());
             }
 
+            /** @var class-string $class */
             foreach ($iterator as $class) {
-                if (\is_string($class) && !$this->configDefinitions->offsetExists($class)) {
-                    yield $class => \Kaspi\DiContainer\diAutowire($class); // @phpstan-ignore generator.keyType, argument.type
+                $reflectionClass = new \ReflectionClass($class);
+
+                if ($this->isAutowireExclude($reflectionClass)) {
+                    continue;
+                }
+
+                foreach ($this->getAutowireAttribute($reflectionClass) as $attribute) {
+                    $identifier = '' !== $attribute->getIdentifier()
+                        ? $attribute->getIdentifier()
+                        : $class;
+
+                    if ($this->configDefinitions->offsetExists($identifier)) {
+                        throw new DiDefinitionException(
+                            \sprintf('Cannot automatically set definition for container identifier "%s". Configure class "%s" via php attribute or via config file.', $identifier, $class)
+                        );
+                    }
+
+                    yield $identifier => \Kaspi\DiContainer\diAutowire($class, $attribute->isSingleton());
+                }
+
+                if (!$this->configDefinitions->offsetExists($class)) {
+                    yield $class => \Kaspi\DiContainer\diAutowire($class);
                 }
             }
         }
