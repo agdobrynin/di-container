@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -18,6 +20,11 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
+
+    public function isAutowireExclude(\ReflectionClass $reflectionClass): bool
+    {
+        return !([] === $reflectionClass->getAttributes(AutowireExclude::class));
+    }
 
     private function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
@@ -179,6 +186,37 @@ trait AttributeReaderTrait
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
+        }
+    }
+
+    private function getAutowireAttribute(\ReflectionClass $reflectionClass): \Generator
+    {
+        if ($this->isAutowireExclude($reflectionClass)) {
+            throw new AutowireAttributeException(
+                \sprintf('Cannot use together attributes #[%s] and #[%s].', Autowire::class, AutowireExclude::class)
+            );
+        }
+
+        $attributes = $reflectionClass->getAttributes(Autowire::class);
+        $containerIdentifier = '';
+
+        foreach ($attributes as $attribute) {
+            /** @var Autowire $autowire */
+            $autowire = $attribute->newInstance();
+
+            if ('' === $autowire->getIdentifier()) {
+                $autowire = new Autowire($reflectionClass->name, $autowire->isSingleton());
+            }
+
+            if ($containerIdentifier === $autowire->getIdentifier()) {
+                throw new AutowireAttributeException(
+                    \sprintf('Container identifier "%s" already defined by php attribute for class "%s".', $autowire->getIdentifier(), $reflectionClass->name),
+                );
+            }
+
+            $containerIdentifier = $autowire->getIdentifier();
+
+            yield $autowire;
         }
     }
 
