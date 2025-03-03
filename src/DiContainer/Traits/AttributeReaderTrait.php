@@ -219,7 +219,7 @@ trait AttributeReaderTrait
 
             if ($containerIdentifier === $autowire->getIdentifier()) {
                 throw new AutowireAttributeException(
-                    \sprintf('Container identifier "%s" already defined by php attribute for class "%s".', $autowire->getIdentifier(), $reflectionClass->name),
+                    \sprintf('Container identifier "%s" already defined by #[%s] for class "%s".', $autowire->getIdentifier(), Autowire::class, $reflectionClass->name),
                 );
             }
 
