@@ -191,6 +191,12 @@ trait AttributeReaderTrait
 
     private function getAutowireAttribute(\ReflectionClass $reflectionClass): \Generator
     {
+        $attributes = $reflectionClass->getAttributes(Autowire::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
         if ($this->isAutowireExclude($reflectionClass)) {
             throw new AutowireAttributeException(
                 \sprintf('Cannot use together attributes #[%s] and #[%s].', Autowire::class, AutowireExclude::class)
