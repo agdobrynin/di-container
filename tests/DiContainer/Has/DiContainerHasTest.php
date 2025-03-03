@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Tests\DiContainer\Has\Fixtures\ClassWithSimpleDependency;
+use Tests\DiContainer\Has\Fixtures\ExcludeClass;
 use Tests\DiContainer\Has\Fixtures\MyInterface;
 
 /**
@@ -78,5 +79,14 @@ class DiContainerHasTest extends TestCase
     public function testHasContainerInterfaceWithoutZeroConfig(): void
     {
         $this->assertTrue((new DiContainer())->has(ContainerInterface::class));
+    }
+
+    public function testAutowireExcludeAttributeWithZeroConfig(): void
+    {
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true,
+        );
+
+        $this->assertFalse((new DiContainer(config: $config))->has(ExcludeClass::class));
     }
 }
