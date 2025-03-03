@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Autowire
+ *
+ * @internal
  */
 class AutowireTest extends TestCase
 {
