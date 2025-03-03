@@ -66,6 +66,10 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
         $namespace = '';
 
         foreach ($tokens as $index => $token) {
+            if ($token->is([\T_COMMENT, T_DOC_COMMENT, T_WHITESPACE])) {
+                continue;
+            }
+
             if ($token->is(\T_NAMESPACE)
                 && null !== ($nextToken = $tokens[$index + 2] ?? null)
                 && $nextToken->is([\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED])) {
