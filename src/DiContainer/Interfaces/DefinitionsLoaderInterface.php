@@ -23,6 +23,7 @@ interface DefinitionsLoaderInterface
      *
      * @throws \InvalidArgumentException
      * @throws ContainerExceptionInterface
+     * @throws ContainerAlreadyRegisteredExceptionInterface
      */
     public function load(string ...$file): static;
 
