@@ -6,7 +6,6 @@ namespace Tests\Traits\AttributeReader\Autowire;
 
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\FailClass;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\MultipleAutowire;

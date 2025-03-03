@@ -104,10 +104,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         return \array_key_exists($id, $this->definitions)
             || \array_key_exists($id, $this->resolved)
-            || (
-                $this->config?->isUseZeroConfigurationDefinition() // @phpstan-ignore booleanAnd.leftNotBoolean
-                && (\class_exists($id) || \interface_exists($id))
-            )
+            || $this->hasViaZeroConfigurationDefinition($id)
             || $this->isContainer($id);
     }
 
@@ -296,6 +293,19 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function isContainer(string $id): bool
     {
         return \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true);
+    }
+
+    protected function hasViaZeroConfigurationDefinition(string $id): bool
+    {
+        if (!$this->config?->isUseZeroConfigurationDefinition()) { // @phpstan-ignore booleanNot.exprNotBoolean
+            return false;
+        }
+
+        if (\class_exists($id)) {
+            return !$this->config->isUseAttribute() || !$this->isAutowireExclude(new \ReflectionClass($id));
+        }
+
+        return \interface_exists($id);
     }
 
     protected function checkCyclicalDependencyCall(string $id): void
