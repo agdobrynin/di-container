@@ -182,7 +182,7 @@ trait ParametersResolverTrait
                 ? $o($this->getContainer())
                 : $o;
 
-            if (true === ($argumentDefinition->isSingleton() ?? $this->singletonFromContainerConfig())) {
+            if (true === ($argumentDefinition->isSingleton() ?? $this->getContainer()->getConfig()?->isSingletonServiceDefault())) {
                 $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
 
                 if ($parameter->isVariadic()) {
