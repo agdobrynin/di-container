@@ -9,7 +9,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
-use Tests\Traits\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowireExclude;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\Main;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\MainFirstDiFactory;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\NoDiFactories;
@@ -51,14 +50,6 @@ class DiFactoryReaderTest extends TestCase
         $attribute = $this->reader->getDiFactoryAttribute(new \ReflectionClass(NoDiFactories::class));
 
         $this->assertNull($attribute);
-    }
-
-    public function testCannotUseTogetherDiFactoryAndAutowireExclude(): void
-    {
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use together attributes.+DiFactory.+AutowireExclude/');
-
-        $this->reader->getDiFactoryAttribute(new \ReflectionClass(ClassWithAttrsDiFactoryAndAutowireExclude::class));
     }
 
     public function testCannotUseTogetherDiFactoryAndAutowire(): void

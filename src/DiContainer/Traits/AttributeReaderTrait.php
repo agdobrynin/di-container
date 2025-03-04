@@ -32,12 +32,6 @@ trait AttributeReaderTrait
             return null;
         }
 
-        if ($this->isAutowireExclude($reflectionClass)) {
-            throw new AutowireAttributeException(
-                \sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', DiFactory::class, AutowireExclude::class, $reflectionClass->name)
-            );
-        }
-
         if ([] !== $reflectionClass->getAttributes(Autowire::class)) {
             throw new AutowireAttributeException(
                 \sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', DiFactory::class, Autowire::class, $reflectionClass->name)
@@ -56,12 +50,6 @@ trait AttributeReaderTrait
 
         if ([] === $attributes) {
             return;
-        }
-
-        if ($this->isAutowireExclude($reflectionClass)) {
-            throw new AutowireAttributeException(
-                \sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', Autowire::class, AutowireExclude::class, $reflectionClass->name)
-            );
         }
 
         if ([] !== $reflectionClass->getAttributes(DiFactory::class)) {

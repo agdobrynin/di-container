@@ -7,7 +7,6 @@ namespace Tests\Traits\AttributeReader\Autowire;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
-use Tests\Traits\AttributeReader\Autowire\Fixtures\ClassWithAttrsAutowireExcludeAndAutowire;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\ClassWithDiFactoryAndAutowire;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\MultipleAutowire;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\MultipleAutowireFail;
@@ -21,14 +20,6 @@ use Tests\Traits\AttributeReader\Autowire\Fixtures\MultipleAutowireFail;
 class AutowireTest extends TestCase
 {
     use AttributeReaderTrait;
-
-    public function testAutowireCannotUseWithAutowireExcludeAndAutowire(): void
-    {
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use together attributes.+Autowire.+AutowireExclude/');
-
-        $this->getAutowireAttribute(new \ReflectionClass(ClassWithAttrsAutowireExcludeAndAutowire::class))->valid();
-    }
 
     public function testAutowireCannotUseWithDiFactoryAndAutowire(): void
     {
