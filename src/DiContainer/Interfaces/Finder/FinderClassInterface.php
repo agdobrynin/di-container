@@ -10,7 +10,7 @@ namespace Kaspi\DiContainer\Interfaces\Finder;
 interface FinderClassInterface
 {
     /**
-     * Get classes and interfaces.
+     * Get Fully Qualified Class Names for classes and interfaces.
      *
      * @return \Iterator<non-negative-int, class-string>
      *

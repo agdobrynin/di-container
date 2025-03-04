@@ -74,18 +74,36 @@ final class FinderClass implements FinderClassInterface
                 continue;
             }
 
-            if ($token->is(\T_CLASS)
-                && null !== ($nextToken = $tokens[$index + 2] ?? null)
-                && \str_starts_with($namespace, $this->namespace)) {
-                $previousToken = $tokens[$index - 2] ?? null;
-
-                if ((null !== $previousToken && $previousToken->is(\T_ABSTRACT))
-                    || !\str_starts_with($namespace, $this->namespace)) {
-                    continue;
-                }
-
-                yield $keyOfClass++ => $namespace.($namespace ? '\\' : '').$nextToken->text; // @phpstan-ignore generator.valueType, ternary.condNotBoolean
+            if (\str_starts_with($namespace, $this->namespace)
+                && null !== ($f_q_c_n = $this->getFQCN($tokens, $token, $index, $namespace))) {
+                yield $keyOfClass++ => $f_q_c_n;
             }
         }
+    }
+
+    /**
+     * @param \PhpToken[] $tokens
+     *
+     * @return null|class-string
+     */
+    private function getFQCN(array $tokens, \PhpToken $token, int $index, string $namespace): ?string
+    {
+        if ($token->is(\T_CLASS)
+            && null !== ($nextToken = $tokens[$index + 2] ?? null)) {
+            $previousToken = $tokens[$index - 2] ?? null;
+
+            if (null !== $previousToken && $previousToken->is(\T_ABSTRACT)) {
+                return null;
+            }
+
+            return $namespace.($namespace ? '\\' : '').$nextToken->text; // @phpstan-ignore return.type, ternary.condNotBoolean
+        }
+
+        if ($token->is(\T_INTERFACE)
+            && null !== ($nextToken = $tokens[$index + 2] ?? null)) {
+            return $namespace.($namespace ? '\\' : '').$nextToken->text; // @phpstan-ignore return.type, ternary.condNotBoolean
+        }
+
+        return null;
     }
 }
