@@ -73,16 +73,16 @@ class FinderFileTest extends TestCase
     public function testFilesWithTxtAndDocExtension(): void
     {
         $files = (new FinderFile(__DIR__.'/Fixtures', extensions: ['txt', 'doc']))->getFiles();
+        $expect = [
+            'document.doc',
+            'SomeFile.txt',
+            'Doc.txt',
+        ];
 
-        $this->assertEquals(
-            [
-                'document.doc',
-                'SomeFile.txt',
-                'Doc.txt',
-            ],
-            \array_diff(\array_map(static fn (\SplFileInfo $f) => $f->getFilename(), \iterator_to_array($files)), [
-            ]),
-        );
+        $found = \array_map(static fn (\SplFileInfo $f) => $f->getFilename(), \iterator_to_array($files));
+
+        $this->assertCount(\count($expect), $found);
+        $this->assertSame($expect, $found);
     }
 
     public function testFilesWithIgnoreExtension(): void

@@ -84,16 +84,19 @@ class FinderClassTest extends TestCase
         foreach ($classes as $class) {
             $foundClasses[] = $class;
         }
+        $expect = [
+            TwoInOneOne::class,
+            TwoInOneTow::class,
+            Fixtures\Success\WithTokenInterface::class,
+            ManyNamespaces::class,
+            Fixtures\Success\SomeInterface::class,
+            Fixtures\Success\Others\GetTokenInterface::class,
+            Fixtures\Success\Others\ManyNamespaces::class,
+            One::class,
+            Fixtures\Success\QueueInterface::class,
+        ];
 
-        $this->assertEquals(
-            [],
-            \array_diff([
-                TwoInOneOne::class,
-                TwoInOneTow::class,
-                ManyNamespaces::class,
-                Fixtures\Success\Others\ManyNamespaces::class,
-                One::class,
-            ], $foundClasses)
-        );
+        $this->assertCount(\count($expect), $foundClasses);
+        $this->assertSame(\sort($expect), \sort($foundClasses));
     }
 }

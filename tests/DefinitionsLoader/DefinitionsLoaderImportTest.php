@@ -38,18 +38,16 @@ class DefinitionsLoaderImportTest extends TestCase
             $classesNames[] = $definition->getDefinition()->getName();
         }
 
-        $this->assertEquals(
-            [],
-            \array_diff(
-                $classesNames,
-                [
-                    Fixtures\Import\SubDirectory\One::class,
-                    Fixtures\Import\SubDirectory\Two::class,
-                    Fixtures\Import\One::class,
-                    Fixtures\Import\Two::class,
-                ]
-            )
-        );
+        $expect = [
+            Fixtures\Import\SubDirectory\One::class,
+            Fixtures\Import\SubDirectory\Two::class,
+            Fixtures\Import\One::class,
+            Fixtures\Import\Two::class,
+            Fixtures\Import\TokenInterface::class,
+        ];
+
+        $this->assertCount(\count($expect), $classesNames);
+        $this->assertSame(\sort($expect), \sort($classesNames));
 
         // manual config in Fixtures/Import/services.php
         $this->assertEquals('baz-bar-foo', $container->get(Fixtures\Import\SubDirectory\One::class)->getToken());
