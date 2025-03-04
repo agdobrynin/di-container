@@ -6,7 +6,7 @@ namespace Tests\DiContainer\ResolveByAutowire;
 
 use PHPUnit\Framework\TestCase;
 
-class ResolveByAutowireTest extends TestCase
-{
-
-}
+/**
+ * @internal
+ */
+class ResolveByAutowireTest extends TestCase {}

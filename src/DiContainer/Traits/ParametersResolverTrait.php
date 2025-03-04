@@ -55,6 +55,11 @@ trait ParametersResolverTrait
      */
     private array $resolvedArguments = [];
 
+    /**
+     * Default singleton for definitions.
+     */
+    private bool $singletonFromContainerConfig;
+
     abstract public function getContainer(): DiContainerInterface;
 
     /**
@@ -182,7 +187,7 @@ trait ParametersResolverTrait
                 ? $o($this->getContainer())
                 : $o;
 
-            if (true === $argumentDefinition->isSingleton()) {
+            if (true === ($argumentDefinition->isSingleton() ?? $this->singletonFromContainerConfig())) {
                 $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
 
                 if ($parameter->isVariadic()) {
@@ -315,5 +320,10 @@ trait ParametersResolverTrait
             \array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
             default => false,
         };
+    }
+
+    private function singletonFromContainerConfig(): bool
+    {
+        return $this->singletonFromContainerConfig ??= $this->getContainer()->getConfig()?->isSingletonServiceDefault() ?? false;
     }
 }
