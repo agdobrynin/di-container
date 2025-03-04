@@ -54,7 +54,7 @@ class ProxyClosureTest extends TestCase
 
     public function testIsSingletonDefault(): void
     {
-        $this->assertFalse((new ProxyClosure('ok'))->isSingleton());
+        $this->assertNull((new ProxyClosure('ok'))->isSingleton());
     }
 
     public function testIsSingletonTrue(): void

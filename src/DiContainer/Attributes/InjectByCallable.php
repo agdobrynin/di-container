@@ -13,7 +13,7 @@ final class InjectByCallable implements DiAttributeInterface
     /**
      * @param non-empty-string $callable
      */
-    public function __construct(private string $callable, private bool $isSingleton = false)
+    public function __construct(private string $callable, private ?bool $isSingleton = null)
     {
         if ('' === $callable || \str_contains($callable, ' ')) { // @phpstan-ignore identical.alwaysFalse
             throw new AutowireAttributeException(
@@ -22,16 +22,16 @@ final class InjectByCallable implements DiAttributeInterface
         }
     }
 
-    public function isSingleton(): bool
-    {
-        return $this->isSingleton;
-    }
-
     /**
      * @return non-empty-string
      */
     public function getIdentifier(): string
     {
         return $this->callable;
+    }
+
+    public function isSingleton(): ?bool
+    {
+        return $this->isSingleton;
     }
 }

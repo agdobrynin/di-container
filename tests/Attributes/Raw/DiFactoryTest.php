@@ -21,7 +21,7 @@ class DiFactoryTest extends TestCase
         $diFactory = new DiFactory(MyDiFactory::class);
 
         $this->assertEquals('Tests\Attributes\Raw\Fixtures\MyDiFactory', $diFactory->getIdentifier());
-        $this->assertFalse($diFactory->isSingleton());
+        $this->assertNull($diFactory->isSingleton());
     }
 
     public function testDiFactorySuccessWithUserValues(): void

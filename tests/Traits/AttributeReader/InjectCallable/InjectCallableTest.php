@@ -75,7 +75,7 @@ class InjectCallableTest extends TestCase
         $f = static fn (
             #[InjectByCallable('func1')]
             #[InjectByCallable('func2', isSingleton: true)]
-            #[InjectByCallable('func3')]
+            #[InjectByCallable('func3', isSingleton: false)]
             string ...$a
         ) => '';
         $p = new \ReflectionParameter($f, 0);
@@ -86,7 +86,7 @@ class InjectCallableTest extends TestCase
 
         $this->assertInstanceOf(InjectByCallable::class, $injects->current());
         $this->assertEquals('func1', $injects->current()->getIdentifier());
-        $this->assertFalse($injects->current()->isSingleton());
+        $this->assertNull($injects->current()->isSingleton());
 
         $injects->next();
 

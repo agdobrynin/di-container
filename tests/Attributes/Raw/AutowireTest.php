@@ -19,7 +19,7 @@ class AutowireTest extends TestCase
         $a = new Autowire();
 
         $this->assertEquals('', $a->getIdentifier());
-        $this->assertFalse($a->isSingleton());
+        $this->assertNull($a->isSingleton());
     }
 
     public function testAutowireDefinedArgs(): void
