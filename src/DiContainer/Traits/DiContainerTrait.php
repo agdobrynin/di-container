@@ -32,4 +32,12 @@ trait DiContainerTrait
 
         return $this->container;
     }
+
+    /**
+     * Default singleton for definitions.
+     */
+    private function singletonFromContainerConfig(): bool
+    {
+        return $this->getContainer()->getConfig()?->isSingletonServiceDefault() ?? false;
+    }
 }

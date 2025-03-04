@@ -55,11 +55,6 @@ trait ParametersResolverTrait
      */
     private array $resolvedArguments = [];
 
-    /**
-     * Default singleton for definitions.
-     */
-    private bool $singletonFromContainerConfig;
-
     abstract public function getContainer(): DiContainerInterface;
 
     /**
@@ -320,10 +315,5 @@ trait ParametersResolverTrait
             \array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
             default => false,
         };
-    }
-
-    private function singletonFromContainerConfig(): bool
-    {
-        return $this->singletonFromContainerConfig ??= $this->getContainer()->getConfig()?->isSingletonServiceDefault() ?? false;
     }
 }
