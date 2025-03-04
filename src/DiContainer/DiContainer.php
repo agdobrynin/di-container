@@ -267,6 +267,16 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 );
             }
 
+            // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
+            if ($this->config?->isUseAttribute()
+                && ($autowires = $this->getAutowireAttribute($reflectionClass))->valid()) {
+                foreach ($autowires as $autowire) {
+                    if ($autowire->getIdentifier() === $reflectionClass->name) {
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton());
+                    }
+                }
+            }
+
             return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->isSingletonDefault);
         }
 
