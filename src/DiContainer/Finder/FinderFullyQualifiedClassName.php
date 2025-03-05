@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Finder;
 
-use Kaspi\DiContainer\Interfaces\Finder\FinderClassInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
 
-final class FinderClass implements FinderClassInterface
+final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNameInterface
 {
     /**
      * @param non-empty-string                         $namespace PSR-4 namespace prefix
@@ -30,23 +30,23 @@ final class FinderClass implements FinderClassInterface
         }
     }
 
-    public function getClasses(): \Iterator
+    public function find(): \Iterator
     {
-        $keyOfClass = 0;
+        $key = 0;
 
         foreach ($this->files as $file) {
-            yield from $this->getClassesInFile($file, $keyOfClass);
+            yield from $this->findInFile($file, $key);
         }
     }
 
     /**
-     * @param non-negative-int $keyOfClass
+     * @param non-negative-int $key
      *
      * @return \Generator<non-negative-int, class-string>
      *
      * @throws \RuntimeException
      */
-    private function getClassesInFile(\SplFileInfo $file, int &$keyOfClass): \Generator
+    private function findInFile(\SplFileInfo $file, int &$key): \Generator
     {
         $f = $file->openFile('rb');
         $code = '';
@@ -75,33 +75,31 @@ final class FinderClass implements FinderClassInterface
             }
 
             if (\str_starts_with($namespace, $this->namespace)
-                && null !== ($f_q_c_n = $this->getFQCN($tokens, $token, $index, $namespace))) {
-                yield $keyOfClass++ => $f_q_c_n;
+                && null !== ($name = $this->getName($tokens, $token, $index))) {
+                yield $key++ => $namespace.($namespace ? '\\' : '').$name; // @phpstan-ignore ternary.condNotBoolean, generator.valueType
             }
         }
     }
 
     /**
      * @param \PhpToken[] $tokens
-     *
-     * @return null|class-string
      */
-    private function getFQCN(array $tokens, \PhpToken $token, int $index, string $namespace): ?string
+    private function getName(array $tokens, \PhpToken $token, int $currentIndex): ?string
     {
         if ($token->is(\T_CLASS)
-            && null !== ($nextToken = $tokens[$index + 2] ?? null)) {
-            $previousToken = $tokens[$index - 2] ?? null;
+            && null !== ($nextToken = $tokens[$currentIndex + 2] ?? null)) {
+            $previousToken = $tokens[$currentIndex - 2] ?? null;
 
             if (null !== $previousToken && $previousToken->is(\T_ABSTRACT)) {
                 return null;
             }
 
-            return $namespace.($namespace ? '\\' : '').$nextToken->text; // @phpstan-ignore return.type, ternary.condNotBoolean
+            return $nextToken->text;
         }
 
         if ($token->is(\T_INTERFACE)
-            && null !== ($nextToken = $tokens[$index + 2] ?? null)) {
-            return $namespace.($namespace ? '\\' : '').$nextToken->text; // @phpstan-ignore return.type, ternary.condNotBoolean
+            && null !== ($nextToken = $tokens[$currentIndex + 2] ?? null)) {
+            return $nextToken->text;
         }
 
         return null;

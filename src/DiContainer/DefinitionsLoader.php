@@ -7,11 +7,11 @@ namespace Kaspi\DiContainer;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Finder\FinderClass;
 use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderClassInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
 
@@ -22,7 +22,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private \ArrayIterator $configDefinitions;
 
     /**
-     * @var array<non-empty-string, FinderClassInterface>
+     * @var array<non-empty-string, FinderFullyQualifiedClassNameInterface>
      */
     private array $import;
 
@@ -85,7 +85,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $iterator = new \AppendIterator();
 
             foreach ($this->import as $finderClass) {
-                $iterator->append($finderClass->getClasses());
+                $iterator->append($finderClass->find());
             }
 
             foreach ($iterator as $class) {
@@ -106,7 +106,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        $this->import[$namespace] = (new FinderClass(
+        $this->import[$namespace] = (new FinderFullyQualifiedClassName(
             $namespace,
             (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
         ));

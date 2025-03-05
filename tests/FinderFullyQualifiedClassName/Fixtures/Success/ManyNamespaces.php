@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\FinderClass\Fixtures\Success {
+namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success {
     interface WithTokenInterface
     {
         public function token(): string;
@@ -19,7 +19,7 @@ namespace Tests\FinderClass\Fixtures\Success {
     }
 }
 
-namespace Tests\FinderClass\Fixtures\Success\Others {
+namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success\Others {
     interface GetTokenInterface
     {
         public function token(): string;

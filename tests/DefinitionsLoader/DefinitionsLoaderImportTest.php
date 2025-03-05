@@ -15,8 +15,8 @@ use PHPUnit\Framework\TestCase;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\Finder\FinderClass
  * @covers \Kaspi\DiContainer\Finder\FinderFile
+ * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal

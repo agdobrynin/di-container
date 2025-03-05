@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\FinderClass\Fixtures\Success;
+namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success;
 
 trait MyTrait
 {
