@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
@@ -84,36 +86,20 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions->rewind();
 
         if (isset($this->import)) {
-            $iterator = new \AppendIterator();
-
             foreach ($this->import as $finderClass) {
-                $iterator->append($finderClass->find());
-            }
-
-            /** @var class-string $class */
-            foreach ($iterator as $class) {
-                $reflectionClass = new \ReflectionClass($class);
-
-                if ($this->isAutowireExclude($reflectionClass)) {
-                    continue;
-                }
-
-                foreach ($this->getAutowireAttribute($reflectionClass) as $attribute) {
-                    $identifier = '' !== $attribute->getIdentifier()
-                        ? $attribute->getIdentifier()
-                        : $class;
-
-                    if ($this->configDefinitions->offsetExists($identifier)) {
-                        throw new DiDefinitionException(
-                            \sprintf('Cannot automatically set definition for container identifier "%s". Configure class "%s" via php attribute or via config file.', $identifier, $class)
-                        );
+                /** @var class-string $classOrInterface */
+                foreach ($finderClass->find() as $classOrInterface) {
+                    if ($this->configDefinitions->offsetExists($classOrInterface)) {
+                        continue;
                     }
 
-                    yield $identifier => \Kaspi\DiContainer\diAutowire($class, $attribute->isSingleton());
-                }
+                    $reflectionClass = new \ReflectionClass($classOrInterface);
 
-                if (!$this->configDefinitions->offsetExists($class)) {
-                    yield $class => \Kaspi\DiContainer\diAutowire($class);
+                    if ($this->isAutowireExclude($reflectionClass)) {
+                        continue;
+                    }
+
+                    yield from $this->makeDefinitionFromReflectionClass($reflectionClass);
                 }
             }
         }
@@ -135,6 +121,33 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         ));
 
         return $this;
+    }
+
+    /**
+     * @return \Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionInterface>
+     */
+    private function makeDefinitionFromReflectionClass(\ReflectionClass $reflectionClass): \Generator
+    {
+        if ($reflectionClass->isInterface()
+            && null !== ($service = $this->getServiceAttribute($reflectionClass))) {
+            yield $reflectionClass->name => \Kaspi\DiContainer\diGet($service->getIdentifier());
+        }
+
+        foreach ($this->getAutowireAttribute($reflectionClass) as $attribute) {
+            $identifier = '' !== $attribute->getIdentifier()
+                ? $attribute->getIdentifier()
+                : $reflectionClass->name;
+
+            if ($this->configDefinitions->offsetExists($identifier)) {
+                throw new DiDefinitionException(
+                    \sprintf('Cannot automatically set definition for container identifier "%s". Configure class "%s" via php attribute or via config file.', $identifier, $reflectionClass->name)
+                );
+            }
+
+            yield $identifier => new DiDefinitionAutowire($reflectionClass, $attribute->isSingleton());
+        }
+
+        yield $reflectionClass->name => new DiDefinitionAutowire($reflectionClass);
     }
 
     private function getIteratorFromFile(string $srcFile): \Generator
