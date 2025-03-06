@@ -51,12 +51,18 @@
 #[AutowireExclude]
 ```
 У атрибута нет аргументов.
+
+> [!WARNING]
+> Если `#[AutowireExclude]` применен к классу или интерфейсу то
+> любые другие атрибуты будут игнорированы.
+
 ```php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\AutowireExclude;
+use Kaspi\DiContainer\Attributes\Autowire;use Kaspi\DiContainer\Attributes\AutowireExclude;
 
 #[AutowireExclude]
+#[Autowire(isSingleton: true)]
 class SomeService {}
 ```
 ```php
