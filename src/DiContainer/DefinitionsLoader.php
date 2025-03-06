@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
@@ -89,10 +91,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             foreach ($this->import as $finderClass) {
                 /** @var class-string $classOrInterface */
                 foreach ($finderClass->find() as $classOrInterface) {
-                    if ($this->configDefinitions->offsetExists($classOrInterface)) {
-                        continue;
-                    }
-
                     $reflectionClass = new \ReflectionClass($classOrInterface);
 
                     if ($this->isAutowireExclude($reflectionClass)) {
@@ -135,6 +133,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 return [];
             }
 
+            if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
+                throw new DiDefinitionException(
+                    \sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
+                );
+            }
+
             return [$reflectionClass->name => \Kaspi\DiContainer\diGet($service->getIdentifier())];
         }
 
@@ -144,7 +148,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             foreach ($autowireAttrs as $autowireAttr) {
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
                     throw new DiDefinitionException(
-                        \sprintf('Cannot automatically set definition for container identifier "%s". Configure class "%s" via php attribute or via K file.', $autowireAttr->getIdentifier(), $reflectionClass->name)
+                        \sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
                     );
                 }
 
@@ -154,7 +158,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
-        return [$reflectionClass->name => new DiDefinitionAutowire($reflectionClass)];
+        return $this->configDefinitions->offsetExists($reflectionClass->name)
+            ? []
+            : [$reflectionClass->name => new DiDefinitionAutowire($reflectionClass)];
     }
 
     private function getIteratorFromFile(string $srcFile): \Generator
