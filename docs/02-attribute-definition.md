@@ -25,7 +25,7 @@
 - **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода класса.
 
 ## Autowire
-Применятся к классу для конфигурирования сервиса.
+Применятся к классу для конфигурирования сервиса в контейнере.
 
 ```php
 #[Autowire(string $id = '', ?bool $isSingleton = null)]
@@ -43,6 +43,43 @@
 > применен несколько раз для класса. Аргумент `$id`
 > у каждого атрибута должен быть уникальным иначе будет выброшено
 > исключение при разрешении класса контейнером.
+
+
+```php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Autowire;use Kaspi\DiContainer\Attributes\AutowireExclude;
+
+#[Autowire(isSingleton: true)] // $id будет присвоен 'App\Services\SomeService'
+#[Autowire('services.some_service')]
+class SomeService {}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use App\Services\SomeService;
+
+// по умолчанию сервисы создаются каждый раз заново
+$container = (new DiContainerFactory())->make();
+
+var_dump($container->has(SomeService::class)); // true
+
+$service = $container->get(SomeService::class);
+
+var_dump(
+    \spl_object_id($service) === \spl_object_id($container->get(SomeService::class))
+); // true
+
+// получить сервис по идентификатору контейнера
+// сконфигурированным через атрибут #[Autowire]
+var_dump($container->has('services.some_service')); // true
+
+// аргумент $isSingleton у атрибута будет заполнена
+// из настройки контейнера, по умолчанию $isSingleton = true.
+var_dump(
+    \spl_object_id($container->get('services.some_service')) === \spl_object_id($container->get('services.some_service')))
+); // false 
+
+```
 
 ## AutowireExclude
 Применятся к классу или интерфейсу для исключения разрешения зависимости контейнером.
