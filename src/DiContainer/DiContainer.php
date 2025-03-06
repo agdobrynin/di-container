@@ -311,11 +311,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return false;
         }
 
-        if (\class_exists($id)) {
+        if (\class_exists($id) || \interface_exists($id)) {
             return !$this->config->isUseAttribute() || !$this->isAutowireExclude(new \ReflectionClass($id));
         }
 
-        return \interface_exists($id);
+        return false;
     }
 
     protected function checkCyclicalDependencyCall(string $id): void
