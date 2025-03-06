@@ -25,9 +25,48 @@
 - **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода класса.
 
 ## Autowire
+Применятся к классу для конфигурирования сервиса.
+
+```php
+#[Autowire(string $id = '', ?bool $isSingleton = null)]
+```
+Аргумент:
+- `$id` – определение идентификатора контейнера для класса (_container identifier_).
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+
+> [!NOTE]
+> Если в аргументе `$id` указана пустая строка то идентификатор контейнера будет
+> подставлен как полное имя класса с учётом пространства имён – **fully qualified class name**.
+
+> [!TIP]
+> Атрибут `#[Autowire]` имеет признак `repetable` и может быть
+> применен несколько раз для класса. Аргумент `$id`
+> у каждого атрибута должен быть уникальным иначе будет выброшено
+> исключение при разрешении класса контейнером.
 
 ## AutowireExclude
+Применятся к классу или интерфейсу для исключения разрешения зависимости контейнером.
 
+```php
+#[AutowireExclude]
+```
+У атрибута нет аргументов.
+```php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\AutowireExclude;
+
+#[AutowireExclude]
+class SomeService {}
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+use App\Services\SomeService;
+
+$container = (new DiContainerFactory())->make();
+
+var_dump($container->has(SomeService::class)); // false
+```
 ## Inject
 
 Применяется к аргументам конструктора класса, метода или функции.
