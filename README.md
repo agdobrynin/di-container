@@ -17,6 +17,7 @@ composer require kaspi/di-container
 ## Быстрый старт
 Определения классов:
 ```php
+// src/Services/Envelope.php
 namespace App\Services;
 
 // Класс для создания сообщения
@@ -31,6 +32,10 @@ class Envelope {
         return $this;
     }
 }
+```
+```php
+// src/Services/Mail.php
+namespace App\Services;
 
 // Сервис отправки почты
 class Mail {
@@ -46,7 +51,9 @@ class Mail {
 }
 ```
 ```php
+// src/Models/Post.php
 namespace App\Models;
+
 // Модель данных — пост в блоге.
 class Post {
     public string $title;
@@ -55,6 +62,7 @@ class Post {
 ```
 
 ```php
+// src/Controllers/PostController.php
 namespace App\Controllers;
 
 use App\Services\Mail;
@@ -74,17 +82,21 @@ class  PostController {
 ```
 
 ```php
+use App\Controllers\PostController;
+use App\Models\Post;
+use Kaspi\DiContainer\DiContainerFactory;
+
 // Создать контейнер.
-$container = (new Kaspi\DiContainer\DiContainerFactory())->make();
+$container = (new DiContainerFactory())->make();
 
 // more code...
 
 //Заполняем модель данными.
-$post = new App\Models\Post();
+$post = new Post();
 $post->title = 'Publication about DiContainer';
 
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
-$postController = $container->get(App\Controllers\PostController::class);
+$postController = $container->get(PostController::class);
 $postController->send($post);
 ```
 > [!NOTE]
@@ -104,14 +116,17 @@ $post = new App\Controllers\PostController(
 
 Другой вариант для примера выше можно использовать для получения результата `DiContainer::call()`:
 ```php
-$post = new App\Models\Post();
+use App\Controllers\PostController;
+use App\Models\Post;
+
+$post = new Post();
 $post->title = 'Publication about DiContainer';
 
 // ...
 
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
 $container->call(
-    definition: [App\Controllers\PostController::class, 'send'],
+    definition: [PostController::class, 'send'],
     arguments: ['post' => $post]
 );
 
@@ -126,7 +141,7 @@ $container->call(
 
 Для конфигурирования контейнера используется класс
 `Kaspi\DiContainer\DiContainerConfig::class`
-который имплементируют интерфейс
+который реализует интерфейс
 `Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
 
 ```php
@@ -138,56 +153,76 @@ $diConfig = new DiContainerConfig(
     // и может быть запрошен через автозагрузку (например через composer),
     // то объявлять каждое определение необязательно.
     useZeroConfigurationDefinition: true,
-    // Использовать Php-атрибуты для объявления определений контейнера.
+    // Использовать Php-атрибуты для конфигурирования зависимостей контейнера.
     useAttribute: true,
-    // Сервис (объект) создавать как одиночку (singleton pattern).
+    // Возвращать всегда одни и тот же объект (singleton pattern).
     isSingletonServiceDefault: false,
 );
 // передать настройки в контейнер
 $container = new DiContainer(config: $diConfig);
 ```
-Или использовать фабрику с настроенными по умолчанию параметрами:
+#### DiContainerFactory.
+Можно использовать фабрику для создания контейнера
+с настроенными по умолчанию параметрами:
 ```php
 use Kaspi\DiContainer\DiContainerFactory;
 
-$container = (new DiContainerFactory())->make(definitions: []);
+$container = (new DiContainerFactory())->make();
 ```
-
+**Конструктор фабрики**:
+```php
+DiContainerFactory::__construct(
+    ?Kaspi\DiContainer\Interfaces\DiContainerConfigInterface $config = null
+)
+```
 > [!TIP]
-> При попытке разрешить зависимость через метод `get` или аргумент конструктора, или метода:
-> - `$container->get(Psr\Container\ContainerInterface::class);`
-> - `$container->get(Kaspi\DiContainer\DiContainer::class);`
-> - `$container->get(Kaspi\DiContainer\Interfaces\DiContainerInterface::class);`
+> Можно передать другую конфигурацию контейнера в фабрику.
+
+**Зарегистрировать сконфигурированные определения (_сервисы_) в контейнере**:
+```php
+DiContainerFactory::make(
+    iterable $definitions = []
+): \Kaspi\DiContainer\Interfaces\DiContainerInterface
+```
+---
+> [!NOTE]
+> Некоторые интерфейсы или классы всегда возвращают текущий контейнер зависимостей.
+> При разрешении зависимости для интерфейсов и классов:
+> - `Psr\Container\ContainerInterface::class`
+> - `Kaspi\DiContainer\Interfaces\DiContainerInterface::class`
+> - `Kaspi\DiContainer\DiContainer::class`
 > 
 > будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
-
-```php
-use Kaspi\DiContainer\DiContainerFactory;
-
-function testFunc(\Psr\Container\ContainerInterface $c) {
-    return $c;
-}
-
-$container = (new DiContainerFactory())->make();
-$container->call('testFunc') instanceof DiContainer; // true
-```
-```php
-use Kaspi\DiContainer\DiContainerFactory;
-use Psr\Container\ContainerInterface;
-
-class TestClass {
-    public function __construct(
-        public ContainerInterface $container
-    ) {}
-}
-
-$container = (new DiContainerFactory())->make();
-$container->get(TestClass::class)->container instanceof DiContainer; // true
-```
+>
+> ```php
+> use Kaspi\DiContainer\DiContainerFactory;
+>
+> function testFunc(\Psr\Container\ContainerInterface $c) {
+>     return $c;
+> }
+>
+> $container = (new DiContainerFactory())->make();
+>
+> var_dump($container->call('testFunc') instanceof DiContainer); // true
+> ```
+> ```php
+> use Kaspi\DiContainer\DiContainerFactory;
+> use Psr\Container\ContainerInterface;
+>
+> class TestClass {
+>     public function __construct(
+>         public ContainerInterface $container
+>     ) {}
+> }
+>
+> $container = (new DiContainerFactory())->make();
+>
+> var_dump($container->get(TestClass::class)->container instanceof DiContainer); // true
+> ```
 
 ### 📁 DefinitionsLoader
-Собирает все определения для контейнера зависимостей из разных конфигурационных файлов
-(_dependency definitions_). Так же доступен "импорт" классов в контейнер из директорий.
+Собирает определения для контейнера зависимостей из разных конфигурационных файлов
+(_dependency definitions_), и выполняет "импорт" классов из директорий.
 
 Подробное описание использования [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
 

@@ -1,16 +1,25 @@
 # 🐘 DiContainer с конфигурированием в стиле php определений
 
-Получение существующего класса и разрешение параметров в конструкторе:
+Получение существующего класса и разрешение параметров в конструкторе.
 
+Класс где необходимо разрешить зависимость `$pdo` в конструкторе
+с помощью контейнера:
 ```php
-// Определения для DiContainer как array
-use Kaspi\DiContainer\{DiContainer, DiContainerConfig};
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+// src/Classes/MyClass.php
+namespace App\Classes;
+
+class MyClass {
+    public function __construct(public \PDO $pdo) {}
+}
+```
+Конфигурационный файл для контейнера:
+```php
+// config/services.php
 use function Kaspi\DiContainer\diAutowire;
 
-$definitions = [
-    // хэлпер функция для объявления тип зависимости
-    diAutowire(
+return static function (): \Generator {
+    // хэлпер функция для объявления зависимости
+    yield diAutowire(
         // получить класс \PDO 
         definition: \PDO::class,
         // всегда возвращать тот же объект
@@ -22,28 +31,31 @@ $definitions = [
             )
             // Вызвать метод "setAttribute" и предать параметры в него
             ->setup('setAttribute', \PDO::ATTR_CASE, \PDO::CASE_UPPER),
-];
 
+};
+```
+Создание контейнера зависимостей:
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainer, DiContainerConfig};
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+
+// загрузка определений контейнера из конфигурационного файла.
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
+
+// конфигурирование контейнера.
 $config = new DiContainerConfig();
-$container = new DiContainer(definitions: $definitions, config: $config);
-```
-> [!TIP]
-> Для создания настроенного контейнера можно использовать фабрику с конфигураций по умолчанию:
-> ```php
-> $container = (new DiContainerFactory())->make($definitions);
-> ```
 
-```php
-// Объявление класса
-namespace App;
+// получение готового контейнера зависимостей.
+$container = new DiContainer(
+    definitions: $definitions,
+    config: $config
+);
 
-class MyClass {
-    public function __construct(public \PDO $pdo) {}
-}
-```
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-$myClass = $container->get(App\MyClass::class); // $pdo->dsn === 'sqlite:/tmp/my.db' 
+// Получение данных из контейнера с автоматическим разрешением зависимостей
+$myClass = $container->get(App\Classes\MyClass::class); // $pdo->dsn === 'sqlite:/tmp/my.db' 
+
 $myClass->pdo->query('...');
 
 // получать один и тот же объект PDO::class
@@ -62,6 +74,13 @@ var_dump(
 > $service = new App\MyClass($pdo);
 > $service->pdo->query('...') // готовый сервис для использования
 > ```
+
+> [!TIP]
+> Для создания настроенного контейнера
+> можно [использовать фабрику `DiContainerFactory`](https://github.com/agdobrynin/di-container/blob/main/README.md#dicontainerfactory).
+
+> [!TIP]
+> `DefinitionsLoader` – [загрузчик определений в контейнер из конфигурационных файлов](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
 
 > [!TIP]
 > Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/01-01-pdo.php)
@@ -83,7 +102,8 @@ var_dump(
 Можно добавлять любые простые определения в виде массивов, строк или любых простых php типов.
 
 ```php
-$definitions =  [
+// config/values.php
+return [
     'logger.name' => 'payment',
     'logger.file' => '/var/log/payment.log',
     'feedback.show-recipient' => false,
@@ -92,8 +112,11 @@ $definitions =  [
         'boss@my-company.inc',
     ],
 ];
-
-$container = (new DiContainerFactory())->make($definitions);
+```
+```php
+$container = (new DiContainerFactory())->make(
+    require __DIR__.'/config/values.php'
+);
 
 $container->get('logger.name'); // 'payment'
 $container->get('logger.file'); // '/var/log/payment.log'
@@ -120,8 +143,8 @@ use function \Kaspi\DiContainer\diAutowire;
 diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAutowireInterface
 ```
 Аргументы:
-- `$definition` - имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
-- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект.
+- `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
 > Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionSetupInterface`.
@@ -151,14 +174,14 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 setup(string $method, mixed ...$argument)
 ``` 
 > [!TIP]
-> Для аргументов не объявленных через `setup` контейнер попопытается разрешить засисимости самостоятельно.
+> Для аргументов в методе `$method` не объявленных через `setup` контейнер по попытается разрешить зависимости автоматически.
 
 Можно указывать именованные аргументы:
 ```php
 diAutowire(...)->setup('classMethod', var1: 'value 1', var2: 'value 2')
 // $object->classMethod(string $var1, string $var2)
 ```
-если в методе нет параметров, то аргументы указывать не нужно
+Если в методе нет параметров или они могут быть разрешены автоматически, то аргументы указывать не нужно:
 ```php
    diAutowire(...)
        ->bindArguments(...)
@@ -239,8 +262,8 @@ use function \Kaspi\DiContainer\diCallable;
 diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 Аргументы:
-- `$definition` - значение которое `DiContainer` может преобразовать в [callable тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
-- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
+- `$definition` – значение которое `DiContainer` может преобразовать в [callable тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
 > Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`
@@ -270,12 +293,15 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 ##### Идентификатор контейнера.
 При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
 
-Пример:
+**Пример.**
+
+Объявление класса:
 ```php
-// объявление класса
+// src/Services/ServiceOne.php
 namespace App\Services;
 
 class ServiceOne {
+
     public function __construct(private string $apiKey, private bool $debug) {}
 
     public static function makeForTest(string $apiKey): self {
@@ -284,42 +310,75 @@ class ServiceOne {
     // some methods here
 }
 ```
+Файл конфигурации `config/api_keys.php`:
 ```php
-use \Kaspi\DiContainer\DiContainerFactory;
-use function \Kaspi\DiContainer\diCallable;
+// config/api_keys.php
+return [
+    'api_key.other' => 'other_value_api_key',    
+];
+```
+Файл конфигурации `config/services.php`:
+```php
+// config/services.php
+use function \Kaspi\DiContainer\{diCallable, diGet};
 
-$definitions = [
-    'services.one' => diCallable(
-        definition: static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key', false),
+require static function (): \Generator {
+
+    yield 'services.one' => diCallable(
+        definition: static fn () => new App\Services\ServiceOne(apiKey: 'value_api_key', false),
         isSingleton: true,
-    ),
+    );
 
-    'services.two' => diCallable(
+    yield 'services.two' => diCallable(
         definition: [App\Services\ServiceOne::class, 'makeForTest'],
         isSingleton: false, 
     )
-        ->bindArguments('my-other-api-key'),
-];
+        // Получить значение аргумента для ServiceOne::makeForTest()
+        // по ссылке на другой идентификатор контейнера.
+        ->bindArguments(
+            apiKey: diGet('api_key.other')
+        );
 
-$container = (new DiContainerFactory())->make($definitions);
+};
+```
+> [!TIP]
+> Поддерживаемые типы для хэлпер фцнкции `diCallable` описаны
+> [в разделе о методе `DiContainer::call`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
+
+Разрешение зависимостей через контейнер:
+```php
+use \Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$loader = (new DefinitionsLoader())
+    ->load(
+        __DIR__.'/config/api_keys.php',
+        __DIR__.'/config/services.php',
+    );
+
+$container = (new DiContainerFactory())
+    ->make(
+        $loader->definitions()
+    );
 
 // ...
 
 var_dump($container->get('services.one') instanceof App\Services\ServiceOne); // true
 var_dump($container->get('services.two') instanceof App\Services\ServiceOne); // true
 ```
+> [!NOTE]
+> Для сервиса `'services.one'` значение в свойстве `App\Services\ServiceOne::$apiKey`
+> будет `'value_api_key'`.
+> Для сервиса `'services.two'` значение в свойстве `App\Services\ServiceOne::$apiKey`
+> будет `'other_value_api_key'`.
 
-> [!TIP]
-> Поддерживаемые типы описаны 
-> [в разделе о методе `DiContainer::call`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы) 
 
 > [!TIP]
 > Так же доступно объявление через callback функцию которое будет корректно:
 > ```php
-> // для примера выше
-> $definitions = [
->   'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'my-api-key', debug: false),
-> ];
+> // для примера из config/services.php
+> // ...
+>   yield 'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'value_api_key', debug: false),
+> // ....
 > ```
 
 > [!TIP]
@@ -339,14 +398,16 @@ diGet(string $containerIdentifier)
 
 > У хэлпер функции нет дополнительных методов.
 
-Пример с указанием на идентификатор контейнера:
+**Пример с указанием на идентификатор контейнера.**
 ```php
+// config/services.php
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 
-$definitions = [
-    'services.env-dsn' => diCallable(
+return static function (): \Generator {
+
+    yield 'services.env-dsn' => diCallable(
         definition: static function () {
             return match (getenv('APP_ENV')) {
                 'prod' => 'sqlite:/databases/my-app/app.db',
@@ -355,77 +416,17 @@ $definitions = [
             };
         },
         isSingleton: true
-    ),
+    );
 
     // ...
 
-    diAutowire(\PDO::class)
-        ->bindArguments(dsn: diGet('services.env-dsn')), // ссылка на определение
-];
+    yield diAutowire(\PDO::class)
+        // получить значение для аргумента
+        // через ссылку на идентификатор контейнера
+        ->bindArguments(dsn: diGet('services.env-dsn'));
+  
+};
 ```
-Пример с указанием на php класс:
-```php
-namespace App;
-
-use Kaspi\DiContainer\Attributes\Inject;
-
-class One {}
-
-class Two {}
-
-class ServiceOne {
- 
-    public function __construct(
-        private One $dependency,
-        private array $values,
-    ) {}
-
-}
-
-class ServiceTwo {
- 
-    public function __construct(
-        private Two $dependency,
-        private array $values,
-    ) {}
-
-}
-```
-```php
-use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\{diAutowire, diGet};
-
-$container = (new DiContainerFactory())->make([
-
-    'params.values' => ['One value', 'Two value'];
-    
-    // Singleton определение
-    diAutowire(App\One::class, isSingleton: true),
-    
-    // Singleton определение
-    diAutowire(App\Two::class, isSingleton: true),
-    
-    diAutowire(App\ServiceOne::class)
-        ->bindArguments(
-            dependency: diGet(App\One::class),
-            values: diGet('params.values') 
-        ),
-        
-    diAutowire(App\ServiceTwo::class)
-        ->bindArguments(
-            dependency: diGet(App\Two::class),
-            values: diGet('params.values') 
-        ),
-]);
-
-$container->get(App\Service::class);
-```
-> [!NOTE]
-> При получении сервиса `App\ServiceOne::class` в аргументе `App\ServiceOne::$dependency`
-> содержится класс `App\One`, в `App\ServiceOne::$values` массив `['One value', 'Two value']`.
-> 
-> Для сервиса `App\ServiceTwo::class` в аргументе `App\ServiceTwo::$dependency`
-> содержится класс `App\Two`, в `App\ServiceTwo::$values` массив `['One value', 'Two value']`.
 
 #### diValue
 
@@ -453,36 +454,9 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 ##### Идентификатор контейнера.
 При объявлении зависимости через `diValue` необходимо указать в конфигурации идентификатор контейнера.
 
-##### Пример когда надо объявить аргумент «как есть»:
+**Пример использования тегов для хэлпер функции `diValue`.**
 ```php
-// класс
-class ParameterIterableVariadic
-{
-    private array $parameters;
-
-    public function __construct(iterable ...$parameter)
-    {
-        $this->parameters = $parameter;
-    }
-    //... some logic
-}
-```
-```php
-use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diValue;
-
-$definition = [
-    diAutowire(ParameterIterableVariadic::class)
-        ->bindArguments(
-            parameter: diValue(['ok'])
-        )
-];
-
-$container = (new DiContainerFactory())->make($definition);
-```
-Пример использования тегов для хэлпер функции `diValue`:
-```php
+// src/Notifications/CompanyStaff.php
 namespace App\Notifications;
 
 class CompanyStaff {
@@ -491,28 +465,48 @@ class CompanyStaff {
 }
 ```
 ```php
-use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs, diValue};
+// config/emails.php
+use function Kaspi\DiContainer\diValue;
 
-$definitions = [
-    'admin.email.tasks' => diValue('runner@company.inc')
-        ->bindTag('tags.system-emails'),
+return static function () {
 
-    'admin.email.report' => diValue('vasiliy@company.inc')
-        ->bindTag('tags.system-emails'),
+    yield 'admin.email.tasks' => diValue('runner@company.inc')
+        ->bindTag('tags.system-emails');
 
-    'admin.email.stock' => diValue('stock@company.inc')
-        ->bindTag('tags.system-emails'),
+    yield 'admin.email.report' => diValue('vasiliy@company.inc')
+        ->bindTag('tags.system-emails');
 
-    diAutowire(App\Notifications\CompanyStaff::class)
+    yield 'admin.email.stock' => diValue('stock@company.inc')
+        ->bindTag('tags.system-emails');
+
+};
+```
+```php
+// config/services.php
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): \Generator {
+
+    yield diAutowire(App\Notifications\CompanyStaff::class)
         ->bindArguments(
             emails: diTaggedAs(
                 tag: 'tags.system-emails',
                 isLazy: false,
                 useKeys: false // 🚩 не использовать строковые ключи коллекции
             )
-        ),
-];
+        );
+
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definitions = (new DefinitionsLoader())
+    ->load(
+        __DIR__.'/config/emails.php',
+        __DIR__.'/config/services.php',
+    )
+    ->definitions();
 
 $container = (new DiContainerFactory())->make($definition);
 
@@ -522,6 +516,58 @@ $notifyStaff = $container->get(App\Notifications\CompanyStaff::class);
 
 > [!TIP]
 > Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+
+##### Пример когда надо объявить аргумент «как есть»:
+```php
+// src/Classes/ParameterIterableVariadic.php
+namespace App\Classes;
+
+class ParameterIterableVariadic
+{
+    private array $parameters;
+
+    public function __construct(array ...$parameter)
+    {
+        $this->parameters = $parameter;
+    }
+    
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
+    
+}
+    //... some logic
+}
+```
+```php
+// config/services.php
+use function Kaspi\DiContainer\{diAutowire, diValue};
+
+return static function (): \Generator {
+
+    yield diAutowire(App\Classes\ParameterIterableVariadic::class)
+        ->bindArguments(
+            diValue(['ok'])
+        );
+    
+};
+```
+> [!NOTE]
+> Так как аргумент `ParameterIterableVariadic::$parameter` массив и
+> вариативный требуется уточнить – передачать в аргумент одно значение.
+```php
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())
+    ->make(
+        require __DIR__.'/config/services.php'
+    );
+
+var_dump(
+    $container->get(App\Classes\ParameterIterableVariadic::class)->getParameters()
+); // array(0 => array(0 => 'ok'))
+```
 
 #### diProxyClosure
 
@@ -535,8 +581,8 @@ diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagAr
 ```
 Аргументы:
 
-- `$definition` - имя определения или идентификатора контейнера которое содержит сервис.
-- `$isSingleton` - используя паттерн singleton создавать каждый раз заново или единожды создав возвращать тот же объект
+- `$definition` – имя определения или идентификатора контейнера которое содержит сервис.
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
 > Функция `diProxyClosure` возвращает объект реализующий интерфейс `DiDefinitionTagArgumentInterface`
@@ -557,13 +603,25 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 
 Такое объявление сервиса пригодится для «тяжёлых» зависимостей,
 требующих длительного времени инициализации или ресурсоёмких вычислений.
-
 ```php
-// Класс с «тяжёлыми» зависимостями, много ресурсов на инициализацию.
+// src/Classes/HeavyDependency.php
+namespace App\Classes;
+
+/** 
+ * Класс с «тяжёлыми» зависимостями,
+ * много ресурсов на инициализацию.
+ */
 class HeavyDependency {
+ 
     public function __construct(...) {}
+ 
     public function doMake() {}
+
 }
+```
+```php
+// src/Classes/ClassWithHeavyDependency.php
+namespace App\Classes;
 
 class ClassWithHeavyDependency {
     /**
@@ -584,32 +642,39 @@ class ClassWithHeavyDependency {
 }
 ```
 ```php
-use Kaspi\DiContainer\DiContainerFactory;
+// config/services.php
+use App\Classes\{ClassWithHeavyDependency, HeavyDependency};
 use function Kaspi\DiContainer\diProxyClosure;
 
-$definition = [
-    diAutowire(ClassWithHeavyDependency::class)
+return static function(): \Generator {
+
+    yield diAutowire(ClassWithHeavyDependency::class)
         ->bindArguments(
             heavyDependency: diProxyClosure(HeavyDependency::class),
-        )
-];
+        );
+
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definition = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
 
 $container = (new DiContainerFactory())->make($definition);
 
-// ...
 
-// свойство ClassWithHeavyDependency::$heavyDependency
-// ещё не инициализировано.
-$classWithHeavyDep = $container->get(ClassWithHeavyDependency::class);
+$classWithHeavyDep = $container->get(App\Classes\ClassWithHeavyDependency::class);
 
-// Внутри метода инициализируется
-// свойство ClassWithHeavyDependency::$heavyDependency
-// через Closure вызов (callback функция) 
 $classWithHeavyDep->doHeavyDependency();
 ```
-При таком объявлении сервис `$heavyDependency` будет инициализирован
-только после обращения к свойству `ClassWithHeavyDependency::$heavyDependency`
-а не в момент разрешения зависимости `ClassWithHeavyDependency::class`.
+> [!NOTE]
+> При разрешении зависимости контейнера `App\Classes\ClassWithHeavyDependency::class`
+> свойство в классе `ClassWithHeavyDependency::$heavyDependency` ещё не инициализировано.
+> Инициализация произойдёт (_разрешение зависимости_) только
+> в момент обращения к этому свойству – в частности при вызове
+> метода `$classWithHeavyDependency->doHeavyDependency()`.
 
 > [!TIP]
 > Для подсказок IDE autocomplete можно использовать PhpDocBlock:
@@ -681,36 +746,52 @@ diTaggedAs(
 
 **Пример использования хэлпер функции diTaggedAs для аргумента:**
 ```php
-namespace App\Srv;
+// src/Services/RuleCollection.php
+namespace App\Services;
 
-final class MyClass {
+final class RuleCollection {
+
     public function __construct(private iterable $rules) {}
     // ...    
+
 }
 ```
 ```php
-use Kaspi\DiContainer\DiContainerFactor;
+// config/services.php
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
-$container = (new DiContainerFactory())->make([
-    diAutowire(App\Srv\MyClass::class)
+return static function (): \Generator {
+    yield diAutowire(App\Services\RuleCollection::class)
         ->bindArguments(
             rules: diTaggedAs('tags.lite-rules')
-        ),
+        );
 
-    diAutowire(App\Rules\RuleA::class)
-        ->bindTag('tags.lite-rules'),
+    yield diAutowire(App\Rules\RuleA::class)
+        ->bindTag('tags.lite-rules');
 
-    diAutowire(App\Rules\RuleB::class),
+    yield diAutowire(App\Rules\RuleB::class);
 
-    diAutowire(App\Rules\RuleC::class)
-        ->bindTag('tags.lite-rules', priority: 100),
-]);
-
-$myClass = $container->get(App\Srv\MyClass::class);
-// $myClass->rules содержит итерируемую коллекцию классов
-// отсортированные по 'priority' - RuleC, RuleA
+    yield diAutowire(App\Rules\RuleC::class)
+        ->bindTag('tags.lite-rules', priority: 100);
+};
 ```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactor};
+
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
+
+$container = (new DiContainerFactory())->make($definitions);
+
+$ruleCollection = $container->get(App\Services\RuleCollection::class);
+```
+> [!NOTE]
+> `$ruleCollection::$rules` содержит итерируемую коллекцию классов
+> отсортированные по `'priority'` - `App\Rules\RuleC`, `App\Rules\RuleA`.
+> Класс `App\Rules\RuleB` не попадает в коллекцию так как не отмечен
+> тегом `'tags.lite-rules'`.
+
 > [!TIP]
 > Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
@@ -744,10 +825,10 @@ $container->get(App\ServiceLocation::class)->locationCity; // Vice city
 ### Получение через функцию обратного вызова – `\Closure`:
 
 ```php
-// Объявление класса
+// src/Loggers/MyLogger.php
 use Psr\Log\LoggerInterface;
 
-namespace App;
+namespace App\Loggers;
 
 class MyLogger {
 
@@ -758,146 +839,209 @@ class MyLogger {
     }
 }
 ```
-
 ```php
-// Определения для DiContainer
-use Kaspi\DiContainer\DiContainerFactory;
+// config/values.php
+return [
+
+    'logger_file' => '/path/to/your.log',
+
+    'logger_name' => 'app-logger',
+
+];
+```
+```php
+// config/loggers.php
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
+
 use function Kaspi\DiContainer\diCallable;
 
-$simpleDefinitions = [
-    'logger_file' => '/path/to/your.log',
-    'logger_name' => 'app-logger',
-];
+return static function (): \Generator {
 
-// ... many definitions ...
-
-$interfaceDefinition = [
-    LoggerInterface::class => diCallable(
+    yield LoggerInterface::class => diCallable(
         definition: static function (ContainerInterface $c) {
             return (new Logger($c->get('logger_name')))
                 ->pushHandler(new StreamHandler($c->get('logger_file')));    
         },
         isSingleton: true
     )
-];
+
+};
+```
+```php
+// Определения для DiContainer
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/values.php')
+    ->load(__DIR__.'/config/loggers.php')
+    ->definitions();
 
 $container = (new DiContainerFactory())->make(
-    \array_merge($simpleDefinitions, $interfaceDefinition)
+    $definitions
 );
-```
 
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-$myClass = $container->get(App\MyLogger::class);
+$myClass = $container->get(App\Loggers\MyLogger::class);
 $myClass->logger()->debug('...');
 ```
+> [!NOTE]
+> Контейнер при разрешении зависимости `App\Loggers\MyLogger::$logger`
+> по типу аргумента `Psr\Log\LoggerInterface` будет искать такой же объявленный
+> идентификатор контейнера.
 
 ### Получение по интерфейсу через объявления в контейнере:
 
 ```php
-// Объявление классов
-namespace App;
+// src/Classes/ClassInterface.php
+namespace App\Classes;
 
-interface ClassInterface {}
+interface ClassInterface {
+
+    public function getFilePath(): string;
+
+}
+```
+```php
+// src/Classes/ClassFirst.php
+namespace App\Classes;
 
 class ClassFirst implements ClassInterface {
 
-    public function __construct(public string $file) {}
+    public function __construct(private string $file) {}
+
+    public function getFilePath(): string {
+        return $this->file;
+    }
+
 }
 ```
-
 ```php
-// Определения для DiContainer
-use App\{ClassFirst, ClassInterface};
-use Kaspi\DiContainer\DiContainerFactory;
+// config/services.php
+use App\Classes\{ClassInterface, ClassFirst};
 use function Kaspi\DiContainer\diAutowire;
 
-$definition = [
-    ClassInterface::class => diAutowire(ClassFirst::class)
+return static function (): \Generator {
+
+    yield ClassInterface::class => diAutowire(ClassFirst::class)
         // без указания именованного аргумента,
         // подставит для конструктора в параметр с индексом 0.
         ->bindArguments('/var/log/app.log')
-];
+
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definition = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
 
 $container = (new DiContainerFactory())->make($definition);
-```
 
-```php
 // Получение данных из контейнера с автоматическим связыванием зависимостей
-$myClass = $container->get(App\ClassInterface::class);
-print $myClass->file; // /var/log/app.log
+$class = $container->get(App\Classes\ClassInterface::class);
+
+print $class->getFilePath(); // /var/log/app.log
 ```
 #### Отдельное определение для класса и привязка интерфейса к реализации для примера выше:
 
 ```php
-// Определения для DiContainer - отдельно класс и реализации.
-use App\{ClassFirst, ClassInterface};
-use Kaspi\DiContainer\DiContainerFactory;
+// config/classes.php
+use App\Classes\ClassFirst;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): \Generator {
+
+    yield diAutowire(ClassFirst::class)
+        ->bindArguments(file: '/var/log/app.log')
+    
+};
+```
+```php
+// config/interfaces.php
+use App\Classes\{ClassFirst, ClassInterface};
 use function Kaspi\DiContainer\{diAutowire, diGet};
 
-$classesDefinitions = [
-    diAutowire(ClassFirst::class)
-        ->bindArguments(file: '/var/log/app.log')
-];
+return static function (): \Generator {
+    yield ClassInterface::class => diGet(ClassFirst::class),
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
 
-// ... many definitions ...
+$definitions = (new DefinitionsLoader())
+    ->load(
+        __DIR__.'/config/classes.php',
+        __DIR__.'/config/interfaces.php'
+    )
+    ->definitions();
 
-$interfacesDefinitions = [
-    ClassInterface::class => diGet(ClassFirst::class),
-];
+$container = (new DiContainerFactory())->make($definitions);
 
-$container = (new DiContainerFactory())->make(
-    \array_merge($classesDefinitions, $interfacesDefinitions)
-);
+$class = $container->get(App\Classes\ClassInterface::class);
+
+print $class->getFilePath(); // /var/log/app.log
 ```
 
 ## 🧙‍♂️ Разрешение зависимости в контейнере с помощью фабрики.
 
 > [!WARNING]
 > Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
-
 ```php
-// Объявления классов
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-use Psr\Container\ContainerInterface;
-
-namespace App;
+// src/Classes/MyClass.php
+namespace App\Classes;
 
 class  MyClass {
 
-    public function __construct(private Db $db) {}
+    public function __construct(private App\Databases\Db $db) {}
     // ...
 }
+```
+```php
+// src/Factories/FactoryMyClass.php
+namespace App\Factories;
 
-// ....
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+use Psr\Container\ContainerInterface;
+use App\Classes\MyClass;
 
 class FactoryMyClass implements DiFactoryInterface {
 
     public function __invoke(ContainerInterface $container): MyClass {
-        return new MyClass(new Db(...));
+
+        return new MyClass(
+            new App\Databases\Db(
+                params: ['table' => 'test', 'transaction' => true]
+            )
+        );
+
     }    
 }
 ```
-
 ```php
-// определения для контейнера
-use Kaspi\DiContainer\DiContainerFactory;
-use function \Kaspi\DiContainer\diAutowire;
+// src/config/services.php
+use function Kaspi\DiContainer\diAutowire;
 
-$definitions = [
-    App\MyClass::class => diAutowire(App\FactoryMyClass::class)
-];
+return static function (): \Generator {
+
+    yield App\Classes\MyClass::class => diAutowire(App\Factories\FactoryMyClass::class);
+
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
 
 $container = (new DiContainerFactory())->make($definitions);
-```
 
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-$container->get(App\MyClass::class); // instance of App\MyClass
+$container->get(App\Classes\MyClass::class);
 ```
+> [!NOTE]
+> Класс `App\Classes\MyClass` будет создан через вызов `App\Factories\FactoryMyClass::__invoke()`
 
 > [!TIP]
 > Для класса реализующего интерфейс `DiFactoryInterface` так же могут быть
@@ -907,15 +1051,33 @@ $container->get(App\MyClass::class); // instance of App\MyClass
 
 Если необходимо передать несколько аргументов для `variadic` параметра используя имя параметра
 то необходимо объявлять аргументы как массив `[]`.
-
 ```php
-// Объявления классов
+// src/Rules/RuleInterface.php
 namespace App\Rules;
 
 interface RuleInterface {}
+```
+```php
+// src/Rules/RuleA.php
+namespace App\Rules;
+
 class RuleA implements RuleInterface {}
+```
+```php
+// src/Rules/RuleB.php
+namespace App\Rules;
+
 class RuleB implements RuleInterface {}
+```
+```php
+// src/Rules/RuleC.php
+namespace App\Rules;
+
 class RuleC implements RuleInterface {}
+```
+```php
+// src/Rules/RuleGenerator.php
+namespace App\Rules;
 
 class RuleGenerator {
 
@@ -931,15 +1093,14 @@ class RuleGenerator {
 }
 ```
 ```php
-// определения для контейнера
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\DiContainerFactory;
+// config/services.php
 use function Kaspi\DiContainer\{diAutowire, diGet};
 
-$definition = [
-    'ruleC' => diAutowire(App\Rules\RuleC::class),
+return static function () {
 
-    diAutowire(App\Rules\RuleGenerator::class)
+    yield 'ruleC' => diAutowire(App\Rules\RuleC::class);
+
+    yield diAutowire(App\Rules\RuleGenerator::class)
         ->bindArguments(
             // имя параметра $inputRule в конструкторе
             inputRule:
@@ -949,27 +1110,39 @@ $definition = [
                     diGet('ruleC'), // <-- получение по ссылке
                 ], // <-- обернуть параметры в массив если их несколько.            
         )
-];
+};
+```
+```php
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
 
-$container = (new DiContainerFactory())->make($definition);
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
 
-// ... more code
+$container = (new DiContainerFactory())->make($definitions);
+
 
 $ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+
 assert($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+
 assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
 Если необходимо передать только один аргумент и использовать имя параметра, то объявление будет таким:
 ```php
-// для примера выше
-$definition = [
-    diAutowire(App\Rules\RuleGenerator::class)
+// для примера выше в файле config/services.php
+use function Kaspi\DiContainer\diAutowire;
+
+return static function(): \Generator {
+    yield diAutowire(App\Rules\RuleGenerator::class)
         ->bindArguments(
             // имя параметра $inputRule в конструкторе
             inputRule: diAutowire(App\Rules\RuleB::class),            
         )
-];
+};
 ```
 
 > [!TIP]
@@ -995,13 +1168,22 @@ $definition = [
 которое сообщит о необходимости уточнить тип для аргумента.
 
 ```php
-namespace App;
-
-use Kaspi\DiContainer\Attributes\Inject;
+// src/Classes/One.php
+namespace App\Classes;
 
 class One {}
+```
+```php
+// src/Classes/Two.php
+namespace App\Classes;
 
 class Two {}
+```
+```php
+// src/Services/Two.php
+namespace App\Services;
+
+use App\Classes\{One, Two};
 
 class Service {
  
@@ -1016,7 +1198,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 
 $container = (new DiContainerFactory())->make();
 
-$container->get(App\Service::class);
+$container->get(App\Services\Service::class);
 ```
 > [!WARNING]
 > Будет выброшено исключение `\Psr\Container\ContainerExceptionInterface`.
@@ -1025,35 +1207,47 @@ $container->get(App\Service::class);
 Для устранения ошибки необходимо конкретизировать тип для аргумента `$dependency`
 при конфигурировании контейнера:
 ```php
-use Kaspi\DiContainer\DiContainerFactory;
-use function Kaspi\DiContainer\{diAutowire, diGet};
+// config/services.php
+return static function (): \Generator {
+    
+    yield diAutowire(App\Services\Service::class)
+        ->bindArguments(
+            dependency: diGet(App\Classes\Two::class)
+        );
+  
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
 
-$container = (new DiContainerFactory())->make([
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
 
-    diAutowire(App\Service::class)
-        ->bindArguments(dependency: diGet(App\Two::class))
+$container = (new DiContainerFactory())->make($definitions);
 
-]);
-
-$container->get(App\Service::class);
+$container->get(App\Services\Service::class);
 ```
 > [!NOTE]
-> При получении сервиса `App\Service::class` в аргументе `App\Service::$dependency`
-> содержится класс `App\Two`
+> При получении сервиса `App\Services\Service::class` в аргументе `App\Services\Service::$dependency`
+> содержится класс `App\Classes\Two`
 
 ## Примеры использования для конфигурирования:
 
 ### Пример #1 
 
 Один класс как самостояние определение со своими аргументами, и как реализация интерфейса, но со своими аргументами
-
 ```php
-// объявления классов
-namespace App;
+// src/Classes/SumInterface.php
+namespace App\Classes;
 
 interface SumInterface {
     public function getInit(): int;
 }
+```
+```php
+// src/Classes/Sum.php
+namespace App\Classes;
 
 class Sum implements SumInterface {
 
@@ -1065,28 +1259,39 @@ class Sum implements SumInterface {
 }
 ```
 ```php
-// Определения контейнера
-use Kaspi\DiContainer\diDefinition;
-
+// config/services.php
 use function Kaspi\DiContainer\diAutowire;
 
-$definition = [
-    App\SumInterface::class => diAutowire(App\Sum::class)
-        ->bindArguments(init: 50),
+return static function (): \Generator {
 
-    diAutowire(App\Sum::class)
-        ->bindArguments(init: 10),
-];
+    yield App\SumInterface::class => diAutowire(App\Sum::class)
+        ->bindArguments(init: 50);
 
-$c = (new DiContainerFactory())->make($definition);
-// … вызова определения
-print $c->get(App\SumInterface::class)->getInit(); // 50
-print $c->get(App\Sum::class)->getInit(); // 10
+    yield diAutowire(App\Sum::class)
+        ->bindArguments(init: 10);
+
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
+
+$container = (new DiContainerFactory())->make($definitions);
+
+print $container->get(App\SumInterface::class)->getInit(); // 50
+
+print $container->get(App\Sum::class)->getInit(); // 10
 ```
 
 ### Пример #2
 Создание объекта без сохранения результата в контейнере.
 ```php
+// src/Api/MyApiRequest.php
+namespace App\Api;
+
 class MyApiRequest {
 
     public function __construct(
@@ -1102,18 +1307,23 @@ class MyApiRequest {
 ```
 ```php
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())
+    // ...настройка контейнера...
+    ->make();
 
 /** @var MyApiRequest $apiV1 */
-$apiV1 = (new DiDefinitionAutowire(MyApiRequest::class))
+$apiV1 = (new DiDefinitionAutowire(App\Api\MyApiRequest::class))
     // SomeDependency $dependency будет разрешено контейнером
    ->bindArguments(endpoint: 'http://www.site.com/apiv1/')
   ->setContainer($container)
   ->invoke();
-  
+
 $apiV1->request(); // выполнить запрос
 
 /** @var MyApiRequest $apiV2 */
-$apiV2 = (new DiDefinitionAutowire(MyApiRequest::class))
+$apiV2 = (new DiDefinitionAutowire(App\Api\MyApiRequest::class))
     // SomeDependency $dependency будет разрешено контейнером
    ->bindArguments(endpoint: 'http://www.site.com/apiv2/')
   ->setContainer($container)
@@ -1122,26 +1332,39 @@ $apiV2 = (new DiDefinitionAutowire(MyApiRequest::class))
 
 $apiV2->request(); // выполнить запрос
 ```
-- Такой вызов работает как `DiContainer::get`, но будет каждый раз выполнять разрешение зависимостей и создание **нового объекта**;
+- Такой вызов работает как `DiContainer::get()`, но будет каждый раз выполнять разрешение зависимостей и создание **нового объекта**;
 - Подстановка аргументов для создания объекта так же может быть каждый раз разной;
 
 ### Пример #3
 Заполнение коллекции на основе callback функции.
 > [!NOTE]
 > Похожий функционал можно реализовать [через тегированные определения](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
-
 ```php
+// src/Rules/RuleInterface.php
 namespace App\Rules;
 
 interface RuleInterface {}
+```
+```php
+// src/Rules/RuleA.php
+namespace App\Rules;
 
 class RuleA implements RuleInterface {}
+```
+```php
+// src/Rules/RuleB.php
+namespace App\Rules;
 
 class RuleB implements RuleInterface {}
+```
+```php
+// src/Rules/RuleC.php
+namespace App\Rules;
 
 class RuleC implements RuleInterface {}
 ```
 ```php
+// src/Services/IterableArg.php
 namespace App\Services;
 
 use App\Rules\RuleInterface;
@@ -1155,98 +1378,73 @@ class IterableArg
 }
 ```
 ```php
+// config/services.php
 use App\Rules\{RuleA, RuleB, RuleC}; 
 use App\Services\IterableArg;
-use Kaspi\DiContainer\DiContainerFactory;
+use function Kaspi\DiContainer\{diAutowire, diGet};
 
-$definitions = [
-    'services.rule-list' => static fn (RuleA $a, RuleB $b, RuleC $c) => \func_get_args(),
+return static function (): \Generator {
+
+    yield 'services.rule-list' => static fn (RuleA $a, RuleB $b, RuleC $c) => \func_get_args();
     
     // ... many definitions ...
     
-    diAutowire(IterableArg::class)
+    yield diAutowire(IterableArg::class)
         ->bindArguments(
             // в параметр $rules передать сервис по ссылке
             rules: diGet('services.rule-list')
-        ),
-];
+        );
+    
+};
+```
+```php
+use Kaspi\DiContainer\DiContainerFactory;
 
+$container = (new DiContainerFactory())->make(
+    require __DIR__.'/config/services.php'
+);
 
-$container = (new DiContainerFactory())->make($definitions);
-
-$class = $container->get(IterableArg::class);
+$class = $container->get(App\Services\IterableArg::class);
 ```
 > [!TIP]
 > Если требуется чтобы сервис `services.rule-list` был объявлен как `isSingleton`
 > необходимо использовать хэлпер функцию `diCallable`
 > ```php
-> $definitions = [
->   'services.rule-list' => diCallable(
+> // config/services.php
+> use App\Rules\{RuleA, RuleB, RuleC};
+> use function Kaspi\DiContainer\diCallable;
+>
+> return static function (): \Generator {
+>
+>   yield 'services.rule-list' => diCallable(
 >       definition: static fn (RuleA $a, RuleB $b, RuleC $c) => \func_get_args(),
 >       isSingleton: true
->   ),
-> ];
+>   );
+>
+>  };
 > ```
 
 ### Пример #4
 Использование дополнительной настройки сервиса через сеттер-методы (_setter methods_):
 ```php
-namespace App\Rules;
+// config/services.php
+use function Kaspi\DiContainer\diAutowire;
 
-interface RuleInterface {}
+return static function(): \Generator {
 
-class RuleA implements RuleInterface {}
+    yield 'priority_queue.get_data' => diAutowire(\SplPriorityQueue::class)
+        ->setup('setExtractFlags', \SplPriorityQueue::EXTR_DATA);
 
-class RuleB implements RuleInterface {}
-
-class RuleC implements RuleInterface {}
+};
 ```
 ```php
-namespace App\Services;
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
 
-use App\Rules\RuleInterface;
-
-class OtherClass {}
-
-class Rules
-{
-    /**
-     * @param RuleInterface[] $rules
-     */
-    private $rules;
-
-    public function addRule(OtherClass $other, RuleInterface $rule): static {
-        $this->rules[] = $rule;
-        
-        return $this;
-    }
-    
-    /**
-     * @return RuleInterface[]
-     */
-    public function getRules(): array {
-        return $this->rules;
-    }
-}
-```
-```php
-use App\Rules\{RuleA, RuleB, RuleC};
-use App\Services\{Rules, OtherClass};
-use Kaspi\DiContainer\{diAutowire, diGet, DiContainerFactory};
-
-$definitions = [
-    'services.other' => diAutowire(OtherClass::class),
-    diAutowire(Rules::class)
-        // использую именованный аргумент для передачи в метод
-        // параметр $other в методе будет заполнен через механизм autowire
-        ->setup('addRule', rule: diGet(RuleA::class))
-        ->setup('addRule', rule: diGet(RuleB::class))
-        // передаю по индексу все аргументы в метод
-        ->setup('addRule', diGet('services.other'), diGet(RuleC::class))
-];
+$definitions = (new DefinitionsLoader())
+    ->load(...\glob(__DIR__.'/config/*.php'))
+    ->definitions();
 
 $container = (new DiContainerFactory())->make($definitions);
 
-$class = $container->get(Rules::class);
-$class->getRules(); // массив содержащий классы RuleA, RuleB, RuleC
+$priorityQueue = $container->get('priority_queue.get_data');
 ```

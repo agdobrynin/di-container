@@ -60,7 +60,7 @@ call(array|callable|string $definition, array $arguments = [])
 
 Абстрактный пример с контроллером:
 ```php
-// определение класса
+// src/Controllers/PostController.php
 namespace App\Controllers;
 
 use App\Service\ServiceOne;
@@ -78,13 +78,10 @@ class  PostController {
 
 ```php
 // определение контейнера
-namespace App;
-
 use Kaspi\DiContainer\DiContainerFactory;
 
 $container = (new DiContainerFactory())->make();
-```
-```php
+
 // вызов контроллера с автоматическим разрешением зависимостей и передачей аргументов
 print $container->call(
     ['App\Controllers\PostController', 'store'],
@@ -105,7 +102,8 @@ print $container->call(
 >    ->post(name: 'Ivan')
 > ```
 
-Абстрактный пример с `autowiring` и подстановкой дополнительных параметров при вызове функции:
+Абстрактный пример с автоматическим разрешением зависимостей
+и подстановкой дополнительных параметров при вызове функции:
 
 ```php
 use Kaspi\DiContainer\DiContainerFactory;
