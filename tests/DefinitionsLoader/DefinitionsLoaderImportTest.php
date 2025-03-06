@@ -77,6 +77,22 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->assertSame($classTwo, $container->get(Two::class));
     }
 
+    public function testImportWithoutUseAttributeForConfigureServices(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import', useAttribute: false)
+        ;
+
+        $container = (new DiContainerFactory(
+            new DiContainerConfig(
+                useZeroConfigurationDefinition: false,
+                useAttribute: false, // Not use php attribute
+            )
+        ))->make($loader->definitions());
+
+        $this->assertFalse($container->has(Fixtures\Import\TokenInterface::class));
+    }
+
     public function testImportAlreadyExists(): void
     {
         $loader = (new DefinitionsLoader())
