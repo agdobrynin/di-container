@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\NotFoundExceptionInterface;
 use Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\Two;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -80,17 +81,24 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithoutUseAttributeForConfigureServices(): void
     {
         $loader = (new DefinitionsLoader())
-            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import', useAttribute: false)
+            ->import(
+                'Tests\DefinitionsLoader\\',
+                __DIR__.'/Fixtures/Import',
+                useAttribute: false
+            )
         ;
 
         $container = (new DiContainerFactory(
-            new DiContainerConfig(
-                useZeroConfigurationDefinition: false,
-                useAttribute: false, // Not use php attribute
-            )
+            new DiContainerConfig(useAttribute: false),
         ))->make($loader->definitions());
 
-        $this->assertFalse($container->has(Fixtures\Import\TokenInterface::class));
+        // resolve by useZeroConfigurationDefinition=true
+        $this->assertTrue($container->has(Fixtures\Import\TokenInterface::class));
+
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Definition not found for identifier');
+        // import skip attribute Service on interface
+        $container->get(Fixtures\Import\TokenInterface::class);
     }
 
     public function testImportAlreadyExists(): void
