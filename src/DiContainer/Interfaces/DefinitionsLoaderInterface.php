@@ -63,7 +63,7 @@ interface DefinitionsLoaderInterface
      * @param non-empty-string       $src                       source directory
      * @param list<non-empty-string> $excludeFilesRegExpPattern exclude files matching by regexp pattern
      * @param list<non-empty-string> $availableExtensions       available files extensions, empty list available all files
-     * @param bool                   $useAttribute              use php attribute for configure services from import source directory
+     * @param bool                   $useAttribute              using php attributes for configure services from import source directory
      *
      * @return $this
      *
