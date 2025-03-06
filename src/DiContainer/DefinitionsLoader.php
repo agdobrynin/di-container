@@ -28,7 +28,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private \ArrayIterator $configDefinitions;
 
     /**
-     * @var array<non-empty-string, FinderFullyQualifiedClassNameInterface>
+     * @var array<non-empty-string, array{0: FinderFullyQualifiedClassNameInterface, 1: bool}>
      */
     private array $import;
 
@@ -88,16 +88,18 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions->rewind();
 
         if (isset($this->import)) {
-            foreach ($this->import as $finderClass) {
+            foreach ($this->import as $import) {
+                [$finderClass, $isUseAttribute] = $import;
+
                 /** @var class-string $classOrInterface */
                 foreach ($finderClass->find() as $classOrInterface) {
                     $reflectionClass = new \ReflectionClass($classOrInterface);
 
-                    if ($this->isAutowireExclude($reflectionClass)) {
+                    if ($isUseAttribute && $this->isAutowireExclude($reflectionClass)) {
                         continue;
                     }
 
-                    if ([] !== ($definitions = $this->makeDefinitionFromReflectionClass($reflectionClass))) {
+                    if ([] !== ($definitions = $this->makeDefinitionFromReflectionClass($reflectionClass, $isUseAttribute))) {
                         yield from $definitions;
                     }
                 }
@@ -107,7 +109,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
     {
         if (isset($this->import[$namespace])) {
             throw new \InvalidArgumentException(
@@ -115,10 +117,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        $this->import[$namespace] = (new FinderFullyQualifiedClassName(
-            $namespace,
-            (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
-        ));
+        $this->import[$namespace] = [
+            new FinderFullyQualifiedClassName(
+                $namespace,
+                (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
+            ),
+            $useAttribute,
+        ];
 
         return $this;
     }
@@ -126,10 +131,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @return array<non-empty-string, DiDefinitionAutowire|DiDefinitionInterface>
      */
-    private function makeDefinitionFromReflectionClass(\ReflectionClass $reflectionClass): array
+    private function makeDefinitionFromReflectionClass(\ReflectionClass $reflectionClass, bool $isUseAttribute): array
     {
         if ($reflectionClass->isInterface()) {
-            if (null === ($service = $this->getServiceAttribute($reflectionClass))) {
+            if (!$isUseAttribute || null === ($service = $this->getServiceAttribute($reflectionClass))) {
                 return [];
             }
 
@@ -142,7 +147,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return [$reflectionClass->name => \Kaspi\DiContainer\diGet($service->getIdentifier())];
         }
 
-        if (($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
+        if ($isUseAttribute && ($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
