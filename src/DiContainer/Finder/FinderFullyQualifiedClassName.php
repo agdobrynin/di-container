@@ -64,48 +64,55 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
         }
 
         $namespace = '';
+        $isNamespace = $isAbstract = $isClassOrInterface = false;
 
-        foreach ($tokens as $index => $token) {
-            if ($token->is([\T_COMMENT, \T_DOC_COMMENT, \T_WHITESPACE])) {
+        foreach ($tokens as $token) {
+            if ($token->isIgnorable()) {
                 continue;
             }
 
-            if ($token->is(\T_NAMESPACE)
-                && null !== ($nextToken = $tokens[$index + 2] ?? null)
-                && $nextToken->is([\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED])) {
-                $namespace = $nextToken->text;
+            if ($token->is(\T_NAMESPACE)) {
+                $isNamespace = true;
 
                 continue;
             }
 
-            if (\str_starts_with($namespace, $this->namespace)
-                && null !== ($name = $this->getName($tokens, $token, $index))) {
-                yield $key++ => $namespace.($namespace ? '\\' : '').$name; // @phpstan-ignore ternary.condNotBoolean, generator.valueType
-            }
-        }
-    }
+            if ($isNamespace && $token->is([\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED])) {
+                $namespace = $token->text;
+                $isNamespace = false;
 
-    /**
-     * @param \PhpToken[] $tokens
-     */
-    private function getName(array $tokens, \PhpToken $token, int $currentIndex): ?string
-    {
-        if ($token->is(\T_CLASS)
-            && null !== ($nextToken = $tokens[$currentIndex + 2] ?? null)) {
-            $previousToken = $tokens[$currentIndex - 2] ?? null;
-
-            if (null !== $previousToken && $previousToken->is(\T_ABSTRACT)) {
-                return null;
+                continue;
             }
 
-            return $nextToken->text;
-        }
+            if ($token->is(\T_ABSTRACT)) {
+                $isAbstract = true;
 
-        if ($token->is(\T_INTERFACE)
-            && null !== ($nextToken = $tokens[$currentIndex + 2] ?? null)) {
-            return $nextToken->text;
-        }
+                continue;
+            }
 
-        return null;
+            if ('}' === $token->text) {
+                $isAbstract = false;
+
+                continue;
+            }
+
+            if (!$isAbstract && $token->is([\T_CLASS, \T_INTERFACE])) {
+                $isClassOrInterface = true;
+
+                continue;
+            }
+
+            /*
+             * Class naming:
+             * @see https://www.php.net/manual/ru/language.oop5.basic.php#language.oop5.basic.class
+             */
+            if ($isClassOrInterface
+                && \str_starts_with($namespace, $this->namespace)
+                && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token->text)) {
+                $isAbstract = $isClassOrInterface = false;
+
+                yield $key++ => $namespace.($namespace ? '\\' : '').$token->text; // @phpstan-ignore ternary.condNotBoolean, generator.valueType
+            }
+        }
     }
 }

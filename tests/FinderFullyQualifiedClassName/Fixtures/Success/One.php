@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success;
+namespace // my comment here 😋
+Tests\FinderFullyQualifiedClassName\Fixtures\Success;
 
-final class One {}
+final class // sss
+# Other comment
+    /**
+     * Docblock
+     */
+One {}
