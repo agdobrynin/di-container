@@ -97,6 +97,8 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         ];
 
         $this->assertCount(\count($expect), $foundClasses);
-        $this->assertSame(\sort($expect), \sort($foundClasses));
+        \sort($expect);
+        \sort($foundClasses);
+        $this->assertEquals($expect, $foundClasses);
     }
 }

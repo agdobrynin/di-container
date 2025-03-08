@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success {
+namespace /* diff name space */ Tests\FinderFullyQualifiedClassName\Fixtures\Success {
     interface WithTokenInterface
     {
         public function token(): string;
@@ -19,12 +19,22 @@ namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success {
     }
 }
 
-namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success\Others {
+namespace
+# What ?
+Tests\FinderFullyQualifiedClassName\Fixtures\Success\Others {
     interface GetTokenInterface
     {
         public function token(): string;
     }
-    abstract class ManyNamespacesAbstract implements GetTokenInterface
+    abstract
+    /**
+     * Hmmm.
+     */
+        // hmm2
+    /**
+     * One.
+     */
+    class ManyNamespacesAbstract implements GetTokenInterface
     {
         private string $token;
 
@@ -32,6 +42,8 @@ namespace Tests\FinderFullyQualifiedClassName\Fixtures\Success\Others {
         {
             return $this->token;
         }
+
+        abstract function foo(): string;
     }
 
     final class ManyNamespaces

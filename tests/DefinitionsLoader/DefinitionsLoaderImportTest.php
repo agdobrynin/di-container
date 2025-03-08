@@ -58,7 +58,9 @@ class DefinitionsLoaderImportTest extends TestCase
         ];
 
         $this->assertCount(\count($expectContainerIds), $containerIds);
-        $this->assertSame(\sort($expectContainerIds), \sort($containerIds));
+        \sort($expectContainerIds);
+        \sort($containerIds);
+        $this->assertEquals($expectContainerIds, $containerIds);
 
         // manual config in Fixtures/Import/services.php
         $this->assertEquals('baz-bar-foo', $container->get(Fixtures\Import\SubDirectory\One::class)->getToken());
