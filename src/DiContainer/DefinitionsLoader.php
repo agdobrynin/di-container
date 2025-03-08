@@ -28,7 +28,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private \ArrayIterator $configDefinitions;
 
     /**
-     * @var array<non-empty-string, array{finder: FinderFullyQualifiedClassNameInterface, useAttribute: bool}>
+     * @var array<non-empty-string, array{finderClass: FinderFullyQualifiedClassNameInterface, useAttribute: bool}>
      */
     private array $import;
 
@@ -88,7 +88,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions->rewind();
 
         if (isset($this->import)) {
-            foreach ($this->import as ['finder' => $finderClass, 'useAttribute' => $useAttribute]) {
+            foreach ($this->import as ['finderClass' => $finderClass, 'useAttribute' => $useAttribute]) {
                 /** @var class-string $classOrInterface */
                 foreach ($finderClass->find() as $classOrInterface) {
                     $reflectionClass = new \ReflectionClass($classOrInterface);
@@ -115,13 +115,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        $this->import[$namespace] = [
-            'finder' => new FinderFullyQualifiedClassName(
-                $namespace,
-                (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
-            ),
-            'useAttribute' => $useAttribute,
-        ];
+        $finderClass = new FinderFullyQualifiedClassName(
+            $namespace,
+            (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
+        );
+
+        $this->import[$namespace] = ['finderClass' => $finderClass, 'useAttribute' => $useAttribute];
 
         return $this;
     }
