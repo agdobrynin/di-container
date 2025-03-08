@@ -88,16 +88,16 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions->rewind();
 
         if (isset($this->import)) {
-            foreach ($this->import as ['finder' => $finderClass, 'useAttribute' => $isUseAttribute]) {
+            foreach ($this->import as ['finder' => $finderClass, 'useAttribute' => $useAttribute]) {
                 /** @var class-string $classOrInterface */
                 foreach ($finderClass->find() as $classOrInterface) {
                     $reflectionClass = new \ReflectionClass($classOrInterface);
 
-                    if ($isUseAttribute && $this->isAutowireExclude($reflectionClass)) {
+                    if ($useAttribute && $this->isAutowireExclude($reflectionClass)) {
                         continue;
                     }
 
-                    if ([] !== ($definitions = $this->makeDefinitionFromReflectionClass($reflectionClass, $isUseAttribute))) {
+                    if ([] !== ($definitions = $this->makeDefinitionFromReflectionClass($reflectionClass, $useAttribute))) {
                         yield from $definitions;
                     }
                 }
@@ -129,10 +129,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @return array<class-string|non-empty-string, DiDefinitionConfigAutowireInterface|DiDefinitionInterface>
      */
-    private function makeDefinitionFromReflectionClass(\ReflectionClass $reflectionClass, bool $isUseAttribute): array
+    private function makeDefinitionFromReflectionClass(\ReflectionClass $reflectionClass, bool $useAttribute): array
     {
         if ($reflectionClass->isInterface()) {
-            if (!$isUseAttribute || null === ($service = $this->getServiceAttribute($reflectionClass))) {
+            if (!$useAttribute || null === ($service = $this->getServiceAttribute($reflectionClass))) {
                 return [];
             }
 
@@ -145,7 +145,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return [$reflectionClass->name => \Kaspi\DiContainer\diGet($service->getIdentifier())];
         }
 
-        if ($isUseAttribute && ($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
+        if ($useAttribute && ($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
