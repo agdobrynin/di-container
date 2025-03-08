@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Psr\Container\ContainerInterface;
 
 trait ParameterTypeByReflectionTrait
 {
-    use DiContainerTrait;
-
-    abstract public function getContainer(): DiContainerInterface;
-
     /**
      * @return null|non-empty-string
      *
      * @throws AutowireExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      */
-    private function getParameterType(\ReflectionParameter $parameter): ?string
+    private function getParameterType(\ReflectionParameter $parameter, ContainerInterface $container): ?string
     {
         $type = $parameter->getType();
 
@@ -38,7 +34,7 @@ trait ParameterTypeByReflectionTrait
                  */
                 $name = $t->getName();
 
-                if (!$t->isBuiltin() && $this->getContainer()->has($name)) {
+                if (!$t->isBuiltin() && $container->has($name)) {
                     $types[] = $name;
                 }
             }

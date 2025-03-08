@@ -51,21 +51,24 @@ interface DefinitionsLoaderInterface
 
     /**
      * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function definitions(): iterable;
 
     /**
      * Import classes from directories.
      *
-     * @param non-empty-string       $namespace                 PSR-4 namespace preifx
+     * @param non-empty-string       $namespace                 PSR-4 namespace prefix
      * @param non-empty-string       $src                       source directory
      * @param list<non-empty-string> $excludeFilesRegExpPattern exclude files matching by regexp pattern
      * @param list<non-empty-string> $availableExtensions       available files extensions, empty list available all files
+     * @param bool                   $useAttribute              using php attributes for configure services from import source directory
      *
      * @return $this
      *
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
-    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static;
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static;
 }

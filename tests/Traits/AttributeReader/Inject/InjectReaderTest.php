@@ -60,6 +60,8 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
+        $this->setContainer($this->createMock(DiContainerInterface::class));
+
         $injects = $this->getInjectAttribute($p);
 
         $this->assertTrue($injects->valid());
@@ -83,6 +85,8 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new \ReflectionParameter($f, 0);
 
+        $this->setContainer($this->createMock(DiContainerInterface::class));
+
         $injects = $this->getInjectAttribute($p);
 
         $this->assertTrue($injects->valid());
@@ -103,6 +107,8 @@ class InjectReaderTest extends TestCase
             SuperClass $a
         ) => '';
         $p = new \ReflectionParameter($f, 0);
+
+        $this->setContainer($this->createMock(DiContainerInterface::class));
 
         $injects = $this->getInjectAttribute($p);
 

@@ -6,5 +6,5 @@ namespace Kaspi\DiContainer\Interfaces\Attributes;
 
 interface DiAttributeServiceInterface extends DiAttributeInterface
 {
-    public function isSingleton(): bool;
+    public function isSingleton(): ?bool;
 }

@@ -119,7 +119,7 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                $strType = $this->getParameterType($parameter);
+                $strType = $this->getParameterType($parameter, $this->getContainer());
 
                 $dependencies[] = null === $strType
                     ? $this->getContainer()->get($parameter->getName())
@@ -182,7 +182,7 @@ trait ParametersResolverTrait
                 ? $o($this->getContainer())
                 : $o;
 
-            if (true === $argumentDefinition->isSingleton()) {
+            if (true === ($argumentDefinition->isSingleton() ?? $this->getContainer()->getConfig()?->isSingletonServiceDefault())) {
                 $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
 
                 if ($parameter->isVariadic()) {

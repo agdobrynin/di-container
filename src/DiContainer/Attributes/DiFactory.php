@@ -14,7 +14,7 @@ final class DiFactory implements DiAttributeServiceInterface
     /**
      * @param class-string<DiFactoryInterface> $id
      */
-    public function __construct(private string $id, private bool $isSingleton = false)
+    public function __construct(private string $id, private ?bool $isSingleton = null)
     {
         if (!\is_a($id, DiFactoryInterface::class, true)) {
             throw new AutowireAttributeException(
@@ -31,7 +31,7 @@ final class DiFactory implements DiAttributeServiceInterface
         return $this->id;
     }
 
-    public function isSingleton(): bool
+    public function isSingleton(): ?bool
     {
         return $this->isSingleton;
     }

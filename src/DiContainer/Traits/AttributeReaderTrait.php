@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -19,14 +21,85 @@ trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
+    public function isAutowireExclude(\ReflectionClass $reflectionClass): bool
+    {
+        return !([] === $reflectionClass->getAttributes(AutowireExclude::class));
+    }
+
     private function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
     {
-        return ($reflectionClass->getAttributes(DiFactory::class)[0] ?? null)?->newInstance();
+        if (null === $attribute = ($reflectionClass->getAttributes(DiFactory::class)[0] ?? null)) {
+            return null;
+        }
+
+        if ([] !== $reflectionClass->getAttributes(Autowire::class)) {
+            throw new AutowireAttributeException(
+                \sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', DiFactory::class, Autowire::class, $reflectionClass->name)
+            );
+        }
+
+        return $attribute->newInstance();
+    }
+
+    /**
+     * @return \Generator<Autowire>
+     */
+    private function getAutowireAttribute(\ReflectionClass $reflectionClass): \Generator
+    {
+        $attributes = $reflectionClass->getAttributes(Autowire::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
+        if ([] !== $reflectionClass->getAttributes(DiFactory::class)) {
+            throw new AutowireAttributeException(
+                \sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', Autowire::class, DiFactory::class, $reflectionClass->name)
+            );
+        }
+
+        $attributes = $reflectionClass->getAttributes(Autowire::class);
+        $containerIdentifier = '';
+
+        foreach ($attributes as $attribute) {
+            /** @var Autowire $autowire */
+            $autowire = $attribute->newInstance();
+
+            if ('' === $autowire->getIdentifier()) {
+                $autowire = new Autowire($reflectionClass->name, $autowire->isSingleton());
+            }
+
+            if ($containerIdentifier === $autowire->getIdentifier()) {
+                throw new AutowireAttributeException(
+                    \sprintf('Container identifier "%s" already defined by #[%s] for class "%s".', $autowire->getIdentifier(), Autowire::class, $reflectionClass->name),
+                );
+            }
+
+            $containerIdentifier = $autowire->getIdentifier();
+
+            yield $autowire;
+        }
     }
 
     private function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
     {
         return ($reflectionClass->getAttributes(Service::class)[0] ?? null)?->newInstance();
+    }
+
+    /**
+     * @return \Generator<Tag>
+     */
+    private function getTagAttribute(\ReflectionClass $reflectionClass): \Generator
+    {
+        $attributes = $reflectionClass->getAttributes(Tag::class);
+
+        if ([] === $attributes) {
+            return;
+        }
+
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
+        }
     }
 
     /**
@@ -104,7 +177,7 @@ trait AttributeReaderTrait
             if ('' === $inject->getIdentifier()
                 // PHPStan is not smart enough to parse such a condition.
                 // @phpstan-ignore-next-line
-                && null !== ($strType = $this->getParameterType($reflectionParameter))) {
+                && null !== ($strType = $this->getParameterType($reflectionParameter, $this->getContainer()))) {
                 $inject = new Inject($strType);
             }
 
@@ -160,22 +233,6 @@ trait AttributeReaderTrait
         }
 
         $this->checkVariadic($reflectionParameter, \count($attributes), InjectByCallable::class);
-
-        foreach ($attributes as $attribute) {
-            yield $attribute->newInstance();
-        }
-    }
-
-    /**
-     * @return \Generator<Tag>
-     */
-    private function getTagAttribute(\ReflectionClass $reflectionClass): \Generator
-    {
-        $attributes = $reflectionClass->getAttributes(Tag::class);
-
-        if ([] === $attributes) {
-            return;
-        }
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();

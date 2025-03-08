@@ -38,9 +38,7 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
-    use AttributeReaderTrait {
-        setContainer as private;
-    }
+    use AttributeReaderTrait;
     use DefinitionIdentifierTrait;
 
     /**
@@ -106,10 +104,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         return \array_key_exists($id, $this->definitions)
             || \array_key_exists($id, $this->resolved)
-            || (
-                $this->config?->isUseZeroConfigurationDefinition() // @phpstan-ignore booleanAnd.leftNotBoolean
-                && (\class_exists($id) || \interface_exists($id))
-            )
+            || $this->hasViaZeroConfigurationDefinition($id)
             || $this->isContainer($id);
     }
 
@@ -272,6 +267,16 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 );
             }
 
+            // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
+            if ($this->config?->isUseAttribute()
+                && ($autowires = $this->getAutowireAttribute($reflectionClass))->valid()) {
+                foreach ($autowires as $autowire) {
+                    if ($autowire->getIdentifier() === $reflectionClass->name) {
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton());
+                    }
+                }
+            }
+
             return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->isSingletonDefault);
         }
 
@@ -298,6 +303,19 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function isContainer(string $id): bool
     {
         return \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true);
+    }
+
+    protected function hasViaZeroConfigurationDefinition(string $id): bool
+    {
+        if (!$this->config?->isUseZeroConfigurationDefinition()) { // @phpstan-ignore booleanNot.exprNotBoolean
+            return false;
+        }
+
+        if (\class_exists($id) || \interface_exists($id)) {
+            return !$this->config->isUseAttribute() || !$this->isAutowireExclude(new \ReflectionClass($id));
+        }
+
+        return false;
     }
 
     protected function checkCyclicalDependencyCall(string $id): void

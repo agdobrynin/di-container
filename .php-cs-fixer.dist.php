@@ -7,7 +7,7 @@ use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 $finder = (new PhpCsFixer\Finder())
     ->in(__DIR__)
     ->exclude([
-        'tests/FinderClass/Fixtures/Error',
+        'tests/FinderFullyQualifiedClassName/Fixtures/Error',
     ])
 ;
 
