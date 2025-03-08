@@ -6,13 +6,13 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Service;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
@@ -28,7 +28,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private \ArrayIterator $configDefinitions;
 
     /**
-     * @var array<non-empty-string, array{0: FinderFullyQualifiedClassNameInterface, 1: bool}>
+     * @var array<non-empty-string, array{finder: FinderFullyQualifiedClassNameInterface, useAttribute: bool}>
      */
     private array $import;
 
@@ -88,9 +88,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions->rewind();
 
         if (isset($this->import)) {
-            foreach ($this->import as $import) {
-                [$finderClass, $isUseAttribute] = $import;
-
+            foreach ($this->import as ['finder' => $finderClass, 'useAttribute' => $isUseAttribute]) {
                 /** @var class-string $classOrInterface */
                 foreach ($finderClass->find() as $classOrInterface) {
                     $reflectionClass = new \ReflectionClass($classOrInterface);
@@ -118,18 +116,18 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         $this->import[$namespace] = [
-            new FinderFullyQualifiedClassName(
+            'finder' => new FinderFullyQualifiedClassName(
                 $namespace,
                 (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
             ),
-            $useAttribute,
+            'useAttribute' => $useAttribute,
         ];
 
         return $this;
     }
 
     /**
-     * @return array<non-empty-string, DiDefinitionAutowire|DiDefinitionInterface>
+     * @return array<class-string|non-empty-string, DiDefinitionConfigAutowireInterface|DiDefinitionInterface>
      */
     private function makeDefinitionFromReflectionClass(\ReflectionClass $reflectionClass, bool $isUseAttribute): array
     {
@@ -157,7 +155,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $services[$autowireAttr->getIdentifier()] = new DiDefinitionAutowire($reflectionClass, $autowireAttr->isSingleton());
+                $services[$autowireAttr->getIdentifier()] = \Kaspi\DiContainer\diAutowire($reflectionClass->name, $autowireAttr->isSingleton());
             }
 
             return $services; // @phpstan-ignore return.type
@@ -165,7 +163,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         return $this->configDefinitions->offsetExists($reflectionClass->name)
             ? []
-            : [$reflectionClass->name => new DiDefinitionAutowire($reflectionClass)];
+            : [$reflectionClass->name => \Kaspi\DiContainer\diAutowire($reflectionClass->name)];
     }
 
     private function getIteratorFromFile(string $srcFile): \Generator
