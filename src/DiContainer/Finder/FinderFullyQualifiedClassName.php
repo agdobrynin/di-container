@@ -115,7 +115,7 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
                 && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token_text)) {
                 $isAbstract = $isClassOrInterface = false;
 
-                yield $key++ => $namespace.($namespace ? '\\' : '').$token_text; // @phpstan-ignore ternary.condNotBoolean, generator.valueType
+                yield $key++ => \implode('\\', [$namespace, $token_text]); // @phpstan-ignore generator.valueType
             }
         }
     }
