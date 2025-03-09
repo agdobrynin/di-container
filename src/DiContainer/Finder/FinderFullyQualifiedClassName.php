@@ -56,7 +56,7 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
         }
 
         try {
-            $tokens = \PhpToken::tokenize($code, \TOKEN_PARSE);
+            $tokens = \token_get_all($code, \TOKEN_PARSE);
         } catch (\ParseError $exception) {
             throw new \RuntimeException(
                 \sprintf('Cannot parse code in file "%s". Reason: %s', $file, $exception->getMessage())
@@ -65,39 +65,55 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
 
         $namespace = '';
         $isNamespace = $isAbstract = $isClassOrInterface = false;
+        $level = $levelClass = 0;
 
         foreach ($tokens as $token) {
-            if ($token->isIgnorable()) {
+            if ($level > $levelClass) {
+                $isAbstract = false;
+            }
+
+            $token_id = \is_array($token) ? $token[0] : null;
+
+            if (null !== $token_id && \in_array($token_id, [\T_WHITESPACE, \T_COMMENT, \T_DOC_COMMENT, \T_OPEN_TAG], true)) {
                 continue;
             }
 
-            if ($token->is(\T_NAMESPACE)) {
+            if (\T_NAMESPACE === $token_id) {
                 $isNamespace = true;
 
                 continue;
             }
 
-            if ($isNamespace && $token->is([\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED])) {
-                $namespace = $token->text;
+            $token_text = \is_array($token) ? $token[1] : $token;
+
+            if (null !== $token_id && $isNamespace && \in_array($token_id, [\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED], true)) {
+                $namespace = $token_text;
                 $isNamespace = false;
 
                 continue;
             }
 
-            if ($token->is(\T_ABSTRACT)) {
+            if (\T_ABSTRACT === $token_id) {
                 $isAbstract = true;
 
                 continue;
             }
 
-            if ('}' === $token->text) {
-                $isAbstract = false;
+            if ('{' === $token_text) {
+                ++$level;
 
                 continue;
             }
 
-            if (!$isAbstract && $token->is([\T_CLASS, \T_INTERFACE])) {
+            if ('}' === $token_text) {
+                --$level;
+
+                continue;
+            }
+
+            if (!$isAbstract && null !== $token_id && \in_array($token_id, [\T_CLASS, \T_INTERFACE], true)) {
                 $isClassOrInterface = true;
+                $levelClass = $level;
 
                 continue;
             }
@@ -108,10 +124,10 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
              */
             if ($isClassOrInterface
                 && \str_starts_with($namespace, $this->namespace)
-                && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token->text)) {
+                && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token_text)) {
                 $isAbstract = $isClassOrInterface = false;
 
-                yield $key++ => $namespace.($namespace ? '\\' : '').$token->text; // @phpstan-ignore ternary.condNotBoolean, generator.valueType
+                yield $key++ => \implode('\\', [$namespace, $token_text]); // @phpstan-ignore generator.valueType
             }
         }
     }
