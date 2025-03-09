@@ -96,9 +96,9 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             Fixtures\Success\QueueInterface::class,
         ];
 
-        $this->assertCount(\count($expect), $foundClasses);
         \sort($expect);
         \sort($foundClasses);
+
         $this->assertEquals($expect, $foundClasses);
     }
 }
