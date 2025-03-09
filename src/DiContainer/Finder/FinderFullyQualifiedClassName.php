@@ -65,8 +65,13 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
 
         $namespace = '';
         $isNamespace = $isAbstract = $isClassOrInterface = false;
+        $level = $levelClass = 0;
 
         foreach ($tokens as $token) {
+            if ($level > $levelClass) {
+                $isAbstract = false;
+            }
+
             $token_id = \is_array($token) ? $token[0] : null;
 
             if (null !== $token_id && \in_array($token_id, [\T_WHITESPACE, \T_COMMENT, \T_DOC_COMMENT, \T_OPEN_TAG], true)) {
@@ -94,14 +99,21 @@ final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNa
                 continue;
             }
 
+            if ('{' === $token_text) {
+                ++$level;
+
+                continue;
+            }
+
             if ('}' === $token_text) {
-                $isAbstract = false;
+                --$level;
 
                 continue;
             }
 
             if (!$isAbstract && null !== $token_id && \in_array($token_id, [\T_CLASS, \T_INTERFACE], true)) {
                 $isClassOrInterface = true;
+                $levelClass = $level;
 
                 continue;
             }
