@@ -138,6 +138,8 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 yield $key++ => [
                     'fqn' => $fqn,
                     'tokenId' => $tokenId,
+                    'line' => \is_array($token) ? $token[2] : null,
+                    'file' => $file->getRealPath(),
                 ];
             }
         }

@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
@@ -95,7 +96,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             foreach ($this->import as ['finderFQN' => $finderFQN, 'useAttribute' => $useAttribute]) {
                 /** @var ItemFQN $itemFQN */
                 foreach ($finderFQN->find() as $itemFQN) {
-                    if ([] !== ($definition = $this->makeDefinitionFromReflectionClass($itemFQN, $useAttribute))) {
+                    if ([] !== ($definition = $this->makeDefinitionFromItemFQN($itemFQN, $useAttribute))) {
                         yield from $definition;
                     }
                 }
@@ -127,8 +128,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      * @param ItemFQN $itemFQN
      *
      * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionGet>
+     *
+     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
+     * @throws \RuntimeException
      */
-    private function makeDefinitionFromReflectionClass(array $itemFQN, bool $useAttribute): array
+    private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
@@ -138,7 +143,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 : [$fqn => new DiDefinitionAutowire($fqn)];
         }
 
-        $reflectionClass = new \ReflectionClass($fqn);
+        try {
+            $reflectionClass = new \ReflectionClass($fqn);
+        } catch (\ReflectionException $e) { // @phpstan-ignore catch.neverThrown
+            throw new \RuntimeException(
+                message: \sprintf('Get fully qualified name "%s" from file "%s:%d" (line #%d). Reason: %s', $fqn, $itemFQN['file'], $itemFQN['line'], $itemFQN['line'], $e->getMessage()),
+                previous: $e
+            );
+        }
 
         if ($this->isAutowireExclude($reflectionClass)) {
             return [];

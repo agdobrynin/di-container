@@ -71,15 +71,16 @@ class FinderFullyQualifiedClassNameTest extends TestCase
     public function testGetClasses(): void
     {
         $dir = new \FilesystemIterator(__DIR__.'/Fixtures/Success/');
-        $classes = (new FinderFullyQualifiedName('Tests\\', $dir))->find();
+        $fqNames = (new FinderFullyQualifiedName('Tests\\', $dir))->find();
 
-        $this->assertTrue($classes->valid());
+        $this->assertTrue($fqNames->valid());
 
-        $foundClasses = [];
+        $foundFqn = [];
 
-        foreach ($classes as $class) {
-            $foundClasses[] = $class;
+        foreach ($fqNames as $fqn) {
+            $foundFqn[] = \array_filter($fqn, static fn (string $k) => \in_array($k, ['fqn', 'tokenId'], true), \ARRAY_FILTER_USE_KEY);
         }
+
         $expect = [
             ['fqn' => Fixtures\Success\TwoInOneOne::class, 'tokenId' => \T_CLASS],
             ['fqn' => Fixtures\Success\TwoInOneTow::class, 'tokenId' => \T_CLASS],
@@ -93,8 +94,8 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         ];
 
         \sort($expect);
-        \sort($foundClasses);
+        \sort($foundFqn);
 
-        $this->assertEquals($expect, $foundClasses);
+        $this->assertEquals($expect, $foundFqn);
     }
 }
