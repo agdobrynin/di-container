@@ -6,10 +6,6 @@ namespace Tests\FinderFullyQualifiedClassName;
 
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use PHPUnit\Framework\TestCase;
-use Tests\FinderFullyQualifiedClassName\Fixtures\Success\ManyNamespaces;
-use Tests\FinderFullyQualifiedClassName\Fixtures\Success\One;
-use Tests\FinderFullyQualifiedClassName\Fixtures\Success\TwoInOneOne;
-use Tests\FinderFullyQualifiedClassName\Fixtures\Success\TwoInOneTow;
 
 /**
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
@@ -85,15 +81,15 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             $foundClasses[] = $class;
         }
         $expect = [
-            TwoInOneOne::class,
-            TwoInOneTow::class,
-            Fixtures\Success\WithTokenInterface::class,
-            ManyNamespaces::class,
-            Fixtures\Success\SomeInterface::class,
-            Fixtures\Success\Others\GetTokenInterface::class,
-            Fixtures\Success\Others\ManyNamespaces::class,
-            One::class,
-            Fixtures\Success\QueueInterface::class,
+            ['fqn' => Fixtures\Success\TwoInOneOne::class, 'tokenId' => \T_CLASS],
+            ['fqn' => Fixtures\Success\TwoInOneTow::class, 'tokenId' => \T_CLASS],
+            ['fqn' => Fixtures\Success\WithTokenInterface::class, 'tokenId' => \T_INTERFACE],
+            ['fqn' => Fixtures\Success\ManyNamespaces::class, 'tokenId' => \T_CLASS],
+            ['fqn' => Fixtures\Success\SomeInterface::class, 'tokenId' => \T_INTERFACE],
+            ['fqn' => Fixtures\Success\Others\GetTokenInterface::class, 'tokenId' => \T_INTERFACE],
+            ['fqn' => Fixtures\Success\Others\ManyNamespaces::class, 'tokenId' => \T_CLASS],
+            ['fqn' => Fixtures\Success\One::class, 'tokenId' => \T_CLASS],
+            ['fqn' => Fixtures\Success\QueueInterface::class, 'tokenId' => \T_INTERFACE],
         ];
 
         \sort($expect);

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\Finder;
 
 /**
+ * @phpstan-type ItemFQN array{fqn: class-string, tokenId: \T_CLASS | \T_INTERFACE}
+ *
  * Find classes and interfaces in source files.
  */
 interface FinderFullyQualifiedNameInterface
@@ -12,7 +14,7 @@ interface FinderFullyQualifiedNameInterface
     /**
      * Find all fully qualified names for classes and interfaces.
      *
-     * @return \Iterator<non-negative-int, class-string>
+     * @return \Iterator<non-negative-int, ItemFQN>
      *
      * @throws \RuntimeException
      */

@@ -6,6 +6,9 @@ namespace Kaspi\DiContainer\Finder;
 
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 
+/**
+ * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
+ */
 final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterface
 {
     /**
@@ -42,7 +45,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     /**
      * @param non-negative-int $key
      *
-     * @return \Generator<non-negative-int, class-string>
+     * @return \Generator<non-negative-int, ItemFQN>
      *
      * @throws \RuntimeException
      */
@@ -64,17 +67,17 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         }
 
         $namespace = '';
-        $isNamespace = $isAbstract = $isClassOrInterface = false;
-        $level = $levelClass = 0;
+        $isNamespace = $isAbstract = false;
+        $level = $levelClass = $classOrInterfaceToken = 0;
 
         foreach ($tokens as $token) {
             if ($level > $levelClass) {
                 $isAbstract = false;
             }
 
-            $token_id = \is_array($token) ? $token[0] : null;
+            $token_id = \is_array($token) ? $token[0] : 0;
 
-            if (null !== $token_id && \in_array($token_id, [\T_WHITESPACE, \T_COMMENT, \T_DOC_COMMENT, \T_OPEN_TAG], true)) {
+            if (\in_array($token_id, [\T_WHITESPACE, \T_COMMENT, \T_DOC_COMMENT, \T_OPEN_TAG], true)) {
                 continue;
             }
 
@@ -86,7 +89,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
             $token_text = \is_array($token) ? $token[1] : $token;
 
-            if (null !== $token_id && $isNamespace && \in_array($token_id, [\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED], true)) {
+            if ($isNamespace && \in_array($token_id, [\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED], true)) {
                 $namespace = $token_text;
                 $isNamespace = false;
 
@@ -111,8 +114,8 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 continue;
             }
 
-            if (!$isAbstract && null !== $token_id && \in_array($token_id, [\T_CLASS, \T_INTERFACE], true)) {
-                $isClassOrInterface = true;
+            if (!$isAbstract && \in_array($token_id, [\T_CLASS, \T_INTERFACE], true)) {
+                $classOrInterfaceToken = $token_id;
                 $levelClass = $level;
 
                 continue;
@@ -122,12 +125,20 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
              * Class naming:
              * @see https://www.php.net/manual/ru/language.oop5.basic.php#language.oop5.basic.class
              */
-            if ($isClassOrInterface
+            if (0 !== $classOrInterfaceToken
                 && \str_starts_with($namespace, $this->namespace)
                 && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token_text)) {
-                $isAbstract = $isClassOrInterface = false;
+                /** @var class-string $fqn */
+                $fqn = \implode('\\', [$namespace, $token_text]);
+                $tokenId = $classOrInterfaceToken;
 
-                yield $key++ => \implode('\\', [$namespace, $token_text]); // @phpstan-ignore generator.valueType
+                $isAbstract = false;
+                $classOrInterfaceToken = 0;
+
+                yield $key++ => [
+                    'fqn' => $fqn,
+                    'tokenId' => $tokenId,
+                ];
             }
         }
     }
