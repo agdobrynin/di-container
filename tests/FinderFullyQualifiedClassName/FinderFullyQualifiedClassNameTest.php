@@ -78,7 +78,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $foundFqn = [];
 
         foreach ($fqNames as $fqn) {
-            $foundFqn[] = \array_filter($fqn, static fn (string $k) => \in_array($k, ['fqn', 'tokenId'], true), \ARRAY_FILTER_USE_KEY);
+            $foundFqn[] = \array_filter((array) $fqn, static fn (string $k) => \in_array($k, ['fqn', 'tokenId'], true), \ARRAY_FILTER_USE_KEY);
         }
 
         $expect = [
