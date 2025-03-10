@@ -96,7 +96,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             foreach ($this->import as ['finderFQN' => $finderFQN, 'useAttribute' => $useAttribute]) {
                 /** @var ItemFQN $itemFQN */
                 foreach ($finderFQN->find() as $itemFQN) {
-                    if ([] !== ($definition = $this->makeDefinitionFromReflectionClass($itemFQN, $useAttribute))) {
+                    if ([] !== ($definition = $this->makeDefinitionFromItemFQN($itemFQN, $useAttribute))) {
                         yield from $definition;
                     }
                 }
@@ -133,7 +133,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      * @throws DiDefinitionExceptionInterface
      * @throws \RuntimeException
      */
-    private function makeDefinitionFromReflectionClass(array $itemFQN, bool $useAttribute): array
+    private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
@@ -147,7 +147,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $reflectionClass = new \ReflectionClass($fqn);
         } catch (\ReflectionException $e) { // @phpstan-ignore catch.neverThrown
             throw new \RuntimeException(
-                message: \sprintf('%s. Got item: %s', $e->getMessage(), \var_export($itemFQN, true)),
+                message: \sprintf('Get fully qualified name "%s" from file "%s:%d" (line #%d). Reason: %s', $fqn, $itemFQN['file'], $itemFQN['line'], $itemFQN['line'], $e->getMessage()),
                 previous: $e
             );
         }
