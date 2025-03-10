@@ -10,12 +10,12 @@ use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Finder\FinderFile;
-use Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
@@ -28,7 +28,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private \ArrayIterator $configDefinitions;
 
     /**
-     * @var array<non-empty-string, array{finderClass: FinderFullyQualifiedClassNameInterface, useAttribute: bool}>
+     * @var array<non-empty-string, array{finderFQN: FinderFullyQualifiedNameInterface, useAttribute: bool}>
      */
     private array $import;
 
@@ -88,9 +88,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions->rewind();
 
         if (isset($this->import)) {
-            foreach ($this->import as ['finderClass' => $finderClass, 'useAttribute' => $useAttribute]) {
+            /** @var FinderFullyQualifiedNameInterface $finderFQN */
+            foreach ($this->import as ['finderFQN' => $finderFQN, 'useAttribute' => $useAttribute]) {
                 /** @var class-string $classOrInterface */
-                foreach ($finderClass->find() as $classOrInterface) {
+                foreach ($finderFQN->find() as $classOrInterface) {
                     $reflectionClass = new \ReflectionClass($classOrInterface);
 
                     if ($useAttribute && $this->isAutowireExclude($reflectionClass)) {
@@ -115,12 +116,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        $finderClass = new FinderFullyQualifiedClassName(
+        $finderFQN = new FinderFullyQualifiedName(
             $namespace,
             (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
         );
 
-        $this->import[$namespace] = ['finderClass' => $finderClass, 'useAttribute' => $useAttribute];
+        $this->import[$namespace] = ['finderFQN' => $finderFQN, 'useAttribute' => $useAttribute];
 
         return $this;
     }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Finder;
 
-use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedClassNameInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 
-final class FinderFullyQualifiedClassName implements FinderFullyQualifiedClassNameInterface
+final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterface
 {
     /**
      * @param non-empty-string                         $namespace PSR-4 namespace prefix

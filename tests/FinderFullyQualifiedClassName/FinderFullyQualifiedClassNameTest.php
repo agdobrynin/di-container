@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\FinderFullyQualifiedClassName;
 
-use Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use PHPUnit\Framework\TestCase;
 use Tests\FinderFullyQualifiedClassName\Fixtures\Success\ManyNamespaces;
 use Tests\FinderFullyQualifiedClassName\Fixtures\Success\One;
@@ -12,7 +12,7 @@ use Tests\FinderFullyQualifiedClassName\Fixtures\Success\TwoInOneOne;
 use Tests\FinderFullyQualifiedClassName\Fixtures\Success\TwoInOneTow;
 
 /**
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedClassName
+ * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
  *
  * @internal
  */
@@ -49,7 +49,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage($expectMessage);
 
-        new FinderFullyQualifiedClassName($namespace, []);
+        new FinderFullyQualifiedName($namespace, []);
     }
 
     public function testCannotOpenFile(): void
@@ -57,7 +57,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to open stream');
 
-        (new FinderFullyQualifiedClassName('App\\', [
+        (new FinderFullyQualifiedName('App\\', [
             new \SplFileInfo('file-not-found.php'),
         ]))->find()->valid();
     }
@@ -67,7 +67,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Cannot parse code');
 
-        (new FinderFullyQualifiedClassName('App\\', [
+        (new FinderFullyQualifiedName('App\\', [
             new \SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php'),
         ]))->find()->valid();
     }
@@ -75,7 +75,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
     public function testGetClasses(): void
     {
         $dir = new \FilesystemIterator(__DIR__.'/Fixtures/Success/');
-        $classes = (new FinderFullyQualifiedClassName('Tests\\', $dir))->find();
+        $classes = (new FinderFullyQualifiedName('Tests\\', $dir))->find();
 
         $this->assertTrue($classes->valid());
 
