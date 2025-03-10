@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Finder;
 
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
+use Kaspi\DiContainer\Traits\TokenizerTrait;
 
 /**
  * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
  */
 final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterface
 {
+    use TokenizerTrait;
+
     /**
      * @param non-empty-string                         $namespace PSR-4 namespace prefix
      * @param iterable<non-negative-int, \SplFileInfo> $files     files for parsing
@@ -59,7 +62,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         }
 
         try {
-            $tokens = \token_get_all($code, \TOKEN_PARSE);
+            $this->tokenizeCode($code);
         } catch (\ParseError $exception) {
             throw new \RuntimeException(
                 \sprintf('Cannot parse code in file "%s". Reason: %s', $file, $exception->getMessage())
@@ -67,40 +70,13 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         }
 
         $namespace = '';
-        $isNamespace = $isAbstract = false;
-        $level = $levelClass = $classOrInterfaceToken = 0;
+        $isValidFqn = true;
+        $level = 0;
+        $fqnLevel = null;
 
-        foreach ($tokens as $token) {
-            if ($level > $levelClass) {
-                $isAbstract = false;
-            }
-
-            $token_id = \is_array($token) ? $token[0] : 0;
-
-            if (\in_array($token_id, [\T_WHITESPACE, \T_COMMENT, \T_DOC_COMMENT, \T_OPEN_TAG], true)) {
-                continue;
-            }
-
-            if (\T_NAMESPACE === $token_id) {
-                $isNamespace = true;
-
-                continue;
-            }
-
-            $token_text = \is_array($token) ? $token[1] : $token;
-
-            if ($isNamespace && \in_array($token_id, [\T_NAME_FULLY_QUALIFIED, \T_NAME_QUALIFIED], true)) {
-                $namespace = $token_text;
-                $isNamespace = false;
-
-                continue;
-            }
-
-            if (\T_ABSTRACT === $token_id) {
-                $isAbstract = true;
-
-                continue;
-            }
+        for ($i = 0; $i < $this->getTotalTokens(); ++$i) {
+            $token_id = $this->getTokenId($i);
+            $token_text = $this->getTokenText($i);
 
             if ('{' === $token_text) {
                 ++$level;
@@ -111,36 +87,68 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
             if ('}' === $token_text) {
                 --$level;
 
-                continue;
-            }
-
-            if (!$isAbstract && \in_array($token_id, [\T_CLASS, \T_INTERFACE], true)) {
-                $classOrInterfaceToken = $token_id;
-                $levelClass = $level;
+                if ($level === $fqnLevel) {
+                    $isValidFqn = true;
+                }
 
                 continue;
             }
 
-            /*
-             * Class naming:
-             * @see https://www.php.net/manual/ru/language.oop5.basic.php#language.oop5.basic.class
-             */
-            if (0 !== $classOrInterfaceToken
-                && \str_starts_with($namespace, $this->namespace)
-                && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token_text)) {
-                /** @var class-string $fqn */
-                $fqn = \implode('\\', [$namespace, $token_text]);
-                $tokenId = $classOrInterfaceToken;
+            if (null !== $fqnLevel && $fqnLevel < $level) {
+                continue;
+            }
 
-                $isAbstract = false;
-                $classOrInterfaceToken = 0;
+            if (\T_NAMESPACE === $token_id) {
+                for (++$i; $i < $this->getTotalTokens(); ++$i) {
+                    $token_id = $this->getTokenId($i);
 
-                yield $key++ => [
-                    'fqn' => $fqn,
-                    'tokenId' => $tokenId,
-                    'line' => \is_array($token) ? $token[2] : null,
-                    'file' => $file->getRealPath(),
-                ];
+                    if (\in_array($token_id, [\T_STRING, \T_NAME_QUALIFIED, \T_NAME_FULLY_QUALIFIED], true)) {
+                        $namespace = $this->getTokenText($i);
+
+                        break;
+                    }
+                }
+            }
+
+            if (\in_array($token_id, [\T_ABSTRACT, \T_TRAIT], true)) {
+                $isValidFqn = false;
+            }
+
+            if ($isValidFqn && \in_array($token_id, [\T_CLASS, \T_INTERFACE], true)) {
+                $fqnItem = [];
+                $classOrInterfaceTokenId = $token_id;
+
+                for (++$i; $i < $this->getTotalTokens(); ++$i) {
+                    $token_id = $this->getTokenId($i);
+                    $token_text = $this->getTokenText($i);
+
+                    /*
+                     * Class, interface naming for $token_text:
+                     * @see https://www.php.net/manual/ru/language.oop5.basic.php#language.oop5.basic.class
+                     */
+                    if ([] === $fqnItem
+                        && \T_STRING === $token_id
+                        && \str_starts_with($namespace, $this->namespace)
+                        && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token_text)) {
+                        /** @var class-string $fqn */
+                        $fqn = \implode('\\', [$namespace, $token_text]);
+                        $fqnItem = [
+                            'fqn' => $fqn,
+                            'tokenId' => $classOrInterfaceTokenId,
+                            'line' => $this->getTokenLine($i),
+                            'file' => $file->getRealPath(),
+                        ];
+                    }
+
+                    if ('{' === $token_text && [] !== $fqnItem) {
+                        $fqnLevel = $level;
+                        ++$level;
+
+                        yield $key++ => $fqnItem;
+
+                        break;
+                    }
+                }
             }
         }
     }

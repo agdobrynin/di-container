@@ -14,7 +14,13 @@ final class TwoInOneOne
     }
 }
 
-abstract class TwoInOneThree
+abstract
+# Hoho
+    /**
+     * Crazy code style
+     */
+// Hmmmmmm
+class TwoInOneThree
 {
     public function main(bool $b): string
     {

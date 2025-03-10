@@ -145,7 +145,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         try {
             $reflectionClass = new \ReflectionClass($fqn);
-        } catch (\ReflectionException $e) { // @phpstan-ignore catch.neverThrown
+        } catch (\Error|\ReflectionException $e) { // @phpstan-ignore catch.neverThrown, catch.neverThrown
             throw new \RuntimeException(
                 message: \sprintf('Get fully qualified name "%s" from file "%s:%d" (line #%d). Reason: %s', $fqn, $itemFQN['file'], $itemFQN['line'], $itemFQN['line'], $e->getMessage()),
                 previous: $e

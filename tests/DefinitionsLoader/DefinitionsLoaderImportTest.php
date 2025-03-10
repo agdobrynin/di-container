@@ -145,4 +145,16 @@ class DefinitionsLoaderImportTest extends TestCase
 
         (new DiContainerFactory())->make($loader->definitions());
     }
+
+    public function testCannotReflectClassFromImportedDefinition(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\\', __DIR__.'/Fixtures/ImportReflectionFail')
+        ;
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Reason: Interface "Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\ContainerInterface" not found');
+
+        (new DiContainerFactory())->make($loader->definitions());
+    }
 }
