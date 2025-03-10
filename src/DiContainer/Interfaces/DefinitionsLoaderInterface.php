@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -53,6 +54,8 @@ interface DefinitionsLoaderInterface
      * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
      *
      * @throws DiDefinitionExceptionInterface
+     * @throws AutowireExceptionInterface
+     * @throws \RuntimeException
      */
     public function definitions(): iterable;
 

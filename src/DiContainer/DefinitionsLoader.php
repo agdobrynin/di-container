@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
@@ -127,6 +128,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      * @param ItemFQN $itemFQN
      *
      * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionGet>
+     *
+     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
+     * @throws \RuntimeException
      */
     private function makeDefinitionFromReflectionClass(array $itemFQN, bool $useAttribute): array
     {
@@ -138,7 +143,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 : [$fqn => new DiDefinitionAutowire($fqn)];
         }
 
-        $reflectionClass = new \ReflectionClass($fqn);
+        try {
+            $reflectionClass = new \ReflectionClass($fqn);
+        } catch (\ReflectionException $e) { // @phpstan-ignore catch.neverThrown
+            throw new \RuntimeException(
+                message: \sprintf('%s. Got item: %s', $e->getMessage(), \var_export($itemFQN, true)),
+                previous: $e
+            );
+        }
 
         if ($this->isAutowireExclude($reflectionClass)) {
             return [];
