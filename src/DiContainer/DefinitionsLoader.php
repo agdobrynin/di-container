@@ -20,6 +20,9 @@ use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
 
+/**
+ * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
+ */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
     use DefinitionIdentifierTrait;
@@ -90,15 +93,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (isset($this->import)) {
             /** @var FinderFullyQualifiedNameInterface $finderFQN */
             foreach ($this->import as ['finderFQN' => $finderFQN, 'useAttribute' => $useAttribute]) {
-                /** @var class-string $classOrInterface */
-                foreach ($finderFQN->find() as $classOrInterface) {
-                    $reflectionClass = new \ReflectionClass($classOrInterface);
-
-                    if ($useAttribute && $this->isAutowireExclude($reflectionClass)) {
-                        continue;
-                    }
-
-                    if ([] !== ($definitions = $this->makeDefinitionFromReflectionClass($reflectionClass, $useAttribute))) {
+                /** @var ItemFQN $itemFQN */
+                foreach ($finderFQN->find() as $itemFQN) {
+                    if ([] !== ($definitions = $this->makeDefinitionFromReflectionClass($itemFQN, $useAttribute))) {
                         yield from $definitions;
                     }
                 }
@@ -127,12 +124,30 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     }
 
     /**
+     * @param ItemFQN $itemFQN
+     *
      * @return array<class-string|non-empty-string, DiDefinitionConfigAutowireInterface|DiDefinitionInterface>
      */
-    private function makeDefinitionFromReflectionClass(\ReflectionClass $reflectionClass, bool $useAttribute): array
+    private function makeDefinitionFromReflectionClass(array $itemFQN, bool $useAttribute): array
     {
+        ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
+
+        if (!$useAttribute) {
+            return $this->configDefinitions->offsetExists($fqn) || \T_INTERFACE === $tokenId
+                ? []
+                : [$fqn => \Kaspi\DiContainer\diAutowire($fqn)];
+        }
+
+        $reflectionClass = new \ReflectionClass($fqn);
+
+        if ($this->isAutowireExclude($reflectionClass)) {
+            return [];
+        }
+
         if ($reflectionClass->isInterface()) {
-            if (!$useAttribute || null === ($service = $this->getServiceAttribute($reflectionClass))) {
+            $service = $this->getServiceAttribute($reflectionClass);
+
+            if (null === $service) {
                 return [];
             }
 
@@ -145,7 +160,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return [$reflectionClass->name => \Kaspi\DiContainer\diGet($service->getIdentifier())];
         }
 
-        if ($useAttribute && ($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
+        if (($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {

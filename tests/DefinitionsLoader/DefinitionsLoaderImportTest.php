@@ -57,7 +57,6 @@ class DefinitionsLoaderImportTest extends TestCase
             'services.two',
         ];
 
-        $this->assertCount(\count($expectContainerIds), $containerIds);
         \sort($expectContainerIds);
         \sort($containerIds);
         $this->assertEquals($expectContainerIds, $containerIds);
