@@ -11,6 +11,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
 
 use function Kaspi\DiContainer\diAutowire;
+use function round;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -31,7 +32,7 @@ class CallFunctionTest extends TestCase
     public function testBuiltinFunction(): void
     {
         $container = new DiContainer();
-        $res = \round($container->call('log', ['num' => 10]));
+        $res = round($container->call('log', ['num' => 10]));
 
         $this->assertEquals(2.0, $res);
     }

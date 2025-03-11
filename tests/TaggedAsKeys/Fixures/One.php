@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\TaggedAsKeys\Fixures;
 
+use stdClass;
+
 final class One
 {
     public static function getKey(string $tag): string
@@ -14,7 +16,7 @@ final class One
         };
     }
 
-    public static function getKeyFail(): array|\stdClass
+    public static function getKeyFail(): array|stdClass
     {
         return ['ok', 'yap'];
     }

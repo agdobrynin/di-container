@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\CallableParser;
 
+use Generator;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
@@ -114,7 +115,7 @@ class CallableParserTest extends TestCase
         $this->assertIsNotCallable($definition);
     }
 
-    public static function dataProviderDefinitionAsStringWithDoubleColonNotValid(): \Generator
+    public static function dataProviderDefinitionAsStringWithDoubleColonNotValid(): Generator
     {
         yield 'class and method is empty' => ['::'];
 

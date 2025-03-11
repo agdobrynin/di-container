@@ -4,8 +4,30 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Finder;
 
+use Generator;
+use InvalidArgumentException;
+use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Traits\TokenizerTrait;
+use ParseError;
+use RuntimeException;
+use SplFileInfo;
+
+use function implode;
+use function in_array;
+use function preg_match;
+use function sprintf;
+use function str_ends_with;
+use function str_starts_with;
+
+use const T_ABSTRACT;
+use const T_CLASS;
+use const T_INTERFACE;
+use const T_NAME_FULLY_QUALIFIED;
+use const T_NAME_QUALIFIED;
+use const T_NAMESPACE;
+use const T_STRING;
+use const T_TRAIT;
 
 /**
  * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
@@ -15,28 +37,28 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     use TokenizerTrait;
 
     /**
-     * @param non-empty-string                         $namespace PSR-4 namespace prefix
-     * @param iterable<non-negative-int, \SplFileInfo> $files     files for parsing
+     * @param non-empty-string                        $namespace PSR-4 namespace prefix
+     * @param iterable<non-negative-int, SplFileInfo> $files     files for parsing
      */
     public function __construct(
         private string $namespace,
         private iterable $files,
     ) {
-        if (!\str_ends_with($namespace, '\\')) {
-            throw new \InvalidArgumentException(
-                \sprintf('Argument $namespace must be end with symbol "\". Got: "%s"', $namespace)
+        if (!str_ends_with($namespace, '\\')) {
+            throw new InvalidArgumentException(
+                sprintf('Argument $namespace must be end with symbol "\". Got: "%s"', $namespace)
             );
         }
 
         // @see https://www.php.net/manual/en/language.variables.basics.php
-        if (1 !== \preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $namespace)) {
-            throw new \InvalidArgumentException(
-                \sprintf('Argument $namespace must be compatible with PSR-4. Got "%s".', $namespace)
+        if (1 !== preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $namespace)) {
+            throw new InvalidArgumentException(
+                sprintf('Argument $namespace must be compatible with PSR-4. Got "%s".', $namespace)
             );
         }
     }
 
-    public function find(): \Iterator
+    public function find(): Iterator
     {
         $key = 0;
 
@@ -48,11 +70,11 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     /**
      * @param non-negative-int $key
      *
-     * @return \Generator<non-negative-int, ItemFQN>
+     * @return Generator<non-negative-int, ItemFQN>
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
-    private function findInFile(\SplFileInfo $file, int &$key): \Generator
+    private function findInFile(SplFileInfo $file, int &$key): Generator
     {
         $f = $file->openFile('rb');
         $code = '';
@@ -63,9 +85,9 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
         try {
             $this->tokenizeCode($code);
-        } catch (\ParseError $exception) {
-            throw new \RuntimeException(
-                \sprintf('Cannot parse code in file "%s". Reason: %s', $file, $exception->getMessage())
+        } catch (ParseError $exception) {
+            throw new RuntimeException(
+                sprintf('Cannot parse code in file "%s". Reason: %s', $file, $exception->getMessage())
             );
         }
 
@@ -98,11 +120,11 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 continue;
             }
 
-            if (\T_NAMESPACE === $token_id) {
+            if (T_NAMESPACE === $token_id) {
                 for (++$i; $i < $this->getTotalTokens(); ++$i) {
                     $token_id = $this->getTokenId($i);
 
-                    if (\in_array($token_id, [\T_STRING, \T_NAME_QUALIFIED, \T_NAME_FULLY_QUALIFIED], true)) {
+                    if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
                         $namespace = $this->getTokenText($i);
 
                         break;
@@ -110,11 +132,11 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 }
             }
 
-            if (\in_array($token_id, [\T_ABSTRACT, \T_TRAIT], true)) {
+            if (in_array($token_id, [T_ABSTRACT, T_TRAIT], true)) {
                 $isValidFqn = false;
             }
 
-            if ($isValidFqn && \in_array($token_id, [\T_CLASS, \T_INTERFACE], true)) {
+            if ($isValidFqn && in_array($token_id, [T_CLASS, T_INTERFACE], true)) {
                 $fqnItem = [];
                 $classOrInterfaceTokenId = $token_id;
 
@@ -122,11 +144,11 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                     $token_id = $this->getTokenId($i);
                     $token_text = $this->getTokenText($i);
 
-                    if (\T_STRING === $token_id
+                    if (T_STRING === $token_id
                         && [] === $fqnItem
-                        && \str_starts_with($namespace, $this->namespace)) {
+                        && str_starts_with($namespace, $this->namespace)) {
                         /** @var class-string $fqn */
-                        $fqn = \implode('\\', [$namespace, $token_text]);
+                        $fqn = implode('\\', [$namespace, $token_text]);
                         $fqnItem = [
                             'fqn' => $fqn,
                             'tokenId' => $classOrInterfaceTokenId,

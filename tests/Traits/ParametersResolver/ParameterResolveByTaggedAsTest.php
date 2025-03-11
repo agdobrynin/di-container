@@ -12,10 +12,12 @@ use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\ClassWithDependency;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
+use function call_user_func_array;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
@@ -40,7 +42,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
     public function testResolveByTaggedAsByDiTaggedAsNonVariadic(): void
     {
         $fn = static fn (iterable $item) => $item;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $this->bindArguments(
             item: diTaggedAs('tags.tag-one'),
@@ -76,7 +78,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertTrue($res->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res->current());
@@ -91,7 +93,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
     public function testResolveByTaggedAsByDiTaggedAsVariadic(): void
     {
         $fn = static fn (iterable ...$item) => $item;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $this->bindArguments(
             item: [
@@ -132,7 +134,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertTrue($res1->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res1->current());
@@ -153,7 +155,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
     public function testResolveByTaggedAsByAttributeNonVariadic(): void
     {
         $fn = static fn (#[TaggedAs('tags.tag-one')] iterable $item) => $item;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::once())
@@ -185,7 +187,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertTrue($res->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res->current());
@@ -204,7 +206,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
             #[TaggedAs('tags.tag-two')]
             iterable ...$item
         ) => $item;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
@@ -238,7 +240,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        [$res1, $res2] = \call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
 
         $this->assertTrue($res1->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res1->current());

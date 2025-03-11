@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
+use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
+use function trim;
+
 /**
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
  */
-#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 final class Tag implements DiAttributeInterface
 {
     /**
@@ -20,7 +23,7 @@ final class Tag implements DiAttributeInterface
      */
     public function __construct(private string $name, private array $options = [], private null|int|string $priority = null, private ?string $priorityMethod = null)
     {
-        if ('' === \trim($name)) {
+        if ('' === trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
     }

@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
@@ -27,7 +28,7 @@ class ProxyClosureReaderTest extends TestCase
         $f = static fn (
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->assertFalse($this->getProxyClosureAttribute($p)->valid());
     }
@@ -39,7 +40,7 @@ class ProxyClosureReaderTest extends TestCase
             #[ProxyClosure('ok2')]
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
@@ -53,7 +54,7 @@ class ProxyClosureReaderTest extends TestCase
             #[ProxyClosure('ok')]
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $injects = $this->getProxyClosureAttribute($p);
 
@@ -76,7 +77,7 @@ class ProxyClosureReaderTest extends TestCase
             #[ProxyClosure('three')]
             string ...$a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $injects = $this->getProxyClosureAttribute($p);
 

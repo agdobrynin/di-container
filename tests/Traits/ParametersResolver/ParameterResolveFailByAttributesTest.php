@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionFunction;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -55,7 +56,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
             #[ProxyClosure('someService')]
             $iterator
         ) => $iterator;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $this->setContainer($this->mockContainer);
 
@@ -72,7 +73,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
             #[TaggedAs('tags.handlers-one')]
             $iterator
         ) => $iterator;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $this->setContainer($this->mockContainer);
 
@@ -91,7 +92,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
             #[InjectByCallable('func')]
             iterable $iterator
         ) => $iterator;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $this->setContainer($this->mockContainer);
 
@@ -108,7 +109,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
             #[InjectByCallable('func')]
             iterable $iterator
         ) => $iterator;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $this->setContainer($this->mockContainer);
 

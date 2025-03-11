@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionReference;
 
+use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  */
 class DiDefinitionReferenceTest extends TestCase
 {
-    public function dataProviderWrongDefinition(): \Generator
+    public function dataProviderWrongDefinition(): Generator
     {
         yield 'empty string' => [''];
 
@@ -33,7 +34,7 @@ class DiDefinitionReferenceTest extends TestCase
         (new DiDefinitionGet($definition))->getDefinition();
     }
 
-    public function dataProviderDefinitionSuccess(): \Generator
+    public function dataProviderDefinitionSuccess(): Generator
     {
         yield 'set 1' => ['key1', 'key1'];
 

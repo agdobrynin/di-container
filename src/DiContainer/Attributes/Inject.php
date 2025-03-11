@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
+use Attribute;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
-#[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class Inject implements DiAttributeInterface
 {
     /**

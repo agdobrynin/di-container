@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions\Fixtures;
 
+use Generator;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleInterface;
 
 class IterableArg
@@ -16,9 +17,9 @@ class IterableArg
     ) {}
 
     /**
-     * @return \Generator<RuleInterface>
+     * @return Generator<RuleInterface>
      */
-    public function getValues(): \Generator
+    public function getValues(): Generator
     {
         yield from $this->rules;
     }

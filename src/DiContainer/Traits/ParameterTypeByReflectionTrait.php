@@ -8,6 +8,13 @@ use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerInterface;
+use ReflectionNamedType;
+use ReflectionParameter;
+use ReflectionUnionType;
+
+use function count;
+use function implode;
+use function sprintf;
 
 trait ParameterTypeByReflectionTrait
 {
@@ -17,15 +24,15 @@ trait ParameterTypeByReflectionTrait
      * @throws AutowireExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      */
-    private function getParameterType(\ReflectionParameter $parameter, ContainerInterface $container): ?string
+    private function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): ?string
     {
         $type = $parameter->getType();
 
-        if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+        if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
             return $type->getName(); // @phpstan-ignore-line
         }
 
-        if ($type instanceof \ReflectionUnionType) {
+        if ($type instanceof ReflectionUnionType) {
             $types = [];
             foreach ($type->getTypes() as $t) { // @phpstan-ignore-line
                 /**
@@ -39,11 +46,11 @@ trait ParameterTypeByReflectionTrait
                 }
             }
 
-            return match (\count($types)) {
+            return match (count($types)) {
                 0 => null,
                 1 => $types[0],
                 default => throw new AutowireException(
-                    \sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available types: %s.', $parameter->getName(), '"'.\implode('", "', $types)).'"'
+                    sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available types: %s.', $parameter->getName(), '"'.implode('", "', $types)).'"'
                 )
             };
         }

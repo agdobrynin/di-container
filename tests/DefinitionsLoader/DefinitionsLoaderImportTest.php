@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader;
 
+use ArrayIterator;
+use InvalidArgumentException;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
+use RuntimeException;
 use Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\Two;
 
+use function array_keys;
+use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
+use function sort;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Autowire
@@ -46,7 +52,7 @@ class DefinitionsLoaderImportTest extends TestCase
             )
         ))->make($loader->definitions());
 
-        $containerIds = \array_keys(\iterator_to_array($container->getDefinitions()));
+        $containerIds = array_keys(iterator_to_array($container->getDefinitions()));
 
         $expectContainerIds = [
             Fixtures\Import\SubDirectory\One::class,
@@ -57,8 +63,8 @@ class DefinitionsLoaderImportTest extends TestCase
             'services.two',
         ];
 
-        \sort($expectContainerIds);
-        \sort($containerIds);
+        sort($expectContainerIds);
+        sort($containerIds);
         $this->assertEquals($expectContainerIds, $containerIds);
 
         // manual config in Fixtures/Import/services.php
@@ -108,7 +114,7 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('is already imported');
 
         $loader->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import');
@@ -120,7 +126,7 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
         $loader->addDefinitions(false, [
-            'services.two' => static fn () => new \ArrayIterator([]),
+            'services.two' => static fn () => new ArrayIterator([]),
         ]);
 
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -152,7 +158,7 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import('Tests\\', __DIR__.'/Fixtures/ImportReflectionFail')
         ;
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Reason: Interface "Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\ContainerInterface" not found');
 
         (new DiContainerFactory())->make($loader->definitions());

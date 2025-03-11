@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Finder;
 
+use Iterator;
+use RuntimeException;
+
 /**
  * @phpstan-type ItemFQN array{fqn: class-string, tokenId: \T_CLASS | \T_INTERFACE, line: null|int, file: string}
  *
@@ -14,9 +17,9 @@ interface FinderFullyQualifiedNameInterface
     /**
      * Find all fully qualified names for classes and interfaces.
      *
-     * @return \Iterator<non-negative-int, ItemFQN>
+     * @return Iterator<non-negative-int, ItemFQN>
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
-    public function find(): \Iterator;
+    public function find(): Iterator;
 }

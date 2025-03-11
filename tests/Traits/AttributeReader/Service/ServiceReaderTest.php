@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Tests\Traits\AttributeReader\Service\Fixtures\Main;
 use Tests\Traits\AttributeReader\Service\Fixtures\MainInterface;
 use Tests\Traits\AttributeReader\Service\Fixtures\NoServiceInterface;
@@ -40,7 +41,7 @@ class ServiceReaderTest extends TestCase
 
     public function testHasOneAttribute(): void
     {
-        $attribute = $this->reader->getServiceAttribute(new \ReflectionClass(MainInterface::class));
+        $attribute = $this->reader->getServiceAttribute(new ReflectionClass(MainInterface::class));
 
         $this->assertInstanceOf(Service::class, $attribute);
         $this->assertEquals(Main::class, $attribute->getIdentifier());
@@ -48,7 +49,7 @@ class ServiceReaderTest extends TestCase
 
     public function testNoneAttribute(): void
     {
-        $attribute = $this->reader->getDiFactoryAttribute(new \ReflectionClass(NoServiceInterface::class));
+        $attribute = $this->reader->getDiFactoryAttribute(new ReflectionClass(NoServiceInterface::class));
 
         $this->assertNull($attribute);
     }

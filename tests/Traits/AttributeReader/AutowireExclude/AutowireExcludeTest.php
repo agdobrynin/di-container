@@ -6,6 +6,7 @@ namespace Tests\Traits\AttributeReader\AutowireExclude;
 
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Tests\Traits\AttributeReader\AutowireExclude\Fixtures\ClassWillBeExcluded;
 use Tests\Traits\AttributeReader\AutowireExclude\Fixtures\ClassWillNotBeExcluded;
 
@@ -21,14 +22,14 @@ class AutowireExcludeTest extends TestCase
     public function testAutowireExclude(): void
     {
         $this->assertTrue(
-            $this->isAutowireExclude(new \ReflectionClass(ClassWillBeExcluded::class))
+            $this->isAutowireExclude(new ReflectionClass(ClassWillBeExcluded::class))
         );
     }
 
     public function testAutowireNotExclude(): void
     {
         $this->assertFalse(
-            $this->isAutowireExclude(new \ReflectionClass(ClassWillNotBeExcluded::class))
+            $this->isAutowireExclude(new ReflectionClass(ClassWillNotBeExcluded::class))
         );
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Attributes\Raw;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  */
 class InjectByCallableTest extends TestCase
 {
-    public function successIdsDataProvider(): \Generator
+    public function successIdsDataProvider(): Generator
     {
         yield 'string' => ['ok', null, 'ok', null];
 
@@ -37,7 +38,7 @@ class InjectByCallableTest extends TestCase
         $this->assertEquals($expectIsSingleton, $attr->isSingleton());
     }
 
-    public function failIdsDataProvider(): \Generator
+    public function failIdsDataProvider(): Generator
     {
         yield 'empty string' => [''];
 

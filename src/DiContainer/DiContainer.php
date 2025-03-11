@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
@@ -31,6 +32,15 @@ use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionClass;
+
+use function array_key_exists;
+use function array_keys;
+use function class_exists;
+use function implode;
+use function in_array;
+use function interface_exists;
+use function sprintf;
 
 /**
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
@@ -102,8 +112,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function has(string $id): bool
     {
-        return \array_key_exists($id, $this->definitions)
-            || \array_key_exists($id, $this->resolved)
+        return array_key_exists($id, $this->definitions)
+            || array_key_exists($id, $this->resolved)
             || $this->hasViaZeroConfigurationDefinition($id)
             || $this->isContainer($id);
     }
@@ -116,9 +126,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         $this->getIdentifier($id, null); // check only $id
 
-        if (\array_key_exists($id, $this->definitions)) {
+        if (array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException(
-                \sprintf('Definition identifier "%s" already registered in container.', $id)
+                sprintf('Definition identifier "%s" already registered in container.', $id)
             );
         }
 
@@ -180,7 +190,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if (!$this->has($id)) {
-                throw new NotFoundException(\sprintf('Unresolvable dependency "%s".', $id));
+                throw new NotFoundException(sprintf('Unresolvable dependency "%s".', $id));
             }
 
             $this->checkCyclicalDependencyCall($id);
@@ -229,7 +239,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id];
         }
 
-        $hasDefinition = \array_key_exists($id, $this->definitions);
+        $hasDefinition = array_key_exists($id, $this->definitions);
 
         if ($hasDefinition
             && !$this->definitions[$id] instanceof DiDefinitionLinkInterface
@@ -239,7 +249,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         if (!$hasDefinition) {
             // @phpstan-ignore argument.type
-            $reflectionClass = new \ReflectionClass($id); // @todo come up with a test for throw ReflectionException
+            $reflectionClass = new ReflectionClass($id); // @todo come up with a test for throw ReflectionException
 
             if ($reflectionClass->isInterface()) {
                 // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
@@ -255,7 +265,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                throw new NotFoundException(\sprintf('Definition not found for identifier "%s"', $id));
+                throw new NotFoundException(sprintf('Definition not found for identifier "%s"', $id));
             }
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
@@ -293,7 +303,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
         }
 
-        if ($rawDefinition instanceof \Closure) {
+        if ($rawDefinition instanceof Closure) {
             return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $this->isSingletonDefault);
         }
 
@@ -302,7 +312,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function isContainer(string $id): bool
     {
-        return \in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true);
+        return in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true);
     }
 
     protected function hasViaZeroConfigurationDefinition(string $id): bool
@@ -311,8 +321,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return false;
         }
 
-        if (\class_exists($id) || \interface_exists($id)) {
-            return !$this->config->isUseAttribute() || !$this->isAutowireExclude(new \ReflectionClass($id));
+        if (class_exists($id) || interface_exists($id)) {
+            return !$this->config->isUseAttribute() || !$this->isAutowireExclude(new ReflectionClass($id));
         }
 
         return false;
@@ -320,11 +330,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function checkCyclicalDependencyCall(string $id): void
     {
-        if (\array_key_exists($id, $this->resolvingDependencies)) {
-            $callPath = \implode(' -> ', \array_keys($this->resolvingDependencies)).' -> '.$id;
+        if (array_key_exists($id, $this->resolvingDependencies)) {
+            $callPath = implode(' -> ', array_keys($this->resolvingDependencies)).' -> '.$id;
 
             throw new CallCircularDependencyException(
-                \sprintf('Trying call cyclical dependency. Call dependencies: %s', $callPath)
+                sprintf('Trying call cyclical dependency. Call dependencies: %s', $callPath)
             );
         }
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiContainer\Set;
 
+use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
@@ -16,7 +17,7 @@ use PHPUnit\Framework\TestCase;
  */
 class DiContainerSetTest extends TestCase
 {
-    public function dataProviderWrongIdentifier(): \Generator
+    public function dataProviderWrongIdentifier(): Generator
     {
         yield 'empty string' => [''];
 
@@ -34,7 +35,7 @@ class DiContainerSetTest extends TestCase
         (new DiContainer())->set($id, 'foo');
     }
 
-    public function dataProviderSuccessIdentifier(): \Generator
+    public function dataProviderSuccessIdentifier(): Generator
     {
         yield 'with spaces' => [' foo ', 'definition'];
 

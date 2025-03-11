@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\DiFactory;
@@ -16,17 +17,26 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use ReflectionAttribute;
+use ReflectionClass;
+use ReflectionParameter;
+
+use function array_reduce;
+use function count;
+use function implode;
+use function in_array;
+use function sprintf;
 
 trait AttributeReaderTrait
 {
     use ParameterTypeByReflectionTrait;
 
-    public function isAutowireExclude(\ReflectionClass $reflectionClass): bool
+    public function isAutowireExclude(ReflectionClass $reflectionClass): bool
     {
         return !([] === $reflectionClass->getAttributes(AutowireExclude::class));
     }
 
-    private function getDiFactoryAttribute(\ReflectionClass $reflectionClass): ?DiFactory
+    private function getDiFactoryAttribute(ReflectionClass $reflectionClass): ?DiFactory
     {
         if (null === $attribute = ($reflectionClass->getAttributes(DiFactory::class)[0] ?? null)) {
             return null;
@@ -34,7 +44,7 @@ trait AttributeReaderTrait
 
         if ([] !== $reflectionClass->getAttributes(Autowire::class)) {
             throw new AutowireAttributeException(
-                \sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', DiFactory::class, Autowire::class, $reflectionClass->name)
+                sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', DiFactory::class, Autowire::class, $reflectionClass->name)
             );
         }
 
@@ -42,9 +52,9 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<Autowire>
+     * @return Generator<Autowire>
      */
-    private function getAutowireAttribute(\ReflectionClass $reflectionClass): \Generator
+    private function getAutowireAttribute(ReflectionClass $reflectionClass): Generator
     {
         $attributes = $reflectionClass->getAttributes(Autowire::class);
 
@@ -54,7 +64,7 @@ trait AttributeReaderTrait
 
         if ([] !== $reflectionClass->getAttributes(DiFactory::class)) {
             throw new AutowireAttributeException(
-                \sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', Autowire::class, DiFactory::class, $reflectionClass->name)
+                sprintf('Cannot use together attributes #[%s] and #[%s] for class %s.', Autowire::class, DiFactory::class, $reflectionClass->name)
             );
         }
 
@@ -71,7 +81,7 @@ trait AttributeReaderTrait
 
             if ($containerIdentifier === $autowire->getIdentifier()) {
                 throw new AutowireAttributeException(
-                    \sprintf('Container identifier "%s" already defined by #[%s] for class "%s".', $autowire->getIdentifier(), Autowire::class, $reflectionClass->name),
+                    sprintf('Container identifier "%s" already defined by #[%s] for class "%s".', $autowire->getIdentifier(), Autowire::class, $reflectionClass->name),
                 );
             }
 
@@ -81,15 +91,15 @@ trait AttributeReaderTrait
         }
     }
 
-    private function getServiceAttribute(\ReflectionClass $reflectionClass): ?Service
+    private function getServiceAttribute(ReflectionClass $reflectionClass): ?Service
     {
         return ($reflectionClass->getAttributes(Service::class)[0] ?? null)?->newInstance();
     }
 
     /**
-     * @return \Generator<Tag>
+     * @return Generator<Tag>
      */
-    private function getTagAttribute(\ReflectionClass $reflectionClass): \Generator
+    private function getTagAttribute(ReflectionClass $reflectionClass): Generator
     {
         $attributes = $reflectionClass->getAttributes(Tag::class);
 
@@ -103,18 +113,18 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<Inject>|\Generator<InjectByCallable>|\Generator<ProxyClosure>|\Generator<TaggedAs>
+     * @return Generator<Inject>|Generator<InjectByCallable>|Generator<ProxyClosure>|Generator<TaggedAs>
      *
      * @throws AutowireExceptionInterface
      */
-    private function getAttributeOnParameter(\ReflectionParameter $reflectionParameter): \Generator
+    private function getAttributeOnParameter(ReflectionParameter $reflectionParameter): Generator
     {
         $oneOfAttributes = [Inject::class, ProxyClosure::class, TaggedAs::class, InjectByCallable::class];
 
-        $attribute = \array_reduce(
+        $attribute = array_reduce(
             $reflectionParameter->getAttributes(),
-            static function (array $attrs, \ReflectionAttribute $a) use ($oneOfAttributes) {
-                if (\in_array($a->getName(), $oneOfAttributes, true)) {
+            static function (array $attrs, ReflectionAttribute $a) use ($oneOfAttributes) {
+                if (in_array($a->getName(), $oneOfAttributes, true)) {
                     $attrs[$a->getName()] = true;
                 }
 
@@ -127,9 +137,9 @@ trait AttributeReaderTrait
             return;
         }
 
-        if (\count($attribute) > 1) {
+        if (count($attribute) > 1) {
             throw new AutowireAttributeException(
-                \sprintf('Only one of the attributes %s may be declared.', '#['.\implode('], #[', $oneOfAttributes).']')
+                sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $oneOfAttributes).']')
             );
         }
 
@@ -155,12 +165,12 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<Inject>
+     * @return Generator<Inject>
      *
      * @throws AutowireExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      */
-    private function getInjectAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getInjectAttribute(ReflectionParameter $reflectionParameter): Generator
     {
         $attributes = $reflectionParameter->getAttributes(Inject::class);
 
@@ -168,7 +178,7 @@ trait AttributeReaderTrait
             return;
         }
 
-        $this->checkVariadic($reflectionParameter, \count($attributes), Inject::class);
+        $this->checkVariadic($reflectionParameter, count($attributes), Inject::class);
 
         foreach ($attributes as $attribute) {
             /** @var Inject $inject */
@@ -186,9 +196,9 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<ProxyClosure>
+     * @return Generator<ProxyClosure>
      */
-    private function getProxyClosureAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getProxyClosureAttribute(ReflectionParameter $reflectionParameter): Generator
     {
         $attributes = $reflectionParameter->getAttributes(ProxyClosure::class);
 
@@ -196,7 +206,7 @@ trait AttributeReaderTrait
             return;
         }
 
-        $this->checkVariadic($reflectionParameter, \count($attributes), ProxyClosure::class);
+        $this->checkVariadic($reflectionParameter, count($attributes), ProxyClosure::class);
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
@@ -204,9 +214,9 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<TaggedAs>
+     * @return Generator<TaggedAs>
      */
-    private function getTaggedAsAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getTaggedAsAttribute(ReflectionParameter $reflectionParameter): Generator
     {
         $attributes = $reflectionParameter->getAttributes(TaggedAs::class);
 
@@ -214,7 +224,7 @@ trait AttributeReaderTrait
             return;
         }
 
-        $this->checkVariadic($reflectionParameter, \count($attributes), TaggedAs::class);
+        $this->checkVariadic($reflectionParameter, count($attributes), TaggedAs::class);
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
@@ -222,9 +232,9 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return \Generator<InjectByCallable>
+     * @return Generator<InjectByCallable>
      */
-    private function getInjectByCallableAttribute(\ReflectionParameter $reflectionParameter): \Generator
+    private function getInjectByCallableAttribute(ReflectionParameter $reflectionParameter): Generator
     {
         $attributes = $reflectionParameter->getAttributes(InjectByCallable::class);
 
@@ -232,18 +242,18 @@ trait AttributeReaderTrait
             return;
         }
 
-        $this->checkVariadic($reflectionParameter, \count($attributes), InjectByCallable::class);
+        $this->checkVariadic($reflectionParameter, count($attributes), InjectByCallable::class);
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
         }
     }
 
-    private function checkVariadic(\ReflectionParameter $reflectionParameter, int $countAttributes, string $attribute): void
+    private function checkVariadic(ReflectionParameter $reflectionParameter, int $countAttributes, string $attribute): void
     {
         if ($countAttributes > 1 && !$reflectionParameter->isVariadic()) {
             throw new AutowireAttributeException(
-                \sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
+                sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
             );
         }
     }

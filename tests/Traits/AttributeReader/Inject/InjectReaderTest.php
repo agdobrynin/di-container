@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionParameter;
 use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
@@ -32,7 +33,7 @@ class InjectReaderTest extends TestCase
         $f = static fn (
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->assertFalse($this->getInjectAttribute($p)->valid());
     }
@@ -44,7 +45,7 @@ class InjectReaderTest extends TestCase
             #[Inject]
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
@@ -58,7 +59,7 @@ class InjectReaderTest extends TestCase
             #[Inject]
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->setContainer($this->createMock(DiContainerInterface::class));
 
@@ -83,7 +84,7 @@ class InjectReaderTest extends TestCase
             #[Inject('three')]
             string ...$a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->setContainer($this->createMock(DiContainerInterface::class));
 
@@ -106,7 +107,7 @@ class InjectReaderTest extends TestCase
             #[Inject]
             SuperClass $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->setContainer($this->createMock(DiContainerInterface::class));
 
@@ -122,7 +123,7 @@ class InjectReaderTest extends TestCase
             #[Inject]
             string|SuperClass $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())

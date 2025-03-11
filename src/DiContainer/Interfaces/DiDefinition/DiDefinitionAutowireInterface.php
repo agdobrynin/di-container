@@ -6,13 +6,14 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use ReflectionClass;
 
 interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
 {
     /**
      * @throws AutowireExceptionInterface
      */
-    public function getDefinition(): \ReflectionClass;
+    public function getDefinition(): ReflectionClass;
 
     public function setContainer(DiContainerInterface $container): static;
 }

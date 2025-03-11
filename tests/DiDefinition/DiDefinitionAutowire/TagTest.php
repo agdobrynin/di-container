@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
+use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagOne;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwo;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefault;
@@ -137,7 +139,7 @@ class TagTest extends TestCase
         $this->assertTrue($def->hasTag('tags.validator.two'));
     }
 
-    public static function dataProviderPriorityTagMethodWrongType(): \Generator
+    public static function dataProviderPriorityTagMethodWrongType(): Generator
     {
         yield 'empty string' => [''];
 
@@ -161,7 +163,7 @@ class TagTest extends TestCase
         $def->geTagPriority('tags.handler-one');
     }
 
-    public static function dataProviderPriorityTagMethodByOptionsWrongType(): \Generator
+    public static function dataProviderPriorityTagMethodByOptionsWrongType(): Generator
     {
         yield 'empty string' => [['priority.method' => '']];
 
@@ -171,7 +173,7 @@ class TagTest extends TestCase
 
         yield 'boolean' => [['priority.method' => true]];
 
-        yield 'stdClass' => [['priority.method' => new \stdClass()]];
+        yield 'stdClass' => [['priority.method' => new stdClass()]];
     }
 
     /**
@@ -213,7 +215,7 @@ class TagTest extends TestCase
         $this->assertNull($def->geTagPriority('tags.handler-one', ['priority.default_method' => 'getTaggedPriorityNonExist']));
     }
 
-    public static function dataProviderWrongReturnType(): \Generator
+    public static function dataProviderWrongReturnType(): Generator
     {
         yield 'none return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnEmpty'];
 

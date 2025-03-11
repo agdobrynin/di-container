@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
+use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
-#[\Attribute(\Attribute::TARGET_CLASS)]
+use function is_a;
+use function sprintf;
+
+#[Attribute(Attribute::TARGET_CLASS)]
 final class DiFactory implements DiAttributeServiceInterface
 {
     /**
@@ -16,9 +20,9 @@ final class DiFactory implements DiAttributeServiceInterface
      */
     public function __construct(private string $id, private ?bool $isSingleton = null)
     {
-        if (!\is_a($id, DiFactoryInterface::class, true)) {
+        if (!is_a($id, DiFactoryInterface::class, true)) {
             throw new AutowireAttributeException(
-                \sprintf('The attribute #[%s] must have an $id parameter as class-string. Class must have implement %s interface. Got: \'%s\'', self::class, DiFactoryInterface::class, $id)
+                sprintf('The attribute #[%s] must have an $id parameter as class-string. Class must have implement %s interface. Got: \'%s\'', self::class, DiFactoryInterface::class, $id)
             );
         }
     }

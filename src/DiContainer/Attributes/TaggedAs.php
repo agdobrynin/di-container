@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
+use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
-#[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
+use function trim;
+
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class TaggedAs implements DiAttributeInterface
 {
     /**
@@ -28,7 +31,7 @@ final class TaggedAs implements DiAttributeInterface
         private array $containerIdExclude = [],
         private bool $selfExclude = true,
     ) {
-        if ('' === \trim($name)) {
+        if ('' === trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
     }

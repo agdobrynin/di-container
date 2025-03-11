@@ -7,9 +7,12 @@ namespace Tests\Traits\AttributeReader\Autowire;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\ClassWithDiFactoryAndAutowire;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\MultipleAutowire;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\MultipleAutowireFail;
+
+use function iterator_to_array;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Autowire
@@ -26,12 +29,12 @@ class AutowireTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot use together attributes.+DiFactory.+Autowire/');
 
-        $this->getAutowireAttribute(new \ReflectionClass(ClassWithDiFactoryAndAutowire::class))->valid();
+        $this->getAutowireAttribute(new ReflectionClass(ClassWithDiFactoryAndAutowire::class))->valid();
     }
 
     public function testMultipleAutowireSuccess(): void
     {
-        $attrs = $this->getAutowireAttribute(new \ReflectionClass(MultipleAutowire::class));
+        $attrs = $this->getAutowireAttribute(new ReflectionClass(MultipleAutowire::class));
 
         $this->assertTrue($attrs->valid());
 
@@ -55,11 +58,11 @@ class AutowireTest extends TestCase
 
     public function testAutowireContainerIdentifierNoneUnique(): void
     {
-        $attrs = $this->getAutowireAttribute(new \ReflectionClass(MultipleAutowireFail::class));
+        $attrs = $this->getAutowireAttribute(new ReflectionClass(MultipleAutowireFail::class));
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Container identifier "service" already defined/');
 
-        \iterator_to_array($attrs);
+        iterator_to_array($attrs);
     }
 }
