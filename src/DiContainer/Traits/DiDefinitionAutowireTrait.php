@@ -46,7 +46,7 @@ trait DiDefinitionAutowireTrait
                 $definition->getDefinition()->name,
                 $method,
                 '"'.implode('", "', $supportReturnTypes).'"',
-                isset($types) ? ' Got return type: "'.implode('", "', $types).'"' : ''
+                isset($types) ? ' Got return type: "'.implode('", "', $types).'".' : ''
             );
 
             throw new AutowireException($message);

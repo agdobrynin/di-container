@@ -108,7 +108,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         foreach ($this->setup as $method => $arguments) {
             if (!$this->getDefinition()->hasMethod($method)) {
-                throw new AutowireException(sprintf('The method "%s" does not exist', $method));
+                throw new AutowireException(sprintf('The method "%s" does not exist.', $method));
             }
 
             $this->reflectionMethodParams[$method] ??= $this->getDefinition()->getMethod($method)->getParameters();
@@ -222,7 +222,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         if (!$reflectionClass->isInstantiable()) {
             throw new AutowireException(
-                sprintf('The "%s" class is not instantiable', $reflectionClass->getName())
+                sprintf('The "%s" class is not instantiable.', $reflectionClass->getName())
             );
         }
 

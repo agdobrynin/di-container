@@ -23,6 +23,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use SplPriorityQueue;
 
 use function explode;
+use function get_debug_type;
 use function in_array;
 use function interface_exists;
 use function is_string;
@@ -209,10 +210,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 if (!is_string($optionKey) || '' === trim($optionKey)) {
                     throw new AutowireException(
                         sprintf(
-                            'Tag option "%s" for container identifier "%s" with tag "%s" has an error: the value must be non-empty string. Got: "%s".',
+                            'Tag option "%s" for container identifier "%s" with tag "%s" has an error: the value must be non-empty string. Got: type "%s", value: %s.',
                             $this->keyOptimized,
                             $identifier,
                             $this->tag,
+                            get_debug_type($optionKey),
                             var_export($optionKey, true)
                         )
                     );

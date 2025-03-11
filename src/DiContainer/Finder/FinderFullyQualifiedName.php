@@ -46,7 +46,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     ) {
         if (!str_ends_with($namespace, '\\')) {
             throw new InvalidArgumentException(
-                sprintf('Argument $namespace must be end with symbol "\". Got: "%s"', $namespace)
+                sprintf('Argument $namespace must be end with symbol "\". Got: "%s".', $namespace)
             );
         }
 

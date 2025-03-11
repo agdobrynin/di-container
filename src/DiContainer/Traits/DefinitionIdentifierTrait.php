@@ -26,7 +26,7 @@ trait DefinitionIdentifierTrait
             is_string($definition) && '' !== trim($definition) => $definition,
             $definition instanceof DiDefinitionIdentifierInterface => $definition->getIdentifier(),
             default => throw new DiDefinitionException(
-                sprintf('Definition identifier must be a non-empty string. Definition [%s].', get_debug_type($definition))
+                sprintf('Definition identifier must be a non-empty string. Definition "%s".', get_debug_type($definition))
             )
         };
     }

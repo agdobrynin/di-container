@@ -22,7 +22,7 @@ final class DiFactory implements DiAttributeServiceInterface
     {
         if (!is_a($id, DiFactoryInterface::class, true)) {
             throw new AutowireAttributeException(
-                sprintf('The attribute #[%s] must have an $id parameter as class-string. Class must have implement %s interface. Got: \'%s\'', self::class, DiFactoryInterface::class, $id)
+                sprintf('The attribute #[%s] must have an $id parameter as class-string. Class must have implement "%s" interface. Got: "%s".', self::class, DiFactoryInterface::class, $id)
             );
         }
     }

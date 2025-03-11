@@ -265,7 +265,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                throw new NotFoundException(sprintf('Definition not found for identifier "%s"', $id));
+                throw new NotFoundException(sprintf('Definition not found for identifier "%s".', $id));
             }
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
@@ -334,7 +334,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $callPath = implode(' -> ', array_keys($this->resolvingDependencies)).' -> '.$id;
 
             throw new CallCircularDependencyException(
-                sprintf('Trying call cyclical dependency. Call dependencies: %s', $callPath)
+                sprintf('Trying call cyclical dependency. Call dependencies: %s.', $callPath)
             );
         }
     }

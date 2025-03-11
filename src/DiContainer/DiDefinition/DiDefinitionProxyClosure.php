@@ -38,7 +38,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     public function invoke(): Closure
     {
         if (!$this->getContainer()->has($this->getDefinition())) {
-            throw new AutowireException(sprintf('Definition "%s" does not exist', $this->getDefinition()));
+            throw new AutowireException(sprintf('Definition "%s" does not exist.', $this->getDefinition()));
         }
 
         return function () {
@@ -52,7 +52,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     public function getDefinition(): string
     {
         return $this->verifyDefinition ??= '' === trim($this->definition)
-            ? throw new AutowireException(sprintf('Definition for %s must be non-empty string.', __CLASS__))
+            ? throw new AutowireException(sprintf('Definition for "%s" must be non-empty string.', __CLASS__))
             : $this->definition;
     }
 }

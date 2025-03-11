@@ -130,7 +130,7 @@ class CallableParserTest extends TestCase
     public function testParseDefinitionAsStringWithDoubleColonNotValid(string $definition): void
     {
         $this->expectException(DiDefinitionCallableExceptionInterface::class);
-        $this->expectExceptionMessage('Wrong callable definition present. Got: '.$definition);
+        $this->expectExceptionMessage('Wrong callable definition present. Got: "'.$definition.'"');
 
         $this->parseDefinitions($definition);
     }

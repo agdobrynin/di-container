@@ -60,7 +60,7 @@ class MainTest extends TestCase
     public function testContainerNeedSet(): void
     {
         $this->expectException(ContainerNeedSetException::class);
-        $this->expectExceptionMessage('Use method setContainer() in Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure class.');
+        $this->expectExceptionMessage('Use method setContainer() in "Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure" class.');
 
         (new DiDefinitionProxyClosure('ok'))->invoke();
     }

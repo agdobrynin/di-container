@@ -31,7 +31,7 @@ class MainTest extends TestCase
 
         yield 'some random string' => [
             'service.ooo',
-            'Definition is not callable. Got: \'service.ooo\'',
+            'Definition is not callable. Got: type "string", value: \'service.ooo\'',
         ];
 
         yield 'empty array' => [
@@ -46,12 +46,12 @@ class MainTest extends TestCase
 
         yield 'no exist class with method as string' => [
             'SomeClass::method',
-            'Definition is not callable. Got: \'SomeClass::method\'',
+            'Definition is not callable. Got: type "string", value: \'SomeClass::method\'',
         ];
 
         yield 'no exist class with method as array' => [
             ['SomeClass', 'method'],
-            'Definition is not callable. Got: array',
+            'Definition is not callable. Got: type "array", value: array (',
         ];
 
         yield 'is not callable because method not exist' => [

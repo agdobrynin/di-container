@@ -12,6 +12,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 use function explode;
+use function get_debug_type;
 use function is_array;
 use function is_callable;
 use function is_string;
@@ -54,7 +55,7 @@ trait CallableParserTrait
         }
 
         throw new DiDefinitionCallableException(
-            sprintf('Definition is not callable. Got: %s', var_export($definition, true))
+            sprintf('Definition is not callable. Got: type "%s", value: %s.', get_debug_type($definition), var_export($definition, true))
         );
     }
 
@@ -68,7 +69,7 @@ trait CallableParserTrait
         if (is_array($argument)) {
             if (!isset($argument[0], $argument[1])) {
                 throw new DiDefinitionCallableException(
-                    sprintf('When the definition is an array, two array elements must be provided. Got: %s', var_export($argument, true))
+                    sprintf('When the definition is an array, two array elements must be provided. Got: type: "%s", value %s.', get_debug_type($argument), var_export($argument, true))
                 );
             }
 
@@ -81,7 +82,7 @@ trait CallableParserTrait
 
             if ('' === $class || '' === $method) {
                 throw new DiDefinitionCallableException(
-                    sprintf('Wrong callable definition present. Got: %s', $argument)
+                    sprintf('Wrong callable definition present. Got: "%s"', $argument)
                 );
             }
 

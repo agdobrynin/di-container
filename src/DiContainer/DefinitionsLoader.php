@@ -229,7 +229,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         foreach ($file as $srcFile) {
             if (!file_exists($srcFile) || !is_readable($srcFile)) {
-                throw new InvalidArgumentException(sprintf('The file "%s" does not exist or is not readable', $srcFile));
+                throw new InvalidArgumentException(sprintf('The file "%s" does not exist or is not readable.', $srcFile));
             }
 
             try {
