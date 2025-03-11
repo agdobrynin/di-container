@@ -122,14 +122,9 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                     $token_id = $this->getTokenId($i);
                     $token_text = $this->getTokenText($i);
 
-                    /*
-                     * Class, interface naming for $token_text:
-                     * @see https://www.php.net/manual/ru/language.oop5.basic.php#language.oop5.basic.class
-                     */
-                    if ([] === $fqnItem
-                        && \T_STRING === $token_id
-                        && \str_starts_with($namespace, $this->namespace)
-                        && 1 === \preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $token_text)) {
+                    if (\T_STRING === $token_id
+                        && [] === $fqnItem
+                        && \str_starts_with($namespace, $this->namespace)) {
                         /** @var class-string $fqn */
                         $fqn = \implode('\\', [$namespace, $token_text]);
                         $fqnItem = [
