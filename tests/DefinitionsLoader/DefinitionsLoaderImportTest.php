@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use RuntimeException;
+use Tests\AppClass;
 use Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\Two;
 
 use function array_keys;
@@ -162,5 +163,27 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->expectExceptionMessage('Reason: Interface "Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\ContainerInterface" not found');
 
         (new DiContainerFactory())->make($loader->definitions());
+    }
+
+    public function testShortNamespaceAndClassName(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\\', __DIR__.'/../', excludeFilesRegExpPattern: [
+                '~tests/Attributes~',
+                '~tests/D.+~',
+                '~tests/F.+~',
+                '~tests/L.+~',
+                '~tests/T.+~',
+            ])
+        ;
+
+        $container = (new DiContainerFactory(
+            new DiContainerConfig(
+                useZeroConfigurationDefinition: false
+            )
+        ))->make($loader->definitions());
+
+        $this->assertTrue($container->has(AppClass::class));
+        $this->assertInstanceOf(AppClass::class, $container->get(AppClass::class));
     }
 }

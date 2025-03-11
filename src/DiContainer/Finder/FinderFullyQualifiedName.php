@@ -13,7 +13,6 @@ use ParseError;
 use RuntimeException;
 use SplFileInfo;
 
-use function implode;
 use function in_array;
 use function preg_match;
 use function sprintf;
@@ -146,9 +145,8 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
                     if (T_STRING === $token_id
                         && [] === $fqnItem
-                        && str_starts_with($namespace, $this->namespace)) {
+                        && str_starts_with($fqn = $namespace.'\\'.$token_text, $this->namespace)) {
                         /** @var class-string $fqn */
-                        $fqn = implode('\\', [$namespace, $token_text]);
                         $fqnItem = [
                             'fqn' => $fqn,
                             'tokenId' => $classOrInterfaceTokenId,
