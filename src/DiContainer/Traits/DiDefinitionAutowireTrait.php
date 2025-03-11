@@ -11,7 +11,6 @@ use ReflectionUnionType;
 
 use function array_diff;
 use function array_map;
-use function call_user_func;
 use function implode;
 use function is_callable;
 use function is_string;
@@ -30,9 +29,7 @@ trait DiDefinitionAutowireTrait
             throw new AutowireException($where.' The value option must be non-empty string.');
         }
 
-        // @phpstan-var callable $callableExpression
-        $callableExpression = [$definition->getDefinition()->name, $method];
-        $isCallable = is_callable($callableExpression);
+        $isCallable = is_callable([$definition->getDefinition()->name, $method]);
 
         // @phpstan-ignore argument.type
         if (!$isCallable || [] !== ($types = static::diffReturnType($definition->getDefinition()->getMethod($method)->getReturnType(), ...$supportReturnTypes))) {
@@ -52,20 +49,20 @@ trait DiDefinitionAutowireTrait
             throw new AutowireException($message);
         }
 
-        // @phpstan-ignore return.type
-        return call_user_func($callableExpression, ...$args);
+        // @phpstan-ignore return.type, staticMethod.dynamicName
+        return $definition->getDefinition()->name::$method(...$args);
     }
 
     /**
      * @return array<string>
      */
-    private static function diffReturnType(null|ReflectionNamedType|ReflectionUnionType $rt, string ...$type): array
+    private static function diffReturnType(null|ReflectionNamedType|ReflectionUnionType $returnType, string ...$type): array
     {
         $fn = static fn (ReflectionNamedType $t): string => $t->getName();
 
         $types = match (true) {
-            $rt instanceof ReflectionNamedType => [$rt->getName()],
-            $rt instanceof ReflectionUnionType => array_map($fn, $rt->getTypes()), // @phpstan-ignore argument.type
+            $returnType instanceof ReflectionNamedType => [$returnType->getName()],
+            $returnType instanceof ReflectionUnionType => array_map($fn, $returnType->getTypes()), // @phpstan-ignore argument.type
             default => ['undefined'],
         };
 
