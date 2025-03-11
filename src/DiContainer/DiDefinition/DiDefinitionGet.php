@@ -7,6 +7,8 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 
+use function trim;
+
 final class DiDefinitionGet implements DiDefinitionLinkInterface
 {
     /**
@@ -26,7 +28,7 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface
      */
     public function getDefinition(): string
     {
-        return $this->validContainerIdentifier ??= '' === \trim($this->containerIdentifier)
+        return $this->validContainerIdentifier ??= '' === trim($this->containerIdentifier)
             ? throw new DiDefinitionException('Definition identifier must be a non-empty string.')
             : $this->containerIdentifier;
     }

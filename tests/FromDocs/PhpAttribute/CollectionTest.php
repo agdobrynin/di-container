@@ -12,6 +12,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\RuleA;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleB;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleInterface;
 
+use function func_get_args;
 use function Kaspi\DiContainer\diCallable;
 
 /**
@@ -31,7 +32,7 @@ class CollectionTest extends TestCase
     {
         $definitions = [
             'services.rule-list' => diCallable(
-                definition: static fn (RuleA $a, RuleB $b) => \func_get_args(),
+                definition: static fn (RuleA $a, RuleB $b) => func_get_args(),
                 isSingleton: true
             ),
         ];

@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\FinderFile;
 
+use Generator;
+use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use PHPUnit\Framework\TestCase;
+use SplFileInfo;
+
+use function array_map;
+use function count;
+use function iterator_to_array;
 
 /**
  * @covers \Kaspi\DiContainer\Finder\FinderFile
@@ -14,7 +21,7 @@ use PHPUnit\Framework\TestCase;
  */
 class FinderFileTest extends TestCase
 {
-    public static function dataProviderConstructor(): \Generator
+    public static function dataProviderConstructor(): Generator
     {
         yield 'none exist directory' => [
             __DIR__.'/no-dir',
@@ -32,7 +39,7 @@ class FinderFileTest extends TestCase
      */
     public function testFinderFileConstructorFail(string $src, string $expectMessage): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches($expectMessage);
 
         new FinderFile($src);
@@ -79,9 +86,9 @@ class FinderFileTest extends TestCase
             'Doc.txt',
         ];
 
-        $found = \array_map(static fn (\SplFileInfo $f) => $f->getFilename(), \iterator_to_array($files));
+        $found = array_map(static fn (SplFileInfo $f) => $f->getFilename(), iterator_to_array($files));
 
-        $this->assertCount(\count($expect), $found);
+        $this->assertCount(count($expect), $found);
         $this->assertSame($expect, $found);
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire\Fixtures;
 
+use ReflectionClass;
+
 class TaggedClassBindTagOne
 {
     public static function getTaggedPriority(): int
@@ -15,5 +17,5 @@ class TaggedClassBindTagOne
 
     public static function getTaggedPriorityReturnArray(): array {}
 
-    public static function getTaggedPriorityReturnUnionWrong(): null|array|\ReflectionClass|string {}
+    public static function getTaggedPriorityReturnUnionWrong(): null|array|ReflectionClass|string {}
 }

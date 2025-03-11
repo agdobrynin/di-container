@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\TaggedAs;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
@@ -38,7 +40,7 @@ class TaggedAsReaderTest extends TestCase
     public function testNonTaggedAs(): void
     {
         $fn = static fn (iterable $tagged) => '';
-        $p = new \ReflectionParameter($fn, 0);
+        $p = new ReflectionParameter($fn, 0);
 
         $this->assertFalse($this->reader->getTaggedAsAttribute($p)->valid());
     }
@@ -50,12 +52,12 @@ class TaggedAsReaderTest extends TestCase
             #[TaggedAs('tags.voters-security')]
             iterable $tagged
         ) => '';
-        $p = new \ReflectionParameter($fn, 0);
+        $p = new ReflectionParameter($fn, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
 
-        /** @var \Generator<TaggedAs> $res */
+        /** @var Generator<TaggedAs> $res */
         $res = $this->reader->getTaggedAsAttribute($p);
 
         $this->assertFalse($res->valid());
@@ -68,9 +70,9 @@ class TaggedAsReaderTest extends TestCase
             #[TaggedAs('tags.voters-security', false, 'getCollectionPriority')]
             ...$tagged
         ) => [];
-        $p = new \ReflectionParameter($fn, 0);
+        $p = new ReflectionParameter($fn, 0);
 
-        /** @var \Generator<TaggedAs> $res */
+        /** @var Generator<TaggedAs> $res */
         $res = $this->reader->getTaggedAsAttribute($p);
 
         $this->assertTrue($res->valid());

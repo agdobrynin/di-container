@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\TaggedAsKeys;
 
+use ArrayAccess;
+use Countable;
+use Iterator;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -68,9 +71,9 @@ class KeyThroughContainerAsPhpDefinitionTest extends TestCase
 
         $this->assertIsIterable($class->items);
         $this->assertInstanceOf(ContainerInterface::class, $class->items);
-        $this->assertInstanceOf(\Countable::class, $class->items);
-        $this->assertInstanceOf(\ArrayAccess::class, $class->items);
-        $this->assertInstanceOf(\Iterator::class, $class->items);
+        $this->assertInstanceOf(Countable::class, $class->items);
+        $this->assertInstanceOf(ArrayAccess::class, $class->items);
+        $this->assertInstanceOf(Iterator::class, $class->items);
 
         $this->assertCount(3, $class->items);
         $this->assertEquals(3, $class->items->count());

@@ -22,6 +22,11 @@ return (new PhpCsFixer\Config())
             'include' => ['@all'],
             'scope' => 'all',
         ],
+        'global_namespace_import' => [
+            'import_classes' => true,
+            'import_constants' => true,
+            'import_functions' => true,
+        ],
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder)

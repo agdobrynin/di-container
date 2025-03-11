@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use function trigger_error;
+
+use const E_USER_DEPRECATED;
+
 trait BindArgumentsTrait
 {
     /**
@@ -18,7 +22,7 @@ trait BindArgumentsTrait
      */
     public function addArgument(int|string $name, mixed $value): static
     {
-        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
+        @trigger_error('Use method bindArguments(). This method will remove next major release.', E_USER_DEPRECATED);
 
         $this->bindArguments[$name] = $value;
 
@@ -30,7 +34,7 @@ trait BindArgumentsTrait
      */
     public function addArguments(array $arguments): static
     {
-        @\trigger_error('Use method bindArguments(). This method will remove next major release.', \E_USER_DEPRECATED);
+        @trigger_error('Use method bindArguments(). This method will remove next major release.', E_USER_DEPRECATED);
         $this->bindArguments = $arguments;
 
         return $this;

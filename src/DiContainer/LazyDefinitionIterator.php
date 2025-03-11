@@ -4,16 +4,27 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use ArrayAccess;
+use Countable;
+use Iterator;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+use function count;
+use function current;
+use function is_string;
+use function key;
+use function next;
+use function reset;
+use function sprintf;
+
 /**
  * @template-covariant TValue
  */
-final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \ArrayAccess, \Countable
+final class LazyDefinitionIterator implements Iterator, ContainerInterface, ArrayAccess, Countable
 {
     /**
      * @param array<non-empty-string|non-negative-int, non-empty-string> $mapKeyToContainerIdentifier key to container identifier
@@ -31,14 +42,14 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
      */
     public function current(): mixed
     {
-        return false !== ($id = \current($this->mapKeyToContainerIdentifier))
+        return false !== ($id = current($this->mapKeyToContainerIdentifier))
             ? $this->container->get($id)
             : false; // @todo may be throw an exception?
     }
 
     public function next(): void
     {
-        \next($this->mapKeyToContainerIdentifier);
+        next($this->mapKeyToContainerIdentifier);
     }
 
     /**
@@ -46,17 +57,17 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
      */
     public function key(): null|int|string
     {
-        return \key($this->mapKeyToContainerIdentifier);
+        return key($this->mapKeyToContainerIdentifier);
     }
 
     public function valid(): bool
     {
-        return null !== \key($this->mapKeyToContainerIdentifier);
+        return null !== key($this->mapKeyToContainerIdentifier);
     }
 
     public function rewind(): void
     {
-        \reset($this->mapKeyToContainerIdentifier);
+        reset($this->mapKeyToContainerIdentifier);
     }
 
     /**
@@ -71,7 +82,7 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
             return $this->container->get($this->mapKeyToContainerIdentifier[$id]);
         }
 
-        throw new NotFoundException(\sprintf('Definition "%s" not found.', $id));
+        throw new NotFoundException(sprintf('Definition "%s" not found.', $id));
     }
 
     public function has(string $id): bool
@@ -81,7 +92,7 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
 
     public function offsetExists(mixed $offset): bool
     {
-        return \is_string($offset) && $this->has($offset);
+        return is_string($offset) && $this->has($offset);
     }
 
     /**
@@ -92,14 +103,14 @@ final class LazyDefinitionIterator implements \Iterator, ContainerInterface, \Ar
      */
     public function offsetGet(mixed $offset): mixed
     {
-        return \is_string($offset)
+        return is_string($offset)
             ? $this->get($offset)
             : false;
     }
 
     public function count(): int
     {
-        return \count($this->mapKeyToContainerIdentifier);
+        return count($this->mapKeyToContainerIdentifier);
     }
 
     public function offsetSet(mixed $offset, mixed $value): void

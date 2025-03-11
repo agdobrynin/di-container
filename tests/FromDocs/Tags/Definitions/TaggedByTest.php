@@ -17,8 +17,10 @@ use Tests\FromDocs\Tags\Definitions\Fixtures\SrvRules;
 use Tests\FromDocs\Tags\Definitions\Fixtures\SrvRulesPriorityByMethod;
 use Tests\FromDocs\Tags\Definitions\Fixtures\Two;
 
+use function current;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;
+use function next;
 
 /**
  * @internal
@@ -126,9 +128,9 @@ class TaggedByTest extends TestCase
         // из классов One, Two
 
         $this->assertCount(2, $class->services);
-        $this->assertInstanceOf(One::class, \current($class->services));
-        $this->assertInstanceOf(Two::class, \next($class->services));
-        $this->assertFalse(\next($class->services));
+        $this->assertInstanceOf(One::class, current($class->services));
+        $this->assertInstanceOf(Two::class, next($class->services));
+        $this->assertFalse(next($class->services));
     }
 
     public function testTaggedByTagWithPriorityByMethod(): void
@@ -157,9 +159,9 @@ class TaggedByTest extends TestCase
 
         $this->assertCount(3, $srv->rules);
 
-        $this->assertInstanceOf(RuleB::class, \current($srv->rules));
-        $this->assertInstanceOf(RuleC::class, \next($srv->rules));
-        $this->assertInstanceOf(RuleA::class, \next($srv->rules));
-        $this->assertFalse(\next($srv->rules));
+        $this->assertInstanceOf(RuleB::class, current($srv->rules));
+        $this->assertInstanceOf(RuleC::class, next($srv->rules));
+        $this->assertInstanceOf(RuleA::class, next($srv->rules));
+        $this->assertFalse(next($srv->rules));
     }
 }

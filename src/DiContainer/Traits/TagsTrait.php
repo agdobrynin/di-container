@@ -7,6 +7,10 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 
+use function array_key_exists;
+use function is_int;
+use function is_string;
+
 /**
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
@@ -60,7 +64,7 @@ trait TagsTrait
     {
         $options = $operationOptions + ($this->getTag($name) ?? []);
 
-        return [] !== $options && \array_key_exists('priority', $options) && (\is_int($priority = $options['priority']) || \is_string($priority))
+        return [] !== $options && array_key_exists('priority', $options) && (is_int($priority = $options['priority']) || is_string($priority))
             ? $priority
             : null;
     }

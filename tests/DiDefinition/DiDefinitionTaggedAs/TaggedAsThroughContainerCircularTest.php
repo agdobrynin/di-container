@@ -15,6 +15,7 @@ use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Circular\ServiceUseOne;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Circular\ServiceUseTwo;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Circular\Two;
 
+use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;
 
@@ -69,7 +70,7 @@ class TaggedAsThroughContainerCircularTest extends TestCase
         $this->expectException(CallCircularDependencyException::class);
         $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
 
-        \iterator_to_array($class->services);
+        iterator_to_array($class->services);
     }
 
     public function testCircularTaggedByInterfaceByPhpDefinition(): void
@@ -104,6 +105,6 @@ class TaggedAsThroughContainerCircularTest extends TestCase
         $this->expectException(CallCircularDependencyException::class);
         $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
 
-        \iterator_to_array($class->services);
+        iterator_to_array($class->services);
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionProxyClosure;
 
+use Closure;
+use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\ContainerNeedSetException;
@@ -18,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  */
 class MainTest extends TestCase
 {
-    public function successDefinitionDataProvider(): \Generator
+    public function successDefinitionDataProvider(): Generator
     {
         yield 'string' => ['ok', 'ok'];
 
@@ -35,7 +37,7 @@ class MainTest extends TestCase
         $this->assertEquals($expect, (new DiDefinitionProxyClosure($id))->getDefinition());
     }
 
-    public function failDefinitionDataProvider(): \Generator
+    public function failDefinitionDataProvider(): Generator
     {
         yield 'empty string' => [''];
 
@@ -58,7 +60,7 @@ class MainTest extends TestCase
     public function testContainerNeedSet(): void
     {
         $this->expectException(ContainerNeedSetException::class);
-        $this->expectExceptionMessage('Use method setContainer() in Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure class.');
+        $this->expectExceptionMessage('Use method setContainer() in "Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure" class.');
 
         (new DiDefinitionProxyClosure('ok'))->invoke();
     }
@@ -93,7 +95,7 @@ class MainTest extends TestCase
             ->invoke()
         ;
 
-        $this->assertInstanceOf(\Closure::class, $res);
+        $this->assertInstanceOf(Closure::class, $res);
     }
 
     public function testContainerDefinitionHasAndResolveSuccess(): void

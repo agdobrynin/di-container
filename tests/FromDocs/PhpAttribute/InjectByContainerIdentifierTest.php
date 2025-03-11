@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
+use Generator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\MyFileByContainerIdentifier;
+
+use function glob;
+use function putenv;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -25,7 +29,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\MyFileByContainerIdentifier;
  */
 class InjectByContainerIdentifierTest extends TestCase
 {
-    public function dataProvider(): \Generator
+    public function dataProvider(): Generator
     {
         yield 'production env' => ['prod', 'file1.txt'];
 
@@ -38,13 +42,13 @@ class InjectByContainerIdentifierTest extends TestCase
     public function testByContainerIdentifier(string $env, string $fileName): void
     {
         $definitions = (new DefinitionsLoader())
-            ->load(...\glob(__DIR__.'/Fixtures/config/*.php'))
+            ->load(...glob(__DIR__.'/Fixtures/config/*.php'))
         ;
 
         $container = (new DiContainerFactory())->make($definitions->definitions());
 
-        \putenv('APP_TEST_FILE');
-        \putenv('APP_TEST_FILE='.$env);
+        putenv('APP_TEST_FILE');
+        putenv('APP_TEST_FILE='.$env);
 
         $class = $container->get(MyFileByContainerIdentifier::class);
 

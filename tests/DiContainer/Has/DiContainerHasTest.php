@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiContainer\Has;
 
+use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +29,7 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has('null'));
     }
 
-    public function dataProvideWithZeroConfig(): \Generator
+    public function dataProvideWithZeroConfig(): Generator
     {
         yield 'class' => [ClassWithSimpleDependency::class];
 
@@ -48,7 +49,7 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has($id));
     }
 
-    public function dataProvideWithoutZeroConfig(): \Generator
+    public function dataProvideWithoutZeroConfig(): Generator
     {
         yield 'class' => [ClassWithSimpleDependency::class];
 

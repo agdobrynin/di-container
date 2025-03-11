@@ -11,9 +11,11 @@ use Tests\DiDefinition\DiDefinitionCallable\Fixtures\CallableArgument;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ClassWithTaggedArg;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MainClass;
 
+use function current;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diTaggedAs;
+use function next;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
@@ -52,9 +54,9 @@ class TaggedAsTest extends TestCase
         $res = $container->get(ClassWithTaggedArg::class);
 
         $this->assertCount(2, $res->tagged);
-        $this->assertEquals('yes 😀', \current($res->tagged));
-        \next($res->tagged);
-        $this->assertEquals('❤ola!', \current($res->tagged));
+        $this->assertEquals('yes 😀', current($res->tagged));
+        next($res->tagged);
+        $this->assertEquals('❤ola!', current($res->tagged));
         // key of tagged service
         $this->assertEquals('❤ola!', $res->tagged['someName1']);
         $this->assertEquals('yes 😀', $res->tagged['someNameAny']);

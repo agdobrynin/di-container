@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionValue;
 
+use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
@@ -14,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  */
 class DiDefinitionValueTest extends TestCase
 {
-    public function dataProviderDiDefinitionValue(): \Generator
+    public function dataProviderDiDefinitionValue(): Generator
     {
         yield 'set 1' => [null, null];
 
@@ -22,7 +24,7 @@ class DiDefinitionValueTest extends TestCase
 
         yield 'set 3' => ['foo', 'foo'];
 
-        $o = new \stdClass();
+        $o = new stdClass();
         $o->foo = 'bar';
 
         yield 'set 4' => [$o, $o];

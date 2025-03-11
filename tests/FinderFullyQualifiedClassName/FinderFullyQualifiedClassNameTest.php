@@ -4,8 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\FinderFullyQualifiedClassName;
 
+use FilesystemIterator;
+use Generator;
+use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use SplFileInfo;
+
+use function array_filter;
+use function in_array;
+use function sort;
+
+use const ARRAY_FILTER_USE_KEY;
+use const T_CLASS;
+use const T_INTERFACE;
 
 /**
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
@@ -14,7 +27,7 @@ use PHPUnit\Framework\TestCase;
  */
 class FinderFullyQualifiedClassNameTest extends TestCase
 {
-    public static function dataProviderFinderClassConstructFail(): \Generator
+    public static function dataProviderFinderClassConstructFail(): Generator
     {
         yield 'empty string' => [
             '',
@@ -42,7 +55,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
      */
     public function testFinderClassConstructFail(string $namespace, string $expectMessage): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectMessage);
 
         new FinderFullyQualifiedName($namespace, []);
@@ -50,27 +63,27 @@ class FinderFullyQualifiedClassNameTest extends TestCase
 
     public function testCannotOpenFile(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to open stream');
 
         (new FinderFullyQualifiedName('App\\', [
-            new \SplFileInfo('file-not-found.php'),
+            new SplFileInfo('file-not-found.php'),
         ]))->find()->valid();
     }
 
     public function testParsePhpException(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot parse code');
 
         (new FinderFullyQualifiedName('App\\', [
-            new \SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php'),
+            new SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php'),
         ]))->find()->valid();
     }
 
     public function testGetClasses(): void
     {
-        $dir = new \FilesystemIterator(__DIR__.'/Fixtures/Success/');
+        $dir = new FilesystemIterator(__DIR__.'/Fixtures/Success/');
         $fqNames = (new FinderFullyQualifiedName('Tests\\', $dir))->find();
 
         $this->assertTrue($fqNames->valid());
@@ -78,23 +91,23 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $foundFqn = [];
 
         foreach ($fqNames as $fqn) {
-            $foundFqn[] = \array_filter((array) $fqn, static fn (string $k) => \in_array($k, ['fqn', 'tokenId'], true), \ARRAY_FILTER_USE_KEY);
+            $foundFqn[] = array_filter((array) $fqn, static fn (string $k) => in_array($k, ['fqn', 'tokenId'], true), ARRAY_FILTER_USE_KEY);
         }
 
         $expect = [
-            ['fqn' => Fixtures\Success\TwoInOneOne::class, 'tokenId' => \T_CLASS],
-            ['fqn' => Fixtures\Success\TwoInOneTow::class, 'tokenId' => \T_CLASS],
-            ['fqn' => Fixtures\Success\WithTokenInterface::class, 'tokenId' => \T_INTERFACE],
-            ['fqn' => Fixtures\Success\ManyNamespaces::class, 'tokenId' => \T_CLASS],
-            ['fqn' => Fixtures\Success\SomeInterface::class, 'tokenId' => \T_INTERFACE],
-            ['fqn' => Fixtures\Success\Others\GetTokenInterface::class, 'tokenId' => \T_INTERFACE],
-            ['fqn' => Fixtures\Success\Others\ManyNamespaces::class, 'tokenId' => \T_CLASS],
-            ['fqn' => Fixtures\Success\One::class, 'tokenId' => \T_CLASS],
-            ['fqn' => Fixtures\Success\QueueInterface::class, 'tokenId' => \T_INTERFACE],
+            ['fqn' => Fixtures\Success\TwoInOneOne::class, 'tokenId' => T_CLASS],
+            ['fqn' => Fixtures\Success\TwoInOneTow::class, 'tokenId' => T_CLASS],
+            ['fqn' => Fixtures\Success\WithTokenInterface::class, 'tokenId' => T_INTERFACE],
+            ['fqn' => Fixtures\Success\ManyNamespaces::class, 'tokenId' => T_CLASS],
+            ['fqn' => Fixtures\Success\SomeInterface::class, 'tokenId' => T_INTERFACE],
+            ['fqn' => Fixtures\Success\Others\GetTokenInterface::class, 'tokenId' => T_INTERFACE],
+            ['fqn' => Fixtures\Success\Others\ManyNamespaces::class, 'tokenId' => T_CLASS],
+            ['fqn' => Fixtures\Success\One::class, 'tokenId' => T_CLASS],
+            ['fqn' => Fixtures\Success\QueueInterface::class, 'tokenId' => T_INTERFACE],
         ];
 
-        \sort($expect);
-        \sort($foundFqn);
+        sort($expect);
+        sort($foundFqn);
 
         $this->assertEquals($expect, $foundFqn);
     }

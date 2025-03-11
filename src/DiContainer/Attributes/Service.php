@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Attributes;
 
+use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 
-#[\Attribute(\Attribute::TARGET_CLASS)]
+use function trim;
+
+#[Attribute(Attribute::TARGET_CLASS)]
 final class Service implements DiAttributeServiceInterface
 {
     /**
@@ -15,7 +18,7 @@ final class Service implements DiAttributeServiceInterface
      */
     public function __construct(private string $id, private ?bool $isSingleton = null)
     {
-        if ('' === \trim($id)) {
+        if ('' === trim($id)) {
             throw new AutowireAttributeException('The $id parameter must be a non-empty string.');
         }
     }

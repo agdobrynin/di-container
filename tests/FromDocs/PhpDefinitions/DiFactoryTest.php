@@ -6,6 +6,7 @@ namespace Tests\FromDocs\PhpDefinitions;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use SplFileInfo;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependency;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependencyDiFactory;
 
@@ -33,7 +34,7 @@ class DiFactoryTest extends TestCase
         $class = $container->get(ClassWithDependency::class);
 
         $this->assertInstanceOf(ClassWithDependency::class, $class);
-        $this->assertInstanceOf(\SplFileInfo::class, $class->splFileInfo);
+        $this->assertInstanceOf(SplFileInfo::class, $class->splFileInfo);
         $this->assertEquals('file1.txt', $class->splFileInfo->getFilename());
         $this->assertSame($class, $container->get(ClassWithDependency::class));
     }

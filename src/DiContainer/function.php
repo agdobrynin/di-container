@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -17,10 +18,16 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
-// @todo Remove alias when remove function diReference.
-\class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
+use function class_alias;
+use function function_exists;
+use function trigger_error;
 
-if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
+use const E_USER_DEPRECATED;
+
+// @todo Remove alias when remove function diReference.
+class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
+
+if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
      * @param class-string $definition Fully Qualified Class Name
      */
@@ -30,9 +37,9 @@ if (!\function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
+if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     /**
-     * @param array{0: non-empty-string|object, 1?:non-empty-string}|callable|callable-string|\Closure|non-empty-string $definition
+     * @param array{0: non-empty-string|object, 1?:non-empty-string}|callable|callable-string|Closure|non-empty-string $definition
      */
     function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {
@@ -40,7 +47,7 @@ if (!\function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
+if (!function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
     /**
      * @param class-string $definition Fully Qualified Class Name
      */
@@ -50,7 +57,7 @@ if (!\function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgn
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
+if (!function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
     /**
      * @deprecated Function diReference() was deprecated, used diGet()
      *
@@ -58,13 +65,13 @@ if (!\function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
      */
     function diReference(string $containerIdentifier): DiDefinitionReference
     {
-        @\trigger_error('Function diReference() was deprecated, used diGet(). This function will remove next major release.', \E_USER_DEPRECATED);
+        @trigger_error('Function diReference() was deprecated, used diGet(). This function will remove next major release.', E_USER_DEPRECATED);
 
         return new DiDefinitionReference($containerIdentifier);
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
+if (!function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
     /**
      * @param non-empty-string $containerIdentifier
      */
@@ -74,14 +81,14 @@ if (!\function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
+if (!function_exists('Kaspi\DiContainer\diValue')) { // @codeCoverageIgnore
     function diValue(mixed $value): DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionValue($value);
     }
 } // @codeCoverageIgnore
 
-if (!\function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
+if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     /**
      * @param non-empty-string       $tag
      * @param null|non-empty-string  $priorityDefaultMethod priority from class::method()

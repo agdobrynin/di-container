@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
 
+use function array_merge;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 
@@ -41,7 +42,7 @@ class StaticMethodAsDefinitionTest extends TestCase
         ];
 
         $container = (new DiContainerFactory())->make(
-            \array_merge($defServices, $defCustom)
+            array_merge($defServices, $defCustom)
         );
 
         $res = $container->get('doSomething');

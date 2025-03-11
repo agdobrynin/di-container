@@ -17,6 +17,17 @@ use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionFunction;
+use ReflectionMethod;
+use ReflectionParameter;
+
+use function call_user_func;
+use function call_user_func_array;
+use function is_array;
+use function is_string;
+use function strpos;
+
+use const PHP_VERSION_ID;
 
 /**
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
@@ -43,7 +54,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     private $parsedDefinition;
 
     /**
-     * @var \ReflectionParameter[]
+     * @var ReflectionParameter[]
      */
     private array $reflectedFunctionParameters;
 
@@ -71,10 +82,10 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         $this->reflectedFunctionParameters ??= $this->reflectParameters();
 
         if ([] === $this->reflectedFunctionParameters) {
-            return \call_user_func($this->getDefinition());
+            return call_user_func($this->getDefinition());
         }
 
-        return \call_user_func_array($this->getDefinition(), $this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
+        return call_user_func_array($this->getDefinition(), $this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
     }
 
     /**
@@ -86,7 +97,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     }
 
     /**
-     * @return \ReflectionParameter[]
+     * @return ReflectionParameter[]
      *
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionCallableExceptionInterface
@@ -94,29 +105,29 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     private function reflectParameters(): array
     {
-        if (\is_array($this->getDefinition())) {
+        if (is_array($this->getDefinition())) {
             /**
              * @var non-empty-string|object $class
              * @var non-empty-string        $method
              */
             [$class, $method] = $this->getDefinition();
 
-            return (new \ReflectionMethod($class, $method))->getParameters();
+            return (new ReflectionMethod($class, $method))->getParameters();
         }
 
-        if (\is_string($staticMethod = $this->getDefinition()) && \strpos($staticMethod, '::') > 0) {
-            if (\PHP_VERSION_ID >= 80400) {
+        if (is_string($staticMethod = $this->getDefinition()) && strpos($staticMethod, '::') > 0) {
+            if (PHP_VERSION_ID >= 80400) {
                 // @codeCoverageIgnoreStart
                 // @phpstan-ignore method.nonObject, staticMethod.notFound, return.type
-                return \ReflectionMethod::createFromMethodName($staticMethod)->getParameters();
+                return ReflectionMethod::createFromMethodName($staticMethod)->getParameters();
                 // @codeCoverageIgnoreEnd
             }
 
-            return (new \ReflectionMethod($this->getDefinition()))->getParameters();
+            return (new ReflectionMethod($this->getDefinition()))->getParameters();
         }
 
         // @phpstan-return \ReflectionParameter[]
-        return (new \ReflectionFunction($this->getDefinition())) // @phpstan-ignore argument.type
+        return (new ReflectionFunction($this->getDefinition())) // @phpstan-ignore argument.type
             ->getParameters()
         ;
     }

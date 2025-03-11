@@ -7,6 +7,7 @@ namespace Tests\FromDocs\PhpDefinitions;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
+use SplFileInfo;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependency;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -26,7 +27,7 @@ class DependencyOneTest extends TestCase
     {
         $definitions = [
             // класс SplFileInfo создать единожды и всегда возвращать тот же объект
-            diAutowire(\SplFileInfo::class, isSingleton: true)
+            diAutowire(SplFileInfo::class, isSingleton: true)
                 // с аргументом $filename в конструкторе.
                 ->bindArguments(filename: __FILE__),
         ];

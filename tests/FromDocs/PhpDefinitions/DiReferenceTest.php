@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
+use Generator;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use SplFileInfo;
 use Tests\FromDocs\PhpDefinitions\Fixtures\MyEmployers;
 use Tests\FromDocs\PhpDefinitions\Fixtures\MyUsers;
 
+use function getenv;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
+use function putenv;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -29,7 +33,7 @@ use function Kaspi\DiContainer\diGet;
  */
 class DiReferenceTest extends TestCase
 {
-    public function dataProvider(): \Generator
+    public function dataProvider(): Generator
     {
         yield 'env APP_TEST_FILE=prod' => ['prod', 'file1.txt'];
 
@@ -41,26 +45,26 @@ class DiReferenceTest extends TestCase
      */
     public function testdiGet(string $envValue, string $expectFile): void
     {
-        \putenv('APP_TEST_FILE');
-        \putenv('APP_TEST_FILE='.$envValue);
+        putenv('APP_TEST_FILE');
+        putenv('APP_TEST_FILE='.$envValue);
 
         $definitions = [
             'services.env' => diCallable(
                 definition: static function () {
-                    return match (\getenv('APP_TEST_FILE')) {
+                    return match (getenv('APP_TEST_FILE')) {
                         'prod' => __DIR__.'/Fixtures/file1.txt',
                         default => __DIR__.'/Fixtures/file2.txt',
                     };
                 },
                 isSingleton: true
             ),
-            diAutowire(\SplFileInfo::class)
+            diAutowire(SplFileInfo::class)
                 ->bindArguments(filename: diGet('services.env')), // ссылка на определение
         ];
 
         $container = (new DiContainerFactory())->make($definitions);
 
-        $this->assertEquals($expectFile, $container->get(\SplFileInfo::class)->getFilename());
+        $this->assertEquals($expectFile, $container->get(SplFileInfo::class)->getFilename());
     }
 
     public function testdiGetByClasses(): void

@@ -8,6 +8,8 @@ use Kaspi\DiContainer\Exception\ContainerNeedSetException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 
+use function sprintf;
+
 trait DiContainerTrait
 {
     private DiContainerInterface $container;
@@ -26,7 +28,7 @@ trait DiContainerTrait
     {
         if (!isset($this->container)) {
             throw new ContainerNeedSetException(
-                \sprintf('Need set container implementation. Use method setContainer() in %s class.', __CLASS__)
+                sprintf('Need set container implementation. Use method setContainer() in "%s" class.', __CLASS__)
             );
         }
 

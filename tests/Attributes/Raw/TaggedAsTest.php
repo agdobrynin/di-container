@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Attributes\Raw;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  */
 class TaggedAsTest extends TestCase
 {
-    public static function dataProviderFail(): \Generator
+    public static function dataProviderFail(): Generator
     {
         yield 'empty string' => [''];
 

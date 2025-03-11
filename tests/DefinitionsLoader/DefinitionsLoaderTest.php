@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader;
 
+use Generator;
+use InvalidArgumentException;
 use Kaspi\DiContainer\DefinitionsLoader;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -17,7 +19,7 @@ use Psr\Container\ContainerExceptionInterface;
  */
 class DefinitionsLoaderTest extends TestCase
 {
-    public function dataProviderInvalidContent(): \Generator
+    public function dataProviderInvalidContent(): Generator
     {
         yield 'no return' => [__DIR__.'/Fixtures/FailContent/f1.php'];
 
@@ -29,7 +31,7 @@ class DefinitionsLoaderTest extends TestCase
      */
     public function testInvalidFileContent(string $file): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('return not valid format');
 
         (new DefinitionsLoader())->load($file);
@@ -37,13 +39,13 @@ class DefinitionsLoaderTest extends TestCase
 
     public function testFileNotFound(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not exist or is not readable');
 
         (new DefinitionsLoader())->load('f.php');
     }
 
-    public function dataProvideDefinitionException(): \Generator
+    public function dataProvideDefinitionException(): Generator
     {
         yield 'definition without container identifier' => [__DIR__.'/Fixtures/DefinitionException/no-identifier.php'];
 
