@@ -21,6 +21,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
@@ -53,8 +54,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      */
     private array $import;
 
-    public function __construct()
-    {
+    public function __construct(
+        private ?FinderFileInterface $finderFile = null,
+        private ?FinderFullyQualifiedNameInterface $finderFullyQualifiedName = null,
+    ) {
         $this->configDefinitions = new ArrayIterator();
     }
 
@@ -131,10 +134,19 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        $finderFQN = new FinderFullyQualifiedName(
-            $namespace,
-            (new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions))->getFiles()
-        );
+        $this->finderFile ??= new FinderFile();
+        $this->finderFullyQualifiedName ??= new FinderFullyQualifiedName();
+
+        $finderFQN = $this->finderFullyQualifiedName
+            ->setNamespace($namespace)
+            ->setFiles(
+                $this->finderFile
+                    ->setSrc($src)
+                    ->setExcludeRegExpPattern($excludeFilesRegExpPattern)
+                    ->setAvailableExtensions($availableExtensions)
+                    ->getFiles()
+            )
+        ;
 
         $this->import[$namespace] = ['finderFQN' => $finderFQN, 'useAttribute' => $useAttribute];
 

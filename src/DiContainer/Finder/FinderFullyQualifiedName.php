@@ -36,13 +36,23 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     use TokenizerTrait;
 
     /**
-     * @param non-empty-string                        $namespace PSR-4 namespace prefix
-     * @param iterable<non-negative-int, SplFileInfo> $files     files for parsing
+     * PSR-4 namespace prefix.
+     *
+     * @var non-empty-string
      */
-    public function __construct(
-        private string $namespace,
-        private iterable $files,
-    ) {
+    private string $namespace;
+
+    /**
+     * Files for parsing.
+     *
+     * @var iterable<non-negative-int, SplFileInfo>
+     */
+    private iterable $files;
+
+    public function __construct() {}
+
+    public function setNamespace(string $namespace): static
+    {
         if (!str_ends_with($namespace, '\\')) {
             throw new InvalidArgumentException(
                 sprintf('Argument $namespace must be end with symbol "\". Got: "%s".', $namespace)
@@ -55,10 +65,29 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 sprintf('Argument $namespace must be compatible with PSR-4. Got "%s".', $namespace)
             );
         }
+
+        $this->namespace = $namespace;
+
+        return $this;
+    }
+
+    public function setFiles(iterable $files): static
+    {
+        $this->files = $files;
+
+        return $this;
     }
 
     public function find(): Iterator
     {
+        if (!isset($this->namespace)) {
+            throw new InvalidArgumentException('Need set "namespace". Use method FinderFile::setNamespace().');
+        }
+
+        if (!isset($this->files)) {
+            throw new InvalidArgumentException('Need set files for parsing. Use method FinderFile::setFiles().');
+        }
+
         $key = 0;
 
         foreach ($this->files as $file) {
