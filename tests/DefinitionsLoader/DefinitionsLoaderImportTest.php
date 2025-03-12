@@ -10,6 +10,8 @@ use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use RuntimeException;
@@ -185,5 +187,28 @@ class DefinitionsLoaderImportTest extends TestCase
 
         $this->assertTrue($container->has(AppClass::class));
         $this->assertInstanceOf(AppClass::class, $container->get(AppClass::class));
+    }
+
+    public function testImportWhenFinderFullyQualifiedNameReturnNotValidToken(): void
+    {
+        $finderFile = $this->createMock(FinderFileInterface::class);
+        $finderFQN = $this->createMock(FinderFullyQualifiedNameInterface::class);
+
+        $finderFQN->method('find')
+            ->willReturn(
+                new ArrayIterator([
+                    0 => ['fqn' => 'App\SomeTrait', 'tokenId' => \T_TRAIT]
+                ])
+            )
+        ;
+
+
+        (new DefinitionsLoader(
+            finderFile: $finderFile,
+            finderFullyQualifiedName: $finderFQN,
+        ))
+            ->import('Tests\\', __DIR__.'/../', )
+        ->definitions()
+        ->current();
     }
 }

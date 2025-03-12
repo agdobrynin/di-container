@@ -62,7 +62,7 @@ trait TokenizerTrait
 
     private function tokenIsValid(int $index): void
     {
-        if (0 < $index && $index >= $this->getTotalTokens()) {
+        if (!($index >= 0 && $index <= $this->getTotalTokens())) {
             throw new OutOfBoundsException(
                 sprintf('index must be between 0 and %d. Got: %d.', $this->getTotalTokens() - 1, $index)
             );
