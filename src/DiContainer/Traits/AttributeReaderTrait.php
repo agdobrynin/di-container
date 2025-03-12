@@ -68,7 +68,6 @@ trait AttributeReaderTrait
             );
         }
 
-        $attributes = $reflectionClass->getAttributes(Autowire::class);
         $containerIdentifier = '';
 
         foreach ($attributes as $attribute) {

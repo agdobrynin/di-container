@@ -115,7 +115,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
             $this->tokenizeCode($code);
         } catch (ParseError $exception) {
             throw new RuntimeException(
-                sprintf('Cannot parse code in file "%s". Reason: %s', $file, $exception->getMessage())
+                sprintf('Cannot parse code from file "%s". Reason: %s', $file, $exception->getMessage())
             );
         }
 
@@ -125,8 +125,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         $fqnLevel = null;
 
         for ($i = 0; $i < $this->getTotalTokens(); ++$i) {
-            $token_id = $this->getTokenId($i);
-            $token_text = $this->getTokenText($i);
+            ['id' => $token_id, 'text' => $token_text] = $this->parseToken($i);
 
             if ('{' === $token_text) {
                 ++$level;
@@ -150,18 +149,22 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
             if (T_NAMESPACE === $token_id) {
                 for (++$i; $i < $this->getTotalTokens(); ++$i) {
-                    $token_id = $this->getTokenId($i);
+                    ['id' => $token_id, 'text' => $token_text] = $this->parseToken($i);
 
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $namespace = $this->getTokenText($i);
+                        $namespace = $token_text;
 
                         break;
                     }
                 }
+
+                continue;
             }
 
             if (in_array($token_id, [T_ABSTRACT, T_TRAIT], true)) {
                 $isValidFqn = false;
+
+                continue;
             }
 
             if ($isValidFqn && in_array($token_id, [T_CLASS, T_INTERFACE], true)) {
@@ -169,8 +172,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 $classOrInterfaceTokenId = $token_id;
 
                 for (++$i; $i < $this->getTotalTokens(); ++$i) {
-                    $token_id = $this->getTokenId($i);
-                    $token_text = $this->getTokenText($i);
+                    ['id' => $token_id, 'text' => $token_text, 'line' => $token_line] = $this->parseToken($i);
 
                     if (T_STRING === $token_id
                         && [] === $fqnItem
@@ -179,7 +181,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                         $fqnItem = [
                             'fqn' => $fqn,
                             'tokenId' => $classOrInterfaceTokenId,
-                            'line' => $this->getTokenLine($i),
+                            'line' => $token_line,
                             'file' => $file->getRealPath(),
                         ];
                     }

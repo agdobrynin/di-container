@@ -25,12 +25,12 @@ class FinderFileTest extends TestCase
     {
         yield 'none exist directory' => [
             __DIR__.'/no-dir',
-            '/Cannot get by "\\\realpath\(\)".+\/no-dir/',
+            '/Cannot resolve source directory by "\\\realpath\(\)".+\/no-dir/',
         ];
 
         yield 'none-directory' => [
             __FILE__,
-            '/Argument \$src must be readable directory/',
+            '/Source directory from argument \$src must be readable/',
         ];
     }
 

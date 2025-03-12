@@ -31,12 +31,14 @@ use ReflectionException;
 use RuntimeException;
 
 use function file_exists;
+use function in_array;
 use function is_iterable;
 use function is_readable;
 use function ob_get_clean;
 use function ob_start;
 use function sprintf;
 
+use const T_CLASS;
 use const T_INTERFACE;
 
 /**
@@ -165,6 +167,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
+
+        if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
+            throw new RuntimeException(
+                sprintf('Unsupported token id. Support only "T_INTERFACE" with id "%d", "T_CLASS" with id "%d". Got "%d".', T_INTERFACE, T_CLASS, $tokenId)
+            );
+        }
 
         if (!$useAttribute) {
             return $this->configDefinitions->offsetExists($fqn) || T_INTERFACE === $tokenId
