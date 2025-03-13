@@ -58,6 +58,7 @@ interface DefinitionsLoaderInterface
      * @throws DiDefinitionExceptionInterface
      * @throws AutowireExceptionInterface
      * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
     public function definitions(): iterable;
 
