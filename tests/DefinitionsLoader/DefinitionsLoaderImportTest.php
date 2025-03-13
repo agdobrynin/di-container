@@ -110,7 +110,7 @@ class DefinitionsLoaderImportTest extends TestCase
             new ImportLoaderCollection(
                 /*
                  * Use preconfigured argument.
-                 * Test clone this argument when "import()" use more than one.
+                 * Test clone this argument when "import()" use more than once.
                  */
                 new ImportLoader()
             )
