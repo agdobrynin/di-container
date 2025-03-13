@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
@@ -15,26 +16,28 @@ use Kaspi\DiContainer\Interfaces\ImportLoaderInterface;
  */
 final class ImportLoader implements ImportLoaderInterface
 {
-    private FinderFileInterface $finderFile;
-
-    private FinderFullyQualifiedNameInterface $finderFullyQualifiedName;
-
     public function __construct(
-        ?FinderFileInterface $finderFile = null,
-        ?FinderFullyQualifiedNameInterface $finderFullyQualifiedName = null
-    ) {
-        $this->finderFile = $finderFile ?? new FinderFile();
-        $this->finderFullyQualifiedName = $finderFullyQualifiedName ?? new FinderFullyQualifiedName();
-    }
+        private ?FinderFileInterface $finderFile = null,
+        private ?FinderFullyQualifiedNameInterface $finderFullyQualifiedName = null
+    ) {}
 
     public function __clone(): void
     {
-        $this->finderFile = new FinderFile();
-        $this->finderFullyQualifiedName = new FinderFullyQualifiedName();
+        if (null !== $this->finderFile) {
+            $this->finderFile = new FinderFile();
+        }
+
+        if (null !== $this->finderFullyQualifiedName) {
+            $this->finderFullyQualifiedName = new FinderFullyQualifiedName();
+        }
     }
 
     public function setSrc(string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static
     {
+        if (null === $this->finderFile) {
+            $this->finderFile = new FinderFile();
+        }
+
         $this->finderFile->setSrc($src)
             ->setExcludeRegExpPattern($excludeFilesRegExpPattern)
             ->setAvailableExtensions($availableExtensions)
@@ -45,6 +48,14 @@ final class ImportLoader implements ImportLoaderInterface
 
     public function getFullyQualifiedName(string $namespace): iterable
     {
+        if (null === $this->finderFile) {
+            throw new InvalidArgumentException('Need set source directory. Use method ImportLoader::setSrc().');
+        }
+
+        if (null === $this->finderFullyQualifiedName) {
+            $this->finderFullyQualifiedName = new FinderFullyQualifiedName();
+        }
+
         // @var ItemFQN $itemFQN
         yield from $this->finderFullyQualifiedName
             ->setNamespace($namespace)
