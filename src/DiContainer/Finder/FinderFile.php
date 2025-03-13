@@ -24,35 +24,63 @@ use function strtolower;
 final class FinderFile implements FinderFileInterface
 {
     /**
-     * @param non-empty-string       $src                  source directory
-     * @param list<non-empty-string> $excludeRegExpPattern exclude matching by regexp pattern
-     * @param list<non-empty-string> $extensions           files extensions, empty list available all files
+     * @var non-empty-string
      */
-    public function __construct(
-        private string $src,
-        private array $excludeRegExpPattern = [],
-        private array $extensions = ['php'],
-    ) {
+    private string $src;
+
+    /**
+     * @var list<non-empty-string>
+     */
+    private array $excludeRegExpPattern = [];
+
+    /**
+     * @var list<non-empty-string>
+     */
+    private array $extensions = ['php'];
+
+    public function __construct() {}
+
+    public function setSrc(string $src): static
+    {
         $fixedSrc = realpath($src);
 
         if (false === $fixedSrc) {
             throw new InvalidArgumentException(
-                sprintf('Cannot get by "\realpath()" for argument $src. Got: "%s".', $src)
+                sprintf('Cannot resolve source directory by "\realpath()" from argument $src. Got: "%s".', $src)
             );
         }
 
         if (!is_dir($fixedSrc) || !is_readable($fixedSrc)) {
             throw new InvalidArgumentException(
-                sprintf('Argument $src must be readable directory. Got: "%s".', $fixedSrc)
+                sprintf('Source directory from argument $src must be readable. Got: "%s".', $fixedSrc)
             );
         }
 
-        $this->extensions = array_map('\strtolower', $extensions); // @phpstan-ignore assign.propertyType
         $this->src = $fixedSrc;
+
+        return $this;
+    }
+
+    public function setExcludeRegExpPattern(array $excludeRegExpPattern): static
+    {
+        $this->excludeRegExpPattern = $excludeRegExpPattern;
+
+        return $this;
+    }
+
+    public function setAvailableExtensions(array $extensions): static
+    {
+        $this->extensions = array_map('\strtolower', $extensions); // @phpstan-ignore assign.propertyType
+
+        return $this;
     }
 
     public function getFiles(): Iterator
     {
+        if (!isset($this->src)) {
+            throw new InvalidArgumentException('Need set source directory. Use method FinderFile::setSrc().');
+        }
+
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
                 $this->src,

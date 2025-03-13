@@ -10,6 +10,8 @@ use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use RuntimeException;
@@ -20,6 +22,8 @@ use function array_keys;
 use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 use function sort;
+
+use const T_TRAIT;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Autowire
@@ -43,7 +47,17 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImport(): void
     {
         $loader = (new DefinitionsLoader())
-            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
+            ->import(
+                'Tests\DefinitionsLoader\\',
+                __DIR__.'/Fixtures/Import',
+                excludeFilesRegExpPattern: [
+                    '~Fixtures/Import/SubDirectory2/.+\.php$~',
+                ],
+            )
+            ->import(
+                'Tests\DefinitionsLoader\Fixtures\Import\SubDirectory2\\',
+                __DIR__.'/Fixtures/Import/SubDirectory2/',
+            )
             ->load(__DIR__.'/Fixtures/Import/services.php')
         ;
 
@@ -62,6 +76,7 @@ class DefinitionsLoaderImportTest extends TestCase
             Fixtures\Import\Two::class,
             Fixtures\Import\TokenInterface::class,
             'services.two',
+            Fixtures\Import\SubDirectory2\Three::class,
         ];
 
         sort($expectContainerIds);
@@ -185,5 +200,33 @@ class DefinitionsLoaderImportTest extends TestCase
 
         $this->assertTrue($container->has(AppClass::class));
         $this->assertInstanceOf(AppClass::class, $container->get(AppClass::class));
+    }
+
+    public function testImportWhenFinderFullyQualifiedNameReturnNotValidToken(): void
+    {
+        $finderFile = $this->createMock(FinderFileInterface::class);
+
+        $finderFQN = $this->createMock(FinderFullyQualifiedNameInterface::class);
+        $finderFQN->method('setNamespace')
+            ->willReturn($finderFQN)
+        ;
+        $finderFQN->method('setFiles')
+            ->willReturn($finderFQN)
+        ;
+        $finderFQN
+            ->method('find')
+            ->willReturnCallback(static function () {
+                yield ['fqn' => 'Tests\SomeTrait', 'tokenId' => T_TRAIT];
+            })
+        ;
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unsupported token id');
+
+        (new DefinitionsLoader())
+            ->import('Tests\\', __DIR__.'/../', finderFile: $finderFile, finderFullyQualifiedName: $finderFQN)
+            ->definitions()
+            ->current()
+        ;
     }
 }

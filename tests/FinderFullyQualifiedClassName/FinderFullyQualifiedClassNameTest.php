@@ -58,7 +58,23 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectMessage);
 
-        new FinderFullyQualifiedName($namespace, []);
+        (new FinderFullyQualifiedName())->setNamespace($namespace)->setFiles([]);
+    }
+
+    public function testNeedSetNamespace(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Need set "namespace". Use method FinderFile::setNamespace().');
+
+        (new FinderFullyQualifiedName())->find()->valid();
+    }
+
+    public function testNeedSetFiles(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Need set files for parsing. Use method FinderFile::setFiles().');
+
+        (new FinderFullyQualifiedName())->setNamespace('App\\')->find()->valid();
     }
 
     public function testCannotOpenFile(): void
@@ -66,9 +82,12 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to open stream');
 
-        (new FinderFullyQualifiedName('App\\', [
-            new SplFileInfo('file-not-found.php'),
-        ]))->find()->valid();
+        (new FinderFullyQualifiedName())
+            ->setNamespace('App\\')
+            ->setFiles([new SplFileInfo('file-not-found.php')])
+            ->find()
+            ->valid()
+        ;
     }
 
     public function testParsePhpException(): void
@@ -76,15 +95,22 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot parse code');
 
-        (new FinderFullyQualifiedName('App\\', [
-            new SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php'),
-        ]))->find()->valid();
+        (new FinderFullyQualifiedName())
+            ->setNamespace('App\\')
+            ->setFiles([new SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php')])
+            ->find()
+            ->valid()
+        ;
     }
 
     public function testGetClasses(): void
     {
         $dir = new FilesystemIterator(__DIR__.'/Fixtures/Success/');
-        $fqNames = (new FinderFullyQualifiedName('Tests\\', $dir))->find();
+        $fqNames = (new FinderFullyQualifiedName())
+            ->setNamespace('Tests\\')
+            ->setFiles($dir)
+            ->find()
+        ;
 
         $this->assertTrue($fqNames->valid());
 
