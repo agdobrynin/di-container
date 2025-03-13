@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SplFileInfo;
+use SplFileObject;
 
 use function array_filter;
 use function in_array;
@@ -66,7 +67,9 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Need set "namespace". Use method FinderFile::setNamespace().');
 
-        (new FinderFullyQualifiedName())->find()->valid();
+        (new FinderFullyQualifiedName())->setFiles([
+            new SplFileObject(__DIR__.'/Fixtures/Success/QueueInterface.php'),
+        ])->find()->valid();
     }
 
     public function testNeedSetFiles(): void
@@ -74,7 +77,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Need set files for parsing. Use method FinderFile::setFiles().');
 
-        (new FinderFullyQualifiedName())->setNamespace('App\\')->find()->valid();
+        (new FinderFullyQualifiedName())->find()->valid();
     }
 
     public function testCannotOpenFile(): void

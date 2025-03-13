@@ -26,6 +26,13 @@ interface FinderFullyQualifiedNameInterface
     public function setNamespace(string $namespace): static;
 
     /**
+     * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getNamespace(): string;
+
+    /**
      * Files for parsing.
      *
      * @param iterable<non-negative-int, SplFileInfo> $files

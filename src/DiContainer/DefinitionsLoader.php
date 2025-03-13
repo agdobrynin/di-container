@@ -16,13 +16,11 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Finder\FinderFile;
-use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
+use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
@@ -53,11 +51,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private ArrayIterator $configDefinitions;
 
     /**
-     * @var array<non-empty-string, array{finderFullyQualifiedName: FinderFullyQualifiedNameInterface, useAttribute: bool}>
+     * @var array<non-empty-string, bool>
      */
-    private array $import;
+    private array $mapNamespaceUseAttribute = [];
 
-    public function __construct()
+    public function __construct(private ?ImportLoaderCollectionInterface $importLoaderCollection = null)
     {
         $this->configDefinitions = new ArrayIterator();
     }
@@ -112,14 +110,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         $this->configDefinitions->rewind();
 
-        if (isset($this->import)) {
-            /** @var FinderFullyQualifiedNameInterface $finderFullyQualifiedName */
-            foreach ($this->import as ['finderFullyQualifiedName' => $finderFullyQualifiedName, 'useAttribute' => $useAttribute]) {
-                /** @var ItemFQN $itemFQN */
-                foreach ($finderFullyQualifiedName->find() as $itemFQN) {
-                    if ([] !== ($definition = $this->makeDefinitionFromItemFQN($itemFQN, $useAttribute))) {
-                        yield from $definition;
-                    }
+        if (isset($this->importLoaderCollection)) {
+            foreach ($this->importLoaderCollection->getFullyQualifiedName() as ['namespace' => $namespace, 'itemFQN' => $itemFQN]) {
+                if ([] !== ($definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$namespace])))) {
+                    yield from $definition;
                 }
             }
         }
@@ -127,33 +121,17 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
     }
 
-    public function import(
-        string $namespace,
-        string $src,
-        array $excludeFilesRegExpPattern = [],
-        array $availableExtensions = ['php'],
-        bool $useAttribute = true,
-        ?FinderFileInterface $finderFile = null,
-        ?FinderFullyQualifiedNameInterface $finderFullyQualifiedName = null,
-    ): static {
-        if (isset($this->import[$namespace])) {
-            throw new InvalidArgumentException(
-                sprintf('Namespace "%s" is already imported.', $namespace)
-            );
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
+    {
+        if (null === $this->importLoaderCollection) {
+            $this->importLoaderCollection = new ImportLoaderCollection();
         }
 
-        $this->import[$namespace] = [
-            'finderFullyQualifiedName' => ($finderFullyQualifiedName ?? new FinderFullyQualifiedName())
-                ->setNamespace($namespace)
-                ->setFiles(
-                    ($finderFile ?? new FinderFile())
-                        ->setSrc($src)
-                        ->setExcludeRegExpPattern($excludeFilesRegExpPattern)
-                        ->setAvailableExtensions($availableExtensions)
-                        ->getFiles()
-                ),
-            'useAttribute' => $useAttribute,
-        ];
+        $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
+
+        if ($useAttribute) {
+            $this->mapNamespaceUseAttribute[$namespace] = true;
+        }
 
         return $this;
     }

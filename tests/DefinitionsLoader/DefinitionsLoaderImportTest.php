@@ -9,9 +9,10 @@ use InvalidArgumentException;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\ImportLoader;
+use Kaspi\DiContainer\ImportLoaderCollection;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
+use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use RuntimeException;
@@ -38,6 +39,8 @@ use const T_TRAIT;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
+ * @covers \Kaspi\DiContainer\ImportLoader
+ * @covers \Kaspi\DiContainer\ImportLoaderCollection
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -99,6 +102,46 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->assertSame($serviceTwo, $container->get('services.two'));
         $classTwo = $container->get(Two::class);
         $this->assertSame($classTwo, $container->get(Two::class));
+    }
+
+    public function testImportWithPreconfiguredImportLoader(): void
+    {
+        $loader = (new DefinitionsLoader(
+            new ImportLoaderCollection(
+                /*
+                 * Use preconfigured argument.
+                 * Test clone this argument when "import()" use more than one.
+                 */
+                new ImportLoader()
+            )
+        ))
+            ->import(
+                'Tests\DefinitionsLoader\\',
+                __DIR__.'/Fixtures/Import',
+                excludeFilesRegExpPattern: [
+                    '~Fixtures/Import/SubDirectory2/.+\.php$~',
+                    '~Fixtures/Import/SubDirectory/.+\.php$~',
+                ],
+            )
+            ->import(
+                'Tests\DefinitionsLoader\Fixtures\Import\SubDirectory2\\',
+                __DIR__.'/Fixtures/Import/SubDirectory2/',
+            )
+            ->import(
+                'Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\\',
+                __DIR__.'/Fixtures/Import/SubDirectory/',
+            )
+            ->load(__DIR__.'/Fixtures/Import/services.php')
+        ;
+
+        $container = (new DiContainerFactory(
+            new DiContainerConfig(
+                useZeroConfigurationDefinition: false, // Not use finding class.
+            )
+        ))->make($loader->definitions());
+
+        $this->assertTrue($container->has(Fixtures\Import\SubDirectory2\Three::class));
+        $this->assertTrue($container->has(Two::class));
     }
 
     public function testImportWithoutUseAttributeForConfigureServices(): void
@@ -204,27 +247,25 @@ class DefinitionsLoaderImportTest extends TestCase
 
     public function testImportWhenFinderFullyQualifiedNameReturnNotValidToken(): void
     {
-        $finderFile = $this->createMock(FinderFileInterface::class);
-
-        $finderFQN = $this->createMock(FinderFullyQualifiedNameInterface::class);
-        $finderFQN->method('setNamespace')
-            ->willReturn($finderFQN)
-        ;
-        $finderFQN->method('setFiles')
-            ->willReturn($finderFQN)
-        ;
-        $finderFQN
-            ->method('find')
-            ->willReturnCallback(static function () {
-                yield ['fqn' => 'Tests\SomeTrait', 'tokenId' => T_TRAIT];
-            })
+        $importLoaderCollection = $this->createMock(ImportLoaderCollectionInterface::class);
+        $importLoaderCollection->method('getFullyQualifiedName')
+            // iterable<non-negative-int, array{namespace: non-empty-string, itemFQN: ItemFQN}>
+            ->willReturn([
+                0 => [
+                    'namespace' => 'Tests\\',
+                    'itemFQN' => [
+                        'fqn' => 'Tests\SomeTrait',
+                        'tokenId' => T_TRAIT,
+                    ],
+                ],
+            ])
         ;
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unsupported token id');
 
-        (new DefinitionsLoader())
-            ->import('Tests\\', __DIR__.'/../', finderFile: $finderFile, finderFullyQualifiedName: $finderFQN)
+        (new DefinitionsLoader($importLoaderCollection))
+            ->import('Tests\\', __DIR__.'/../')
             ->definitions()
             ->current()
         ;

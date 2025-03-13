@@ -72,6 +72,15 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         return $this;
     }
 
+    public function getNamespace(): string
+    {
+        if (!isset($this->namespace)) {
+            throw new InvalidArgumentException('Need set "namespace". Use method FinderFile::setNamespace().');
+        }
+
+        return $this->namespace;
+    }
+
     public function setFiles(iterable $files): static
     {
         $this->files = $files;
@@ -81,10 +90,6 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
     public function find(): Iterator
     {
-        if (!isset($this->namespace)) {
-            throw new InvalidArgumentException('Need set "namespace". Use method FinderFile::setNamespace().');
-        }
-
         if (!isset($this->files)) {
             throw new InvalidArgumentException('Need set files for parsing. Use method FinderFile::setFiles().');
         }
@@ -92,18 +97,20 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         $key = 0;
 
         foreach ($this->files as $file) {
-            yield from $this->findInFile($file, $key);
+            yield from $this->findInFile($file, $this->getNamespace(), $key);
         }
     }
 
     /**
+     * @param non-empty-string $requiredNamespace
      * @param non-negative-int $key
      *
      * @return Generator<non-negative-int, ItemFQN>
      *
      * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
-    private function findInFile(SplFileInfo $file, int &$key): Generator
+    private function findInFile(SplFileInfo $file, string $requiredNamespace, int &$key): Generator
     {
         $f = $file->openFile('rb');
         $code = '';
@@ -183,7 +190,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
                     if (T_STRING === $token_id
                         && [] === $fqnItem
-                        && str_starts_with($fqn = $namespace.'\\'.$token_text, $this->namespace)) {
+                        && str_starts_with($fqn = $namespace.'\\'.$token_text, $requiredNamespace)) {
                         /** @var class-string $fqn */
                         $fqnItem = [
                             'fqn' => $fqn,
