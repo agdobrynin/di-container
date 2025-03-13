@@ -15,6 +15,8 @@ use RuntimeException;
  */
 interface ImportLoaderCollectionInterface
 {
+    public function __clone(): void;
+
     /**
      * Import fully qualified names from directory.
      *

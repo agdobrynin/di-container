@@ -15,6 +15,8 @@ use RuntimeException;
  */
 interface ImportLoaderInterface
 {
+    public function __clone(): void;
+
     /**
      * Set source directory with filtering parameters.
      *
