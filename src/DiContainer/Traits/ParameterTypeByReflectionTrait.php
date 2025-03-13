@@ -36,7 +36,7 @@ trait ParameterTypeByReflectionTrait
             $types = [];
             foreach ($type->getTypes() as $t) { // @phpstan-ignore-line
                 /**
-                 * @phpstan-var \ReflectionNamedType $t
+                 * @phpstan-var ReflectionNamedType $t
                  * @phpstan-var non-empty-string $name
                  */
                 $name = $t->getName();

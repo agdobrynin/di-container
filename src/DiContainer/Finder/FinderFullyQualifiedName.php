@@ -8,16 +8,18 @@ use Generator;
 use InvalidArgumentException;
 use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
-use Kaspi\DiContainer\Traits\TokenizerTrait;
 use ParseError;
 use RuntimeException;
 use SplFileInfo;
 
+use function count;
 use function in_array;
+use function is_array;
 use function preg_match;
 use function sprintf;
 use function str_ends_with;
 use function str_starts_with;
+use function token_get_all;
 
 use const T_ABSTRACT;
 use const T_CLASS;
@@ -27,14 +29,13 @@ use const T_NAME_QUALIFIED;
 use const T_NAMESPACE;
 use const T_STRING;
 use const T_TRAIT;
+use const TOKEN_PARSE;
 
 /**
  * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
  */
 final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterface
 {
-    use TokenizerTrait;
-
     /**
      * PSR-4 namespace prefix.
      *
@@ -112,7 +113,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         }
 
         try {
-            $this->tokenizeCode($code);
+            $tokens = token_get_all($code, TOKEN_PARSE);
         } catch (ParseError $exception) {
             throw new RuntimeException(
                 sprintf('Cannot parse code from file "%s". Reason: %s', $file, $exception->getMessage())
@@ -124,8 +125,10 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         $level = 0;
         $fqnLevel = null;
 
-        for ($i = 0; $i < $this->getTotalTokens(); ++$i) {
-            ['id' => $token_id, 'text' => $token_text] = $this->parseToken($i);
+        for ($i = 0, $totalTokens = count($tokens); $i < $totalTokens; ++$i) {
+            [$token_id, $token_text] = is_array($tokens[$i])
+                ? [$tokens[$i][0], $tokens[$i][1]]
+                : [0, $tokens[$i]];
 
             if ('{' === $token_text) {
                 ++$level;
@@ -148,8 +151,10 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
             }
 
             if (T_NAMESPACE === $token_id) {
-                for (++$i; $i < $this->getTotalTokens(); ++$i) {
-                    ['id' => $token_id, 'text' => $token_text] = $this->parseToken($i);
+                for (++$i; $i < $totalTokens; ++$i) {
+                    [$token_id, $token_text] = is_array($tokens[$i])
+                        ? [$tokens[$i][0], $tokens[$i][1]]
+                        : [0, $tokens[$i]];
 
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
                         $namespace = $token_text;
@@ -171,8 +176,10 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 $fqnItem = [];
                 $classOrInterfaceTokenId = $token_id;
 
-                for (++$i; $i < $this->getTotalTokens(); ++$i) {
-                    ['id' => $token_id, 'text' => $token_text, 'line' => $token_line] = $this->parseToken($i);
+                for (++$i; $i < $totalTokens; ++$i) {
+                    [$token_id, $token_text, $token_line] = is_array($tokens[$i])
+                        ? [$tokens[$i][0], $tokens[$i][1], $tokens[$i][2]]
+                        : [0, $tokens[$i], null];
 
                     if (T_STRING === $token_id
                         && [] === $fqnItem
