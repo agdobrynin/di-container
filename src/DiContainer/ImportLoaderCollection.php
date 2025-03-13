@@ -21,6 +21,16 @@ final class ImportLoaderCollection implements ImportLoaderCollectionInterface
 
     public function __construct(private ?ImportLoaderInterface $importLoader = null) {}
 
+    public function __clone(): void
+    {
+        $this->import = [];
+        $this->cloneCounterImportLoader = 0;
+
+        if (null !== $this->importLoader) {
+            $this->importLoader = clone $this->importLoader;
+        }
+    }
+
     public function importFromNamespace(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static
     {
         if (isset($this->import[$namespace])) {
