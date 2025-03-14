@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerFactory;
 
+use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
@@ -30,7 +31,7 @@ class MainTest extends TestCase
 
     public function testMakeContainerByFactoryDefinitionInsertByGenerator(): void
     {
-        $definitions = static function (): \Generator {
+        $definitions = static function (): Generator {
             yield 'a' => 'b';
 
             yield 'c' => static fn () => 'hello!';

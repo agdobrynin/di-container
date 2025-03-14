@@ -6,6 +6,7 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperClass;
 
 /**
@@ -24,7 +25,7 @@ class GetIdentifierTest extends TestCase
 
     public function testGetIdentifierFromReflection(): void
     {
-        $d = new DiDefinitionAutowire(new \ReflectionClass(SuperClass::class));
+        $d = new DiDefinitionAutowire(new ReflectionClass(SuperClass::class));
 
         $this->assertEquals(SuperClass::class, $d->getIdentifier());
     }

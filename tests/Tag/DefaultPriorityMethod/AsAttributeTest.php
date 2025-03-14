@@ -6,6 +6,7 @@ namespace Tests\Tag\DefaultPriorityMethod;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedCollectionOne;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedCollectionTwo;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedFour;
@@ -78,7 +79,7 @@ class AsAttributeTest extends TestCase
         $collection->items->next();
         // class without priorityDefaultMethod: 'getOneOfPriority'
         $this->assertInstanceOf(TaggedTwo::class, $collection->items->current());
-        $this->assertFalse((new \ReflectionClass($collection->items->current()))->hasMethod('getOneOfPriority'));
+        $this->assertFalse((new ReflectionClass($collection->items->current()))->hasMethod('getOneOfPriority'));
 
         $collection->items->next();
         $this->assertFalse($collection->items->valid());

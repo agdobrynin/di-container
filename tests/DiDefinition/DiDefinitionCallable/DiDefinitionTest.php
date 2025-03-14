@@ -88,7 +88,7 @@ class DiDefinitionTest extends TestCase
         $container = new DiContainer(config: new DiContainerConfig());
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Definition is not callable. Got: \'noneCallableString\'');
+        $this->expectExceptionMessage('Definition is not callable. Got: type "string", value: \'noneCallableString\'.');
 
         $container->get(ServiceFour::class);
     }

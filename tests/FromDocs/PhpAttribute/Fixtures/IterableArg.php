@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute\Fixtures;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\Inject;
 
 class IterableArg
@@ -17,9 +18,9 @@ class IterableArg
     ) {}
 
     /**
-     * @return \Generator<RuleInterface>
+     * @return Generator<RuleInterface>
      */
-    public function getValues(): \Generator
+    public function getValues(): Generator
     {
         yield from $this->rules;
     }

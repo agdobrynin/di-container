@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
+use Closure;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use Tests\FromDocs\PhpAttribute\Fixtures\ClassWithHeavyDependency;
 
 /**
@@ -37,8 +39,8 @@ class DiProxyClosureTest extends TestCase
         $this->assertInstanceOf(ClassWithHeavyDependency::class, $someClass);
 
         $this->assertEquals(
-            \Closure::class,
-            (new \ReflectionProperty($someClass, 'heavyDependency'))->getType()->getName()
+            Closure::class,
+            (new ReflectionProperty($someClass, 'heavyDependency'))->getType()->getName()
         );
 
         $this->assertEquals('doMake in LiteDependency', $someClass->doLiteDependency());

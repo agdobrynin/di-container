@@ -6,6 +6,7 @@ namespace Tests\FromDocs\PhpAttribute;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use SplFileInfo;
 use Tests\FromDocs\PhpAttribute\Fixtures\MyFile;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -26,7 +27,7 @@ class InjectByArgumentTypeTest extends TestCase
     public function testInjectByArgumentType(): void
     {
         $definitions = [
-            diAutowire(\SplFileInfo::class)
+            diAutowire(SplFileInfo::class)
                 ->bindArguments(filename: __DIR__.'/Fixtures/file1.txt'),
         ];
 

@@ -18,6 +18,12 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\DiDefinitionAutowireTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionParameter;
+
+use function is_string;
+use function sprintf;
 
 /**
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
@@ -36,15 +42,15 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         geTagPriority as private internalGeTagPriority;
     }
 
-    private \ReflectionClass $reflectionClass;
+    private ReflectionClass $reflectionClass;
 
     /**
-     * @var \ReflectionParameter[]
+     * @var ReflectionParameter[]
      */
     private array $reflectionConstructorParams;
 
     /**
-     * @var array<non-empty-string, list<\ReflectionParameter>>
+     * @var array<non-empty-string, list<ReflectionParameter>>
      */
     private array $reflectionMethodParams;
 
@@ -63,11 +69,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private array $tagAttributes;
 
     /**
-     * @param class-string|\ReflectionClass $definition
+     * @param class-string|ReflectionClass $definition
      */
-    public function __construct(private \ReflectionClass|string $definition, private ?bool $isSingleton = null)
+    public function __construct(private ReflectionClass|string $definition, private ?bool $isSingleton = null)
     {
-        if ($this->definition instanceof \ReflectionClass) {
+        if ($this->definition instanceof ReflectionClass) {
             $this->reflectionClass = $this->definition;
         }
     }
@@ -102,7 +108,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         foreach ($this->setup as $method => $arguments) {
             if (!$this->getDefinition()->hasMethod($method)) {
-                throw new AutowireException(\sprintf('The method "%s" does not exist', $method));
+                throw new AutowireException(sprintf('The method "%s" does not exist.', $method));
             }
 
             $this->reflectionMethodParams[$method] ??= $this->getDefinition()->getMethod($method)->getParameters();
@@ -119,11 +125,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return $object;
     }
 
-    public function getDefinition(): \ReflectionClass
+    public function getDefinition(): ReflectionClass
     {
         try {
-            return $this->reflectionClass ??= new \ReflectionClass($this->definition);
-        } catch (\ReflectionException $e) { // @phpstan-ignore catch.neverThrown
+            return $this->reflectionClass ??= new ReflectionClass($this->definition);
+        } catch (ReflectionException $e) { // @phpstan-ignore catch.neverThrown
             throw new AutowireException(message: $e->getMessage());
         }
     }
@@ -133,7 +139,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      */
     public function getIdentifier(): string
     {
-        return \is_string($this->definition)
+        return is_string($this->definition)
             ? $this->definition
             : $this->reflectionClass->getName();
     }
@@ -166,7 +172,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         if ([] !== ($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
             $tagOptions = $this->getTag($name) + $operationOptions;
-            $howGetPriority = \sprintf('Get priority by option "priority.method" for tag "%s".', $name);
+            $howGetPriority = sprintf('Get priority by option "priority.method" for tag "%s".', $name);
 
             // @phpstan-ignore return.type
             return self::callStaticMethod($this, $tagOptions['priority.method'], true, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
@@ -176,7 +182,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         if (null !== $priorityDefaultMethod) {
             $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
-            $howGetPriority = \sprintf('Get priority by option "priority.default_method" for class "%s".', $this->getDefinition()->getName());
+            $howGetPriority = sprintf('Get priority by option "priority.default_method" for class "%s".', $this->getDefinition()->getName());
 
             // @phpstan-ignore return.type
             return self::callStaticMethod($this, $priorityDefaultMethod, false, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
@@ -204,7 +210,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     }
 
     /**
-     * @return \ReflectionParameter[]
+     * @return ReflectionParameter[]
      */
     private function getConstructorParams(): array
     {
@@ -216,7 +222,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
         if (!$reflectionClass->isInstantiable()) {
             throw new AutowireException(
-                \sprintf('The [%s] class is not instantiable', $reflectionClass->getName())
+                sprintf('The "%s" class is not instantiable.', $reflectionClass->getName())
             );
         }
 

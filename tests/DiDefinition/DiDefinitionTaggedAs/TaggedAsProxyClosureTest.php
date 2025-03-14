@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionTaggedAs;
 
+use Closure;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
@@ -42,12 +43,12 @@ class TaggedAsProxyClosureTest extends TestCase
 
         $this->assertIsIterable($service);
 
-        $this->assertInstanceOf(\Closure::class, $service->current());
+        $this->assertInstanceOf(Closure::class, $service->current());
         $this->assertInstanceOf(HeavyDepTwo::class, ($service->current())());
 
         $service->next();
 
-        $this->assertInstanceOf(\Closure::class, $service->current());
+        $this->assertInstanceOf(Closure::class, $service->current());
         $this->assertInstanceOf(HeavyDepOne::class, ($service->current())());
 
         $service->next();
@@ -71,12 +72,12 @@ class TaggedAsProxyClosureTest extends TestCase
 
         $this->assertIsIterable($service);
 
-        $this->assertInstanceOf(\Closure::class, $service->current());
+        $this->assertInstanceOf(Closure::class, $service->current());
         $this->assertInstanceOf(HeavyDepTwo::class, ($service->current())());
 
         $service->next();
         $secondService = $service->current();
-        $this->assertInstanceOf(\Closure::class, $secondService);
+        $this->assertInstanceOf(Closure::class, $secondService);
         $this->assertInstanceOf(HeavyDepOne::class, ($secondService)());
 
         $service->next();
@@ -92,11 +93,11 @@ class TaggedAsProxyClosureTest extends TestCase
         $this->assertCount(2, $services);
 
         // access by key as container identifier
-        $this->assertInstanceOf(\Closure::class, $services['heavy.two']);
+        $this->assertInstanceOf(Closure::class, $services['heavy.two']);
         $this->assertInstanceOf(HeavyDepTwo::class, ($services['heavy.two'])());
 
         // access by key as container identifier
-        $this->assertInstanceOf(\Closure::class, $services['heavy.one']);
+        $this->assertInstanceOf(Closure::class, $services['heavy.one']);
         $this->assertInstanceOf(HeavyDepOne::class, ($services['heavy.one'])());
     }
 

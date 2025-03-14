@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassFirst;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassInterface;
 
+use function array_merge;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 
@@ -54,7 +55,7 @@ class ResolveByInterfaceTest extends TestCase
         ];
 
         $container = (new DiContainerFactory())->make(
-            \array_merge($classesDefinitions, $interfacesDefinitions)
+            array_merge($classesDefinitions, $interfacesDefinitions)
         );
 
         $myClass = $container->get(ClassInterface::class);

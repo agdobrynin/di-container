@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\FromDocs\Tags\Attributes\TestFromIssues\Fixtures;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use LogicException;
 
 final class RuleTaggedByInterface
 {
@@ -17,7 +18,7 @@ final class RuleTaggedByInterface
     ) {}
 
     /**
-     * @throws \LogicException
+     * @throws LogicException
      */
     public function validate(string $str): string
     {

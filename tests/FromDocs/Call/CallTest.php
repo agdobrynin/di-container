@@ -8,6 +8,10 @@ use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\Call\Fixtires\ServiceOne;
 
+use function array_filter;
+
+use const ARRAY_FILTER_USE_BOTH;
+
 /**
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -30,7 +34,7 @@ class CallTest extends TestCase
         $res = $container->call(
             ['\Tests\FromDocs\Call\Fixtires\PostController', 'store'],
             // $_POST содержит ['name' => 'Ivan']
-            \array_filter($_POST, static fn ($v, $k) => 'name' === $k, \ARRAY_FILTER_USE_BOTH)
+            array_filter($_POST, static fn ($v, $k) => 'name' === $k, ARRAY_FILTER_USE_BOTH)
         );
 
         $this->assertEquals('The name Ivan saved!', $res);

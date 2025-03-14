@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\DiContainer\Has;
 
+use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Tests\DiContainer\Has\Fixtures\ClassWithSimpleDependency;
+use Tests\DiContainer\Has\Fixtures\ExcludeClass;
+use Tests\DiContainer\Has\Fixtures\ExcludeInterface;
 use Tests\DiContainer\Has\Fixtures\MyInterface;
 
 /**
@@ -26,7 +29,7 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has('null'));
     }
 
-    public function dataProvideWithZeroConfig(): \Generator
+    public function dataProvideWithZeroConfig(): Generator
     {
         yield 'class' => [ClassWithSimpleDependency::class];
 
@@ -46,7 +49,7 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has($id));
     }
 
-    public function dataProvideWithoutZeroConfig(): \Generator
+    public function dataProvideWithoutZeroConfig(): Generator
     {
         yield 'class' => [ClassWithSimpleDependency::class];
 
@@ -78,5 +81,23 @@ class DiContainerHasTest extends TestCase
     public function testHasContainerInterfaceWithoutZeroConfig(): void
     {
         $this->assertTrue((new DiContainer())->has(ContainerInterface::class));
+    }
+
+    public function testAutowireExcludeAttributeOnClassWithZeroConfig(): void
+    {
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true,
+        );
+
+        $this->assertFalse((new DiContainer(config: $config))->has(ExcludeClass::class));
+    }
+
+    public function testAutowireExcludeAttributeOnInterfaceWithZeroConfig(): void
+    {
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true,
+        );
+
+        $this->assertFalse((new DiContainer(config: $config))->has(ExcludeInterface::class));
     }
 }

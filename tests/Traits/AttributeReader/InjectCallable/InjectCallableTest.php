@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
@@ -30,7 +31,7 @@ class InjectCallableTest extends TestCase
         $f = static fn (
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->assertFalse($this->getInjectByCallableAttribute($p)->valid());
     }
@@ -42,7 +43,7 @@ class InjectCallableTest extends TestCase
             #[InjectByCallable('func2')]
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
@@ -56,7 +57,7 @@ class InjectCallableTest extends TestCase
             #[InjectByCallable('func')]
             string $a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $injects = $this->getInjectByCallableAttribute($p);
 
@@ -75,10 +76,10 @@ class InjectCallableTest extends TestCase
         $f = static fn (
             #[InjectByCallable('func1')]
             #[InjectByCallable('func2', isSingleton: true)]
-            #[InjectByCallable('func3')]
+            #[InjectByCallable('func3', isSingleton: false)]
             string ...$a
         ) => '';
-        $p = new \ReflectionParameter($f, 0);
+        $p = new ReflectionParameter($f, 0);
 
         $injects = $this->getInjectByCallableAttribute($p);
 
@@ -86,7 +87,7 @@ class InjectCallableTest extends TestCase
 
         $this->assertInstanceOf(InjectByCallable::class, $injects->current());
         $this->assertEquals('func1', $injects->current()->getIdentifier());
-        $this->assertFalse($injects->current()->isSingleton());
+        $this->assertNull($injects->current()->isSingleton());
 
         $injects->next();
 

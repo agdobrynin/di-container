@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
@@ -25,6 +26,20 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionParameter;
+
+use function array_column;
+use function array_filter;
+use function array_key_exists;
+use function array_keys;
+use function array_push;
+use function array_slice;
+use function count;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_string;
+use function sprintf;
 
 trait ParametersResolverTrait
 {
@@ -44,7 +59,7 @@ trait ParametersResolverTrait
     /**
      * Reflected parameters from function or method.
      *
-     * @var \ReflectionParameter[]
+     * @var ReflectionParameter[]
      */
     private array $reflectionParameters;
 
@@ -59,7 +74,7 @@ trait ParametersResolverTrait
 
     /**
      * @param array<non-empty-string|non-negative-int, mixed> $inputArguments
-     * @param \ReflectionParameter[]                          $reflectionParameters
+     * @param ReflectionParameter[]                           $reflectionParameters
      *
      * @return list<mixed>
      *
@@ -93,7 +108,7 @@ trait ParametersResolverTrait
                     // @phpstan-ignore booleanAnd.leftNotBoolean
                     if ($this->getContainer()->getConfig()?->isUseAttribute()
                         && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                        \array_push($dependencies, ...$attributes);
+                        array_push($dependencies, ...$attributes);
 
                         continue;
                     }
@@ -114,12 +129,12 @@ trait ParametersResolverTrait
                 // @phpstan-ignore booleanAnd.leftNotBoolean
                 if ($this->getContainer()->getConfig()?->isUseAttribute()
                     && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                    \array_push($dependencies, ...$attributes);
+                    array_push($dependencies, ...$attributes);
 
                     continue;
                 }
 
-                $strType = $this->getParameterType($parameter);
+                $strType = $this->getParameterType($parameter, $this->getContainer());
 
                 $dependencies[] = null === $strType
                     ? $this->getContainer()->get($parameter->getName())
@@ -140,7 +155,7 @@ trait ParametersResolverTrait
 
             $declaredClass = null !== $parameter->getDeclaringClass() ? $parameter->getDeclaringClass()->getName() : '';
             $declaredFunction = $parameter->getDeclaringFunction()->getName();
-            $where = \implode('::', \array_filter([$declaredClass, $declaredFunction])); // @phpstan-ignore arrayFilter.strict
+            $where = implode('::', array_filter([$declaredClass, $declaredFunction])); // @phpstan-ignore arrayFilter.strict
             $messageParameter = $parameter.' in '.$where;
             $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException->getMessage()}";
 
@@ -160,7 +175,7 @@ trait ParametersResolverTrait
      * @throws ContainerExceptionInterface
      * @throws AutowireExceptionInterface
      */
-    private function resolveInputArgument(\ReflectionParameter $parameter, mixed $argumentDefinition): mixed
+    private function resolveInputArgument(ReflectionParameter $parameter, mixed $argumentDefinition): mixed
     {
         if ($argumentDefinition instanceof DiDefinitionLinkInterface) {
             return $this->getContainer()->get($argumentDefinition->getDefinition());
@@ -182,11 +197,11 @@ trait ParametersResolverTrait
                 ? $o($this->getContainer())
                 : $o;
 
-            if (true === $argumentDefinition->isSingleton()) {
-                $identifier = \sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
+            if (true === ($argumentDefinition->isSingleton() ?? $this->getContainer()->getConfig()?->isSingletonServiceDefault())) {
+                $identifier = sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
 
                 if ($parameter->isVariadic()) {
-                    $identifier .= \sprintf('#%d', self::$variadicPosition++);
+                    $identifier .= sprintf('#%d', self::$variadicPosition++);
                 }
 
                 return $this->resolvedArguments[$identifier] ??= $object;
@@ -208,7 +223,7 @@ trait ParametersResolverTrait
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    private function attemptApplyAttributes(\ReflectionParameter $parameter): \Generator
+    private function attemptApplyAttributes(ReflectionParameter $parameter): Generator
     {
         $attrs = $this->getAttributeOnParameter($parameter);
 
@@ -256,13 +271,13 @@ trait ParametersResolverTrait
      */
     private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
     {
-        if (\is_string($argumentNameOrIndex)) {
-            return \is_array($this->arguments[$argumentNameOrIndex])
+        if (is_string($argumentNameOrIndex)) {
+            return is_array($this->arguments[$argumentNameOrIndex])
                 ? $this->arguments[$argumentNameOrIndex]
                 : [$this->arguments[$argumentNameOrIndex]];
         }
 
-        return \array_slice($this->arguments, $argumentNameOrIndex);
+        return array_slice($this->arguments, $argumentNameOrIndex);
     }
 
     /**
@@ -271,15 +286,15 @@ trait ParametersResolverTrait
     private function validateInputArguments(): void
     {
         if ([] !== $this->arguments) {
-            $parameters = \array_column($this->reflectionParameters, 'name');
-            $hasVariadic = [] !== \array_filter($this->reflectionParameters, static fn (\ReflectionParameter $parameter) => $parameter->isVariadic());
+            $parameters = array_column($this->reflectionParameters, 'name');
+            $hasVariadic = [] !== array_filter($this->reflectionParameters, static fn (ReflectionParameter $parameter) => $parameter->isVariadic());
 
-            if (!$hasVariadic && \count($this->arguments) > \count($parameters)) {
+            if (!$hasVariadic && count($this->arguments) > count($parameters)) {
                 throw new AutowireException(
-                    \sprintf(
+                    sprintf(
                         'Too many input arguments. Input index or name arguments "%s". Definition parameters: %s',
-                        \implode(', ', \array_keys($this->arguments)),
-                        '' !== ($p = \implode(', ', $parameters)) ? '"'.$p.'"' : 'without input parameters'
+                        implode(', ', array_keys($this->arguments)),
+                        '' !== ($p = implode(', ', $parameters)) ? '"'.$p.'"' : 'without input parameters'
                     )
                 );
             }
@@ -289,14 +304,14 @@ trait ParametersResolverTrait
             foreach ($this->arguments as $name => $value) {
                 ++$argumentPosition;
 
-                if (\is_string($name) && !\in_array($name, $parameters, true)) {
+                if (is_string($name) && !in_array($name, $parameters, true)) {
                     throw new AutowireAttributeException(
-                        \sprintf(
+                        sprintf(
                             'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
                             $name,
                             __CLASS__,
                             $argumentPosition,
-                            \implode(', ', $parameters)
+                            implode(', ', $parameters)
                         )
                     );
                 }
@@ -304,15 +319,15 @@ trait ParametersResolverTrait
         }
     }
 
-    private function getArgumentByNameOrIndex(\ReflectionParameter $parameter): false|int|string
+    private function getArgumentByNameOrIndex(ReflectionParameter $parameter): false|int|string
     {
         if ([] === $this->arguments) {
             return false;
         }
 
         return match (true) {
-            \array_key_exists($parameter->name, $this->arguments) => $parameter->name,
-            \array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
+            array_key_exists($parameter->name, $this->arguments) => $parameter->name,
+            array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
             default => false,
         };
     }

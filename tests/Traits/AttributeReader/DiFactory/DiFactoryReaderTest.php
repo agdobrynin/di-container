@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\DiFactory;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use Tests\Traits\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\Main;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\MainFirstDiFactory;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\NoDiFactories;
@@ -28,7 +30,6 @@ class DiFactoryReaderTest extends TestCase
             use AttributeReaderTrait {
                 getDiFactoryAttribute as public;
             }
-            use DiContainerTrait; // abstract method cover.
         };
     }
 
@@ -39,7 +40,7 @@ class DiFactoryReaderTest extends TestCase
 
     public function testHasOneAttribute(): void
     {
-        $attribute = $this->reader->getDiFactoryAttribute(new \ReflectionClass(Main::class));
+        $attribute = $this->reader->getDiFactoryAttribute(new ReflectionClass(Main::class));
 
         $this->assertInstanceOf(DiFactory::class, $attribute);
         $this->assertEquals(MainFirstDiFactory::class, $attribute->getIdentifier());
@@ -47,8 +48,16 @@ class DiFactoryReaderTest extends TestCase
 
     public function testNoneAttribute(): void
     {
-        $attribute = $this->reader->getDiFactoryAttribute(new \ReflectionClass(NoDiFactories::class));
+        $attribute = $this->reader->getDiFactoryAttribute(new ReflectionClass(NoDiFactories::class));
 
         $this->assertNull($attribute);
+    }
+
+    public function testCannotUseTogetherDiFactoryAndAutowire(): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot use together attributes.+DiFactory.+Autowire\]/');
+
+        $this->reader->getDiFactoryAttribute(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
     }
 }

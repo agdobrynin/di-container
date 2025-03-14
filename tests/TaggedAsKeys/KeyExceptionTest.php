@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\TaggedAsKeys;
 
+use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -32,7 +33,7 @@ class KeyExceptionTest extends TestCase
         $this->container = null;
     }
 
-    public static function dataProviderEmptyString(): \Generator
+    public static function dataProviderEmptyString(): Generator
     {
         yield 'empty string' => [''];
 
@@ -60,7 +61,7 @@ class KeyExceptionTest extends TestCase
         $taggedAs->getServicesTaggedAs();
     }
 
-    public static function dataProviderInvalidDefinitions(): \Generator
+    public static function dataProviderInvalidDefinitions(): Generator
     {
         yield 'key option is none-string' => [
             new DiDefinitionTaggedAs('tags.one', key: 'key_srv'),

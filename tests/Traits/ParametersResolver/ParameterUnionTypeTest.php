@@ -11,9 +11,11 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\One;
 use Tests\Traits\ParametersResolver\Fixtures\Two;
 
+use function call_user_func_array;
 use function Kaspi\DiContainer\diGet;
 
 /**
@@ -57,7 +59,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
 
-        $this->resolveParameters([], (new \ReflectionFunction($fn))->getParameters());
+        $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters());
     }
 
     public function testUnionTypeByPhpDefinitionSuccess(): void
@@ -73,10 +75,10 @@ class ParameterUnionTypeTest extends TestCase
 
         $res = $this->resolveParameters(
             [diGet(Two::class)],
-            (new \ReflectionFunction($fn))->getParameters()
+            (new ReflectionFunction($fn))->getParameters()
         );
 
-        $this->assertInstanceOf(Two::class, \call_user_func_array($fn, $res));
+        $this->assertInstanceOf(Two::class, call_user_func_array($fn, $res));
     }
 
     public function testUnionTypeByPhpAttributeFail(): void
@@ -95,7 +97,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
 
-        $this->resolveParameters([], (new \ReflectionFunction($fn))->getParameters());
+        $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters());
     }
 
     public function testUnionTypeByPhpAttributeSuccess(): void
@@ -115,8 +117,8 @@ class ParameterUnionTypeTest extends TestCase
 
         $this->setContainer($this->mockContainer);
 
-        $res = $this->resolveParameters([], (new \ReflectionFunction($fn))->getParameters());
+        $res = $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters());
 
-        $this->assertInstanceOf(Two::class, \call_user_func_array($fn, $res));
+        $this->assertInstanceOf(Two::class, call_user_func_array($fn, $res));
     }
 }

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall\WrongDefinition;
 
+use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
+use stdClass;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer
@@ -20,7 +22,7 @@ use Psr\Container\ContainerExceptionInterface;
  */
 class MainTest extends TestCase
 {
-    public function dataProviderWrongDefinition(): \Generator
+    public function dataProviderWrongDefinition(): Generator
     {
         yield 'empty string' => [
             '',
@@ -29,7 +31,7 @@ class MainTest extends TestCase
 
         yield 'some random string' => [
             'service.ooo',
-            'Definition is not callable. Got: \'service.ooo\'',
+            'Definition is not callable. Got: type "string", value: \'service.ooo\'',
         ];
 
         yield 'empty array' => [
@@ -44,12 +46,12 @@ class MainTest extends TestCase
 
         yield 'no exist class with method as string' => [
             'SomeClass::method',
-            'Definition is not callable. Got: \'SomeClass::method\'',
+            'Definition is not callable. Got: type "string", value: \'SomeClass::method\'',
         ];
 
         yield 'no exist class with method as array' => [
             ['SomeClass', 'method'],
-            'Definition is not callable. Got: array',
+            'Definition is not callable. Got: type "array", value: array (',
         ];
 
         yield 'is not callable because method not exist' => [
@@ -58,7 +60,7 @@ class MainTest extends TestCase
         ];
 
         yield 'instance of object without method' => [
-            [new \stdClass(), 'method'],
+            [new stdClass(), 'method'],
             'Definition is not callable',
         ];
     }

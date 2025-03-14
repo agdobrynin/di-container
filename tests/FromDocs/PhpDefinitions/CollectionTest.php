@@ -13,6 +13,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleB;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleC;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleInterface;
 
+use function func_get_args;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
@@ -40,7 +41,7 @@ class CollectionTest extends TestCase
                     rules: diGet('services.rule-list')
                 ),
             'services.rule-list' => diCallable(
-                definition: static fn (RuleA $a, RuleB $b, RuleC $c) => \func_get_args(),
+                definition: static fn (RuleA $a, RuleB $b, RuleC $c) => func_get_args(),
                 isSingleton: true
             ),
         ];

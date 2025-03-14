@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiContainer;
 
+use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -18,7 +19,7 @@ use Psr\Container\ContainerInterface;
  */
 class ResolveSelfContainerTest extends TestCase
 {
-    public function dataProvider(): \Generator
+    public function dataProvider(): Generator
     {
         yield 'ContainerInterface' => [ContainerInterface::class];
 

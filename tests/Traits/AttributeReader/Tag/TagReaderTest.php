@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Tests\Traits\AttributeReader\Tag\Fixtures\NoneTaggedClass;
 use Tests\Traits\AttributeReader\Tag\Fixtures\TaggedClass;
 
@@ -39,14 +40,14 @@ class TagReaderTest extends TestCase
 
     public function testNoneTaggedClassReader(): void
     {
-        $result = $this->reader->getTagAttribute(new \ReflectionClass(NoneTaggedClass::class));
+        $result = $this->reader->getTagAttribute(new ReflectionClass(NoneTaggedClass::class));
 
         $this->assertFalse($result->valid());
     }
 
     public function testTaggedClassReader(): void
     {
-        $result = $this->reader->getTagAttribute(new \ReflectionClass(TaggedClass::class));
+        $result = $this->reader->getTagAttribute(new ReflectionClass(TaggedClass::class));
 
         $this->assertTrue($result->valid());
         $this->assertInstanceOf(Tag::class, $result->current());

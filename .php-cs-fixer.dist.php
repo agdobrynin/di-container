@@ -6,7 +6,10 @@ use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 
 $finder = (new PhpCsFixer\Finder())
     ->in(__DIR__)
-    ->exclude([])
+    ->exclude([
+        'tests/FinderFullyQualifiedClassName/Fixtures/Error',
+        'tests/FinderFullyQualifiedClassName/Fixtures',
+    ])
 ;
 
 return (new PhpCsFixer\Config())
@@ -18,6 +21,11 @@ return (new PhpCsFixer\Config())
         'native_function_invocation' => [
             'include' => ['@all'],
             'scope' => 'all',
+        ],
+        'global_namespace_import' => [
+            'import_classes' => true,
+            'import_constants' => true,
+            'import_functions' => true,
         ],
     ])
     ->setRiskyAllowed(true)

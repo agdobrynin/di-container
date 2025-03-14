@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
 /**
@@ -12,7 +13,7 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 class ClassWithHeavyDepByAttribute
 {
     /**
-     * @param \Generator<T> $collectionHeavyDep
+     * @param Generator<T> $collectionHeavyDep
      */
     public function __construct(
         #[TaggedAs('tags.heavy.dep')]
@@ -20,9 +21,9 @@ class ClassWithHeavyDepByAttribute
     ) {}
 
     /**
-     * @return \Generator<T>
+     * @return Generator<T>
      */
-    public function getDep(): \Generator
+    public function getDep(): Generator
     {
         yield from $this->collectionHeavyDep;
     }

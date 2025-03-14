@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures;
 
+use Generator;
+
 /**
  * @template T of Closure():HeavyDepInterface
  */
@@ -15,9 +17,9 @@ class ClassWithHeavyDep
     public function __construct(private iterable $collectionHeavyDep) {}
 
     /**
-     * @return \Generator<T>
+     * @return Generator<T>
      */
-    public function getDep(): \Generator
+    public function getDep(): Generator
     {
         yield from $this->collectionHeavyDep;
     }

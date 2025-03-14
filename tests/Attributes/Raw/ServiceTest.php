@@ -20,7 +20,7 @@ class ServiceTest extends TestCase
         $service = new Service('id');
 
         $this->assertEquals('id', $service->getIdentifier());
-        $this->assertFalse($service->isSingleton());
+        $this->assertNull($service->isSingleton());
     }
 
     public function testServiceWithUserValue(): void

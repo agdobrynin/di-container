@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\ParametersResolver;
 
+use ArrayIterator;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -12,10 +13,16 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionFunction;
+use stdClass;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 use Tests\Traits\ParametersResolver\Fixtures\SuperDiFactory;
 use Tests\Traits\ParametersResolver\Fixtures\SuperInterface;
+
+use function array_keys;
+use function array_map;
+use function call_user_func_array;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
@@ -38,14 +45,14 @@ class ParameterResolveByInjectAttributeTest extends TestCase
     {
         $fn = static fn (
             #[Inject]
-            \ArrayIterator $iterator
+            ArrayIterator $iterator
         ) => $iterator;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
-            ->method('get')->with(\ArrayIterator::class)
-            ->willReturn(new \ArrayIterator(['✔', '❤']))
+            ->method('get')->with(ArrayIterator::class)
+            ->willReturn(new ArrayIterator(['✔', '❤']))
         ;
         $mockContainer->method('getConfig')
             ->willReturn(new DiContainerConfig(useAttribute: true))
@@ -56,7 +63,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $params = $this->resolveParameters([], $reflectionParameters);
         $this->assertEquals(
             ['✔', '❤'],
-            \call_user_func_array($fn, $params)->getArrayCopy()
+            call_user_func_array($fn, $params)->getArrayCopy()
         );
     }
 
@@ -67,7 +74,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             #[Inject('b')]
             SuperClass $iterator
         ) => $iterator;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->never())->method('get');
@@ -91,7 +98,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             #[Inject('services.tow')]
             SuperInterface ...$super
         ) => $super;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->atLeast(2))
@@ -111,7 +118,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertIsArray($res);
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
@@ -124,7 +131,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             #[Inject(SuperDiFactory::class)]
             SuperInterface ...$super
         ) => $super;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -138,7 +145,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertIsArray($res);
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
@@ -150,13 +157,13 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             #[Inject]
             object|string $parameter
         ) => $parameter;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
             ->method('get')
             ->with('parameter')
-            ->willReturn(new \stdClass())
+            ->willReturn(new stdClass())
         ;
         $mockContainer->method('getConfig')
             ->willReturn(new DiContainerConfig(useAttribute: true))
@@ -164,7 +171,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertIsObject($res);
     }
@@ -175,7 +182,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             #[Inject]
             object|string $parameter
         ) => $parameter;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -201,7 +208,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             #[Inject]
             object|string $parameter = 'welcome!'
         ) => $parameter;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -215,7 +222,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertEquals('welcome!', $res);
     }
@@ -226,7 +233,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
             #[Inject('names')]
             array $name
         ): array => $name;
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -240,7 +247,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertEquals(['Ivan', 'Piter'], $res);
     }
@@ -250,12 +257,12 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $fn = static fn (
             #[Inject('names')]
             array ...$name
-        ): array => \array_map(
-            static fn (array $name, int $index) => $index > 0 ? \array_map('strtoupper', $name) : \array_map('strtolower', $name),
+        ): array => array_map(
+            static fn (array $name, int $index) => $index > 0 ? array_map('strtoupper', $name) : array_map('strtolower', $name),
             $name,
-            \array_keys($name)
+            array_keys($name)
         );
-        $reflectionParameters = (new \ReflectionFunction($fn))->getParameters();
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->once())
@@ -269,7 +276,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = \call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
 
         $this->assertCount(1, $res);
 
