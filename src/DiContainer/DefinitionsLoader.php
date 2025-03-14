@@ -206,6 +206,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
+        if (null !== ($diFactoryAttr = $this->getDiFactoryAttribute($reflectionClass))) {
+            return [$reflectionClass->name => new DiDefinitionAutowire($diFactoryAttr->getIdentifier(), $diFactoryAttr->isSingleton())];
+        }
+
         return $this->configDefinitions->offsetExists($reflectionClass->name)
             ? []
             : [$reflectionClass->name => new DiDefinitionAutowire($reflectionClass->name)];
