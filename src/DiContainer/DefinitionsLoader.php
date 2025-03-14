@@ -10,6 +10,7 @@ use Error;
 use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -171,7 +172,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if ($this->isAutowireExclude($reflectionClass)) {
-            return [];
+            return $this->configDefinitions->offsetExists($reflectionClass->name)
+                ? throw new DiDefinitionException(sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', AutowireExclude::class, $reflectionClass->name, $reflectionClass->name))
+                : [];
         }
 
         if ($reflectionClass->isInterface()) {
