@@ -130,6 +130,8 @@ class DefinitionLoaderImportCacheTest extends TestCase
         sort($expectKeys);
 
         $this->assertEquals($getKeys, $expectKeys);
+        $this->assertTrue($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\SubOne\Two']->isSingleton());
+        $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
 
         @unlink($fileName);
     }
