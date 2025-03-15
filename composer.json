@@ -3,6 +3,10 @@
     "description": "Dependency injection container with autowired",
     "keywords": ["container","di","autowire", "autowiring", "psr-11"],
     "type": "library",
+    "support": {
+        "issues": "https://github.com/agdobrynin/di-container/issues",
+        "source": "https://github.com/agdobrynin/di-container/tree/main"
+    },
     "require": {
         "php": "^8.0 || ^8.1 || ^8.2 || ^8.3 || ^8.4",
         "psr/container": "^2.0",
