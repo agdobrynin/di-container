@@ -17,6 +17,7 @@ use function sort;
 use function unlink;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\Autowire
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DefinitionsLoader
  * @covers \Kaspi\DiContainer\diAutowire
@@ -130,6 +131,8 @@ class DefinitionLoaderImportCacheTest extends TestCase
         sort($expectKeys);
 
         $this->assertEquals($getKeys, $expectKeys);
+        $this->assertTrue($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\SubOne\Two']->isSingleton());
+        $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
 
         @unlink($fileName);
     }
