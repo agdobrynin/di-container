@@ -47,7 +47,7 @@ use const T_TRAIT;
  */
 class DefinitionsLoaderImportTest extends TestCase
 {
-    public function testImport(): void
+    public function testImportMany(): void
     {
         $loader = (new DefinitionsLoader())
             ->import(
@@ -227,6 +227,7 @@ class DefinitionsLoaderImportTest extends TestCase
     {
         $loader = (new DefinitionsLoader())
             ->import('Tests\\', __DIR__.'/../', excludeFilesRegExpPattern: [
+                '~tests/_var/~',
                 '~tests/Attributes~',
                 '~tests/D.+~',
                 '~tests/F.+~',
