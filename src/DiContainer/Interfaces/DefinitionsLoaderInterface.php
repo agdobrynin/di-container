@@ -25,8 +25,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @throws DefinitionsLoaderExceptionInterface
      * @throws ContainerExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
      */
@@ -39,8 +38,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @throws DefinitionsLoaderExceptionInterface
      * @throws ContainerExceptionInterface
      */
     public function loadOverride(string ...$file): static;
@@ -58,6 +56,7 @@ interface DefinitionsLoaderInterface
     /**
      * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
      *
+     * @throws DefinitionsLoaderExceptionInterface
      * @throws DiDefinitionExceptionInterface
      * @throws AutowireExceptionInterface
      * @throws RuntimeException

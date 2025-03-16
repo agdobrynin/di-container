@@ -20,6 +20,7 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
@@ -146,7 +147,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     'return static function () {'.PHP_EOL
                 );
             } catch (RuntimeException $e) {
-                throw new RuntimeException(
+                throw new DefinitionsLoaderException(
                     sprintf(
                         'Cannot create cache file for imported definitions via DefinitionsLoader::import(). File: "%s".',
                         $importCacheFile->getPathname()
@@ -233,14 +234,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @throws AutowireExceptionInterface
      * @throws DiDefinitionExceptionInterface
-     * @throws RuntimeException
+     * @throws DefinitionsLoaderExceptionInterface
      */
     private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
         if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
-            throw new RuntimeException(
+            throw new DefinitionsLoaderException(
                 sprintf(
                     'Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.',
                     T_INTERFACE,
@@ -259,7 +260,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         try {
             $reflectionClass = new ReflectionClass($fqn);
         } catch (Error|ReflectionException $e) { // @phpstan-ignore catch.neverThrown, catch.neverThrown
-            throw new RuntimeException(
+            throw new DefinitionsLoaderException(
                 message: sprintf(
                     'Get fully qualified name "%s" from file "%s:%d" (line #%d). Reason: %s',
                     $fqn,
@@ -346,7 +347,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ob_start();
             $content = require $srcFile;
         } catch (Error|ParseError $e) {
-            throw new RuntimeException(
+            throw new DefinitionsLoaderException(
                 sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $srcFile),
                 previous: $e
             );
@@ -357,7 +358,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return match (true) {
             is_iterable($content) => yield from $content,
             $content instanceof Closure && is_iterable($content()) => yield from $content(),
-            default => throw new InvalidArgumentException(
+            default => throw new DefinitionsLoaderException(
                 sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile)
             )
         };
@@ -367,14 +368,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         foreach ($file as $srcFile) {
             if (!file_exists($srcFile) || !is_readable($srcFile)) {
-                throw new InvalidArgumentException(sprintf('The file "%s" does not exist or is not readable.', $srcFile));
+                throw new DefinitionsLoaderException(sprintf('The file "%s" does not exist or is not readable.', $srcFile));
             }
 
             try {
                 $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
                 unset($srcFile);
             } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
-                throw new ContainerException(
+                throw new DefinitionsLoaderException(
                     sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
                 );
             }
