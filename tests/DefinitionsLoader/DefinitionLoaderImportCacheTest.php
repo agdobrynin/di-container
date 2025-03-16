@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -122,6 +124,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
         $getKeys = array_keys($arr);
         $expectKeys = [
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\Interfaces\MagicInterface',
+            'Tests\DefinitionsLoader\Fixtures\ImportCreating\Interfaces\OtherInterface',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\SubOne\Two',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\SubTwo\Three',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\One',
@@ -132,6 +135,15 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
         $this->assertEquals($getKeys, $expectKeys);
         $this->assertTrue($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\SubOne\Two']->isSingleton());
+
+        $srvMI = $arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\Interfaces\MagicInterface'];
+        $this->assertInstanceOf(DiDefinitionAutowire::class, $srvMI);
+        $this->assertTrue($srvMI->isSingleton());
+
+        $srvOI = $arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\Interfaces\OtherInterface'];
+        $this->assertInstanceOf(DiDefinitionGet::class, $srvOI);
+        $this->assertEquals('services.any', $srvOI->getDefinition());
+
         $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
 
         @unlink($fileName);
