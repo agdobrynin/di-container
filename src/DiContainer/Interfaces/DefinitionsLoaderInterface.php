@@ -25,6 +25,7 @@ interface DefinitionsLoaderInterface
      * @return $this
      *
      * @throws InvalidArgumentException
+     * @throws RuntimeException
      * @throws ContainerExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
      */
@@ -38,6 +39,7 @@ interface DefinitionsLoaderInterface
      * @return $this
      *
      * @throws InvalidArgumentException
+     * @throws RuntimeException
      * @throws ContainerExceptionInterface
      */
     public function loadOverride(string ...$file): static;
