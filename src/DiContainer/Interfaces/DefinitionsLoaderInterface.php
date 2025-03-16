@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use RuntimeException;
@@ -75,8 +76,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static;
 }

@@ -16,6 +16,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -124,7 +125,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
             if (!$importCacheFile->isReadable()) {
-                throw new RuntimeException(
+                throw new DefinitionsLoaderException(
                     sprintf(
                         'Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".',
                         $importCacheFile->getPathname()
@@ -184,7 +185,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
             return $file->isReadable()
                 ? $this
-                : throw new RuntimeException(
+                : throw new DefinitionsLoaderException(
                     sprintf(
                         'Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".',
                         $file->getPathname()
