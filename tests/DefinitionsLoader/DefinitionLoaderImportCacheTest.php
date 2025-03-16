@@ -144,7 +144,6 @@ class DefinitionLoaderImportCacheTest extends TestCase
         $this->assertInstanceOf(DiDefinitionGet::class, $srvOI);
         $this->assertEquals('services.any', $srvOI->getDefinition());
 
-
         $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
 
         @unlink($fileName);

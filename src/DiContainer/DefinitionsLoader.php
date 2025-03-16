@@ -31,6 +31,7 @@ use ReflectionException;
 use RuntimeException;
 use SplFileInfo;
 
+use function class_exists;
 use function file_exists;
 use function in_array;
 use function is_iterable;
@@ -302,10 +303,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             return [
-                $reflectionClass->name =>
-                    class_exists($service->getIdentifier())
+                $reflectionClass->name => class_exists($service->getIdentifier())
                     ? new DiDefinitionAutowire($service->getIdentifier(), $service->isSingleton())
-                    : new DiDefinitionGet($service->getIdentifier())
+                    : new DiDefinitionGet($service->getIdentifier()),
             ];
         }
 
