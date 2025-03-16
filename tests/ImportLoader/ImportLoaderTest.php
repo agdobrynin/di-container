@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\ImportLoader;
 
-use InvalidArgumentException;
 use Kaspi\DiContainer\ImportLoader;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,7 +17,7 @@ class ImportLoaderTest extends TestCase
 {
     public function testInitFinderFullyQualifiedNameLazy(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Need set source directory. Use method ImportLoader::setSrc().');
 
         (new ImportLoader())->getFullyQualifiedName('App\\')->valid();

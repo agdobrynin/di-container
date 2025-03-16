@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use InvalidArgumentException;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
@@ -49,7 +49,7 @@ final class ImportLoader implements ImportLoaderInterface
     public function getFullyQualifiedName(string $namespace): iterable
     {
         if (null === $this->finderFile) {
-            throw new InvalidArgumentException('Need set source directory. Use method ImportLoader::setSrc().');
+            throw new DefinitionsLoaderException('Need set source directory. Use method ImportLoader::setSrc().');
         }
 
         if (null === $this->finderFullyQualifiedName) {

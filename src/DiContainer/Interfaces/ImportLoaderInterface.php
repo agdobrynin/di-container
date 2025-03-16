@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use InvalidArgumentException;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use RuntimeException;
 
@@ -39,6 +40,7 @@ interface ImportLoaderInterface
      *
      * @throws InvalidArgumentException
      * @throws RuntimeException
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function getFullyQualifiedName(string $namespace): iterable;
 }
