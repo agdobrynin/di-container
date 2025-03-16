@@ -301,7 +301,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            return [$reflectionClass->name => new DiDefinitionGet($service->getIdentifier())];
+            return [
+                $reflectionClass->name =>
+                    class_exists($service->getIdentifier())
+                    ? new DiDefinitionAutowire($service->getIdentifier(), $service->isSingleton())
+                    : new DiDefinitionGet($service->getIdentifier())
+            ];
         }
 
         if (($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
