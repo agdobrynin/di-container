@@ -107,7 +107,7 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithPreconfiguredImportLoader(): void
     {
         $loader = (new DefinitionsLoader(
-            new ImportLoaderCollection(
+            importLoaderCollection: new ImportLoaderCollection(
                 /*
                  * Use preconfigured argument.
                  * Test clone this argument when "import()" use more than once.
@@ -265,7 +265,7 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unsupported token id');
 
-        (new DefinitionsLoader($importLoaderCollection))
+        (new DefinitionsLoader(importLoaderCollection: $importLoaderCollection))
             ->import('Tests\\', __DIR__.'/../')
             ->definitions()
             ->current()

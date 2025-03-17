@@ -194,10 +194,12 @@ $container = (new DiContainerFactory())->make(
 ```php
 DefinitionsLoader::__construct(
     ?string $importCacheFile = null,
+    ?ImportLoaderCollectionInterface $importLoaderCollection = null
 )
 ```
 Аргумент:
 - `$importCacheFile` – имя кэш-файла.
+- `$importLoaderCollection` – класс собирающий fully qualified names для php классов и интерфейса из директорий.
 
 > [!WARNING]
 > Не используйте кэширования импортируемых файлов в "development"

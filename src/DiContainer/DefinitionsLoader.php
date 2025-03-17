@@ -66,8 +66,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private SplFileInfo $splFileInfoImportCacheFile;
 
     public function __construct(
-        private ?ImportLoaderCollectionInterface $importLoaderCollection = null,
         private ?string $importCacheFile = null,
+        private ?ImportLoaderCollectionInterface $importLoaderCollection = null,
     ) {
         $this->configDefinitions = new ArrayIterator();
     }

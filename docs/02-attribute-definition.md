@@ -539,7 +539,7 @@ $service = $container->get(App\Services\ServiceOne::class);
 
 ## Service
 
-Применяется к интерфейсу.
+Применяется к интерфейсу для конфигурирования реализации php интерфейса.
 ```php
 #[Service(string $id, ?bool $isSingleton = null)]
 ```
@@ -547,8 +547,15 @@ $service = $container->get(App\Services\ServiceOne::class);
 - `$id` - класс реализующий интерфейс (FQCN) или идентификатор контейнера.
 - `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
+> [!WARNING]
+> Если в качестве значения в аргументе `$id` указан
+> php класс реализующий этот интерфейс, то значение аргумента
+> `$isSingleton` будет учитываться при конфигурировании
+> этого сервиса, в противном случае аргумент `$isSingleton`
+> будет проигнорирован.
+
 > [!NOTE]
-> **FQCN** – fully Qualified Class Name. 
+> **FQCN** – Fully Qualified Class Name. 
 
 ```php
 // src/Loggers/CustomLoggerInterface.php
@@ -619,7 +626,7 @@ $myClass = $container->get(App\Loggers\MyLogger::class);
 print $myClass->customLogger->loggerFile(); // /var/log/app.log
 ```
 > [!TIP]
-> Загрузка определений через `DefinitionsLoader`
+> Загрузка определений в контейнер через `DefinitionsLoader`
 > используя [конфигурационные файлы](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
 > и [импорт и настройку сервисов из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
 
