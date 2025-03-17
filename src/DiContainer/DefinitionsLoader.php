@@ -161,7 +161,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$namespace]));
                     if ([] !== $definition) {
                         foreach ($definition as $identifier => $definitionItem) {
-                            $file?->fwrite($this->generateYieldStringDefinition($identifier, $definitionItem).PHP_EOL.PHP_EOL);
+                            $file?->fwrite($this->generateYieldStringDefinition($identifier, $definitionItem).PHP_EOL);
 
                             yield $identifier => $definitionItem;
                         }
