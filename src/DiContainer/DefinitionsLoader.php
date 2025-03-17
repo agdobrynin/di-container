@@ -15,10 +15,12 @@ use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
-use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
@@ -124,7 +126,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
             if (!$importCacheFile->isReadable()) {
-                throw new RuntimeException(
+                throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf(
                         'Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".',
                         $importCacheFile->getPathname()
@@ -145,7 +147,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     'return static function () {'.PHP_EOL
                 );
             } catch (RuntimeException $e) {
-                throw new RuntimeException(
+                throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf(
                         'Cannot create cache file for imported definitions via DefinitionsLoader::import(). File: "%s".',
                         $importCacheFile->getPathname()
@@ -170,7 +172,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     @unlink($file->getPathname());
                 }
 
-                throw $e;
+                throw new DefinitionsLoaderException(
+                    sprintf('There was an error loading definitions. Reason: %s', $e->getMessage()),
+                    previous: $e
+                );
             }
 
             $file?->fwrite('};'.PHP_EOL);
@@ -184,7 +189,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
             return $file->isReadable()
                 ? $this
-                : throw new RuntimeException(
+                : throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf(
                         'Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".',
                         $file->getPathname()
@@ -196,7 +201,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->importLoaderCollection = new ImportLoaderCollection();
         }
 
-        $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
+        try {
+            $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
+        } catch (InvalidArgumentException|RuntimeException $e) {
+            throw new DefinitionsLoaderInvalidArgumentException(
+                sprintf('Cannot import from namespace "%s". Reason: %s', $namespace, $e->getMessage()),
+                previous: $e
+            );
+        }
 
         if ($useAttribute) {
             $this->mapNamespaceUseAttribute[$namespace] = true;
@@ -231,15 +243,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionGet>
      *
      * @throws AutowireExceptionInterface
+     * @throws DefinitionsLoaderExceptionInterface
      * @throws DiDefinitionExceptionInterface
-     * @throws RuntimeException
      */
     private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
         if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
-            throw new RuntimeException(
+            throw new DefinitionsLoaderInvalidArgumentException(
                 sprintf(
                     'Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.',
                     T_INTERFACE,
@@ -258,7 +270,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         try {
             $reflectionClass = new ReflectionClass($fqn);
         } catch (Error|ReflectionException $e) { // @phpstan-ignore catch.neverThrown, catch.neverThrown
-            throw new RuntimeException(
+            throw new DefinitionsLoaderInvalidArgumentException(
                 message: sprintf(
                     'Get fully qualified name "%s" from file "%s:%d" (line #%d). Reason: %s',
                     $fqn,
@@ -345,7 +357,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ob_start();
             $content = require $srcFile;
         } catch (Error|ParseError $e) {
-            throw new RuntimeException(
+            throw new DefinitionsLoaderInvalidArgumentException(
                 sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $srcFile),
                 previous: $e
             );
@@ -356,7 +368,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return match (true) {
             is_iterable($content) => yield from $content,
             $content instanceof Closure && is_iterable($content()) => yield from $content(),
-            default => throw new InvalidArgumentException(
+            default => throw new DefinitionsLoaderInvalidArgumentException(
                 sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile)
             )
         };
@@ -366,14 +378,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         foreach ($file as $srcFile) {
             if (!file_exists($srcFile) || !is_readable($srcFile)) {
-                throw new InvalidArgumentException(sprintf('The file "%s" does not exist or is not readable.', $srcFile));
+                throw new DefinitionsLoaderInvalidArgumentException(sprintf('The file "%s" does not exist or is not readable.', $srcFile));
             }
 
             try {
                 $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
                 unset($srcFile);
             } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
-                throw new ContainerException(
+                throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
                 );
             }

@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use InvalidArgumentException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Psr\Container\ContainerExceptionInterface;
-use RuntimeException;
 
 interface DefinitionsLoaderInterface
 {
@@ -24,9 +21,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ContainerExceptionInterface
+     * @throws DefinitionsLoaderExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
      */
     public function load(string ...$file): static;
@@ -38,9 +33,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws ContainerExceptionInterface
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function loadOverride(string ...$file): static;
 
@@ -57,10 +50,7 @@ interface DefinitionsLoaderInterface
     /**
      * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
      *
-     * @throws DiDefinitionExceptionInterface
-     * @throws AutowireExceptionInterface
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function definitions(): iterable;
 
@@ -75,8 +65,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static;
 }

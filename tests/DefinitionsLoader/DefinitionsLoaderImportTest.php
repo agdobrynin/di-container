@@ -11,7 +11,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\ImportLoader;
 use Kaspi\DiContainer\ImportLoaderCollection;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
@@ -188,7 +188,7 @@ class DefinitionsLoaderImportTest extends TestCase
             'services.two' => static fn () => new ArrayIterator([]),
         ]);
 
-        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Autowire\].+"services\.two".+/');
 
         (new DiContainerFactory())->make($loader->definitions());
@@ -205,7 +205,7 @@ class DefinitionsLoaderImportTest extends TestCase
             Fixtures\Import\TokenInterface::class => static fn (Fixtures\Import\One $one) => new Fixtures\Import\Two($one),
         ]);
 
-        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Service\].+".+\\\TokenInterface".+/');
 
         (new DiContainerFactory())->make($loader->definitions());

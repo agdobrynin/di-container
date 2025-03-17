@@ -7,6 +7,7 @@ namespace Tests\DefinitionsLoader;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -44,7 +45,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
             ->withContent('')->at(vfsStream::setup())
         ;
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
@@ -60,7 +61,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
             ->withContent('')->at(vfsStream::setup())
         ;
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
@@ -74,7 +75,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
             ->at(vfsStream::setup())
         ;
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Cannot create cache file');
 
         (new DefinitionsLoader(importCacheFile: $dir->url().'/cache.php'))
@@ -154,7 +155,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
         $fileName = __DIR__.'/../_var/cache/'.__FUNCTION__.'_cache.php';
         file_put_contents($fileName, '<?php return []');
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('syntax error, unexpected end of file, expecting ";"');
 
         try {
@@ -175,7 +176,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
         $fileName = __DIR__.'/../_var/cache/'.__FUNCTION__.'_cache.php';
         file_put_contents($fileName, '<?php return ["a" => funcAAAAAAA()];');
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Call to undefined function funcAAAAAAA()');
 
         try {

@@ -7,7 +7,7 @@ namespace Tests\DefinitionsLoader\ImportAutoconfigure;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
 use function iterator_to_array;
@@ -56,7 +56,7 @@ class ImportAutoconfigureTest extends TestCase
 
     public function testConflictAttributeAutowireExcludeAndConfigByDefinition(): void
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches(
             '/Cannot automatically set definition via.+AutowireExclude.+DiFactoryPerson/'
         );
