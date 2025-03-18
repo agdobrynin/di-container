@@ -547,13 +547,6 @@ $service = $container->get(App\Services\ServiceOne::class);
 - `$id` - класс реализующий интерфейс (FQCN) или идентификатор контейнера.
 - `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
-> [!WARNING]
-> Если в качестве значения в аргументе `$id` указан
-> php класс реализующий этот интерфейс, то значение аргумента
-> `$isSingleton` будет учитываться при конфигурировании
-> этого сервиса, в противном случае аргумент `$isSingleton`
-> будет проигнорирован.
-
 > [!NOTE]
 > **FQCN** – Fully Qualified Class Name. 
 
