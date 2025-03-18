@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer;
 use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionInvokableWrapper;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -259,13 +260,15 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     $this->resolvingDependencies[$service->getIdentifier()] = true;
 
                     try {
-                        return $this->diResolvedDefinition[$service->getIdentifier()] = $this->resolveDefinition($service->getIdentifier());
+                        if (($def = $this->resolveDefinition($service->getIdentifier())) instanceof DiDefinitionInvokableInterface) {
+                            return $this->diResolvedDefinition[$id] = new DiDefinitionInvokableWrapper($def, $service->isSingleton());
+                        }
                     } finally {
                         unset($this->resolvingDependencies[$service->getIdentifier()]);
                     }
                 }
 
-                throw new NotFoundException(sprintf('Definition not found for identifier "%s".', $id));
+                throw new NotFoundException(sprintf('Definition not found for interface "%s".', $id));
             }
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean

@@ -19,6 +19,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionInvokableWrapper
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal

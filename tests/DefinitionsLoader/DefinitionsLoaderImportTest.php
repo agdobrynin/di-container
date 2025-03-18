@@ -11,7 +11,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\ImportLoader;
 use Kaspi\DiContainer\ImportLoaderCollection;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
@@ -47,7 +47,7 @@ use const T_TRAIT;
  */
 class DefinitionsLoaderImportTest extends TestCase
 {
-    public function testImport(): void
+    public function testImportMany(): void
     {
         $loader = (new DefinitionsLoader())
             ->import(
@@ -107,7 +107,7 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithPreconfiguredImportLoader(): void
     {
         $loader = (new DefinitionsLoader(
-            new ImportLoaderCollection(
+            importLoaderCollection: new ImportLoaderCollection(
                 /*
                  * Use preconfigured argument.
                  * Test clone this argument when "import()" use more than once.
@@ -162,7 +162,7 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->assertTrue($container->has(Fixtures\Import\TokenInterface::class));
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition not found for identifier');
+        $this->expectExceptionMessage('Definition not found for interface');
         // import skip attribute Service on interface
         $container->get(Fixtures\Import\TokenInterface::class);
     }
@@ -188,7 +188,7 @@ class DefinitionsLoaderImportTest extends TestCase
             'services.two' => static fn () => new ArrayIterator([]),
         ]);
 
-        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Autowire\].+"services\.two".+/');
 
         (new DiContainerFactory())->make($loader->definitions());
@@ -205,7 +205,7 @@ class DefinitionsLoaderImportTest extends TestCase
             Fixtures\Import\TokenInterface::class => static fn (Fixtures\Import\One $one) => new Fixtures\Import\Two($one),
         ]);
 
-        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Service\].+".+\\\TokenInterface".+/');
 
         (new DiContainerFactory())->make($loader->definitions());
@@ -227,6 +227,7 @@ class DefinitionsLoaderImportTest extends TestCase
     {
         $loader = (new DefinitionsLoader())
             ->import('Tests\\', __DIR__.'/../', excludeFilesRegExpPattern: [
+                '~tests/_var/~',
                 '~tests/Attributes~',
                 '~tests/D.+~',
                 '~tests/F.+~',
@@ -264,7 +265,7 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unsupported token id');
 
-        (new DefinitionsLoader($importLoaderCollection))
+        (new DefinitionsLoader(importLoaderCollection: $importLoaderCollection))
             ->import('Tests\\', __DIR__.'/../')
             ->definitions()
             ->current()

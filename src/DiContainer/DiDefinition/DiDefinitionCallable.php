@@ -21,8 +21,6 @@ use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
 
-use function call_user_func;
-use function call_user_func_array;
 use function is_array;
 use function is_string;
 use function strpos;
@@ -82,10 +80,10 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         $this->reflectedFunctionParameters ??= $this->reflectParameters();
 
         if ([] === $this->reflectedFunctionParameters) {
-            return call_user_func($this->getDefinition());
+            return $this->getDefinition()();
         }
 
-        return call_user_func_array($this->getDefinition(), $this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
+        return $this->getDefinition()(...$this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
     }
 
     /**
