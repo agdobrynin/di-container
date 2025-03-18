@@ -71,6 +71,29 @@ class ResolveByInterfaceTest extends TestCase
         $this->assertNotSame($res, $container->get(ServiceViaAttributeWithReferenceInterface::class));
     }
 
+    public function testResolveByInterfaceViaAttributeWithZeroConfigUseReferenceAndResolveInterfaceByCallableDefinition(): void
+    {
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true
+        );
+
+        $def = [
+            'class-a' => diCallable(static function () {
+                return new ServiceViaAttributeWithClassA();
+            }, isSingleton: true),
+            // ...
+            'services.class-a' => diGet('class-a'),
+        ];
+
+        $container = new DiContainer($def, config: $config);
+
+        // Via Service attribute as none-singleton.
+        $res = $container->get(ServiceViaAttributeWithReferenceInterface::class);
+
+        $this->assertInstanceOf(ServiceViaAttributeWithClassA::class, $res);
+        $this->assertNotSame($res, $container->get(ServiceViaAttributeWithReferenceInterface::class));
+    }
+
     public function testResolveByInterfaceViaAttributeWithZeroConfigUseReferenceCircularException(): void
     {
         $config = new DiContainerConfig(
