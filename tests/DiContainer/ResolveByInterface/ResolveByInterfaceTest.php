@@ -12,6 +12,7 @@ use Tests\DiContainer\ResolveByInterface\Fixtures\FreeInterface;
 use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithClassA;
 use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithClassInterface;
 use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithReferenceInterface;
+use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithReferenceIsSingletonFalseInterface;
 use Tests\DiContainer\ResolveByInterface\Fixtures\SuperClass;
 use Tests\DiContainer\ResolveByInterface\Fixtures\SuperInterface;
 
@@ -28,6 +29,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionInvokableWrapper
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\CallableParserTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
@@ -42,9 +44,11 @@ class ResolveByInterfaceTest extends TestCase
             useZeroConfigurationDefinition: true
         );
 
-        $res = (new DiContainer(config: $config))->get(ServiceViaAttributeWithClassInterface::class);
+        // ServiceViaAttributeWithClassInterface via Service attribute as singleton.
+        $res = ($container = new DiContainer(config: $config))->get(ServiceViaAttributeWithClassInterface::class);
 
         $this->assertInstanceOf(ServiceViaAttributeWithClassA::class, $res);
+        $this->assertSame($res, $container->get(ServiceViaAttributeWithClassInterface::class));
     }
 
     public function testResolveByInterfaceViaAttributeWithZeroConfigUseReference(): void
@@ -61,9 +65,35 @@ class ResolveByInterfaceTest extends TestCase
 
         $container = new DiContainer($def, config: $config);
 
+        // Via Service attribute as none-singleton.
+        $res = $container->get(ServiceViaAttributeWithReferenceIsSingletonFalseInterface::class);
+
+        $this->assertInstanceOf(ServiceViaAttributeWithClassA::class, $res);
+        $this->assertNotSame($res, $container->get(ServiceViaAttributeWithReferenceIsSingletonFalseInterface::class));
+    }
+
+    public function testResolveByInterfaceViaAttributeWithZeroConfigUseReferenceAndResolveInterfaceByCallableDefinition(): void
+    {
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true
+        );
+
+        $def = [
+            'class-a' => diCallable(static function () {
+                return new ServiceViaAttributeWithClassA();
+            }, isSingleton: true),
+            // ...
+            'services.class-a' => diGet('class-a'),
+        ];
+
+        $container = new DiContainer($def, config: $config);
+
+        // Via Service attribute as singleton.
         $res = $container->get(ServiceViaAttributeWithReferenceInterface::class);
 
         $this->assertInstanceOf(ServiceViaAttributeWithClassA::class, $res);
+
+        $this->assertSame($res, $container->get(ServiceViaAttributeWithReferenceInterface::class));
     }
 
     public function testResolveByInterfaceViaAttributeWithZeroConfigUseReferenceCircularException(): void
