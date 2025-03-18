@@ -268,7 +268,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                throw new NotFoundException(sprintf('Definition not found for identifier "%s".', $id));
+                throw new NotFoundException(sprintf('Definition not found for interface "%s".', $id));
             }
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean

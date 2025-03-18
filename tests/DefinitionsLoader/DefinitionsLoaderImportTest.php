@@ -162,7 +162,7 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->assertTrue($container->has(Fixtures\Import\TokenInterface::class));
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition not found for identifier');
+        $this->expectExceptionMessage('Definition not found for interface');
         // import skip attribute Service on interface
         $container->get(Fixtures\Import\TokenInterface::class);
     }
