@@ -12,6 +12,7 @@ use Tests\DiContainer\ResolveByInterface\Fixtures\FreeInterface;
 use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithClassA;
 use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithClassInterface;
 use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithReferenceInterface;
+use Tests\DiContainer\ResolveByInterface\Fixtures\ServiceViaAttributeWithReferenceIsSingletonFalseInterface;
 use Tests\DiContainer\ResolveByInterface\Fixtures\SuperClass;
 use Tests\DiContainer\ResolveByInterface\Fixtures\SuperInterface;
 
@@ -65,10 +66,10 @@ class ResolveByInterfaceTest extends TestCase
         $container = new DiContainer($def, config: $config);
 
         // Via Service attribute as none-singleton.
-        $res = $container->get(ServiceViaAttributeWithReferenceInterface::class);
+        $res = $container->get(ServiceViaAttributeWithReferenceIsSingletonFalseInterface::class);
 
         $this->assertInstanceOf(ServiceViaAttributeWithClassA::class, $res);
-        $this->assertNotSame($res, $container->get(ServiceViaAttributeWithReferenceInterface::class));
+        $this->assertNotSame($res, $container->get(ServiceViaAttributeWithReferenceIsSingletonFalseInterface::class));
     }
 
     public function testResolveByInterfaceViaAttributeWithZeroConfigUseReferenceAndResolveInterfaceByCallableDefinition(): void
@@ -87,11 +88,12 @@ class ResolveByInterfaceTest extends TestCase
 
         $container = new DiContainer($def, config: $config);
 
-        // Via Service attribute as none-singleton.
+        // Via Service attribute as singleton.
         $res = $container->get(ServiceViaAttributeWithReferenceInterface::class);
 
         $this->assertInstanceOf(ServiceViaAttributeWithClassA::class, $res);
-        $this->assertNotSame($res, $container->get(ServiceViaAttributeWithReferenceInterface::class));
+
+        $this->assertSame($res, $container->get(ServiceViaAttributeWithReferenceInterface::class));
     }
 
     public function testResolveByInterfaceViaAttributeWithZeroConfigUseReferenceCircularException(): void

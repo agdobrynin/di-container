@@ -6,5 +6,5 @@ namespace Tests\DiContainer\ResolveByInterface\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Service;
 
-#[Service('services.class-a', isSingleton: true)]
-interface ServiceViaAttributeWithReferenceInterface {}
+#[Service('services.class-a', isSingleton: false)]
+interface ServiceViaAttributeWithReferenceIsSingletonFalseInterface {}
