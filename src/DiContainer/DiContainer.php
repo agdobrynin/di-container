@@ -300,7 +300,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $this->resolvingDependencies[$rawDefinition->getDefinition()] = true;
 
             try {
-                return $this->resolveDefinition($rawDefinition->getDefinition());
+                return $this->diResolvedDefinition[$id] = $this->resolveDefinition($rawDefinition->getDefinition());
             } finally {
                 unset($this->resolvingDependencies[$rawDefinition->getDefinition()]);
             }
