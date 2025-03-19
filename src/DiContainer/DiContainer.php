@@ -165,9 +165,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function getDefinitions(): iterable
     {
         foreach ($this->definitions as $id => $definition) {
-            if ($definition instanceof DiDefinitionInterface) {
-                yield $id => $definition;
-            }
+            yield $id => $this->clarificationOfDefinition($definition);
         }
     }
 
@@ -293,24 +291,29 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->isSingletonDefault);
         }
 
-        $rawDefinition = $this->definitions[$id];
+        $definition = $this->clarificationOfDefinition($this->definitions[$id]);
 
-        if ($rawDefinition instanceof DiDefinitionLinkInterface) {
-            $this->checkCyclicalDependencyCall($rawDefinition->getDefinition());
-            $this->resolvingDependencies[$rawDefinition->getDefinition()] = true;
+        if ($definition instanceof DiDefinitionLinkInterface) {
+            $this->checkCyclicalDependencyCall($definition->getDefinition());
+            $this->resolvingDependencies[$definition->getDefinition()] = true;
 
             try {
-                return $this->diResolvedDefinition[$id] = $this->resolveDefinition($rawDefinition->getDefinition());
+                return $this->diResolvedDefinition[$id] = $this->resolveDefinition($definition->getDefinition());
             } finally {
-                unset($this->resolvingDependencies[$rawDefinition->getDefinition()]);
+                unset($this->resolvingDependencies[$definition->getDefinition()]);
             }
         }
 
-        if ($rawDefinition instanceof Closure) {
-            return $this->diResolvedDefinition[$id] = new DiDefinitionCallable($rawDefinition, $this->isSingletonDefault);
-        }
+        return $this->diResolvedDefinition[$id] = $definition;
+    }
 
-        return $this->diResolvedDefinition[$id] = new DiDefinitionValue($rawDefinition);
+    protected function clarificationOfDefinition(mixed $definition): DiDefinitionCallable|DiDefinitionInterface|DiDefinitionValue
+    {
+        return match (true) {
+            $definition instanceof DiDefinitionInterface => $definition,
+            $definition instanceof Closure => new DiDefinitionCallable($definition, $this->isSingletonDefault),
+            default => new DiDefinitionValue($definition)
+        };
     }
 
     protected function isContainer(string $id): bool
