@@ -67,9 +67,7 @@ final class FinderClosureCode
         $fnTokens = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
-            $tokenLine = $tokens[$i][2] ?? -1;
-
-            if ($tokenLine < $reflection->getStartLine()) {
+            if (is_array($tokens[$i]) && $tokens[$i][2] < $reflection->getStartLine()) {
                 continue;
             }
 
@@ -96,7 +94,7 @@ final class FinderClosureCode
 
             if (0 !== $fnType && T_USE === $token_id) {
                 throw new LogicException(
-                    sprintf('Function cannot import variable vai keyword "use". Code from file "%s".', $fileName),
+                    sprintf('Function cannot import variable via keyword "use". Code from file "%s".', $fileName),
                 );
             }
 
