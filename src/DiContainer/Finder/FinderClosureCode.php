@@ -62,8 +62,8 @@ final class FinderClosureCode
             );
         }
 
-        $fnStart = $fnIsStatic = $isFnShort = $isFnFunction = false;
-        $fnLevel = 0;
+        $fnIsStatic = $fnStart = false;
+        $fnLevel = $fnType = 0;
         $fnTokens = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
@@ -89,21 +89,28 @@ final class FinderClosureCode
                         sprintf('Function must be declare with "static" keyword. Code from file "%s".', $fileName),
                     );
                 }
+                $fnType = $token_id;
 
+                continue;
+            }
+
+            if (0 !== $fnType && T_USE === $token_id) {
+                throw new LogicException(
+                    sprintf('Function cannot import variable vai keyword "use". Code from file "%s".', $fileName),
+                );
+            }
+
+            $token_text = is_array($tokens[$i])
+                ? $tokens[$i][1]
+                : $tokens[$i];
+
+            if (0 !== $fnType && (T_DOUBLE_ARROW === $token_id || '{' === $token_text)) {
                 $fnStart = true;
+
+                continue;
             }
 
             if ($fnStart) {
-                if (T_USE === $token_id) {
-                    throw new LogicException(
-                        sprintf('Function cannot import variable vai keyword "use". Code from file "%s".', $fileName),
-                    );
-                }
-
-                $token_text = is_array($tokens[$i])
-                    ? $tokens[$i][1]
-                    : $tokens[$i];
-
                 if ('{' === $token_text) {
                     ++$fnLevel;
                 } elseif ('}' === $token_text) {
