@@ -62,7 +62,7 @@ final class FinderClosureCode
             );
         }
 
-        $fnStart = $fnIsStatic = false;
+        $fnStart = $fnIsStatic = $isFnShort = $isFnFunction = false;
         $fnLevel = 0;
         $fnTokens = [];
 
@@ -100,7 +100,21 @@ final class FinderClosureCode
                     );
                 }
 
-                $fnTokens[] = is_array($tokens[$i]) ? $tokens[$i][1] : $tokens[$i];
+                $token_text = is_array($tokens[$i])
+                    ? $tokens[$i][1]
+                    : $tokens[$i];
+
+                if ('{' === $token_text) {
+                    ++$fnLevel;
+                } elseif ('}' === $token_text) {
+                    --$fnLevel;
+                }
+
+                if (0 === $fnLevel && in_array($token_text, [',', ')', '}', ';'], true)) {
+                    break;
+                }
+
+                $fnTokens[] = $token_text;
             }
         }
 
