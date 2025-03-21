@@ -67,7 +67,12 @@ final class FinderClosureCode
         $fnTokens = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
-            if (is_array($tokens[$i]) && $tokens[$i][2] < $reflection->getStartLine()) {
+            if (is_array($tokens[$i])
+                && (
+                    $tokens[$i][2] < $reflection->getStartLine()
+                    || in_array($tokens[$i][0],[T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)
+                )
+            ) {
                 continue;
             }
 
