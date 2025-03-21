@@ -65,8 +65,28 @@ final class FinderClosureCode
         $fnStart = false;
         $fnLevel = $fnType = 0;
         $fnTokens = [];
+        $useNamespace = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
+            [$token_id, $token_text] = is_array($tokens[$i])
+                ? [$tokens[$i][0], $tokens[$i][1]]
+                : [0, $tokens[$i]];
+
+            if (T_USE === $token_id) {
+                for (++$i; $i < $t; ++$i) {
+                    [$token_id, $token_text] = is_array($tokens[$i])
+                        ? [$tokens[$i][0], $tokens[$i][1]]
+                        : [0, $tokens[$i]];
+                    if (';' === $token_text) {
+                        break;
+                    }
+
+                    if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                        $useNamespace[$token_text] = true;
+                    }
+                }
+            }
+
             if (is_array($tokens[$i])
                 && (
                     $tokens[$i][2] < $reflection->getStartLine()
