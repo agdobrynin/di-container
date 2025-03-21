@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\FinderClosureCode;
@@ -9,24 +10,32 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use SplFileObject;
 
-class FInderClosureCodeTest extends TestCase {
+use function var_export;
+
+/**
+ * @internal
+ */
+class FInderClosureCodeTest extends TestCase
+{
     public function testFunction(): void
     {
         $code = (new FinderClosureCode())
-            ->getCode(static fn(ContainerInterface $c): FinderClosureCode|DiDefinitionAutowireInterface =>
-                $c->has('services.exclude')
+            ->getCode(
+                static fn (ContainerInterface $c): DiDefinitionAutowireInterface|FinderClosureCode => $c->has('services.exclude')
                     ? $c->get('services.exclude')
                     : new FinderClosureCode()
-            );
+            )
+        ;
 
         var_export($code);
 
         $code = (new FinderClosureCode())
-            ->getCode(static function(string $filename): FinderClosureCode {
+            ->getCode(static function (string $filename): FinderClosureCode {
                 $someArg = new SplFileObject($filename);
 
                 return new FinderClosureCode($someArg);
-            });
+            })
+        ;
 
         var_export($code);
     }

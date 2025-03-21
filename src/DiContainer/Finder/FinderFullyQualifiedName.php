@@ -163,7 +163,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
 
-                    if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                    if (in_array($token_id, [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
                         $namespace = $token_text;
 
                         break;

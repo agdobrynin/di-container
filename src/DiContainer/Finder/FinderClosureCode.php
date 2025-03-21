@@ -12,7 +12,10 @@ use ReflectionFunction;
 use RuntimeException;
 use SplFileObject;
 
+use function array_search;
 use function count;
+use function end;
+use function explode;
 use function implode;
 use function in_array;
 use function is_array;
@@ -20,7 +23,6 @@ use function sprintf;
 use function token_get_all;
 use function var_export;
 
-use const T_STATIC;
 use const T_USE;
 
 final class FinderClosureCode
@@ -40,24 +42,11 @@ final class FinderClosureCode
             throw new RuntimeException($e->getMessage(), previous: $e);
         }
 
-        if (false === ($fileName = $reflection->getFileName())) {
-            throw new RuntimeException(
-                sprintf('Function defined in the PHP core or in a PHP extension. Got: %s.', var_export($function, true))
-            );
-        }
-
         try {
-            $f = (new SplFileObject($fileName))->openFile('rb');
-            $code = '';
-
-            while (!$f->eof()) {
-                $code .= $f->fread(8192);
-            }
-
-            $tokens = $this->fileTokens[$f->getPathname()] ??= token_get_all($code, TOKEN_PARSE);
-        } catch (LogicException|ParseError|RuntimeException  $e) {
+            $tokens = $this->getTokens($reflection->getFileName());
+        } catch (RuntimeException $e) {
             throw new RuntimeException(
-                sprintf('Cannot parse code from file "%s". Reason: %s', $fileName, $e->getMessage()),
+                sprintf('%s Got: %s', $e->getMessage(), var_export($function, true)),
                 previous: $e
             );
         }
@@ -68,11 +57,9 @@ final class FinderClosureCode
         $useNamespace = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
-            [$token_id, $token_text] = is_array($tokens[$i])
-                ? [$tokens[$i][0], $tokens[$i][1]]
-                : [0, $tokens[$i]];
+            $token_id = $tokens[$i][0] ?? 0;
 
-            if (T_USE === $token_id) {
+            if (false === $fnStart && T_USE === $token_id) {
                 for (++$i; $i < $t; ++$i) {
                     [$token_id, $token_text] = is_array($tokens[$i])
                         ? [$tokens[$i][0], $tokens[$i][1]]
@@ -82,7 +69,8 @@ final class FinderClosureCode
                     }
 
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $useNamespace[$token_text] = true;
+                        $n = explode('\\', $token_text);
+                        $useNamespace['\\'.$token_text] = end($n);
                     }
                 }
             }
@@ -90,15 +78,11 @@ final class FinderClosureCode
             if (is_array($tokens[$i])
                 && (
                     $tokens[$i][2] < $reflection->getStartLine()
-                    || in_array($tokens[$i][0],[T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)
+                    || in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)
                 )
             ) {
                 continue;
             }
-
-            $token_id = is_array($tokens[$i])
-                ? $tokens[$i][0]
-                : 0;
 
             if (in_array($token_id, [T_FN, T_FUNCTION], true)) {
                 $fnType = $token_id;
@@ -108,7 +92,7 @@ final class FinderClosureCode
 
             if (0 !== $fnType && T_USE === $token_id) {
                 throw new LogicException(
-                    sprintf('Function cannot import variable via keyword "use". Code from file "%s".', $fileName),
+                    sprintf('Function cannot import variable via keyword "use". Code from file "%s".', $reflection->getFileName()),
                 );
             }
 
@@ -139,5 +123,35 @@ final class FinderClosureCode
         }
 
         return implode($fnTokens);
+    }
+
+    /**
+     * @return array<string, list<array{0: int, 1: string, 2: int}|string>>
+     */
+    private function getTokens(false|string $fileName): array
+    {
+        if (isset($this->fileTokens[$fileName])) {
+            return $this->fileTokens[$fileName];
+        }
+
+        if (false === $fileName) {
+            throw new RuntimeException('Function defined in the PHP core or in a PHP extension.');
+        }
+
+        try {
+            $f = (new SplFileObject($fileName))->openFile('rb');
+            $code = '';
+
+            while (!$f->eof()) {
+                $code .= $f->fread(8192);
+            }
+
+            return $this->fileTokens[$f->getPathname()] = token_get_all($code, TOKEN_PARSE);
+        } catch (LogicException|ParseError|RuntimeException  $e) {
+            throw new RuntimeException(
+                sprintf('Cannot parse code from file "%s". Reason: %s', $fileName, $e->getMessage()),
+                previous: $e
+            );
+        }
     }
 }
