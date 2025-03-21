@@ -62,7 +62,7 @@ final class FinderClosureCode
             );
         }
 
-        $fnIsStatic = $fnStart = false;
+        $fnStart = false;
         $fnLevel = $fnType = 0;
         $fnTokens = [];
 
@@ -75,18 +75,7 @@ final class FinderClosureCode
                 ? $tokens[$i][0]
                 : 0;
 
-            if (T_STATIC === $token_id) {
-                $fnIsStatic = true;
-
-                continue;
-            }
-
             if (in_array($token_id, [T_FN, T_FUNCTION], true)) {
-                if (!$fnIsStatic) {
-                    throw new LogicException(
-                        sprintf('Function must be declare with "static" keyword. Code from file "%s".', $fileName),
-                    );
-                }
                 $fnType = $token_id;
 
                 continue;
@@ -104,6 +93,7 @@ final class FinderClosureCode
 
             if (0 !== $fnType && (T_DOUBLE_ARROW === $token_id || '{' === $token_text)) {
                 $fnStart = true;
+                ++$fnLevel;
 
                 continue;
             }
@@ -115,7 +105,7 @@ final class FinderClosureCode
                     --$fnLevel;
                 }
 
-                if (0 === $fnLevel && in_array($token_text, [',', ')', '}', ';'], true)) {
+                if (0 === $fnLevel && in_array($token_text, [',', ')', '}', ';', ']'], true)) {
                     break;
                 }
 
