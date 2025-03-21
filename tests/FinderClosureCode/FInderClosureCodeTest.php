@@ -12,7 +12,16 @@ class FInderClosureCodeTest extends TestCase {
     {
         $code = (new FinderClosureCode())
             ->getCode(static fn(ContainerInterface $c): \stdClass => $c->get('services.exclude'));
-var_export($code);
-        //$this->assertEquals('$c->get(\'services.exclude\')', $code);
+
+        var_export($code);
+
+        $code = (new FinderClosureCode())
+            ->getCode(static function(): FinderClosureCode {
+                $someArg = 'aaa';
+
+                return new FinderClosureCode($someArg);
+            });
+
+        var_export($code);
     }
 }
