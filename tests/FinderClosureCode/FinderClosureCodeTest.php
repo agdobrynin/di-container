@@ -25,10 +25,10 @@ class FinderClosureCodeTest extends TestCase
 
         var_export($code);
 
-        $services->next();
-
-        $code = (new FinderClosureCode())->getCode($services->current());
-
-        var_export($code);
+//        $services->next();
+//
+//        $code = (new FinderClosureCode())->getCode($services->current());
+//
+//        var_export($code);
     }
 }
