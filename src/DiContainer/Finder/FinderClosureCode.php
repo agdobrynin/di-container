@@ -77,7 +77,7 @@ final class FinderClosureCode
                     }
 
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $useNamespace[$useNameSpaceLevel] = $token_text;
+                        $useNamespace[] = $token_text;
                     }
                 }
             }
