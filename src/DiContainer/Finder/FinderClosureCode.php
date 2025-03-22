@@ -13,8 +13,6 @@ use RuntimeException;
 use SplFileObject;
 
 use function count;
-use function end;
-use function explode;
 use function implode;
 use function in_array;
 use function is_array;
@@ -67,14 +65,15 @@ final class FinderClosureCode
                     [$token_id, $token_text] = is_array($tokens[$i])
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
+
                     if (';' === $token_text) {
                         break;
                     }
 
                     if ('{' === $token_text) {
-                        ++$useNamespace;
+                        ++$useNameSpaceLevel;
                     } elseif ('}' === $token_text) {
-                        --$useNamespace;
+                        --$useNameSpaceLevel;
                     }
 
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
