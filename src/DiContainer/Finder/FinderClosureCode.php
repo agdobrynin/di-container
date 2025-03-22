@@ -17,11 +17,13 @@ use function end;
 use function implode;
 use function in_array;
 use function is_array;
+use function print_r;
 use function sprintf;
+use function str_repeat;
 use function token_get_all;
-use function var_dump;
 use function var_export;
 
+use const PHP_EOL;
 use const T_AS;
 use const T_CONST;
 use const T_FUNCTION;
@@ -75,10 +77,9 @@ final class FinderClosureCode
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
 
-                    if ($token_text === ';') {
+                    if (';' === $token_text) {
                         ++$useCount;
                         $isAlias = false;
-                        $useTypeId = 0;
 
                         break;
                     }
@@ -91,20 +92,31 @@ final class FinderClosureCode
 
                     if ($isAlias && ',' === $token_text) {
                         $isAlias = false;
+
+                        continue;
                     }
 
                     if ('{' === $token_text) {
                         ++$useNameSpaceLevel;
-                    } elseif ('}' === $token_text) {
+
+                        continue;
+                    }
+                    if ('}' === $token_text) {
                         --$useNameSpaceLevel;
+
+                        continue;
                     }
 
                     if (T_AS === $token_id) {
                         $isAlias = true;
+
+                        continue;
                     }
 
                     if ($isAlias && \T_STRING === $token_id) {
                         $useNamespaceAlias[$token_text] = end($useNamespace);
+
+                        continue;
                     }
 
                     if (false === $isAlias && in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
@@ -165,13 +177,13 @@ final class FinderClosureCode
                 $fnTokens[] = $token_text;
             }
         }
-        print "\n\n";
-        $normalizedNamespaces = (static function($useNamespace) {
+        echo "\n\n";
+        $normalizedNamespaces = (static function ($useNamespace) {
             return [];
         })($useNamespace);
-        \print_r($useNamespace);
-        print str_repeat('-', 20).\PHP_EOL;
-        \print_r($useNamespaceAlias);
+        print_r($useNamespace);
+        echo str_repeat('-', 20).PHP_EOL;
+        print_r($useNamespaceAlias);
 
         return implode($fnTokens);
     }
