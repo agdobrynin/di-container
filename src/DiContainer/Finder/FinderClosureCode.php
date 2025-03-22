@@ -56,7 +56,9 @@ final class FinderClosureCode
         $useNamespace = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
-            $token_id = $tokens[$i][0] ?? 0;
+            $token_id = is_array($tokens[$i]) ?
+                $tokens[$i][0]
+                : 0;
 
             if (false === $fnStart && T_USE === $token_id) {
                 $useNameSpaceLevel = 0;
