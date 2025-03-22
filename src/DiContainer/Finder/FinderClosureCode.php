@@ -63,7 +63,7 @@ final class FinderClosureCode
             if (false === $fnStart && T_USE === $token_id) {
                 $useNameSpaceLevel = 0;
 
-                for (++$i; $i < $t; ++$i) {
+                for (++$i; $i < $t; ++$i) { // parse use namespace.
                     [$token_id, $token_text] = is_array($tokens[$i])
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
