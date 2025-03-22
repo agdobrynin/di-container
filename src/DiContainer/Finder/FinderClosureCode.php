@@ -59,6 +59,8 @@ final class FinderClosureCode
             $token_id = $tokens[$i][0] ?? 0;
 
             if (false === $fnStart && T_USE === $token_id) {
+                $useNameSpaceLevel = 0;
+
                 for (++$i; $i < $t; ++$i) {
                     [$token_id, $token_text] = is_array($tokens[$i])
                         ? [$tokens[$i][0], $tokens[$i][1]]
@@ -67,9 +69,14 @@ final class FinderClosureCode
                         break;
                     }
 
+                    if ('{' === $token_text) {
+                        ++$useNamespace;
+                    } elseif ('}' === $token_text) {
+                        --$useNamespace;
+                    }
+
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $n = explode('\\', $token_text);
-                        $useNamespace['\\'.$token_text] = end($n);
+                        $useNamespace[$useNameSpaceLevel] = $token_text;
                     }
                 }
             }

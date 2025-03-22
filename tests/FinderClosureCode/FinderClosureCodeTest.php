@@ -15,7 +15,7 @@ use function var_export;
 /**
  * @internal
  */
-class FInderClosureCodeTest extends TestCase
+class FinderClosureCodeTest extends TestCase
 {
     public function testFunction(): void
     {
