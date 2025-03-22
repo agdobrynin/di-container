@@ -13,14 +13,18 @@ use RuntimeException;
 use SplFileObject;
 
 use function count;
+use function end;
 use function implode;
 use function in_array;
 use function is_array;
 use function sprintf;
 use function token_get_all;
+use function var_dump;
 use function var_export;
 
 use const T_AS;
+use const T_CONST;
+use const T_FUNCTION;
 use const T_USE;
 
 final class FinderClosureCode
@@ -53,8 +57,9 @@ final class FinderClosureCode
         $fnLevel = $fnType = 0;
         $fnTokens = [];
         $useNamespace = [];
+        $useNamespaceAlias = [];
         $useCount = 0;
-        $useNameSpaceAlias = [];
+        $isAlias = false;
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
             $token_id = is_array($tokens[$i]) ?
@@ -63,16 +68,28 @@ final class FinderClosureCode
 
             if (false === $fnStart && T_USE === $token_id) {
                 $useNameSpaceLevel = 0;
+                $useType = '';
 
                 for (++$i; $i < $t; ++$i) { // parse use namespace.
                     [$token_id, $token_text] = is_array($tokens[$i])
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
 
-                    if (';' === $token_text) {
+                    if (in_array($token_text, [';', ','], true)) {
                         ++$useCount;
+                        $isAlias = false;
 
                         break;
+                    }
+
+                    if (in_array($token_id, [T_FUNCTION, T_CONST], true)) {
+                        $useType = $token_text;
+
+                        continue;
+                    }
+
+                    if ($isAlias && ',' === $token_text) {
+                        $isAlias = false;
                     }
 
                     if ('{' === $token_text) {
@@ -81,8 +98,17 @@ final class FinderClosureCode
                         --$useNameSpaceLevel;
                     }
 
-                    if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $useNamespace[$useCount][$useNameSpaceLevel] = [$token_text];
+                    if (T_AS === $token_id) {
+                        $isAlias = true;
+                    }
+
+                    if ($isAlias && \T_STRING === $token_id) {
+                        $useNamespaceAlias[$token_text] = end($useNamespace);
+                    }
+
+                    if (false === $isAlias && in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                        $useNamespace[$useCount][$useNameSpaceLevel] = $token_text;
+                        $useNamespace[$useCount]['type'] = $useType;
                     }
                 }
             }
@@ -133,9 +159,9 @@ final class FinderClosureCode
                 $fnTokens[] = $token_text;
             }
         }
-
-
+        print "\n\n";
         \print_r($useNamespace);
+        \print_r($useNamespaceAlias);
 
         return implode($fnTokens);
     }

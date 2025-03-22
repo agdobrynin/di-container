@@ -7,7 +7,10 @@ namespace Tests\FinderClosureCode\Fixture;
 use Kaspi\DiContainer\Finder\{FinderClosureCode as FC, FinderFile};
 use Kaspi\DiContainer\Exception\NotFoundException as NF;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface, Psr\Container\ContainerExceptionInterface;
+use function array_map;
+use const T_CLASS;
+use const T_ABSTRACT, T_INTERFACE;
 
 return static function (): \Generator {
 
@@ -15,7 +18,14 @@ return static function (): \Generator {
         ? $container->get(FC::class)
         : throw new NF('Uups.');
 
-    yield 'fn2' => function () {
+    yield 'fn2' => function (array $params, int $tokenId) {
+        $res = array_map('implode', $params);
+        $label = match ($tokenId) {
+            T_CLASS => 'php class',
+            T_ABSTRACT => 'is abstract',
+            T_INTERFACE => 'is php interface',
+        };
+
         return new FinderFile();
     };
 };
