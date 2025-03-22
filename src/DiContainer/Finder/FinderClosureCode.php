@@ -68,22 +68,23 @@ final class FinderClosureCode
 
             if (false === $fnStart && T_USE === $token_id) {
                 $useNameSpaceLevel = 0;
+                $useTypeId = 0;
 
                 for (++$i; $i < $t; ++$i) { // parse use namespace.
                     [$token_id, $token_text] = is_array($tokens[$i])
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
 
-                    if (0 === $useNameSpaceLevel && in_array($token_text, [';', ','], true)) {
+                    if ($token_text === ';') {
                         ++$useCount;
                         $isAlias = false;
-                        unset($useType);
+                        $useTypeId = 0;
 
                         break;
                     }
 
                     if (in_array($token_id, [T_FUNCTION, T_CONST], true)) {
-                        $useType = $token_id;
+                        $useTypeId = $token_id;
 
                         continue;
                     }
@@ -107,8 +108,13 @@ final class FinderClosureCode
                     }
 
                     if (false === $isAlias && in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $useNamespace[$useCount]['expr'][$useNameSpaceLevel][] = $token_text;
-                        $useNamespace[$useCount]['type'] = $useType ?? '';
+                        $useNamespace[$useCount][
+                            match ($useTypeId) {
+                                T_FUNCTION => 'function',
+                                T_CONST => 'const',
+                                default => ''
+                            }
+                        ][$useNameSpaceLevel][] = $token_text;
                     }
                 }
             }
@@ -160,7 +166,11 @@ final class FinderClosureCode
             }
         }
         print "\n\n";
+        $normalizedNamespaces = (static function($useNamespace) {
+            return [];
+        })($useNamespace);
         \print_r($useNamespace);
+        print str_repeat('-', 20).\PHP_EOL;
         \print_r($useNamespaceAlias);
 
         return implode($fnTokens);

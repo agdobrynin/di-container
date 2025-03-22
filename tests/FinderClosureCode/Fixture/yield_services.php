@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\FinderClosureCode\Fixture;
 
+use CONST Tests\Fixtures\LALA_LAND;
+// ok
 use Kaspi\DiContainer\{
-    Finder\FinderClosureCode as FC,
-    Finder\FinderFile,
     Exception\NotFoundException as NF,
+};
+use Kaspi\DiContainer\Finder\{
+    FinderClosureCode as FC,
+    FinderFile,
 };
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface, Psr\Container\ContainerExceptionInterface;
@@ -19,7 +23,7 @@ return static function (): \Generator {
 
     yield 'fn' => fn(ContainerInterface $container) => $container->has(FC::class)
         ? $container->get(FC::class)
-        : throw new NF('Uups.');
+        : throw new NF(\sprintf('Uups. %s', LALA_LAND));
 
     yield 'fn2' => function (array $params, int $tokenId) {
         $res = array_map('implode', $params);
