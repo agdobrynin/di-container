@@ -19,23 +19,15 @@ class FinderClosureCodeTest extends TestCase
 {
     public function testFunction(): void
     {
-        $code = (new FinderClosureCode())
-            ->getCode(
-                static fn (ContainerInterface $c): DiDefinitionAutowireInterface|FinderClosureCode => $c->has('services.exclude')
-                    ? $c->get('services.exclude')
-                    : new FinderClosureCode()
-            )
-        ;
+        $services = (require __DIR__.'/Fixture/yield_services.php')();
+
+        $code = (new FinderClosureCode())->getCode($services->current());
 
         var_export($code);
 
-        $code = (new FinderClosureCode())
-            ->getCode(static function (string $filename): FinderClosureCode {
-                $someArg = new SplFileObject($filename);
+        $services->next();
 
-                return new FinderClosureCode($someArg);
-            })
-        ;
+        $code = (new FinderClosureCode())->getCode($services->current());
 
         var_export($code);
     }

@@ -52,6 +52,7 @@ final class FinderClosureCode
         $fnLevel = $fnType = 0;
         $fnTokens = [];
         $useNamespace = [];
+        $useNameSpaceAlias = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
             $token_id = is_array($tokens[$i]) ?
@@ -77,7 +78,7 @@ final class FinderClosureCode
                     }
 
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $useNamespace[] = $token_text;
+                        $useNamespace[$useNameSpaceLevel] = [$token_text];
                     }
                 }
             }
