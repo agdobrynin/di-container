@@ -20,6 +20,7 @@ use function sprintf;
 use function token_get_all;
 use function var_export;
 
+use const T_AS;
 use const T_USE;
 
 final class FinderClosureCode
@@ -52,6 +53,7 @@ final class FinderClosureCode
         $fnLevel = $fnType = 0;
         $fnTokens = [];
         $useNamespace = [];
+        $useCount = 0;
         $useNameSpaceAlias = [];
 
         for ($i = 0, $t = count($tokens); $i < $t; ++$i) {
@@ -68,6 +70,8 @@ final class FinderClosureCode
                         : [0, $tokens[$i]];
 
                     if (';' === $token_text) {
+                        ++$useCount;
+
                         break;
                     }
 
@@ -78,7 +82,7 @@ final class FinderClosureCode
                     }
 
                     if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                        $useNamespace[][$useNameSpaceLevel] = [$token_text];
+                        $useNamespace[$useCount][$useNameSpaceLevel] = [$token_text];
                     }
                 }
             }
@@ -131,7 +135,7 @@ final class FinderClosureCode
         }
 
 
-        \var_dump($useNamespace);
+        \print_r($useNamespace);
 
         return implode($fnTokens);
     }
