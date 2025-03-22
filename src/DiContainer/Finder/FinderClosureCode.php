@@ -12,7 +12,6 @@ use ReflectionFunction;
 use RuntimeException;
 use SplFileObject;
 
-use function array_search;
 use function count;
 use function end;
 use function explode;
