@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\FinderClosureCode\Fixture;
 
-use Kaspi\DiContainer\Finder\{FinderClosureCode as FC, FinderFile};
-use Kaspi\DiContainer\Exception\NotFoundException as NF;
+use Kaspi\DiContainer\{
+    Finder\FinderClosureCode as FC,
+    Finder\FinderFile,
+    Exception\NotFoundException as NF,
+};
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface, Psr\Container\ContainerExceptionInterface;
 use function array_map;
