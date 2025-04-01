@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\FinderClosureCode;
 
-use Closure;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainer;
