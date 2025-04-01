@@ -364,11 +364,8 @@ final class FinderClosureCode implements FinderClosureCodeInterface
             if (T_NAMESPACE === $token_id) {
                 $isNamespace = true;
 
-                /** @var non-negative-int $startLine */
-                $startLine = $lastFoundLine;
-
                 if (isset($namespaces[$namespace])) {
-                    $namespaces[$namespace]['endLine'] = $startLine > 0 ? $startLine - 1 : $startLine;
+                    $namespaces[$namespace]['endLine'] = $lastFoundLine > 0 ? $lastFoundLine - 1 : $lastFoundLine;
                 }
             }
 
