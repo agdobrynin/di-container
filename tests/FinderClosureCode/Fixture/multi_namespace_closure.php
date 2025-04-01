@@ -17,9 +17,13 @@ namespace App {
 }
 
 namespace {
+    // static fn(\Foo $a, \Bar $b, \Baz $q) => true
+    $fn4 = static fn(Foo $a, Bar $b, Baz $q) => true;
+
     return [
         'fn1' => &$fn1,
         'fn2' => &$fn2,
         'fn3' => &$fn3,
+        'fn4' => &$fn4,
     ];
 }

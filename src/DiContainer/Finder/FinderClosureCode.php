@@ -338,7 +338,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         }
 
         $useNamespaceLevel = $namespaceBraceLevel = $lastFoundLine = 0;
-        $isUseStart = $isAlias = $isNamespace = $isNamespaceBrace = false;
+        $isUseStart = $isAlias = $isNamespace = $isNamespaceBrace = $isNamespaceDetected = false;
         $namespace = '';
         $namespaces = [
             $namespace => [
@@ -370,6 +370,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
             }
 
             if ($isNamespace && in_array($token_id, [T_STRING, T_NAME_QUALIFIED], true)) {
+                $isNamespaceDetected = true;
                 $namespace = $token_text;
                 $namespaces[$namespace] = [
                     'startLine' => $lastFoundLine,
@@ -383,6 +384,13 @@ final class FinderClosureCode implements FinderClosureCodeInterface
 
             if ($isNamespace && '' !== $namespace && in_array($token_text, ['{', ';'], true)) {
                 $isNamespace = false;
+
+                if (false === $isNamespaceDetected) {
+                    $namespace = '';
+                    $namespaces[$namespace]['startLine'] = $lastFoundLine;
+                } else {
+                    $isNamespaceDetected = false;
+                }
 
                 if ('{' === $token_text) {
                     $isNamespaceBrace = true;

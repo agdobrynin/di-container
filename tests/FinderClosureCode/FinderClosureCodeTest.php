@@ -386,5 +386,13 @@ static fn(\App\Foo $a, \App\Bar $b, \App\Baz $q) => true
 EXPECT;
 
         self::assertEquals($expectCode3, $code3);
+
+        $code4 = (new FinderClosureCode())->getCode($fns['fn4']);
+
+        $expectCode4 = <<< 'EXPECT'
+static fn(\Foo $a, \Bar $b, \Baz $q) => true
+EXPECT;
+
+        self::assertEquals($expectCode4, $code4);
     }
 }
