@@ -382,7 +382,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 continue;
             }
 
-            if ($isNamespace && '' !== $namespace && in_array($token_text, ['{', ';'], true)) {
+            if ($isNamespace && in_array($token_text, ['{', ';'], true)) {
                 $isNamespace = false;
 
                 if (false === $isNamespaceDetected) {
