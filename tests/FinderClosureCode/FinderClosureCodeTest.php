@@ -33,6 +33,7 @@ class FinderClosureCodeTest extends TestCase
     private static array $root_namespace;
     private static array $use_brace_and_comma_service1;
     private static array $magic_constants;
+    private static array $multi_namespace_closure;
 
     public static function setUpBeforeClass(): void
     {
@@ -42,6 +43,7 @@ class FinderClosureCodeTest extends TestCase
         static::$root_namespace ??= require __DIR__.'/Fixture/root_namespace.php';
         static::$use_brace_and_comma_service1 ??= require __DIR__.'/Fixture/use_brace_and_comma_service1.php';
         static::$magic_constants ??= require __DIR__.'/Fixture/magic_constants.php';
+        static::$multi_namespace_closure ??= require __DIR__.'/Fixture/multi_namespace_closure.php';
     }
 
     public function testFunctionWithInlineNamespaceBaz(): void
@@ -355,5 +357,34 @@ static function (
 EXPECT;
 
         self::assertEquals($expectCode, $code);
+    }
+
+    public function testMultiNamespace(): void
+    {
+        $fns = self::$multi_namespace_closure;
+
+        $code1 = (new FinderClosureCode())->getCode($fns['fn1']);
+
+        $expectCode1 = <<< 'EXPECT'
+static fn(\Events\Foo $a, \Events\Bar $b, \App\Qux $q) => true
+EXPECT;
+
+        self::assertEquals($expectCode1, $code1);
+
+        $code2 = (new FinderClosureCode())->getCode($fns['fn2']);
+
+        $expectCode2 = <<< 'EXPECT'
+static fn(\Services\Foo $a, \Services\Bar $b, \Services\Baz\Qux $q) => true
+EXPECT;
+
+        self::assertEquals($expectCode2, $code2);
+
+        $code3 = (new FinderClosureCode())->getCode($fns['fn3']);
+
+        $expectCode3 = <<< 'EXPECT'
+static fn(\App\Foo $a, \App\Bar $b, \App\Baz $q) => true
+EXPECT;
+
+        self::assertEquals($expectCode3, $code3);
     }
 }
