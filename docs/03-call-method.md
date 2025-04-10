@@ -18,6 +18,7 @@
   ```php
   $container->call('App\MyClass::someStaticMethod');
   $container->call(App\MyClass::class.'::someStaticMethod');
+  $container->call([App\MyClass::class, 'someStaticMethod']);
   ```
 - Метод у созданного класса [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
   ```php
