@@ -9,7 +9,8 @@ $finder = (new PhpCsFixer\Finder())
     ->exclude([
         'tests/FinderFullyQualifiedClassName/Fixtures/Error',
         'tests/FinderFullyQualifiedClassName/Fixtures',
-        'tests/_var'
+        'tests/_var',
+        'tests/FinderClosureCode/Fixture/',
     ])
 ;
 
