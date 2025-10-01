@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use ArrayAccess;
-use Countable;
 use Generator;
-use Iterator;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
@@ -18,8 +15,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\DiDefinitionAutowireTrait;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use SplPriorityQueue;
 
 use function explode;
@@ -76,15 +71,6 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this;
     }
 
-    /**
-     * @return array<non-empty-string, mixed>|(ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface)|list<mixed>
-     *
-     * @throws ContainerExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
-     * @throws NotFoundExceptionInterface
-     *
-     * @phpstan-ignore method.childReturnType
-     */
     public function getServicesTaggedAs(): iterable
     {
         if ($this->isLazy) {
@@ -124,7 +110,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     {
         $services = [];
 
-        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
+        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier]) {
             $services[] = $this->getContainer()->get($containerIdentifier);
         }
 
