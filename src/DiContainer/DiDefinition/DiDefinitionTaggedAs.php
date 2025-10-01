@@ -75,55 +75,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     public function getServicesTaggedAs(): iterable
     {
-        /**
-         * Key as container identifier, value as container definition.
-         *
-         * @var Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
-         */
-        $items = $this->getContainerIdentifiersOfTaggedServiceByTag();
-
-        if (!$items->valid()) {
-            // @phpstan-ignore return.type
-            return $this->isLazy
-                ? new LazyDefinitionIterator($this->getContainer(), [])
-                : [];
+        if ($this->isLazy) {
+            return $this->isUseKeysComputed ? $this->getLazyServicesWithKey() : $this->getLazyServicesWithoutKey();
         }
 
-        if (!$this->isLazy) {
-            // @phpstan-var array<non-empty-string|non-negative-int, mixed> $services
-            $services = [];
-
-            foreach ($items as [$containerIdentifier, $item]) {
-                if ($this->isUseKeysComputed) {
-                    $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-
-                    if (!isset($services[$keyCollection])) {
-                        $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
-                    }
-                } else {
-                    $services[] = $this->getContainer()->get($containerIdentifier);
-                }
-            }
-
-            return $services; // @phpstan-ignore return.type
-        }
-
-        // @phpstan-var array<non-empty-string, none-empty-string> $services
-        $mapKeyCollectionToContainerIdentifier = [];
-
-        foreach ($items as [$containerIdentifier, $item]) {
-            if ($this->isUseKeysComputed) {
-                $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-
-                if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
-                    $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
-                }
-            } else {
-                $mapKeyCollectionToContainerIdentifier[] = $containerIdentifier;
-            }
-        }
-
-        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier);
+        return $this->isUseKeysComputed ? $this->getServicesWithKey() : $this->getServicesWithoutKey();
     }
 
     public function getDefinition(): string
@@ -141,6 +97,64 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     public function getCallingByService(): ?DiDefinitionAutowireInterface
     {
         return $this->callingByDefinitionAutowire;
+    }
+
+    /**
+     * @return array{non-empty-string, mixed}
+     */
+    private function getServicesWithKey(): array
+    {
+        $services = [];
+
+        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
+            $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $definition);
+
+            if (!isset($services[$keyCollection])) {
+                $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
+            }
+        }
+
+        return $services; // @phpstan-ignore return.type
+    }
+
+    /**
+     * @return array{non-negative-int, mixed}
+     */
+    private function getServicesWithoutKey(): array
+    {
+        $services = [];
+
+        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
+            $services[] = $this->getContainer()->get($containerIdentifier);
+        }
+
+        return $services; // @phpstan-ignore return.type
+    }
+
+    private function getLazyServicesWithKey(): LazyDefinitionIterator
+    {
+        $mapKeyCollectionToContainerIdentifier = [];
+
+        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
+            $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $definition);
+
+            if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
+                $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
+            }
+        }
+
+        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier);
+    }
+
+    private function getLazyServicesWithoutKey(): LazyDefinitionIterator
+    {
+        $containerIdentifiers = [];
+
+        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
+            $containerIdentifiers[] = $containerIdentifier;
+        }
+
+        return new LazyDefinitionIterator($this->getContainer(), $containerIdentifiers);
     }
 
     /**
