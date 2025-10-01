@@ -65,7 +65,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @return ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface
+     * @return array<non-empty-string, mixed>|(ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface)|list<mixed>
      *
      * @throws ContainerExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
@@ -82,25 +82,13 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this->isUseKeysComputed ? $this->getServicesWithKey() : $this->getServicesWithoutKey();
     }
 
-    public function getDefinition(): string
-    {
-        return $this->tag;
-    }
-
-    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static
-    {
-        $this->callingByDefinitionAutowire = $definitionAutowire;
-
-        return $this;
-    }
-
     public function getCallingByService(): ?DiDefinitionAutowireInterface
     {
         return $this->callingByDefinitionAutowire;
     }
 
     /**
-     * @return array{non-empty-string, mixed}
+     * @return array<non-empty-string, mixed>
      */
     private function getServicesWithKey(): array
     {
@@ -114,11 +102,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
-        return $services; // @phpstan-ignore return.type
+        return $services;
     }
 
     /**
-     * @return array{non-negative-int, mixed}
+     * @return list<mixed>
      */
     private function getServicesWithoutKey(): array
     {
@@ -128,7 +116,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $services[] = $this->getContainer()->get($containerIdentifier);
         }
 
-        return $services; // @phpstan-ignore return.type
+        return $services;
     }
 
     private function getLazyServicesWithKey(): LazyDefinitionIterator
