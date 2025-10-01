@@ -39,6 +39,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     private bool $tagIsInterface;
     private string $keyOptimized;
+    private bool $isUseKeysComputed;
 
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
@@ -54,12 +55,14 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         private string $tag,
         private bool $isLazy = true,
         private ?string $priorityDefaultMethod = null,
-        private bool $useKeys = true,
+        bool $useKeys = true,
         private ?string $key = null,
         private ?string $keyDefaultMethod = null,
         private array $containerIdExclude = [],
         private bool $selfExclude = true,
-    ) {}
+    ) {
+        $this->isUseKeysComputed = $useKeys || null !== $key || null !== $keyDefaultMethod;
+    }
 
     /**
      * @return ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface
@@ -86,14 +89,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 : [];
         }
 
-        $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
-
         if (!$this->isLazy) {
             // @phpstan-var array<non-empty-string|non-negative-int, mixed> $services
             $services = [];
 
             foreach ($items as [$containerIdentifier, $item]) {
-                if ($isUseKeys) {
+                if ($this->isUseKeysComputed) {
                     $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
 
                     if (!isset($services[$keyCollection])) {
@@ -111,7 +112,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $mapKeyCollectionToContainerIdentifier = [];
 
         foreach ($items as [$containerIdentifier, $item]) {
-            if ($isUseKeys) {
+            if ($this->isUseKeysComputed) {
                 $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
 
                 if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
