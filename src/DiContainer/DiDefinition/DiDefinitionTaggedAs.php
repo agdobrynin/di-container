@@ -64,6 +64,18 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $this->isUseKeysComputed = $useKeys || null !== $key || null !== $keyDefaultMethod;
     }
 
+    public function getDefinition(): string
+    {
+        return $this->tag;
+    }
+
+    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static
+    {
+        $this->callingByDefinitionAutowire = $definitionAutowire;
+
+        return $this;
+    }
+
     /**
      * @return array<non-empty-string, mixed>|(ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface)|list<mixed>
      *
