@@ -8,8 +8,8 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
-use Tests\TaggedAsKeys\Fixures\Attributes\One;
-use Tests\TaggedAsKeys\Fixures\Attributes\Two;
+use Tests\TaggedAsKeys\Fixtures\Attributes\One;
+use Tests\TaggedAsKeys\Fixtures\Attributes\Two;
 
 use function Kaspi\DiContainer\diAutowire;
 
@@ -71,16 +71,16 @@ class KeyOverrideTest extends TestCase
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
-                Fixures\One::class => diAutowire(Fixures\One::class)
+                Fixtures\One::class => diAutowire(Fixtures\One::class)
                     ->bindTag('tags.one', options: ['key.override' => 'key-service'], priority: 100),
-                Fixures\Two::class => diAutowire(Fixures\Two::class)
+                Fixtures\Two::class => diAutowire(Fixtures\Two::class)
                     ->bindTag('tags.one', options: ['key.override' => 'key-service'], priority: 0),
             ])
         ;
 
         $this->container->method('get')
-            ->with(Fixures\One::class)
-            ->willReturn(new Fixures\One())
+            ->with(Fixtures\One::class)
+            ->willReturn(new Fixtures\One())
         ;
 
         // get item with highest priority - One::class with priority 100, Two::class with priority 0
@@ -89,6 +89,6 @@ class KeyOverrideTest extends TestCase
         $items = $taggedAs->getServicesTaggedAs();
 
         $this->assertCount(1, $items);
-        $this->assertInstanceOf(Fixures\One::class, $items->get('key-service'));
+        $this->assertInstanceOf(Fixtures\One::class, $items->get('key-service'));
     }
 }
