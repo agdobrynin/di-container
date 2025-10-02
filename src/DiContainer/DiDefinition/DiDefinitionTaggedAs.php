@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\DiDefinitionAutowireTrait;
 use SplPriorityQueue;
 
+use function array_map;
 use function explode;
 use function get_debug_type;
 use function in_array;
@@ -73,11 +74,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     public function getServicesTaggedAs(): iterable
     {
-        if ($this->isLazy) {
-            return $this->isUseKeysComputed ? $this->getLazyServicesWithKey() : $this->getLazyServicesWithoutKey();
-        }
-
-        return $this->isUseKeysComputed ? $this->getServicesWithKey() : $this->getServicesWithoutKey();
+        return $this->isLazy
+            ? new LazyDefinitionIterator($this->getContainer(), $this->getContainerIdentifiers())
+            : array_map(fn (string $id) => $this->getContainer()->get($id), $this->getContainerIdentifiers());
     }
 
     public function getCallingByService(): ?DiDefinitionAutowireInterface
@@ -86,38 +85,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @return array<non-empty-string, mixed>
+     * @return array<non-empty-string, non-empty-string>
      */
-    private function getServicesWithKey(): array
-    {
-        $services = [];
-
-        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
-            $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $definition);
-
-            if (!isset($services[$keyCollection])) {
-                $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
-            }
-        }
-
-        return $services;
-    }
-
-    /**
-     * @return list<mixed>
-     */
-    private function getServicesWithoutKey(): array
-    {
-        $services = [];
-
-        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier]) {
-            $services[] = $this->getContainer()->get($containerIdentifier);
-        }
-
-        return $services;
-    }
-
-    private function getLazyServicesWithKey(): LazyDefinitionIterator
+    private function getContainerIdentifiersWithKey(): array
     {
         $mapKeyCollectionToContainerIdentifier = [];
 
@@ -129,10 +99,13 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
-        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier);
+        return $mapKeyCollectionToContainerIdentifier;
     }
 
-    private function getLazyServicesWithoutKey(): LazyDefinitionIterator
+    /**
+     * @return list<non-empty-string>
+     */
+    private function getContainerIdentifiersWithoutKey(): array
     {
         $containerIdentifiers = [];
 
@@ -140,7 +113,15 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $containerIdentifiers[] = $containerIdentifier;
         }
 
-        return new LazyDefinitionIterator($this->getContainer(), $containerIdentifiers);
+        return $containerIdentifiers;
+    }
+
+    /**
+     * @return array<non-empty-string, non-empty-string>|list<non-empty-string>
+     */
+    private function getContainerIdentifiers(): array
+    {
+        return $this->isUseKeysComputed ? $this->getContainerIdentifiersWithKey() : $this->getContainerIdentifiersWithoutKey();
     }
 
     /**
