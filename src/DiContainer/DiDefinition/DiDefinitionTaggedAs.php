@@ -206,8 +206,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     $method = explode('::', $optionKey)[1];
                     $howGetOptions = sprintf('Get key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $method, $this->tag);
 
-                    // @phpstan-ignore return.type
-                    return self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+                    /** @var string $key */
+                    $key = self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+
+                    return '' === $key || '' === trim($key)
+                        ? throw new AutowireException(sprintf('%s return value must be non-empty string.', $howGetOptions))
+                        : $key;
                 }
 
                 return $optionKey; // @phpstan-ignore return.type
