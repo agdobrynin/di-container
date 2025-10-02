@@ -212,7 +212,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     $key = self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
 
                     return '' === $key || '' === trim($key)
-                        ? throw new AutowireException(sprintf('%s return value must be non-empty string.', $howGetOptions))
+                        ? throw new AutowireException(sprintf('%s return value must be non-empty string. Got value: "%s"', $howGetOptions, $key))
                         : $key;
                 }
 
