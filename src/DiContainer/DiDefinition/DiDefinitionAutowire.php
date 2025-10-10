@@ -22,8 +22,12 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
 
+use function get_class;
+use function get_debug_type;
+use function is_object;
 use function is_string;
 use function sprintf;
+use function strtolower;
 
 /**
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
@@ -50,14 +54,14 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private array $reflectionConstructorParams;
 
     /**
-     * @var array<non-empty-string, list<ReflectionParameter>>
+     * @var array<non-empty-string, array{args: list<ReflectionParameter>, returnType: string}>
      */
-    private array $reflectionMethodParams;
+    private array $reflectionMethodMeta;
 
     /**
-     * Methods for setup service via setters.
+     * Methods for setup service via setters (mutable or immutable).
      *
-     * @var array<non-empty-string, array<non-empty-string|non-negative-int, mixed>>
+     * @var array<non-empty-string,array{0: bool,array<non-empty-string|non-negative-int, mixed>}>
      */
     private array $setup = [];
 
@@ -83,7 +87,14 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      */
     public function setup(string $method, mixed ...$argument): static
     {
-        $this->setup[$method][] = $argument;
+        $this->setup[$method][] = [false, $argument];
+
+        return $this;
+    }
+
+    public function setupImmutable(string $method, mixed ...$argument): static
+    {
+        $this->setup[$method][] = [true, $argument];
 
         return $this;
     }
@@ -106,19 +117,51 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             return $object;
         }
 
-        foreach ($this->setup as $method => $arguments) {
+        // prepare call setters methods
+        $fullyClassNameLowercase = strtolower($this->getDefinition()->getName());
+        $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
+
+        foreach ($this->setup as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
-                throw new AutowireException(sprintf('The method "%s" does not exist.', $method));
+                throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
             }
 
-            $this->reflectionMethodParams[$method] ??= $this->getDefinition()->getMethod($method)->getParameters();
+            $this->reflectionMethodMeta[$method] ??= [
+                'args' => $this->getDefinition()->getMethod($method)->getParameters(),
+                'returnType' => strtolower((string) $this->getDefinition()->getMethod($method)->getReturnType()),
+            ];
 
-            foreach ($arguments as $argument) {
-                /**
-                 * @phpstan-var array<non-negative-int|non-empty-string, mixed> $argument
-                 */
-                $args = $this->resolveParameters($argument, $this->reflectionMethodParams[$method]);
-                $this->getDefinition()->getMethod($method)->invokeArgs($object, $args);
+            /**
+             * @phpstan-var  boolean $isImmutable
+             * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $call_arguments
+             */
+            foreach ($calls as [$isImmutable, $call_arguments]) {
+                // check return type before invoke method with argument
+                if ($isImmutable
+                    && '' !== $this->reflectionMethodMeta[$method]['returnType']
+                    && (
+                        'self' !== $this->reflectionMethodMeta[$method]['returnType']
+                        && $fullyClassNameLowercase !== $this->reflectionMethodMeta[$method]['returnType']
+                    )
+                ) {
+                    throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), $fullyClassNameLowercase));
+                }
+
+                $result = $this->getDefinition()->getMethod($method)->invokeArgs(
+                    $object,
+                    $this->resolveParameters($call_arguments, $this->reflectionMethodMeta[$method]['args'])
+                );
+
+                if ($isImmutable) {
+                    if (is_object($result) && get_class($result) === get_class($object)) {
+                        $object = $result;
+                        unset($result);
+
+                        continue;
+                    }
+
+                    throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), get_debug_type($result)));
+                }
             }
         }
 

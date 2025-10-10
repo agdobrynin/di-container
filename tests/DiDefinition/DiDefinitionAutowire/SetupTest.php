@@ -48,7 +48,7 @@ class SetupTest extends TestCase
         ;
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('The method "methodNotExist" does not exist');
+        $this->expectExceptionMessageMatches('/The setter method.+\SetupClass::methodNotExist\(\)" does not exist/');
 
         $def->invoke();
     }
