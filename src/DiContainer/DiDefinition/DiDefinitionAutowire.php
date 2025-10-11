@@ -24,6 +24,7 @@ use ReflectionParameter;
 
 use function get_class;
 use function get_debug_type;
+use function in_array;
 use function is_object;
 use function is_string;
 use function sprintf;
@@ -126,9 +127,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
             }
 
+            $reflectionMethod = $this->getDefinition()->getMethod($method);
+
             $this->reflectionMethodMeta[$method] ??= [
-                'args' => $this->getDefinition()->getMethod($method)->getParameters(),
-                'returnType' => strtolower((string) $this->getDefinition()->getMethod($method)->getReturnType()),
+                'args' => $reflectionMethod->getParameters(),
+                'returnType' => strtolower((string) $reflectionMethod->getReturnType()),
             ];
 
             /**
@@ -136,32 +139,31 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
              * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $call_arguments
              */
             foreach ($calls as [$isImmutable, $call_arguments]) {
+                $reflectionParameters = $this->reflectionMethodMeta[$method]['args'];
+
+                if (!$isImmutable) {
+                    $reflectionMethod->invokeArgs($object, $this->resolveParameters($call_arguments, $reflectionParameters));
+
+                    continue;
+                }
+
                 // check return type before invoke method with argument
-                if ($isImmutable
-                    && '' !== $this->reflectionMethodMeta[$method]['returnType']
-                    && (
-                        'self' !== $this->reflectionMethodMeta[$method]['returnType']
-                        && $fullyClassNameLowercase !== $this->reflectionMethodMeta[$method]['returnType']
-                    )
-                ) {
+                $returnType = $this->reflectionMethodMeta[$method]['returnType'];
+
+                if ('' !== $returnType && $fullyClassNameLowercase !== $returnType && !in_array($returnType, ['self', 'static'], true)) {
                     throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), $fullyClassNameLowercase));
                 }
 
-                $result = $this->getDefinition()->getMethod($method)->invokeArgs(
-                    $object,
-                    $this->resolveParameters($call_arguments, $this->reflectionMethodMeta[$method]['args'])
-                );
+                $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($call_arguments, $reflectionParameters));
 
-                if ($isImmutable) {
-                    if (is_object($result) && get_class($result) === get_class($object)) {
-                        $object = $result;
-                        unset($result);
+                if (is_object($result) && get_class($result) === get_class($object)) {
+                    $object = $result;
+                    unset($result);
 
-                        continue;
-                    }
-
-                    throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), get_debug_type($result)));
+                    continue;
                 }
+
+                throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), get_debug_type($result)));
             }
         }
 
