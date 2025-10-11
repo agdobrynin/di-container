@@ -81,6 +81,7 @@ class SetupImmutableTest extends TestCase
         ;
 
         $this->expectException(AutowireException::class);
+        $this->expectExceptionMessageMatches('/The immutable setter .+SetupImmutable::'.$method.'\(\)" must return same class/');
 
         /** @var SetupImmutable $setupImmutableClass */
         $setupImmutableClass = $def->invoke();
