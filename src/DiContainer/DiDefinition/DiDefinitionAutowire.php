@@ -118,7 +118,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             return $object;
         }
 
-        // prepare call setters methods
+        // prepare metadata for calling setter methods
         $fullyClassNameLowercase = strtolower($this->getDefinition()->getName());
         $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
 
