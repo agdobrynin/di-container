@@ -15,7 +15,7 @@ trait SetupTrait
 
     public function getIdentifier(): string
     {
-        return $this->method ?? throw new AutowireAttributeException('Method is not defined.');
+        return $this->method ?? throw new AutowireAttributeException('The private value $method is not defined.');
     }
 
     /**
