@@ -10,9 +10,15 @@ use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
+use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diGet;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\Setup
  * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\diGet
  *
  * @internal
  */
@@ -118,6 +124,13 @@ class SetupAndSetupImmutableTest extends TestCase
         self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
     }
 
+    public function testSetupMixedNamedArgumentWithValueAsObject(): void
+    {
+        $s = new Setup('first', two: diGet('service.one'));
+
+        self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
+    }
+
     public function testSetupImmutableNamedArgument(): void
     {
         $s = new SetupImmutable(...['one' => 'first', 'two' => 'second']);
@@ -130,5 +143,19 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new SetupImmutable(...['first', 'two' => 'second']);
 
         self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
+    }
+
+    public function testSetupImmutableNamedArgumentWithValueAsObject(): void
+    {
+        $s = new SetupImmutable(...['one' => diGet('service.a'), 'two' => diAutowire('MyClass')]);
+
+        self::assertEquals(['one' => diGet('service.a'), 'two' => diAutowire('MyClass')], $s->getArguments());
+    }
+
+    public function testSetupImmutableMixedNamedArgumentWithValueAsObject(): void
+    {
+        $s = new SetupImmutable(...['first', 'two' => diAutowire('App\MyClass')]);
+
+        self::assertEquals([0 => 'first', 'two' => diAutowire('App\MyClass')], $s->getArguments());
     }
 }

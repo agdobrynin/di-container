@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 
 use function preg_match;
 use function sprintf;
@@ -13,21 +16,19 @@ trait SetupTrait
 {
     private string $method;
 
-    /** @var string[] */
+    /** @var (DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed)[] */
     private array $arguments = [];
 
     /**
-     * @param string ...$argument Container identifiers for arguments of setup method.
+     * @param (DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed) ...$argument
      */
-    public function __construct(string ...$argument)
+    public function __construct(mixed ...$argument)
     {
         $this->arguments = $argument;
     }
 
     /**
-     * Container identifiers for arguments of setup method.
-     *
-     * @return string[]
+     * @return (DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed)[]
      */
     public function getArguments(): array
     {
