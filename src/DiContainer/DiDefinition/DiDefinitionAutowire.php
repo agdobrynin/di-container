@@ -270,7 +270,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         if (!isset($this->setupAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
             $this->setupAttributes = [];
 
-            foreach ($this->getSetupAndSetupImmutableAttribute($this->getDefinition()) as $method => $setupAttribute) {
+            foreach ($this->getSetupOrSetupImmutableAttribute($this->getDefinition()) as $method => $setupAttribute) {
                 $this->setupAttributes[$method] = $setupAttribute;
                 // 🚩 Php-attribute override existing tag defined by <setup> or <setupImmutable> (see documentation.)
             }
