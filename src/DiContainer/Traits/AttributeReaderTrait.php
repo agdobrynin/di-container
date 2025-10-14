@@ -24,6 +24,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 
+use function array_filter;
 use function array_reduce;
 use function count;
 use function implode;
@@ -115,7 +116,7 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return Generator<non-empty-string, Setup|SetupImmutable>
+     * @return Generator<non-empty-string,Setup|SetupImmutable>
      */
     private function getSetupAndSetupImmutableAttribute(ReflectionClass $reflectionClass): Generator
     {
@@ -123,11 +124,15 @@ trait AttributeReaderTrait
 
         foreach ($methods as $method) {
             if (!$method->isConstructor() && !$method->isDestructor()) {
-                /** @var ReflectionAttribute[] $attrs */
-                $attrs = [...$method->getAttributes(Setup::class), $method->getAttributes(SetupImmutable::class)];
+                $attrs = array_filter(
+                    $method->getAttributes(),
+                    static fn (ReflectionAttribute $attr) => in_array($attr->getName(), [Setup::class, SetupImmutable::class], true)
+                );
 
                 if (count($attrs) > 1) {
-                    throw new AutowireAttributeException('');
+                    throw new AutowireAttributeException(
+                        sprintf('')
+                    );
                 }
 
                 /** @var Setup|SetupImmutable $setup */
