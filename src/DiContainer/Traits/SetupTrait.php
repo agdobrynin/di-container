@@ -13,6 +13,27 @@ trait SetupTrait
 {
     private string $method;
 
+    /** @var string[] */
+    private array $arguments = [];
+
+    /**
+     * @param string ...$argument Container identifiers for arguments of setup method.
+     */
+    public function __construct(string ...$argument)
+    {
+        $this->arguments = $argument;
+    }
+
+    /**
+     * Container identifiers for arguments of setup method.
+     *
+     * @return string[]
+     */
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
+
     public function getIdentifier(): string
     {
         return $this->method ?? throw new AutowireAttributeException('The private value $method is not defined.');
