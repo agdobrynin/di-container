@@ -117,7 +117,7 @@ trait AttributeReaderTrait
     /**
      * @return Generator<non-empty-string, Setup|SetupImmutable>
      */
-    private function getSetupAttribute(ReflectionClass $reflectionClass): Generator
+    private function getSetupAndSetupImmutableAttribute(ReflectionClass $reflectionClass): Generator
     {
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
