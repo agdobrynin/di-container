@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -72,6 +74,13 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      * @var Tag[]
      */
     private array $tagAttributes;
+
+    /**
+     * Php attributes for setters on class.
+     *
+     * @var array<non-empty-string, (Setup|SetupImmutable)[]>
+     */
+    private array $setupAttributes;
 
     /**
      * @param class-string|ReflectionClass $definition
@@ -250,6 +259,19 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                     options: (null !== $tagAttribute->getPriorityMethod() ? ['priority.method' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
                     priority: $tagAttribute->getPriority(),
                 );
+            }
+        }
+    }
+
+    private function attemptsReadSetupAttribute(): void
+    {
+        // @phpstan-ignore booleanAnd.rightNotBoolean
+        if (!isset($this->setupAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
+            $this->setupAttributes = [];
+
+            foreach ($this->getSetupAttribute($this->getDefinition()) as $method => $setupAttribute) {
+                $this->setupAttributes[$method][] = $setupAttribute;
+                // 🚩 Php-attribute override existing tag defined by <setup> or <setupImmutable> (see documentation.)
             }
         }
     }

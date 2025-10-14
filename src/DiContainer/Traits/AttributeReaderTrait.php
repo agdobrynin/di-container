@@ -12,6 +12,8 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -19,6 +21,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionParameter;
 
 use function array_reduce;
@@ -108,6 +111,31 @@ trait AttributeReaderTrait
 
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
+        }
+    }
+
+    /**
+     * @return Generator<non-empty-string, Setup|SetupImmutable>
+     */
+    private function getSetupAttribute(ReflectionClass $reflectionClass): Generator
+    {
+        $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
+
+        foreach ($methods as $method) {
+            if (!$method->isConstructor() && !$method->isDestructor()) {
+                /** @var ReflectionAttribute[] $attrs */
+                $attrs = [...$method->getAttributes(Setup::class), $method->getAttributes(SetupImmutable::class)];
+
+                if (count($attrs) > 1) {
+                    throw new AutowireAttributeException('');
+                }
+
+                /** @var Setup|SetupImmutable $setup */
+                $setup = $attrs[0]->newInstance();
+                $setup->setMethod($method->getName());
+
+                yield $method->getName() => $setup;
+            }
         }
     }
 
