@@ -89,6 +89,7 @@ class SetupAndSetupImmutableTest extends TestCase
         $s->setMethod($method);
 
         self::assertEquals($method, $s->getIdentifier());
+        self::assertEquals([], $s->getArguments());
     }
 
     /**
@@ -100,5 +101,34 @@ class SetupAndSetupImmutableTest extends TestCase
         $s->setMethod($method);
 
         self::assertEquals($method, $s->getIdentifier());
+        self::assertEquals([], $s->getArguments());
+    }
+
+    public function testSetupNamedArgument(): void
+    {
+        $s = new Setup(one: 'first', two: 'second');
+
+        self::assertEquals(['one' => 'first', 'two' => 'second'], $s->getArguments());
+    }
+
+    public function testSetupMixedNamedArgument(): void
+    {
+        $s = new Setup('first', two: 'second');
+
+        self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
+    }
+
+    public function testSetupImmutableNamedArgument(): void
+    {
+        $s = new SetupImmutable(...['one' => 'first', 'two' => 'second']);
+
+        self::assertEquals(['one' => 'first', 'two' => 'second'], $s->getArguments());
+    }
+
+    public function testSetupImmutableMixedNamedArgument(): void
+    {
+        $s = new SetupImmutable(...['first', 'two' => 'second']);
+
+        self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
     }
 }
