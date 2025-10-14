@@ -24,11 +24,10 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 
-use function array_filter;
-use function array_reduce;
+use function array_intersect;
+use function array_keys;
 use function count;
 use function implode;
-use function in_array;
 use function sprintf;
 
 trait AttributeReaderTrait
@@ -124,22 +123,33 @@ trait AttributeReaderTrait
 
         foreach ($methods as $method) {
             if (!$method->isConstructor() && !$method->isDestructor()) {
-                $attrs = array_filter(
-                    $method->getAttributes(),
-                    static fn (ReflectionAttribute $attr) => in_array($attr->getName(), [Setup::class, SetupImmutable::class], true)
-                );
+                $groupAttributes = $this->groupAttributes($method);
+                // ⚠ attributes cannot be used together.
+                $intersectAttrs = array_intersect(array_keys($groupAttributes), [Setup::class, SetupImmutable::class]);
 
-                if (count($attrs) > 1) {
+                if (count($intersectAttrs) > 1) {
                     throw new AutowireAttributeException(
-                        sprintf('')
+                        sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $intersectAttrs).']')
                     );
                 }
 
-                /** @var Setup|SetupImmutable $setup */
-                $setup = $attrs[0]->newInstance();
-                $setup->setMethod($method->getName());
+                $getInstancedAttrs = static function (array $attrs) use ($method): Generator {
+                    /** @param ReflectionAttribute[] $attrs */
+                    foreach ($attrs as $attr) {
+                        /** @var Setup|SetupImmutable $s */
+                        $s = $attr->newInstance()->setMethod($method->getName());
 
-                yield $method->getName() => $setup;
+                        yield $s->getIdentifier() => $s;
+                    }
+                };
+
+                if (isset($groupAttributes[Setup::class])) {
+                    yield from $getInstancedAttrs($groupAttributes[Setup::class]);
+
+                    return;
+                }
+
+                yield from $getInstancedAttrs($groupAttributes[SetupImmutable::class]);
             }
         }
     }
@@ -151,43 +161,34 @@ trait AttributeReaderTrait
      */
     private function getAttributeOnParameter(ReflectionParameter $reflectionParameter): Generator
     {
-        $oneOfAttributes = [Inject::class, ProxyClosure::class, TaggedAs::class, InjectByCallable::class];
+        $groupAttributes = $this->groupAttributes($reflectionParameter);
 
-        $attribute = array_reduce(
-            $reflectionParameter->getAttributes(),
-            static function (array $attrs, ReflectionAttribute $a) use ($oneOfAttributes) {
-                if (in_array($a->getName(), $oneOfAttributes, true)) {
-                    $attrs[$a->getName()] = true;
-                }
-
-                return $attrs;
-            },
-            [],
-        );
-
-        if ([] === $attribute) {
+        if ([] === $groupAttributes) {
             return;
         }
 
-        if (count($attribute) > 1) {
+        // ⚠ attributes cannot be used together.
+        $intersectAttrs = array_intersect(array_keys($groupAttributes), [Inject::class, ProxyClosure::class, TaggedAs::class, InjectByCallable::class]);
+
+        if (count($intersectAttrs) > 1) {
             throw new AutowireAttributeException(
-                sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $oneOfAttributes).']')
+                sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $intersectAttrs).']')
             );
         }
 
-        if (isset($attribute[Inject::class])) {
+        if (isset($groupAttributes[Inject::class])) {
             yield from $this->getInjectAttribute($reflectionParameter);
 
             return;
         }
 
-        if (isset($attribute[ProxyClosure::class])) {
+        if (isset($groupAttributes[ProxyClosure::class])) {
             yield from $this->getProxyClosureAttribute($reflectionParameter);
 
             return;
         }
 
-        if (isset($attribute[TaggedAs::class])) {
+        if (isset($groupAttributes[TaggedAs::class])) {
             yield from $this->getTaggedAsAttribute($reflectionParameter);
 
             return;
@@ -288,5 +289,19 @@ trait AttributeReaderTrait
                 sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
             );
         }
+    }
+
+    /**
+     * @return array<class-string, ReflectionAttribute[]>
+     */
+    private function groupAttributes(ReflectionMethod|ReflectionParameter $reflection): array
+    {
+        $attrs = [];
+
+        foreach ($reflection->getAttributes() as $a) {
+            $attrs[$a->getName()][] = $a;
+        }
+
+        return $attrs;
     }
 }

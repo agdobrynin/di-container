@@ -14,6 +14,7 @@ use function sprintf;
 
 trait SetupTrait
 {
+    /** @var non-empty-string */
     private string $method;
 
     /** @var (DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed)[] */
@@ -35,6 +36,9 @@ trait SetupTrait
         return $this->arguments;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getIdentifier(): string
     {
         return $this->method ?? throw new AutowireAttributeException('The private value $method is not defined.');
@@ -43,7 +47,7 @@ trait SetupTrait
     /**
      * @param non-empty-string $method
      */
-    public function setMethod(string $method): void
+    public function setMethod(string $method): static
     {
         // @see https://www.php.net/manual/en/language.variables.basics.php
         if (1 !== preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $method)) {
@@ -51,5 +55,7 @@ trait SetupTrait
         }
 
         $this->method = $method;
+
+        return $this;
     }
 }
