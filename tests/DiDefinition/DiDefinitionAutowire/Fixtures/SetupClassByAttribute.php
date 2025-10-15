@@ -23,10 +23,10 @@ class SetupClassByAttribute
         $this->parameters[$paramName] = $parameters;
     }
 
-    #[Setup]
-    #[Setup]
-    #[Setup]
-    #[Setup]
+    #[Setup] // 1
+    #[Setup] // 2
+    #[Setup] // 3
+    #[Setup] // 4
     public function incInc(): void
     {
         isset($this->inc) ? $this->inc++ : $this->inc = 1;
