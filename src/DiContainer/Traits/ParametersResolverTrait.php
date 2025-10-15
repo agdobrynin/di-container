@@ -84,7 +84,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    private function resolveParameters(array $inputArguments, array $reflectionParameters): array
+    private function resolveParameters(array $inputArguments, array $reflectionParameters, bool $isAttributeOnParamHigherPriority = true): array
     {
         if ([] === $inputArguments && [] === $reflectionParameters) {
             return [];
@@ -106,7 +106,7 @@ trait ParametersResolverTrait
             try {
                 if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                     // PHP attributes have higher priority than PHP definitions
-                    if ($isUseAttribute && ($resolvedParam = $this->attemptResolveParamByAttributes($parameter))->valid()) {
+                    if ($isUseAttribute && $isAttributeOnParamHigherPriority && ($resolvedParam = $this->attemptResolveParamByAttributes($parameter))->valid()) {
                         array_push($dependencies, ...$resolvedParam);
 
                         continue;

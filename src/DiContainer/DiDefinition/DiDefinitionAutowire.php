@@ -147,13 +147,13 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
             /**
              * @phpstan-var  boolean $isImmutable
-             * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $call_arguments
+             * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $callArguments
              */
-            foreach ($calls as [$isImmutable, $call_arguments]) {
+            foreach ($calls as [$isImmutable, $callArguments]) {
                 $reflectionParameters = $this->reflectionMethodMeta[$method]['args'];
 
                 if (!$isImmutable) {
-                    $reflectionMethod->invokeArgs($object, $this->resolveParameters($call_arguments, $reflectionParameters));
+                    $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionParameters, false));
 
                     continue;
                 }
@@ -165,7 +165,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                     throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), $fullyClassNameLowercase));
                 }
 
-                $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($call_arguments, $reflectionParameters));
+                $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionParameters, false));
 
                 if (is_object($result) && get_class($result) === get_class($object)) {
                     $object = $result;
