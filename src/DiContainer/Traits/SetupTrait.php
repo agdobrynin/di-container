@@ -47,7 +47,7 @@ trait SetupTrait
     /**
      * @param non-empty-string $method
      */
-    public function setMethod(string $method): static
+    public function setMethod(string $method): void
     {
         // @see https://www.php.net/manual/en/language.variables.basics.php
         if (1 !== preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $method)) {
@@ -55,7 +55,5 @@ trait SetupTrait
         }
 
         $this->method = $method;
-
-        return $this;
     }
 }

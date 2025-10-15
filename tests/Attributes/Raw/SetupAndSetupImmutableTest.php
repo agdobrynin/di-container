@@ -60,7 +60,8 @@ class SetupAndSetupImmutableTest extends TestCase
     {
         $this->expectException(AutowireExceptionInterface::class);
 
-        (new Setup())->setMethod($method);
+        $s = new Setup();
+        $s->setMethod($method);
     }
 
     /**
@@ -70,7 +71,8 @@ class SetupAndSetupImmutableTest extends TestCase
     {
         $this->expectException(AutowireExceptionInterface::class);
 
-        (new SetupImmutable())->setMethod($method);
+        $s = new SetupImmutable();
+        $s->setMethod($method);
     }
 
     public function dataProviderSuccessMethod(): Generator

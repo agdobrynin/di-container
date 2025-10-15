@@ -133,23 +133,13 @@ trait AttributeReaderTrait
                     );
                 }
 
-                $getInstancedAttrs = static function (array $attrs) use ($method): Generator {
-                    /** @param ReflectionAttribute[] $attrs */
-                    foreach ($attrs as $attr) {
-                        /** @var Setup|SetupImmutable $s */
-                        $s = $attr->newInstance()->setMethod($method->getName());
-
-                        yield $s->getIdentifier() => $s;
-                    }
-                };
-
                 if (isset($groupAttributes[Setup::class])) {
-                    yield from $getInstancedAttrs($groupAttributes[Setup::class]);
+                    yield from $this->getInstanceSetupOrSetupImmutableAttributes($groupAttributes[Setup::class], $method->getName());
 
                     return;
                 }
 
-                yield from $getInstancedAttrs($groupAttributes[SetupImmutable::class]);
+                yield from $this->getInstanceSetupOrSetupImmutableAttributes($groupAttributes[SetupImmutable::class], $method->getName());
             }
         }
     }
@@ -303,5 +293,22 @@ trait AttributeReaderTrait
         }
 
         return $attrs;
+    }
+
+    /**
+     * @param ReflectionAttribute[] $attrs
+     * @param non-empty-string      $method
+     *
+     * @return Generator<non-empty-string, Setup|SetupImmutable>
+     */
+    private function getInstanceSetupOrSetupImmutableAttributes(array $attrs, string $method): Generator
+    {
+        foreach ($attrs as $attr) {
+            /** @var Setup|SetupImmutable $s */
+            $s = $attr->newInstance();
+            $s->setMethod($method);
+
+            yield $s->getIdentifier() => $s;
+        }
     }
 }
