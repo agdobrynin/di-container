@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Generator;
-use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
@@ -275,10 +273,19 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 return;
             }
 
-            // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
             foreach ($this->getSetupAttribute($this->getDefinition()) as $setup) {
-                // $this->setup[$method][] = [true, $argument];
-                $this->setup[$setup->getIdentifier()][] = [$setup->isImmutable(), $setup->getArguments()];
+                $this->setupAttributes[$setup->getIdentifier()][] = $setup;
+            }
+
+            // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
+            foreach ($this->setupAttributes as $methodSetup => $setups) {
+                if (isset($this->setup[$methodSetup])) {
+                    unset($this->setup[$methodSetup]);
+                }
+
+                foreach ($setups as $setup) {
+                    $this->setup[$setup->getIdentifier()][] = [$setup->isImmutable(), $setup->getArguments()];
+                }
             }
         }
     }

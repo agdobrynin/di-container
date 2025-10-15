@@ -124,8 +124,10 @@ trait AttributeReaderTrait
 
         foreach ($methods as $method) {
             if (!$method->isConstructor() && !$method->isDestructor()) {
-                foreach ([...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)] as $setupAttribute) {
-                    /** @var ReflectionAttribute $setupAttribute */
+                /** @var ReflectionAttribute[] $attrs */
+                $attrs = [...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)];
+
+                foreach ($attrs as $setupAttribute) {
                     /** @var DiSetupAttributeInterface $setup */
                     $setup = $setupAttribute->newInstance();
                     $setup->setMethod($method->getName());

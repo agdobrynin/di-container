@@ -21,4 +21,9 @@ interface DiSetupAttributeInterface extends DiAttributeInterface
      * @param non-empty-string $method
      */
     public function setMethod(string $method): void;
+
+    /**
+     * @return non-empty-string
+     */
+    public function getIdentifier(): string;
 }
