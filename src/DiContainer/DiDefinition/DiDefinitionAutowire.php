@@ -267,11 +267,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     private function attemptsReadSetupAttribute(): void
     {
-        if (isset($this->setupAttributes)) {
+        if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
             return;
         }
 
-        if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
+        if (isset($this->setupAttributes)) {
             return;
         }
 
