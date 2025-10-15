@@ -106,8 +106,8 @@ trait ParametersResolverTrait
             try {
                 if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                     // PHP attributes have higher priority than PHP definitions
-                    if ($isUseAttribute && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                        array_push($dependencies, ...$attributes);
+                    if ($isUseAttribute && ($resolvedParam = $this->attemptResolveParamByAttributes($parameter))->valid()) {
+                        array_push($dependencies, ...$resolvedParam);
 
                         continue;
                     }
@@ -125,8 +125,8 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                if ($isUseAttribute && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                    array_push($dependencies, ...$attributes);
+                if ($isUseAttribute && ($resolvedParam = $this->attemptResolveParamByAttributes($parameter))->valid()) {
+                    array_push($dependencies, ...$resolvedParam);
 
                     continue;
                 }
@@ -220,7 +220,7 @@ trait ParametersResolverTrait
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    private function attemptApplyAttributes(ReflectionParameter $parameter): Generator
+    private function attemptResolveParamByAttributes(ReflectionParameter $parameter): Generator
     {
         $attrs = $this->getAttributeOnParameter($parameter);
 
