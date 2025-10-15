@@ -269,10 +269,24 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         // @phpstan-ignore booleanAnd.rightNotBoolean
         if (!isset($this->setupAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
             $this->setupAttributes = [];
+            /** @var \Generator<non-empty-string, SetupImmutable|Setup> $attrs */
+            $attrs = $this->getSetupOrSetupImmutableAttribute($this->getDefinition());
 
-            foreach ($this->getSetupOrSetupImmutableAttribute($this->getDefinition()) as $method => $setupAttribute) {
-                $this->setupAttributes[$method][] = $setupAttribute;
-                // 🚩 Php-attribute override existing tag defined by <setup> or <setupImmutable> (see documentation.)
+            if (!$attrs->valid()) {
+                return;
+            }
+
+            // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
+            if ($attrs->current() instanceof Setup) {
+                foreach ($attrs as $method => $setup) {
+                    $this->setup($method, $setup->getArguments());
+                }
+
+                return;
+            }
+
+            foreach ($attrs as $method => $setupImmutable) {
+                $this->setupImmutable($method, $setupImmutable->getArguments());
             }
         }
     }
