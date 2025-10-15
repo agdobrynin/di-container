@@ -115,7 +115,7 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return Generator<non-empty-string,Setup|SetupImmutable>
+     * @return Generator<non-empty-string, (Setup|SetupImmutable)>
      */
     private function getSetupOrSetupImmutableAttribute(ReflectionClass $reflectionClass): Generator
     {
