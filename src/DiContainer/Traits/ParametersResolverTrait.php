@@ -98,6 +98,7 @@ trait ParametersResolverTrait
 
         $dependencies = [];
         self::$variadicPosition = 0;
+        $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
 
         foreach ($this->reflectionParameters as $parameter) {
             $autowireException = null;
@@ -105,9 +106,7 @@ trait ParametersResolverTrait
             try {
                 if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                     // PHP attributes have higher priority than PHP definitions
-                    // @phpstan-ignore booleanAnd.leftNotBoolean
-                    if ($this->getContainer()->getConfig()?->isUseAttribute()
-                        && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                    if ($isUseAttribute && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                         array_push($dependencies, ...$attributes);
 
                         continue;
@@ -126,9 +125,7 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                // @phpstan-ignore booleanAnd.leftNotBoolean
-                if ($this->getContainer()->getConfig()?->isUseAttribute()
-                    && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
+                if ($isUseAttribute && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
                     array_push($dependencies, ...$attributes);
 
                     continue;
