@@ -13,13 +13,11 @@ use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Setup;
-use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
-use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -115,31 +113,21 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return Generator<non-empty-string, (Setup|SetupImmutable)>
+     * @return Generator<non-empty-string, Setup>
      */
-    private function getSetupOrSetupImmutableAttribute(ReflectionClass $reflectionClass): Generator
+    private function getSetupAttribute(ReflectionClass $reflectionClass): Generator
     {
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
             if (!$method->isConstructor() && !$method->isDestructor()) {
-                $groupAttributes = $this->groupAttributes($method);
-                // ⚠ attributes cannot be used together.
-                $intersectAttrs = array_intersect(array_keys($groupAttributes), [Setup::class, SetupImmutable::class]);
+                foreach ($method->getAttributes(Setup::class) as $setupAttribute) {
+                    /** @var Setup $setup */
+                    $setup = $setupAttribute->newInstance();
+                    $setup->setMethod($method->getName());
 
-                if (count($intersectAttrs) > 1) {
-                    throw new AutowireAttributeException(
-                        sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $intersectAttrs).']')
-                    );
+                    yield $setup->getIdentifier() => $setup;
                 }
-
-                if (isset($groupAttributes[Setup::class])) {
-                    yield from $this->getInstanceSetupOrSetupImmutableAttributes($groupAttributes[Setup::class], $method->getName());
-
-                    return;
-                }
-
-                yield from $this->getInstanceSetupOrSetupImmutableAttributes($groupAttributes[SetupImmutable::class], $method->getName());
             }
         }
     }
@@ -151,7 +139,11 @@ trait AttributeReaderTrait
      */
     private function getAttributeOnParameter(ReflectionParameter $reflectionParameter): Generator
     {
-        $groupAttributes = $this->groupAttributes($reflectionParameter);
+        $groupAttributes = [];
+
+        foreach ($reflectionParameter->getAttributes() as $attribute) {
+            $groupAttributes[$attribute->getName()][] = $attribute;
+        }
 
         if ([] === $groupAttributes) {
             return;
@@ -278,37 +270,6 @@ trait AttributeReaderTrait
             throw new AutowireAttributeException(
                 sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
             );
-        }
-    }
-
-    /**
-     * @return array<class-string, ReflectionAttribute[]>
-     */
-    private function groupAttributes(ReflectionMethod|ReflectionParameter $reflection): array
-    {
-        $attrs = [];
-
-        foreach ($reflection->getAttributes() as $a) {
-            $attrs[$a->getName()][] = $a;
-        }
-
-        return $attrs;
-    }
-
-    /**
-     * @param ReflectionAttribute[] $attrs
-     * @param non-empty-string      $method
-     *
-     * @return Generator<non-empty-string, Setup|SetupImmutable>
-     */
-    private function getInstanceSetupOrSetupImmutableAttributes(array $attrs, string $method): Generator
-    {
-        foreach ($attrs as $attr) {
-            /** @var Setup|SetupImmutable $s */
-            $s = $attr->newInstance();
-            $s->setMethod($method);
-
-            yield $s->getIdentifier() => $s;
         }
     }
 }

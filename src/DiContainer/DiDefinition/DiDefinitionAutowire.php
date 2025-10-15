@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\Setup;
-use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -77,9 +77,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     /**
      * Php attributes for setters on class.
-     * One setter for one method.
      *
-     * @var array<non-empty-string, (Setup|SetupImmutable)[]>
+     * @var array<non-empty-string, Setup[]>
      */
     private array $setupAttributes;
 
@@ -131,6 +130,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         // prepare metadata for calling setter methods
         $fullyClassNameLowercase = strtolower($this->getDefinition()->getName());
         $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
+        $this->attemptsReadSetupAttribute();
 
         foreach ($this->setup as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
@@ -269,24 +269,18 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         // @phpstan-ignore booleanAnd.rightNotBoolean
         if (!isset($this->setupAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
             $this->setupAttributes = [];
-            /** @var \Generator<non-empty-string, SetupImmutable|Setup> $attrs */
-            $attrs = $this->getSetupOrSetupImmutableAttribute($this->getDefinition());
+
+            /** @var Generator<non-empty-string, Setup> $attrs */
+            $attrs = $this->getSetupAttribute($this->getDefinition());
 
             if (!$attrs->valid()) {
                 return;
             }
 
             // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
-            if ($attrs->current() instanceof Setup) {
-                foreach ($attrs as $method => $setup) {
-                    $this->setup($method, $setup->getArguments());
-                }
-
-                return;
-            }
-
-            foreach ($attrs as $method => $setupImmutable) {
-                $this->setupImmutable($method, $setupImmutable->getArguments());
+            foreach ($attrs as $method => $setup) {
+                $this->setup[$method][] = [];
+                $this->setup[$method][] = [$setup->isImmutable(), $setup->getArguments()];
             }
         }
     }
