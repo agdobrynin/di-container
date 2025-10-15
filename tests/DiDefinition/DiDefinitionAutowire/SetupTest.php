@@ -44,6 +44,7 @@ class SetupTest extends TestCase
     public function testSetupMethodNotExist(): void
     {
         $def = (new DiDefinitionAutowire(SetupClass::class))
+            ->setContainer($this->createMock(DiContainerInterface::class))
             ->setup('methodNotExist')
         ;
 
@@ -56,6 +57,7 @@ class SetupTest extends TestCase
     public function testSetupWithoutParameters(): void
     {
         $def = (new DiDefinitionAutowire(SetupClass::class))
+            ->setContainer($this->createMock(DiContainerInterface::class))
             ->setup('incInc')
             ->setup('incInc')
             ->setup('incInc')
