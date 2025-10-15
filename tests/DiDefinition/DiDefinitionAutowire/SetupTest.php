@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClassByAttribute;
 
 /**
+ * @covers \Kaspi\DiContainer\Attributes\Setup
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  *
  * @internal
@@ -66,5 +70,36 @@ class SetupTest extends TestCase
         $class = $def->invoke();
 
         $this->assertEquals(3, $class->getInc());
+    }
+
+    public function testSetupByAttribute(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        // #[Setup] on `incInc` method call 4 times.
+        // #[Setup] on `setParameters` method call 2 times with arguments.
+        $def = (new DiDefinitionAutowire(SetupClassByAttribute::class))
+            ->setContainer($mockContainer)
+            ->setup('incInc')// override by php attribute #[Setup]
+            ->setup('incInc') // override by php attribute #[Setup]
+            ->setup('incInc') // override by php attribute #[Setup]
+            ->setup('setParameters', 'key1', ['One', 'Two', 'Three']) // override by php attribute #[Setup]
+            ->setup('setParameters', 'key2', ['X', 'Y', 'Z']) // override by php attribute #[Setup]
+        ;
+
+        /** @var SetupClassByAttribute $class */
+        $class = $def->invoke();
+
+        self::assertEquals(4, $class->getInc());
+        self::assertSame(
+            [
+                'abc' => ['one', 'two', 'three'],
+                'path' => ['/tmp', '/var/cache'],
+            ],
+            $class->getParameters()
+        );
     }
 }

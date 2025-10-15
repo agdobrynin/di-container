@@ -5,14 +5,21 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Generator;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutable;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttribute;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SomeClass;
 
+use function Kaspi\DiContainer\diAutowire;
+
 /**
+ * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
@@ -85,5 +92,54 @@ class SetupImmutableTest extends TestCase
 
         /** @var SetupImmutable $setupImmutableClass */
         $setupImmutableClass = $def->invoke();
+    }
+
+    public function testSetupImmutableByAttribute(): void
+    {
+        $this->mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
+            ->setContainer($this->mockContainer)
+        ;
+
+        $setupImmutableClass = $def->invoke();
+
+        self::assertInstanceOf(SomeClass::class, $setupImmutableClass->getSomeClass());
+    }
+
+    public function testSetupImmutableByAttributeWithoutConfigUseAttribute(): void
+    {
+        $this->mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: false))
+        ;
+
+        $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
+            ->setContainer($this->mockContainer)
+        ;
+
+        $setupImmutableClass = $def->invoke();
+
+        self::assertNull($setupImmutableClass->getSomeClass());
+    }
+
+    public function testSetupImmutableByAttributeWithOverrideDefinitionSetup(): void
+    {
+        $this->mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
+            ->setupImmutable('withSomeClass', someClass: null)
+            ->setupImmutable('withSomeClass', someClass: diAutowire(SomeClass::class)->bindArguments('aaa'))
+
+            ->setContainer($this->mockContainer)
+        ;
+
+        $setupImmutableClass = $def->invoke();
+
+        self::assertInstanceOf(SomeClass::class, $setupImmutableClass->getSomeClass());
+        self::assertNull($setupImmutableClass->getSomeClass()->getValue());
     }
 }

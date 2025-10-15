@@ -122,6 +122,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             ? $this->getDefinition()->newInstanceWithoutConstructor()
             : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->getConstructorParams()));
 
+        // Check setter methods.
+        $this->attemptsReadSetupAttribute();
+
         if ([] === $this->setup) {
             return $object;
         }
@@ -129,7 +132,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         // prepare metadata for calling setter methods
         $fullyClassNameLowercase = strtolower($this->getDefinition()->getName());
         $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
-        $this->attemptsReadSetupAttribute();
 
         foreach ($this->setup as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
