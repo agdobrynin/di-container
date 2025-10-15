@@ -265,27 +265,32 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     private function attemptsReadSetupAttribute(): void
     {
-        // @phpstan-ignore booleanAnd.rightNotBoolean
-        if (!isset($this->setupAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
-            $this->setupAttributes = [];
+        if (isset($this->setupAttributes)) {
+            return;
+        }
 
-            if (!$this->getSetupAttribute($this->getDefinition())->valid()) {
-                return;
+        if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
+            return;
+        }
+
+        $this->setupAttributes = [];
+
+        if (!$this->getSetupAttribute($this->getDefinition())->valid()) {
+            return;
+        }
+
+        foreach ($this->getSetupAttribute($this->getDefinition()) as $setup) {
+            $this->setupAttributes[$setup->getIdentifier()][] = $setup;
+        }
+
+        // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
+        foreach ($this->setupAttributes as $methodSetup => $setups) {
+            if (isset($this->setup[$methodSetup])) {
+                unset($this->setup[$methodSetup]);
             }
 
-            foreach ($this->getSetupAttribute($this->getDefinition()) as $setup) {
-                $this->setupAttributes[$setup->getIdentifier()][] = $setup;
-            }
-
-            // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
-            foreach ($this->setupAttributes as $methodSetup => $setups) {
-                if (isset($this->setup[$methodSetup])) {
-                    unset($this->setup[$methodSetup]);
-                }
-
-                foreach ($setups as $setup) {
-                    $this->setup[$setup->getIdentifier()][] = [$setup->isImmutable(), $setup->getArguments()];
-                }
+            foreach ($setups as $setup) {
+                $this->setup[$setup->getIdentifier()][] = [$setup->isImmutable(), $setup->getArguments()];
             }
         }
     }
