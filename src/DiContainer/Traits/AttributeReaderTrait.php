@@ -13,11 +13,14 @@ use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -113,7 +116,7 @@ trait AttributeReaderTrait
     }
 
     /**
-     * @return Generator<non-empty-string, Setup>
+     * @return Generator<DiSetupAttributeInterface>
      */
     private function getSetupAttribute(ReflectionClass $reflectionClass): Generator
     {
@@ -121,12 +124,13 @@ trait AttributeReaderTrait
 
         foreach ($methods as $method) {
             if (!$method->isConstructor() && !$method->isDestructor()) {
-                foreach ($method->getAttributes(Setup::class) as $setupAttribute) {
-                    /** @var Setup $setup */
+                foreach ([...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)] as $setupAttribute) {
+                    /** @var ReflectionAttribute $setupAttribute */
+                    /** @var DiSetupAttributeInterface $setup */
                     $setup = $setupAttribute->newInstance();
                     $setup->setMethod($method->getName());
 
-                    yield $setup->getIdentifier() => $setup;
+                    yield $setup;
                 }
             }
         }

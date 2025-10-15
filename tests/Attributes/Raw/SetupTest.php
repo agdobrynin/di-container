@@ -88,15 +88,15 @@ class SetupTest extends TestCase
 
     public function testSetupMixedNamedArgument(): void
     {
-        $s = new Setup(true, 'first', two: 'second');
+        $s = new Setup('first', two: 'second');
 
         self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
-        self::assertTrue($s->isImmutable());
+        self::assertFalse($s->isImmutable());
     }
 
     public function testSetupMixedNamedArgumentWithValueAsObject(): void
     {
-        $s = new Setup(false, 'first', two: diGet('service.one'));
+        $s = new Setup('first', two: diGet('service.one'));
 
         self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
         self::assertFalse($s->isImmutable());
