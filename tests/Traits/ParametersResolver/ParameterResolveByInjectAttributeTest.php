@@ -60,7 +60,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters([], $reflectionParameters);
+        $params = $this->resolveParameters([], $reflectionParameters, true);
         $this->assertEquals(
             ['✔', '❤'],
             call_user_func_array($fn, $params)->getArrayCopy()
@@ -88,7 +88,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $this->expectException(AutowireAttributeException::class);
         $this->expectExceptionMessage('once per non-variadic parameter');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, true);
     }
 
     public function testParameterResolveTypedVariadicArgumentByTowInjectAttributeWithId(): void
@@ -118,7 +118,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertIsArray($res);
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
@@ -145,7 +145,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertIsArray($res);
         $this->assertInstanceOf(SuperInterface::class, $res[0]);
@@ -171,7 +171,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertIsObject($res);
     }
@@ -199,7 +199,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+object\|string \$parameter.+Not found/');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, true);
     }
 
     public function testParameterResolveByArgumentNameNotFoundWithDefaultValue(): void
@@ -222,7 +222,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertEquals('welcome!', $res);
     }
@@ -247,7 +247,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertEquals(['Ivan', 'Piter'], $res);
     }
@@ -276,7 +276,7 @@ class ParameterResolveByInjectAttributeTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertCount(1, $res);
 

@@ -78,7 +78,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertTrue($res->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res->current());
@@ -134,7 +134,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertTrue($res1->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res1->current());
@@ -187,7 +187,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertTrue($res->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res->current());
@@ -240,7 +240,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertTrue($res1->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res1->current());

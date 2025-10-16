@@ -48,7 +48,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
             iterator: diGet('services.icon-iterator'),
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(ArrayIterator::class, $res);
         $this->assertEquals(['🚀', '🔥'], $res->getArrayCopy());
@@ -82,7 +82,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
             name: 'Piter'
         );
 
-        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals('Piter', $name);
         $this->assertCount(2, $res);
@@ -120,7 +120,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
             diGet('services.icon-iterator.one'),
         );
 
-        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals('Ivan', $name);
         $this->assertCount(2, $res);
@@ -157,7 +157,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
             diGet('services.icon-iterator.two')
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
 

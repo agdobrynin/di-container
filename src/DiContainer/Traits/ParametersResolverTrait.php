@@ -75,6 +75,7 @@ trait ParametersResolverTrait
     /**
      * @param array<non-empty-string|non-negative-int, mixed> $inputArguments
      * @param ReflectionParameter[]                           $reflectionParameters
+     * @param bool                                            $isAttributeOnParamHigherPriority Php attributes higher priority then $inputArguments
      *
      * @return list<mixed>
      *
@@ -84,7 +85,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    private function resolveParameters(array $inputArguments, array $reflectionParameters, bool $isAttributeOnParamHigherPriority = true): array
+    private function resolveParameters(array $inputArguments, array $reflectionParameters, bool $isAttributeOnParamHigherPriority): array
     {
         if ([] === $inputArguments && [] === $reflectionParameters) {
             return [];

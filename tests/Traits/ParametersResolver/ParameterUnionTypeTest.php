@@ -59,7 +59,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
 
-        $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters());
+        $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters(), false);
     }
 
     public function testUnionTypeByPhpDefinitionSuccess(): void
@@ -75,7 +75,8 @@ class ParameterUnionTypeTest extends TestCase
 
         $res = $this->resolveParameters(
             [diGet(Two::class)],
-            (new ReflectionFunction($fn))->getParameters()
+            (new ReflectionFunction($fn))->getParameters(),
+            false
         );
 
         $this->assertInstanceOf(Two::class, call_user_func_array($fn, $res));
@@ -97,7 +98,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
 
-        $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters());
+        $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters(), false);
     }
 
     public function testUnionTypeByPhpAttributeSuccess(): void
@@ -117,7 +118,7 @@ class ParameterUnionTypeTest extends TestCase
 
         $this->setContainer($this->mockContainer);
 
-        $res = $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters());
+        $res = $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters(), false);
 
         $this->assertInstanceOf(Two::class, call_user_func_array($fn, $res));
     }

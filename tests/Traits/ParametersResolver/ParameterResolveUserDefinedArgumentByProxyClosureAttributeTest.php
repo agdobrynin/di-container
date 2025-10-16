@@ -60,10 +60,10 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertInstanceOf(Closure::class, $res);
-        $this->assertNotSame($res, call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters)));
+        $this->assertNotSame($res, call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true)));
         $this->assertInstanceOf(MoreSuperClass::class, $res());
     }
 
@@ -93,9 +93,9 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
-        $this->assertSame($res, call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters)));
+        $this->assertSame($res, call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true)));
     }
 
     public function testResolveArgumentVariadicByAttribute(): void
@@ -136,7 +136,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
 
         $this->setContainer($mockContainer);
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertInstanceOf(Closure::class, $res1);
         $this->assertInstanceOf(Closure::class, $res2);
@@ -179,8 +179,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
 
         $this->setContainer($mockContainer);
 
-        [$res11, $res12] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
-        [$res21, $res22] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters));
+        [$res11, $res12] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
+        [$res21, $res22] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
 
         $this->assertNotSame($res11, $res21);
         $this->assertSame($res12, $res22);

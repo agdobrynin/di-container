@@ -120,7 +120,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
          */
         $object = [] === $this->getConstructorParams()
             ? $this->getDefinition()->newInstanceWithoutConstructor()
-            : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->getConstructorParams()));
+            : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->getConstructorParams(), true));
 
         // Check setter methods.
         $this->attemptsReadSetupAttribute();
