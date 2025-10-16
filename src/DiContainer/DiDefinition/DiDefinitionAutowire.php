@@ -6,7 +6,6 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
@@ -68,18 +67,18 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private array $setup = [];
 
     /**
+     * Methods for setup service via setters initialized by php attribute (mutable or immutable).
+     *
+     * @var array<non-empty-string,array{0: bool,array<non-empty-string|non-negative-int, mixed>}>
+     */
+    private array $setupByAttributes;
+
+    /**
      * Php attributes on class.
      *
      * @var Tag[]
      */
     private array $tagAttributes;
-
-    /**
-     * Php attributes for setters on class.
-     *
-     * @var array<non-empty-string, DiSetupAttributeInterface[]>
-     */
-    private array $setupAttributes;
 
     /**
      * @param class-string|ReflectionClass $definition
@@ -125,7 +124,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         // Check setter methods.
         $this->attemptsReadSetupAttribute();
 
-        if ([] === $this->setup) {
+        if ([] === $this->setup && [] === $this->setupByAttributes) {
             return $object;
         }
 
@@ -133,7 +132,10 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         $fullyClassNameLowercase = strtolower($this->getDefinition()->getName());
         $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
 
-        foreach ($this->setup as $method => $calls) {
+        // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
+        $setup = $this->setupByAttributes + $this->setup;
+
+        foreach ($setup as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
                 throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
             }
@@ -268,32 +270,19 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private function attemptsReadSetupAttribute(): void
     {
         if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
+            $this->setupByAttributes = [];
+
             return;
         }
 
-        if (isset($this->setupAttributes)) {
+        if (isset($this->setupByAttributes)) {
             return;
         }
 
-        $this->setupAttributes = [];
+        $this->setupByAttributes = [];
 
-        if (!$this->getSetupAttribute($this->getDefinition())->valid()) {
-            return;
-        }
-
-        foreach ($this->getSetupAttribute($this->getDefinition()) as $setup) {
-            $this->setupAttributes[$setup->getIdentifier()][] = $setup;
-        }
-
-        foreach ($this->setupAttributes as $methodSetup => $setups) {
-            // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
-            if (isset($this->setup[$methodSetup])) {
-                unset($this->setup[$methodSetup]);
-            }
-
-            foreach ($setups as $setup) {
-                $this->setup[$setup->getIdentifier()][] = [$setup->isImmutable(), $setup->getArguments()];
-            }
+        foreach ($this->getSetupAttribute($this->getDefinition()) as $setupAttr) {
+            $this->setupByAttributes[$setupAttr->getIdentifier()][] = [$setupAttr->isImmutable(), $setupAttr->getArguments()];
         }
     }
 
