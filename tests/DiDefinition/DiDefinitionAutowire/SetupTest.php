@@ -12,10 +12,14 @@ use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClassByAttribute;
 
+use function Kaspi\DiContainer\diValue;
+
 /**
  * @covers \Kaspi\DiContainer\Attributes\Setup
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diValue
  *
  * @internal
  */
@@ -26,9 +30,9 @@ class SetupTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
 
         $def = (new DiDefinitionAutowire(SetupClass::class))
-            ->setup('setName', newName: 'Vasiliy') // first set name
-            ->setup('setName', 'Piter') // override set name
-            ->setup('setParameters', paramName: 'key1', parameters: ['One', 'Two', 'Three'])
+            ->setup('setName', newName: diValue('Vasiliy')) // first set name
+            ->setup('setName', diValue('Piter')) // override set name
+            ->setup('setParameters', paramName: diValue('key1'), parameters: ['One', 'Two', 'Three'])
             ->setup('setParameters', 'key2', ['Four', 'Five', 'Six'])
         ;
         $def->setContainer($mockContainer);

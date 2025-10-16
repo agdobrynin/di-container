@@ -285,8 +285,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             $this->setupAttributes[$setup->getIdentifier()][] = $setup;
         }
 
-        // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
         foreach ($this->setupAttributes as $methodSetup => $setups) {
+            // 🚩 Php-attribute override existing setter method defined by <setup> or <setupImmutable> (see documentation.)
             if (isset($this->setup[$methodSetup])) {
                 unset($this->setup[$methodSetup]);
             }
