@@ -173,7 +173,7 @@ class SetupImmutableTest extends TestCase
         self::assertEquals('foo', $class->getSomeClass()->getValue());
 
         self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
-        self::assertEquals('@services.any_string', $class->getAnyAsEscapedString());
+        self::assertEquals('@la-la-la', $class->getAnyAsEscapedString());
         self::assertEquals('any_string', $class->getAnyAsString());
     }
 }

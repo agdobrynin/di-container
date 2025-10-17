@@ -14,21 +14,33 @@ final class SetupImmutableByAttributeWithArgumentAsReference
 
     private ?string $anyAsString = null;
 
+    /**
+     * Will return SomeClass::SomeClass.
+     */
     public function getSomeClass(): ?SomeClass
     {
         return $this->someClass;
     }
 
+    /**
+     * Will return value from the container mock object.
+     */
     public function getAnyAsContainerIdentifier(): ?string
     {
         return $this->anyAsContainerIdentifier;
     }
 
+    /**
+     * Will return string "@la-la-la".
+     */
     public function getAnyAsEscapedString(): ?string
     {
         return $this->anyAsEscapedString;
     }
 
+    /**
+     * Will return "any_string".
+     */
     public function getAnyAsString(): ?string
     {
         return $this->anyAsString;
@@ -52,7 +64,7 @@ final class SetupImmutableByAttributeWithArgumentAsReference
         return $new;
     }
 
-    #[SetupImmutable(any: '@@services.any_string')]
+    #[SetupImmutable(any: '@@la-la-la')]
     public function withAnyAsEscapedString(string $any): self
     {
         $new = clone $this;

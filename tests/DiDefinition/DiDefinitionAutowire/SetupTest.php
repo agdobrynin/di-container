@@ -9,8 +9,10 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupByAttributeWithArgumentAsReference;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClassByAttribute;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SomeClass;
 
 use function Kaspi\DiContainer\diValue;
 
@@ -18,6 +20,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\Attributes\Setup
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet::getDefinition
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
  *
@@ -105,5 +108,38 @@ class SetupTest extends TestCase
             ],
             $class->getParameters()
         );
+    }
+
+    public function testSetupByAttributeStringArgumentAsDiGet(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+        $mockContainer->method('get')
+            ->with(self::logicalXor(
+                'services.some_class',
+                'services.any_string',
+            ))
+            ->willReturn(
+                new SomeClass('foo'),
+                'string from container',
+            )
+        ;
+
+        $def = (new DiDefinitionAutowire(SetupByAttributeWithArgumentAsReference::class))
+            ->setup('setSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
+            ->setContainer($mockContainer)
+        ;
+
+        /** @var SetupByAttributeWithArgumentAsReference $class */
+        $class = $def->invoke();
+
+        self::assertInstanceOf(SomeClass::class, $class->getSomeClass());
+        self::assertEquals('foo', $class->getSomeClass()->getValue());
+
+        self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
+        self::assertEquals('@la-la-la', $class->getAnyAsEscapedString());
+        self::assertEquals('la-la-la', $class->getAnyAsString());
     }
 }
