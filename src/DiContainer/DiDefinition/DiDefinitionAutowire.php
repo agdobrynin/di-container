@@ -133,9 +133,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
 
         // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
-        $setup = $this->setupByAttributes + $this->setup;
+        $setupMerged = $this->setupByAttributes + $this->setup;
 
-        foreach ($setup as $method => $calls) {
+        foreach ($setupMerged as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
                 throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
             }
