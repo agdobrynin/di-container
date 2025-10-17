@@ -9,7 +9,9 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutable;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttribute;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttributeWithArgumentAsReference;
@@ -175,5 +177,28 @@ class SetupImmutableTest extends TestCase
         self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
         self::assertEquals('@la-la-la', $class->getAnyAsEscapedString());
         self::assertEquals('any_string', $class->getAnyAsString());
+    }
+
+    public function dataProviderSetupOnMethod(): Generator
+    {
+        yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
+
+        yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
+    }
+
+    /**
+     * @dataProvider dataProviderSetupOnMethod
+     */
+    public function testSetupOnMethod(string $class, string $method): void
+    {
+        $def = (new DiDefinitionAutowire($class))
+            ->setupImmutable($method)
+            ->setContainer($this->createMock(DiContainerInterface::class))
+        ;
+
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
+
+        $def->invoke();
     }
 }

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
+use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupByAttributeWithArgumentAsReference;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClassByAttribute;
@@ -141,5 +143,28 @@ class SetupTest extends TestCase
         self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
         self::assertEquals('@la-la-la', $class->getAnyAsEscapedString());
         self::assertEquals('la-la-la', $class->getAnyAsString());
+    }
+
+    public function dataProviderSetupOnMethod(): Generator
+    {
+        yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
+
+        yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
+    }
+
+    /**
+     * @dataProvider dataProviderSetupOnMethod
+     */
+    public function testSetupOnMethod(string $class, string $method): void
+    {
+        $def = (new DiDefinitionAutowire($class))
+            ->setup($method)
+            ->setContainer($this->createMock(DiContainerInterface::class))
+        ;
+
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
+
+        $def->invoke();
     }
 }

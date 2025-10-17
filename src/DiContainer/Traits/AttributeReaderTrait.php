@@ -123,17 +123,21 @@ trait AttributeReaderTrait
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
-            if (!$method->isConstructor() && !$method->isDestructor()) {
-                /** @var ReflectionAttribute[] $attrs */
-                $attrs = [...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)];
+            /** @var ReflectionAttribute[] $attrs */
+            $attrs = [...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)];
 
-                foreach ($attrs as $setupAttribute) {
-                    /** @var DiSetupAttributeInterface $setup */
-                    $setup = $setupAttribute->newInstance();
-                    $setup->setMethod($method->getName());
-
-                    yield $setup;
+            foreach ($attrs as $setupAttribute) {
+                if ($method->isConstructor() || $method->isDestructor()) {
+                    throw new AutowireAttributeException(
+                        sprintf('Cannot use attribute #[%s] on method %s::%s().', $setupAttribute->getName(), $reflectionClass->name, $method->name)
+                    );
                 }
+
+                /** @var DiSetupAttributeInterface $setup */
+                $setup = $setupAttribute->newInstance();
+                $setup->setMethod($method->getName());
+
+                yield $setup;
             }
         }
     }
