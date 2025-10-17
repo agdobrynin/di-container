@@ -55,7 +55,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private array $reflectionConstructorParams;
 
     /**
-     * @var array<non-empty-string, array{args: list<ReflectionParameter>, returnType: string}>
+     * @var array<non-empty-string, array{args: ReflectionParameter[], returnType: string}>
      */
     private array $reflectionMethodMeta;
 
