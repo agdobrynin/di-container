@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutable;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttribute;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttributeWithArgumentAsReference;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SomeClass;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -141,5 +142,38 @@ class SetupImmutableTest extends TestCase
 
         self::assertInstanceOf(SomeClass::class, $setupImmutableClass->getSomeClass());
         self::assertNull($setupImmutableClass->getSomeClass()->getValue());
+    }
+
+    public function testSetupImmutableByAttributeStringArgumentAsDiGet(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+        $mockContainer->method('get')
+            ->with(self::logicalXor(
+                'services.some_class',
+                'services.any_string',
+            ))
+            ->willReturn(
+                new SomeClass('foo'),
+                'string from container',
+            )
+        ;
+
+        $def = (new DiDefinitionAutowire(SetupImmutableByAttributeWithArgumentAsReference::class))
+            ->setupImmutable('withSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
+            ->setContainer($mockContainer)
+        ;
+
+        /** @var SetupImmutableByAttributeWithArgumentAsReference $class */
+        $class = $def->invoke();
+
+        self::assertInstanceOf(SomeClass::class, $class->getSomeClass());
+        self::assertEquals('foo', $class->getSomeClass()->getValue());
+
+        self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
+        self::assertEquals('@services.any_string', $class->getAnyAsEscapedString());
+        self::assertEquals('any_string', $class->getAnyAsString());
     }
 }
