@@ -53,11 +53,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private ReflectionClass $reflectionClass;
 
     /**
-     * @var ReflectionParameter[]
-     */
-    private array $reflectionConstructorParams;
-
-    /**
      * @var array<non-empty-string, array{args: ReflectionParameter[], returnType: string}>
      */
     private array $reflectionMethodMeta;
@@ -312,8 +307,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      */
     private function getConstructorParams(): array
     {
-        if (isset($this->reflectionConstructorParams)) {
-            return $this->reflectionConstructorParams;
+        if (isset($this->reflectionMethodMeta['__construct']['args'])) {
+            return $this->reflectionMethodMeta['__construct']['args'];
         }
 
         $reflectionClass = $this->getDefinition();
@@ -324,6 +319,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             );
         }
 
-        return $this->reflectionConstructorParams = $reflectionClass->getConstructor()?->getParameters() ?? [];
+        $this->reflectionMethodMeta['__construct'] = [
+            'args' => $reflectionClass->getConstructor()?->getParameters() ?? [],
+            'returnType' => 'void',
+        ];
+
+        return $this->reflectionMethodMeta['__construct']['args'];
     }
 }
