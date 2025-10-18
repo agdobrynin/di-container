@@ -53,11 +53,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private ReflectionClass $reflectionClass;
 
     /**
-     * @var array<non-empty-string, array{args: ReflectionParameter[], returnType: string}>
-     */
-    private array $reflectionMethodMeta;
-
-    /**
      * Methods for setup service via setters (mutable or immutable).
      *
      * @var array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
@@ -112,12 +107,14 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function invoke(): mixed
     {
+        $constructParams = $this->getConstructorParams();
+
         /**
          * @var object $object
          */
-        $object = [] === $this->getConstructorParams()
+        $object = [] === $constructParams
             ? $this->getDefinition()->newInstanceWithoutConstructor()
-            : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->getConstructorParams(), true));
+            : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $constructParams, true));
 
         // Check setter methods.
         $this->setupByAttributes ??= $this->attemptsReadSetupAttribute();
@@ -144,34 +141,26 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
             }
 
-            $reflectionMethod = $this->getDefinition()->getMethod($method);
-
-            $this->reflectionMethodMeta[$method] ??= [
-                'args' => $reflectionMethod->getParameters(),
-                'returnType' => strtolower((string) $reflectionMethod->getReturnType()),
-            ];
+            $reflectionMethodParams = $reflectionMethod->getParameters();
+            $methodReturnType = strtolower((string) $reflectionMethod->getReturnType());
 
             /**
              * @phpstan-var  boolean $isImmutable
              * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $callArguments
              */
             foreach ($calls as [$isImmutable, $callArguments]) {
-                $reflectionParameters = $this->reflectionMethodMeta[$method]['args'];
-
                 if (!$isImmutable) {
-                    $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionParameters, false));
+                    $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionMethodParams, false));
 
                     continue;
                 }
 
                 // check return type before invoke method with argument
-                $returnType = $this->reflectionMethodMeta[$method]['returnType'];
-
-                if ('' !== $returnType && $fullyClassNameLowercase !== $returnType && !in_array($returnType, ['self', 'static'], true)) {
+                if ('' !== $methodReturnType && $fullyClassNameLowercase !== $methodReturnType && !in_array($methodReturnType, ['self', 'static'], true)) {
                     throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), $fullyClassNameLowercase));
                 }
 
-                $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionParameters, false));
+                $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionMethodParams, false));
 
                 if (is_object($result) && get_class($result) === get_class($object)) {
                     $object = $result;
@@ -312,23 +301,10 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      */
     private function getConstructorParams(): array
     {
-        if (isset($this->reflectionMethodMeta['__construct']['args'])) {
-            return $this->reflectionMethodMeta['__construct']['args'];
-        }
-
-        $reflectionClass = $this->getDefinition();
-
-        if (!$reflectionClass->isInstantiable()) {
-            throw new AutowireException(
-                sprintf('The "%s" class is not instantiable.', $reflectionClass->getName())
+        return $this->getDefinition()->isInstantiable()
+            ? ($this->getDefinition()->getConstructor()?->getParameters() ?? [])
+            : throw new AutowireException(
+                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
             );
-        }
-
-        $this->reflectionMethodMeta['__construct'] = [
-            'args' => $reflectionClass->getConstructor()?->getParameters() ?? [],
-            'returnType' => 'void',
-        ];
-
-        return $this->reflectionMethodMeta['__construct']['args'];
     }
 }
