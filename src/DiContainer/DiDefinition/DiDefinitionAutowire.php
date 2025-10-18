@@ -120,7 +120,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $this->getConstructorParams(), true));
 
         // Check setter methods.
-        $this->attemptsReadSetupAttribute();
+        $this->setupByAttributes ??= $this->attemptsReadSetupAttribute();
 
         if ([] === $this->setup && [] === $this->setupByAttributes) {
             return $object;
@@ -269,19 +269,16 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
     }
 
-    private function attemptsReadSetupAttribute(): void
+    /**
+     * @return array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
+     */
+    private function attemptsReadSetupAttribute(): array
     {
         if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
-            $this->setupByAttributes = [];
-
-            return;
+            return [];
         }
 
-        if (isset($this->setupByAttributes)) {
-            return;
-        }
-
-        $this->setupByAttributes = [];
+        $setupByAttributes = [];
 
         foreach ($this->getSetupAttribute($this->getDefinition()) as $setupAttr) {
             /**
@@ -302,8 +299,10 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 return $arg;
             }, $setupAttr->getArguments());
 
-            $this->setupByAttributes[$setupAttr->getIdentifier()][] = [$setupAttr->isImmutable(), $convertedArgs];
+            $setupByAttributes[$setupAttr->getIdentifier()][] = [$setupAttr->isImmutable(), $convertedArgs];
         }
+
+        return $setupByAttributes;
     }
 
     /**
