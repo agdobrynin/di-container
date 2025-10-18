@@ -138,7 +138,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
             }
 
-            if (in_array($method, ['__construct', '__destruct'], true)) {
+            $reflectionMethod = $this->getDefinition()->getMethod($method);
+
+            if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
                 throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
             }
 
