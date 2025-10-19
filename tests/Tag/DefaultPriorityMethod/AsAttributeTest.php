@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Tag\DefaultPriorityMethod;
 
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedCollectionOne;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedCollectionTwo;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedFour;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedOne;
+use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedPriorityVsMethodPriority;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedThree;
 use Tests\Tag\DefaultPriorityMethod\Fixtures\TaggedTwo;
 
@@ -83,5 +86,42 @@ class AsAttributeTest extends TestCase
 
         $collection->items->next();
         $this->assertFalse($collection->items->valid());
+    }
+
+    public function testPriorityVsMethodPriorityByAttributeTag(): void
+    {
+        $def = (new DiDefinitionAutowire(TaggedPriorityVsMethodPriority::class))
+            ->bindTag(
+                'tags.priority_vs_method_priority',
+                options: ['priority.method' => 'getPriorityByPhpDefinition'],
+                priority: 200
+            ) // this binding tag overrider by php attribute on class
+            ->setContainer((new DiContainerFactory())->make())
+        ;
+
+        // must return value defined in "priority" argument in `#[Tag]`
+        self::assertEquals(10, $def->geTagPriority('tags.priority_vs_method_priority'));
+    }
+
+    public function testPriorityVsMethodPriorityByPhpDefinition(): void
+    {
+        $def = (new DiDefinitionAutowire(TaggedPriorityVsMethodPriority::class))
+            ->bindTag(
+                'tags.priority_vs_method_priority',
+                options: ['priority.method' => 'getPriorityByPhpDefinition'],
+                priority: 200
+            ) // this binding tag overrider by php attribute on class
+            ->setContainer(
+                (new DiContainerFactory(
+                    new DiContainerConfig(
+                        useAttribute: false
+                    )
+                ))->make()
+            )
+        ;
+
+        // must return value defined in "priority" set by `bingTag`
+        // option "priority.method" must be ignored.
+        self::assertEquals(200, $def->geTagPriority('tags.priority_vs_method_priority'));
     }
 }
