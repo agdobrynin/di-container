@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
@@ -12,6 +11,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
@@ -67,11 +67,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private array $setupByAttributes;
 
     /**
-     * Php attributes on class.
+     * Tags from php attributes on class.
      *
-     * @var Tag[]
+     * @var array<non-empty-string, TagOptions>
      */
-    private array $tagAttributes;
+    private array $tagsByAttribute;
 
     /**
      * @param class-string|ReflectionClass $definition
@@ -197,16 +197,22 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function getTags(): array
     {
-        $this->attemptsReadTagAttribute();
+        if ((bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
+            // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
+            return $this->getTagsByAttribute() + $this->internalGetTags();
+        }
 
         return $this->internalGetTags();
     }
 
     public function hasTag(string $name): bool
     {
-        $this->attemptsReadTagAttribute();
+        return isset($this->getTags()[$name]);
+    }
 
-        return $this->internalHasTag($name);
+    public function getTag(string $name): ?array
+    {
+        return $this->getTags()[$name] ?? null;
     }
 
     /**
@@ -215,11 +221,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      */
     public function geTagPriority(string $name, array $operationOptions = []): null|int|string
     {
-        if (null !== ($priority = $this->internalGeTagPriority($name))) {
+        if (null !== ($priority = $this->internalGeTagPriority($name, $operationOptions))) {
             return $priority;
         }
-
-        $this->attemptsReadTagAttribute();
 
         if ([] !== ($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
             $tagOptions = $this->getTag($name) + $operationOptions;
@@ -242,22 +246,28 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return null;
     }
 
-    private function attemptsReadTagAttribute(): void
+    /**
+     * @return array<non-empty-string, TagOptions>
+     *
+     * @throws AutowireExceptionInterface
+     */
+    private function getTagsByAttribute(): array
     {
-        // @phpstan-ignore booleanAnd.rightNotBoolean
-        if (!isset($this->tagAttributes) && $this->getContainer()->getConfig()?->isUseAttribute()) {
-            $this->tagAttributes = [];
+        if (!isset($this->tagsByAttribute)) {
+            $this->tagsByAttribute = [];
 
             foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
-                $this->tagAttributes[] = $tagAttribute;
-                // 🚩 Php-attribute override existing tag defined by <bindTag> (see documentation.)
-                $this->bindTag(
-                    name: $tagAttribute->getIdentifier(),
-                    options: (null !== $tagAttribute->getPriorityMethod() ? ['priority.method' => $tagAttribute->getPriorityMethod()] : []) + $tagAttribute->getOptions(),
-                    priority: $tagAttribute->getPriority(),
+                $priorityMethod = null !== $tagAttribute->getPriorityMethod()
+                    ? ['priority.method' => $tagAttribute->getPriorityMethod()]
+                    : [];
+                $this->tagsByAttribute[$tagAttribute->getIdentifier()] = self::transformTagOptions(
+                    $priorityMethod + $tagAttribute->getOptions(),
+                    $tagAttribute->getPriority()
                 );
             }
         }
+
+        return $this->tagsByAttribute;
     }
 
     /**

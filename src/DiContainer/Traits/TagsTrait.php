@@ -27,11 +27,7 @@ trait TagsTrait
      */
     public function bindTag(string $name, array $options = [], null|int|string $priority = null): static
     {
-        $this->tags[$name] = $options;
-
-        if (null !== $priority) {
-            $this->tags[$name]['priority'] = $priority;
-        }
+        $this->tags[$name] = static::transformTagOptions($options, $priority);
 
         return $this;
     }
@@ -46,14 +42,12 @@ trait TagsTrait
 
     public function getTag(string $name): ?array
     {
-        return $this->hasTag($name)
-            ? $this->tags[$name]
-            : null;
+        return $this->getTags()[$name] ?? null;
     }
 
     public function hasTag(string $name): bool
     {
-        return [] !== $this->tags && isset($this->tags[$name]);
+        return isset($this->getTags()[$name]);
     }
 
     /**
@@ -67,5 +61,15 @@ trait TagsTrait
         return [] !== $options && array_key_exists('priority', $options) && (is_int($priority = $options['priority']) || is_string($priority))
             ? $priority
             : null;
+    }
+
+    /**
+     * @param TagOptions $options tag's meta-data
+     *
+     * @return TagOptions
+     */
+    private static function transformTagOptions(array $options = [], null|int|string $priority = null): array
+    {
+        return $options + (null === $priority ? [] : ['priority' => $priority]);
     }
 }
