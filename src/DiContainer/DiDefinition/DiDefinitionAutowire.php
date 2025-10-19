@@ -116,10 +116,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             ? $this->getDefinition()->newInstanceWithoutConstructor()
             : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $constructParams, true));
 
-        // Check setter methods.
-        $this->setupByAttributes ??= $this->attemptsReadSetupAttribute();
-
-        if ([] === $this->setup && [] === $this->setupByAttributes) {
+        if ([] === $this->setup && [] === $this->getSetupByAttribute()) {
             return $object;
         }
 
@@ -128,7 +125,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
 
         // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
-        $setupMerged = $this->setupByAttributes + $this->setup;
+        $setupMerged = $this->getSetupByAttribute() + $this->setup;
 
         foreach ($setupMerged as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
@@ -197,12 +194,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function getTags(): array
     {
-        if ((bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
-            // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
-            return $this->getTagsByAttribute() + $this->internalGetTags();
-        }
-
-        return $this->internalGetTags();
+        // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
+        return $this->getTagsByAttribute() + $this->internalGetTags();
     }
 
     public function hasTag(string $name): bool
@@ -253,18 +246,24 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      */
     private function getTagsByAttribute(): array
     {
-        if (!isset($this->tagsByAttribute)) {
-            $this->tagsByAttribute = [];
+        if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
+            return [];
+        }
 
-            foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
-                $priorityMethod = null !== $tagAttribute->getPriorityMethod()
-                    ? ['priority.method' => $tagAttribute->getPriorityMethod()]
-                    : [];
-                $this->tagsByAttribute[$tagAttribute->getIdentifier()] = self::transformTagOptions(
-                    $priorityMethod + $tagAttribute->getOptions(),
-                    $tagAttribute->getPriority()
-                );
-            }
+        if (isset($this->tagsByAttribute)) {
+            return $this->tagsByAttribute;
+        }
+
+        $this->tagsByAttribute = [];
+
+        foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
+            $priorityMethod = null !== $tagAttribute->getPriorityMethod()
+                ? ['priority.method' => $tagAttribute->getPriorityMethod()]
+                : [];
+            $this->tagsByAttribute[$tagAttribute->getIdentifier()] = self::transformTagOptions(
+                $priorityMethod + $tagAttribute->getOptions(),
+                $tagAttribute->getPriority()
+            );
         }
 
         return $this->tagsByAttribute;
@@ -273,13 +272,17 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     /**
      * @return array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
      */
-    private function attemptsReadSetupAttribute(): array
+    private function getSetupByAttribute(): array
     {
         if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
             return [];
         }
 
-        $setupByAttributes = [];
+        if (isset($this->setupByAttributes)) {
+            return $this->setupByAttributes;
+        }
+
+        $this->setupByAttributes = [];
 
         foreach ($this->getSetupAttribute($this->getDefinition()) as $setupAttr) {
             /**
@@ -300,10 +303,10 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 return $arg;
             }, $setupAttr->getArguments());
 
-            $setupByAttributes[$setupAttr->getIdentifier()][] = [$setupAttr->isImmutable(), $convertedArgs];
+            $this->setupByAttributes[$setupAttr->getIdentifier()][] = [$setupAttr->isImmutable(), $convertedArgs];
         }
 
-        return $setupByAttributes;
+        return $this->setupByAttributes;
     }
 
     /**
