@@ -103,14 +103,10 @@ class ParameterResolveByInjectAttributeTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects($this->atLeast(2))
             ->method('get')
-            ->with($this->logicalOr(
-                'services.one',
-                'services.tow',
-            ))
-            ->willReturn(
-                new SuperClass(),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                ['services.one', new SuperClass()],
+                ['services.tow', new MoreSuperClass()],
+            ])
         ;
         $mockContainer->method('getConfig')
             ->willReturn(new DiContainerConfig(useAttribute: true))

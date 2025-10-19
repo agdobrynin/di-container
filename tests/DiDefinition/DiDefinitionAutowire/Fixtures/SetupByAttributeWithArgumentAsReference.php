@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Attributes\Setup;
 
 final class SetupByAttributeWithArgumentAsReference
 {
+    public SomeClass $dependencyAutoResolve;
     private ?SomeClass $someClass = null;
     private ?string $anyAsContainerIdentifier = null;
     private ?string $anyAsEscapedString = null;
@@ -47,9 +48,10 @@ final class SetupByAttributeWithArgumentAsReference
     }
 
     #[Setup(someClass: '@services.some_class')]
-    public function setSomeClassAsContainerIdentifier($someClass): void
+    public function setSomeClassAsContainerIdentifier($someClass, SomeClass $class): void
     {
         $this->someClass = $someClass;
+        $this->dependencyAutoResolve = $class;
     }
 
     #[Setup(any: '@services.any_string')]

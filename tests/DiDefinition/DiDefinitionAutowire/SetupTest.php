@@ -119,14 +119,11 @@ class SetupTest extends TestCase
             ->willReturn(new DiContainerConfig(useAttribute: true))
         ;
         $mockContainer->method('get')
-            ->with(self::logicalXor(
-                'services.some_class',
-                'services.any_string',
-            ))
-            ->willReturn(
-                new SomeClass('foo'),
-                'string from container',
-            )
+            ->willReturnMap([
+                ['services.some_class', new SomeClass('foo')],
+                [SomeClass::class, new SomeClass('baz')],
+                ['services.any_string', 'string from container'],
+            ])
         ;
 
         $def = (new DiDefinitionAutowire(SetupByAttributeWithArgumentAsReference::class))
@@ -138,6 +135,7 @@ class SetupTest extends TestCase
         $class = $def->invoke();
 
         self::assertInstanceOf(SomeClass::class, $class->getSomeClass());
+        self::assertEquals('baz', $class->dependencyAutoResolve->getValue());
         self::assertEquals('foo', $class->getSomeClass()->getValue());
 
         self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
