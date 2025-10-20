@@ -53,7 +53,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     private ReflectionClass $reflectionClass;
 
     /**
-     * Methods for setup service via setters (mutable or immutable).
+     * Methods for setup service by PHP definition via setters (mutable or immutable).
      *
      * @var array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
      */

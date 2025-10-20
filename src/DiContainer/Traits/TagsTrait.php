@@ -70,6 +70,6 @@ trait TagsTrait
      */
     private static function transformTagOptions(array $options = [], null|int|string $priority = null): array
     {
-        return $options + (null === $priority ? [] : ['priority' => $priority]);
+        return (null === $priority ? [] : ['priority' => $priority]) + $options;
     }
 }
