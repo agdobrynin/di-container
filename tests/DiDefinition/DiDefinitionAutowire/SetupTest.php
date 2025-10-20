@@ -25,6 +25,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet::getDefinition
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait::getParameterType
  *
  * @internal
  */

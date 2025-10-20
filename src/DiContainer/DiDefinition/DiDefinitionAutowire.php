@@ -218,18 +218,18 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             return $priority;
         }
 
-        if ([] !== ($tagOptions = $this->getTag($name)) && isset($tagOptions['priority.method'])) {
-            $tagOptions = $this->getTag($name) + $operationOptions;
+        $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
+
+        if (isset($tagOptions['priority.method'])) {
             $howGetPriority = sprintf('Get priority by option "priority.method" for tag "%s".', $name);
 
             // @phpstan-ignore return.type
             return self::callStaticMethod($this, $tagOptions['priority.method'], true, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
         }
 
-        $priorityDefaultMethod = ($operationOptions['priority.default_method'] ?? null);
+        $priorityDefaultMethod = ($tagOptions['priority.default_method'] ?? null);
 
         if (null !== $priorityDefaultMethod) {
-            $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
             $howGetPriority = sprintf('Get priority by option "priority.default_method" for class "%s".', $this->getDefinition()->getName());
 
             // @phpstan-ignore return.type
