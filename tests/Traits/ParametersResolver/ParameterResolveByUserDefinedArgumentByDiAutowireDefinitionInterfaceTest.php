@@ -170,14 +170,10 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                'services.super.one',
-                'services.super.two'
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                ['services.super.one', new MoreSuperClass()],
+                ['services.super.two', new SuperClass()],
+            ])
         ;
         $this->setContainer($mockContainer);
 
@@ -204,14 +200,10 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                'services.super.one',
-                'services.super.two',
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                ['services.super.one', new MoreSuperClass()],
+                ['services.super.two', new SuperClass()],
+            ])
         ;
         $this->setContainer($mockContainer);
 

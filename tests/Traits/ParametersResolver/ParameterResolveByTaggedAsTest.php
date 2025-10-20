@@ -62,14 +62,10 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')
@@ -116,16 +112,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(3))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-                SuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')
@@ -171,14 +162,10 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')
@@ -222,16 +209,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(3))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-                SuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')

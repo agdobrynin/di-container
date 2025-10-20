@@ -153,25 +153,17 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('has')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                true,
-                true
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, true],
+                [SuperClass::class, true],
+            ])
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass()
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+            ])
         ;
 
         $this->setContainer($mockContainer);
@@ -198,24 +190,17 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('has')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                true
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, true],
+                [SuperClass::class, true],
+            ])
         ;
         $mockContainer->method('get')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass(),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
 
         $this->setContainer($mockContainer);
@@ -247,25 +232,17 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('has')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                true,
-                true
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, true],
+                [SuperClass::class, true],
+            ])
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                new SuperClass(),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [SuperClass::class, new SuperClass()],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
 
         $this->setContainer($mockContainer);

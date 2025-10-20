@@ -153,14 +153,10 @@ class SetupImmutableTest extends TestCase
             ->willReturn(new DiContainerConfig(useAttribute: true))
         ;
         $mockContainer->method('get')
-            ->with(self::logicalXor(
-                'services.some_class',
-                'services.any_string',
-            ))
-            ->willReturn(
-                new SomeClass('foo'),
-                'string from container',
-            )
+            ->willReturnMap([
+                ['services.some_class', new SomeClass('foo')],
+                ['services.any_string', 'string from container'],
+            ])
         ;
 
         $def = (new DiDefinitionAutowire(SetupImmutableByAttributeWithArgumentAsReference::class))

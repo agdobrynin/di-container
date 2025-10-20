@@ -76,14 +76,10 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $mockContainer
             ->expects(self::exactly(2))
             ->method('get')
-            ->with($this->logicalOr(
-                SuperClass::class,
-                'word'
-            ))
-            ->willReturn(
-                new SuperClass(),
-                'one'
-            )
+            ->willReturnMap([
+                [SuperClass::class, new SuperClass()],
+                ['word', 'one'],
+            ])
         ;
 
         $this->setContainer($mockContainer);
