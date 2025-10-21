@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use ReflectionNamedType;
+use ReflectionType;
 use ReflectionUnionType;
 
 use function array_diff;
@@ -59,7 +60,7 @@ trait DiAutowireTrait
     /**
      * @return array<string>
      */
-    private static function diffReturnType(null|ReflectionNamedType|ReflectionUnionType $returnType, string ...$type): array
+    private static function diffReturnType(?ReflectionType $returnType, string ...$type): array
     {
         $fn = static fn (ReflectionNamedType $t): string => $t->getName();
 
