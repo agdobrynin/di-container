@@ -170,6 +170,9 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 > [!TIP]
 > Для аргументов не объявленных через `bindArgument` контейнер попытается разрешить зависимости самостоятельно.
 
+> [!TIP]
+> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+
 **Дополнительная настройка сервиса через методы класса (mutable setters):**
 ```php 
 setup(string $method, mixed ...$argument)
@@ -181,7 +184,7 @@ setup(string $method, mixed ...$argument)
 > Для аргументов в методе `$method` не объявленных через `setup` контейнер по попытается разрешить зависимости автоматически.
 
 > [!TIP]
-> Аргументы `$argument` в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue` и другие.
+> Аргументы `$argument` в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
 Можно указывать именованные аргументы:
 ```php
@@ -219,7 +222,7 @@ setupImmutable(string $method, mixed ...$argument)
 > Для аргументов в методе `$method` не объявленных через `setupImmutable` контейнер по попытается разрешить зависимости автоматически.
 
 > [!TIP]
-> Аргументы `$argument` в `setupImmutable` могут принимать хэлпер функции такие как `diGet`, `diValue` и другие.
+> Аргументы `$argument` в `setupImmutable` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
 > [!NOTE]
 > [пример использования метода `diAutowire(...)->setupImmutable`](#пример-5)
@@ -304,6 +307,9 @@ bindArguments(mixed ...$argument)`
  bindArguments(var1: 'value 1', var2: 'value 2');
  // function(string $var1, string $var2) 
  ```
+> [!TIP]
+> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+
 > [!WARNING]
 > метод `bindArguments` перезаписывает ранее определенные аргументы.
 
