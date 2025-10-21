@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use ReflectionNamedType;
@@ -15,9 +16,11 @@ use function implode;
 use function is_callable;
 use function is_string;
 use function sprintf;
+use function str_starts_with;
+use function substr;
 use function trim;
 
-trait DiDefinitionAutowireTrait
+trait DiAutowireTrait
 {
     /**
      * @param non-empty-string                          $where
@@ -67,5 +70,24 @@ trait DiDefinitionAutowireTrait
         };
 
         return array_diff($types, $type);
+    }
+
+    /**
+     * Convention for string value in argument:
+     *  - 'raw str' raw value, as is
+     * - '@container-identifier' convert to new DiDefinitionGet('container-identifier')
+     * - '@@container-identifier' convert to string '@container-identifier'
+     */
+    private static function convertStringArgumentToDiDefinitionGet(mixed $arg): mixed
+    {
+        if (is_string($arg) && str_starts_with($arg, '@')) {
+            return match (true) {
+                str_starts_with($arg, '@@') => substr($arg, 1),
+                '' !== ($id = substr($arg, 1)) => new DiDefinitionGet($id),
+                default => $arg
+            };
+        }
+
+        return $arg;
     }
 }

@@ -14,8 +14,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\DiAutowireTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\DiDefinitionAutowireTrait;
 use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
@@ -29,9 +29,7 @@ use function in_array;
 use function is_object;
 use function is_string;
 use function sprintf;
-use function str_starts_with;
 use function strtolower;
-use function substr;
 
 /**
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
@@ -43,7 +41,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     use BindArgumentsTrait;
     use ParametersResolverTrait;
     use DiContainerTrait;
-    use DiDefinitionAutowireTrait;
+    use DiAutowireTrait;
     use TagsTrait {
         getTags as private internalGetTags;
         hasTag as private internalHasTag;
@@ -285,25 +283,13 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         $this->setupByAttributes = [];
 
         foreach ($this->getSetupAttribute($this->getDefinition()) as $setupAttr) {
-            /**
-             * Convention for string value in argument:
-             *  - 'raw str' raw value, as is
-             * - '@container-identifier' convert to new DiDefinitionGet('container-identifier')
-             * - '@@container-identifier' convert to string '@container-identifier'
-             */
-            $convertedArgs = array_map(static function (mixed $arg) {
-                if (is_string($arg) && str_starts_with($arg, '@')) {
-                    return match (true) {
-                        str_starts_with($arg, '@@') => substr($arg, 1),
-                        '' !== ($id = substr($arg, 1)) => new DiDefinitionGet($id),
-                        default => $arg
-                    };
-                }
-
-                return $arg;
-            }, $setupAttr->getArguments());
-
-            $this->setupByAttributes[$setupAttr->getIdentifier()][] = [$setupAttr->isImmutable(), $convertedArgs];
+            $this->setupByAttributes[$setupAttr->getIdentifier()][] = [
+                $setupAttr->isImmutable(),
+                array_map(
+                    static fn (mixed $arg) => self::convertStringArgumentToDiDefinitionGet($arg),
+                    $setupAttr->getArguments()
+                ),
+            ];
         }
 
         return $this->setupByAttributes;
