@@ -269,6 +269,9 @@ class MyService
 
     // Аргумент передается как объект для PHP 8.1.0 и выше.    
     #[SetupImmutable(logger: new DiDefinitionGet(MyLogger::class))]
+    // ⚠ для PHP 8.0.x аргумент передается как специальная строка
+    // и будет интерпретирована как идентификатор контейнера.
+    // #[SetupImmutable(logger: '@'.App\Loggers\MyLogger::class)]
     public function withLogger(?LoggerInterface $logger): static
     {
         $new = clone $this;
