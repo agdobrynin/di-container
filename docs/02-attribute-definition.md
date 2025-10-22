@@ -120,9 +120,224 @@ var_dump($container->has(SomeService::class)); // false
 
 ## Setup
 
+Применяется к методам PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
+
+```php
+#[Setup(mixed ...$argument)]
+```
+
+Аргументы:
+- `$argument` - аргументы для передачи в вызываемый метод.
+
+Значениями для `$argument` разрешается указывать скалярные типы данных,
+массивы (array), специальный тип null и начиная с **PHP 8.1.0** объекты,
+которые создают синтаксисом `new ClassName()`.
+
+> [!TIP]
+> Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
+
+> [!TIP]
+> Сеттер метод через PHP атрибут `#[Setup]` можно применять несколько раз, контейнер
+> вызовет сеттер метод указанное количество раз.
+
+Пример добавления зависимостей через сеттер метод. 
+```php
+// src/Rules/RuleInterface.php
+namespace App\Rules;
+
+interface RuleInterface {}
+```
+```php
+// src/Rules/RuleA.php
+namespace App\Rules;
+
+class RuleA implements RuleInterface {}
+```
+```php
+// src/Rules/RuleB.php
+namespace App\Rules;
+
+class RuleB implements RuleInterface {}
+```
+```php
+// src/Rules/RuleGenerator.php
+namespace App\Rules;
+
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use App\Rules\{RuleA, RuleB};
+
+class RuleGenerator {
+
+    private iterable $rules = [];
+    
+    // Аргумент передается как объект для PHP 8.1.0 и выше.
+    #[Setup(inputRule: new DiDefinitionGet(RuleB::class))]
+    #[Setup(inputRule: new DiDefinitionGet(RuleA::class))]
+    public function setRule(RuleInterface $inputRule): void {
+        $this->rules[] = $inputRule;
+    }
+    
+    public function getRules(): array {
+        return $this->rules;
+    }
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$loader = (new DefinitionsLoader())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/');
+
+$container = (new DiContainerFactory())
+    ->make(
+        $loader->definitions()
+    );
+
+$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+
+var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
+var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
+```
+
+> [!WARNING]
+> Для случаев когда нельзя передать `$argument` как объект (_для PHP ниже версии 8.1.0_)
+> существует возможность передать строковое значение указывающее
+> контейнеру на необходимость вызвать другой сервис по идентификатору контейнера —
+> строка должна начинаться с символа `@`:
+> - `@container-identifier` — получить зависимость из контейнера по идентификатору контейнера `container-identifier`
+> 
+> Если нужно передать значение строкового аргумента начинающегося с `@`,
+> то необходимо экранировать его добавив ещё один символ `@` в начало строки,
+> чтобы контейнер не считал значение идентификатором контейнера:
+> - `@@some-string-value` — будет интерпритирована как строка `@some-string-value` 
+
+Пример использования PHP атрибута `#[Setup]` с передачей аргумента
+как строкового значения указывающего на идентификатор контейнера, для PHP ниже версии 8.1.0
+так как нельзя передавать в `$argument` объект созданный через синтаксис `new ClassName()`: 
+
+```php
+// src/Rules/RuleGenerator.php
+namespace App\Rules;
+
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use App\Rules\{RuleA, RuleB};
+
+class RuleGenerator {
+
+    private iterable $rules = [];
+    
+    // Аргумент передается как специальная строка
+    // для PHP 8.0.x и будет интерпретирована как
+    // получение значения по идентификатору контейнера.
+    #[Setup(inputRule: '@'.RuleB::class)]
+    #[Setup(inputRule: '@'.RuleA::class)]
+    public function setRule(RuleInterface $inputRule): void {
+        $this->rules[] = $inputRule;
+    }
+    
+    public function getRules(): array {
+        return $this->rules;
+    }
+}
+```
 
 ## SetupImmutable
 
+Применяется к методам PHP класса для настройки сервиса с учётом, 
+что вызванный сеттер метод возвращает новый объект (_immutable setter method_).
+Возвращаемое значение метода должно быть `self`, `static`
+или того же класса, что и сам сервис.
+
+```php
+#[SetupImmutable(mixed ...$argument)]
+```
+
+Аргументы:
+- `$argument` - аргументы для передачи в вызываемый метод.
+
+Значениями для `$argument` разрешается указывать скалярные типы данных,
+массивы (array), специальный тип null и начиная с **PHP 8.1.0** объекты,
+которые создают синтаксисом `new ClassName()`.
+
+> [!TIP]
+> Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
+
+> [!TIP]
+> Сеттер метод через PHP атрибут `#[SetupImmutable]` можно применять несколько раз, контейнер
+> вызовет сеттер метод указанное количество раз.
+
+Пример добавления зависимостей через сеттер метода который возвращает новый объект:
+```php
+// src/App/Loggers/MyLogger.php
+namespace App\Services;
+
+use Psr\Log\LoggerInterface;
+
+class MyLogger implements LoggerInterface
+{
+    // implement all methods from interface
+}
+```
+```php
+// src/App/Services/MyService.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use App\Loggers\MyLogger;
+use Psr\Log\LoggerInterface;
+
+class MyService
+{
+    private ?LoggerInterface $logger;
+
+    // Аргумент передается как объект для PHP 8.1.0 и выше.    
+    #[SetupImmutable(logger: new DiDefinitionGet(MyLogger::class))]
+    public function withLogger(?LoggerInterface $logger): static
+    {
+        $new = clone $this;
+        $new->logger = $logger;
+        
+        return $new;    
+    }
+    
+    public function getLogger():?LoggerInterface
+    {
+        return $this->logger;
+    }
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$loader = (new DefinitionsLoader())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/');
+
+$container = (new DiContainerFactory())
+    ->make(
+        $loader->definitions()
+    );
+
+$myService = $container->get(App\Services\MyService::class);
+
+var_dump($myService->getLogger() instanceof Psr\Log\LoggerInterface); // true
+```
+
+> [!WARNING]
+> Для случаев когда нельзя передать `$argument` как объект (_для PHP ниже версии 8.1.0_)
+> существует возможность передать строковое значение указывающее
+> контейнеру на необходимость вызвать другой сервис по идентификатору контейнера —
+> строка должна начинаться с символа `@`:
+> - `@container-identifier` — получить зависимость из контейнера по идентификатору контейнера `container-identifier`
+>
+> Если нужно передать значение строкового аргумента начинающегося с `@`,
+> то необходимо экранировать его добавив ещё один символ `@` в начало строки,
+> чтобы контейнер не считал значение идентификатором контейнера:
+> - `@@some-string-value` — будет интерпритирована как строка `@some-string-value`
 
 ## Inject
 
