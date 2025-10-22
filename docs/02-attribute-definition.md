@@ -174,7 +174,11 @@ class RuleGenerator {
     // Аргумент передается как объект для PHP 8.1.0 и выше.
     #[Setup(inputRule: new DiDefinitionGet(RuleB::class))]
     #[Setup(inputRule: new DiDefinitionGet(RuleA::class))]
-    public function setRule(RuleInterface $inputRule): void {
+    // ⚠ для PHP 8.0.x аргумент передается как специальная строка
+    // и будет интерпретирована как идентификатор контейнера.
+    // #[Setup(inputRule: '@'.RuleB::class)] 
+    // #[Setup(inputRule: '@'.RuleA::class)]
+    public function addRule(RuleInterface $inputRule): void {
         $this->rules[] = $inputRule;
     }
     
@@ -211,38 +215,7 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 > Если нужно передать значение строкового аргумента начинающегося с `@`,
 > то необходимо экранировать его добавив ещё один символ `@` в начало строки,
 > чтобы контейнер не считал значение идентификатором контейнера:
-> - `@@some-string-value` — будет интерпритирована как строка `@some-string-value` 
-
-Пример использования PHP атрибута `#[Setup]` с передачей аргумента
-как строкового значения указывающего на идентификатор контейнера, для PHP ниже версии 8.1.0
-так как нельзя передавать в `$argument` объект созданный через синтаксис `new ClassName()`: 
-
-```php
-// src/Rules/RuleGenerator.php
-namespace App\Rules;
-
-use Kaspi\DiContainer\Attributes\Setup;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use App\Rules\{RuleA, RuleB};
-
-class RuleGenerator {
-
-    private iterable $rules = [];
-    
-    // Аргумент передается как специальная строка
-    // для PHP 8.0.x и будет интерпретирована как
-    // получение значения по идентификатору контейнера.
-    #[Setup(inputRule: '@'.RuleB::class)]
-    #[Setup(inputRule: '@'.RuleA::class)]
-    public function setRule(RuleInterface $inputRule): void {
-        $this->rules[] = $inputRule;
-    }
-    
-    public function getRules(): array {
-        return $this->rules;
-    }
-}
-```
+> - `@@some-string-value` — будет интерпритирована как строка `@some-string-value`
 
 ## SetupImmutable
 
