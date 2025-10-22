@@ -49,7 +49,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         // 🚩 test data
         $this->bindArguments(iterator: ['aaa', 'bbb', 'ccc']);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals(['aaa', 'bbb', 'ccc'], $res);
     }
@@ -71,7 +71,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
             ]
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertCount(2, $res);
 
@@ -93,7 +93,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
             str: 'hi my darling'
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(1, $res);
 
@@ -115,7 +115,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
             ['ddd', 'eee', 'fff'],
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
 
@@ -137,7 +137,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         ;
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertCount(3, $res);
         $this->assertEquals(['hello', 'world', '!'], $res);
@@ -157,7 +157,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
         ;
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertCount(3, $res);
         $this->assertEquals(['hello', 'world', '!'], $res);

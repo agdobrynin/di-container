@@ -75,6 +75,7 @@ trait ParametersResolverTrait
     /**
      * @param array<non-empty-string|non-negative-int, mixed> $inputArguments
      * @param ReflectionParameter[]                           $reflectionParameters
+     * @param bool                                            $isAttributeOnParamHigherPriority Php attributes higher priority then $inputArguments
      *
      * @return list<mixed>
      *
@@ -84,7 +85,7 @@ trait ParametersResolverTrait
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    private function resolveParameters(array $inputArguments, array $reflectionParameters): array
+    private function resolveParameters(array $inputArguments, array $reflectionParameters, bool $isAttributeOnParamHigherPriority): array
     {
         if ([] === $inputArguments && [] === $reflectionParameters) {
             return [];
@@ -98,6 +99,7 @@ trait ParametersResolverTrait
 
         $dependencies = [];
         self::$variadicPosition = 0;
+        $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
 
         foreach ($this->reflectionParameters as $parameter) {
             $autowireException = null;
@@ -105,10 +107,8 @@ trait ParametersResolverTrait
             try {
                 if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                     // PHP attributes have higher priority than PHP definitions
-                    // @phpstan-ignore booleanAnd.leftNotBoolean
-                    if ($this->getContainer()->getConfig()?->isUseAttribute()
-                        && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                        array_push($dependencies, ...$attributes);
+                    if ($isUseAttribute && $isAttributeOnParamHigherPriority && ($resolvedParam = $this->attemptResolveParamByAttributes($parameter))->valid()) {
+                        array_push($dependencies, ...$resolvedParam);
 
                         continue;
                     }
@@ -126,10 +126,8 @@ trait ParametersResolverTrait
                     continue;
                 }
 
-                // @phpstan-ignore booleanAnd.leftNotBoolean
-                if ($this->getContainer()->getConfig()?->isUseAttribute()
-                    && ($attributes = $this->attemptApplyAttributes($parameter))->valid()) {
-                    array_push($dependencies, ...$attributes);
+                if ($isUseAttribute && ($resolvedParam = $this->attemptResolveParamByAttributes($parameter))->valid()) {
+                    array_push($dependencies, ...$resolvedParam);
 
                     continue;
                 }
@@ -223,7 +221,7 @@ trait ParametersResolverTrait
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
      */
-    private function attemptApplyAttributes(ReflectionParameter $parameter): Generator
+    private function attemptResolveParamByAttributes(ReflectionParameter $parameter): Generator
     {
         $attrs = $this->getAttributeOnParameter($parameter);
 

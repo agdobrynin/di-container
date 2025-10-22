@@ -48,7 +48,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
             iterator: diGet('services.icon-iterator'),
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(ArrayIterator::class, $res);
         $this->assertEquals(['🚀', '🔥'], $res->getArrayCopy());
@@ -60,29 +60,24 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->expects(self::exactly(2))
-            ->method('get')
-            ->with($this->logicalOr(
-                'services.icon-iterator.one',
-                'services.icon-iterator.two'
-            ))
-            ->willReturn(
-                new ArrayIterator(array: ['🚀']),
-                new ArrayIterator(array: ['🔥']),
-            )
+        $mockContainer->method('get')
+            ->willReturnMap([
+                ['services.icon-iterator.one', new ArrayIterator(array: ['🚀'])],
+                ['services.icon-iterator.two', new ArrayIterator(array: ['🔥'])],
+            ])
         ;
 
         $this->setContainer($mockContainer);
         // 🚩 test data
         $this->bindArguments(
             iterator: [
-                diGet('services.icon-iterator.two'),
                 diGet('services.icon-iterator.one'),
+                diGet('services.icon-iterator.two'),
             ],
             name: 'Piter'
         );
 
-        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals('Piter', $name);
         $this->assertCount(2, $res);
@@ -102,25 +97,21 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                'services.icon-iterator.two',
-                'services.icon-iterator.one'
-            ))
-            ->willReturn(
-                new ArrayIterator(array: ['🚀']),
-                new ArrayIterator(array: ['🔥']),
-            )
+            ->willReturnMap([
+                ['services.icon-iterator.one', new ArrayIterator(array: ['🚀'])],
+                ['services.icon-iterator.two', new ArrayIterator(array: ['🔥'])],
+            ])
         ;
 
         $this->setContainer($mockContainer);
         // 🚩 test data
         $this->bindArguments(
             'Ivan',
-            diGet('services.icon-iterator.two'),
             diGet('services.icon-iterator.one'),
+            diGet('services.icon-iterator.two'),
         );
 
-        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals('Ivan', $name);
         $this->assertCount(2, $res);
@@ -140,14 +131,10 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                'services.icon-iterator.one',
-                'services.icon-iterator.two'
-            ))
-            ->willReturn(
-                new ArrayIterator(array: ['🚀']),
-                new ArrayIterator(array: ['🔥']),
-            )
+            ->willReturnMap([
+                ['services.icon-iterator.one', new ArrayIterator(array: ['🚀'])],
+                ['services.icon-iterator.two', new ArrayIterator(array: ['🔥'])],
+            ])
         ;
 
         $this->setContainer($mockContainer);
@@ -157,7 +144,7 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
             diGet('services.icon-iterator.two')
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
 

@@ -12,19 +12,23 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionParameter;
 
-use function array_reduce;
+use function array_intersect;
+use function array_keys;
 use function count;
 use function implode;
-use function in_array;
 use function sprintf;
 
 trait AttributeReaderTrait
@@ -112,49 +116,71 @@ trait AttributeReaderTrait
     }
 
     /**
+     * @return Generator<DiSetupAttributeInterface>
+     */
+    private function getSetupAttribute(ReflectionClass $reflectionClass): Generator
+    {
+        $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
+
+        foreach ($methods as $method) {
+            /** @var ReflectionAttribute[] $attrs */
+            $attrs = [...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)];
+
+            foreach ($attrs as $setupAttribute) {
+                if ($method->isConstructor() || $method->isDestructor()) {
+                    throw new AutowireAttributeException(
+                        sprintf('Cannot use attribute #[%s] on method %s::%s().', $setupAttribute->getName(), $reflectionClass->name, $method->name)
+                    );
+                }
+
+                /** @var DiSetupAttributeInterface $setup */
+                $setup = $setupAttribute->newInstance();
+                $setup->setMethod($method->getName());
+
+                yield $setup;
+            }
+        }
+    }
+
+    /**
      * @return Generator<Inject>|Generator<InjectByCallable>|Generator<ProxyClosure>|Generator<TaggedAs>
      *
      * @throws AutowireExceptionInterface
      */
     private function getAttributeOnParameter(ReflectionParameter $reflectionParameter): Generator
     {
-        $oneOfAttributes = [Inject::class, ProxyClosure::class, TaggedAs::class, InjectByCallable::class];
+        $groupAttributes = [];
 
-        $attribute = array_reduce(
-            $reflectionParameter->getAttributes(),
-            static function (array $attrs, ReflectionAttribute $a) use ($oneOfAttributes) {
-                if (in_array($a->getName(), $oneOfAttributes, true)) {
-                    $attrs[$a->getName()] = true;
-                }
+        foreach ($reflectionParameter->getAttributes() as $attribute) {
+            $groupAttributes[$attribute->getName()][] = $attribute;
+        }
 
-                return $attrs;
-            },
-            [],
-        );
-
-        if ([] === $attribute) {
+        if ([] === $groupAttributes) {
             return;
         }
 
-        if (count($attribute) > 1) {
+        // ⚠ attributes cannot be used together.
+        $intersectAttrs = array_intersect(array_keys($groupAttributes), [Inject::class, ProxyClosure::class, TaggedAs::class, InjectByCallable::class]);
+
+        if (count($intersectAttrs) > 1) {
             throw new AutowireAttributeException(
-                sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $oneOfAttributes).']')
+                sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $intersectAttrs).']')
             );
         }
 
-        if (isset($attribute[Inject::class])) {
+        if (isset($groupAttributes[Inject::class])) {
             yield from $this->getInjectAttribute($reflectionParameter);
 
             return;
         }
 
-        if (isset($attribute[ProxyClosure::class])) {
+        if (isset($groupAttributes[ProxyClosure::class])) {
             yield from $this->getProxyClosureAttribute($reflectionParameter);
 
             return;
         }
 
-        if (isset($attribute[TaggedAs::class])) {
+        if (isset($groupAttributes[TaggedAs::class])) {
             yield from $this->getTaggedAsAttribute($reflectionParameter);
 
             return;

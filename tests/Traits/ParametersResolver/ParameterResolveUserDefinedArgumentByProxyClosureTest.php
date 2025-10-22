@@ -57,7 +57,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             item: diProxyClosure(MoreSuperClass::class),
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(Closure::class, $res);
         $this->assertInstanceOf(MoreSuperClass::class, $res());
@@ -85,8 +85,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             item: diProxyClosure(MoreSuperClass::class, true),
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
-        $this->assertSame($res, call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
+        $this->assertSame($res, call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testResolveArgumentNoneVariadicByNameIsNoneSingleton(): void
@@ -111,8 +111,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             item: diProxyClosure(MoreSuperClass::class, false),
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
-        $this->assertNotSame($res, call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
+        $this->assertNotSame($res, call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testResolveArgumentNoneVariadicByIndex(): void
@@ -139,7 +139,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             diProxyClosure(MoreSuperClass::class),
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(Closure::class, $res);
         $this->assertInstanceOf(MoreSuperClass::class, $res());
@@ -153,25 +153,17 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('has')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                true,
-                true
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, true],
+                [SuperClass::class, true],
+            ])
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass()
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+            ])
         ;
 
         $this->setContainer($mockContainer);
@@ -184,7 +176,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             ]
         );
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(Closure::class, $res1);
         $this->assertInstanceOf(Closure::class, $res2);
@@ -198,24 +190,17 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('has')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                true
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, true],
+                [SuperClass::class, true],
+            ])
         ;
         $mockContainer->method('get')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass(),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
 
         $this->setContainer($mockContainer);
@@ -230,8 +215,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             ]
         );
 
-        [$res11, $res12, $res13] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
-        [$res21, $res22, $res23] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res11, $res12, $res13] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
+        [$res21, $res22, $res23] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertNotSame($res11, $res13);
         $this->assertNotSame($res21, $res23);
@@ -247,25 +232,17 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('has')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                true,
-                true
-            )
+            ->willReturnMap([
+                [MoreSuperClass::class, true],
+                [SuperClass::class, true],
+            ])
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                MoreSuperClass::class,
-                SuperClass::class
-            ))
-            ->willReturn(
-                new SuperClass(),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [SuperClass::class, new SuperClass()],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
 
         $this->setContainer($mockContainer);
@@ -276,7 +253,7 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
             diProxyClosure(MoreSuperClass::class),
         );
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(Closure::class, $res1);
         $this->assertInstanceOf(Closure::class, $res2);

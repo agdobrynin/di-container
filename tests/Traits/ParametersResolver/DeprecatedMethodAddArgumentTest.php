@@ -43,7 +43,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
         $this->addArgument('iterator', []);
 
-        $this->assertEquals([], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $this->assertEquals([], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testAddArgumentVariadicSuccess(): void
@@ -56,7 +56,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
         $this->addArgument('iterator', [[], []]);
 
-        $this->assertEquals([[], []], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $this->assertEquals([[], []], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testAddArgumentFailByName(): void
@@ -72,7 +72,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Invalid input argument name "a"');
 
-        $this->resolveParameters($this->getBindArguments(), $reflectionParameters);
+        $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false);
     }
 
     public function testAddArgumentFailByCount(): void
@@ -88,7 +88,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Too many input arguments');
 
-        $this->resolveParameters($this->getBindArguments(), $reflectionParameters);
+        $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false);
     }
 
     public function testAddArgumentsWithoutNames(): void
@@ -107,7 +107,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
             diAutowire(SuperClass::class), // 🚩 without array key as argument name
         ]);
 
-        $this->assertEquals('ok', call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $this->assertEquals('ok', call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testAddArgumentByIndex(): void
@@ -124,7 +124,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $this->addArgument(0, 'value');
         $this->addArgument(1, diAutowire(SuperClass::class));
 
-        $this->assertEquals('ok', call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $this->assertEquals('ok', call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testAddArgumentsSuccess(): void
@@ -143,7 +143,7 @@ class DeprecatedMethodAddArgumentTest extends TestCase
             'iterator' => ['ok'],
         ]);
 
-        $this->assertEquals(['ok', null], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $this->assertEquals(['ok', null], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testNoUserDefinedArgumentSuccess(): void
@@ -160,6 +160,6 @@ class DeprecatedMethodAddArgumentTest extends TestCase
 
         $this->addArguments([])->getBindArguments();
 
-        $this->assertEquals(['app'], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters)));
+        $this->assertEquals(['app'], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 }

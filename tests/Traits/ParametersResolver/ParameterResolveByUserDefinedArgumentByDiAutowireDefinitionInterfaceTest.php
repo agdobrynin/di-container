@@ -52,7 +52,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 ->bindArguments(dependency: 'aaaa')
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(ClassWithDependency::class, $res);
     }
@@ -71,7 +71,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
                 ->bindArguments('aaaa')
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(ClassWithDependency::class, $res);
     }
@@ -98,7 +98,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(SuperClass::class, $res[0]);
@@ -107,7 +107,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         // none-singleton
         $this->assertNotSame(
             $res[0],
-            call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters))[0]
+            call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false))[0]
         );
     }
 
@@ -127,7 +127,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(SuperClass::class, $res[0]);
         $this->assertInstanceOf(MoreSuperClass::class, $res[1]);
@@ -149,7 +149,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(SuperClass::class, $res[0]);
@@ -158,7 +158,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         // is singleton
         $this->assertSame(
             $res[0],
-            call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters))[0]
+            call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false))[0]
         );
     }
 
@@ -170,14 +170,10 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                'services.super.one',
-                'services.super.two'
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                ['services.super.one', new MoreSuperClass()],
+                ['services.super.two', new SuperClass()],
+            ])
         ;
         $this->setContainer($mockContainer);
 
@@ -189,7 +185,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             ]
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(MoreSuperClass::class, $res[0]);
@@ -204,14 +200,10 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                'services.super.one',
-                'services.super.two',
-            ))
-            ->willReturn(
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                ['services.super.one', new MoreSuperClass()],
+                ['services.super.two', new SuperClass()],
+            ])
         ;
         $this->setContainer($mockContainer);
 
@@ -221,7 +213,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
             diGet('services.super.two')
         );
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertCount(2, $res);
         $this->assertInstanceOf(MoreSuperClass::class, $res[0]);

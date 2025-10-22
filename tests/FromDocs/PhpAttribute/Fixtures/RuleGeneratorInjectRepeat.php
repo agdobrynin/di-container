@@ -11,8 +11,7 @@ class RuleGeneratorInjectRepeat
     private iterable $rules;
 
     public function __construct(
-        #[Inject(RuleB::class)]
-        #[Inject(RuleA::class)]
+        #[Inject(RuleB::class), Inject(RuleA::class)]
         RuleInterface ...$inputRule
     ) {
         $this->rules = $inputRule;

@@ -83,7 +83,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
             return $this->getDefinition()();
         }
 
-        return $this->getDefinition()(...$this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters));
+        return $this->getDefinition()(...$this->resolveParameters($this->getBindArguments(), $this->reflectedFunctionParameters, true));
     }
 
     /**
