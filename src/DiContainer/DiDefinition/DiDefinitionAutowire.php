@@ -25,11 +25,9 @@ use ReflectionParameter;
 use function array_map;
 use function get_class;
 use function get_debug_type;
-use function in_array;
 use function is_object;
 use function is_string;
 use function sprintf;
-use function strtolower;
 
 /**
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
@@ -118,10 +116,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             return $object;
         }
 
-        // prepare metadata for calling setter methods
-        $fullyClassNameLowercase = strtolower($this->getDefinition()->getName());
-        $exceptionMessageImmutableSetter = 'The immutable setter "%s::%s()" must return same class "%s". Got type: %s';
-
         // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
         $setupMerged = $this->getSetupByAttribute() + $this->setup;
 
@@ -137,7 +131,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             }
 
             $reflectionMethodParams = $reflectionMethod->getParameters();
-            $methodReturnType = strtolower((string) $reflectionMethod->getReturnType());
 
             /**
              * @phpstan-var  boolean $isImmutable
@@ -150,11 +143,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                     continue;
                 }
 
-                // check return type before invoke method with argument
-                if ('' !== $methodReturnType && $fullyClassNameLowercase !== $methodReturnType && !in_array($methodReturnType, ['self', 'static'], true)) {
-                    throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), $fullyClassNameLowercase));
-                }
-
                 $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionMethodParams, false));
 
                 if (is_object($result) && get_class($result) === get_class($object)) {
@@ -164,7 +152,15 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                     continue;
                 }
 
-                throw new AutowireException(sprintf($exceptionMessageImmutableSetter, $this->getDefinition()->getName(), $method, $this->getDefinition()->getName(), get_debug_type($result)));
+                throw new AutowireException(
+                    sprintf(
+                        'The immutable setter "%s::%s()" must return same class "%s". Got type: %s',
+                        $this->getDefinition()->getName(),
+                        $method,
+                        $this->getDefinition()->getName(),
+                        get_debug_type($result)
+                    )
+                );
             }
         }
 
