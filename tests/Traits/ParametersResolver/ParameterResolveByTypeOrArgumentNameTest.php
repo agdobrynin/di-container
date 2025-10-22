@@ -45,7 +45,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->assertInstanceOf(
             ArrayIterator::class,
-            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters))
+            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, false))
         );
     }
 
@@ -63,7 +63,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->assertInstanceOf(
             ArrayIterator::class,
-            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters))
+            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, false))
         );
     }
 
@@ -76,19 +76,15 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $mockContainer
             ->expects(self::exactly(2))
             ->method('get')
-            ->with($this->logicalOr(
-                SuperClass::class,
-                'word'
-            ))
-            ->willReturn(
-                new SuperClass(),
-                'one'
-            )
+            ->willReturnMap([
+                [SuperClass::class, new SuperClass()],
+                ['word', 'one'],
+            ])
         ;
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters([], $reflectionParameters);
+        $params = $this->resolveParameters([], $reflectionParameters, false);
 
         $this->assertCount(2, $params);
         $this->assertInstanceOf(SuperClass::class, $params[0]);
@@ -115,7 +111,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters([], $reflectionParameters);
+        $params = $this->resolveParameters([], $reflectionParameters, false);
 
         $this->assertCount(1, $params);
         $this->assertEquals(
@@ -141,7 +137,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters([], $reflectionParameters);
+        $params = $this->resolveParameters([], $reflectionParameters, false);
 
         $this->assertEquals(
             ['one', 'two', 'three'],
@@ -161,7 +157,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         ;
         $this->setContainer($mockContainer);
 
-        $this->assertNull(call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters)));
+        $this->assertNull(call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, false)));
     }
 
     public function testParameterResolveByTypeWithVariadic(): void
@@ -177,7 +173,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->setContainer($mockContainer);
         $this->assertInstanceOf(
             ArrayIterator::class,
-            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters))[0]
+            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, false))[0]
         );
     }
 
@@ -197,7 +193,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass.+Not found/');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, false);
     }
 
     public function testParameterResolveByTypeThrowWhenResolveDependency(): void
@@ -216,6 +212,6 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+SuperClass \$superClass.+some error/');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, false);
     }
 }

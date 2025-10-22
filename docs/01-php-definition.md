@@ -151,7 +151,8 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAut
 > 
 > Интерфейс представляет методы:
 >   - `bindArguments` - аргументы для конструктора класса
->   - `setup` - вызов метода класса с параметрами (_setter method_)
+>   - `setup` - вызов метода класса с параметрами (_mutable setter method_) для настройки класса
+>   - `setupImmutable` - вызов метода класса с параметрами (_immutable setter method_) и возвращаемым значением
 >   - `bindTag` - добавляет тег с мета-данными для определения
  
 **Аргументы для конструктора:**
@@ -169,12 +170,21 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 > [!TIP]
 > Для аргументов не объявленных через `bindArgument` контейнер попытается разрешить зависимости самостоятельно.
 
-**Дополнительная настройка сервиса через методы класса (setters):**
+> [!TIP]
+> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+
+**Дополнительная настройка сервиса через методы класса (mutable setters):**
 ```php 
 setup(string $method, mixed ...$argument)
 ``` 
+Возвращаемое значение из вызываемого метода не учитывается при настройке сервиса,
+контейнер вернет экземпляр класса созданного через конструктор класса.
+
 > [!TIP]
 > Для аргументов в методе `$method` не объявленных через `setup` контейнер по попытается разрешить зависимости автоматически.
+
+> [!TIP]
+> Аргументы `$argument` в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
 Можно указывать именованные аргументы:
 ```php
@@ -186,7 +196,7 @@ diAutowire(...)->setup('classMethod', var1: 'value 1', var2: 'value 2')
    diAutowire(...)
        ->bindArguments(...)
        ->setup('classMethodWithoutParams')
-   // $object->classMethodWithoutParams()
+   // $object->classMethodWithoutParams(SomeDependency $someDependency)
 ```
 При указании нескольких вызовов метода он будет вызван указанное количество раз и возможно с разными аргументами:
 ```php
@@ -200,6 +210,23 @@ diAutowire(...)
 > [!NOTE]
 > [пример использования метода `diAutowire(...)->setup`](#пример-4)
 
+**Дополнительная настройка сервиса через методы класса возвращающие значение (immutable setters):**
+```php 
+setupImmutable(string $method, mixed ...$argument)
+``` 
+Возвращаемое значение метода должно быть `self`, `static`
+или того же класса, что и сам сервис,
+контейнер вернет экземпляр класса созданного через вызываемый метод.
+
+> [!TIP]
+> Для аргументов в методе `$method` не объявленных через `setupImmutable` контейнер по попытается разрешить зависимости автоматически.
+
+> [!TIP]
+> Аргументы `$argument` в `setupImmutable` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+
+> [!NOTE]
+> [пример использования метода `diAutowire(...)->setupImmutable`](#пример-5)
+> 
 **Указать теги для определения:**
 ```php
 bindTag(string $name, array $options = [], null|int|string $priority = null)
@@ -280,6 +307,9 @@ bindArguments(mixed ...$argument)`
  bindArguments(var1: 'value 1', var2: 'value 2');
  // function(string $var1, string $var2) 
  ```
+> [!TIP]
+> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+
 > [!WARNING]
 > метод `bindArguments` перезаписывает ранее определенные аргументы.
 
@@ -1425,7 +1455,7 @@ $class = $container->get(App\Services\IterableArg::class);
 > ```
 
 ### Пример #4
-Использование дополнительной настройки сервиса через сеттер-методы (_setter methods_):
+Использование дополнительной настройки сервиса через сеттер-методы (_mutable setter_):
 ```php
 // config/services.php
 use function Kaspi\DiContainer\diAutowire;
@@ -1448,3 +1478,69 @@ $container = (new DiContainerFactory())->make($definitions);
 
 $priorityQueue = $container->get('priority_queue.get_data');
 ```
+### Пример #5
+Использование дополнительной настройки сервиса через сеттер-методы возвращающие новый экземпляр сервиса (_immutable setter_):
+```php
+// App\SomeClass.php
+namespace App;
+
+use Psr\Log\LoggerInterface;
+
+class SomeClass {
+    private LoggerInterface $logger;
+
+    // other methods and properties.
+
+    public function withLogger(LoggerInterface $logger): static
+    {
+        $new = clone $this;
+        $new->logger = $logger;
+    
+        return $new;
+    }
+    
+    public function getLogger(): ?LoggerInterface {
+        return $this->logger ?? null;
+    }
+}
+```
+```php
+// App/Services/FileLogger.php
+namespace App\Services;
+
+use Psr\Log\LoggerInterface;
+
+class FileLogger implements LoggerInterface {
+
+    public function __construct(private string $fileName) {}
+    // implement methods from LoggerInterface
+}
+```
+Определения для контейнера:
+```php
+// config/services.php
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+return static function(): \Generator {
+    yield diAutowire(App\Servces\FileLogger::class)
+        ->bindArguments(fileName: '/var/logs/application.log');
+
+    yield diAutowire(App\SomeClass::class)
+        // Будет возвращён объект из метода `withLogger`
+        ->setupImmutable('withLogger', diGet(App\Servces\FileLogger::class));
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definitions = (new DefinitionsLoader())
+    ->load(...\glob(__DIR__.'/config/*.php'))
+    ->definitions();
+
+$container = (new DiContainerFactory())->make($definitions);
+
+$container->get(App\SomeClass::class);
+```
+> [!NOTE]
+> При получении сервиса `App\SomeClass::class` в свойстве `App\SomeClass::$logger`
+> будет класс `App\Servces\FileLogger`

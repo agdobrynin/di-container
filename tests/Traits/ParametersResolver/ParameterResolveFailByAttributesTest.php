@@ -63,7 +63,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, true);
     }
 
     public function testCannotUseAttributeTaggedAsAndInjectTogether(): void
@@ -80,7 +80,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, true);
     }
 
     public function testCannotUseAttributeTaggedAsAndInjectAndProxyClosureTogether(): void
@@ -99,7 +99,7 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, true);
     }
 
     public function testCannotUseAttributeInjectAndInjectCallableTogether(): void
@@ -116,6 +116,6 @@ class ParameterResolveFailByAttributesTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+may be declared/');
 
-        $this->resolveParameters([], $reflectionParameters);
+        $this->resolveParameters([], $reflectionParameters, true);
     }
 }

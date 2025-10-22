@@ -62,14 +62,10 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')
@@ -78,7 +74,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertTrue($res->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res->current());
@@ -116,16 +112,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(3))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-                SuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')
@@ -134,7 +125,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertTrue($res1->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res1->current());
@@ -171,14 +162,10 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(2))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')
@@ -187,7 +174,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertTrue($res->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res->current());
@@ -222,16 +209,11 @@ class ParameterResolveByTaggedAsTest extends TestCase
         ;
         $mockContainer->expects(self::exactly(3))
             ->method('get')
-            ->with(self::logicalOr(
-                ClassWithDependency::class,
-                MoreSuperClass::class,
-                SuperClass::class,
-            ))
-            ->willReturn(
-                new ClassWithDependency('ok'),
-                new MoreSuperClass(),
-                new SuperClass(),
-            )
+            ->willReturnMap([
+                [ClassWithDependency::class, new ClassWithDependency('ok')],
+                [MoreSuperClass::class, new MoreSuperClass()],
+                [SuperClass::class, new SuperClass()],
+            ])
         ;
         $mockContainer
             ->method('getConfig')
@@ -240,7 +222,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertTrue($res1->valid());
         $this->assertInstanceOf(ClassWithDependency::class, $res1->current());

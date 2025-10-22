@@ -45,7 +45,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments(['aaa', 'bbb', 'ccc']);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals(['aaa', 'bbb', 'ccc'], $res);
     }
@@ -62,7 +62,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments(iterator: ['aaa', 'bbb', 'ccc']);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals(['aaa', 'bbb', 'ccc'], $res);
     }
@@ -83,7 +83,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
             ['ddd', 'eee', 'fff'],
         );
 
-        [$str ,$iter] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$str ,$iter] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals('my way', $str);
         $this->assertCount(2, $iter);
@@ -106,7 +106,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
             ['ddd', 'eee', 'fff'],
         ]);
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
 
@@ -126,7 +126,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments(iterator: diValue(['aaa', 'bbb', 'ccc']));
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(1, $res);
 
@@ -145,7 +145,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments('aaa', 'bbb', 'ccc');
 
-        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(3, $res);
 
@@ -166,7 +166,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data, unsorted parameter names
         $this->bindArguments(word: ['aaa', 'bbb', 'ccc'], numbers: [1_000, 10_000]);
 
-        [$numbers, $word] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$numbers, $word] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $numbers);
         $this->assertEquals(1_000, $numbers[0]);
@@ -194,7 +194,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         // 🚩 test data
         $this->bindArguments('Hello', numbers: [1_000, 10_000]);
 
-        [$str, $super, $numbers] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters));
+        [$str, $super, $numbers] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertEquals('Hello', $str);
         $this->assertEquals([1000, 10000], $numbers);
