@@ -10,10 +10,10 @@ use Iterator;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use Tests\TaggedAsKeys\Fixures\One;
-use Tests\TaggedAsKeys\Fixures\TaggedService;
-use Tests\TaggedAsKeys\Fixures\Three;
-use Tests\TaggedAsKeys\Fixures\Two;
+use Tests\TaggedAsKeys\Fixtures\One;
+use Tests\TaggedAsKeys\Fixtures\TaggedService;
+use Tests\TaggedAsKeys\Fixtures\Three;
+use Tests\TaggedAsKeys\Fixtures\Two;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;

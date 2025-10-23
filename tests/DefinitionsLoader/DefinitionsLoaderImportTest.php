@@ -228,11 +228,7 @@ class DefinitionsLoaderImportTest extends TestCase
         $loader = (new DefinitionsLoader())
             ->import('Tests\\', __DIR__.'/../', excludeFilesRegExpPattern: [
                 '~tests/_var/~',
-                '~tests/Attributes~',
-                '~tests/D.+~',
-                '~tests/F.+~',
-                '~tests/L.+~',
-                '~tests/T.+~',
+                '~tests/([A-Z]+).*/~',
             ])
         ;
 
