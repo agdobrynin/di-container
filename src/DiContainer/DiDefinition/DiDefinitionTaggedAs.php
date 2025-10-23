@@ -214,7 +214,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                         : $key;
                 }
 
-                return $optionKey; // @phpstan-ignore return.type
+                return $optionKey;
             }
         }
 

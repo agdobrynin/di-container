@@ -307,8 +307,8 @@ trait ParametersResolverTrait
                         sprintf(
                             'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
                             $name,
-                            __CLASS__,
                             $argumentPosition,
+                            __CLASS__,
                             implode(', ', $parameters)
                         )
                     );

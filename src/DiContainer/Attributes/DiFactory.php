@@ -16,7 +16,7 @@ use function sprintf;
 final class DiFactory implements DiAttributeServiceInterface
 {
     /**
-     * @param class-string<DiFactoryInterface> $id
+     * @param class-string $id
      */
     public function __construct(private string $id, private ?bool $isSingleton = null)
     {

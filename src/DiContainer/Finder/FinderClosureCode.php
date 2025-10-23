@@ -339,6 +339,8 @@ final class FinderClosureCode implements FinderClosureCodeInterface
 
         $useNamespaceLevel = $namespaceBraceLevel = $lastFoundLine = 0;
         $isUseStart = $isAlias = $isNamespace = $isNamespaceBrace = $isNamespaceDetected = false;
+
+        /** @var string $namespace */
         $namespace = '';
         $namespaces = [
             $namespace => [
