@@ -27,7 +27,6 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
- * @covers \Kaspi\DiContainer\diReference
  * @covers \Kaspi\DiContainer\diTaggedAs
  *
  * @internal

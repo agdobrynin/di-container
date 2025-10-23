@@ -26,9 +26,6 @@ all:
 
 .PHONY: test-supports-php
 test-supports-php:
-	@docker-compose build --build-arg PHP_IMAGE=php:8.0-cli-alpine
-	@docker-compose -f docker-compose.yml run --rm php ./vendor/bin/phpunit --no-coverage
-
 	@docker-compose build --build-arg PHP_IMAGE=php:8.1-cli-alpine
 	@docker-compose -f docker-compose.yml run --rm php ./vendor/bin/phpunit --no-coverage
 
