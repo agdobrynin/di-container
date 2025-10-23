@@ -16,6 +16,14 @@ use stdClass;
  */
 class DiDefinitionValueTest extends TestCase
 {
+    /**
+     * @dataProvider dataProviderDiDefinitionValue
+     */
+    public function testDiDefinitionValue(mixed $definition, mixed $expect): void
+    {
+        $this->assertEquals($expect, (new DiDefinitionValue($definition))->getDefinition());
+    }
+
     public function dataProviderDiDefinitionValue(): Generator
     {
         yield 'set 1' => [null, null];
@@ -30,13 +38,5 @@ class DiDefinitionValueTest extends TestCase
         yield 'set 4' => [$o, $o];
 
         yield 'set 5' => [' ', ' '];
-    }
-
-    /**
-     * @dataProvider dataProviderDiDefinitionValue
-     */
-    public function testDiDefinitionValue(mixed $definition, mixed $expect): void
-    {
-        $this->assertEquals($expect, (new DiDefinitionValue($definition))->getDefinition());
     }
 }

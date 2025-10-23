@@ -47,13 +47,6 @@ class FinderClosureCodeExceptionsTest extends TestCase
         (new FinderClosureCode())->getCode($res['a']);
     }
 
-    public function dataProviderNoneStatic(): Generator
-    {
-        yield 'short function' => [fn () => true];
-
-        yield 'function' => [function () { return false; }];
-    }
-
     /**
      * @dataProvider dataProviderNoneStatic
      */
@@ -63,6 +56,13 @@ class FinderClosureCodeExceptionsTest extends TestCase
         $this->expectExceptionMessage('Anonymous function must be declared as static');
 
         (new FinderClosureCode())->getCode($fn);
+    }
+
+    public function dataProviderNoneStatic(): Generator
+    {
+        yield 'short function' => [fn () => true];
+
+        yield 'function' => [function () { return false; }];
     }
 
     public function testFunctionReferenceViaUse(): void

@@ -20,6 +20,17 @@ use function Kaspi\DiContainer\diCallable;
  */
 class DiContainerAddDefinitionThroughConstructorTest extends TestCase
 {
+    /**
+     * @dataProvider dataProviderWrongDefinition
+     */
+    public function testDefinitionWithoutStringIdentifier(iterable $definition): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('must be a non-empty string');
+
+        new DiContainer($definition);
+    }
+
     public function dataProviderWrongDefinition(): Generator
     {
         yield 'digit only' => [[10]];
@@ -32,14 +43,14 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProviderWrongDefinition
+     * @dataProvider dataProviderSuccessIdentifier
      */
-    public function testDefinitionWithoutStringIdentifier(iterable $definition): void
+    public function testDefinitionSuccessIdentifier(iterable $definitions, string $identifier, mixed $definition): void
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('must be a non-empty string');
+        $mock = $this->createMock(DiContainer::class);
+        $mock->expects($this->once())->method('set')->with($identifier, $definition);
 
-        new DiContainer($definition);
+        $mock->__construct($definitions);
     }
 
     public function dataProviderSuccessIdentifier(): Generator
@@ -68,16 +79,5 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
             'identifier' => 'my.identifier',
             'definition' => $class,
         ];
-    }
-
-    /**
-     * @dataProvider dataProviderSuccessIdentifier
-     */
-    public function testDefinitionSuccessIdentifier(iterable $definitions, string $identifier, mixed $definition): void
-    {
-        $mock = $this->createMock(DiContainer::class);
-        $mock->expects($this->once())->method('set')->with($identifier, $definition);
-
-        $mock->__construct($definitions);
     }
 }

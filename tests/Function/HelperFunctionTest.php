@@ -15,7 +15,6 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diProxyClosure;
-use function Kaspi\DiContainer\diReference;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
@@ -78,13 +77,5 @@ class HelperFunctionTest extends TestCase
         $def = diTaggedAs('tags.security.voters', false, 'getPriorityForCollection', true);
 
         $this->assertInstanceOf(DiDefinitionTaggedAs::class, $def);
-    }
-
-    public function testDeprecatedFunctionDiReference(): void
-    {
-        $def = diReference('ok');
-
-        $this->assertInstanceOf(DiDefinitionGet::class, $def);
-        $this->assertEquals('ok', $def->getDefinition());
     }
 }

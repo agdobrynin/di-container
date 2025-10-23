@@ -34,17 +34,6 @@ class SetupAttributeTest extends TestCase
         };
     }
 
-    public function dataProviderFailSetups(): Generator
-    {
-        yield 'on construct #Setup' => [SetupOnConstructor::class, '::__construct()'];
-
-        yield 'on construct #SetupImmutable' => [SetupImmutableOnConstructor::class, '::__construct()'];
-
-        yield 'on destructor #Setup' => [SetupOnDestructor::class, '::__destruct()'];
-
-        yield 'on destructor #SetupImmutable' => [SetupImmutableOnDestructor::class, '::__destruct()'];
-    }
-
     /**
      * @dataProvider dataProviderFailSetups
      */
@@ -54,5 +43,16 @@ class SetupAttributeTest extends TestCase
         $this->expectExceptionMessageMatches('/Cannot use attribute.+'.$method.'/');
 
         $this->reader->getSetupAttribute(new ReflectionClass($class))->valid();
+    }
+
+    public function dataProviderFailSetups(): Generator
+    {
+        yield 'on construct #Setup' => [SetupOnConstructor::class, '::__construct()'];
+
+        yield 'on construct #SetupImmutable' => [SetupImmutableOnConstructor::class, '::__construct()'];
+
+        yield 'on destructor #Setup' => [SetupOnDestructor::class, '::__destruct()'];
+
+        yield 'on destructor #SetupImmutable' => [SetupImmutableOnDestructor::class, '::__destruct()'];
     }
 }
