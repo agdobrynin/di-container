@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use ArrayAccess;
-use Countable;
 use Generator;
-use Iterator;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
@@ -18,10 +15,9 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use SplPriorityQueue;
 
+use function array_map;
 use function explode;
 use function get_debug_type;
 use function in_array;
@@ -39,6 +35,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     private bool $tagIsInterface;
     private string $keyOptimized;
+    private bool $isUseKeysComputed;
 
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
@@ -54,75 +51,13 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         private string $tag,
         private bool $isLazy = true,
         private ?string $priorityDefaultMethod = null,
-        private bool $useKeys = true,
+        bool $useKeys = true,
         private ?string $key = null,
         private ?string $keyDefaultMethod = null,
         private array $containerIdExclude = [],
         private bool $selfExclude = true,
-    ) {}
-
-    /**
-     * @return ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface
-     *
-     * @throws ContainerExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
-     * @throws NotFoundExceptionInterface
-     *
-     * @phpstan-ignore method.childReturnType
-     */
-    public function getServicesTaggedAs(): iterable
-    {
-        /**
-         * Key as container identifier, value as container definition.
-         *
-         * @var Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
-         */
-        $items = $this->getContainerIdentifiersOfTaggedServiceByTag();
-
-        if (!$items->valid()) {
-            // @phpstan-ignore return.type
-            return $this->isLazy
-                ? new LazyDefinitionIterator($this->getContainer(), [])
-                : [];
-        }
-
-        $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
-
-        if (!$this->isLazy) {
-            // @phpstan-var array<non-empty-string|non-negative-int, mixed> $services
-            $services = [];
-
-            foreach ($items as [$containerIdentifier, $item]) {
-                if ($isUseKeys) {
-                    $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-
-                    if (!isset($services[$keyCollection])) {
-                        $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
-                    }
-                } else {
-                    $services[] = $this->getContainer()->get($containerIdentifier);
-                }
-            }
-
-            return $services; // @phpstan-ignore return.type
-        }
-
-        // @phpstan-var array<non-empty-string, none-empty-string> $services
-        $mapKeyCollectionToContainerIdentifier = [];
-
-        foreach ($items as [$containerIdentifier, $item]) {
-            if ($isUseKeys) {
-                $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-
-                if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
-                    $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
-                }
-            } else {
-                $mapKeyCollectionToContainerIdentifier[] = $containerIdentifier;
-            }
-        }
-
-        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier);
+    ) {
+        $this->isUseKeysComputed = $useKeys || null !== $key || null !== $keyDefaultMethod;
     }
 
     public function getDefinition(): string
@@ -137,9 +72,56 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this;
     }
 
+    public function getServicesTaggedAs(): iterable
+    {
+        return $this->isLazy
+            ? new LazyDefinitionIterator($this->getContainer(), $this->getContainerIdentifiers())
+            : array_map(fn (string $id) => $this->getContainer()->get($id), $this->getContainerIdentifiers());
+    }
+
     public function getCallingByService(): ?DiDefinitionAutowireInterface
     {
         return $this->callingByDefinitionAutowire;
+    }
+
+    /**
+     * @return array<non-empty-string, non-empty-string>
+     */
+    private function getContainerIdentifiersWithKey(): array
+    {
+        $mapKeyCollectionToContainerIdentifier = [];
+
+        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
+            $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $definition);
+
+            if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
+                $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
+            }
+        }
+
+        return $mapKeyCollectionToContainerIdentifier;
+    }
+
+    /**
+     * @return list<non-empty-string>
+     */
+    private function getContainerIdentifiersWithoutKey(): array
+    {
+        $containerIdentifiers = [];
+
+        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier]) {
+            $containerIdentifiers[] = $containerIdentifier;
+        }
+
+        return $containerIdentifiers;
+    }
+
+    /**
+     * @return array<non-empty-string, non-empty-string>|list<non-empty-string>
+     */
+    private function getContainerIdentifiers(): array
+    {
+        return $this->isUseKeysComputed ? $this->getContainerIdentifiersWithKey() : $this->getContainerIdentifiersWithoutKey();
     }
 
     /**
@@ -224,8 +206,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     $method = explode('::', $optionKey)[1];
                     $howGetOptions = sprintf('Get key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $method, $this->tag);
 
-                    // @phpstan-ignore return.type
-                    return self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+                    /** @var string $key */
+                    $key = self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+
+                    return '' === $key || '' === trim($key)
+                        ? throw new AutowireException(sprintf('%s return value must be non-empty string. Got value: "%s"', $howGetOptions, $key))
+                        : $key;
                 }
 
                 return $optionKey; // @phpstan-ignore return.type

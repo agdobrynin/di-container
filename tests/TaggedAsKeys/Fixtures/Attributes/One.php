@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\TaggedAsKeys\Fixures\Attributes;
+namespace Tests\TaggedAsKeys\Fixtures\Attributes;
 
 use Kaspi\DiContainer\Attributes\Tag;
 

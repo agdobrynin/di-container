@@ -9,10 +9,14 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Tests\TaggedAsKeys\Fixtures\OptionKeyReturnEmptyString;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diValue;
 
 /**
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Traits\TagsTrait
@@ -98,6 +102,43 @@ class KeyExceptionTest extends TestCase
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('the value must be non-empty string');
+
+        $taggedAs->getServicesTaggedAs();
+    }
+
+    public function dataProviderKeyOptionFromMethod(): Generator
+    {
+        yield 'empty string' => [
+            new DiDefinitionTaggedAs('tags.one', key: 'key'),
+            [
+                'service_one' => diAutowire(OptionKeyReturnEmptyString::class)
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeyEmpty']),
+            ],
+        ];
+
+        yield 'string with spaces' => [
+            new DiDefinitionTaggedAs('tags.one', key: 'key'),
+            [
+                'service_one' => diAutowire(OptionKeyReturnEmptyString::class)
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeySpaces']),
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataProviderKeyOptionFromMethod
+     */
+    public function testKeyOptionFromMethod(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
+    {
+        $this->container->expects(self::once())
+            ->method('getDefinitions')
+            ->willReturn($getDefinitions)
+        ;
+
+        $taggedAs->setContainer($this->container);
+
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('return value must be non-empty string');
 
         $taggedAs->getServicesTaggedAs();
     }
