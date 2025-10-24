@@ -37,13 +37,6 @@ class KeyExceptionTest extends TestCase
         $this->container = null;
     }
 
-    public static function dataProviderEmptyString(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'string with spaces' => ['  '];
-    }
-
     /**
      * @dataProvider dataProviderEmptyString
      */
@@ -61,6 +54,30 @@ class KeyExceptionTest extends TestCase
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Argument $key must be non-empty string');
+
+        $taggedAs->getServicesTaggedAs();
+    }
+
+    public static function dataProviderEmptyString(): Generator
+    {
+        yield 'empty string' => [''];
+
+        yield 'string with spaces' => ['  '];
+    }
+
+    /**
+     * @dataProvider dataProviderInvalidDefinitions
+     */
+    public function testKeyOptionIsNonEmptyString(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
+    {
+        $this->container->expects(self::once())
+            ->method('getDefinitions')
+            ->willReturn($getDefinitions)
+        ;
+        $taggedAs->setContainer($this->container);
+
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('the value must be non-empty string');
 
         $taggedAs->getServicesTaggedAs();
     }
@@ -90,18 +107,19 @@ class KeyExceptionTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProviderInvalidDefinitions
+     * @dataProvider dataProviderKeyOptionFromMethod
      */
-    public function testKeyOptionIsNonEmptyString(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
+    public function testKeyOptionFromMethod(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
     {
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn($getDefinitions)
         ;
+
         $taggedAs->setContainer($this->container);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('the value must be non-empty string');
+        $this->expectExceptionMessage('return value must be non-empty string');
 
         $taggedAs->getServicesTaggedAs();
     }
@@ -123,23 +141,5 @@ class KeyExceptionTest extends TestCase
                     ->bindTag('tags.one', options: ['key' => 'self::getKeySpaces']),
             ],
         ];
-    }
-
-    /**
-     * @dataProvider dataProviderKeyOptionFromMethod
-     */
-    public function testKeyOptionFromMethod(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
-    {
-        $this->container->expects(self::once())
-            ->method('getDefinitions')
-            ->willReturn($getDefinitions)
-        ;
-
-        $taggedAs->setContainer($this->container);
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('return value must be non-empty string');
-
-        $taggedAs->getServicesTaggedAs();
     }
 }

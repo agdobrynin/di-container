@@ -21,6 +21,17 @@ use function iterator_to_array;
  */
 class FinderFileTest extends TestCase
 {
+    /**
+     * @dataProvider dataProviderConstructor
+     */
+    public function testFinderFileConstructorFail(string $src, string $expectMessage): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($expectMessage);
+
+        (new FinderFile())->setSrc($src)->getFiles();
+    }
+
     public static function dataProviderConstructor(): Generator
     {
         yield 'none exist directory' => [
@@ -32,17 +43,6 @@ class FinderFileTest extends TestCase
             __FILE__,
             '/Source directory from argument \$src must be readable/',
         ];
-    }
-
-    /**
-     * @dataProvider dataProviderConstructor
-     */
-    public function testFinderFileConstructorFail(string $src, string $expectMessage): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches($expectMessage);
-
-        (new FinderFile())->setSrc($src)->getFiles();
     }
 
     public function testFinderFileWithoutSrc(): void

@@ -29,13 +29,6 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has('null'));
     }
 
-    public function dataProvideWithZeroConfig(): Generator
-    {
-        yield 'class' => [ClassWithSimpleDependency::class];
-
-        yield 'interface' => [MyInterface::class];
-    }
-
     /**
      * @dataProvider dataProvideWithZeroConfig
      */
@@ -49,7 +42,7 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has($id));
     }
 
-    public function dataProvideWithoutZeroConfig(): Generator
+    public function dataProvideWithZeroConfig(): Generator
     {
         yield 'class' => [ClassWithSimpleDependency::class];
 
@@ -67,6 +60,13 @@ class DiContainerHasTest extends TestCase
         $container = new DiContainer(config: $config);
 
         $this->assertFalse($container->has($id));
+    }
+
+    public function dataProvideWithoutZeroConfig(): Generator
+    {
+        yield 'class' => [ClassWithSimpleDependency::class];
+
+        yield 'interface' => [MyInterface::class];
     }
 
     public function testHasContainerInterfaceWithZeroConfig(): void

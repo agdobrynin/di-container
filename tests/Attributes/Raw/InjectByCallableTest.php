@@ -34,17 +34,13 @@ class InjectByCallableTest extends TestCase
         $this->assertEquals($expectIdentifier, $attr->getIdentifier());
     }
 
-    public function failIdsDataProvider(): Generator
+    public function successIdsDataProvider(): Generator
     {
-        yield 'empty string' => [''];
+        yield 'string' => ['ok', null, 'ok', null];
 
-        yield 'empty spaces' => ['  '];
+        yield 'string with singleton false' => ['ok', false, 'ok', false];
 
-        yield 'string with spaces in middle' => ['ok  yes'];
-
-        yield 'string with space trailing' => [' yes'];
-
-        yield 'string with space ending' => ['yes '];
+        yield 'string aka static method' => ['MyClass::ok', true, 'MyClass::ok', true];
     }
 
     /**
@@ -56,5 +52,18 @@ class InjectByCallableTest extends TestCase
         $this->expectExceptionMessage('The $callable parameter must be a non-empty string and must not contain spaces');
 
         new InjectByCallable($id);
+    }
+
+    public function failIdsDataProvider(): Generator
+    {
+        yield 'empty string' => [''];
+
+        yield 'empty spaces' => ['  '];
+
+        yield 'string with spaces in middle' => ['ok  yes'];
+
+        yield 'string with space trailing' => [' yes'];
+
+        yield 'string with space ending' => ['yes '];
     }
 }

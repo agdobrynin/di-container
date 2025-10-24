@@ -40,7 +40,7 @@ interface DiTaggedDefinitionInterface
      * @param non-empty-string $name
      * @param TagOptions       $operationOptions temporary options (meta-data) for operation
      */
-    public function geTagPriority(string $name, array $operationOptions = []): null|int|string;
+    public function geTagPriority(string $name, array $operationOptions = []): int|string|null;
 
     /**
      * Bind tag for services with meta-data.
@@ -51,5 +51,5 @@ interface DiTaggedDefinitionInterface
      *
      * @return $this
      */
-    public function bindTag(string $name, array $options = [], null|int|string $priority = null): static;
+    public function bindTag(string $name, array $options = [], int|string|null $priority = null): static;
 }
