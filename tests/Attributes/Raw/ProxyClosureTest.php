@@ -26,7 +26,7 @@ class ProxyClosureTest extends TestCase
         $this->assertEquals($expect, $asClosureAttr->getIdentifier());
     }
 
-    public function successIdsDataProvider(): Generator
+    public function failIdsDataProvider(): Generator
     {
         yield 'string' => ['ok', 'ok'];
 
