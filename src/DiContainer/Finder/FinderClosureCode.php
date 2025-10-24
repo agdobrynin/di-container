@@ -61,12 +61,12 @@ use const T_XOR_EQUAL;
 
 /**
  * @phpstan-type PhpTokens list<array{0: int, 1: string, 2: int}|string>
- * @phpstan-type ParsedNamespace array{startLine?: non-negative-int, endLine?: non-negative-int, imports?: array<string, string>, aliases?: array<string, string>}
+ * @phpstan-type ParsedNamespaces array<string, array{startLine?: non-negative-int, endLine?: non-negative-int, imports?: array<string, string>, aliases?: array<string, string>}>
  */
 final class FinderClosureCode implements FinderClosureCodeInterface
 {
     /**
-     * @var array<string, array{tokens: PhpTokens, namespaces: array<string, ParsedNamespace>}>
+     * @var array<string, array{tokens: PhpTokens, namespaces: ParsedNamespaces}>
      */
     private array $closureFileStruct = [];
 
@@ -294,7 +294,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
     }
 
     /**
-     * @return array{tokens: PhpTokens, namespaces: array<string, ParsedNamespace>}
+     * @return array{tokens: PhpTokens, namespaces: ParsedNamespaces}
      *
      * @throws RuntimeException
      */
@@ -333,7 +333,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         $namespace = '';
 
         /**
-         * @var array<string, ParsedNamespace> $namespaces
+         * @var ParsedNamespaces $namespaces
          */
         $namespaces = [];
         $namespaces[$namespace] = [
