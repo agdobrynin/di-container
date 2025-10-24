@@ -300,19 +300,21 @@ trait ParametersResolverTrait
             $argumentPosition = 0;
 
             foreach ($this->arguments as $name => $value) {
-                ++$argumentPosition;
-
                 if (is_string($name) && !in_array($name, $parameters, true)) {
+                    $reflectionParameter = $this->reflectionParameters[$argumentPosition];
+
                     throw new AutowireAttributeException(
                         sprintf(
                             'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
                             $name,
                             $argumentPosition,
-                            __CLASS__,
+                            implode('::', array_filter([$reflectionParameter->getDeclaringClass()?->getName(), $reflectionParameter->getDeclaringFunction()->getName().'()'])),
                             implode(', ', $parameters)
                         )
                     );
                 }
+
+                ++$argumentPosition;
             }
         }
     }
