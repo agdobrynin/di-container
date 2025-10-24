@@ -339,8 +339,6 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         $namespaces[$namespace] = [
             'startLine' => 0,
             'endLine' => PHP_INT_MAX,
-            'imports' => [],
-            'aliases' => [],
         ];
 
         /** @var array{0: list<string>, 1?: list<string>} $use */
@@ -373,8 +371,6 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 $namespaces[$namespace] = [
                     'startLine' => $lastFoundLine,
                     'endLine' => PHP_INT_MAX,
-                    'imports' => [],
-                    'aliases' => [],
                 ];
 
                 continue;
