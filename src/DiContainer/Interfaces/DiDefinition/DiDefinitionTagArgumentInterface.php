@@ -17,5 +17,5 @@ interface DiDefinitionTagArgumentInterface
      *
      * @return $this
      */
-    public function bindTag(string $name, array $options = [], null|int|string $priority = null): static;
+    public function bindTag(string $name, array $options = [], int|string|null $priority = null): static;
 }

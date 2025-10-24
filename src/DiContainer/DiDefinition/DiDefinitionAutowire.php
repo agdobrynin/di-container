@@ -167,7 +167,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return $object;
     }
 
-    public function getDefinition(): ReflectionClass
+    public function getDefinition(): ReflectionClass // @phpstan-ignore throws.unusedType
     {
         try {
             return $this->reflectionClass ??= new ReflectionClass($this->definition);
@@ -206,7 +206,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
      * @param non-empty-string $name
      * @param TagOptions       $operationOptions
      */
-    public function geTagPriority(string $name, array $operationOptions = []): null|int|string
+    public function geTagPriority(string $name, array $operationOptions = []): int|string|null
     {
         if (null !== ($priority = $this->internalGeTagPriority($name, $operationOptions))) {
             return $priority;

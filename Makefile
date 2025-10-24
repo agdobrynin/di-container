@@ -10,7 +10,7 @@ test-cover:
 
 .PHONY: stat
 stat:
-	@docker-compose -f docker-compose.yml run --rm php vendor/bin/phpstan
+	@docker-compose -f docker-compose.yml run --rm php vendor/bin/phpstan --memory-limit=256M
 
 .PHONY: fix
 fix:
@@ -22,13 +22,10 @@ install:
 
 .PHONY: all
 all:
-	@docker-compose -f docker-compose.yml run --rm php sh -c "vendor/bin/php-cs-fixer fix && vendor/bin/phpstan && vendor/bin/phpunit --no-coverage"
+	@docker-compose -f docker-compose.yml run --rm php sh -c "vendor/bin/php-cs-fixer fix && vendor/bin/phpstan --memory-limit=256M && vendor/bin/phpunit --no-coverage"
 
 .PHONY: test-supports-php
 test-supports-php:
-	@docker-compose build --build-arg PHP_IMAGE=php:8.0-cli-alpine
-	@docker-compose -f docker-compose.yml run --rm php ./vendor/bin/phpunit --no-coverage
-
 	@docker-compose build --build-arg PHP_IMAGE=php:8.1-cli-alpine
 	@docker-compose -f docker-compose.yml run --rm php ./vendor/bin/phpunit --no-coverage
 

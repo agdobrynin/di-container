@@ -16,15 +16,6 @@ use PHPUnit\Framework\TestCase;
  */
 class ProxyClosureTest extends TestCase
 {
-    public function successIdsDataProvider(): Generator
-    {
-        yield 'string' => ['ok', 'ok'];
-
-        yield 'has start space' => [' ok', ' ok'];
-
-        yield 'has start spaces' => [' ok ', ' ok '];
-    }
-
     /**
      * @dataProvider successIdsDataProvider
      */
@@ -35,11 +26,13 @@ class ProxyClosureTest extends TestCase
         $this->assertEquals($expect, $asClosureAttr->getIdentifier());
     }
 
-    public function failIdsDataProvider(): Generator
+    public function successIdsDataProvider(): Generator
     {
-        yield 'empty string' => [''];
+        yield 'string' => ['ok', 'ok'];
 
-        yield 'empty spaces' => ['  '];
+        yield 'has start space' => [' ok', ' ok'];
+
+        yield 'has start spaces' => [' ok ', ' ok '];
     }
 
     /**
@@ -51,6 +44,13 @@ class ProxyClosureTest extends TestCase
         $this->expectExceptionMessage('The $id parameter must be a non-empty string');
 
         new ProxyClosure($id);
+    }
+
+    public function failIdsDataProvider(): Generator
+    {
+        yield 'empty string' => [''];
+
+        yield 'empty spaces' => ['  '];
     }
 
     public function testIsSingletonDefault(): void
