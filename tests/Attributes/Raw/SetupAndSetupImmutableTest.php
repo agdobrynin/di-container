@@ -37,21 +37,6 @@ class SetupAndSetupImmutableTest extends TestCase
         (new SetupImmutable())->getIdentifier();
     }
 
-    public function dataProviderMethod(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'string with spaces' => ['   '];
-
-        yield 'not valid string "11111"' => ['11111'];
-
-        yield 'not valid string "1method"' => ['1method'];
-
-        yield 'not valid string "method method"' => ['method method'];
-
-        yield 'not valid string " method"' => [' method'];
-    }
-
     /**
      * @dataProvider dataProviderMethod
      */
@@ -74,17 +59,19 @@ class SetupAndSetupImmutableTest extends TestCase
         $s->setMethod($method);
     }
 
-    public function dataProviderSuccessMethod(): Generator
+    public function dataProviderMethod(): Generator
     {
-        yield 'success name #1' => ['withLogger'];
+        yield 'empty string' => [''];
 
-        yield 'success name #2' => ['setLogger'];
+        yield 'string with spaces' => ['   '];
 
-        yield 'success name #3' => ['set2'];
+        yield 'not valid string "11111"' => ['11111'];
 
-        yield 'success name #4' => ['with1'];
+        yield 'not valid string "1method"' => ['1method'];
 
-        yield 'success name #5' => ['a'];
+        yield 'not valid string "method method"' => ['method method'];
+
+        yield 'not valid string " method"' => [' method'];
     }
 
     /**
@@ -111,6 +98,19 @@ class SetupAndSetupImmutableTest extends TestCase
         self::assertEquals($method, $s->getIdentifier());
         self::assertEquals([], $s->getArguments());
         self::assertTrue($s->isImmutable());
+    }
+
+    public function dataProviderSuccessMethod(): Generator
+    {
+        yield 'success name #1' => ['withLogger'];
+
+        yield 'success name #2' => ['setLogger'];
+
+        yield 'success name #3' => ['set2'];
+
+        yield 'success name #4' => ['with1'];
+
+        yield 'success name #5' => ['a'];
     }
 
     public function testSetupNamedArgument(): void

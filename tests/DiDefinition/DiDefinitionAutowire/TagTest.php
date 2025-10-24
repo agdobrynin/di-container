@@ -139,13 +139,6 @@ class TagTest extends TestCase
         $this->assertTrue($def->hasTag('tags.validator.two'));
     }
 
-    public static function dataProviderPriorityTagMethodWrongType(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'string with spaces' => ['   '];
-    }
-
     /**
      * @dataProvider dataProviderPriorityTagMethodWrongType
      */
@@ -154,6 +147,30 @@ class TagTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
             ->bindTag('tags.handler-one', ['priority.method' => $priorityTagMethod])
+            ->setContainer($mockContainer)
+        ;
+
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('The value option must be non-empty string');
+
+        $def->geTagPriority('tags.handler-one');
+    }
+
+    public static function dataProviderPriorityTagMethodWrongType(): Generator
+    {
+        yield 'empty string' => [''];
+
+        yield 'string with spaces' => ['   '];
+    }
+
+    /**
+     * @dataProvider dataProviderPriorityTagMethodByOptionsWrongType
+     */
+    public function testGetPriorityByPriorityTagMethodByOptionsWrongType(array $options): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
+            ->bindTag('tags.handler-one', options: $options)
             ->setContainer($mockContainer)
         ;
 
@@ -174,23 +191,6 @@ class TagTest extends TestCase
         yield 'boolean' => [['priority.method' => true]];
 
         yield 'stdClass' => [['priority.method' => new stdClass()]];
-    }
-
-    /**
-     * @dataProvider dataProviderPriorityTagMethodByOptionsWrongType
-     */
-    public function testGetPriorityByPriorityTagMethodByOptionsWrongType(array $options): void
-    {
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
-            ->bindTag('tags.handler-one', options: $options)
-            ->setContainer($mockContainer)
-        ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('The value option must be non-empty string');
-
-        $def->geTagPriority('tags.handler-one');
     }
 
     public function testGetPriorityByDefaultPriorityTagMethodSuccess(): void
@@ -215,15 +215,6 @@ class TagTest extends TestCase
         $this->assertNull($def->geTagPriority('tags.handler-one', ['priority.default_method' => 'getTaggedPriorityNonExist']));
     }
 
-    public static function dataProviderWrongReturnType(): Generator
-    {
-        yield 'none return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnEmpty'];
-
-        yield 'array return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnArray'];
-
-        yield 'wrong union type return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnUnionWrong'];
-    }
-
     /**
      * @dataProvider dataProviderWrongReturnType
      */
@@ -239,5 +230,14 @@ class TagTest extends TestCase
         $this->expectExceptionMessage('Return type must be "int", "string", "null"');
 
         $def->geTagPriority('tags.handler-one');
+    }
+
+    public static function dataProviderWrongReturnType(): Generator
+    {
+        yield 'none return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnEmpty'];
+
+        yield 'array return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnArray'];
+
+        yield 'wrong union type return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnUnionWrong'];
     }
 }

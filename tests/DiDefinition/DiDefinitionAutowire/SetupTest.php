@@ -144,13 +144,6 @@ class SetupTest extends TestCase
         self::assertEquals('la-la-la', $class->getAnyAsString());
     }
 
-    public function dataProviderSetupOnMethod(): Generator
-    {
-        yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
-
-        yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
-    }
-
     /**
      * @dataProvider dataProviderSetupOnMethod
      */
@@ -165,5 +158,12 @@ class SetupTest extends TestCase
         $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
 
         $def->invoke();
+    }
+
+    public function dataProviderSetupOnMethod(): Generator
+    {
+        yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
+
+        yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
     }
 }

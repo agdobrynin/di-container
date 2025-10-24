@@ -16,10 +16,9 @@ interface DiContainerCallInterface
 {
     /**
      * @param array<class-string, null|non-empty-string>|callable|class-string|non-empty-string $definition
+     * @param array<non-empty-string|non-negative-int, mixed>                                   $arguments
      *
      * @phpstan-param NotParsedCallable|ParsedCallable $definition
-     *
-     * @param array<non-empty-string|non-negative-int, mixed> $arguments
      *
      * @throws ContainerExceptionInterface
      * @throws CallCircularDependencyException

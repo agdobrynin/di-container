@@ -10,6 +10,7 @@ use Iterator;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
@@ -22,7 +23,7 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
     public function getContainer(): DiContainerInterface;
 
     /**
-     * @return array<non-empty-string, mixed>|(ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface)|list<mixed>
+     * @return array<non-empty-string, mixed>|(ArrayAccess&ContainerInterface&Countable&Iterator)|list<mixed>
      *
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface

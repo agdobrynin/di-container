@@ -22,6 +22,19 @@ use stdClass;
  */
 class MainTest extends TestCase
 {
+    /**
+     * @dataProvider dataProviderWrongDefinition
+     *
+     * @param mixed $definition
+     */
+    public function testWrongDefinitionAsString($definition, string $expectMessage): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage($expectMessage);
+
+        (new DiContainer(config: new DiContainerConfig()))->call($definition);
+    }
+
     public function dataProviderWrongDefinition(): Generator
     {
         yield 'empty string' => [
@@ -63,18 +76,5 @@ class MainTest extends TestCase
             [new stdClass(), 'method'],
             'Definition is not callable',
         ];
-    }
-
-    /**
-     * @dataProvider dataProviderWrongDefinition
-     *
-     * @param mixed $definition
-     */
-    public function testWrongDefinitionAsString($definition, string $expectMessage): void
-    {
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage($expectMessage);
-
-        (new DiContainer(config: new DiContainerConfig()))->call($definition);
     }
 }

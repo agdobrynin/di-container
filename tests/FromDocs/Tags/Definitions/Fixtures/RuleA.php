@@ -6,7 +6,7 @@ namespace Tests\FromDocs\Tags\Definitions\Fixtures;
 
 class RuleA implements RuleInterface
 {
-    public static function getPriority(string $tag, array $tagOptions): null|int|string
+    public static function getPriority(string $tag, array $tagOptions): int|string|null
     {
         return match ($tag) {
             'tags.rules' => 'AAA',

@@ -101,4 +101,17 @@ class ExceptionsTest extends TestCase
 
         $container->get(DependencyClass::class);
     }
+
+    public function testInvalidArgumentName(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(DependencyClass::class)
+                ->bindArguments(noneExistParam: 'Ok'),
+        ]);
+
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Invalid input argument name "noneExistParam" at position #0.+DependencyClass::__construct\(\) has arguments: "value"/');
+
+        $container->get(DependencyClass::class);
+    }
 }
