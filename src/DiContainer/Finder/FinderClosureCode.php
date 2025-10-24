@@ -61,12 +61,12 @@ use const T_XOR_EQUAL;
 
 /**
  * @phpstan-type PhpTokens list<array{0: int, 1: string, 2: int}|string>
- * @phpstan-type ParsedNamespace array{startLine: non-negative-int, endLine: non-negative-int, imports: array<string, string>, aliases: array<string, string>}
+ * @phpstan-type ParsedNamespace array{startLine?: non-negative-int, endLine?: non-negative-int, imports?: array<string, string>, aliases?: array<string, string>}
  */
 final class FinderClosureCode implements FinderClosureCodeInterface
 {
     /**
-     * @var array<string, array{tokens: PhpTokens, namespaces: non-empty-array<string, ParsedNamespace>}>
+     * @var array<string, array{tokens: PhpTokens, namespaces: array<string, ParsedNamespace>}>
      */
     private array $closureFileStruct = [];
 
@@ -98,12 +98,14 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         $closureNamespace = '';
 
         foreach ($namespaces as $key => $namespace) {
-            $imports = $namespace['imports'];
-            $importAliases = $namespace['aliases'];
+            $imports = $namespace['imports'] ?? [];
+            $importAliases = $namespace['aliases'] ?? [];
             $closureNamespace = $key;
+            $startLine = $namespace['startLine'] ?? 0;
+            $endLine = $namespace['endLine'] ?? PHP_INT_MAX;
 
-            if ($namespace['startLine'] <= $reflection->getStartLine()
-                && $namespace['endLine'] >= $reflection->getEndLine()) {
+            if ($startLine <= $reflection->getStartLine()
+                && $endLine >= $reflection->getEndLine()) {
                 break;
             }
         }
@@ -292,7 +294,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
     }
 
     /**
-     * @return array{tokens: PhpTokens, namespaces: non-empty-array<string, ParsedNamespace>}
+     * @return array{tokens: PhpTokens, namespaces: array<string, ParsedNamespace>}
      *
      * @throws RuntimeException
      */
@@ -328,11 +330,10 @@ final class FinderClosureCode implements FinderClosureCodeInterface
 
         $useNamespaceLevel = $namespaceBraceLevel = $lastFoundLine = 0;
         $isUseStart = $isAlias = $isNamespace = $isNamespaceBrace = $isNamespaceDetected = false;
-
         $namespace = '';
 
         /**
-         * @var non-empty-array<string, ParsedNamespace> $namespaces
+         * @var array<string, ParsedNamespace> $namespaces
          */
         $namespaces = [];
         $namespaces[$namespace] = [
@@ -432,7 +433,12 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                         $foundImports[strtolower(end($partsOfUse))] = $fullUseItem;
                     }
 
-                    $namespaces[$namespace]['imports'] += $foundImports;
+                    if (isset($namespaces[$namespace]['imports'])) {
+                        $namespaces[$namespace]['imports'] += $foundImports;
+                    } else {
+                        $namespaces[$namespace]['imports'] = $foundImports;
+                    }
+
                     $isUseStart = false;
 
                     continue;

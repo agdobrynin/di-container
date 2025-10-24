@@ -167,7 +167,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         return $object;
     }
 
-    public function getDefinition(): ReflectionClass
+    public function getDefinition(): ReflectionClass // @phpstan-ignore throws.unusedType
     {
         try {
             return $this->reflectionClass ??= new ReflectionClass($this->definition);
