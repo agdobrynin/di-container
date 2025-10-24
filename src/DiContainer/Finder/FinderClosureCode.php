@@ -59,18 +59,14 @@ use const T_USE;
 use const T_WHITESPACE;
 use const T_XOR_EQUAL;
 
+/**
+ * @phpstan-type PhpTokens list<array{0: int, 1: string, 2: int}|string>
+ * @phpstan-type ParsedNamespace array{startLine: non-negative-int, endLine: non-negative-int, imports: array<string, string>, aliases: array<string, string>}
+ */
 final class FinderClosureCode implements FinderClosureCodeInterface
 {
     /**
-     * @var array<string, array{
-     *          tokens: list<array{0: int, 1: string, 2: int}|string>,
-     *          namespaces: array<string, array{
-     *              startLine: non-negative-int,
-     *              endLine: non-negative-int,
-     *              imports?: array<string, string>,
-     *              aliases?: array<string, string>
-     *          }>
-     * }>
+     * @var array<string, array{tokens: PhpTokens, namespaces: non-empty-array<string, ParsedNamespace>}>
      */
     private array $closureFileStruct = [];
 
@@ -102,8 +98,8 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         $closureNamespace = '';
 
         foreach ($namespaces as $key => $namespace) {
-            $imports = $namespace['imports'] ?? [];
-            $importAliases = $namespace['aliases'] ?? [];
+            $imports = $namespace['imports'];
+            $importAliases = $namespace['aliases'];
             $closureNamespace = $key;
 
             if ($namespace['startLine'] <= $reflection->getStartLine()
@@ -296,15 +292,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
     }
 
     /**
-     * @return array{
-     *     tokens: list<array{0: int, 1: string, 2: int}|string>,
-     *     namespaces: array<string, array{
-     *          startLine: non-negative-int,
-     *          endLine: non-negative-int,
-     *          imports?: array<string, string>,
-     *          aliases?: array<string, string>,
-     *      }>
-     *  }
+     * @return array{tokens: PhpTokens, namespaces: non-empty-array<string, ParsedNamespace>}
      *
      * @throws RuntimeException
      */
@@ -329,6 +317,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 $code .= $f->fread(8192);
             }
 
+            /** @var PhpTokens $tokens */
             $tokens = token_get_all($code, TOKEN_PARSE);
         } catch (LogicException|ParseError|RuntimeException  $e) {
             throw new RuntimeException(
@@ -340,15 +329,17 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         $useNamespaceLevel = $namespaceBraceLevel = $lastFoundLine = 0;
         $isUseStart = $isAlias = $isNamespace = $isNamespaceBrace = $isNamespaceDetected = false;
 
-        /** @var string $namespace */
         $namespace = '';
-        $namespaces = [
-            $namespace => [
-                'startLine' => 0,
-                'endLine' => PHP_INT_MAX,
-                'imports' => [],
-                'aliases' => [],
-            ],
+
+        /**
+         * @var non-empty-array<string, ParsedNamespace> $namespaces
+         */
+        $namespaces = [];
+        $namespaces[$namespace] = [
+            'startLine' => 0,
+            'endLine' => PHP_INT_MAX,
+            'imports' => [],
+            'aliases' => [],
         ];
 
         /** @var array{0: list<string>, 1?: list<string>} $use */
@@ -356,7 +347,11 @@ final class FinderClosureCode implements FinderClosureCodeInterface
 
         foreach ($tokens as $token) {
             if (is_array($token)) {
-                /** @var non-negative-int $lastFoundLine */
+                /**
+                 * @var int              $token_id
+                 * @var string           $token_text
+                 * @var non-negative-int $lastFoundLine
+                 */
                 [$token_id, $token_text, $lastFoundLine] = [$token[0], $token[1], $token[2]];
             } else {
                 $token_id = null;
@@ -464,6 +459,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 }
 
                 if ($isAlias && T_STRING === $token_id) {
+                    /** @var string $fullUseOfAlias */
                     $fullUseOfAlias = isset($use[1])
                         ? $use[0][0].'\\'.end($use[1])
                         : $use[0][0];
