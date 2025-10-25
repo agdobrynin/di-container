@@ -34,6 +34,7 @@
         },
         "files": [
             "tests/Fixtures/function.php",
+            "tests/Function/Fixtures/functions.php",
             "tests/DiContainerCall/Fixtures/function.php"
         ]
     },

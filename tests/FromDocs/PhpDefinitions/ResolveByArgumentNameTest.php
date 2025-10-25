@@ -6,6 +6,7 @@ namespace Tests\FromDocs\PhpDefinitions;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
 
 /**
@@ -14,13 +15,14 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */
 class ResolveByArgumentNameTest extends TestCase
 {
-    public function testResolveByArgumentName(): void
+    public function testResolveByArgumentNameFail(): void
     {
         $definitions = [
             'locationCity' => 'Vice city',
@@ -28,6 +30,9 @@ class ResolveByArgumentNameTest extends TestCase
 
         $container = (new DiContainerFactory())->make($definitions);
 
-        $this->assertEquals('Vice city', $container->get(ServiceLocation::class)->locationCity);
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+ServiceLocation::__construct\(\).+string \$locationCity/');
+
+        $container->get(ServiceLocation::class);
     }
 }
