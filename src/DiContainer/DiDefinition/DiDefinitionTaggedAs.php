@@ -60,18 +60,6 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $this->isUseKeysComputed = $useKeys || null !== $key || null !== $keyDefaultMethod;
     }
 
-    public function getDefinition(): string
-    {
-        return $this->tag;
-    }
-
-    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static
-    {
-        $this->callingByDefinitionAutowire = $definitionAutowire;
-
-        return $this;
-    }
-
     public function getServicesTaggedAs(): iterable
     {
         return $this->isLazy
@@ -79,9 +67,21 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             : array_map(fn (string $id) => $this->getContainer()->get($id), $this->getContainerIdentifiers());
     }
 
+    public function getDefinition(): string
+    {
+        return $this->tag;
+    }
+
     public function getCallingByService(): ?DiDefinitionAutowireInterface
     {
         return $this->callingByDefinitionAutowire;
+    }
+
+    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static
+    {
+        $this->callingByDefinitionAutowire = $definitionAutowire;
+
+        return $this;
     }
 
     /**
