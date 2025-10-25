@@ -19,15 +19,6 @@ use Psr\Container\ContainerInterface;
  */
 class ResolveSelfContainerTest extends TestCase
 {
-    public function dataProvider(): Generator
-    {
-        yield 'ContainerInterface' => [ContainerInterface::class];
-
-        yield 'DiContainerInterface' => [DiContainerInterface::class];
-
-        yield 'DiContainer' => [DiContainer::class];
-    }
-
     /**
      * @dataProvider dataProvider
      */
@@ -42,5 +33,14 @@ class ResolveSelfContainerTest extends TestCase
     public function testResolveWithConfig(string $id): void
     {
         $this->assertInstanceOf(DiContainer::class, (new DiContainer(config: new DiContainerConfig()))->get($id));
+    }
+
+    public function dataProvider(): Generator
+    {
+        yield 'ContainerInterface' => [ContainerInterface::class];
+
+        yield 'DiContainerInterface' => [DiContainerInterface::class];
+
+        yield 'DiContainer' => [DiContainer::class];
     }
 }

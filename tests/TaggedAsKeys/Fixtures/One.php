@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\TaggedAsKeys\Fixures;
+namespace Tests\TaggedAsKeys\Fixtures;
 
 use stdClass;
 

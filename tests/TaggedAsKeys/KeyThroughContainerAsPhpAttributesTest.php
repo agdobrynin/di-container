@@ -29,53 +29,53 @@ class KeyThroughContainerAsPhpAttributesTest extends TestCase
     public function testNotLazyKeyAsString(): void
     {
         $container = (new DiContainerFactory())->make([
-            diAutowire(Fixures\Attributes\One::class),
-            diAutowire(Fixures\Attributes\Two::class),
-            diAutowire(Fixures\Attributes\Three::class),
+            diAutowire(Fixtures\Attributes\One::class),
+            diAutowire(Fixtures\Attributes\Two::class),
+            diAutowire(Fixtures\Attributes\Three::class),
         ]);
 
         // 'tags.one'
-        $class = $container->get(Fixures\Attributes\TaggedServiceAsArray::class);
+        $class = $container->get(Fixtures\Attributes\TaggedServiceAsArray::class);
 
         $this->assertIsArray($class->items);
         $this->assertCount(2, $class->items);
 
-        $this->assertInstanceOf(Fixures\Attributes\One::class, $class->items['some_service.one-other']);
-        $this->assertInstanceOf(Fixures\Attributes\Two::class, $class->items['some_service.Dos']);
+        $this->assertInstanceOf(Fixtures\Attributes\One::class, $class->items['some_service.one-other']);
+        $this->assertInstanceOf(Fixtures\Attributes\Two::class, $class->items['some_service.Dos']);
     }
 
     public function testLazyKeyAsString(): void
     {
         $container = (new DiContainerFactory())->make([
-            diAutowire(Fixures\Attributes\One::class),
-            diAutowire(Fixures\Attributes\Two::class),
-            diAutowire(Fixures\Attributes\Three::class),
+            diAutowire(Fixtures\Attributes\One::class),
+            diAutowire(Fixtures\Attributes\Two::class),
+            diAutowire(Fixtures\Attributes\Three::class),
         ]);
 
         // 'tags.one'
-        $class = $container->get(Fixures\Attributes\TaggedServiceAsLazy::class);
+        $class = $container->get(Fixtures\Attributes\TaggedServiceAsLazy::class);
 
         $this->assertIsIterable($class->items);
         $this->assertCount(2, $class->items);
         $this->assertEquals(2, $class->items->count());
 
-        $this->assertInstanceOf(Fixures\Attributes\One::class, $class->items['some_service.one-other']);
-        $this->assertInstanceOf(Fixures\Attributes\One::class, $class->items->get('some_service.one-other'));
+        $this->assertInstanceOf(Fixtures\Attributes\One::class, $class->items['some_service.one-other']);
+        $this->assertInstanceOf(Fixtures\Attributes\One::class, $class->items->get('some_service.one-other'));
 
-        $this->assertInstanceOf(Fixures\Attributes\Two::class, $class->items['some_service.Dos']);
-        $this->assertInstanceOf(Fixures\Attributes\Two::class, $class->items->get('some_service.Dos'));
+        $this->assertInstanceOf(Fixtures\Attributes\Two::class, $class->items['some_service.Dos']);
+        $this->assertInstanceOf(Fixtures\Attributes\Two::class, $class->items->get('some_service.Dos'));
     }
 
     public function testLazyGetKeyByMethod(): void
     {
         $container = (new DiContainerFactory())->make([
-            diAutowire(Fixures\Attributes\One::class),
-            diAutowire(Fixures\Attributes\Two::class),
-            diAutowire(Fixures\Attributes\Three::class),
+            diAutowire(Fixtures\Attributes\One::class),
+            diAutowire(Fixtures\Attributes\Two::class),
+            diAutowire(Fixtures\Attributes\Three::class),
         ]);
 
-        $res = $container->call([Fixures\Attributes\TaggedServiceAsLazy::class, 'getKeyByMethod']);
+        $res = $container->call([Fixtures\Attributes\TaggedServiceAsLazy::class, 'getKeyByMethod']);
 
-        $this->assertInstanceOf(Fixures\Attributes\Three::class, $res->get('signed_service'));
+        $this->assertInstanceOf(Fixtures\Attributes\Three::class, $res->get('signed_service'));
     }
 }

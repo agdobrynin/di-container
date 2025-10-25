@@ -20,15 +20,6 @@ use PHPUnit\Framework\TestCase;
  */
 class MainTest extends TestCase
 {
-    public function successDefinitionDataProvider(): Generator
-    {
-        yield 'string' => ['ok', 'ok'];
-
-        yield 'string with space' => [' ok', ' ok'];
-
-        yield 'string with spaces' => [' ok ', ' ok '];
-    }
-
     /**
      * @dataProvider successDefinitionDataProvider
      */
@@ -37,13 +28,13 @@ class MainTest extends TestCase
         $this->assertEquals($expect, (new DiDefinitionProxyClosure($id))->getDefinition());
     }
 
-    public function failDefinitionDataProvider(): Generator
+    public function successDefinitionDataProvider(): Generator
     {
-        yield 'empty string' => [''];
+        yield 'string' => ['ok', 'ok'];
 
-        yield 'string with space' => [' '];
+        yield 'string with space' => [' ok', ' ok'];
 
-        yield 'string with spaces' => ['   '];
+        yield 'string with spaces' => [' ok ', ' ok '];
     }
 
     /**
@@ -55,6 +46,15 @@ class MainTest extends TestCase
         $this->expectExceptionMessage('must be non-empty string');
 
         (new DiDefinitionProxyClosure($id))->getDefinition();
+    }
+
+    public function failDefinitionDataProvider(): Generator
+    {
+        yield 'empty string' => [''];
+
+        yield 'string with space' => [' '];
+
+        yield 'string with spaces' => ['   '];
     }
 
     public function testContainerNeedSet(): void

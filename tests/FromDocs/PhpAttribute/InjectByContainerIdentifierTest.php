@@ -29,13 +29,6 @@ use function putenv;
  */
 class InjectByContainerIdentifierTest extends TestCase
 {
-    public function dataProvider(): Generator
-    {
-        yield 'production env' => ['prod', 'file1.txt'];
-
-        yield 'local env' => ['local', 'file2.txt'];
-    }
-
     /**
      * @dataProvider dataProvider
      */
@@ -53,5 +46,12 @@ class InjectByContainerIdentifierTest extends TestCase
         $class = $container->get(MyFileByContainerIdentifier::class);
 
         $this->assertEquals($fileName, $class->fileInfo->getFilename());
+    }
+
+    public function dataProvider(): Generator
+    {
+        yield 'production env' => ['prod', 'file1.txt'];
+
+        yield 'local env' => ['local', 'file2.txt'];
     }
 }

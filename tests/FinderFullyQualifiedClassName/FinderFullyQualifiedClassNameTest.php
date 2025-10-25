@@ -28,6 +28,17 @@ use const T_INTERFACE;
  */
 class FinderFullyQualifiedClassNameTest extends TestCase
 {
+    /**
+     * @dataProvider dataProviderFinderClassConstructFail
+     */
+    public function testFinderClassConstructFail(string $namespace, string $expectMessage): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($expectMessage);
+
+        (new FinderFullyQualifiedName())->setNamespace($namespace)->setFiles([]);
+    }
+
     public static function dataProviderFinderClassConstructFail(): Generator
     {
         yield 'empty string' => [
@@ -49,17 +60,6 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             '\\',
             'Argument $namespace must be compatible with PSR-4',
         ];
-    }
-
-    /**
-     * @dataProvider dataProviderFinderClassConstructFail
-     */
-    public function testFinderClassConstructFail(string $namespace, string $expectMessage): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage($expectMessage);
-
-        (new FinderFullyQualifiedName())->setNamespace($namespace)->setFiles([]);
     }
 
     public function testNeedSetNamespace(): void

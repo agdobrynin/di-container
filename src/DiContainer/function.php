@@ -9,7 +9,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -18,14 +17,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
-use function class_alias;
 use function function_exists;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
-
-// @todo Remove alias when remove function diReference.
-class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
@@ -54,20 +46,6 @@ if (!function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgno
     function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionProxyClosure($definition, $isSingleton);
-    }
-} // @codeCoverageIgnore
-
-if (!function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
-    /**
-     * @deprecated Function diReference() was deprecated, used diGet()
-     *
-     * @param non-empty-string $containerIdentifier
-     */
-    function diReference(string $containerIdentifier): DiDefinitionReference
-    {
-        @trigger_error('Function diReference() was deprecated, used diGet(). This function will remove next major release.', E_USER_DEPRECATED);
-
-        return new DiDefinitionReference($containerIdentifier);
     }
 } // @codeCoverageIgnore
 

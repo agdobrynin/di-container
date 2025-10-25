@@ -43,17 +43,6 @@ class SetupImmutableTest extends TestCase
         ;
     }
 
-    public function dataProviderImmutableSuccess(): Generator
-    {
-        yield 'for method withSomeClassClonedReturnSelf' => ['withSomeClassClonedReturnSelf'];
-
-        yield 'for method withSomeClassClonedReturnSameClass' => ['withSomeClassClonedReturnSameClass'];
-
-        yield 'for method withSomeClassClonedNotReturnTypehint' => ['withSomeClassClonedNotReturnTypehint'];
-
-        yield 'for method withSomeClassNotClonedReturnSelf' => ['withSomeClassNotClonedReturnSelf'];
-    }
-
     /**
      * @dataProvider dataProviderImmutableSuccess
      */
@@ -71,13 +60,15 @@ class SetupImmutableTest extends TestCase
         self::assertInstanceOf(SomeClass::class, $setupImmutableClass->getSomeClass());
     }
 
-    public function dataProviderImmutableFail(): Generator
+    public function dataProviderImmutableSuccess(): Generator
     {
-        yield 'for method withSomeClassFailReturnType' => ['withSomeClassFailReturnType'];
+        yield 'for method withSomeClassClonedReturnSelf' => ['withSomeClassClonedReturnSelf'];
 
-        yield 'for method withSomeClassFailReturnObject' => ['withSomeClassFailReturnObject'];
+        yield 'for method withSomeClassClonedReturnSameClass' => ['withSomeClassClonedReturnSameClass'];
 
-        yield 'for method withSomeClassFailReturnTypehintVoid' => ['withSomeClassFailReturnTypehintVoid'];
+        yield 'for method withSomeClassClonedNotReturnTypehint' => ['withSomeClassClonedNotReturnTypehint'];
+
+        yield 'for method withSomeClassNotClonedReturnSelf' => ['withSomeClassNotClonedReturnSelf'];
     }
 
     /**
@@ -95,6 +86,15 @@ class SetupImmutableTest extends TestCase
 
         /** @var SetupImmutable $setupImmutableClass */
         $setupImmutableClass = $def->invoke();
+    }
+
+    public function dataProviderImmutableFail(): Generator
+    {
+        yield 'for method withSomeClassFailReturnType' => ['withSomeClassFailReturnType'];
+
+        yield 'for method withSomeClassFailReturnObject' => ['withSomeClassFailReturnObject'];
+
+        yield 'for method withSomeClassFailReturnTypehintVoid' => ['withSomeClassFailReturnTypehintVoid'];
     }
 
     public function testSetupImmutableByAttribute(): void
@@ -175,13 +175,6 @@ class SetupImmutableTest extends TestCase
         self::assertEquals('any_string', $class->getAnyAsString());
     }
 
-    public function dataProviderSetupOnMethod(): Generator
-    {
-        yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
-
-        yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
-    }
-
     /**
      * @dataProvider dataProviderSetupOnMethod
      */
@@ -196,5 +189,12 @@ class SetupImmutableTest extends TestCase
         $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
 
         $def->invoke();
+    }
+
+    public function dataProviderSetupOnMethod(): Generator
+    {
+        yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
+
+        yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
     }
 }
