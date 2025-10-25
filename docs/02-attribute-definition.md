@@ -37,15 +37,18 @@
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!NOTE]
-> Если в аргументе `$id` указана пустая строка то идентификатор контейнера будет
-> представлен как полное имя класса с учётом пространства имён – **fully qualified class name**.
+> Пустая строка в аргументе `$id` будет представлена как полное имя класса
+> с учётом пространства имён – **fully qualified class name** и будет являться идентификатором контейнера для этого класса.
+
+> [!WARNING]
+> Чтобы была возможность использовать аргумент `$id` отличающийся от полного имени класса (_fully qualified class name_)
+> необходимо использовать [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
 
 > [!TIP]
 > Атрибут `#[Autowire]` имеет признак `repetable` и может быть
 > применен несколько раз для класса. Аргумент `$id`
 > у каждого атрибута должен быть уникальным, иначе будет выброшено
 > исключение при разрешении класса контейнером.
-
 
 ```php
 // src/Services/SomeService.php
@@ -57,33 +60,53 @@ use Kaspi\DiContainer\Attributes\Autowire;
 #[Autowire(id: 'services.some_service')]
 class SomeService {}
 ```
+Используем [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md)
+для конфигурирования контейнера так как в одном из атрибутов `#[Autowire]` для
+аргумента `$id` используется значение отличное от полного имени класса (_fully qualified class name_):
 ```php
 use Kaspi\DiContainer\DiContainerFactory;
 use App\Services\SomeService;
 
+// Загрузить определения путем сканирования файловой системы
+$loader = (new DefinitionsLoader())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/');
+
 // по умолчанию сервисы создаются каждый раз заново
-$container = (new DiContainerFactory())->make();
+$container = (new DiContainerFactory())->make(
+    $loader->definitions()
+);
 
 var_dump($container->has(SomeService::class)); // true
 
+// получить сервис по идентификатору контейнера `App\Services\SomeService`
+// сконфигурированным через атрибут #[Autowire]
 $service = $container->get(SomeService::class);
 
 var_dump(
     \spl_object_id($service) === \spl_object_id($container->get(SomeService::class))
 ); // true
 
-// получить сервис по идентификатору контейнера
-// сконфигурированным через атрибут #[Autowire]
 var_dump($container->has('services.some_service')); // true
 
+// получить сервис по идентификатору контейнера `services.some_service`
+// сконфигурированным через атрибут #[Autowire]
+$serviceSome = $container->get('services.some_service');
+
 var_dump(
-    \spl_object_id($container->get('services.some_service')) === \spl_object_id($container->get('services.some_service')))
+    \spl_object_id($serviceSome) === \spl_object_id($container->get('services.some_service')))
 ); // false
 ```
 > [!NOTE]
 > При получении сервиса через идентификатор `App\Services\SomeService::class` сервис
 > создаётся единожды так как у атрибута конфигурирующего этот сервис
 > аргумент `isSingleton` указан как `true`.
+> 
+> При получении сервиса через идентификатор `services.some_service` сервис
+> создается каждый раз заново так как у атрибута конфигурирующего этот сервис
+> аргумент `isSingleton` не указан и по умолчанию имеет значение `null` 
+>, но в конфигурации контейнера по умолчанию установлено создавать сервисы
+> каждый раз заново.
+
 
 ## AutowireExclude
 Применятся к классу или интерфейсу для исключения разрешения зависимости контейнером.
