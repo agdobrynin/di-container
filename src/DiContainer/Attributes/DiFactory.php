@@ -16,11 +16,11 @@ use function sprintf;
 final class DiFactory implements DiAttributeServiceInterface
 {
     /**
-     * @param class-string $id
+     * @param class-string<DiFactoryInterface> $id
      */
     public function __construct(private string $id, private ?bool $isSingleton = null)
     {
-        if (!is_a($id, DiFactoryInterface::class, true)) {
+        if (!is_a($id, DiFactoryInterface::class, true)) { // @phpstan-ignore function.alreadyNarrowedType
             throw new AutowireAttributeException(
                 sprintf('The attribute #[%s] must have an $id parameter as class-string. Class must have implement "%s" interface. Got: "%s".', self::class, DiFactoryInterface::class, $id)
             );
