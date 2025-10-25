@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\Attributes\Singleton;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -38,6 +39,15 @@ trait AttributeReaderTrait
     public function isAutowireExclude(ReflectionClass $reflectionClass): bool
     {
         return !([] === $reflectionClass->getAttributes(AutowireExclude::class));
+    }
+
+    public function getSingletonAttribute(ReflectionClass $reflectionClass): ?Singleton
+    {
+        if (null === $attribute = ($reflectionClass->getAttributes(Singleton::class)[0] ?? null)) {
+            return null;
+        }
+
+        return $attribute->newInstance();
     }
 
     private function getDiFactoryAttribute(ReflectionClass $reflectionClass): ?DiFactory
