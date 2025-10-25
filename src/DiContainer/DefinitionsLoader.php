@@ -348,7 +348,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         return $this->configDefinitions->offsetExists($reflectionClass->name)
             ? []
-            : [$reflectionClass->name => new DiDefinitionAutowire($reflectionClass->name)];
+            : [$reflectionClass->name => new DiDefinitionAutowire(
+                $reflectionClass->name,
+                $this->getSingletonAttribute($reflectionClass)?->isSingleton()
+            )];
     }
 
     private function getIteratorFromFile(string $srcFile): Generator
