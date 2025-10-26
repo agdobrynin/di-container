@@ -13,22 +13,15 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use ReflectionParameter;
 
-use function array_column;
-use function array_filter;
 use function array_key_exists;
-use function array_keys;
 use function array_push;
 use function array_slice;
-use function count;
-use function implode;
-use function in_array;
 use function is_array;
 use function is_string;
 use function Kaspi\DiContainer\functionNameByParameter;
@@ -72,12 +65,13 @@ trait BindArgumentsTrait
      */
     private function getParameters(array $reflectionParameters, bool $isAttributeOnParamHigherPriority): array
     {
-        if ([] === $this->bindArguments && [] === $reflectionParameters) {
-            return [];
+        if ([] === $reflectionParameters) {
+            /*
+             * This can be useful for functions without arguments
+             * that use functions like `func_get_args()` or any `func_*()`
+             */
+            return $this->bindArguments;
         }
-
-        // Check valid user defined arguments
-        $this->validateBindArguments($reflectionParameters);
 
         $parameters = [];
         $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
@@ -146,6 +140,13 @@ trait BindArgumentsTrait
             );
         }
 
+        /*
+         * Add unused bind arguments.
+         * This can be useful for functions without arguments
+         * that use functions like `func_get_args()` or any `func_*()`
+         */
+
+
         return $parameters;
     }
 
@@ -212,49 +213,6 @@ trait BindArgumentsTrait
             }
 
             yield $definition;
-        }
-    }
-
-    /**
-     * @param ReflectionParameter[] $reflectionParameters
-     *
-     * @throws AutowireExceptionInterface
-     */
-    private function validateBindArguments(array $reflectionParameters): void
-    {
-        if ([] !== $this->bindArguments) {
-            $parameterNames = array_column($reflectionParameters, 'name');
-            $hasVariadic = [] !== array_filter($reflectionParameters, static fn (ReflectionParameter $parameter) => $parameter->isVariadic());
-
-            if (!$hasVariadic && count($this->bindArguments) > count($parameterNames)) {
-                throw new AutowireException(
-                    sprintf(
-                        'Too many input arguments. Input index or name arguments "%s". Definition parameters: %s',
-                        implode(', ', array_keys($this->bindArguments)),
-                        '' !== ($p = implode(', ', $parameterNames)) ? '"'.$p.'"' : 'without input parameters'
-                    )
-                );
-            }
-
-            $argumentPosition = 0;
-
-            foreach ($this->bindArguments as $name => $value) {
-                if (is_string($name) && !in_array($name, $parameterNames, true)) {
-                    $reflectionParameter = $reflectionParameters[$argumentPosition];
-
-                    throw new AutowireAttributeException(
-                        sprintf(
-                            'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
-                            $name,
-                            $argumentPosition,
-                            functionNameByParameter($reflectionParameter),
-                            implode(', ', $parameterNames)
-                        )
-                    );
-                }
-
-                ++$argumentPosition;
-            }
         }
     }
 }
