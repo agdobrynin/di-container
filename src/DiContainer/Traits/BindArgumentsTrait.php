@@ -22,6 +22,8 @@ use ReflectionParameter;
 use function array_key_exists;
 use function array_push;
 use function array_slice;
+use function array_values;
+use function count;
 use function end;
 use function is_array;
 use function is_string;
@@ -147,7 +149,9 @@ trait BindArgumentsTrait
          * This can be useful for functions without arguments
          * that use functions like `func_get_args()` or any `func_*()`
          */
-        // TODO - implement it
+        if (!$hasVariadic && count($this->bindArguments) > ($c = count($reflectionParameters))) {
+            array_push($parameters, ...array_values(array_slice($this->bindArguments, $c)));
+        }
 
         return $parameters;
     }
