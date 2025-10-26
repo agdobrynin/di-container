@@ -23,6 +23,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\functionNameByParameter
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
