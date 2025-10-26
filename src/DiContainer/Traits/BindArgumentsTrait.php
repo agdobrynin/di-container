@@ -16,7 +16,6 @@ use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
-use ReflectionException;
 use ReflectionParameter;
 
 use function array_column;
@@ -118,14 +117,15 @@ trait BindArgumentsTrait
 
                     continue;
                 }
+            } catch (AutowireExceptionInterface $e) {
+                if ($parameter->isDefaultValueAvailable()) {
+                    // TODO value convert to diAutowire, diCallable, diValue?
+                    $parameters[] = $parameter->getDefaultValue();
 
-                if ($parameter->isDefaultValueAvailable()) {
-                    $parameters[] = $parameter->getDefaultValue();
+                    continue;
                 }
-            } catch (AutowireExceptionInterface) {
-                if ($parameter->isDefaultValueAvailable()) {
-                    $parameters[] = $parameter->getDefaultValue();
-                }
+
+                throw $e;
             }
         }
 
