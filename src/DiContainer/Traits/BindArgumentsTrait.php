@@ -8,12 +8,14 @@ use Generator;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use ReflectionParameter;
@@ -49,6 +51,8 @@ trait BindArgumentsTrait
         return $this;
     }
 
+    abstract public function getContainer(): DiContainerInterface;
+
     /**
      * @return array<non-empty-string|non-negative-int, mixed>
      */
@@ -60,6 +64,8 @@ trait BindArgumentsTrait
     /**
      * @param ReflectionParameter[] $reflectionParameters
      * @param bool                  $isAttributeOnParamHigherPriority Php attributes higher priority then bindArguments
+     *
+     * @return (DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|mixed)[]
      *
      * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
@@ -105,21 +111,8 @@ trait BindArgumentsTrait
 
             try {
                 $strType = $this->getParameterType($parameter, $this->getContainer());
-
-                if (null === $strType && $this->getContainer()->has($parameter->getName())) {
-                    $parameters[] = new DiDefinitionGet($parameter->getName());
-
-                    continue;
-                }
-
-                if ($this->getContainer()->has($strType)) {
-                    $parameters[] = new DiDefinitionGet($strType);
-
-                    continue;
-                }
             } catch (AutowireExceptionInterface $e) {
                 if ($parameter->isDefaultValueAvailable()) {
-                    // TODO value convert to diAutowire, diCallable, diValue?
                     $parameters[] = $parameter->getDefaultValue();
 
                     continue;
@@ -127,6 +120,28 @@ trait BindArgumentsTrait
 
                 throw $e;
             }
+
+            if (null !== $strType && $this->getContainer()->has($strType)) {
+                $parameters[] = new DiDefinitionGet($strType);
+
+                continue;
+            }
+
+            if ($this->getContainer()->has($parameter->getName())) {
+                $parameters[] = new DiDefinitionGet($parameter->getName());
+
+                continue;
+            }
+
+            if ($parameter->isDefaultValueAvailable()) {
+                $parameters[] = $parameter->getDefaultValue();
+
+                continue;
+            }
+
+            throw new AutowireException(
+                sprintf('Unresolvable dependency %s.', $parameter),
+            );
         }
 
         return $parameters;
@@ -160,6 +175,8 @@ trait BindArgumentsTrait
     }
 
     /**
+     * @return Generator<DiDefinitionCallable>|Generator<DiDefinitionGet>|Generator<DiDefinitionProxyClosure>|Generator<DiDefinitionTaggedAs>
+     *
      * @throws AutowireExceptionInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $parameter): Generator

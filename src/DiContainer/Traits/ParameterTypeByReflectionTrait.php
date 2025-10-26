@@ -6,7 +6,6 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
@@ -22,7 +21,6 @@ trait ParameterTypeByReflectionTrait
      * @return null|non-empty-string
      *
      * @throws AutowireExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
      */
     private function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): ?string
     {
