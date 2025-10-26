@@ -22,6 +22,7 @@ use ReflectionParameter;
 use function array_key_exists;
 use function array_push;
 use function array_slice;
+use function end;
 use function is_array;
 use function is_string;
 use function Kaspi\DiContainer\functionNameByParameter;
@@ -75,8 +76,9 @@ trait BindArgumentsTrait
 
         $parameters = [];
         $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
+        $hasVariadic = end($reflectionParameters)->isVariadic();
 
-        foreach ($this->reflectionParameters as $parameter) {
+        foreach ($reflectionParameters as $parameter) {
             if (false !== ($argumentNameOrIndex = $this->getBindArgumentByNameOrIndex($parameter))) {
                 // PHP attributes have higher priority than PHP definitions
                 if ($isUseAttribute && $isAttributeOnParamHigherPriority
@@ -145,7 +147,7 @@ trait BindArgumentsTrait
          * This can be useful for functions without arguments
          * that use functions like `func_get_args()` or any `func_*()`
          */
-
+        // TODO - implement it
 
         return $parameters;
     }
