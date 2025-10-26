@@ -16,6 +16,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterfac
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use ReflectionMethod;
+use ReflectionParameter;
 
 use function function_exists;
 
@@ -78,5 +80,16 @@ if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     function diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true, ?string $key = null, ?string $keyDefaultMethod = null, array $containerIdExclude = [], bool $selfExclude = true): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionTaggedAs($tag, $isLazy, $priorityDefaultMethod, $useKeys, $key, $keyDefaultMethod, $containerIdExclude, $selfExclude);
+    }
+} // @codeCoverageIgnore
+
+if (!function_exists('Kaspi\DiContainer\functionNameByParameter')) { // @codeCoverageIgnore
+    function functionNameByParameter(ReflectionParameter $parameter): string
+    {
+        $fn = $parameter->getDeclaringFunction();
+
+        return $fn instanceof ReflectionMethod
+            ? $fn->getDeclaringClass()->getName().'::'.$fn->getName().'()'
+            : $fn->getName().'()';
     }
 } // @codeCoverageIgnore

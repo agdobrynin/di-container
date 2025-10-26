@@ -39,6 +39,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
+use function Kaspi\DiContainer\functionNameByParameter;
 use function sprintf;
 
 trait ParametersResolverTrait
@@ -155,10 +156,7 @@ trait ParametersResolverTrait
                 continue;
             }
 
-            $declaredClass = null !== $parameter->getDeclaringClass() ? $parameter->getDeclaringClass()->getName() : '';
-            $declaredFunction = $parameter->getDeclaringFunction()->getName();
-            $where = implode('::', array_filter([$declaredClass, $declaredFunction])); // @phpstan-ignore arrayFilter.strict
-            $messageParameter = $parameter.' in '.$where;
+            $messageParameter = $parameter.' in '.functionNameByParameter($parameter);
             $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException->getMessage()}";
 
             if ($autowireException instanceof NotFoundExceptionInterface) {

@@ -31,6 +31,7 @@ use function implode;
 use function in_array;
 use function is_array;
 use function is_string;
+use function Kaspi\DiContainer\functionNameByParameter;
 use function sprintf;
 
 trait BindArgumentsTrait
@@ -140,7 +141,7 @@ trait BindArgumentsTrait
             }
 
             throw new AutowireException(
-                sprintf('Unresolvable dependency %s.', $parameter),
+                sprintf('Unresolvable dependency %s in %s', $parameter, functionNameByParameter($parameter)),
             );
         }
 
@@ -221,15 +222,15 @@ trait BindArgumentsTrait
     private function validateBindArguments(array $reflectionParameters): void
     {
         if ([] !== $this->bindArguments) {
-            $parameters = array_column($reflectionParameters, 'name');
+            $parameterNames = array_column($reflectionParameters, 'name');
             $hasVariadic = [] !== array_filter($reflectionParameters, static fn (ReflectionParameter $parameter) => $parameter->isVariadic());
 
-            if (!$hasVariadic && count($this->bindArguments) > count($parameters)) {
+            if (!$hasVariadic && count($this->bindArguments) > count($parameterNames)) {
                 throw new AutowireException(
                     sprintf(
                         'Too many input arguments. Input index or name arguments "%s". Definition parameters: %s',
                         implode(', ', array_keys($this->bindArguments)),
-                        '' !== ($p = implode(', ', $parameters)) ? '"'.$p.'"' : 'without input parameters'
+                        '' !== ($p = implode(', ', $parameterNames)) ? '"'.$p.'"' : 'without input parameters'
                     )
                 );
             }
@@ -237,7 +238,7 @@ trait BindArgumentsTrait
             $argumentPosition = 0;
 
             foreach ($this->bindArguments as $name => $value) {
-                if (is_string($name) && !in_array($name, $parameters, true)) {
+                if (is_string($name) && !in_array($name, $parameterNames, true)) {
                     $reflectionParameter = $reflectionParameters[$argumentPosition];
 
                     throw new AutowireAttributeException(
@@ -245,8 +246,8 @@ trait BindArgumentsTrait
                             'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
                             $name,
                             $argumentPosition,
-                            implode('::', array_filter([$reflectionParameter->getDeclaringClass()?->getName(), $reflectionParameter->getDeclaringFunction()->getName().'()'])),
-                            implode(', ', $parameters)
+                            functionNameByParameter($reflectionParameter),
+                            implode(', ', $parameterNames)
                         )
                     );
                 }
