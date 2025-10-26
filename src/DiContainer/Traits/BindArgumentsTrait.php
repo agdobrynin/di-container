@@ -15,12 +15,15 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use ReflectionException;
 use ReflectionParameter;
 
 use function array_column;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
+use function array_push;
 use function array_slice;
 use function count;
 use function implode;
@@ -59,7 +62,7 @@ trait BindArgumentsTrait
      * @param ReflectionParameter[] $reflectionParameters
      * @param bool                  $isAttributeOnParamHigherPriority Php attributes higher priority then bindArguments
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
     private function getParameters(array $reflectionParameters, bool $isAttributeOnParamHigherPriority): array
     {
@@ -76,12 +79,53 @@ trait BindArgumentsTrait
         foreach ($this->reflectionParameters as $parameter) {
             if (false !== ($argumentNameOrIndex = $this->getBindArgumentByNameOrIndex($parameter))) {
                 // PHP attributes have higher priority than PHP definitions
-                if ($isUseAttribute && $isAttributeOnParamHigherPriority && ($definition = $this->getDefinitionByAttributes($parameter))->valid()) {
-                    array_push($parameters, ...$definition);
+                if ($isUseAttribute && $isAttributeOnParamHigherPriority && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
+                    array_push($parameters, ...$definitions);
 
                     continue;
                 }
-                // TODO - WIP
+
+                if ($parameter->isVariadic()) {
+                    foreach ($this->getBindArgumentAsVariadic($argumentNameOrIndex) as $definition) {
+                        $parameters[] = $definition;
+                    }
+
+                    break; // Variadic Parameter has last position
+                }
+
+                $parameters[] = $this->bindArguments[$argumentNameOrIndex];
+
+                continue;
+            }
+
+            if ($isUseAttribute && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
+                array_push($parameters, ...$definitions);
+
+                continue;
+            }
+
+            try {
+                $strType = $this->getParameterType($parameter, $this->getContainer());
+
+                if (null === $strType && $this->getContainer()->has($parameter->getName())) {
+                    $parameters[] = new DiDefinitionGet($parameter->getName());
+
+                    continue;
+                }
+
+                if ($this->getContainer()->has($strType)) {
+                    $parameters[] = new DiDefinitionGet($strType);
+
+                    continue;
+                }
+
+                if ($parameter->isDefaultValueAvailable()) {
+                    $parameters[] = $parameter->getDefaultValue();
+                }
+            } catch (AutowireExceptionInterface) {
+                if ($parameter->isDefaultValueAvailable()) {
+                    $parameters[] = $parameter->getDefaultValue();
+                }
             }
         }
 
