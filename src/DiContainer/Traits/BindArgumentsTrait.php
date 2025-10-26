@@ -85,7 +85,8 @@ trait BindArgumentsTrait
         foreach ($this->reflectionParameters as $parameter) {
             if (false !== ($argumentNameOrIndex = $this->getBindArgumentByNameOrIndex($parameter))) {
                 // PHP attributes have higher priority than PHP definitions
-                if ($isUseAttribute && $isAttributeOnParamHigherPriority && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
+                if ($isUseAttribute && $isAttributeOnParamHigherPriority
+                    && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
                     array_push($parameters, ...$definitions);
 
                     continue;
@@ -141,7 +142,7 @@ trait BindArgumentsTrait
             }
 
             throw new AutowireException(
-                sprintf('Unresolvable dependency %s in %s', $parameter, functionNameByParameter($parameter)),
+                sprintf('Unresolvable dependency %s in %s.', $parameter, functionNameByParameter($parameter)),
             );
         }
 
