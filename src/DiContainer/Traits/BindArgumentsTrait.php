@@ -41,14 +41,14 @@ trait BindArgumentsTrait
      */
     private array $bindArguments = [];
 
+    abstract public function getContainer(): DiContainerInterface;
+
     public function bindArguments(mixed ...$argument): static
     {
         $this->bindArguments = $argument; // @phpstan-ignore assign.propertyType
 
         return $this;
     }
-
-    abstract public function getContainer(): DiContainerInterface;
 
     /**
      * @return array<non-empty-string|non-negative-int, mixed>
@@ -186,11 +186,11 @@ trait BindArgumentsTrait
     /**
      * @return Generator<DiDefinitionCallable>|Generator<DiDefinitionGet>|Generator<DiDefinitionProxyClosure>|Generator<DiDefinitionTaggedAs>
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $parameter): Generator
     {
-        $attrs = $this->getAttributeOnParameter($parameter);
+        $attrs = $this->getAttributeOnParameter($parameter, $this->getContainer());
 
         if (!$attrs->valid()) {
             return;

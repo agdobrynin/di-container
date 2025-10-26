@@ -19,7 +19,7 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -147,7 +147,7 @@ trait AttributeReaderTrait
      *
      * @throws AutowireExceptionInterface
      */
-    private function getAttributeOnParameter(ReflectionParameter $reflectionParameter): Generator
+    private function getAttributeOnParameter(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
     {
         $groupAttributes = [];
 
@@ -169,7 +169,7 @@ trait AttributeReaderTrait
         }
 
         if (isset($groupAttributes[Inject::class])) {
-            yield from $this->getInjectAttribute($reflectionParameter);
+            yield from $this->getInjectAttribute($reflectionParameter, $container);
 
             return;
         }
@@ -193,9 +193,8 @@ trait AttributeReaderTrait
      * @return Generator<Inject>
      *
      * @throws AutowireExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
      */
-    private function getInjectAttribute(ReflectionParameter $reflectionParameter): Generator
+    private function getInjectAttribute(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
     {
         $attributes = $reflectionParameter->getAttributes(Inject::class);
 
@@ -212,7 +211,7 @@ trait AttributeReaderTrait
             if ('' === $inject->getIdentifier()
                 // PHPStan is not smart enough to parse such a condition.
                 // @phpstan-ignore-next-line
-                && null !== ($strType = $this->getParameterType($reflectionParameter, $this->getContainer()))) {
+                && null !== ($strType = $this->getParameterType($reflectionParameter, $container))) {
                 $inject = new Inject($strType);
             }
 

@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\Inject;
 
 use Kaspi\DiContainer\Attributes\Inject;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
@@ -26,7 +25,12 @@ class InjectReaderTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use AttributeReaderTrait;
-    use DiContainerTrait; // 🧨 need for abstract method getContainer in AttributeReaderTrait.
+    private ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = $this->createMock(ContainerInterface::class);
+    }
 
     public function testNoneInject(): void
     {
@@ -35,7 +39,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse($this->getInjectAttribute($p)->valid());
+        $this->assertFalse($this->getInjectAttribute($p, $this->container)->valid());
     }
 
     public function testManyInjectNonVariadicParameter(): void
@@ -50,7 +54,7 @@ class InjectReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
 
-        $this->getInjectAttribute($p)->valid();
+        $this->getInjectAttribute($p, $this->container)->valid();
     }
 
     public function testInjectNonVariadicParameter(): void
@@ -61,9 +65,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->setContainer($this->createMock(DiContainerInterface::class));
-
-        $injects = $this->getInjectAttribute($p);
+        $injects = $this->getInjectAttribute($p, $this->container);
 
         $this->assertTrue($injects->valid());
         $injects->rewind();
@@ -86,9 +88,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->setContainer($this->createMock(DiContainerInterface::class));
-
-        $injects = $this->getInjectAttribute($p);
+        $injects = $this->getInjectAttribute($p, $this->container);
 
         $this->assertTrue($injects->valid());
 
@@ -109,9 +109,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->setContainer($this->createMock(DiContainerInterface::class));
-
-        $injects = $this->getInjectAttribute($p);
+        $injects = $this->getInjectAttribute($p, $this->container);
 
         $this->assertTrue($injects->valid());
         $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());
@@ -125,14 +123,12 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->expects($this->once())
+        $this->container->expects($this->once())
             ->method('has')->with(SuperClass::class)
             ->willReturn(true)
         ;
-        $this->setContainer($mockContainer);
 
-        $injects = $this->getInjectAttribute($p);
+        $injects = $this->getInjectAttribute($p, $this->container);
 
         $this->assertTrue($injects->valid());
         $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());

@@ -214,7 +214,7 @@ trait ParametersResolverTrait
      */
     private function attemptResolveParamByAttributes(ReflectionParameter $parameter): Generator
     {
-        $attrs = $this->getAttributeOnParameter($parameter);
+        $attrs = $this->getAttributeOnParameter($parameter, $this->getContainer());
 
         if (!$attrs->valid()) {
             return;
