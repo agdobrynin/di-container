@@ -54,7 +54,8 @@ trait ParameterTypeByReflectionTrait
             };
         }
 
-        if ($type instanceof ReflectionIntersectionType & !$parameter->isDefaultValueAvailable()) {
+        if ($type instanceof ReflectionIntersectionType
+            & (!$parameter->isDefaultValueAvailable() && !$container->has($parameter->getName()))) {
             throw new AutowireException(
                 sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available intersection types: %s.', $parameter->getName(), '"'.implode('" & "', $type->getTypes())).'"'
             );
