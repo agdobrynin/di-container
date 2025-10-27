@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionParameter;
+use Tests\Function\Fixtures\AnyClass;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
@@ -87,55 +88,36 @@ class HelperFunctionTest extends TestCase
     /**
      * @dataProvider dataProviderReflectionParameter
      */
-    public function testFunctionNameByParameter(ReflectionParameter $parameter, string $expect): void
+    public function testFunctionNameByParameter(ReflectionParameter $parameter, string $expectRegExp): void
     {
-        self::assertStringContainsString($expect, functionNameByParameter($parameter));
+        self::assertMatchesRegularExpression($expectRegExp, functionNameByParameter($parameter));
     }
 
     public function dataProviderReflectionParameter(): Generator
     {
         yield 'in class method' => [
             (new ReflectionClass(AnyClass::class))->getMethod('foo')->getParameters()[0],
-            'Tests\Function\AnyClass::foo()',
+            '/^Tests\\\Function\\\Fixtures\\\AnyClass::foo\(\)$/',
         ];
 
         yield 'in class constructor' => [
             (new ReflectionClass(AnyClass::class))->getConstructor()->getParameters()[0],
-            'Tests\Function\AnyClass::__construct()',
+            '/^Tests\\\Function\\\Fixtures\\\AnyClass::__construct\(\)$/',
         ];
 
         yield 'in user defined function' => [
-            (new ReflectionFunction('Tests\Function\bar'))->getParameters()[0],
-            'Tests\Function\bar()',
+            (new ReflectionFunction('Tests\Function\Fixtures\bar'))->getParameters()[0],
+            '/^Tests\\\Function\\\Fixtures\\\bar\(\)$/',
         ];
 
         yield 'in build-in function' => [
             (new ReflectionFunction('\log'))->getParameters()[0],
-            'log()',
+            '/^log\(\)$/',
         ];
-
-        $expect = 'Tests\Function\{closure}()';
-
-        if (PHP_VERSION_ID >= 80400) {
-            $expect = 'Tests\Function\HelperFunctionTest::{closure:Tests\Function\HelperFunctionTest::dataProviderReflectionParameter()';
-        }
 
         yield 'closure function' => [
-            (new ReflectionFunction(fn (string $bar) => $bar.'*'))->getParameters()[0],
-            $expect,
+            (new ReflectionFunction(require __DIR__.'/Fixtures/closure.php'))->getParameters()[0],
+            '/^Tests\\\Function\\\HelperFunctionTest::{closure.+tests\/Function\/Fixtures\/closure.php:5}\(\)$/',
         ];
     }
-}
-
-// Fixtures for method testFunctionNameByParameter.
-class AnyClass
-{
-    public function __construct(private string $foo) {}
-
-    public function foo(string $baz): void {}
-}
-
-function bar(string $param): string
-{
-    return 'foo + '.$param;
 }

@@ -20,6 +20,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 
 use function function_exists;
+use function sprintf;
 
 if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
@@ -88,8 +89,12 @@ if (!function_exists('Kaspi\DiContainer\functionNameByParameter')) { // @codeCov
     {
         $fn = $parameter->getDeclaringFunction();
 
-        return $fn instanceof ReflectionMethod
-            ? $fn->getDeclaringClass()->getName().'::'.$fn->getName().'()'
+        $fnName = $fn->isClosure() && false !== $fn->getFileName() && false !== $fn->getStartLine()
+            ? sprintf('{closure:%s:%d}()', $fn->getFileName(), $fn->getStartLine())
             : $fn->getName().'()';
+
+        return $fn instanceof ReflectionMethod
+            ? $fn->getDeclaringClass()->getName().'::'.$fnName
+            : $fnName;
     }
 } // @codeCoverageIgnore
