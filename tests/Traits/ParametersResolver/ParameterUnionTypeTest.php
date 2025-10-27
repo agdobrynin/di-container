@@ -58,7 +58,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->setContainer($this->mockContainer);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+One|.+Two.+\$type/');
 
         $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters(), false);
     }
@@ -97,7 +97,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->setContainer($this->mockContainer);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+One|.+Two \$type/');
 
         $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters(), false);
     }

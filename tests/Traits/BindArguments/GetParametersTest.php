@@ -51,7 +51,7 @@ class GetParametersTest extends TestCase
 
         $params = (new ReflectionFunction($fn))->getParameters();
 
-        $containerMock = self::createMock(DiContainerInterface::class);
+        $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
             ->willReturnMap([
                 ['ArrayIterator', true],
@@ -74,7 +74,7 @@ class GetParametersTest extends TestCase
 
         $params = (new ReflectionFunction($fn))->getParameters();
 
-        $containerMock = self::createMock(DiContainerInterface::class);
+        $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
             ->willReturnMap([
                 [Foo::class, true],
@@ -96,7 +96,7 @@ class GetParametersTest extends TestCase
 
         $params = (new ReflectionFunction($fn))->getParameters();
 
-        $containerMock = self::createMock(DiContainerInterface::class);
+        $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
             ->willReturnMap([
                 ['fooBar', false],
@@ -117,10 +117,10 @@ class GetParametersTest extends TestCase
 
         $params = (new ReflectionFunction($fn))->getParameters();
 
-        $this->setContainer(self::createMock(DiContainerInterface::class));
+        $this->setContainer($this->createMock(DiContainerInterface::class));
 
-        self::expectException(AutowireExceptionInterface::class);
-        self::expectExceptionMessageMatches('/^Cannot automatically resolve dependency.+"\$fooBar"\..+Available intersection types.+/');
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/^Cannot automatically resolve dependency.+Bar&.+Foo \$fooBar/');
 
         $this->getParameters($params, false);
     }
@@ -136,14 +136,14 @@ class GetParametersTest extends TestCase
             ->willReturnMap([
                 [Foo::class, false],
                 ['foo', false],
-            ]);
+            ])
+        ;
 
         $this->setContainer($mockContainer);
 
-        self::expectException(AutowireExceptionInterface::class);
-        self::expectExceptionMessageMatches('/^Unresolvable dependency.+ \$foo /');
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/^Unresolvable dependency.+ \$foo /');
 
         $this->getParameters($params, false);
     }
-
 }

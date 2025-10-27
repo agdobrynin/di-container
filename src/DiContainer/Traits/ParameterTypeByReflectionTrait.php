@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -13,7 +12,7 @@ use ReflectionParameter;
 use ReflectionUnionType;
 
 use function count;
-use function implode;
+use function Kaspi\DiContainer\functionNameByParameter;
 use function sprintf;
 
 trait ParameterTypeByReflectionTrait
@@ -21,7 +20,7 @@ trait ParameterTypeByReflectionTrait
     /**
      * @return null|non-empty-string
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireException
      */
     private function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): ?string
     {
@@ -49,15 +48,14 @@ trait ParameterTypeByReflectionTrait
                 0 => null,
                 1 => $types[0],
                 default => throw new AutowireException(
-                    sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available types: %s.', $parameter->getName(), '"'.implode('", "', $types)).'"'
+                    sprintf('Cannot automatically resolve dependency in %s. Please specify the parameter type for the %s.', functionNameByParameter($parameter), $parameter)
                 )
             };
         }
 
-        if ($type instanceof ReflectionIntersectionType
-            & (!$parameter->isDefaultValueAvailable() && !$container->has($parameter->getName()))) {
+        if ($type instanceof ReflectionIntersectionType) {
             throw new AutowireException(
-                sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available intersection types: %s.', $parameter->getName(), '"'.implode('" & "', $type->getTypes())).'"'
+                sprintf('Cannot automatically resolve dependency in %s. Please specify the parameter type for the %s.', functionNameByParameter($parameter), $parameter)
             );
         }
 
