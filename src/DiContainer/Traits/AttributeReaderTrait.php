@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -208,11 +209,13 @@ trait AttributeReaderTrait
             /** @var Inject $inject */
             $inject = $attribute->newInstance();
 
-            if ('' === $inject->getIdentifier()
-                // PHPStan is not smart enough to parse such a condition.
-                // @phpstan-ignore-next-line
-                && null !== ($strType = $this->getParameterType($reflectionParameter, $container))) {
-                $inject = new Inject($strType);
+            if ('' === $inject->getIdentifier()) {
+                try {
+                    if (null !== ($strType = $this->getParameterType($reflectionParameter, $container))) {
+                        $inject = new Inject($strType);
+                    }
+                } catch (AutowireParameterTypeException) {
+                }
             }
 
             yield $inject;
