@@ -6,16 +6,21 @@ namespace Tests\Traits\BindArguments;
 
 use ArrayIterator;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use stdClass;
+use Tests\Traits\BindArguments\Fixtures\Bar;
+use Tests\Traits\BindArguments\Fixtures\Baz;
+use Tests\Traits\BindArguments\Fixtures\Foo;
 
 use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\functionNameByParameter
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getParameterType
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
@@ -62,4 +67,83 @@ class GetParametersTest extends TestCase
             $this->getParameters($params, false)
         );
     }
+
+    public function testGetParameterTypeWithDefaultValue(): void
+    {
+        $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
+
+        $params = (new ReflectionFunction($fn))->getParameters();
+
+        $containerMock = self::createMock(DiContainerInterface::class);
+        $containerMock->method('has')
+            ->willReturnMap([
+                [Foo::class, true],
+                [Bar::class, true],
+            ])
+        ;
+
+        $this->setContainer($containerMock);
+
+        self::assertInstanceOf(
+            Baz::class,
+            $this->getParameters($params, false)[0]
+        );
+    }
+
+    public function testGetParameterIntersectionTypeWithDefaultValue(): void
+    {
+        $fn = static fn (Bar&Foo $fooBar = new Baz()): Bar&Foo => $fooBar;
+
+        $params = (new ReflectionFunction($fn))->getParameters();
+
+        $containerMock = self::createMock(DiContainerInterface::class);
+        $containerMock->method('has')
+            ->willReturnMap([
+                ['fooBar', false],
+            ])
+        ;
+
+        $this->setContainer($containerMock);
+
+        self::assertInstanceOf(
+            Baz::class,
+            $this->getParameters($params, false)[0]
+        );
+    }
+
+    public function testExceptionGetParameterIntersectionType(): void
+    {
+        $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
+
+        $params = (new ReflectionFunction($fn))->getParameters();
+
+        $this->setContainer(self::createMock(DiContainerInterface::class));
+
+        self::expectException(AutowireExceptionInterface::class);
+        self::expectExceptionMessageMatches('/^Cannot automatically resolve dependency.+"\$fooBar"\..+Available intersection types.+/');
+
+        $this->getParameters($params, false);
+    }
+
+    public function testExceptionGetParameterUnresolvedType(): void
+    {
+        $fn = static fn (Foo $foo): Foo => $foo;
+
+        $params = (new ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = self::createMock(DiContainerInterface::class);
+        $mockContainer->method('has')
+            ->willReturnMap([
+                [Foo::class, false],
+                ['foo', false],
+            ]);
+
+        $this->setContainer($mockContainer);
+
+        self::expectException(AutowireExceptionInterface::class);
+        self::expectExceptionMessageMatches('/^Unresolvable dependency.+ \$foo /');
+
+        $this->getParameters($params, false);
+    }
+
 }
