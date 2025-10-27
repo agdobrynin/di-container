@@ -122,7 +122,7 @@ trait BindArgumentsTrait
                 throw $e;
             }
 
-            if (null !== $strType) {
+            if (null !== $strType && $this->getContainer()->has($strType)) {
                 $parameters[] = new DiDefinitionGet($strType);
 
                 continue;
