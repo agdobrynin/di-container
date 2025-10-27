@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Psr\Container\ContainerInterface;
+use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
@@ -51,6 +52,12 @@ trait ParameterTypeByReflectionTrait
                     sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available types: %s.', $parameter->getName(), '"'.implode('", "', $types)).'"'
                 )
             };
+        }
+
+        if ($type instanceof ReflectionIntersectionType & !$parameter->isDefaultValueAvailable()) {
+            throw new AutowireException(
+                sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available intersection types: %s.', $parameter->getName(), '"'.implode('" & "', $type->getTypes())).'"'
+            );
         }
 
         return null;
