@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Psr\Container\ContainerInterface;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -20,7 +20,7 @@ trait ParameterTypeByReflectionTrait
     /**
      * @return null|non-empty-string
      *
-     * @throws AutowireException
+     * @throws AutowireParameterTypeException
      */
     private function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): ?string
     {
@@ -47,14 +47,14 @@ trait ParameterTypeByReflectionTrait
             return match (count($types)) {
                 0 => null,
                 1 => $types[0],
-                default => throw new AutowireException(
+                default => throw new AutowireParameterTypeException(
                     sprintf('Cannot automatically resolve dependency in %s. Please specify the parameter type for the %s.', functionNameByParameter($parameter), $parameter)
                 )
             };
         }
 
         if ($type instanceof ReflectionIntersectionType) {
-            throw new AutowireException(
+            throw new AutowireParameterTypeException(
                 sprintf('Cannot automatically resolve dependency in %s. Please specify the parameter type for the %s.', functionNameByParameter($parameter), $parameter)
             );
         }
