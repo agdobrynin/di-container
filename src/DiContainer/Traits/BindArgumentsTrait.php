@@ -70,7 +70,7 @@ trait BindArgumentsTrait
     {
         if ([] === $reflectionParameters) {
             /*
-             * This can be useful for functions without arguments
+             * This maybe useful for functions without arguments
              * that use functions like `func_get_args()` or any `func_*()`
              */
             return $this->bindArguments;
