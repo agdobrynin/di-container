@@ -33,6 +33,7 @@ use function sprintf;
 trait BindArgumentsTrait
 {
     use DiContainerTrait;
+    use ParameterTypeByReflectionTrait;
 
     /**
      * User defined parameters by parameter name.
@@ -121,7 +122,7 @@ trait BindArgumentsTrait
                 throw $e;
             }
 
-            if (null !== $strType && $this->getContainer()->has($strType)) {
+            if (null !== $strType) {
                 $parameters[] = new DiDefinitionGet($strType);
 
                 continue;
