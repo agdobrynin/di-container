@@ -1,0 +1,12 @@
+/doc export-ignore
+/examples export-ignore
+/tests export-ignore
+/.env export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/docker-compose.yml export-ignore
+/Dockerfile export-ignore
+/Makefile export-ignore
+/phpstan.neon export-ignore
+/phpunit.xml export-ignore
