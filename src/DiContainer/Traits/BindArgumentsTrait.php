@@ -115,6 +115,8 @@ trait BindArgumentsTrait
             try {
                 $strType = $this->getParameterType($parameter, $this->getContainer());
                 $parameters[] = new DiDefinitionGet($strType);
+
+                continue;
             } catch (AutowireParameterTypeException $e) {
                 if ($parameter->isDefaultValueAvailable()) {
                     $parameters[] = $parameter->getDefaultValue();
