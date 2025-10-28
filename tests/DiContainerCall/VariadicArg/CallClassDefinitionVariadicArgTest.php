@@ -7,6 +7,7 @@ namespace Tests\DiContainerCall\VariadicArg;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainerCall\VariadicArg\Fixtures\Talk;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordHello;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordSuffix;
@@ -24,6 +25,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\functionNameByParameter
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
  *
  * @internal

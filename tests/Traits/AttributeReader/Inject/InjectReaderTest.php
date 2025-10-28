@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\Inject;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,7 @@ use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\functionNameByParameter
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
@@ -57,7 +59,7 @@ class InjectReaderTest extends TestCase
         $this->getInjectAttribute($p, $this->container)->valid();
     }
 
-    public function testInjectNonVariadicParameter(): void
+    public function testInjectNonVariadicParameterFail(): void
     {
         $f = static fn (
             #[Inject]
@@ -65,17 +67,10 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = $this->getInjectAttribute($p, $this->container);
+        $this->expectException(AutowireParameterTypeException::class);
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+string \$a/');
 
-        $this->assertTrue($injects->valid());
-        $injects->rewind();
-
-        $this->assertInstanceOf(Inject::class, $injects->current());
-        $this->assertEquals('', $injects->current()->getIdentifier());
-
-        $injects->next(); // One element Inject for argument $a in function $f.
-
-        $this->assertFalse($injects->valid());
+        $this->getInjectAttribute($p, $this->container)->valid();
     }
 
     public function testInjectVariadicParameter(): void

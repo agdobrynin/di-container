@@ -67,19 +67,6 @@ class CallClassDefinitionTest extends TestCase
         $this->assertEquals('Start method 🚩', $res);
     }
 
-    public function testCallWithArgumentsClassWithNoneStaticMethodAsArrayWithoutPhpAttribute(): void
-    {
-        $container = new DiContainer([
-            // global definition when resolve class container will get dependency by argument name.
-            'publicProperty' => 'Try call as array from',
-            diAutowire(ClassWithSimplePublicProperty::class),
-        ]);
-
-        $res = $container->call([ClassWithSimplePublicProperty::class, 'method'], ['append' => '🌞']);
-
-        $this->assertEquals('Try call as array from method 🌞', $res);
-    }
-
     public function testCallWithArgumentsFromStaticMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make();
