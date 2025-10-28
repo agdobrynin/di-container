@@ -16,8 +16,11 @@ use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
 
 use function call_user_func_array;
+use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet::getDefinition
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
@@ -76,19 +79,15 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $mockContainer
             ->expects(self::exactly(2))
             ->method('get')
-            ->with($this->logicalOr(
-                SuperClass::class,
-                'word'
-            ))
-            ->willReturn(
-                new SuperClass(),
-                'one'
-            )
+            ->willReturnMap([
+                [SuperClass::class, new SuperClass()],
+                ['word', 'one'],
+            ])
         ;
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters([], $reflectionParameters);
+        $params = $this->resolveParameters(['word' => diGet('word')], $reflectionParameters);
 
         $this->assertCount(2, $params);
         $this->assertInstanceOf(SuperClass::class, $params[0]);
@@ -115,7 +114,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->setContainer($mockContainer);
 
-        $params = $this->resolveParameters([], $reflectionParameters);
+        $params = $this->resolveParameters([diGet('phrase')], $reflectionParameters);
 
         $this->assertCount(1, $params);
         $this->assertEquals(
@@ -177,7 +176,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         $this->setContainer($mockContainer);
         $this->assertInstanceOf(
             ArrayIterator::class,
-            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters))[0]
+            call_user_func_array($fn, $this->resolveParameters([diGet(ArrayIterator::class)], $reflectionParameters))[0]
         );
     }
 
