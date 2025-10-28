@@ -13,7 +13,9 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
@@ -112,7 +114,8 @@ trait BindArgumentsTrait
 
             try {
                 $strType = $this->getParameterType($parameter, $this->getContainer());
-            } catch (AutowireExceptionInterface $e) {
+                $parameters[] = new DiDefinitionGet($strType);
+            } catch (AutowireParameterTypeException $e) {
                 if ($parameter->isDefaultValueAvailable()) {
                     $parameters[] = $parameter->getDefaultValue();
 
@@ -120,24 +123,6 @@ trait BindArgumentsTrait
                 }
 
                 throw $e;
-            }
-
-            if (null !== $strType && $this->getContainer()->has($strType)) {
-                $parameters[] = new DiDefinitionGet($strType);
-
-                continue;
-            }
-
-            if ($this->getContainer()->has($parameter->getName())) {
-                $parameters[] = new DiDefinitionGet($parameter->getName());
-
-                continue;
-            }
-
-            if ($parameter->isDefaultValueAvailable()) {
-                $parameters[] = $parameter->getDefaultValue();
-
-                continue;
             }
 
             throw new AutowireException(
@@ -185,7 +170,7 @@ trait BindArgumentsTrait
     }
 
     /**
-     * @return Generator<DiDefinitionCallable>|Generator<DiDefinitionGet>|Generator<DiDefinitionProxyClosure>|Generator<DiDefinitionTaggedAs>
+     * @return Generator<DiDefinitionCallable>|Generator<DiDefinitionGet>|Generator<DiDefinitionProxyClosure>|Generator<DiDefinitionTaggedAs>|Generator<DiDefinitionValue>
      *
      * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
@@ -199,9 +184,7 @@ trait BindArgumentsTrait
 
         foreach ($attrs as $attr) {
             if ($attr instanceof Inject) {
-                $definition = '' !== $attr->getIdentifier()
-                    ? new DiDefinitionGet($attr->getIdentifier())
-                    : new DiDefinitionGet($parameter->getName());
+                $definition = new DiDefinitionGet($attr->getIdentifier()); // @phpstan-ignore argument.type
             } elseif ($attr instanceof ProxyClosure) {
                 $definition = new DiDefinitionProxyClosure($attr->getIdentifier(), $attr->isSingleton());
             } elseif ($attr instanceof TaggedAs) {

@@ -19,7 +19,6 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
@@ -146,7 +145,7 @@ trait AttributeReaderTrait
     /**
      * @return Generator<Inject>|Generator<InjectByCallable>|Generator<ProxyClosure>|Generator<TaggedAs>
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireAttributeException|AutowireParameterTypeException
      */
     private function getAttributeOnParameter(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
     {
@@ -193,7 +192,7 @@ trait AttributeReaderTrait
     /**
      * @return Generator<Inject>
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireAttributeException|AutowireParameterTypeException
      */
     private function getInjectAttribute(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
     {
@@ -210,12 +209,9 @@ trait AttributeReaderTrait
             $inject = $attribute->newInstance();
 
             if ('' === $inject->getIdentifier()) {
-                try {
-                    if (null !== ($strType = $this->getParameterType($reflectionParameter, $container))) {
-                        $inject = new Inject($strType);
-                    }
-                } catch (AutowireParameterTypeException) {
-                }
+                $inject = new Inject(
+                    $this->getParameterType($reflectionParameter, $container)
+                );
             }
 
             yield $inject;
