@@ -132,6 +132,10 @@ trait ParametersResolverTrait
                     continue;
                 }
 
+                if ($parameter->isVariadic()) {
+                    continue;
+                }
+
                 $strType = $this->getParameterType($parameter, $this->getContainer());
 
                 $dependencies[] = null === $strType

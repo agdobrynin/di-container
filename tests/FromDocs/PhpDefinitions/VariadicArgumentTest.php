@@ -11,6 +11,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleA;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleB;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleC;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleGenerator;
+use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleInterface;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
@@ -26,6 +27,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
  *
  * @internal
  */
@@ -100,5 +102,17 @@ class VariadicArgumentTest extends TestCase
 
         $this->assertEquals(['first'], $container->get(ParameterIterableVariadic::class)->getParameters()[0]);
         $this->assertEquals(['second'], $container->get(ParameterIterableVariadic::class)->getParameters()[1]);
+    }
+
+    public function testVariadicParameterWithoutBindArguments(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diAutowire(RuleGenerator::class),
+            RuleInterface::class => diAutowire(RuleA::class),
+        ]);
+
+        $ruleGenerator = $container->get(RuleGenerator::class);
+
+        self::assertEmpty($ruleGenerator->getRules());
     }
 }
