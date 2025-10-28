@@ -7,7 +7,6 @@ namespace Tests\DiContainerCall\VariadicArg;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainerCall\VariadicArg\Fixtures\Talk;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordHello;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordSuffix;

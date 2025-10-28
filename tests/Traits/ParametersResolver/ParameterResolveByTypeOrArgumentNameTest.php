@@ -53,24 +53,6 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         );
     }
 
-    public function testParameterResolveByName(): void
-    {
-        $fn = static fn ($myArrayIterator) => $myArrayIterator;
-        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
-
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->expects($this->once())
-            ->method('get')->with('myArrayIterator')
-            ->willReturn(new ArrayIterator())
-        ;
-        $this->setContainer($mockContainer);
-
-        $this->assertInstanceOf(
-            ArrayIterator::class,
-            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, false))
-        );
-    }
-
     public function testParameterResolveByNameVariadicParameterString(): void
     {
         $fn = static fn (SuperClass $superClass, string ...$word) => [$superClass, $word];

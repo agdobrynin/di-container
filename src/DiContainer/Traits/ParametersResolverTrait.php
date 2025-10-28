@@ -139,9 +139,7 @@ trait ParametersResolverTrait
 
                 $strType = $this->getParameterType($parameter, $this->getContainer());
 
-                $dependencies[] = null === $strType
-                    ? $this->getContainer()->get($parameter->getName())
-                    : $this->getContainer()->get($strType);
+                $dependencies[] = $this->getContainer()->get($strType);
 
                 continue;
             } catch (AutowireAttributeException|CallCircularDependencyException|ContainerNeedSetExceptionInterface $e) {
@@ -153,6 +151,10 @@ trait ParametersResolverTrait
             if ($parameter->isDefaultValueAvailable()) {
                 $dependencies[] = $parameter->getDefaultValue();
 
+                continue;
+            }
+
+            if ($parameter->isOptional()) {
                 continue;
             }
 

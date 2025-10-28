@@ -115,7 +115,7 @@ trait BindArgumentsTrait
 
                 continue;
             } catch (AutowireParameterTypeException $e) {
-                if (!$parameter->isDefaultValueAvailable()) {
+                if (!($parameter->isDefaultValueAvailable() || $parameter->isOptional())) {
                     throw $e;
                 }
             }
