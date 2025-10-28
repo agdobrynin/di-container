@@ -151,7 +151,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $this->assertInstanceOf(WordHello::class, $res[1]);
     }
 
-    public function testCallStaticMethodResolveByArgumentName(): void
+    public function testCallStaticMethodResolveWithoutArguments(): void
     {
         $config = new DiContainerConfig();
         $definitions = [
@@ -161,7 +161,6 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call([Talk::class, 'staticMethodByArgumentNameOneToMany']);
 
-        $this->assertCount(1, $res);
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
+        self::assertEmpty($res);
     }
 }
