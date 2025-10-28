@@ -14,7 +14,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -29,8 +28,6 @@ use function count;
 use function end;
 use function is_array;
 use function is_string;
-use function Kaspi\DiContainer\functionNameByParameter;
-use function sprintf;
 
 trait BindArgumentsTrait
 {
@@ -118,18 +115,10 @@ trait BindArgumentsTrait
 
                 continue;
             } catch (AutowireParameterTypeException $e) {
-                if ($parameter->isDefaultValueAvailable()) {
-                    $parameters[] = $parameter->getDefaultValue();
-
-                    continue;
+                if (!$parameter->isDefaultValueAvailable()) {
+                    throw $e;
                 }
-
-                throw $e;
             }
-
-            throw new AutowireException(
-                sprintf('Unresolvable dependency %s in %s.', $parameter, functionNameByParameter($parameter)),
-            );
         }
 
         /*
