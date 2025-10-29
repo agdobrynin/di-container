@@ -417,9 +417,15 @@ $container = (new DiContainerFactory())->make(require 'config/main.php');
 $myClass = $container->get(App\Databases\MyDb::class);
 ```
 
-### Атрибут #[Inject] для разрешения аргументов переменной длины
+### Атрибут #[Inject] для разрешения параметров переменной длины
 
 Атрибут имеет признак `repetable`
+
+> [!WARNING]
+> Параметр переменной длинны является опциональным и если у него не задан
+> PHP атрибут указывающий какой аргумент использовать
+> для разрешения зависимости, то он будет пропущен.
+
 
 ```php
 // src/Rules/RuleInterface.php
@@ -483,7 +489,13 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 > [!TIP]
 > `DefinitionsLoader` – [загрузчик определений в контейнер из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md). 
 
-### Атрибут #[Inject] для аргументов переменной длины по идентификатору контейнера
+### Атрибут #[Inject] для параметра переменной длины по идентификатору контейнера
+
+> [!WARNING]
+> Параметр переменной длинны является опциональным и если у него не задан
+> PHP атрибут указывающий какой аргумент использовать
+> для разрешения зависимости, то он будет пропущен.
+
 ```php
 // src/Rules/RuleInterface.php
 namespace App\Rules;
@@ -1163,6 +1175,11 @@ class AnyService {
 ```
 > [!WARNING]
 > Для аргумента с типом `array` необходимо указать `$isLazy` как `false`.
+
+> [!WARNING]
+> Параметр переменной длинны является опциональным и если у него не задан
+> PHP атрибут указывающий какой аргумент использовать
+> для разрешения зависимости, то он будет пропущен.
 
 > [!TIP]
 > Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
