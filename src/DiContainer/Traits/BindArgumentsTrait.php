@@ -18,6 +18,7 @@ use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use ReflectionFunctionAbstract;
 use ReflectionParameter;
 
 use function array_key_exists;
@@ -25,7 +26,6 @@ use function array_push;
 use function array_slice;
 use function array_values;
 use function count;
-use function end;
 use function is_array;
 use function is_string;
 
@@ -59,16 +59,15 @@ trait BindArgumentsTrait
     }
 
     /**
-     * @param ReflectionParameter[] $reflectionParameters
-     * @param bool                  $isAttributeOnParamHigherPriority Php attributes higher priority then bindArguments
+     * @param bool $isAttributeOnParamHigherPriority Php attributes higher priority then bindArguments
      *
      * @return (DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|mixed)[]
      *
      * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
-    private function getParameters(array $reflectionParameters, bool $isAttributeOnParamHigherPriority): array
+    private function buildArguments(ReflectionFunctionAbstract $functionOrMethod, bool $isAttributeOnParamHigherPriority): array
     {
-        if ([] === $reflectionParameters) {
+        if ([] === $functionOrMethod->getParameters()) {
             /*
              * This maybe useful for functions without arguments
              * that use functions like `func_get_args()` or any `func_*()`
@@ -78,9 +77,9 @@ trait BindArgumentsTrait
 
         $parameters = [];
         $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
-        $hasVariadic = end($reflectionParameters)->isVariadic();
+        $hasVariadic = $functionOrMethod->isVariadic();
 
-        foreach ($reflectionParameters as $parameter) {
+        foreach ($functionOrMethod->getParameters() as $parameter) {
             if (false !== ($argumentNameOrIndex = $this->getBindArgumentByNameOrIndex($parameter))) {
                 // PHP attributes have higher priority than PHP definitions
                 if ($isUseAttribute && $isAttributeOnParamHigherPriority
@@ -131,7 +130,7 @@ trait BindArgumentsTrait
          * This can be useful for functions without arguments
          * that use functions like `func_get_args()` or any `func_*()`
          */
-        if (!$hasVariadic && count($this->bindArguments) > ($c = count($reflectionParameters))) {
+        if (!$hasVariadic && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
             array_push($parameters, ...array_values(array_slice($this->bindArguments, $c)));
         }
 

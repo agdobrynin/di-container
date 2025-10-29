@@ -27,7 +27,7 @@ use function Kaspi\DiContainer\diGet;
  *
  * @internal
  */
-class GetParametersTest extends TestCase
+class BuildArgumentsTest extends TestCase
 {
     use BindArgumentsTrait;
     use DiContainerTrait;
@@ -42,19 +42,16 @@ class GetParametersTest extends TestCase
         $fn = static fn () => '';
 
         $this->bindArguments('one', 'two', diGet('services.logger_file'));
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         self::assertEquals(
             ['one', 'two', diGet('services.logger_file')],
-            $this->getParameters($params, false)
+            $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }
 
     public function testResolveByParameterTypeByParameterNameByDefaultValue(): void
     {
         $fn = static fn (ArrayIterator $iterator, $dto = new stdClass()): array => [$iterator, $dto];
-
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -68,7 +65,7 @@ class GetParametersTest extends TestCase
 
         $this->setContainer($containerMock);
 
-        $args = $this->getParameters($params, false);
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
 
         self::assertEquals([diGet('ArrayIterator')], $args);
     }
@@ -76,8 +73,6 @@ class GetParametersTest extends TestCase
     public function testGetParameterTypeWithDefaultValue(): void
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
-
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -89,14 +84,12 @@ class GetParametersTest extends TestCase
 
         $this->setContainer($containerMock);
 
-        self::assertEmpty($this->getParameters($params, false));
+        self::assertEmpty($this->buildArguments(new ReflectionFunction($fn), false));
     }
 
     public function testGetParameterTypeOnce(): void
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
-
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -110,15 +103,13 @@ class GetParametersTest extends TestCase
 
         self::assertEquals(
             [diGet(Bar::class)],
-            $this->getParameters($params, false)
+            $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }
 
     public function testGetParameterIntersectionTypeWithDefaultValue(): void
     {
         $fn = static fn (Bar&Foo $fooBar = new Baz()): Bar&Foo => $fooBar;
-
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -130,7 +121,7 @@ class GetParametersTest extends TestCase
 
         $this->setContainer($containerMock);
 
-        self::assertEmpty($this->getParameters($params, false));
+        self::assertEmpty($this->buildArguments(new ReflectionFunction($fn), false));
     }
 
     public function testExceptionGetParameterIntersectionType(): void
@@ -139,7 +130,6 @@ class GetParametersTest extends TestCase
         $this->expectExceptionMessageMatches('/^Cannot automatically resolve dependency.+Bar&.+Foo \$fooBar/');
 
         $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -151,13 +141,12 @@ class GetParametersTest extends TestCase
 
         $this->setContainer($containerMock);
 
-        $this->getParameters($params, false);
+        $this->buildArguments(new ReflectionFunction($fn), false);
     }
 
     public function testVariadicParameterWithoutArgument(): void
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -171,14 +160,13 @@ class GetParametersTest extends TestCase
 
         self::assertEquals(
             [diGet(Bar::class)],
-            $this->getParameters($params, false)
+            $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }
 
     public function testVariadicParameterBindArgument(): void
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -203,14 +191,13 @@ class GetParametersTest extends TestCase
                 diGet(Foo::class),
                 diGet(Baz::class),
             ],
-            $this->getParameters($params, false)
+            $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }
 
     public function testDefaultParameter(): void
     {
         $fn = static fn (Foo $foo, Bar|Foo $bar = new Baz()): array => [$foo, $bar];
-        $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
         $containerMock->method('has')
@@ -224,7 +211,7 @@ class GetParametersTest extends TestCase
 
         self::assertEquals(
             [diGet(Foo::class)],
-            $this->getParameters($params, false)
+            $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }
 }
