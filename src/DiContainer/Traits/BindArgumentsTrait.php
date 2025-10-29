@@ -61,7 +61,7 @@ trait BindArgumentsTrait
     /**
      * @param bool $isAttributeOnParamHigherPriority Php attributes higher priority then bindArguments
      *
-     * @return (DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|mixed)[]
+     * @return (DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|DiDefinitionValue|mixed)[]
      *
      * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
