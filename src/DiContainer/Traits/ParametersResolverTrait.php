@@ -133,7 +133,7 @@ trait ParametersResolverTrait
                 }
 
                 if ($parameter->isVariadic()) {
-                    continue;
+                    break; // Variadic Parameter has last position
                 }
 
                 $strType = $this->getParameterType($parameter, $this->getContainer());
