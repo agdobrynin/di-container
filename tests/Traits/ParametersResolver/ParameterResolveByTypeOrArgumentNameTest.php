@@ -19,9 +19,9 @@ use function call_user_func_array;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\functionNameByParameter
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet::getDefinition
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\functionNameByParameter
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait

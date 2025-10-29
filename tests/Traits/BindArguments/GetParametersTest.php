@@ -177,7 +177,7 @@ class GetParametersTest extends TestCase
 
     public function testDefaultParameter(): void
     {
-        $fn = static fn (Foo $foo, Foo|Bar $bar = new Baz): array => [$foo, $bar];
+        $fn = static fn (Foo $foo, Bar|Foo $bar = new Baz()): array => [$foo, $bar];
         $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
