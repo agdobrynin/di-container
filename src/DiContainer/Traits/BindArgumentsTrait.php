@@ -109,13 +109,18 @@ trait BindArgumentsTrait
                 continue;
             }
 
+            // Variadic parameter resolve only by bind arguments
+            if ($parameter->isVariadic()) {
+                break; // Variadic Parameter has last position
+            }
+
             try {
                 $strType = $this->getParameterType($parameter, $this->getContainer());
                 $parameters[] = new DiDefinitionGet($strType);
 
                 continue;
             } catch (AutowireParameterTypeException $e) {
-                if (!($parameter->isDefaultValueAvailable() || $parameter->isOptional())) {
+                if (!$parameter->isDefaultValueAvailable()) {
                     throw $e;
                 }
             }

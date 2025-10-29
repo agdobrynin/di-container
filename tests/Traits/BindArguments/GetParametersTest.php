@@ -154,9 +154,9 @@ class GetParametersTest extends TestCase
         $this->getParameters($params, false);
     }
 
-    public function testOptionalParameter(): void
+    public function testVariadicParameterWithoutArgument(): void
     {
-        $fn = static fn (Bar $bar, Bar&Foo ...$foo): array => [$bar, $foo];
+        $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
         $params = (new ReflectionFunction($fn))->getParameters();
 
         $containerMock = $this->createMock(DiContainerInterface::class);
@@ -171,6 +171,38 @@ class GetParametersTest extends TestCase
 
         self::assertEquals(
             [diGet(Bar::class)],
+            $this->getParameters($params, false)
+        );
+    }
+
+    public function testVariadicParameterBindArgument(): void
+    {
+        $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
+        $params = (new ReflectionFunction($fn))->getParameters();
+
+        $containerMock = $this->createMock(DiContainerInterface::class);
+        $containerMock->method('has')
+            ->willReturnMap([
+                [Bar::class, true],
+                [Foo::class, true],
+            ])
+        ;
+
+        $this->setContainer($containerMock);
+
+        $this->bindArguments(
+            foo: [
+                diGet(Foo::class),
+                diGet(Baz::class),
+            ]
+        );
+
+        self::assertEquals(
+            [
+                diGet(Bar::class),
+                diGet(Foo::class),
+                diGet(Baz::class),
+            ],
             $this->getParameters($params, false)
         );
     }
