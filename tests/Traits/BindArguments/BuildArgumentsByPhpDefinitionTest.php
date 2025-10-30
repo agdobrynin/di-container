@@ -16,10 +16,16 @@ use Tests\Traits\BindArguments\Fixtures\Bar;
 use Tests\Traits\BindArguments\Fixtures\Baz;
 use Tests\Traits\BindArguments\Fixtures\Foo;
 
+use function func_get_args;
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diValue;
 
 /**
+ * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\functionNameByParameter
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getParameterType
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
@@ -27,14 +33,16 @@ use function Kaspi\DiContainer\diGet;
  *
  * @internal
  */
-class BuildArgumentsTest extends TestCase
+class BuildArgumentsByPhpDefinitionTest extends TestCase
 {
     use BindArgumentsTrait;
     use DiContainerTrait;
+    private DiContainerInterface $containerMock;
 
     public function setUp(): void
     {
         $this->bindArguments();
+        $this->containerMock = $this->createMock(DiContainerInterface::class);
     }
 
     public function testGetWithoutParameters(): void
@@ -53,17 +61,16 @@ class BuildArgumentsTest extends TestCase
     {
         $fn = static fn (ArrayIterator $iterator, $dto = new stdClass()): array => [$iterator, $dto];
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->with('ArrayIterator')
             ->willReturn(true)
         ;
-        $containerMock->method('get')
+        $this->containerMock->method('get')
             ->with('ArrayIterator')
             ->willReturn(new ArrayIterator())
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         $args = $this->buildArguments(new ReflectionFunction($fn), false);
 
@@ -74,15 +81,14 @@ class BuildArgumentsTest extends TestCase
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->willReturnMap([
                 [Foo::class, true],
                 [Bar::class, true],
             ])
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         self::assertEmpty($this->buildArguments(new ReflectionFunction($fn), false));
     }
@@ -91,15 +97,14 @@ class BuildArgumentsTest extends TestCase
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->willReturnMap([
                 [Bar::class, true],
                 [Foo::class, false],
             ])
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         self::assertEquals(
             [diGet(Bar::class)],
@@ -111,15 +116,14 @@ class BuildArgumentsTest extends TestCase
     {
         $fn = static fn (Bar&Foo $fooBar = new Baz()): Bar&Foo => $fooBar;
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->willReturnMap([
                 [Bar::class, true],
                 [Foo::class, true],
             ])
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         self::assertEmpty($this->buildArguments(new ReflectionFunction($fn), false));
     }
@@ -131,15 +135,14 @@ class BuildArgumentsTest extends TestCase
 
         $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->willReturnMap([
                 [Bar::class, true],
                 [Foo::class, true],
             ])
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         $this->buildArguments(new ReflectionFunction($fn), false);
     }
@@ -148,15 +151,14 @@ class BuildArgumentsTest extends TestCase
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->willReturnMap([
                 [Bar::class, true],
                 [Foo::class, true],
             ])
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         self::assertEquals(
             [diGet(Bar::class)],
@@ -164,32 +166,51 @@ class BuildArgumentsTest extends TestCase
         );
     }
 
-    public function testVariadicParameterBindArgument(): void
+    public function testVariadicParameterBindArgumentAsNamedArgument(): void
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->willReturnMap([
                 [Bar::class, true],
                 [Foo::class, true],
             ])
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         $this->bindArguments(
-            foo: [
-                diGet(Foo::class),
-                diGet(Baz::class),
-            ]
+            foo: diGet(Foo::class),
+            foo_1: diGet(Baz::class),
         );
 
         self::assertEquals(
             [
-                diGet(Bar::class),
-                diGet(Foo::class),
-                diGet(Baz::class),
+                0 => diGet(Bar::class),
+                'foo' => diGet(Foo::class),
+                'foo_1' => diGet(Baz::class),
+            ],
+            $this->buildArguments(new ReflectionFunction($fn), false)
+        );
+    }
+
+    public function testVariadicParameterBindArgumentAsIndexArgument(): void
+    {
+        $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
+
+        $this->setContainer($this->containerMock);
+
+        $this->bindArguments(
+            diGet(Bar::class),
+            diGet(Foo::class),
+            diGet(Baz::class),
+        );
+
+        self::assertEquals(
+            [
+                0 => diGet(Bar::class),
+                1 => diGet(Foo::class),
+                2 => diGet(Baz::class),
             ],
             $this->buildArguments(new ReflectionFunction($fn), false)
         );
@@ -199,18 +220,49 @@ class BuildArgumentsTest extends TestCase
     {
         $fn = static fn (Foo $foo, Bar|Foo $bar = new Baz()): array => [$foo, $bar];
 
-        $containerMock = $this->createMock(DiContainerInterface::class);
-        $containerMock->method('has')
+        $this->containerMock->method('has')
             ->willReturnMap([
                 [Foo::class, true],
                 [Bar::class, true],
             ])
         ;
 
-        $this->setContainer($containerMock);
+        $this->setContainer($this->containerMock);
 
         self::assertEquals(
             [diGet(Foo::class)],
+            $this->buildArguments(new ReflectionFunction($fn), false)
+        );
+    }
+
+    public function testPassNotDeclarationParameter(): void
+    {
+        $fn = static fn (Foo $foo): array => [$foo, func_get_args()];
+
+        $this->containerMock->method('has')
+            ->willReturnMap([
+                [Foo::class, true],
+            ])
+        ;
+
+        $this->setContainer($this->containerMock);
+
+        $this->bindArguments(
+            diGet(Foo::class),
+            diAutowire(Baz::class)
+                ->bindArguments('secure_string')
+                ->setup('__invoke'),
+            diValue(new stdClass()),
+        );
+
+        self::assertEquals(
+            [
+                diGet(Foo::class),
+                diAutowire(Baz::class)
+                    ->bindArguments('secure_string')
+                    ->setup('__invoke'),
+                diValue(new stdClass()),
+            ],
             $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }

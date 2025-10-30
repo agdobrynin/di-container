@@ -22,12 +22,12 @@ use ReflectionFunctionAbstract;
 use ReflectionParameter;
 
 use function array_key_exists;
+use function array_keys;
+use function array_merge;
 use function array_push;
+use function array_search;
 use function array_slice;
-use function array_values;
 use function count;
-use function is_array;
-use function is_string;
 
 trait BindArgumentsTrait
 {
@@ -80,42 +80,56 @@ trait BindArgumentsTrait
         $hasVariadic = $functionOrMethod->isVariadic();
 
         foreach ($functionOrMethod->getParameters() as $parameter) {
-            if (false !== ($argumentNameOrIndex = $this->getBindArgumentByNameOrIndex($parameter))) {
+            $argumentNameOrIndex = match (true) {
+                array_key_exists($parameter->name, $this->bindArguments) => $parameter->name,
+                array_key_exists($parameter->getPosition(), $this->bindArguments) => $parameter->getPosition(),
+                default => false,
+            };
+
+            if (false !== $argumentNameOrIndex) {
                 // PHP attributes have higher priority than PHP definitions
                 if ($isUseAttribute && $isAttributeOnParamHigherPriority
                     && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                    array_push($parameters, ...$definitions);
+                    foreach ($definitions as $definition) {
+                        $parameters[$parameter->getPosition()] = $definition;
+                    }
 
                     continue;
                 }
 
                 if ($parameter->isVariadic()) {
-                    foreach ($this->getBindArgumentAsVariadic($argumentNameOrIndex) as $definition) {
-                        $parameters[] = $definition;
+                    if (false !== $indexFrom = array_search($argumentNameOrIndex, array_keys($this->bindArguments), true)) {
+                        $parameters = array_merge($parameters, array_slice($this->bindArguments, $indexFrom));
                     }
 
                     break; // Variadic Parameter has last position
                 }
 
-                $parameters[] = $this->bindArguments[$argumentNameOrIndex];
+                $parameters[$argumentNameOrIndex] = $this->bindArguments[$argumentNameOrIndex];
 
                 continue;
             }
 
             if ($isUseAttribute && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                array_push($parameters, ...$definitions);
+                if ($parameter->isVariadic()) {
+                    array_push($parameters, ...$definitions);
+
+                    break; // Variadic Parameter has last position
+                }
+
+                $parameters[$parameter->getPosition()] = $definitions->current();
 
                 continue;
             }
 
-            // Variadic parameter resolve only by bind arguments
+            // Variadic parameter resolve only by `bindArguments()`
             if ($parameter->isVariadic()) {
                 break; // Variadic Parameter has last position
             }
 
             try {
                 $strType = $this->getParameterType($parameter, $this->getContainer());
-                $parameters[] = new DiDefinitionGet($strType);
+                $parameters[$parameter->getPosition()] = new DiDefinitionGet($strType);
 
                 continue;
             } catch (AutowireParameterTypeException $e) {
@@ -131,37 +145,10 @@ trait BindArgumentsTrait
          * that use functions like `func_get_args()` or any `func_*()`
          */
         if (!$hasVariadic && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
-            array_push($parameters, ...array_values(array_slice($this->bindArguments, $c)));
+            $parameters = array_merge($parameters, array_slice($this->bindArguments, $c));
         }
 
         return $parameters;
-    }
-
-    private function getBindArgumentByNameOrIndex(ReflectionParameter $parameter): false|int|string
-    {
-        if ([] === $this->bindArguments) {
-            return false;
-        }
-
-        return match (true) {
-            array_key_exists($parameter->name, $this->bindArguments) => $parameter->name,
-            array_key_exists($parameter->getPosition(), $this->bindArguments) => $parameter->getPosition(),
-            default => false,
-        };
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    private function getBindArgumentAsVariadic(int|string $argumentNameOrIndex): array
-    {
-        if (is_string($argumentNameOrIndex)) {
-            return is_array($this->bindArguments[$argumentNameOrIndex])
-                ? $this->bindArguments[$argumentNameOrIndex]
-                : [$this->bindArguments[$argumentNameOrIndex]];
-        }
-
-        return array_slice($this->bindArguments, $argumentNameOrIndex);
     }
 
     /**
