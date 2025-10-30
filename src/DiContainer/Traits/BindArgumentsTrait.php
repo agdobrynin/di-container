@@ -23,7 +23,6 @@ use ReflectionParameter;
 
 use function array_key_exists;
 use function array_keys;
-use function array_merge;
 use function array_push;
 use function array_search;
 use function array_slice;
@@ -99,7 +98,7 @@ trait BindArgumentsTrait
 
                 if ($parameter->isVariadic()) {
                     if (false !== $indexFrom = array_search($argumentNameOrIndex, array_keys($this->bindArguments), true)) {
-                        $parameters = array_merge($parameters, array_slice($this->bindArguments, $indexFrom));
+                        $parameters = [...$parameters, ...array_slice($this->bindArguments, $indexFrom)];
                     }
 
                     break; // Variadic Parameter has last position
@@ -145,7 +144,7 @@ trait BindArgumentsTrait
          * that use functions like `func_get_args()` or any `func_*()`
          */
         if (!$hasVariadic && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
-            $parameters = array_merge($parameters, array_slice($this->bindArguments, $c));
+            $parameters = [...$parameters, ...array_slice($this->bindArguments, $c)];
         }
 
         return $parameters;

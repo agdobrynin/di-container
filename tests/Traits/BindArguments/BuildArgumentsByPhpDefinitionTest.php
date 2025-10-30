@@ -49,10 +49,10 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn () => '';
 
-        $this->bindArguments('one', 'two', diGet('services.logger_file'));
+        $this->bindArguments('one', 'two', a: diGet('services.logger_file'));
 
         self::assertEquals(
-            ['one', 'two', diGet('services.logger_file')],
+            ['one', 'two', 'a' => diGet('services.logger_file')],
             $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }
@@ -60,15 +60,6 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testResolveByParameterTypeByParameterNameByDefaultValue(): void
     {
         $fn = static fn (ArrayIterator $iterator, $dto = new stdClass()): array => [$iterator, $dto];
-
-        $this->containerMock->method('has')
-            ->with('ArrayIterator')
-            ->willReturn(true)
-        ;
-        $this->containerMock->method('get')
-            ->with('ArrayIterator')
-            ->willReturn(new ArrayIterator())
-        ;
 
         $this->setContainer($this->containerMock);
 
@@ -80,13 +71,6 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testGetParameterTypeWithDefaultValue(): void
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
-
-        $this->containerMock->method('has')
-            ->willReturnMap([
-                [Foo::class, true],
-                [Bar::class, true],
-            ])
-        ;
 
         $this->setContainer($this->containerMock);
 
@@ -116,13 +100,6 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar&Foo $fooBar = new Baz()): Bar&Foo => $fooBar;
 
-        $this->containerMock->method('has')
-            ->willReturnMap([
-                [Bar::class, true],
-                [Foo::class, true],
-            ])
-        ;
-
         $this->setContainer($this->containerMock);
 
         self::assertEmpty($this->buildArguments(new ReflectionFunction($fn), false));
@@ -135,13 +112,6 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
 
-        $this->containerMock->method('has')
-            ->willReturnMap([
-                [Bar::class, true],
-                [Foo::class, true],
-            ])
-        ;
-
         $this->setContainer($this->containerMock);
 
         $this->buildArguments(new ReflectionFunction($fn), false);
@@ -150,13 +120,6 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testVariadicParameterWithoutArgument(): void
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
-
-        $this->containerMock->method('has')
-            ->willReturnMap([
-                [Bar::class, true],
-                [Foo::class, true],
-            ])
-        ;
 
         $this->setContainer($this->containerMock);
 
@@ -169,13 +132,6 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testVariadicParameterBindArgumentAsNamedArgument(): void
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
-
-        $this->containerMock->method('has')
-            ->willReturnMap([
-                [Bar::class, true],
-                [Foo::class, true],
-            ])
-        ;
 
         $this->setContainer($this->containerMock);
 
@@ -239,12 +195,6 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Foo $foo): array => [$foo, func_get_args()];
 
-        $this->containerMock->method('has')
-            ->willReturnMap([
-                [Foo::class, true],
-            ])
-        ;
-
         $this->setContainer($this->containerMock);
 
         $this->bindArguments(
@@ -255,6 +205,8 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             diValue(new stdClass()),
         );
 
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
         self::assertEquals(
             [
                 diGet(Foo::class),
@@ -263,7 +215,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
                     ->setup('__invoke'),
                 diValue(new stdClass()),
             ],
-            $this->buildArguments(new ReflectionFunction($fn), false)
+            $args
         );
     }
 }

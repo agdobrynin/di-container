@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Traits\BindArguments;
 
+use Closure;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\Attributes\ProxyClosure;
+use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
@@ -13,20 +17,36 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\Traits\BindArguments\Fixtures\Baz;
+use Tests\Traits\BindArguments\Fixtures\HeavyDependency;
+use Tests\Traits\BindArguments\Fixtures\HeavyDependencyTwo;
 use Tests\Traits\BindArguments\Fixtures\Quux;
 use Tests\Traits\BindArguments\Fixtures\QuuxInterface;
 use Tests\Traits\BindArguments\Fixtures\QuuxTwo;
 
+use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diProxyClosure;
+use function Kaspi\DiContainer\diTaggedAs;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
+ * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
+ * @covers \Kaspi\DiContainer\Attributes\TaggedAs
+ * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\diProxyClosure
+ * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::checkVariadic
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getAttributeOnParameter
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getInjectAttribute
+ * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getInjectByCallableAttribute
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getParameterType
+ * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getProxyClosureAttribute
+ * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getTaggedAsAttribute
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  *
@@ -63,6 +83,11 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             [diGet(Quux::class)],
             $args
         );
+
+        self::assertEquals(
+            ['quux' => diGet('services.quux')],
+            $this->getBindArguments(),
+        );
     }
 
     public function testInjectRegularParametersPhpDefinitionHigherPriority(): void
@@ -97,7 +122,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         );
     }
 
-    public function testInjectVaridicParameters(): void
+    public function testInjectVariadicParameters(): void
     {
         $fn = static fn (
             Baz $baz,
@@ -117,6 +142,152 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
                 2 => diGet(QuuxTwo::class),
             ],
             $args
+        );
+    }
+
+    public function testProxyClosureRegularParameters(): void
+    {
+        /**
+         * @param Closure(): HeavyDependency $heavyDependency
+         */
+        $fn = static fn (
+            #[ProxyClosure(HeavyDependency::class)]
+            Closure $heavyDependency,
+            QuuxInterface $quux,
+        ) => ($heavyDependency)()->doMake($quux);
+
+        $this->setContainer($this->containerMock);
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        self::assertEquals(
+            [
+                diProxyClosure(HeavyDependency::class),
+                diGet(QuuxInterface::class),
+            ],
+            $args,
+        );
+    }
+
+    public function testProxyClosureVariadicParameters(): void
+    {
+        /**
+         * @param Closure(): HeavyDependency $heavyDependency
+         */
+        $fn = static fn (
+            QuuxInterface $quux,
+            #[
+                ProxyClosure(HeavyDependency::class),
+                ProxyClosure(HeavyDependencyTwo::class, isSingleton: true),
+            ]
+            Closure ...$heavyDependency,
+        ): array => [($heavyDependency[0])()->doMake($quux), ($heavyDependency[1])()->doMake($quux)];
+
+        $this->setContainer($this->containerMock);
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        self::assertEquals(
+            [
+                diGet(QuuxInterface::class),
+                diProxyClosure(HeavyDependency::class),
+                diProxyClosure(HeavyDependencyTwo::class, true),
+            ],
+            $args,
+        );
+    }
+
+    public function testCallableRegularParameters(): void
+    {
+        $fn = static fn (
+            QuuxInterface $quux,
+            #[InjectByCallable(Baz::class.'::doMake')]
+            callable $doCallable,
+        ) => ($doCallable)($quux);
+
+        $this->setContainer($this->containerMock);
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        self::assertEquals(
+            [
+                diGet(QuuxInterface::class),
+                diCallable(Baz::class.'::doMake'),
+            ],
+            $args,
+        );
+    }
+
+    public function testCallableVariadicParameters(): void
+    {
+        $fn = static fn (
+            QuuxInterface $quux,
+            #[InjectByCallable(Baz::class.'::doMake')]
+            #[InjectByCallable('App\Helpers\fn\funcUser', true)]
+            callable ...$doCallable,
+        ) => true;
+
+        $this->setContainer($this->containerMock);
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        self::assertEquals(
+            [
+                diGet(QuuxInterface::class),
+                diCallable(Baz::class.'::doMake'),
+                diCallable('App\Helpers\fn\funcUser', true),
+            ],
+            $args,
+        );
+    }
+
+    public function testTaggedAsRegularParameters(): void
+    {
+        $fn = static fn (
+            QuuxInterface $quux,
+            #[TaggedAs('tags.validate_string')]
+            iterable $validators,
+        ) => true;
+
+        $this->setContainer($this->containerMock);
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        self::assertEquals(
+            [
+                diGet(QuuxInterface::class),
+                diTaggedAs('tags.validate_string'),
+            ],
+            $args,
+        );
+    }
+
+    public function testTaggedAsVariadicParameters(): void
+    {
+        $fn = static fn (
+            QuuxInterface $quux,
+            #[TaggedAs('tags.validator_string')]
+            #[TaggedAs('tags.validator_password', priorityDefaultMethod: 'self::getPriority')]
+            iterable ...$validator,
+        ) => true;
+
+        $this->setContainer($this->containerMock);
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        self::assertEquals(
+            [
+                diGet(QuuxInterface::class),
+                diTaggedAs('tags.validator_string'),
+                diTaggedAs('tags.validator_password', priorityDefaultMethod: 'self::getPriority'),
+            ],
+            $args,
         );
     }
 }
