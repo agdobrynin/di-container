@@ -70,11 +70,9 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->setContainer($mockContainer);
         // 🚩 test data
         $this->bindArguments(
-            iterator: [
-                diGet('services.icon-iterator.one'),
-                diGet('services.icon-iterator.two'),
-            ],
-            name: 'Piter'
+            name: 'Piter',
+            iterator: diGet('services.icon-iterator.one'),
+            iterator2: diGet('services.icon-iterator.two'),
         );
 
         [$name, $res] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
@@ -82,11 +80,11 @@ class ParameterResolveByUserDefinedArgumentByDiReferenceTest extends TestCase
         $this->assertEquals('Piter', $name);
         $this->assertCount(2, $res);
 
-        $this->assertInstanceOf(ArrayIterator::class, $res[0]);
-        $this->assertEquals(['🚀'], $res[0]->getArrayCopy());
+        $this->assertInstanceOf(ArrayIterator::class, $res['iterator']);
+        $this->assertEquals(['🚀'], $res['iterator']->getArrayCopy());
 
-        $this->assertInstanceOf(ArrayIterator::class, $res[1]);
-        $this->assertEquals(['🔥'], $res[1]->getArrayCopy());
+        $this->assertInstanceOf(ArrayIterator::class, $res['iterator2']);
+        $this->assertEquals(['🔥'], $res['iterator2']->getArrayCopy());
     }
 
     public function testUserDefinedArgumentByManydiGetVariadicByIndex(): void

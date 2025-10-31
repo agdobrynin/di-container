@@ -92,10 +92,8 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
 
         // 🚩 test data
         $this->bindArguments(
-            item: [
-                diAutowire(SuperClass::class),
-                diAutowire(SuperDiFactory::class),
-            ]
+            diAutowire(SuperClass::class),
+            diAutowire(SuperDiFactory::class),
         );
 
         $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
@@ -121,16 +119,14 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
 
         // 🚩 test data
         $this->bindArguments(
-            item: [
-                diAutowire(SuperClass::class),
-                diAutowire(MoreSuperClass::class),
-            ]
+            item: diAutowire(SuperClass::class),
+            item2: diAutowire(MoreSuperClass::class),
         );
 
         $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
-        $this->assertInstanceOf(SuperClass::class, $res[0]);
-        $this->assertInstanceOf(MoreSuperClass::class, $res[1]);
+        $this->assertInstanceOf(SuperClass::class, $res['item']);
+        $this->assertInstanceOf(MoreSuperClass::class, $res['item2']);
     }
 
     public function testResolveByAutowireDefinitionVariadicByArrayAndSingletonByName(): void
@@ -143,10 +139,8 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
 
         // 🚩 test data
         $this->bindArguments(
-            item: [
-                diAutowire(SuperClass::class, true),
-                diAutowire(MoreSuperClass::class, true),
-            ]
+            diAutowire(SuperClass::class, true),
+            diAutowire(MoreSuperClass::class, true),
         );
 
         $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
@@ -179,10 +173,8 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
 
         // 🚩 test data
         $this->bindArguments(
-            item: [
-                diGet('services.super.one'),
-                diGet('services.super.two'),
-            ]
+            diGet('services.super.one'),
+            diGet('services.super.two'),
         );
 
         $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
@@ -218,5 +210,25 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $this->assertCount(2, $res);
         $this->assertInstanceOf(MoreSuperClass::class, $res[0]);
         $this->assertInstanceOf(SuperClass::class, $res[1]);
+    }
+
+    public function testResolveVariadicAsOptional(): void
+    {
+        $fn = static fn (SuperInterface ...$item) => $item;
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer
+            ->expects(self::never())
+            ->method('get')
+            ->willReturnMap([
+                [SuperInterface::class, new MoreSuperClass()],
+            ])
+        ;
+        $this->setContainer($mockContainer);
+
+        $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
+
+        $this->assertEquals([], $res);
     }
 }

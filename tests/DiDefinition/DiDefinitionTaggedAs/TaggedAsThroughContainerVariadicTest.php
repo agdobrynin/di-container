@@ -46,27 +46,27 @@ class TaggedAsThroughContainerVariadicTest extends TestCase
             diAutowire(TwoTwo::class)
                 ->bindTag('tags.two'),
             diAutowire(TaggedVariadicParameters::class)
-                ->bindArguments(variadic: [
-                    diTaggedAs('tags.two'),
-                    diTaggedAs('tags.one'),
-                ]),
+                ->bindArguments(
+                    variadic: diTaggedAs('tags.two'),
+                    variadic2: diTaggedAs('tags.one'),
+                ),
         ]);
 
         $class = $container->get(TaggedVariadicParameters::class);
 
         $this->assertCount(2, $class->variadic);
         // 'tags.two'
-        $this->assertInstanceOf(TwoOne::class, $class->variadic[0]->current());
-        $class->variadic[0]->next();
-        $this->assertInstanceOf(TwoTwo::class, $class->variadic[0]->current());
-        $class->variadic[0]->next();
-        $this->assertFalse($class->variadic[0]->valid());
+        $this->assertInstanceOf(TwoOne::class, $class->variadic['variadic']->current());
+        $class->variadic['variadic']->next();
+        $this->assertInstanceOf(TwoTwo::class, $class->variadic['variadic']->current());
+        $class->variadic['variadic']->next();
+        $this->assertFalse($class->variadic['variadic']->valid());
         // 'tags.one'
-        $this->assertInstanceOf(OneTwo::class, $class->variadic[1]->current()); // priority = 100
-        $class->variadic[1]->next();
-        $this->assertInstanceOf(OneOne::class, $class->variadic[1]->current()); // priority = 0
-        $class->variadic[1]->next();
-        $this->assertFalse($class->variadic[1]->valid());
+        $this->assertInstanceOf(OneTwo::class, $class->variadic['variadic2']->current()); // priority = 100
+        $class->variadic['variadic2']->next();
+        $this->assertInstanceOf(OneOne::class, $class->variadic['variadic2']->current()); // priority = 0
+        $class->variadic['variadic2']->next();
+        $this->assertFalse($class->variadic['variadic2']->valid());
     }
 
     public function testVariadicTaggedByInterfaceWithPhpDefinition(): void
@@ -77,10 +77,10 @@ class TaggedAsThroughContainerVariadicTest extends TestCase
             diAutowire(TwoOne::class),
             diAutowire(TwoTwo::class),
             diAutowire(TaggedVariadicParameters::class)
-                ->bindArguments(variadic: [
+                ->bindArguments(
                     diTaggedAs(OneInterface::class),
                     diTaggedAs(TwoInterface::class),
-                ]),
+                ),
         ]);
 
         $class = $container->get(TaggedVariadicParameters::class);

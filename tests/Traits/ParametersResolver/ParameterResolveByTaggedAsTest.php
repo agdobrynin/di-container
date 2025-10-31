@@ -92,10 +92,8 @@ class ParameterResolveByTaggedAsTest extends TestCase
         $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $this->bindArguments(
-            item: [
-                diTaggedAs('tags.tag-one'),
-                diTaggedAs('tags.tag-two'),
-            ]
+            diTaggedAs('tags.tag-one'),
+            diTaggedAs('tags.tag-two'),
         );
 
         $mockContainer = $this->createMock(DiContainerInterface::class);

@@ -65,18 +65,16 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         // 🚩 test data
         $this->bindArguments(
-            iterator: [
-                ['aaa', 'bbb', 'ccc'],
-                ['ddd', 'eee', 'fff'],
-            ]
+            iterator1: ['aaa', 'bbb', 'ccc'],
+            iterator2: ['ddd', 'eee', 'fff'],
         );
 
         $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, true));
 
         $this->assertCount(2, $res);
 
-        $this->assertEquals(['aaa', 'bbb', 'ccc'], $res[0]);
-        $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]);
+        $this->assertEquals(['aaa', 'bbb', 'ccc'], $res['iterator1']);
+        $this->assertEquals(['ddd', 'eee', 'fff'], $res['iterator2']);
     }
 
     public function testUserDefinedArgumentVariadicOneByName(): void
@@ -97,7 +95,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 
         $this->assertCount(1, $res);
 
-        $this->assertEquals('hi my darling', $res[0]);
+        $this->assertEquals('hi my darling', $res['str']);
     }
 
     public function testUserDefinedArgumentByIndexVariadicSuccess(): void
