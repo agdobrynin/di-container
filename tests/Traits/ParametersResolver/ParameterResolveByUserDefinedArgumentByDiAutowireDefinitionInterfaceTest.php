@@ -155,8 +155,8 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
         $this->assertInstanceOf(SuperClass::class, $res[0]);
         $this->assertInstanceOf(MoreSuperClass::class, $res[1]);
 
-        // is singleton
-        $this->assertSame(
+        // when bind argument by a definition with $isSingleton — it will be ignored.
+        $this->assertNotSame(
             $res[0],
             call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false))[0]
         );

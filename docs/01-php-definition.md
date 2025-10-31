@@ -171,7 +171,12 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 > Для аргументов не объявленных через `bindArgument` контейнер попытается разрешить зависимости самостоятельно.
 
 > [!TIP]
-> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+>
+> Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
+> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface::class`
+> (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
+> то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
 
 **Дополнительная настройка сервиса через методы класса (mutable setters):**
 ```php 
@@ -295,7 +300,7 @@ diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefi
 > [!IMPORTANT]
 > Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`
 > предоставляющий методы:
-> - `bindArguments` - указать аргументы для определения
+> - `bindArguments` - указать аргументы для параметров функции.
 > - `bindTag` - добавляет тег с мета-данными для определения.
 
 **Аргументы для определения:**
@@ -308,7 +313,13 @@ bindArguments(mixed ...$argument)`
  // function(string $var1, string $var2) 
  ```
 > [!TIP]
-> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+>
+> Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
+> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface::class`
+> (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
+> то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
+
 
 > [!WARNING]
 > метод `bindArguments` перезаписывает ранее определенные аргументы.
