@@ -86,7 +86,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         );
 
         $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
-        $this->assertSame($res, call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
+        // $isSingleton will be ignored because argument bind through bindArguments()
+        $this->assertNotSame($res, call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testResolveArgumentNoneVariadicByNameIsNoneSingleton(): void
@@ -209,9 +210,9 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
         $this->bindArguments(
             item: [
-                diProxyClosure(MoreSuperClass::class, false), // ➖
-                diProxyClosure(SuperClass::class, true), // ➕
-                diProxyClosure(MoreSuperClass::class, false), // ➖
+                diProxyClosure(MoreSuperClass::class, false),
+                diProxyClosure(SuperClass::class, true),
+                diProxyClosure(MoreSuperClass::class, false),
             ]
         );
 
@@ -221,7 +222,8 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         $this->assertNotSame($res11, $res13);
         $this->assertNotSame($res21, $res23);
         $this->assertNotSame($res11, $res21);
-        $this->assertSame($res12, $res22); // because diProxyClosure(SuperClass::class, true)
+        // because ignore isSingleton diProxyClosure(SuperClass::class, true), ignore in bindArguments()
+        $this->assertNotSame($res12, $res22);
     }
 
     public function testResolveArgumentVariadicByIndex(): void

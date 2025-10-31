@@ -47,8 +47,6 @@ trait ParametersResolverTrait
     use ParameterTypeByReflectionTrait;
     use DiContainerTrait;
 
-    private static int $variadicPosition = 0;
-
     /**
      * User defined input arguments.
      *
@@ -62,13 +60,6 @@ trait ParametersResolverTrait
      * @var ReflectionParameter[]
      */
     private array $reflectionParameters;
-
-    /**
-     * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
-     *
-     * @var array<non-empty-string, mixed>
-     */
-    private array $resolvedArguments = [];
 
     abstract public function getContainer(): DiContainerInterface;
 
@@ -98,7 +89,6 @@ trait ParametersResolverTrait
         $this->validateInputArguments();
 
         $dependencies = [];
-        self::$variadicPosition = 0;
         $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
 
         foreach ($this->reflectionParameters as $parameter) {
@@ -195,21 +185,10 @@ trait ParametersResolverTrait
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
             $o = $argumentDefinition->setContainer($this->getContainer())->invoke();
-            $object = $o instanceof DiFactoryInterface
+
+            return $o instanceof DiFactoryInterface
                 ? $o($this->getContainer())
                 : $o;
-
-            if (true === ($argumentDefinition->isSingleton() ?? $this->getContainer()->getConfig()?->isSingletonServiceDefault())) {
-                $identifier = sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
-
-                if ($parameter->isVariadic()) {
-                    $identifier .= sprintf('#%d', self::$variadicPosition++);
-                }
-
-                return $this->resolvedArguments[$identifier] ??= $object;
-            }
-
-            return $object;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInterface) {
@@ -241,7 +220,7 @@ trait ParametersResolverTrait
             } elseif ($attr instanceof ProxyClosure) {
                 $resolvedParam = $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionProxyClosure($attr->getIdentifier(), $attr->isSingleton())
+                    new DiDefinitionProxyClosure($attr->getIdentifier())
                 );
             } elseif ($attr instanceof TaggedAs) {
                 $resolvedParam = $this->resolveInputArgument(
@@ -260,7 +239,7 @@ trait ParametersResolverTrait
             } else {
                 $resolvedParam = $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionCallable($attr->getIdentifier(), $attr->isSingleton())
+                    new DiDefinitionCallable($attr->getIdentifier())
                 );
             }
 
