@@ -88,7 +88,7 @@ if (!function_exists('Kaspi\DiContainer\functionName')) { // @codeCoverageIgnore
     function functionName(ReflectionFunctionAbstract $fn): string
     {
         $fnName = $fn->isClosure() && false !== $fn->getFileName() && false !== $fn->getStartLine()
-            ? sprintf('{closure:%s:%d}()', $fn->getFileName(), $fn->getStartLine())
+            ? sprintf('%s{closure:%s:%d}()', $fn->inNamespace() ? $fn->getNamespaceName().'::' : '', $fn->getFileName(), $fn->getStartLine())
             : $fn->getName().'()';
 
         return $fn instanceof ReflectionMethod

@@ -13,7 +13,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
-use ReflectionParameter;
+use ReflectionFunctionAbstract;
 use Tests\Function\Fixtures\AnyClass;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -86,38 +86,38 @@ class HelperFunctionTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProviderReflectionParameter
+     * @dataProvider dataProviderReflectionFn
      */
-    public function testFunctionNameByParameter(ReflectionParameter $parameter, string $expectRegExp): void
+    public function testFunctionName(ReflectionFunctionAbstract $fn, string $expectRegExp): void
     {
-        self::assertMatchesRegularExpression($expectRegExp, functionName($parameter->getDeclaringFunction()));
+        self::assertMatchesRegularExpression($expectRegExp, functionName($fn));
     }
 
-    public function dataProviderReflectionParameter(): Generator
+    public function dataProviderReflectionFn(): Generator
     {
         yield 'in class method' => [
-            (new ReflectionClass(AnyClass::class))->getMethod('foo')->getParameters()[0],
+            (new ReflectionClass(AnyClass::class))->getMethod('foo'),
             '/^Tests\\\Function\\\Fixtures\\\AnyClass::foo\(\)$/',
         ];
 
         yield 'in class constructor' => [
-            (new ReflectionClass(AnyClass::class))->getConstructor()->getParameters()[0],
+            (new ReflectionClass(AnyClass::class))->getConstructor(),
             '/^Tests\\\Function\\\Fixtures\\\AnyClass::__construct\(\)$/',
         ];
 
         yield 'in user defined function' => [
-            (new ReflectionFunction('Tests\Function\Fixtures\bar'))->getParameters()[0],
+            new ReflectionFunction('Tests\Function\Fixtures\bar'),
             '/^Tests\\\Function\\\Fixtures\\\bar\(\)$/',
         ];
 
         yield 'in build-in function' => [
-            (new ReflectionFunction('\log'))->getParameters()[0],
+            new ReflectionFunction('\log'),
             '/^log\(\)$/',
         ];
 
         yield 'closure function' => [
-            (new ReflectionFunction(require __DIR__.'/Fixtures/closure.php'))->getParameters()[0],
-            '/^Tests\\\Function\\\HelperFunctionTest::{closure.+tests\/Function\/Fixtures\/closure.php:5}\(\)$/',
+            new ReflectionFunction(require __DIR__.'/Fixtures/closure.php'),
+            '/^Tests\\\Function\\\Fixtures::{closure.+tests\/Function\/Fixtures\/closure.php:7}\(\)$/',
         ];
     }
 }
