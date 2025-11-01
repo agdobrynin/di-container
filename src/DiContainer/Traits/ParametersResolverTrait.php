@@ -39,7 +39,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
-use function Kaspi\DiContainer\functionNameByParameter;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 trait ParametersResolverTrait
@@ -158,7 +158,7 @@ trait ParametersResolverTrait
                 continue;
             }
 
-            $messageParameter = $parameter.' in '.functionNameByParameter($parameter);
+            $messageParameter = $parameter.' in '.functionName($parameter->getDeclaringFunction());
             $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException->getMessage()}";
 
             if ($autowireException instanceof NotFoundExceptionInterface) {

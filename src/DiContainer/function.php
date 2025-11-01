@@ -16,8 +16,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterfac
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use ReflectionFunctionAbstract;
 use ReflectionMethod;
-use ReflectionParameter;
 
 use function function_exists;
 use function sprintf;
@@ -84,11 +84,9 @@ if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     }
 } // @codeCoverageIgnore
 
-if (!function_exists('Kaspi\DiContainer\functionNameByParameter')) { // @codeCoverageIgnore
-    function functionNameByParameter(ReflectionParameter $parameter): string
+if (!function_exists('Kaspi\DiContainer\functionName')) { // @codeCoverageIgnore
+    function functionName(ReflectionFunctionAbstract $fn): string
     {
-        $fn = $parameter->getDeclaringFunction();
-
         $fnName = $fn->isClosure() && false !== $fn->getFileName() && false !== $fn->getStartLine()
             ? sprintf('{closure:%s:%d}()', $fn->getFileName(), $fn->getStartLine())
             : $fn->getName().'()';

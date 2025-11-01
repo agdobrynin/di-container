@@ -11,7 +11,7 @@ use ReflectionParameter;
 use ReflectionUnionType;
 
 use function count;
-use function Kaspi\DiContainer\functionNameByParameter;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 trait ParameterTypeByReflectionTrait
@@ -46,11 +46,11 @@ trait ParameterTypeByReflectionTrait
 
             return 1 === count($types)
                 ? $types[0]
-                : throw new AutowireParameterTypeException(sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionNameByParameter($parameter), $parameter));
+                : throw new AutowireParameterTypeException(sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionName($parameter->getDeclaringFunction()), $parameter));
         }
 
         throw new AutowireParameterTypeException(
-            sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionNameByParameter($parameter), $parameter)
+            sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionName($parameter->getDeclaringFunction()), $parameter)
         );
     }
 }

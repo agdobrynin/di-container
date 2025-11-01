@@ -14,6 +14,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -24,11 +25,14 @@ use ReflectionParameter;
 use function array_column;
 use function array_filter;
 use function array_key_exists;
+use function array_keys;
 use function array_push;
 use function array_slice;
 use function count;
 use function in_array;
 use function is_int;
+use function Kaspi\DiContainer\functionName;
+use function sprintf;
 
 trait BindArgumentsTrait
 {
@@ -150,7 +154,15 @@ trait BindArgumentsTrait
          * that use functions like `func_get_args()` or any `func_*()`
          */
         if (!$hasVariadic && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
-            array_push($parameters, ...array_slice($this->bindArguments, $c));
+            $tailArgs = array_slice($this->bindArguments, $c);
+
+            if (count(array_filter(array_keys($tailArgs), 'is_string')) > 0) {
+                throw new AutowireException(
+                    sprintf('Does not accept unknown named parameters for %s', functionName($functionOrMethod))
+                );
+            }
+
+            array_push($parameters, ...$tailArgs);
         }
 
         return $parameters;

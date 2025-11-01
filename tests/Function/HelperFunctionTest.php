@@ -21,7 +21,7 @@ use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
-use function Kaspi\DiContainer\functionNameByParameter;
+use function Kaspi\DiContainer\functionName;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
@@ -34,7 +34,7 @@ use function Kaspi\DiContainer\functionNameByParameter;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\functionNameByParameter
+ * @covers \Kaspi\DiContainer\functionName
  *
  * @internal
  */
@@ -90,7 +90,7 @@ class HelperFunctionTest extends TestCase
      */
     public function testFunctionNameByParameter(ReflectionParameter $parameter, string $expectRegExp): void
     {
-        self::assertMatchesRegularExpression($expectRegExp, functionNameByParameter($parameter));
+        self::assertMatchesRegularExpression($expectRegExp, functionName($parameter->getDeclaringFunction()));
     }
 
     public function dataProviderReflectionParameter(): Generator

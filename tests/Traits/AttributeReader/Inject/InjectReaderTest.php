@@ -15,7 +15,7 @@ use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\functionNameByParameter
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait

@@ -15,7 +15,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\functionNameByParameter
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
