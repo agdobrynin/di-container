@@ -37,7 +37,7 @@ use function array_slice;
 use function count;
 use function implode;
 use function in_array;
-use function is_array;
+use function is_int;
 use function is_string;
 use function sprintf;
 
@@ -46,8 +46,6 @@ trait ParametersResolverTrait
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
     use DiContainerTrait;
-
-    private static int $variadicPosition = 0;
 
     /**
      * User defined input arguments.
@@ -64,11 +62,9 @@ trait ParametersResolverTrait
     private array $reflectionParameters;
 
     /**
-     * Resolved arguments mark as <isSingleton> by DiAttributeInterface.
-     *
-     * @var array<non-empty-string, mixed>
+     * @var string[]
      */
-    private array $resolvedArguments = [];
+    private array $parameterNames;
 
     abstract public function getContainer(): DiContainerInterface;
 
@@ -77,7 +73,7 @@ trait ParametersResolverTrait
      * @param ReflectionParameter[]                           $reflectionParameters
      * @param bool                                            $isAttributeOnParamHigherPriority Php attributes higher priority then $inputArguments
      *
-     * @return list<mixed>
+     * @return array<int|string, mixed>
      *
      * @throws AutowireAttributeException
      * @throws AutowireExceptionInterface
@@ -93,19 +89,19 @@ trait ParametersResolverTrait
 
         $this->arguments = $inputArguments;
         $this->reflectionParameters = $reflectionParameters;
+        $this->parameterNames = array_column($this->reflectionParameters, 'name');
 
         // Check valid user defined arguments
         $this->validateInputArguments();
 
         $dependencies = [];
-        self::$variadicPosition = 0;
         $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
 
         foreach ($this->reflectionParameters as $parameter) {
             $autowireException = null;
 
             try {
-                if (false !== ($argumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
+                if (false !== ($foundArgumentNameOrIndex = $this->getArgumentByNameOrIndex($parameter))) {
                     // PHP attributes have higher priority than PHP definitions
                     if ($isUseAttribute && $isAttributeOnParamHigherPriority && ($resolvedParam = $this->attemptResolveParamByAttributes($parameter))->valid()) {
                         array_push($dependencies, ...$resolvedParam);
@@ -114,14 +110,14 @@ trait ParametersResolverTrait
                     }
 
                     if ($parameter->isVariadic()) {
-                        foreach ($this->getInputVariadicArgument($argumentNameOrIndex) as $definitionItem) {
-                            $dependencies[] = $this->resolveInputArgument($parameter, $definitionItem);
+                        foreach ($this->getInputVariadicArgument($foundArgumentNameOrIndex) as $argNameOrIndex => $definitionItem) {
+                            $dependencies[$argNameOrIndex] = $this->resolveInputArgument($parameter, $definitionItem);
                         }
 
                         break; // Variadic Parameter has last position
                     }
 
-                    $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$argumentNameOrIndex]);
+                    $dependencies[] = $this->resolveInputArgument($parameter, $this->arguments[$foundArgumentNameOrIndex]);
 
                     continue;
                 }
@@ -133,6 +129,10 @@ trait ParametersResolverTrait
                 }
 
                 if ($parameter->isVariadic()) {
+                    foreach ($this->getInputVariadicArgument($parameter->getName()) as $argName => $definitionItem) {
+                        $dependencies[$argName] = $this->resolveInputArgument($parameter, $definitionItem);
+                    }
+
                     break; // Variadic Parameter has last position
                 }
 
@@ -195,21 +195,10 @@ trait ParametersResolverTrait
 
         if ($argumentDefinition instanceof DiDefinitionInvokableInterface) {
             $o = $argumentDefinition->setContainer($this->getContainer())->invoke();
-            $object = $o instanceof DiFactoryInterface
+
+            return $o instanceof DiFactoryInterface
                 ? $o($this->getContainer())
                 : $o;
-
-            if (true === ($argumentDefinition->isSingleton() ?? $this->getContainer()->getConfig()?->isSingletonServiceDefault())) {
-                $identifier = sprintf('%s:%s', $parameter->getDeclaringFunction()->getName(), $parameter->getName());
-
-                if ($parameter->isVariadic()) {
-                    $identifier .= sprintf('#%d', self::$variadicPosition++);
-                }
-
-                return $this->resolvedArguments[$identifier] ??= $object;
-            }
-
-            return $object;
         }
 
         if ($argumentDefinition instanceof DiDefinitionInterface) {
@@ -241,7 +230,7 @@ trait ParametersResolverTrait
             } elseif ($attr instanceof ProxyClosure) {
                 $resolvedParam = $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionProxyClosure($attr->getIdentifier(), $attr->isSingleton())
+                    new DiDefinitionProxyClosure($attr->getIdentifier())
                 );
             } elseif ($attr instanceof TaggedAs) {
                 $resolvedParam = $this->resolveInputArgument(
@@ -260,7 +249,7 @@ trait ParametersResolverTrait
             } else {
                 $resolvedParam = $this->resolveInputArgument(
                     $parameter,
-                    new DiDefinitionCallable($attr->getIdentifier(), $attr->isSingleton())
+                    new DiDefinitionCallable($attr->getIdentifier())
                 );
             }
 
@@ -273,13 +262,17 @@ trait ParametersResolverTrait
      */
     private function getInputVariadicArgument(int|string $argumentNameOrIndex): array
     {
-        if (is_string($argumentNameOrIndex)) {
-            return is_array($this->arguments[$argumentNameOrIndex])
-                ? $this->arguments[$argumentNameOrIndex]
-                : [$this->arguments[$argumentNameOrIndex]];
+        if (is_int($argumentNameOrIndex)) {
+            return array_slice($this->arguments, $argumentNameOrIndex, preserve_keys: true);
         }
 
-        return array_slice($this->arguments, $argumentNameOrIndex);
+        $paramNames = $this->parameterNames;
+
+        return array_filter(
+            $this->arguments,
+            static fn (int|string $nameOrIndex) => !in_array($nameOrIndex, $paramNames, true) || $nameOrIndex === $argumentNameOrIndex,
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
     /**
@@ -288,15 +281,18 @@ trait ParametersResolverTrait
     private function validateInputArguments(): void
     {
         if ([] !== $this->arguments) {
-            $parameters = array_column($this->reflectionParameters, 'name');
             $hasVariadic = [] !== array_filter($this->reflectionParameters, static fn (ReflectionParameter $parameter) => $parameter->isVariadic());
 
-            if (!$hasVariadic && count($this->arguments) > count($parameters)) {
+            if ($hasVariadic) {
+                return;
+            }
+
+            if (count($this->arguments) > count($this->parameterNames)) {
                 throw new AutowireException(
                     sprintf(
                         'Too many input arguments. Input index or name arguments "%s". Definition parameters: %s',
                         implode(', ', array_keys($this->arguments)),
-                        '' !== ($p = implode(', ', $parameters)) ? '"'.$p.'"' : 'without input parameters'
+                        '' !== ($p = implode(', ', $this->parameterNames)) ? '"'.$p.'"' : 'without input parameters'
                     )
                 );
             }
@@ -306,14 +302,14 @@ trait ParametersResolverTrait
             foreach ($this->arguments as $name => $value) {
                 ++$argumentPosition;
 
-                if (is_string($name) && !in_array($name, $parameters, true)) {
+                if (is_string($name) && !in_array($name, $this->parameterNames, true)) {
                     throw new AutowireAttributeException(
                         sprintf(
                             'Invalid input argument name "%s" at position #%d. Definition %s has arguments: "%s"',
                             $name,
-                            __CLASS__,
                             $argumentPosition,
-                            implode(', ', $parameters)
+                            __CLASS__,
+                            implode(', ', $this->parameterNames)
                         )
                     );
                 }

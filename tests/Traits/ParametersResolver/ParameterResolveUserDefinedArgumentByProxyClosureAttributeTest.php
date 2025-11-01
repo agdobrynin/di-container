@@ -67,37 +67,6 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         $this->assertInstanceOf(MoreSuperClass::class, $res());
     }
 
-    public function testResolveArgumentNoneVariadicAttributeIsSingleton(): void
-    {
-        /**
-         * @param Closure(): MoreSuperClass $item
-         */
-        $fn = static fn (
-            #[ProxyClosure(MoreSuperClass::class, true)]
-            Closure $item
-        ) => $item;
-        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
-
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('has')
-            ->with(MoreSuperClass::class)
-            ->willReturn(true)
-        ;
-        $mockContainer->method('get')
-            ->with(MoreSuperClass::class)
-            ->willReturn(new MoreSuperClass())
-        ;
-        $mockContainer->method('getConfig')
-            ->willReturn(new DiContainerConfig())
-        ;
-
-        $this->setContainer($mockContainer);
-
-        $res = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
-
-        $this->assertSame($res, call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true)));
-    }
-
     public function testResolveArgumentVariadicByAttribute(): void
     {
         $fn = static fn (
@@ -134,42 +103,5 @@ class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends Tes
         $this->assertInstanceOf(Closure::class, $res2);
         $this->assertInstanceOf(MoreSuperClass::class, $res1());
         $this->assertInstanceOf(SuperClass::class, $res2());
-    }
-
-    public function testResolveArgumentVariadicByAttributeIsSingleton(): void
-    {
-        $fn = static fn (
-            #[ProxyClosure(MoreSuperClass::class, false)]
-            #[ProxyClosure(SuperClass::class, true)]
-            Closure ...$item
-        ) => $item;
-        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
-
-        $mockContainer = $this->createMock(DiContainerInterface::class);
-        $mockContainer->method('has')
-            ->willReturnMap([
-                [MoreSuperClass::class, true],
-                [SuperClass::class, true],
-            ])
-        ;
-        $mockContainer->method('get')
-            ->willReturnMap([
-                [MoreSuperClass::class, new MoreSuperClass()],
-                [SuperClass::class, new SuperClass()],
-            ])
-        ;
-        $mockContainer->method('getConfig')
-            ->willReturn(
-                new DiContainerConfig()
-            )
-        ;
-
-        $this->setContainer($mockContainer);
-
-        [$res11, $res12] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
-        [$res21, $res22] = call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, true));
-
-        $this->assertNotSame($res11, $res21);
-        $this->assertSame($res12, $res22);
     }
 }

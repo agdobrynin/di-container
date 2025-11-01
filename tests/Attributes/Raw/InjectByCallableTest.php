@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use PHPUnit\Framework\TestCase;
+use Tests\Attributes\Raw\Fixtures\MyDiFactory;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
@@ -18,24 +19,19 @@ class InjectByCallableTest extends TestCase
 {
     public function successIdsDataProvider(): Generator
     {
-        yield 'string' => ['ok', null, 'ok', null];
+        yield 'string' => ['ok', 'ok'];
 
-        yield 'string with singleton false' => ['ok', false, 'ok', false];
-
-        yield 'string aka static method' => ['MyClass::ok', true, 'MyClass::ok', true];
+        yield 'string invoke method' => [MyDiFactory::class, 'Tests\Attributes\Raw\Fixtures\MyDiFactory'];
     }
 
     /**
      * @dataProvider successIdsDataProvider
      */
-    public function testSuccess(string $id, ?bool $isSingleton, string $expectIdentifier, ?bool $expectIsSingleton): void
+    public function testSuccess(string $id, string $expectIdentifier): void
     {
-        $attr = null === $isSingleton
-            ? new InjectByCallable($id)
-            : new InjectByCallable($id, $isSingleton);
+        $attr = new InjectByCallable($id);
 
         $this->assertEquals($expectIdentifier, $attr->getIdentifier());
-        $this->assertEquals($expectIsSingleton, $attr->isSingleton());
     }
 
     public function failIdsDataProvider(): Generator

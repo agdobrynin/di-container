@@ -691,15 +691,14 @@ var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 
 ## InjectByCallable
 
-Применяется к аргументам конструктора класса, метода или функции через [`callable` тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
+Применяется к параметрам конструктора класса, метода или функции через [`callable` тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
 на основе [вызова `DiContainer::call()`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md).
 
 ```php
-#[InjectByCallable(string $callable, ?bool $isSingleton = null)]
+#[InjectByCallable(string $callable)]
 ```
 Аргументы:
 - `$callable` - строка которая может быть преобразована к `callable` для получения результата внедрения.
-- `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!TIP]
 > Аргументы указанные в `callable` вызове могут быть разрешены
@@ -948,13 +947,13 @@ print $myClass->age; // 22
 ## ProxyClosure
 
 Реализация ленивой инициализации параметров класса (зависимости) через функцию обратного вызова.
+Применяется к параметрам конструктора класса, метода или функции.
 
 ```php
-#[ProxyClosure(string $id, ?bool $isSingleton = null)]
+#[ProxyClosure(string $id)]
 ```
 Аргументы:
 - `$id` - класс (_FQCN_) реализующий сервис который необходимо разрешить отложено.
-- `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 Такое объявление сервиса пригодится для «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмких вычислений.
 
@@ -1068,8 +1067,19 @@ class SomeClass {}
 
 ## TaggedAs
 Получение коллекции (_списка_) сервисов и определений отмеченных тегом.
+Применяется к параметрам конструктора класса, метода или функции.
 Тегирование класса в стиле php определенй через метод `bindTag` у [хэлпер функций](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
 или через [php атрибут `#[Tag]`](#tag) у тегированного класса.
+
+Результат выполнения может быть применен для параметров с типом:
+- `iterable`
+  - `\Traversable`
+    - `\Iterator`
+- `\ArrayAccess`
+- `\Psr\Container\ContainerInterface`
+- `array` требуется использовать параметр `$isLazy = false`.
+- Составной тип (_intersection types PHP 8.1 и выше_) для ленивых коллекций (`$isLazy = true`)
+  - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`.
 
 ```php
 #[TaggedAs(
