@@ -17,13 +17,6 @@ use Tests\Attributes\Raw\Fixtures\MyDiFactory;
  */
 class InjectByCallableTest extends TestCase
 {
-    public function successIdsDataProvider(): Generator
-    {
-        yield 'string' => ['ok', 'ok'];
-
-        yield 'string invoke method' => [MyDiFactory::class, 'Tests\Attributes\Raw\Fixtures\MyDiFactory'];
-    }
-
     /**
      * @dataProvider successIdsDataProvider
      */
@@ -36,11 +29,9 @@ class InjectByCallableTest extends TestCase
 
     public function successIdsDataProvider(): Generator
     {
-        yield 'string' => ['ok', null, 'ok', null];
+        yield 'string' => ['ok', 'ok'];
 
-        yield 'string with singleton false' => ['ok', false, 'ok', false];
-
-        yield 'string aka static method' => ['MyClass::ok', true, 'MyClass::ok', true];
+        yield 'string invoke method' => [MyDiFactory::class, 'Tests\Attributes\Raw\Fixtures\MyDiFactory'];
     }
 
     /**
