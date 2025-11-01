@@ -283,7 +283,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testTailArgs(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Does not accept unknown named parameter $other');
+        $this->expectExceptionMessage('Does not accept unknown named parameter $other_one');
 
         $fn = static fn (string $str) => func_get_args();
 

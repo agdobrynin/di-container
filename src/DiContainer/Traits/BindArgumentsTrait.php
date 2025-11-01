@@ -88,16 +88,14 @@ trait BindArgumentsTrait
                 // PHP attributes have higher priority than PHP definitions
                 if ($isUseAttribute && $isAttributeOnParamHigherPriority
                     && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                    foreach ($definitions as $definition) {
-                        $parameters[$parameter->getPosition()] = $definition;
-                    }
+                    array_push($parameters, ...$definitions);
 
                     continue;
                 }
 
-                if ($parameter->isVariadic()) {
-                    foreach ($this->getVariadicArguments($argNameOrIndex, $functionOrMethod) as $key => $definition) {
-                        $parameters[$key] = $definition;
+                if (false !== ($definitions = $this->getVariadicArguments($argNameOrIndex, $parameter))) {
+                    foreach ($definitions as $argKey => $definition) {
+                        $parameters[$argKey] = $definition;
                     }
 
                     break; // Variadic Parameter has last position
@@ -109,21 +107,15 @@ trait BindArgumentsTrait
             }
 
             if ($isUseAttribute && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                if ($parameter->isVariadic()) {
-                    array_push($parameters, ...$definitions);
-
-                    break; // Variadic Parameter has last position
-                }
-
-                $parameters[$parameter->getPosition()] = $definitions->current();
+                array_push($parameters, ...$definitions);
 
                 continue;
             }
 
             // The named argument for a variadic parameter can be a random string
-            if ($parameter->isVariadic()) {
-                foreach ($this->getVariadicArguments($parameter->name, $functionOrMethod) as $key => $definition) {
-                    $parameters[$key] = $definition;
+            if (false !== ($definitions = $this->getVariadicArguments($parameter->name, $parameter))) {
+                foreach ($definitions as $argKey => $definition) {
+                    $parameters[$argKey] = $definition;
                 }
 
                 break; // Variadic Parameter has last position
@@ -147,7 +139,7 @@ trait BindArgumentsTrait
          * that use functions like `func_get_args()` or any `func_*()`
          */
         if (!$functionOrMethod->isVariadic()
-            && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
+            && (count($this->bindArguments) > ($c = count($functionOrMethod->getParameters())))) {
             $tailArgs = array_slice($this->bindArguments, $c, preserve_keys: true);
 
             $this->checkUnknownNamedParameter($functionOrMethod, $tailArgs);
@@ -158,15 +150,19 @@ trait BindArgumentsTrait
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return array<int|string, mixed>|false
      */
-    private function getVariadicArguments(int|string $argumentNameOrIndex, ReflectionFunctionAbstract $functionOrMethod): array
+    private function getVariadicArguments(int|string $argumentNameOrIndex, ReflectionParameter $parameter): array|false
     {
+        if (!$parameter->isVariadic()) {
+            return false;
+        }
+
         if (is_int($argumentNameOrIndex)) {
             return array_slice($this->bindArguments, $argumentNameOrIndex, preserve_keys: true);
         }
 
-        $paramNames = array_column($functionOrMethod->getParameters(), 'name');
+        $paramNames = array_column($parameter->getDeclaringFunction()->getParameters(), 'name');
 
         return array_filter(
             $this->bindArguments,
@@ -219,30 +215,12 @@ trait BindArgumentsTrait
      */
     private function checkUnknownNamedParameter(ReflectionFunctionAbstract $functionOrMethod, array $args): void
     {
-        $findArgNameAsString = static function (array $array) {
-            foreach ($array as $key => $value) {
-                if (is_string($key)) {
-                    return $key;
-                }
-            }
-
-            return null;
-        };
-
-        if ([] === $functionOrMethod->getParameters()) {
-            if (null !== ($argStringName = $findArgNameAsString($args))) {
+        foreach ($args as $key => $value) {
+            if (is_string($key)) {
                 throw new AutowireException(
-                    sprintf('Does not accept unknown named parameter $%s in %s', $argStringName, functionName($functionOrMethod))
+                    sprintf('Does not accept unknown named parameter $%s in %s', $key, functionName($functionOrMethod))
                 );
             }
-
-            return;
-        }
-
-        if (null !== ($argStringName = $findArgNameAsString($args))) {
-            throw new AutowireException(
-                sprintf('Does not accept unknown named parameter $%s in %s', $argStringName, functionName($functionOrMethod))
-            );
         }
     }
 }
