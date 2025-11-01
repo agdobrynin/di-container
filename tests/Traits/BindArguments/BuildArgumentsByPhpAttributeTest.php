@@ -41,6 +41,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::checkVariadic
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getAttributeOnParameter
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getInjectAttribute

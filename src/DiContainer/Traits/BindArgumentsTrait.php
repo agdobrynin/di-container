@@ -249,10 +249,6 @@ trait BindArgumentsTrait
             return;
         }
 
-        if ($functionOrMethod->isVariadic()) {
-            return;
-        }
-
         if (null !== ($argStringName = $findArgNameAsString($args))) {
             throw new AutowireException(
                 sprintf('Does not accept unknown named parameter $%s in %s', $argStringName, functionName($functionOrMethod))
