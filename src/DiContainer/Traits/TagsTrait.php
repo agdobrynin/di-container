@@ -25,7 +25,7 @@ trait TagsTrait
     /**
      * @return $this
      */
-    public function bindTag(string $name, array $options = [], null|int|string $priority = null): static
+    public function bindTag(string $name, array $options = [], int|string|null $priority = null): static
     {
         $this->tags[$name] = static::transformTagOptions($options, $priority);
 
@@ -54,7 +54,7 @@ trait TagsTrait
      * @param non-empty-string $name
      * @param TagOptions       $operationOptions
      */
-    public function geTagPriority(string $name, array $operationOptions = []): null|int|string
+    public function geTagPriority(string $name, array $operationOptions = []): int|string|null
     {
         $options = $operationOptions + ($this->getTag($name) ?? []);
 
@@ -68,7 +68,7 @@ trait TagsTrait
      *
      * @return TagOptions
      */
-    private static function transformTagOptions(array $options = [], null|int|string $priority = null): array
+    private static function transformTagOptions(array $options = [], int|string|null $priority = null): array
     {
         return (null === $priority ? [] : ['priority' => $priority]) + $options;
     }

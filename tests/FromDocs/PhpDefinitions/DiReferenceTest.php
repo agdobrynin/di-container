@@ -33,13 +33,6 @@ use function putenv;
  */
 class DiReferenceTest extends TestCase
 {
-    public function dataProvider(): Generator
-    {
-        yield 'env APP_TEST_FILE=prod' => ['prod', 'file1.txt'];
-
-        yield 'env APP_TEST_FILE=dev' => ['dev', 'file2.txt'];
-    }
-
     /**
      * @dataProvider dataProvider
      */
@@ -65,6 +58,13 @@ class DiReferenceTest extends TestCase
         $container = (new DiContainerFactory())->make($definitions);
 
         $this->assertEquals($expectFile, $container->get(SplFileInfo::class)->getFilename());
+    }
+
+    public function dataProvider(): Generator
+    {
+        yield 'env APP_TEST_FILE=prod' => ['prod', 'file1.txt'];
+
+        yield 'env APP_TEST_FILE=dev' => ['dev', 'file2.txt'];
     }
 
     public function testdiGetByClasses(): void

@@ -17,5 +17,5 @@ class TaggedClassBindTagOne
 
     public static function getTaggedPriorityReturnArray(): array {}
 
-    public static function getTaggedPriorityReturnUnionWrong(): null|array|ReflectionClass|string {}
+    public static function getTaggedPriorityReturnUnionWrong(): array|ReflectionClass|string|null {}
 }

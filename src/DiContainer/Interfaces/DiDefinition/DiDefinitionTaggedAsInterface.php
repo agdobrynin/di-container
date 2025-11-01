@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use ArrayAccess;
+use Countable;
+use Iterator;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
@@ -19,7 +23,7 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
     public function getContainer(): DiContainerInterface;
 
     /**
-     * @return iterable<non-empty-string|non-negative-int, mixed>
+     * @return array<non-empty-string, mixed>|(ArrayAccess&ContainerInterface&Countable&Iterator)|list<mixed>
      *
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface

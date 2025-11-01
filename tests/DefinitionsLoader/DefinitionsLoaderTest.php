@@ -19,13 +19,6 @@ use PHPUnit\Framework\TestCase;
  */
 class DefinitionsLoaderTest extends TestCase
 {
-    public function dataProviderInvalidContent(): Generator
-    {
-        yield 'no return' => [__DIR__.'/Fixtures/FailContent/f1.php'];
-
-        yield 'none php' => [__DIR__.'/Fixtures/FailContent/f2.txt'];
-    }
-
     /**
      * @dataProvider dataProviderInvalidContent
      */
@@ -37,19 +30,19 @@ class DefinitionsLoaderTest extends TestCase
         (new DefinitionsLoader())->load($file);
     }
 
+    public function dataProviderInvalidContent(): Generator
+    {
+        yield 'no return' => [__DIR__.'/Fixtures/FailContent/f1.php'];
+
+        yield 'none php' => [__DIR__.'/Fixtures/FailContent/f2.txt'];
+    }
+
     public function testFileNotFound(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not exist or is not readable');
 
         (new DefinitionsLoader())->load('f.php');
-    }
-
-    public function dataProvideDefinitionException(): Generator
-    {
-        yield 'definition without container identifier' => [__DIR__.'/Fixtures/DefinitionException/no-identifier.php'];
-
-        yield 'definition empty identifier' => [__DIR__.'/Fixtures/DefinitionException/empty-identifier.php'];
     }
 
     /**
@@ -61,6 +54,13 @@ class DefinitionsLoaderTest extends TestCase
         $this->expectExceptionMessageMatches('~Invalid definition in file "'.$file.'".+Definition identifier must be a non-empty string~');
 
         (new DefinitionsLoader())->load($file);
+    }
+
+    public function dataProvideDefinitionException(): Generator
+    {
+        yield 'definition without container identifier' => [__DIR__.'/Fixtures/DefinitionException/no-identifier.php'];
+
+        yield 'definition empty identifier' => [__DIR__.'/Fixtures/DefinitionException/empty-identifier.php'];
     }
 
     public function testOverrideDefinitionException(): void

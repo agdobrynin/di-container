@@ -70,7 +70,7 @@ final class FinderFile implements FinderFileInterface
 
     public function setAvailableExtensions(array $extensions): static
     {
-        $this->extensions = array_map('\strtolower', $extensions); // @phpstan-ignore assign.propertyType
+        $this->extensions = array_map('\strtolower', $extensions);
 
         return $this;
     }

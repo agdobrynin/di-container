@@ -9,5 +9,5 @@ parameters:
 		-
 			identifier: missingType.generics
 	phpVersion:
-		min: 80000
+		min: 80100
 		max: 80400

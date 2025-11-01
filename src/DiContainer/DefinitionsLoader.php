@@ -142,9 +142,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 // @var null|SplFileObject $file
                 $file = $importCacheFile?->openFile('wb+');
                 $file?->fwrite(
-                    '<?php'.PHP_EOL.
-                    'use function Kaspi\DiContainer\{diAutowire, diGet};'.PHP_EOL.
-                    'return static function () {'.PHP_EOL
+                    '<?php'.PHP_EOL
+                    .'use function Kaspi\DiContainer\{diAutowire, diGet};'.PHP_EOL
+                    .'return static function () {'.PHP_EOL
                 );
             } catch (RuntimeException $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(

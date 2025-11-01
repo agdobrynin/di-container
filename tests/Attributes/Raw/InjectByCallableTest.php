@@ -17,13 +17,6 @@ use Tests\Attributes\Raw\Fixtures\MyDiFactory;
  */
 class InjectByCallableTest extends TestCase
 {
-    public function successIdsDataProvider(): Generator
-    {
-        yield 'string' => ['ok', 'ok'];
-
-        yield 'string invoke method' => [MyDiFactory::class, 'Tests\Attributes\Raw\Fixtures\MyDiFactory'];
-    }
-
     /**
      * @dataProvider successIdsDataProvider
      */
@@ -32,6 +25,24 @@ class InjectByCallableTest extends TestCase
         $attr = new InjectByCallable($id);
 
         $this->assertEquals($expectIdentifier, $attr->getIdentifier());
+    }
+
+    public function successIdsDataProvider(): Generator
+    {
+        yield 'string' => ['ok', 'ok'];
+
+        yield 'string invoke method' => [MyDiFactory::class, 'Tests\Attributes\Raw\Fixtures\MyDiFactory'];
+    }
+
+    /**
+     * @dataProvider failIdsDataProvider
+     */
+    public function testFailure(string $id): void
+    {
+        $this->expectException(AutowireAttributeException::class);
+        $this->expectExceptionMessage('The $callable parameter must be a non-empty string and must not contain spaces');
+
+        new InjectByCallable($id);
     }
 
     public function failIdsDataProvider(): Generator
@@ -45,16 +56,5 @@ class InjectByCallableTest extends TestCase
         yield 'string with space trailing' => [' yes'];
 
         yield 'string with space ending' => ['yes '];
-    }
-
-    /**
-     * @dataProvider failIdsDataProvider
-     */
-    public function testFailure(string $id): void
-    {
-        $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessage('The $callable parameter must be a non-empty string and must not contain spaces');
-
-        new InjectByCallable($id);
     }
 }

@@ -115,15 +115,6 @@ class CallableParserTest extends TestCase
         $this->assertIsNotCallable($definition);
     }
 
-    public static function dataProviderDefinitionAsStringWithDoubleColonNotValid(): Generator
-    {
-        yield 'class and method is empty' => ['::'];
-
-        yield 'class is empty' => ['::method'];
-
-        yield 'method is empty' => ['class::'];
-    }
-
     /**
      * @dataProvider dataProviderDefinitionAsStringWithDoubleColonNotValid
      */
@@ -133,5 +124,14 @@ class CallableParserTest extends TestCase
         $this->expectExceptionMessage('Wrong callable definition present. Got: "'.$definition.'"');
 
         $this->parseDefinitions($definition);
+    }
+
+    public static function dataProviderDefinitionAsStringWithDoubleColonNotValid(): Generator
+    {
+        yield 'class and method is empty' => ['::'];
+
+        yield 'class is empty' => ['::method'];
+
+        yield 'method is empty' => ['class::'];
     }
 }

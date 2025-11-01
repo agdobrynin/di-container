@@ -55,7 +55,7 @@ final class LazyDefinitionIterator implements Iterator, ContainerInterface, Arra
     /**
      * @return null|non-empty-string|non-negative-int
      */
-    public function key(): null|int|string
+    public function key(): int|string|null
     {
         return key($this->mapKeyToContainerIdentifier);
     }

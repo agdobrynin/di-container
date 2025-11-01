@@ -17,13 +17,6 @@ use PHPUnit\Framework\TestCase;
  */
 class DiContainerSetTest extends TestCase
 {
-    public function dataProviderWrongIdentifier(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'spaces' => ['   '];
-    }
-
     /**
      * @dataProvider dataProviderWrongIdentifier
      */
@@ -35,11 +28,11 @@ class DiContainerSetTest extends TestCase
         (new DiContainer())->set($id, 'foo');
     }
 
-    public function dataProviderSuccessIdentifier(): Generator
+    public function dataProviderWrongIdentifier(): Generator
     {
-        yield 'with spaces' => [' foo ', 'definition'];
+        yield 'empty string' => [''];
 
-        yield 'with string as "null" and definition NULL' => ['null', null];
+        yield 'spaces' => ['   '];
     }
 
     /**
@@ -50,6 +43,13 @@ class DiContainerSetTest extends TestCase
         $container = (new DiContainer())->set($id, $definition);
 
         $this->assertTrue($container->has($id));
+    }
+
+    public function dataProviderSuccessIdentifier(): Generator
+    {
+        yield 'with spaces' => [' foo ', 'definition'];
+
+        yield 'with string as "null" and definition NULL' => ['null', null];
     }
 
     public function testIdentifierNotUnique(): void

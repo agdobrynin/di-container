@@ -16,13 +16,6 @@ use PHPUnit\Framework\TestCase;
  */
 class TaggedAsTest extends TestCase
 {
-    public static function dataProviderFail(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'string with spaces' => ['   '];
-    }
-
     /**
      * @dataProvider dataProviderFail
      */
@@ -32,6 +25,13 @@ class TaggedAsTest extends TestCase
         $this->expectExceptionMessage('parameter must be a non-empty string');
 
         new TaggedAs($name);
+    }
+
+    public static function dataProviderFail(): Generator
+    {
+        yield 'empty string' => [''];
+
+        yield 'string with spaces' => ['   '];
     }
 
     public function testTaggedAsDefault(): void

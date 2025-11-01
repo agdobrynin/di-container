@@ -9,8 +9,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
-use Tests\TaggedAsKeys\Fixures\One;
-use Tests\TaggedAsKeys\Fixures\Two;
+use Tests\TaggedAsKeys\Fixtures\One;
+use Tests\TaggedAsKeys\Fixtures\Two;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;
@@ -184,9 +184,9 @@ class KeyTest extends TestCase
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
-                Fixures\Attributes\One::class => diAutowire(Fixures\Attributes\One::class),
-                Fixures\Attributes\Three::class => diAutowire(Fixures\Attributes\Three::class),
-                Fixures\Attributes\Two::class => diAutowire(Fixures\Attributes\Two::class),
+                Fixtures\Attributes\One::class => diAutowire(Fixtures\Attributes\One::class),
+                Fixtures\Attributes\Three::class => diAutowire(Fixtures\Attributes\Three::class),
+                Fixtures\Attributes\Two::class => diAutowire(Fixtures\Attributes\Two::class),
             ])
         ;
 
@@ -213,9 +213,9 @@ class KeyTest extends TestCase
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
-                Fixures\Attributes\One::class => diAutowire(Fixures\Attributes\One::class),
-                Fixures\Attributes\Three::class => diAutowire(Fixures\Attributes\Three::class),
-                Fixures\Attributes\Two::class => diAutowire(Fixures\Attributes\Two::class),
+                Fixtures\Attributes\One::class => diAutowire(Fixtures\Attributes\One::class),
+                Fixtures\Attributes\Three::class => diAutowire(Fixtures\Attributes\Three::class),
+                Fixtures\Attributes\Two::class => diAutowire(Fixtures\Attributes\Two::class),
             ])
         ;
 
