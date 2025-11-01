@@ -50,6 +50,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn () => '';
 
+        $this->setContainer($this->containerMock);
         $this->bindArguments('one', 'two', diGet('services.logger_file'));
 
         self::assertEquals(
@@ -65,6 +66,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $fn = static fn () => '';
 
+        $this->setContainer($this->containerMock);
         $this->bindArguments(
             'one',
             'two',

@@ -74,16 +74,6 @@ trait BindArgumentsTrait
      */
     private function buildArguments(ReflectionFunctionAbstract $functionOrMethod, bool $isAttributeOnParamHigherPriority): array
     {
-        if ([] === $functionOrMethod->getParameters()) {
-            /*
-             * This maybe useful for functions without arguments
-             * that use functions like `func_get_args()` or any `func_*()`
-             */
-            $this->checkUnknownNamedParameter($functionOrMethod, $this->bindArguments);
-
-            return $this->bindArguments;
-        }
-
         $parameters = [];
         $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
 
@@ -153,7 +143,7 @@ trait BindArgumentsTrait
 
         /*
          * Add unused bind arguments.
-         * This can be useful for functions without arguments
+         * This can be useful for functions without arguments or tail argument
          * that use functions like `func_get_args()` or any `func_*()`
          */
         if (!$functionOrMethod->isVariadic()
