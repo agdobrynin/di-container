@@ -91,9 +91,9 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $this->assertEquals(['ddd', 'eee', 'fff'], $iter[1]);
     }
 
-    public function testUserDefinedArgumentAsArrayVariadicByNameSuccess(): void
+    public function testUserDefinedArgumentVariadicByOtherNamedArgNameSuccess(): void
     {
-        $fn = static fn (iterable ...$iterator) => $iterator;
+        $fn = static fn (string $str = '', iterable ...$iterator) => [$str, $iterator];
         $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
@@ -101,17 +101,15 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $this->setContainer($mockContainer);
 
         // 🚩 test data
-        $this->bindArguments(iterator: [
-            ['aaa', 'bbb', 'ccc'],
-            ['ddd', 'eee', 'fff'],
-        ]);
+        $this->bindArguments(iterator1: ['aaa', 'bbb', 'ccc'], iterator2: ['ddd', 'eee', 'fff'], str: 'welcome');
 
         $res = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertCount(2, $res);
 
-        $this->assertEquals(['aaa', 'bbb', 'ccc'], $res[0]);
-        $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]);
+        $this->assertEquals('welcome', $res[0]);
+        $this->assertEquals(['aaa', 'bbb', 'ccc'], $res[1]['iterator1']);
+        $this->assertEquals(['ddd', 'eee', 'fff'], $res[1]['iterator2']);
     }
 
     public function testUserDefinedArgumentOneVariadicByNameWrappedByDiValue(): void
@@ -130,7 +128,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         $this->assertCount(1, $res);
 
-        $this->assertEquals(['aaa', 'bbb', 'ccc'], $res[0]);
+        $this->assertEquals(['aaa', 'bbb', 'ccc'], $res['iterator']);
     }
 
     public function testUserDefinedArgumentAsStringVariadicByIndexSuccess(): void
@@ -164,7 +162,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
         $this->setContainer($mockContainer);
 
         // 🚩 test data, unsorted parameter names
-        $this->bindArguments(word: ['aaa', 'bbb', 'ccc'], numbers: [1_000, 10_000]);
+        $this->bindArguments(word: 'aaa', word2: 'bbb', wor3: 'ccc', numbers: [1_000, 10_000]);
 
         [$numbers, $word] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
@@ -174,9 +172,9 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 
         $this->assertCount(3, $word);
 
-        $this->assertEquals('aaa', $word[0]);
-        $this->assertEquals('bbb', $word[1]);
-        $this->assertEquals('ccc', $word[2]);
+        $this->assertEquals('aaa', $word['word']);
+        $this->assertEquals('bbb', $word['word2']);
+        $this->assertEquals('ccc', $word['wor3']);
     }
 
     public function testUserDefinedArgumentAsStdClassByIndexAndName(): void

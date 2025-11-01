@@ -54,9 +54,10 @@ class DeprecatedMethodAddArgumentTest extends TestCase
         $fn = static fn (iterable ...$iterator) => $iterator;
         $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
 
-        $this->addArgument('iterator', [[], []]);
+        $this->addArgument('iterator', []);
+        $this->addArgument('iterator2', []);
 
-        $this->assertEquals([[], []], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
+        $this->assertEquals(['iterator' => [], 'iterator2' => []], call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false)));
     }
 
     public function testAddArgumentFailByName(): void

@@ -171,13 +171,11 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
 
         // 🚩 test data
         $this->bindArguments(
-            item: [
-                diProxyClosure(MoreSuperClass::class),
-                diProxyClosure(SuperClass::class),
-            ]
+            item1: diProxyClosure(MoreSuperClass::class),
+            item2: diProxyClosure(SuperClass::class),
         );
 
-        [$res1, $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
+        ['item1' => $res1, 'item2' => $res2] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertInstanceOf(Closure::class, $res1);
         $this->assertInstanceOf(Closure::class, $res2);
@@ -209,15 +207,13 @@ class ParameterResolveUserDefinedArgumentByProxyClosureTest extends TestCase
         // 🚩 test data
         $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
         $this->bindArguments(
-            item: [
-                diProxyClosure(MoreSuperClass::class, false),
-                diProxyClosure(SuperClass::class, true),
-                diProxyClosure(MoreSuperClass::class, false),
-            ]
+            item: diProxyClosure(MoreSuperClass::class, false),
+            item2: diProxyClosure(SuperClass::class, true),
+            item3: diProxyClosure(MoreSuperClass::class, false),
         );
 
-        [$res11, $res12, $res13] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
-        [$res21, $res22, $res23] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
+        ['item' => $res11, 'item2' => $res12, 'item3' => $res13] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
+        ['item' => $res21, 'item2' => $res22, 'item3' => $res23] = call_user_func_array($fn, $this->resolveParameters($this->getBindArguments(), $reflectionParameters, false));
 
         $this->assertNotSame($res11, $res13);
         $this->assertNotSame($res21, $res23);
