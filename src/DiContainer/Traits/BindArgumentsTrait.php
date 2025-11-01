@@ -109,13 +109,7 @@ trait BindArgumentsTrait
             }
 
             if ($isUseAttribute && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                if ($parameter->isVariadic()) {
-                    array_push($parameters, ...$definitions);
-
-                    break; // Variadic Parameter has last position
-                }
-
-                $parameters[$parameter->getPosition()] = $definitions->current();
+                array_push($parameters, ...$definitions);
 
                 continue;
             }
