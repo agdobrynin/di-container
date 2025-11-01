@@ -141,7 +141,7 @@ trait BindArgumentsTrait
          * that use functions like `func_get_args()` or any `func_*()`
          */
         if (!$functionOrMethod->isVariadic()
-            && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
+            && (count($this->bindArguments) > ($c = count($functionOrMethod->getParameters())))) {
             $tailArgs = array_slice($this->bindArguments, $c, preserve_keys: true);
 
             $this->checkUnknownNamedParameter($functionOrMethod, $tailArgs);
