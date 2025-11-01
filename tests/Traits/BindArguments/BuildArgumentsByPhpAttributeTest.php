@@ -72,15 +72,14 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
     {
         $fn = static fn (#[Inject] Quux $quux) => $quux;
 
-        $this->bindArguments(quux: diGet('services.quux'));
-
         $this->setContainer($this->containerMock);
+        $this->bindArguments(quux: diGet('services.quux'));
 
         // Php attribute priority = true
         $args = $this->buildArguments(new ReflectionFunction($fn), true);
 
         self::assertEquals(
-            [diGet(Quux::class)],
+            [0 => diGet(Quux::class)],
             $args
         );
 
@@ -90,15 +89,31 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         );
     }
 
+    public function testInjectRegularParametersAttributeHigherPriorityAndTailOtherArg(): void
+    {
+        $fn = static fn (#[Inject] Quux $quux) => $quux;
+
+        $this->setContainer($this->containerMock);
+        $this->bindArguments(other: diGet('services.quux'), other2: diGet('services.quux'));
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        self::assertEquals(
+            [0 => diGet(Quux::class)],
+            $args
+        );
+    }
+
     public function testInjectRegularParametersPhpDefinitionHigherPriority(): void
     {
         $fn = static fn (#[Inject] Quux $quux) => $quux;
 
+        $this->setContainer($this->containerMock);
         $this->bindArguments(quux: diGet('services.quux'));
 
-        $this->setContainer($this->containerMock);
-
-        // Php attribute priority = false
+        // Use of attributes is enabled in container configuration.
+        // Php attribute priority by argument $isAttributeOnParamHigherPriority = false
         $args = $this->buildArguments(new ReflectionFunction($fn), false);
 
         self::assertEquals(
@@ -135,14 +150,10 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         // Php attribute priority = true
         $args = $this->buildArguments(new ReflectionFunction($fn), true);
 
-        self::assertEquals(
-            [
-                0 => diGet(Baz::class),
-                1 => diGet(Quux::class),
-                2 => diGet(QuuxTwo::class),
-            ],
-            $args
-        );
+        // Order arg important
+        self::assertEquals(diGet(Baz::class), $args[0]);
+        self::assertEquals(diGet(Quux::class), $args[1]);
+        self::assertEquals(diGet(QuuxTwo::class), $args[2]);
     }
 
     public function testProxyClosureRegularParameters(): void
