@@ -16,6 +16,7 @@ use Tests\Traits\BindArguments\Fixtures\Bar;
 use Tests\Traits\BindArguments\Fixtures\Baz;
 use Tests\Traits\BindArguments\Fixtures\Foo;
 
+use function array_keys;
 use function func_get_args;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
@@ -65,7 +66,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $args = $this->buildArguments(new ReflectionFunction($fn), false);
 
-        self::assertEquals([diGet('ArrayIterator')], $args);
+        self::assertEquals([0 => diGet('ArrayIterator')], $args);
     }
 
     public function testGetParameterTypeWithDefaultValue(): void
@@ -91,7 +92,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         $this->setContainer($this->containerMock);
 
         self::assertEquals(
-            [diGet(Bar::class)],
+            [0 => diGet(Bar::class)],
             $this->buildArguments(new ReflectionFunction($fn), false)
         );
     }
@@ -123,10 +124,11 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $this->setContainer($this->containerMock);
 
-        self::assertEquals(
-            [diGet(Bar::class)],
-            $this->buildArguments(new ReflectionFunction($fn), false)
-        );
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
+        self::assertCount(1, $args);
+        // Order arg name (key) important
+        self::assertEquals(diGet(Bar::class), $args[0]);
     }
 
     public function testVariadicParameterBindArgumentAsNamedArgument(): void
@@ -140,14 +142,57 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             foo_1: diGet(Baz::class),
         );
 
-        self::assertEquals(
-            [
-                0 => diGet(Bar::class),
-                'foo' => diGet(Foo::class),
-                'foo_1' => diGet(Baz::class),
-            ],
-            $this->buildArguments(new ReflectionFunction($fn), false)
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
+        // Order arg name (key) important
+        self::assertEquals([0, 'foo', 'foo_1'], array_keys($args));
+        // definition resolved
+        self::assertEquals(diGet(Bar::class), $args[0]);
+        self::assertEquals(diGet(Foo::class), $args['foo']);
+        self::assertEquals(diGet(Baz::class), $args['foo_1']);
+    }
+
+    public function testVariadicParameterBindArgumentAsRandomName(): void
+    {
+        $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
+
+        $this->setContainer($this->containerMock);
+
+        $this->bindArguments(
+            foo_foo: diGet(Foo::class),
+            foo_baz: diGet(Baz::class),
         );
+
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
+        // Order arg name (key) important
+        self::assertEquals([0, 'foo_foo', 'foo_baz'], array_keys($args));
+        // definition resolved
+        self::assertEquals(diGet(Bar::class), $args[0]);
+        self::assertEquals(diGet(Foo::class), $args['foo_foo']);
+        self::assertEquals(diGet(Baz::class), $args['foo_baz']);
+    }
+
+    public function testVariadicParameterBindArgumentAsUnorderNamedArgument(): void
+    {
+        $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
+
+        $this->setContainer($this->containerMock);
+
+        $this->bindArguments(
+            foo_foo: diGet(Foo::class),
+            foo: diGet(Baz::class),
+            bar: diGet(Bar::class),
+        );
+
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
+        // Order arg name (key) important
+        self::assertEquals(['bar', 'foo_foo', 'foo'], array_keys($args));
+        // definition resolved
+        self::assertEquals(diGet(Bar::class), $args['bar']);
+        self::assertEquals(diGet(Baz::class), $args['foo']);
+        self::assertEquals(diGet(Foo::class), $args['foo_foo']);
     }
 
     public function testVariadicParameterBindArgumentAsIndexArgument(): void
@@ -162,14 +207,12 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             diGet(Baz::class),
         );
 
-        self::assertEquals(
-            [
-                0 => diGet(Bar::class),
-                1 => diGet(Foo::class),
-                2 => diGet(Baz::class),
-            ],
-            $this->buildArguments(new ReflectionFunction($fn), false)
-        );
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
+        // Order arg name (key) important
+        self::assertEquals(diGet(Bar::class), $args[0]);
+        self::assertEquals(diGet(Foo::class), $args[1]);
+        self::assertEquals(diGet(Baz::class), $args[2]);
     }
 
     public function testDefaultParameter(): void

@@ -21,12 +21,14 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 
+use function array_column;
+use function array_filter;
 use function array_key_exists;
-use function array_keys;
 use function array_push;
-use function array_search;
 use function array_slice;
 use function count;
+use function in_array;
+use function is_int;
 
 trait BindArgumentsTrait
 {
@@ -79,13 +81,13 @@ trait BindArgumentsTrait
         $hasVariadic = $functionOrMethod->isVariadic();
 
         foreach ($functionOrMethod->getParameters() as $parameter) {
-            $argumentNameOrIndex = match (true) {
+            $argNameOrIndex = match (true) {
                 array_key_exists($parameter->name, $this->bindArguments) => $parameter->name,
                 array_key_exists($parameter->getPosition(), $this->bindArguments) => $parameter->getPosition(),
                 default => false,
             };
 
-            if (false !== $argumentNameOrIndex) {
+            if (false !== $argNameOrIndex) {
                 // PHP attributes have higher priority than PHP definitions
                 if ($isUseAttribute && $isAttributeOnParamHigherPriority
                     && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
@@ -97,14 +99,14 @@ trait BindArgumentsTrait
                 }
 
                 if ($parameter->isVariadic()) {
-                    if (false !== $indexFrom = array_search($argumentNameOrIndex, array_keys($this->bindArguments), true)) {
-                        $parameters = [...$parameters, ...array_slice($this->bindArguments, $indexFrom)];
+                    foreach ($this->getVariadicArguments($argNameOrIndex, $functionOrMethod) as $key => $definition) {
+                        $parameters[$key] = $definition;
                     }
 
                     break; // Variadic Parameter has last position
                 }
 
-                $parameters[$argumentNameOrIndex] = $this->bindArguments[$argumentNameOrIndex];
+                $parameters[$argNameOrIndex] = $this->bindArguments[$argNameOrIndex];
 
                 continue;
             }
@@ -121,8 +123,12 @@ trait BindArgumentsTrait
                 continue;
             }
 
-            // Variadic parameter resolve only by `bindArguments()`
+            // The named argument for a variadic parameter can be a random string
             if ($parameter->isVariadic()) {
+                foreach ($this->getVariadicArguments($parameter->name, $functionOrMethod) as $key => $definition) {
+                    $parameters[$key] = $definition;
+                }
+
                 break; // Variadic Parameter has last position
             }
 
@@ -144,10 +150,28 @@ trait BindArgumentsTrait
          * that use functions like `func_get_args()` or any `func_*()`
          */
         if (!$hasVariadic && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
-            $parameters = [...$parameters, ...array_slice($this->bindArguments, $c)];
+            array_push($parameters, ...array_slice($this->bindArguments, $c));
         }
 
         return $parameters;
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function getVariadicArguments(int|string $argumentNameOrIndex, ReflectionFunctionAbstract $functionOrMethod): array
+    {
+        if (is_int($argumentNameOrIndex)) {
+            return array_slice($this->bindArguments, $argumentNameOrIndex, preserve_keys: true);
+        }
+
+        $paramNames = array_column($functionOrMethod->getParameters(), 'name');
+
+        return array_filter(
+            $this->bindArguments,
+            static fn (int|string $nameOrIndex) => !in_array($nameOrIndex, $paramNames, true) || $nameOrIndex === $argumentNameOrIndex,
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
     /**
