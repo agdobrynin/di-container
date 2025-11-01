@@ -532,7 +532,7 @@ return static function (): \Generator {
         ->bindArguments(
             emails: diTaggedAs(
                 tag: 'tags.system-emails',
-                isLazy: false,
+                isLazy: false, // 🚩 для параметра с типом array
                 useKeys: false // 🚩 не использовать строковые ключи коллекции
             )
         );
@@ -679,7 +679,15 @@ $classWithHeavyDep->doHeavyDependency();
 > ```
 #### diTaggedAs
 Определение для получения коллекции сервисов отмеченных тегом.
-Результат выполнения может быть применен для параметров с типом `iterable` и `array`.
+Результат выполнения может быть применен для параметров с типом:
+ - `iterable`
+   - `\Traversable`
+     - `\Iterator`
+ - `\ArrayAccess`
+ - `\Psr\Container\ContainerInterface`
+ - `array` требуется использовать параметр `$isLazy = false`.
+ - Составной тип (_intersection types PHP 8.1 и выше_) для ленивых коллекций (`$isLazy = true`) 
+   - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`. 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use function Kaspi\DiContainer\diTaggedAs;
