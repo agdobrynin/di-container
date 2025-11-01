@@ -7,6 +7,7 @@ namespace Tests\DiContainerCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
 
@@ -23,7 +24,9 @@ use function round;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
+ * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
+ * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */
@@ -65,7 +68,7 @@ class CallFunctionTest extends TestCase
         $this->assertEquals('I am alone', $res);
     }
 
-    public function testUserFunctionResolveArgumentByName(): void
+    public function testUserFunctionResolveArgumentByNameException(): void
     {
         $definitions = [
             'allUsers' => ['Ivan', 'Piter', 'Vasiliy'],
@@ -73,10 +76,10 @@ class CallFunctionTest extends TestCase
         $config = new DiContainerConfig();
         $container = new DiContainer($definitions, $config);
 
-        $res = $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
-        $expect = 'IVAN - PITER - VASILIY';
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+array \$allUsers/');
 
-        $this->assertEquals($expect, $res);
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
     }
 
     public function testUserFunctionInjectByAttributeWithDefaultValue(): void

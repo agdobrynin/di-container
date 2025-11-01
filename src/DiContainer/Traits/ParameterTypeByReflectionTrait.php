@@ -4,27 +4,24 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Psr\Container\ContainerInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
 
 use function count;
-use function implode;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 trait ParameterTypeByReflectionTrait
 {
     /**
-     * @return null|non-empty-string
+     * @return non-empty-string
      *
-     * @throws AutowireExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
+     * @throws AutowireParameterTypeException
      */
-    private function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): ?string
+    private function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): string
     {
         $type = $parameter->getType();
 
@@ -33,6 +30,7 @@ trait ParameterTypeByReflectionTrait
         }
 
         if ($type instanceof ReflectionUnionType) {
+            /** @var non-empty-string[] $types */
             $types = [];
             foreach ($type->getTypes() as $t) { // @phpstan-ignore-line
                 /**
@@ -46,15 +44,13 @@ trait ParameterTypeByReflectionTrait
                 }
             }
 
-            return match (count($types)) {
-                0 => null,
-                1 => $types[0],
-                default => throw new AutowireException(
-                    sprintf('Cannot automatically resolve dependency. Please specify the parameter type for the argument "$%s". Available types: %s.', $parameter->getName(), '"'.implode('", "', $types)).'"'
-                )
-            };
+            return 1 === count($types)
+                ? $types[0]
+                : throw new AutowireParameterTypeException(sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionName($parameter->getDeclaringFunction()), $parameter));
         }
 
-        return null;
+        throw new AutowireParameterTypeException(
+            sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionName($parameter->getDeclaringFunction()), $parameter)
+        );
     }
 }

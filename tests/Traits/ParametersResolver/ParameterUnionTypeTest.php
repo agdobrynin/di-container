@@ -23,6 +23,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
@@ -57,7 +58,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->setContainer($this->mockContainer);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+One|.+Two.+\$type/');
 
         $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters(), false);
     }
@@ -96,7 +97,7 @@ class ParameterUnionTypeTest extends TestCase
         $this->setContainer($this->mockContainer);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+"\$type".+One.+Two/');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+One|.+Two \$type/');
 
         $this->resolveParameters([], (new ReflectionFunction($fn))->getParameters(), false);
     }
