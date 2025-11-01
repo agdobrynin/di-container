@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
@@ -89,20 +90,22 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         );
     }
 
-    public function testInjectRegularParametersAttributeHigherPriorityAndTailOtherArg(): void
+    public function testInjectRegularParametersAndTailArgs(): void
     {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('Does not accept unknown named parameter $other_two');
+
         $fn = static fn (#[Inject] Quux $quux) => $quux;
 
         $this->setContainer($this->containerMock);
-        $this->bindArguments(other: diGet('services.quux'), other2: diGet('services.quux'));
+        $this->bindArguments(
+            other: diGet('services.foo'),
+            other_two: diGet('services.bar'),
+            other_three: diGet('services.baz'),
+        );
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
-
-        self::assertEquals(
-            [0 => diGet(Quux::class)],
-            $args
-        );
+        $this->buildArguments(new ReflectionFunction($fn), true);
     }
 
     public function testInjectRegularParametersPhpDefinitionHigherPriority(): void

@@ -50,12 +50,28 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn () => '';
 
-        $this->bindArguments('one', 'two', a: diGet('services.logger_file'));
+        $this->bindArguments('one', 'two', diGet('services.logger_file'));
 
         self::assertEquals(
-            ['one', 'two', 'a' => diGet('services.logger_file')],
+            ['one', 'two', diGet('services.logger_file')],
             $this->buildArguments(new ReflectionFunction($fn), false)
         );
+    }
+
+    public function testGetWithoutParametersAndNamedArgument(): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('Does not accept unknown named parameter $service');
+
+        $fn = static fn () => '';
+
+        $this->bindArguments(
+            'one',
+            'two',
+            service: diGet('services.logger_file')
+        );
+
+        $this->buildArguments(new ReflectionFunction($fn), false);
     }
 
     public function testResolveByParameterTypeByParameterNameByDefaultValue(): void
@@ -260,5 +276,23 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             ],
             $args
         );
+    }
+
+    public function testTailArgs(): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('Does not accept unknown named parameter $other');
+
+        $fn = static fn (string $str) => func_get_args();
+
+        $this->setContainer($this->containerMock);
+        $this->bindArguments(
+            str: diGet('params.secure_string'),
+            other_one: diGet('services.baz'),
+            other_two: diGet('services.bar')
+        );
+
+        // Php attribute priority = true
+        $this->buildArguments(new ReflectionFunction($fn), true);
     }
 }

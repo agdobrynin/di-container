@@ -25,14 +25,16 @@ use ReflectionParameter;
 use function array_column;
 use function array_filter;
 use function array_key_exists;
-use function array_keys;
 use function array_push;
 use function array_slice;
 use function count;
 use function in_array;
 use function is_int;
+use function is_string;
 use function Kaspi\DiContainer\functionName;
 use function sprintf;
+
+use const ARRAY_FILTER_USE_KEY;
 
 trait BindArgumentsTrait
 {
@@ -77,12 +79,13 @@ trait BindArgumentsTrait
              * This maybe useful for functions without arguments
              * that use functions like `func_get_args()` or any `func_*()`
              */
+            $this->checkUnknownNamedParameter($functionOrMethod, $this->bindArguments);
+
             return $this->bindArguments;
         }
 
         $parameters = [];
         $isUseAttribute = (bool) $this->getContainer()->getConfig()?->isUseAttribute();
-        $hasVariadic = $functionOrMethod->isVariadic();
 
         foreach ($functionOrMethod->getParameters() as $parameter) {
             $argNameOrIndex = match (true) {
@@ -153,15 +156,11 @@ trait BindArgumentsTrait
          * This can be useful for functions without arguments
          * that use functions like `func_get_args()` or any `func_*()`
          */
-        if (!$hasVariadic && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
-            $tailArgs = array_slice($this->bindArguments, $c);
+        if (!$functionOrMethod->isVariadic()
+            && count($this->bindArguments) > ($c = count($functionOrMethod->getParameters()))) {
+            $tailArgs = array_slice($this->bindArguments, $c, preserve_keys: true);
 
-            if (count(array_filter(array_keys($tailArgs), 'is_string')) > 0) {
-                throw new AutowireException(
-                    sprintf('Does not accept unknown named parameters for %s', functionName($functionOrMethod))
-                );
-            }
-
+            $this->checkUnknownNamedParameter($functionOrMethod, $tailArgs);
             array_push($parameters, ...$tailArgs);
         }
 
@@ -220,6 +219,44 @@ trait BindArgumentsTrait
             }
 
             yield $definition;
+        }
+    }
+
+    /**
+     * @param array<non-empty-string|non-negative-int, mixed> $args
+     *
+     * @throws AutowireExceptionInterface
+     */
+    private function checkUnknownNamedParameter(ReflectionFunctionAbstract $functionOrMethod, array $args): void
+    {
+        $findArgNameAsString = static function (array $array) {
+            foreach ($array as $key => $value) {
+                if (is_string($key)) {
+                    return $key;
+                }
+            }
+
+            return null;
+        };
+
+        if ([] === $functionOrMethod->getParameters()) {
+            if (null !== ($argStringName = $findArgNameAsString($args))) {
+                throw new AutowireException(
+                    sprintf('Does not accept unknown named parameter $%s in %s', $argStringName, functionName($functionOrMethod))
+                );
+            }
+
+            return;
+        }
+
+        if ($functionOrMethod->isVariadic()) {
+            return;
+        }
+
+        if (null !== ($argStringName = $findArgNameAsString($args))) {
+            throw new AutowireException(
+                sprintf('Does not accept unknown named parameter $%s in %s', $argStringName, functionName($functionOrMethod))
+            );
         }
     }
 }
