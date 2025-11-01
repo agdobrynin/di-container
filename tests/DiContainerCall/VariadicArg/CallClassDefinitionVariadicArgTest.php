@@ -41,14 +41,12 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
             [
-                'word' => [ // <- variadic vars wrap by array
-                    diGet(WordSuffix::class),
-                    diGet(WordHello::class),
-                ], // <- variadic vars wrap by array
+                'word' => diGet(WordSuffix::class),
+                'word_2' => diGet(WordHello::class),
             ]
         );
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
+        $this->assertInstanceOf(WordSuffix::class, $res['word']);
+        $this->assertInstanceOf(WordHello::class, $res['word_2']);
     }
 
     public function testCallStaticMethodWithoutAttributePassArgumentByDiAutowire(): void
@@ -62,14 +60,12 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
             [
-                'word' => [ // <- variadic vars wrap by array
-                    diAutowire(WordSuffix::class),
-                    diAutowire(WordHello::class),
-                ], // <- variadic vars wrap by array
+                'word' => diAutowire(WordSuffix::class),
+                'word1' => diAutowire(WordHello::class),
             ]
         );
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
+        $this->assertInstanceOf(WordSuffix::class, $res['word']);
+        $this->assertInstanceOf(WordHello::class, $res['word1']);
     }
 
     public function testCallStaticMethodWithoutAttributePassArgumentByReferenceOneToMany(): void
@@ -83,14 +79,12 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
             [
-                'word' => [
-                    $container->get(WordSuffix::class),
-                    $container->get(WordHello::class),
-                ],
+                'word' => $container->get(WordSuffix::class),
+                'word2' => $container->get(WordHello::class),
             ]
         );
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
-        $this->assertInstanceOf(WordHello::class, $res[1]);
+        $this->assertInstanceOf(WordSuffix::class, $res['word']);
+        $this->assertInstanceOf(WordHello::class, $res['word2']);
     }
 
     public function testCallStaticMethodWitAttributeInjectIdAsContainerIdentifier(): void

@@ -171,7 +171,12 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 > Для аргументов не объявленных через `bindArgument` контейнер попытается разрешить зависимости самостоятельно.
 
 > [!TIP]
-> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+>
+> Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
+> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface::class`
+> (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
+> то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
 
 **Дополнительная настройка сервиса через методы класса (mutable setters):**
 ```php 
@@ -295,7 +300,7 @@ diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefi
 > [!IMPORTANT]
 > Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`
 > предоставляющий методы:
-> - `bindArguments` - указать аргументы для определения
+> - `bindArguments` - указать аргументы для параметров функции.
 > - `bindTag` - добавляет тег с мета-данными для определения.
 
 **Аргументы для определения:**
@@ -308,7 +313,13 @@ bindArguments(mixed ...$argument)`
  // function(string $var1, string $var2) 
  ```
 > [!TIP]
-> Аргументы `$argument` в `bindArgument` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+>
+> Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
+> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface::class`
+> (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
+> то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
+
 
 > [!WARNING]
 > метод `bindArguments` перезаписывает ранее определенные аргументы.
@@ -521,7 +532,7 @@ return static function (): \Generator {
         ->bindArguments(
             emails: diTaggedAs(
                 tag: 'tags.system-emails',
-                isLazy: false,
+                isLazy: false, // 🚩 для параметра с типом array
                 useKeys: false // 🚩 не использовать строковые ключи коллекции
             )
         );
@@ -546,58 +557,6 @@ $notifyStaff = $container->get(App\Notifications\CompanyStaff::class);
 
 > [!TIP]
 > Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
-
-##### Пример когда надо объявить аргумент «как есть»:
-```php
-// src/Classes/ParameterIterableVariadic.php
-namespace App\Classes;
-
-class ParameterIterableVariadic
-{
-    private array $parameters;
-
-    public function __construct(array ...$parameter)
-    {
-        $this->parameters = $parameter;
-    }
-    
-    public function getParameters(): array
-    {
-        return $this->parameters;
-    }
-    
-}
-    //... some logic
-}
-```
-```php
-// config/services.php
-use function Kaspi\DiContainer\{diAutowire, diValue};
-
-return static function (): \Generator {
-
-    yield diAutowire(App\Classes\ParameterIterableVariadic::class)
-        ->bindArguments(
-            diValue(['ok'])
-        );
-    
-};
-```
-> [!NOTE]
-> Так как параметр `ParameterIterableVariadic::$parameter` массив и
-> вариативный то требуется уточнить – нужно передать в аргумент одно значение.
-```php
-use Kaspi\DiContainer\DiContainerFactory;
-
-$container = (new DiContainerFactory())
-    ->make(
-        require __DIR__.'/config/services.php'
-    );
-
-var_dump(
-    $container->get(App\Classes\ParameterIterableVariadic::class)->getParameters()
-); // array(0 => array(0 => 'ok'))
-```
 
 #### diProxyClosure
 
@@ -720,7 +679,15 @@ $classWithHeavyDep->doHeavyDependency();
 > ```
 #### diTaggedAs
 Определение для получения коллекции сервисов отмеченных тегом.
-Результат выполнения может быть применен для параметров с типом `iterable` и `array`.
+Результат выполнения может быть применен для параметров с типом:
+ - `iterable`
+   - `\Traversable`
+     - `\Iterator`
+ - `\ArrayAccess`
+ - `\Psr\Container\ContainerInterface`
+ - `array` требуется использовать параметр `$isLazy = false`.
+ - Составной тип (_intersection types PHP 8.1 и выше_) для ленивых коллекций (`$isLazy = true`) 
+   - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`. 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use function Kaspi\DiContainer\diTaggedAs;
@@ -1079,11 +1046,8 @@ $container->get(App\Classes\MyClass::class);
 
 ## Разрешение параметров переменной длины
 
-Если необходимо передать несколько аргументов для `variadic` параметра используя имя параметра
-то необходимо объявлять их как массив `[]`.
-
 > [!WARNING]
-> Параметр переменной длинны является опциональным и если у него не задан
+> Параметр переменной длинны является опциональным и если не задан
 > аргумент, то он будет пропущен при разрешении зависимости.
 
 ```php
@@ -1137,13 +1101,9 @@ return static function () {
 
     yield diAutowire(App\Rules\RuleGenerator::class)
         ->bindArguments(
-            // имя параметра $inputRule в конструкторе
-            inputRule:
-                [ // <-- обернуть параметры в массив для variadic типов если их несколько.
-                    diAutowire(App\Rules\RuleB::class),
-                    diAutowire(App\Rules\RuleA::class),
-                    diGet('ruleC'), // <-- получение по ссылке
-                ], // <-- обернуть параметры в массив если их несколько.            
+            diAutowire(App\Rules\RuleB::class),
+            diAutowire(App\Rules\RuleA::class),
+            diGet('ruleC'), // <-- получение по ссылке
         )
 };
 ```
@@ -1166,33 +1126,32 @@ assert($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 
 assert($ruleGenerator->getRules()[2] instanceof App\Rules\RuleС); // true
 ```
-Если необходимо передать только один аргумент и использовать имя параметра, то объявление будет таким:
-```php
-// для примера выше в файле config/services.php
-use function Kaspi\DiContainer\diAutowire;
-
-return static function(): \Generator {
-    yield diAutowire(App\Rules\RuleGenerator::class)
-        ->bindArguments(
-            // имя параметра $inputRule в конструкторе
-            inputRule: diAutowire(App\Rules\RuleB::class),            
-        )
-};
-```
 
 > [!TIP]
-> Если не использовать имя параметра то передавать аргументы по индексу в конструкторе можно просто перечисляя нужные определения:
+> Для использования [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)
+> и [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list)
+> действуют правила описанные в документации php.
+> 
 > ```php
 > // Передать три аргумента в конструктор класс
 > diAutowire(App\Rules\RuleGenerator::class)
->   // Передать в параметр с индексом 0 значение.
+>   // Передать аргументы как именованные.
 >   ->bindArguments(
->       diAutowire(App\Rules\RuleB::class),
+>       inputRule: diAutowire(App\Rules\RuleB::class),
 >
->       diAutowire(App\Rules\RuleA::class),
+>       inputRule_2: diAutowire(App\Rules\RuleA::class),
 >
->       diGet('ruleC'), // <-- получение по ссылке
+>       inputRule_3: diGet('ruleC'),
 >   );
+> ```
+> В результате в переменной `App\Rules\RuleGenerator::$inputRule` будет
+> массив со значением ключей:
+> ```text
+> array(
+>   'inputRule' => object(RuleA)#1
+>   'inputRule_2' => object(RuleB)#2
+>   'inputRule_3' => object(RuleC)#3
+> )
 > ```
 
 ## Разрешение зависимости объединенного типа.

@@ -91,10 +91,10 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->assertCount(2, $params);
         $this->assertInstanceOf(SuperClass::class, $params[0]);
-        $this->assertEquals('one', $params[1]);
+        $this->assertEquals('one', $params['word']);
 
         $this->assertInstanceOf(SuperClass::class, call_user_func_array($fn, $params)[0]);
-        $this->assertEquals(['one'], call_user_func_array($fn, $params)[1]);
+        $this->assertEquals(['word' => 'one'], call_user_func_array($fn, $params)[1]);
     }
 
     public function testParameterResolveByNameVariadicParameterArray(): void
