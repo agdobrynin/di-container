@@ -167,7 +167,7 @@ trait BindArgumentsTrait
             if ($attr instanceof Inject) {
                 $definition = new DiDefinitionGet($attr->getIdentifier()); // @phpstan-ignore argument.type
             } elseif ($attr instanceof ProxyClosure) {
-                $definition = new DiDefinitionProxyClosure($attr->getIdentifier(), $attr->isSingleton());
+                $definition = new DiDefinitionProxyClosure($attr->getIdentifier());
             } elseif ($attr instanceof TaggedAs) {
                 $definition = new DiDefinitionTaggedAs(
                     $attr->getIdentifier(),
@@ -180,7 +180,7 @@ trait BindArgumentsTrait
                     $attr->isSelfExclude(),
                 );
             } else {
-                $definition = new DiDefinitionCallable($attr->getIdentifier(), $attr->isSingleton());
+                $definition = new DiDefinitionCallable($attr->getIdentifier());
             }
 
             yield $definition;

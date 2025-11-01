@@ -179,7 +179,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             QuuxInterface $quux,
             #[
                 ProxyClosure(HeavyDependency::class),
-                ProxyClosure(HeavyDependencyTwo::class, isSingleton: true),
+                ProxyClosure(HeavyDependencyTwo::class),
             ]
             Closure ...$heavyDependency,
         ): array => [($heavyDependency[0])()->doMake($quux), ($heavyDependency[1])()->doMake($quux)];
@@ -193,7 +193,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             [
                 diGet(QuuxInterface::class),
                 diProxyClosure(HeavyDependency::class),
-                diProxyClosure(HeavyDependencyTwo::class, true),
+                diProxyClosure(HeavyDependencyTwo::class),
             ],
             $args,
         );
@@ -226,7 +226,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         $fn = static fn (
             QuuxInterface $quux,
             #[InjectByCallable(Baz::class.'::doMake')]
-            #[InjectByCallable('App\Helpers\fn\funcUser', true)]
+            #[InjectByCallable('App\Helpers\fn\funcUser')]
             callable ...$doCallable,
         ) => true;
 
@@ -239,7 +239,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             [
                 diGet(QuuxInterface::class),
                 diCallable(Baz::class.'::doMake'),
-                diCallable('App\Helpers\fn\funcUser', true),
+                diCallable('App\Helpers\fn\funcUser'),
             ],
             $args,
         );
