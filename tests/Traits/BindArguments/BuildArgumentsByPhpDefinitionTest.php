@@ -15,6 +15,8 @@ use stdClass;
 use Tests\Traits\BindArguments\Fixtures\Bar;
 use Tests\Traits\BindArguments\Fixtures\Baz;
 use Tests\Traits\BindArguments\Fixtures\Foo;
+use Tests\Traits\BindArguments\Fixtures\Quux;
+use Tests\Traits\BindArguments\Fixtures\QuuxInterface;
 
 use function array_keys;
 use function func_get_args;
@@ -149,6 +151,36 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         self::assertEquals(diGet(Bar::class), $args[0]);
     }
 
+    public function testDefaultValueAndVariadicParameterWithoutArgument(): void
+    {
+        $fn = static fn (Bar&Foo $bar = new Baz(), Foo ...$foo): array => [$bar, $foo];
+
+        $this->setContainer($this->containerMock);
+
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
+        self::assertCount(0, $args);
+    }
+
+    public function testDefaultValueAndVariadicParameterArgument(): void
+    {
+        $fn = static fn (Bar&Foo $bar = new Baz(), Foo ...$foo): array => [$bar, $foo];
+
+        $this->setContainer($this->containerMock);
+        $this->bindArguments(
+            foo: diGet(Foo::class),
+            foo_1: diGet(Baz::class),
+        );
+
+        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+
+        // Order arg name (key) important
+        self::assertEquals(['foo', 'foo_1'], array_keys($args));
+        // definition resolved
+        self::assertEquals(diGet(Foo::class), $args['foo']);
+        self::assertEquals(diGet(Baz::class), $args['foo_1']);
+    }
+
     public function testVariadicParameterBindArgumentAsNamedArgument(): void
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
@@ -206,9 +238,9 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         $args = $this->buildArguments(new ReflectionFunction($fn), false);
 
         // Order arg name (key) important
-        self::assertEquals(['bar', 'foo_foo', 'foo'], array_keys($args));
+        self::assertEquals([0, 'foo_foo', 'foo'], array_keys($args));
         // definition resolved
-        self::assertEquals(diGet(Bar::class), $args['bar']);
+        self::assertEquals(diGet(Bar::class), $args[0]);
         self::assertEquals(diGet(Baz::class), $args['foo']);
         self::assertEquals(diGet(Foo::class), $args['foo_foo']);
     }
@@ -270,14 +302,35 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         self::assertEquals(
             [
-                diGet(Foo::class),
-                diAutowire(Baz::class)
+                0 => diGet(Foo::class),
+                1 => diAutowire(Baz::class)
                     ->bindArguments('secure_string')
                     ->setup('__invoke'),
-                diValue(new stdClass()),
+                2 => diValue(new stdClass()),
             ],
             $args
         );
+    }
+
+    public function testSecondDefaultValueAndVariadic(): void
+    {
+        $fn = static fn (
+            QuuxInterface $quux,        // parameter #0
+            Bar|Foo $bar = new Baz(),   // parameter #1
+            Baz ...$baz,                // parameter #2
+        ) => true;
+
+        $this->setContainer($this->containerMock);
+        $this->bindArguments(
+            quux: diGet(Quux::class)
+        );
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        // argument order is important
+        self::assertCount(1, $args);
+        self::assertEquals(diGet(Quux::class), $args[0]);
     }
 
     public function testTailArgs(): void

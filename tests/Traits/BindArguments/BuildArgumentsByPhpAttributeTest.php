@@ -17,7 +17,9 @@ use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
+use Tests\Traits\BindArguments\Fixtures\Bar;
 use Tests\Traits\BindArguments\Fixtures\Baz;
+use Tests\Traits\BindArguments\Fixtures\Foo;
 use Tests\Traits\BindArguments\Fixtures\HeavyDependency;
 use Tests\Traits\BindArguments\Fixtures\HeavyDependencyTwo;
 use Tests\Traits\BindArguments\Fixtures\Quux;
@@ -121,7 +123,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         $args = $this->buildArguments(new ReflectionFunction($fn), false);
 
         self::assertEquals(
-            ['quux' => diGet('services.quux')],
+            [0 => diGet('services.quux')],
             $args
         );
     }
@@ -304,5 +306,46 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ],
             $args,
         );
+    }
+
+    public function testMixPhpAttributeAndBindArguments(): void
+    {
+        $fn = static fn (
+            #[Inject(Quux::class)]
+            QuuxInterface $quux, // parameter #0
+            Bar $bar,            // parameter #1
+            #[Inject('services.baz')]
+            Baz $baz,            // parameter #2
+        ) => true;
+
+        $this->setContainer($this->containerMock);
+        $this->bindArguments(bar: diCallable([Baz::class, 'doMake']));
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        // argument order is important
+        self::assertEquals(diGet(Quux::class), $args[0]);
+        self::assertEquals(diCallable([Baz::class, 'doMake']), $args[1]);
+        self::assertEquals(diGet('services.baz'), $args[2]);
+    }
+
+    public function testInjectSecondDefaultValueAndVariadic(): void
+    {
+        $fn = static fn (
+            #[Inject(Quux::class)]
+            QuuxInterface $quux,        // parameter #0
+            Bar|Foo $bar = new Baz(),   // parameter #1
+            Baz ...$baz,                // parameter #2
+        ) => true;
+
+        $this->setContainer($this->containerMock);
+
+        // Php attribute priority = true
+        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+
+        // argument order is important
+        self::assertCount(1, $args);
+        self::assertEquals(diGet(Quux::class), $args[0]);
     }
 }

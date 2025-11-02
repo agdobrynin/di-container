@@ -101,7 +101,7 @@ trait BindArgumentsTrait
                     break; // Variadic Parameter has last position
                 }
 
-                $parameters[$argNameOrIndex] = $this->bindArguments[$argNameOrIndex];
+                $parameters[$parameter->getPosition()] = $this->bindArguments[$argNameOrIndex];
 
                 continue;
             }
