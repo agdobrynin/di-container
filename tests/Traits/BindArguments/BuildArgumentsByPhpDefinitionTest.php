@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use ReflectionFunction;
 use stdClass;
 use Tests\Traits\BindArguments\Fixtures\Bar;
@@ -331,6 +332,17 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         // argument order is important
         self::assertCount(1, $args);
         self::assertEquals(diGet(Quux::class), $args[0]);
+    }
+
+    public function testBindSimpleArgument(): void
+    {
+        $this->bindArguments(secure: 'secure_string');
+        $this->setContainer($this->containerMock);
+
+        $args = $this->buildArguments((new ReflectionClass(Quux::class))->getConstructor(), false);
+
+        self::assertCount(1, $args);
+        self::assertEquals('secure_string', $args[0]);
     }
 
     public function testTailArgs(): void
