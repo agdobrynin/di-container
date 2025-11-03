@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Tests\Traits\BindArguments;
+namespace Tests\DiDefinition\BuildArguments;
 
 use ArrayIterator;
+use Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
 use stdClass;
-use Tests\Traits\BindArguments\Fixtures\Bar;
-use Tests\Traits\BindArguments\Fixtures\Baz;
-use Tests\Traits\BindArguments\Fixtures\Foo;
-use Tests\Traits\BindArguments\Fixtures\Quux;
-use Tests\Traits\BindArguments\Fixtures\QuuxInterface;
+use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
+use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
+use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
+use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
+use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 
 use function array_keys;
 use function func_get_args;
@@ -27,38 +27,38 @@ use function Kaspi\DiContainer\diValue;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\functionName
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getParameterType
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
- * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  *
  * @internal
  */
 class BuildArgumentsByPhpDefinitionTest extends TestCase
 {
     use BindArgumentsTrait;
-    use DiContainerTrait;
-    private DiContainerInterface $containerMock;
+
+    private DiContainerInterface $container;
 
     public function setUp(): void
     {
         $this->bindArguments();
-        $this->containerMock = $this->createMock(DiContainerInterface::class);
+        $this->container = $this->createMock(DiContainerInterface::class);
     }
 
     public function testGetWithoutParameters(): void
     {
         $fn = static fn () => '';
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments('one', 'two', diGet('services.logger_file'));
+
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         self::assertEquals(
             ['one', 'two', diGet('services.logger_file')],
-            $this->buildArguments(new ReflectionFunction($fn), false)
+            $ba->build(false)
         );
     }
 
@@ -69,23 +69,20 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $fn = static fn () => '';
 
-        $this->setContainer($this->containerMock);
-        $this->bindArguments(
-            'one',
-            'two',
-            service: diGet('services.logger_file')
-        );
+        $this->bindArguments('one', 'two', service: diGet('services.logger_file'));
 
-        $this->buildArguments(new ReflectionFunction($fn), false);
+        (new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container))
+            ->build(false)
+        ;
     }
 
     public function testResolveByParameterTypeByParameterNameByDefaultValue(): void
     {
         $fn = static fn (ArrayIterator $iterator, $dto = new stdClass()): array => [$iterator, $dto];
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $args = $ba->build(false);
 
         self::assertEquals([0 => diGet('ArrayIterator')], $args);
     }
@@ -94,27 +91,27 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        self::assertEmpty($this->buildArguments(new ReflectionFunction($fn), false));
+        self::assertEmpty($ba->build(false));
     }
 
     public function testGetParameterTypeOnce(): void
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
 
-        $this->containerMock->method('has')
+        $this->container->method('has')
             ->willReturnMap([
                 [Bar::class, true],
                 [Foo::class, false],
             ])
         ;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         self::assertEquals(
             [0 => diGet(Bar::class)],
-            $this->buildArguments(new ReflectionFunction($fn), false)
+            $ba->build(false)
         );
     }
 
@@ -122,9 +119,9 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar&Foo $fooBar = new Baz()): Bar&Foo => $fooBar;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        self::assertEmpty($this->buildArguments(new ReflectionFunction($fn), false));
+        self::assertEmpty($ba->build(false));
     }
 
     public function testExceptionGetParameterIntersectionType(): void
@@ -134,18 +131,18 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        $this->buildArguments(new ReflectionFunction($fn), false);
+        $ba->build(false);
     }
 
     public function testVariadicParameterWithoutArgument(): void
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $args = $ba->build(false);
 
         self::assertCount(1, $args);
         // Order arg name (key) important
@@ -156,9 +153,9 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar&Foo $bar = new Baz(), Foo ...$foo): array => [$bar, $foo];
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $args = $ba->build(false);
 
         self::assertCount(0, $args);
     }
@@ -167,13 +164,14 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar&Foo $bar = new Baz(), Foo ...$foo): array => [$bar, $foo];
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments(
             foo: diGet(Foo::class),
             foo_1: diGet(Baz::class),
         );
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build(false);
 
         // Order arg name (key) important
         self::assertEquals(['foo', 'foo_1'], array_keys($args));
@@ -186,14 +184,14 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $this->setContainer($this->containerMock);
-
         $this->bindArguments(
             foo: diGet(Foo::class),
             foo_1: diGet(Baz::class),
         );
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build(false);
 
         // Order arg name (key) important
         self::assertEquals([0, 'foo', 'foo_1'], array_keys($args));
@@ -207,14 +205,14 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $this->setContainer($this->containerMock);
-
         $this->bindArguments(
             foo_foo: diGet(Foo::class),
             foo_baz: diGet(Baz::class),
         );
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build(false);
 
         // Order arg name (key) important
         self::assertEquals([0, 'foo_foo', 'foo_baz'], array_keys($args));
@@ -228,15 +226,15 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $this->setContainer($this->containerMock);
-
         $this->bindArguments(
             foo_foo: diGet(Foo::class),
             foo: diGet(Baz::class),
             bar: diGet(Bar::class),
         );
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build(false);
 
         // Order arg name (key) important
         self::assertEquals([0, 'foo_foo', 'foo'], array_keys($args));
@@ -250,15 +248,15 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $this->setContainer($this->containerMock);
-
         $this->bindArguments(
             diGet(Bar::class),
             diGet(Foo::class),
             diGet(Baz::class),
         );
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build(false);
 
         // Order arg name (key) important
         self::assertEquals(diGet(Bar::class), $args[0]);
@@ -270,26 +268,24 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Foo $foo, Bar|Foo $bar = new Baz()): array => [$foo, $bar];
 
-        $this->containerMock->method('has')
+        $this->container->method('has')
             ->willReturnMap([
                 [Foo::class, true],
                 [Bar::class, true],
             ])
         ;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         self::assertEquals(
             [diGet(Foo::class)],
-            $this->buildArguments(new ReflectionFunction($fn), false)
+            $ba->build(false)
         );
     }
 
     public function testPassNotDeclarationParameter(): void
     {
         $fn = static fn (Foo $foo): array => [$foo, func_get_args()];
-
-        $this->setContainer($this->containerMock);
 
         $this->bindArguments(
             diGet(Foo::class),
@@ -299,7 +295,9 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             diValue(new stdClass()),
         );
 
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build(false);
 
         self::assertEquals(
             [
@@ -321,13 +319,13 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             Baz ...$baz,                // parameter #2
         ) => true;
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments(
             quux: diGet(Quux::class)
         );
 
-        // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build(false);
 
         // argument order is important
         self::assertCount(1, $args);
@@ -337,9 +335,14 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testBindSimpleArgument(): void
     {
         $this->bindArguments(secure: 'secure_string');
-        $this->setContainer($this->containerMock);
 
-        $args = $this->buildArguments((new ReflectionClass(Quux::class))->getConstructor(), false);
+        $ba = new BuildArguments(
+            $this->getBindArguments(),
+            (new ReflectionClass(Quux::class))->getConstructor(),
+            $this->container,
+        );
+
+        $args = $ba->build(false);
 
         self::assertCount(1, $args);
         self::assertEquals('secure_string', $args[0]);
@@ -352,14 +355,14 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $fn = static fn (string $str) => func_get_args();
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments(
             str: diGet('params.secure_string'),
             other_one: diGet('services.baz'),
             other_two: diGet('services.bar')
         );
 
-        // Php attribute priority = true
-        $this->buildArguments(new ReflectionFunction($fn), true);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $ba->build(false);
     }
 }

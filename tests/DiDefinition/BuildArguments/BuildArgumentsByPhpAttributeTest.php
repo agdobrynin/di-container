@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Traits\BindArguments;
+namespace Tests\DiDefinition\BuildArguments;
 
 use Closure;
 use Kaspi\DiContainer\Attributes\Inject;
@@ -10,21 +10,20 @@ use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
-use Tests\Traits\BindArguments\Fixtures\Bar;
-use Tests\Traits\BindArguments\Fixtures\Baz;
-use Tests\Traits\BindArguments\Fixtures\Foo;
-use Tests\Traits\BindArguments\Fixtures\HeavyDependency;
-use Tests\Traits\BindArguments\Fixtures\HeavyDependencyTwo;
-use Tests\Traits\BindArguments\Fixtures\Quux;
-use Tests\Traits\BindArguments\Fixtures\QuuxInterface;
-use Tests\Traits\BindArguments\Fixtures\QuuxTwo;
+use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
+use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
+use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
+use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependency;
+use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependencyTwo;
+use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
+use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
+use Tests\DiDefinition\BuildArguments\Fixtures\QuuxTwo;
 
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
@@ -38,59 +37,48 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\functionName
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::checkVariadic
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getAttributeOnParameter
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getInjectAttribute
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getInjectByCallableAttribute
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getParameterType
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getProxyClosureAttribute
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait::getTaggedAsAttribute
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
- * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  *
  * @internal
  */
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;
-    use DiContainerTrait;
-    use AttributeReaderTrait;
-    private DiContainerInterface $containerMock;
+
+    private DiContainerInterface $container;
 
     public function setUp(): void
     {
-        $this->bindArguments();
-        $this->containerMock = $this->createMock(DiContainerInterface::class);
-        $this->containerMock->method('getConfig')->willReturn(
+        $this->container = $this->createMock(DiContainerInterface::class);
+        $this->container->method('getConfig')->willReturn(
             new DiContainerConfig(useAttribute: true)
         );
+        $this->bindArguments();
     }
 
     public function testInjectRegularParametersAttributeHigherPriority(): void
     {
         $fn = static fn (#[Inject] Quux $quux) => $quux;
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments(quux: diGet('services.quux'));
 
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
-        self::assertEquals(
-            [0 => diGet(Quux::class)],
-            $args
-        );
+        // argument resolve by php attribute
+        self::assertEquals([0 => diGet(Quux::class)], $args);
 
-        self::assertEquals(
-            ['quux' => diGet('services.quux')],
-            $this->getBindArguments(),
-        );
+        // bind argument cannot resolve because BuildArguments::build(true)
+        self::assertEquals(['quux' => diGet('services.quux')], $this->getBindArguments());
     }
 
     public function testInjectRegularParametersAndTailArgs(): void
@@ -100,47 +88,40 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $fn = static fn (#[Inject] Quux $quux) => $quux;
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments(
             other: diGet('services.foo'),
             other_two: diGet('services.bar'),
             other_three: diGet('services.baz'),
         );
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $this->buildArguments(new ReflectionFunction($fn), true);
+        $ba->build(true);
     }
 
     public function testInjectRegularParametersPhpDefinitionHigherPriority(): void
     {
         $fn = static fn (#[Inject] Quux $quux) => $quux;
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments(quux: diGet('services.quux'));
 
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
         // Use of attributes is enabled in container configuration.
         // Php attribute priority by argument $isAttributeOnParamHigherPriority = false
-        $args = $this->buildArguments(new ReflectionFunction($fn), false);
 
-        self::assertEquals(
-            [0 => diGet('services.quux')],
-            $args
-        );
+        $args = $ba->build(false);
+
+        self::assertEquals([0 => diGet('services.quux')], $args);
     }
 
     public function testInjectRegularParameters(): void
     {
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux) => $quux;
-
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
-        self::assertEquals(
-            [0 => diGet(Quux::class)],
-            $args
-        );
+        self::assertEquals([0 => diGet(Quux::class)], $args);
     }
 
     public function testInjectVariadicParameters(): void
@@ -151,10 +132,10 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             QuuxInterface ...$quux
         ) => $quux;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         // Order arg important
         self::assertEquals(diGet(Baz::class), $args[0]);
@@ -173,15 +154,15 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             QuuxInterface $quux,
         ) => ($heavyDependency)()->doMake($quux);
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         self::assertEquals(
             [
-                diProxyClosure(HeavyDependency::class),
-                diGet(QuuxInterface::class),
+                0 => diProxyClosure(HeavyDependency::class),
+                1 => diGet(QuuxInterface::class),
             ],
             $args,
         );
@@ -201,16 +182,16 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Closure ...$heavyDependency,
         ): array => [($heavyDependency[0])()->doMake($quux), ($heavyDependency[1])()->doMake($quux)];
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         self::assertEquals(
             [
-                diGet(QuuxInterface::class),
-                diProxyClosure(HeavyDependency::class),
-                diProxyClosure(HeavyDependencyTwo::class),
+                0 => diGet(QuuxInterface::class),
+                1 => diProxyClosure(HeavyDependency::class),
+                2 => diProxyClosure(HeavyDependencyTwo::class),
             ],
             $args,
         );
@@ -224,15 +205,15 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             callable $doCallable,
         ) => ($doCallable)($quux);
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         self::assertEquals(
             [
-                diGet(QuuxInterface::class),
-                diCallable(Baz::class.'::doMake'),
+                0 => diGet(QuuxInterface::class),
+                1 => diCallable(Baz::class.'::doMake'),
             ],
             $args,
         );
@@ -247,16 +228,16 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             callable ...$doCallable,
         ) => true;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         self::assertEquals(
             [
-                diGet(QuuxInterface::class),
-                diCallable(Baz::class.'::doMake'),
-                diCallable('App\Helpers\fn\funcUser'),
+                0 => diGet(QuuxInterface::class),
+                1 => diCallable(Baz::class.'::doMake'),
+                2 => diCallable('App\Helpers\fn\funcUser'),
             ],
             $args,
         );
@@ -270,15 +251,15 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             iterable $validators,
         ) => true;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         self::assertEquals(
             [
-                diGet(QuuxInterface::class),
-                diTaggedAs('tags.validate_string'),
+                0 => diGet(QuuxInterface::class),
+                1 => diTaggedAs('tags.validate_string'),
             ],
             $args,
         );
@@ -293,16 +274,16 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             iterable ...$validator,
         ) => true;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         self::assertEquals(
             [
-                diGet(QuuxInterface::class),
-                diTaggedAs('tags.validator_string'),
-                diTaggedAs('tags.validator_password', priorityDefaultMethod: 'self::getPriority'),
+                0 => diGet(QuuxInterface::class),
+                1 => diTaggedAs('tags.validator_string'),
+                2 => diTaggedAs('tags.validator_password', priorityDefaultMethod: 'self::getPriority'),
             ],
             $args,
         );
@@ -318,11 +299,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Baz $baz,            // parameter #2
         ) => true;
 
-        $this->setContainer($this->containerMock);
         $this->bindArguments(bar: diCallable([Baz::class, 'doMake']));
 
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         // argument order is important
         self::assertEquals(diGet(Quux::class), $args[0]);
@@ -339,10 +321,10 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Baz ...$baz,                // parameter #2
         ) => true;
 
-        $this->setContainer($this->containerMock);
+        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // Php attribute priority = true
-        $args = $this->buildArguments(new ReflectionFunction($fn), true);
+        $args = $ba->build(true);
 
         // argument order is important
         self::assertCount(1, $args);
