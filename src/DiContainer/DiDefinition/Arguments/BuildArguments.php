@@ -14,12 +14,11 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait;
 use ReflectionFunctionAbstract;
@@ -38,7 +37,7 @@ use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 /**
- * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ * @phpstan-type DiDefinitionItem DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|DiDefinitionValue
  */
 final class BuildArguments
 {
@@ -46,120 +45,213 @@ final class BuildArguments
     use ParameterTypeByReflectionTrait;
 
     /**
-     * @param array<non-empty-string|non-negative-int, DiDefinitionArgumentType> $arguments
+     * @param array<non-empty-string|non-negative-int, DiDefinitionItem|mixed> $bindArguments
      */
     public function __construct(
-        private readonly array $arguments,
+        private readonly array $bindArguments,
         private readonly ReflectionFunctionAbstract $functionOrMethod,
         private readonly DiContainerInterface $container,
     ) {}
 
     /**
-     * @param bool $isAttributeOnParamHigherPriority Php attributes higher priority then bindArguments
+     * Build output arguments based on bind arguments and typed parameters
+     * without PHP attributes.
      *
-     * @return (DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|DiDefinitionValue|mixed)[]
+     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
      *
-     * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
+     * @throws AutowireExceptionInterface
      */
-    public function build(bool $isAttributeOnParamHigherPriority): array
+    public function basedOnBindArguments(): array
     {
-        $parameters = [];
-        $isUseAttribute = (bool) $this->container->getConfig()?->isUseAttribute();
+        $args = [];
 
         foreach ($this->functionOrMethod->getParameters() as $parameter) {
-            $argNameOrIndex = match (true) {
-                array_key_exists($parameter->name, $this->arguments) => $parameter->name,
-                array_key_exists($parameter->getPosition(), $this->arguments) => $parameter->getPosition(),
-                default => false,
-            };
-
-            if (false !== $argNameOrIndex) {
-                // PHP attributes have higher priority than PHP definitions
-                if ($isUseAttribute && $isAttributeOnParamHigherPriority
-                    && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                    array_push($parameters, ...$definitions);
-
-                    continue;
-                }
-
-                if ($parameter->isVariadic()) {
-                    foreach ($this->getVariadicArguments($argNameOrIndex) as $argKey => $definition) {
-                        $parameters[$argKey] = $definition;
-                    }
-
-                    break; // Variadic Parameter has last position
-                }
-
-                $parameters[$parameter->getPosition()] = $this->arguments[$argNameOrIndex];
-
+            if (false !== $this->pushFromBindArguments($args, $parameter)) {
                 continue;
             }
 
-            if ($isUseAttribute && ($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                array_push($parameters, ...$definitions);
-
-                continue;
-            }
-
-            // The named argument for a variadic parameter can be a random string
-            if ($parameter->isVariadic()) {
-                foreach ($this->getVariadicArguments($parameter->name) as $argKey => $definition) {
-                    $parameters[$argKey] = $definition;
-                }
-
-                break; // Variadic Parameter has last position
-            }
-
-            try {
-                $strType = $this->getParameterType($parameter, $this->container);
-                $parameters[$parameter->getPosition()] = new DiDefinitionGet($strType);
-
-                continue;
-            } catch (AutowireParameterTypeException $e) {
-                if (!$parameter->isDefaultValueAvailable()) {
-                    throw $e;
-                }
-            }
+            $this->pushFromParameterType($args, $parameter);
         }
 
-        /*
-         * Add unused bind arguments.
-         * This can be useful for functions without arguments or tail argument
-         * that use functions like `func_get_args()` or any `func_*()`
-         */
-        if (!$this->functionOrMethod->isVariadic()
-            && (count($this->arguments) > ($c = count($this->functionOrMethod->getParameters())))) {
-            $tailArgs = array_slice($this->arguments, $c, preserve_keys: true);
+        array_push($args, ...$this->getTailArguments());
 
-            $this->checkUnknownNamedParameter($tailArgs);
-            array_push($parameters, ...$tailArgs);
-        }
-
-        return $parameters;
+        return $args;
     }
 
     /**
-     * @return array<int|string, mixed>
+     * Build output arguments based on PHP attributes, bind arguments and typed parameters.
+     * PHP attribute on a parameter has higher priority than bind argument.
+     *
+     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     *
+     * @throws AutowireExceptionInterface
      */
-    private function getVariadicArguments(int|string $argumentNameOrIndex): array
+    public function basedOnPhpAttributes(): array
+    {
+        $args = [];
+
+        foreach ($this->functionOrMethod->getParameters() as $parameter) {
+            if (($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
+                array_push($args, ...$definitions);
+
+                continue;
+            }
+
+            if (false !== $this->pushFromBindArguments($args, $parameter)) {
+                continue;
+            }
+
+            $this->pushFromParameterType($args, $parameter);
+        }
+
+        array_push($args, ...$this->getTailArguments());
+
+        return $args;
+    }
+
+    /**
+     *  Build output arguments based on bind arguments, PHP attributes and typed parameters.
+     *  A bind argument on a parameter has higher priority than PHP attribute.
+     *
+     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     *
+     * @throws AutowireExceptionInterface
+     */
+    public function basedOnBindArgumentsAsPriorityAndPhpAttributes(): array
+    {
+        $args = [];
+
+        foreach ($this->functionOrMethod->getParameters() as $parameter) {
+            if (false !== $this->pushFromBindArguments($args, $parameter)) {
+                continue;
+            }
+
+            if (($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
+                array_push($args, ...$definitions);
+
+                continue;
+            }
+
+            $this->pushFromParameterType($args, $parameter);
+        }
+
+        array_push($args, ...$this->getTailArguments());
+
+        return $args;
+    }
+
+    /**
+     * @param array<non-empty-string|non-negative-int, DiDefinitionItem|mixed> $args
+     *
+     * @throws AutowireParameterTypeException
+     */
+    private function pushFromParameterType(array &$args, ReflectionParameter $parameter): void
+    {
+        try {
+            $strType = $this->getParameterType($parameter, $this->container);
+            // @phpstan-ignore parameterByRef.type
+            $args[$parameter->getPosition()] = new DiDefinitionGet($strType);
+        } catch (AutowireParameterTypeException $e) {
+            if (!$parameter->isDefaultValueAvailable()) {
+                throw $e;
+            }
+        }
+    }
+
+    /**
+     * @param array<non-empty-string|non-negative-int, DiDefinitionItem|mixed> $args
+     *
+     * @return bool when argument found return true
+     */
+    private function pushFromBindArguments(array &$args, ReflectionParameter $parameter): bool
+    {
+        $argNameOrIndex = match (true) {
+            array_key_exists($parameter->name, $this->bindArguments) => $parameter->name,
+            array_key_exists($parameter->getPosition(), $this->bindArguments) => $parameter->getPosition(),
+            default => false,
+        };
+
+        if (false !== $argNameOrIndex) {
+            if ($parameter->isVariadic()) {
+                foreach ($this->capturingVariadicArguments($argNameOrIndex) as $argKey => $definition) {
+                    $args[$argKey] = $definition;
+                }
+
+                return true; // Variadic Parameter has last position
+            }
+
+            // @phpstan-ignore parameterByRef.type
+            $args[$parameter->getPosition()] = $this->bindArguments[$argNameOrIndex];
+
+            return true;
+        }
+
+        /*
+         * Even if the binding argument is not found by position or named argument,
+         * it is possible to pass a named argument by any name.
+         */
+        if ($parameter->isVariadic()) {
+            foreach ($this->capturingVariadicArguments($parameter->name) as $argKey => $definition) {
+                $args[$argKey] = $definition;
+            }
+
+            return true; // Variadic Parameter has last position
+        }
+
+        return false;
+    }
+
+    /**
+     * Add unused bind arguments.
+     * This can be useful for functions without arguments or tail argument
+     * that use functions like `func_get_args()` or any `func_*()`.
+     *
+     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     *
+     * @throws AutowireException
+     */
+    private function getTailArguments(): array
+    {
+        if (!$this->functionOrMethod->isVariadic()
+            && (count($this->bindArguments) > ($c = count($this->functionOrMethod->getParameters())))) {
+            $tailArgs = array_slice($this->bindArguments, $c, preserve_keys: true);
+
+            foreach ($tailArgs as $key => $value) {
+                if (is_string($key)) {
+                    throw new AutowireException(
+                        sprintf('Does not accept unknown named parameter $%s in %s', $key, functionName($this->functionOrMethod))
+                    );
+                }
+            }
+
+            return $tailArgs;
+        }
+
+        return [];
+    }
+
+    /**
+     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     */
+    private function capturingVariadicArguments(int|string $argumentNameOrIndex): array
     {
         if (is_int($argumentNameOrIndex)) {
-            return array_slice($this->arguments, $argumentNameOrIndex, preserve_keys: true);
+            return array_slice($this->bindArguments, $argumentNameOrIndex, preserve_keys: true);
         }
 
         $paramNames = array_column($this->functionOrMethod->getParameters(), 'name');
 
         return array_filter(
-            $this->arguments,
+            $this->bindArguments,
             static fn (int|string $nameOrIndex) => !in_array($nameOrIndex, $paramNames, true) || $nameOrIndex === $argumentNameOrIndex,
             ARRAY_FILTER_USE_KEY
         );
     }
 
     /**
-     * @return Generator<DiDefinitionCallable>|Generator<DiDefinitionGet>|Generator<DiDefinitionProxyClosure>|Generator<DiDefinitionTaggedAs>|Generator<DiDefinitionValue>
+     * @return Generator<DiDefinitionItem>
      *
-     * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
+     * @throws AutowireAttributeException|AutowireParameterTypeException
      */
     private function getDefinitionByAttributes(ReflectionParameter $parameter): Generator
     {
@@ -190,22 +282,6 @@ final class BuildArguments
             }
 
             yield $definition;
-        }
-    }
-
-    /**
-     * @param array<non-empty-string|non-negative-int, mixed> $args
-     *
-     * @throws AutowireExceptionInterface
-     */
-    private function checkUnknownNamedParameter(array $args): void
-    {
-        foreach ($args as $key => $value) {
-            if (is_string($key)) {
-                throw new AutowireException(
-                    sprintf('Does not accept unknown named parameter $%s in %s', $key, functionName($this->functionOrMethod))
-                );
-            }
         }
     }
 }

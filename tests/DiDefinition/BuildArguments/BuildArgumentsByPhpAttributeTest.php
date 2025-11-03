@@ -9,7 +9,6 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
-use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -57,9 +56,6 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
     public function setUp(): void
     {
         $this->container = $this->createMock(DiContainerInterface::class);
-        $this->container->method('getConfig')->willReturn(
-            new DiContainerConfig(useAttribute: true)
-        );
         $this->bindArguments();
     }
 
@@ -71,8 +67,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         // argument resolve by php attribute
         self::assertEquals([0 => diGet(Quux::class)], $args);
@@ -95,22 +90,27 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         );
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        $ba->build(true);
+        $ba->basedOnPhpAttributes();
     }
 
     public function testInjectRegularParametersPhpDefinitionHigherPriority(): void
     {
-        $fn = static fn (#[Inject] Quux $quux) => $quux;
+        $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux, #[Inject(Baz::class)] Foo $foo) => $quux;
 
         $this->bindArguments(quux: diGet('services.quux'));
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
-        // Use of attributes is enabled in container configuration.
-        // Php attribute priority by argument $isAttributeOnParamHigherPriority = false
 
-        $args = $ba->build(false);
+        // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
+        $args = $ba->basedOnBindArgumentsAsPriorityAndPhpAttributes();
 
-        self::assertEquals([0 => diGet('services.quux')], $args);
+        self::assertEquals(
+            [
+                0 => diGet('services.quux'),
+                1 => diGet(Baz::class),
+            ],
+            $args
+        );
     }
 
     public function testInjectRegularParameters(): void
@@ -118,8 +118,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux) => $quux;
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         self::assertEquals([0 => diGet(Quux::class)], $args);
     }
@@ -134,8 +133,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         // Order arg important
         self::assertEquals(diGet(Baz::class), $args[0]);
@@ -156,8 +154,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         self::assertEquals(
             [
@@ -184,8 +181,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         self::assertEquals(
             [
@@ -207,8 +203,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         self::assertEquals(
             [
@@ -230,8 +225,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         self::assertEquals(
             [
@@ -253,8 +247,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         self::assertEquals(
             [
@@ -276,8 +269,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         self::assertEquals(
             [
@@ -303,8 +295,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         // argument order is important
         self::assertEquals(diGet(Quux::class), $args[0]);
@@ -323,8 +314,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
-        // Php attribute priority = true
-        $args = $ba->build(true);
+        $args = $ba->basedOnPhpAttributes();
 
         // argument order is important
         self::assertCount(1, $args);
