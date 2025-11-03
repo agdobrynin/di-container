@@ -24,7 +24,6 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
  *
  * @internal

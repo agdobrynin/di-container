@@ -39,7 +39,6 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
-use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 trait ParametersResolverTrait
@@ -139,7 +138,9 @@ trait ParametersResolverTrait
 
                 $strType = $this->getParameterType($parameter, $this->getContainer());
 
-                $dependencies[] = $this->getContainer()->get($strType);
+                $dependencies[] = null === $strType
+                    ? $this->getContainer()->get($parameter->getName())
+                    : $this->getContainer()->get($strType);
 
                 continue;
             } catch (AutowireAttributeException|CallCircularDependencyException|ContainerNeedSetExceptionInterface $e) {
@@ -154,11 +155,10 @@ trait ParametersResolverTrait
                 continue;
             }
 
-            if ($parameter->isOptional()) {
-                continue;
-            }
-
-            $messageParameter = $parameter.' in '.functionName($parameter->getDeclaringFunction());
+            $declaredClass = null !== $parameter->getDeclaringClass() ? $parameter->getDeclaringClass()->getName() : '';
+            $declaredFunction = $parameter->getDeclaringFunction()->getName();
+            $where = implode('::', array_filter([$declaredClass, $declaredFunction])); // @phpstan-ignore arrayFilter.strict
+            $messageParameter = $parameter.' in '.$where;
             $message = "Unresolvable dependency. {$messageParameter}. Reason: {$autowireException->getMessage()}";
 
             if ($autowireException instanceof NotFoundExceptionInterface) {
@@ -216,7 +216,7 @@ trait ParametersResolverTrait
      */
     private function attemptResolveParamByAttributes(ReflectionParameter $parameter): Generator
     {
-        $attrs = $this->getAttributeOnParameter($parameter, $this->getContainer());
+        $attrs = $this->getAttributeOnParameter($parameter);
 
         if (!$attrs->valid()) {
             return;

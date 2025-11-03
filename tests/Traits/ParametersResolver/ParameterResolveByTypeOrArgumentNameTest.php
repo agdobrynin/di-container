@@ -21,7 +21,6 @@ use function Kaspi\DiContainer\diGet;
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet::getDefinition
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
@@ -53,6 +52,24 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
         );
     }
 
+    public function testParameterResolveByName(): void
+    {
+        $fn = static fn ($myArrayIterator) => $myArrayIterator;
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->expects($this->once())
+            ->method('get')->with('myArrayIterator')
+            ->willReturn(new ArrayIterator())
+        ;
+        $this->setContainer($mockContainer);
+
+        $this->assertInstanceOf(
+            ArrayIterator::class,
+            call_user_func_array($fn, $this->resolveParameters([], $reflectionParameters, false))
+        );
+    }
+
     public function testParameterResolveByNameVariadicParameterString(): void
     {
         $fn = static fn (SuperClass $superClass, string ...$word) => [$superClass, $word];
@@ -60,6 +77,7 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer
+            ->expects(self::exactly(2))
             ->method('get')
             ->willReturnMap([
                 [SuperClass::class, new SuperClass()],
@@ -69,15 +87,63 @@ class ParameterResolveByTypeOrArgumentNameTest extends TestCase
 
         $this->setContainer($mockContainer);
 
+        $params = $this->resolveParameters(['word' => diGet('word')], $reflectionParameters, false);
+
+        $this->assertCount(2, $params);
+        $this->assertInstanceOf(SuperClass::class, $params[0]);
+        $this->assertEquals('one', $params['word']);
+
+        $this->assertInstanceOf(SuperClass::class, call_user_func_array($fn, $params)[0]);
+        $this->assertEquals(['word' => 'one'], call_user_func_array($fn, $params)[1]);
+    }
+
+    public function testParameterResolveByNameVariadicParameterArray(): void
+    {
+        $fn = static fn (array ...$phrase) => $phrase;
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer
+            ->expects($this->once())
+            ->method('get')
+            ->with('phrase')
+            ->willReturn(
+                ['one', 'two', 'three'],
+            )
+        ;
+
+        $this->setContainer($mockContainer);
+
+        $params = $this->resolveParameters([diGet('phrase')], $reflectionParameters, false);
+
+        $this->assertCount(1, $params);
+        $this->assertEquals(
+            [['one', 'two', 'three']],
+            call_user_func_array($fn, $params)
+        );
+    }
+
+    public function testParameterResolveByNameNonVariadicParameterArray(): void
+    {
+        $fn = static fn (array $phrase) => $phrase;
+        $reflectionParameters = (new ReflectionFunction($fn))->getParameters();
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer
+            ->expects($this->once())
+            ->method('get')
+            ->with('phrase')
+            ->willReturn(
+                ['one', 'two', 'three'],
+            )
+        ;
+
+        $this->setContainer($mockContainer);
+
         $params = $this->resolveParameters([], $reflectionParameters, false);
 
-        self::assertEquals(
-            [new SuperClass()],
-            $params
-        );
-
-        self::assertEquals(
-            [new SuperClass(), []],
+        $this->assertEquals(
+            ['one', 'two', 'three'],
             call_user_func_array($fn, $params)
         );
     }
