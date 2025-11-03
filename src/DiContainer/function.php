@@ -16,11 +16,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterfac
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
-use ReflectionFunctionAbstract;
-use ReflectionMethod;
 
 use function function_exists;
-use function sprintf;
 
 if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
@@ -81,18 +78,5 @@ if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     function diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true, ?string $key = null, ?string $keyDefaultMethod = null, array $containerIdExclude = [], bool $selfExclude = true): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionTaggedAs($tag, $isLazy, $priorityDefaultMethod, $useKeys, $key, $keyDefaultMethod, $containerIdExclude, $selfExclude);
-    }
-} // @codeCoverageIgnore
-
-if (!function_exists('Kaspi\DiContainer\functionName')) { // @codeCoverageIgnore
-    function functionName(ReflectionFunctionAbstract $fn): string
-    {
-        $fnName = $fn->isClosure() && false !== $fn->getFileName() && false !== $fn->getStartLine()
-            ? sprintf('%s{closure:%s:%d}()', $fn->inNamespace() ? $fn->getNamespaceName().'::' : '', $fn->getFileName(), $fn->getStartLine())
-            : $fn->getName().'()';
-
-        return $fn instanceof ReflectionMethod
-            ? $fn->getDeclaringClass()->getName().'::'.$fnName
-            : $fnName;
     }
 } // @codeCoverageIgnore
