@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+/**
+ * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ */
 interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInterface
 {
     /**
@@ -27,8 +30,8 @@ interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInter
      *      ->setup('classMethod', 'value 1', 'value 2')
      *      // bind parameters by index Class->classMethod('value 1', 'value 2')
      *
-     * @param non-empty-string                                                                          $method
-     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed ...$argument
+     * @param non-empty-string         $method
+     * @param DiDefinitionArgumentType ...$argument
      *
      * @return $this
      */
@@ -55,8 +58,8 @@ interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInter
      *      ->setupImmutable('classMethod', 'value 1', 'value 2')
      *      // bind parameters by index Class->classMethod('value 1', 'value 2')
      *
-     * @param non-empty-string                                                                          $method
-     * @param DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed ...$argument
+     * @param non-empty-string         $method
+     * @param DiDefinitionArgumentType ...$argument
      *
      * @return $this
      */

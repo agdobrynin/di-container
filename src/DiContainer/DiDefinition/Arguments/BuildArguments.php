@@ -17,6 +17,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
@@ -36,11 +37,17 @@ use function is_string;
 use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
+/**
+ * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ */
 final class BuildArguments
 {
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
 
+    /**
+     * @param array<non-empty-string|non-negative-int, DiDefinitionArgumentType> $arguments
+     */
     public function __construct(
         private readonly array $arguments,
         private readonly ReflectionFunctionAbstract $functionOrMethod,
