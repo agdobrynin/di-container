@@ -17,9 +17,9 @@ use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -145,9 +145,9 @@ trait AttributeReaderTrait
     /**
      * @return Generator<Inject>|Generator<InjectByCallable>|Generator<ProxyClosure>|Generator<TaggedAs>
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireAttributeException|AutowireParameterTypeException
      */
-    private function getAttributeOnParameter(ReflectionParameter $reflectionParameter): Generator
+    private function getAttributeOnParameter(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
     {
         $groupAttributes = [];
 
@@ -169,7 +169,7 @@ trait AttributeReaderTrait
         }
 
         if (isset($groupAttributes[Inject::class])) {
-            yield from $this->getInjectAttribute($reflectionParameter);
+            yield from $this->getInjectAttribute($reflectionParameter, $container);
 
             return;
         }
@@ -192,10 +192,9 @@ trait AttributeReaderTrait
     /**
      * @return Generator<Inject>
      *
-     * @throws AutowireExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
+     * @throws AutowireAttributeException|AutowireParameterTypeException
      */
-    private function getInjectAttribute(ReflectionParameter $reflectionParameter): Generator
+    private function getInjectAttribute(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
     {
         $attributes = $reflectionParameter->getAttributes(Inject::class);
 
@@ -209,11 +208,10 @@ trait AttributeReaderTrait
             /** @var Inject $inject */
             $inject = $attribute->newInstance();
 
-            if ('' === $inject->getIdentifier()
-                // PHPStan is not smart enough to parse such a condition.
-                // @phpstan-ignore-next-line
-                && null !== ($strType = $this->getParameterType($reflectionParameter, $this->getContainer()))) {
-                $inject = new Inject($strType);
+            if ('' === $inject->getIdentifier()) {
+                $inject = new Inject(
+                    $this->getParameterType($reflectionParameter, $container)
+                );
             }
 
             yield $inject;

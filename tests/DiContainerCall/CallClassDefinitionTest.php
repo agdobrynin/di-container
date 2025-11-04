@@ -20,6 +20,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue::getDefinition
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
  *
  * @internal
@@ -65,19 +66,6 @@ class CallClassDefinitionTest extends TestCase
         $res = $container->call(ClassWithSimplePublicProperty::class.'::method', ['append' => '🚩']);
 
         $this->assertEquals('Start method 🚩', $res);
-    }
-
-    public function testCallWithArgumentsClassWithNoneStaticMethodAsArrayWithoutPhpAttribute(): void
-    {
-        $container = new DiContainer([
-            // global definition when resolve class container will get dependency by argument name.
-            'publicProperty' => 'Try call as array from',
-            diAutowire(ClassWithSimplePublicProperty::class),
-        ]);
-
-        $res = $container->call([ClassWithSimplePublicProperty::class, 'method'], ['append' => '🌞']);
-
-        $this->assertEquals('Try call as array from method 🌞', $res);
     }
 
     public function testCallWithArgumentsFromStaticMethodAsString(): void

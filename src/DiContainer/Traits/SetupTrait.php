@@ -6,22 +6,23 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 
 use function preg_match;
 use function sprintf;
 
+/**
+ * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ */
 trait SetupTrait
 {
     /** @var non-empty-string */
     private string $method;
 
-    /** @var (DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed)[] */
+    /** @var DiDefinitionArgumentType[] */
     private array $arguments = [];
 
     /**
-     * @param (DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed) ...$argument
+     * @param DiDefinitionArgumentType ...$argument
      */
     public function __construct(mixed ...$argument)
     {
@@ -29,7 +30,7 @@ trait SetupTrait
     }
 
     /**
-     * @return (DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed)[]
+     * @return DiDefinitionArgumentType[]
      */
     public function getArguments(): array
     {

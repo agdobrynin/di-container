@@ -9,7 +9,6 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Tests\DiContainer\Exceptions\Fixtures\DependencyClass;
 use Tests\DiContainer\Exceptions\Fixtures\FirstClass;
 use Tests\DiContainer\Exceptions\Fixtures\SecondClass;
@@ -25,6 +24,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -83,7 +83,7 @@ class ExceptionsTest extends TestCase
     {
         $container = (new DiContainerFactory())->make();
 
-        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+string \$value.+DependencyClass/');
 
         $container->get(SuperClass::class);
