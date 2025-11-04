@@ -50,7 +50,12 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     private ReflectionClass $reflectionClass;
 
-    private BuildArguments|false $constructorBuilderArguments;
+    private BuildArguments|false $constructBA;
+
+    /**
+     * @var array<non-empty-string, array<non-negative-int, BuildArguments>>
+     */
+    private array $setupBA = [];
 
     /**
      * Methods for setup service by PHP definition via setters (mutable or immutable).
@@ -89,6 +94,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     public function setup(string $method, mixed ...$argument): static
     {
         $this->setup[$method][] = [false, $argument];
+        unset($this->setupBA[$method]);
 
         return $this;
     }
@@ -96,7 +102,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     public function bindArguments(mixed ...$argument): static
     {
         $this->bindArgs(...$argument);
-        unset($this->constructorBuilderArguments);
+        unset($this->constructBA);
 
         return $this;
     }
@@ -104,6 +110,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     public function setupImmutable(string $method, mixed ...$argument): static
     {
         $this->setup[$method][] = [true, $argument];
+        unset($this->setupBA[$method]);
 
         return $this;
     }
@@ -121,22 +128,25 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             );
         }
 
-        if (!isset($this->constructorBuilderArguments)) {
+        if (!isset($this->constructBA)) {
             $constructor = $this->getDefinition()->getConstructor();
-            $this->constructorBuilderArguments = match (null) {
+            $this->constructBA = match (null) {
                 $constructor => false,
                 default => new BuildArguments($this->getBindArguments(), $constructor, $this->getContainer())
             };
         }
 
-        // @var object $object
-        if (false === $this->constructorBuilderArguments) {
+        if (false === $this->constructBA) {
+            // @var object $object
             $object = $this->getDefinition()->newInstanceWithoutConstructor();
         } else {
             $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
-                ? $this->constructorBuilderArguments->basedOnPhpAttributes()
-                : $this->constructorBuilderArguments->basedOnBindArguments();
+                ? $this->constructBA->basedOnPhpAttributes()
+                : $this->constructBA->basedOnBindArguments();
 
+            /**
+             * @var object $object
+             */
             $object = $this->getDefinition()->newInstanceArgs($this->resolveArguments($args));
         }
 
@@ -163,10 +173,12 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             /**
              * @phpstan-var  boolean $isImmutable
              * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $callArguments
+             * @phpstan-var non-negative-int $index
              */
-            foreach ($calls as [$isImmutable, $callArguments]) {
-                $ba = new BuildArguments($callArguments, $reflectionMethod, $this->getContainer());
-                $args = (bool) $this->getContainer()->getConfig()->isUseAttribute()
+            foreach ($calls as $index => [$isImmutable, $callArguments]) {
+                $ba = $this->setupBA[$method][$index] ?? ($this->setupBA[$method][$index] = new BuildArguments($callArguments, $reflectionMethod, $this->getContainer()));
+
+                $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
                     ? $ba->basedOnBindArgumentsAsPriorityAndPhpAttributes()
                     : $ba->basedOnBindArguments();
 

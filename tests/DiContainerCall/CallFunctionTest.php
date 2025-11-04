@@ -83,8 +83,11 @@ class CallFunctionTest extends TestCase
         $res = $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
     }
 
-    public function testUserFunctionInjectByAttributeWithDefaultValue(): void
+    public function testUserFunctionInjectByAttributeFail(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Unresolvable dependency "service\.append"/');
+
         $definitions = [
             diAutowire(ClassWithSimplePublicProperty::class),
             'vars.public-property' => 'Hello',
@@ -93,9 +96,7 @@ class CallFunctionTest extends TestCase
         $config = new DiContainerConfig(useAttribute: true);
         $container = new DiContainer($definitions, $config);
 
-        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
-
-        $this->assertEquals('Hello', $res);
+        $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
     }
 
     public function testUserFunctionInjectByAttribute(): void
