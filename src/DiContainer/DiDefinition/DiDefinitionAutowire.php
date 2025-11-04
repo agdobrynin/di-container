@@ -21,7 +21,6 @@ use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionParameter;
 
 use function array_map;
 use function get_class;
@@ -84,20 +83,20 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
     }
 
-    public function bindArguments(mixed ...$argument): static
-    {
-        $this->bindArgs(...$argument);
-        unset($this->constructorBuilderArguments);
-
-        return $this;
-    }
-
     /**
      * @return $this
      */
     public function setup(string $method, mixed ...$argument): static
     {
         $this->setup[$method][] = [false, $argument];
+
+        return $this;
+    }
+
+    public function bindArguments(mixed ...$argument): static
+    {
+        $this->bindArgs(...$argument);
+        unset($this->constructorBuilderArguments);
 
         return $this;
     }
@@ -166,13 +165,18 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
              * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $callArguments
              */
             foreach ($calls as [$isImmutable, $callArguments]) {
+                $ba = new BuildArguments($callArguments, $reflectionMethod, $this->getContainer());
+                $args = (bool) $this->getContainer()->getConfig()->isUseAttribute()
+                    ? $ba->basedOnBindArgumentsAsPriorityAndPhpAttributes()
+                    : $ba->basedOnBindArguments();
+
                 if (!$isImmutable) {
-                    $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionMethodParams, false));
+                    $reflectionMethod->invokeArgs($object, $this->resolveArguments($args));
 
                     continue;
                 }
 
-                $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionMethodParams, false));
+                $result = $reflectionMethod->invokeArgs($object, $this->resolveArguments($args));
 
                 if (is_object($result) && get_class($result) === get_class($object)) {
                     $object = $result;
@@ -318,17 +322,5 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         return $this->setupByAttributes;
-    }
-
-    /**
-     * @return ReflectionParameter[]
-     */
-    private function getConstructorParams(): array
-    {
-        return $this->getDefinition()->isInstantiable()
-            ? ($this->getDefinition()->getConstructor()?->getParameters() ?? [])
-            : throw new AutowireException(
-                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
-            );
     }
 }

@@ -19,10 +19,9 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunction;
-use ReflectionFunctionAbstract;
 use ReflectionMethod;
-use ReflectionParameter;
 
+use function call_user_func_array;
 use function is_array;
 use function is_string;
 use function strpos;
@@ -57,7 +56,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
     private BuildArguments $builderArguments;
 
-    private ReflectionFunctionAbstract $reflectionFn;
+    private ReflectionFunction|ReflectionMethod $reflectionFn;
 
     /**
      * @param NotParsedCallable|ParsedCallable $definition
@@ -94,7 +93,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
             ? $this->builderArguments->basedOnPhpAttributes()
             : $this->builderArguments->basedOnBindArguments();
 
-        return $this->getDefinition()(...$this->resolveArguments($args));
+        return call_user_func_array($this->getDefinition(), $this->resolveArguments($args));
     }
 
     /**
@@ -108,7 +107,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     /**
      * @throws ContainerExceptionInterface|DiDefinitionCallableExceptionInterface|NotFoundExceptionInterface
      */
-    private function reflectionFn(): ReflectionFunctionAbstract
+    private function reflectionFn(): ReflectionFunction|ReflectionMethod
     {
         if (is_array($this->getDefinition())) {
             /**

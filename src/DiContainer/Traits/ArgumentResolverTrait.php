@@ -18,6 +18,8 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+use function array_map;
+
 trait ArgumentResolverTrait
 {
     use DiContainerTrait;
@@ -37,17 +39,9 @@ trait ArgumentResolverTrait
      */
     private function resolveArguments(array $inputArguments): array
     {
-        if ([] === $inputArguments) {
-            return [];
-        }
-
-        $dependencies = [];
-
-        foreach ($inputArguments as $argument) {
-            $dependencies[] = $this->resolveInputArgument($argument);
-        }
-
-        return $dependencies;
+        return array_map(function ($argument) {
+            return $this->resolveInputArgument($argument);
+        }, $inputArguments);
     }
 
     /**
