@@ -23,7 +23,6 @@ use function array_map;
 trait ArgumentResolverTrait
 {
     use DiContainerTrait;
-    use ParameterTypeByReflectionTrait;
 
     abstract public function getContainer(): DiContainerInterface;
 
