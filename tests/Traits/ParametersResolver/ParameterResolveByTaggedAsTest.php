@@ -8,9 +8,9 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\ClassWithDependency;
@@ -35,7 +35,7 @@ class ParameterResolveByTaggedAsTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use BindArgumentsTrait;
-    use ParametersResolverTrait;
+    use ArgumentResolverTrait;
     // 🧨 need for abstract method getContainer.
     use DiContainerTrait;
 

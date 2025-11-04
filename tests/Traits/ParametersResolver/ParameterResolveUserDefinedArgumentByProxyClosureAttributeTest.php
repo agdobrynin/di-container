@@ -8,8 +8,8 @@ use Closure;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\MoreSuperClass;
@@ -22,15 +22,15 @@ use function call_user_func_array;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
  * @covers \Kaspi\DiContainer\diProxyClosure
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  *
  * @internal
  */
 class ParameterResolveUserDefinedArgumentByProxyClosureAttributeTest extends TestCase
 {
     // 🔥 Test Trait 🔥
-    use ParametersResolverTrait;
+    use ArgumentResolverTrait;
     // 🧨 need for abstract method getContainer.
     use DiContainerTrait;
 

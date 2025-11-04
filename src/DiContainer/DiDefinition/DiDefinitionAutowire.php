@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
@@ -12,11 +13,11 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
 use ReflectionException;
@@ -36,8 +37,10 @@ use function sprintf;
 final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface
 {
     use AttributeReaderTrait;
-    use BindArgumentsTrait;
-    use ParametersResolverTrait;
+    use BindArgumentsTrait {
+        bindArguments as private bindArgs;
+    }
+    use ArgumentResolverTrait;
     use DiContainerTrait;
     use DiAutowireTrait;
     use TagsTrait {
@@ -47,6 +50,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     }
 
     private ReflectionClass $reflectionClass;
+
+    private BuildArguments|false $constructorBuilderArguments;
 
     /**
      * Methods for setup service by PHP definition via setters (mutable or immutable).
@@ -79,6 +84,14 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
     }
 
+    public function bindArguments(mixed ...$argument): static
+    {
+        $this->bindArgs(...$argument);
+        unset($this->constructorBuilderArguments);
+
+        return $this;
+    }
+
     /**
      * @return $this
      */
@@ -103,14 +116,30 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function invoke(): mixed
     {
-        $constructParams = $this->getConstructorParams();
+        if (!$this->getDefinition()->isInstantiable()) {
+            throw new AutowireException(
+                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
+            );
+        }
 
-        /**
-         * @var object $object
-         */
-        $object = [] === $constructParams
-            ? $this->getDefinition()->newInstanceWithoutConstructor()
-            : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $constructParams, true));
+        if (!isset($this->constructorBuilderArguments)) {
+            $constructor = $this->getDefinition()->getConstructor();
+            $this->constructorBuilderArguments = match (null) {
+                $constructor => false,
+                default => new BuildArguments($this->getBindArguments(), $constructor, $this->getContainer())
+            };
+        }
+
+        // @var object $object
+        if (false === $this->constructorBuilderArguments) {
+            $object = $this->getDefinition()->newInstanceWithoutConstructor();
+        } else {
+            $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
+                ? $this->constructorBuilderArguments->basedOnPhpAttributes()
+                : $this->constructorBuilderArguments->basedOnBindArguments();
+
+            $object = $this->getDefinition()->newInstanceArgs($this->resolveArguments($args));
+        }
 
         if ([] === $this->setup && [] === $this->getSetupByAttribute()) {
             return $object;

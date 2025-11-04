@@ -11,8 +11,8 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 
@@ -21,16 +21,16 @@ use ReflectionFunction;
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */
 class ParameterResolveFailByAttributesTest extends TestCase
 {
-    use ParametersResolverTrait;
+    use ArgumentResolverTrait;
     use DiContainerTrait;
 
     private ?object $mockContainer = null;

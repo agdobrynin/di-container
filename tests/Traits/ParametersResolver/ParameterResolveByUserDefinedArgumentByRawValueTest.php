@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\SuperClass;
@@ -18,9 +18,9 @@ use function Kaspi\DiContainer\diValue;
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -29,7 +29,7 @@ class ParameterResolveByUserDefinedArgumentByRawValueTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use BindArgumentsTrait;
-    use ParametersResolverTrait;
+    use ArgumentResolverTrait;
     // 🧨 need for abstract method getContainer.
     use DiContainerTrait;
 

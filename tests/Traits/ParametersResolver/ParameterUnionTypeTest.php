@@ -8,8 +8,8 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\One;
@@ -24,16 +24,16 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */
 class ParameterUnionTypeTest extends TestCase
 {
-    use ParametersResolverTrait;
+    use ArgumentResolverTrait;
     use DiContainerTrait;
 
     private ?object $mockContainer = null;

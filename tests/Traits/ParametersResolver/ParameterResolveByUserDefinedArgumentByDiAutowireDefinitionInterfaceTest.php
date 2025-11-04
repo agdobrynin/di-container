@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Traits\ParametersResolver;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\Traits\ParametersResolver\Fixtures\ClassWithDependency;
@@ -25,7 +25,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -34,7 +34,7 @@ class ParameterResolveByUserDefinedArgumentByDiAutowireDefinitionInterfaceTest e
 {
     // 🔥 Test Trait 🔥
     use BindArgumentsTrait;
-    use ParametersResolverTrait;
+    use ArgumentResolverTrait;
     // 🧨 need for abstract method getContainer.
     use DiContainerTrait;
 

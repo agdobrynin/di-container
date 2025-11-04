@@ -7,9 +7,9 @@ namespace Tests\Traits\ParametersResolver;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 
@@ -18,10 +18,10 @@ use function call_user_func_array;
 /**
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  *
  * @internal
  */
@@ -29,7 +29,7 @@ class ParameterResolveByUserDefinedArgumentBySimpleDiDefinitionTest extends Test
 {
     // 🔥 Test Trait 🔥
     use BindArgumentsTrait;
-    use ParametersResolverTrait;
+    use ArgumentResolverTrait;
     // 🧨 need for abstract method getContainer.
     use DiContainerTrait;
 

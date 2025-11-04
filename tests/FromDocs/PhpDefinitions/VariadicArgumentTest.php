@@ -26,7 +26,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait::getParameterType
  *
  * @internal
  */

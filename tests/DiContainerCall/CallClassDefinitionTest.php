@@ -21,7 +21,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue::getDefinition
  * @covers \Kaspi\DiContainer\functionName
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait::getParameterType
  *
  * @internal
  */
