@@ -166,7 +166,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
              */
             foreach ($calls as [$isImmutable, $callArguments]) {
                 $ba = new BuildArguments($callArguments, $reflectionMethod, $this->getContainer());
-                $args = (bool) $this->getContainer()->getConfig()->isUseAttribute()
+                $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
                     ? $ba->basedOnBindArgumentsAsPriorityAndPhpAttributes()
                     : $ba->basedOnBindArguments();
 
