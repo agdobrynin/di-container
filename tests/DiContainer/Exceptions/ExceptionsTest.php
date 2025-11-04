@@ -83,8 +83,8 @@ class ExceptionsTest extends TestCase
     {
         $container = (new DiContainerFactory())->make();
 
-//        $this->expectException(ContainerExceptionInterface::class);
-//        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency in.+DependencyClass\:\:__construct\(\)+.string \$value/');
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+string \$value.+DependencyClass/');
 
         $container->get(SuperClass::class);
     }

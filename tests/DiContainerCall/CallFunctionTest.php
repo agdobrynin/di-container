@@ -80,7 +80,22 @@ class CallFunctionTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+array \$allUsers/');
 
-        $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
+    }
+
+    public function testUserFunctionInjectByAttributeWithDefaultValue(): void
+    {
+        $definitions = [
+            diAutowire(ClassWithSimplePublicProperty::class),
+            'vars.public-property' => 'Hello',
+        ];
+
+        $config = new DiContainerConfig(useAttribute: true);
+        $container = new DiContainer($definitions, $config);
+
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
+
+        $this->assertEquals('Hello', $res);
     }
 
     public function testUserFunctionInjectByAttribute(): void
