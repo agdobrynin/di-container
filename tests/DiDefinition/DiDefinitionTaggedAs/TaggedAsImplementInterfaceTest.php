@@ -94,7 +94,7 @@ class TaggedAsImplementInterfaceTest extends TestCase
         $this->assertInstanceOf(HeavyDepOne::class, $res->current());
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Unresolvable dependency');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+HeaveDepWithDependency::__construct\(\).+\<required\> \$someDep/');
 
         $res->next();
         $res->current();

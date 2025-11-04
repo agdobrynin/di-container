@@ -120,7 +120,7 @@ class CallFunctionTest extends TestCase
         $container = new DiContainer();
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty \$class/');
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty/');
 
         $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
     }
