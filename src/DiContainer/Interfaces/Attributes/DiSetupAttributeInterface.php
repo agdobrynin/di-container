@@ -14,7 +14,7 @@ interface DiSetupAttributeInterface extends DiAttributeInterface
     public function isImmutable(): bool;
 
     /**
-     * @return DiDefinitionArgumentType[]
+     * @return (DiDefinitionArgumentType|mixed)[]
      */
     public function getArguments(): array;
 

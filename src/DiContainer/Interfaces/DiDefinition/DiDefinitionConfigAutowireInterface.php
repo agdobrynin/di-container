@@ -30,8 +30,8 @@ interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInter
      *      ->setup('classMethod', 'value 1', 'value 2')
      *      // bind parameters by index Class->classMethod('value 1', 'value 2')
      *
-     * @param non-empty-string         $method
-     * @param DiDefinitionArgumentType ...$argument
+     * @param non-empty-string                 $method
+     * @param (DiDefinitionArgumentType|mixed) ...$argument
      *
      * @return $this
      */
@@ -58,8 +58,8 @@ interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInter
      *      ->setupImmutable('classMethod', 'value 1', 'value 2')
      *      // bind parameters by index Class->classMethod('value 1', 'value 2')
      *
-     * @param non-empty-string         $method
-     * @param DiDefinitionArgumentType ...$argument
+     * @param non-empty-string                 $method
+     * @param (DiDefinitionArgumentType|mixed) ...$argument
      *
      * @return $this
      */

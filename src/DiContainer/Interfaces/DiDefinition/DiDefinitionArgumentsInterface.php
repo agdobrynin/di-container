@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 /**
- * @phpstan-type DiDefinitionArgumentType DiDefinitionArgumentsInterface|DiDefinitionTagArgumentInterface|DiDefinitionLinkInterface|DiDefinitionNoArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|mixed
+ * @phpstan-type DiDefinitionArgumentType DiDefinitionArgumentsInterface|DiDefinitionTagArgumentInterface|DiDefinitionLinkInterface|DiDefinitionNoArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface
  */
 interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterface
 {
@@ -18,7 +18,7 @@ interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterfac
      *
      * ⚠ This method replaces all previously defined arguments.
      *
-     * @param DiDefinitionArgumentType ...$argument
+     * @param (DiDefinitionArgumentType|mixed) ...$argument
      *
      * @return $this
      */

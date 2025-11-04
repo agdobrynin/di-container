@@ -18,11 +18,11 @@ trait SetupTrait
     /** @var non-empty-string */
     private string $method;
 
-    /** @var DiDefinitionArgumentType[] */
+    /** @var (DiDefinitionArgumentType|mixed)[] */
     private array $arguments = [];
 
     /**
-     * @param DiDefinitionArgumentType ...$argument
+     * @param (DiDefinitionArgumentType|mixed) ...$argument
      */
     public function __construct(mixed ...$argument)
     {
@@ -30,7 +30,7 @@ trait SetupTrait
     }
 
     /**
-     * @return DiDefinitionArgumentType[]
+     * @return (DiDefinitionArgumentType|mixed)[]
      */
     public function getArguments(): array
     {

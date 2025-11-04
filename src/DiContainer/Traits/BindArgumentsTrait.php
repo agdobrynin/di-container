@@ -14,7 +14,7 @@ trait BindArgumentsTrait
     /**
      * User defined parameters by parameter name.
      *
-     * @var array<non-empty-string|non-negative-int, DiDefinitionArgumentType>
+     * @var array<non-empty-string|non-negative-int, DiDefinitionArgumentType|mixed>
      */
     private array $bindArguments = [];
 
@@ -26,7 +26,7 @@ trait BindArgumentsTrait
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, DiDefinitionArgumentType>
+     * @return array<non-empty-string|non-negative-int, (DiDefinitionArgumentType|mixed)>
      */
     private function getBindArguments(): array
     {
