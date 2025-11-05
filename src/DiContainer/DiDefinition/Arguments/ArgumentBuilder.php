@@ -39,7 +39,7 @@ use function sprintf;
 /**
  * @phpstan-type DiDefinitionItem DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|DiDefinitionValue
  */
-final class BuildArguments
+final class ArgumentBuilder
 {
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;

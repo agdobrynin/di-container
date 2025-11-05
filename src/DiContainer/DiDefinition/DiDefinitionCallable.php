@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
@@ -54,7 +54,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     private $parsedDefinition;
 
-    private BuildArguments $builderArguments;
+    private ArgumentBuilder $argBuilder;
 
     private ReflectionFunction|ReflectionMethod $reflectionFn;
 
@@ -74,7 +74,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     public function bindArguments(mixed ...$argument): static
     {
         $this->bindArgs(...$argument);
-        unset($this->builderArguments);
+        unset($this->argBuilder);
 
         return $this;
     }
@@ -88,10 +88,10 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     public function invoke(): mixed
     {
         $this->reflectionFn ??= $this->reflectionFn();
-        $this->builderArguments ??= new BuildArguments($this->getBindArguments(), $this->reflectionFn, $this->getContainer());
+        $this->argBuilder ??= new ArgumentBuilder($this->getBindArguments(), $this->reflectionFn, $this->getContainer());
         $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
-            ? $this->builderArguments->basedOnPhpAttributes()
-            : $this->builderArguments->basedOnBindArguments();
+            ? $this->argBuilder->basedOnPhpAttributes()
+            : $this->argBuilder->basedOnBindArguments();
 
         return call_user_func_array($this->getDefinition(), $this->resolveArguments($args));
     }
