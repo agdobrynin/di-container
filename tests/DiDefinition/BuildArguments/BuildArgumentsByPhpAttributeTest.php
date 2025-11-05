@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
-use Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -36,7 +36,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\BuildArguments
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diGet
@@ -65,7 +65,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(quux: diGet('services.quux'));
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -88,7 +88,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             other_two: diGet('services.bar'),
             other_three: diGet('services.baz'),
         );
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $ba->basedOnPhpAttributes();
     }
@@ -99,7 +99,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(quux: diGet('services.quux'));
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
         $args = $ba->basedOnBindArgumentsAsPriorityAndPhpAttributes();
@@ -116,7 +116,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
     public function testInjectRegularParameters(): void
     {
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux) => $quux;
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -131,7 +131,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             QuuxInterface ...$quux
         ) => $quux;
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -152,7 +152,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             QuuxInterface $quux,
         ) => ($heavyDependency)()->doMake($quux);
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -179,7 +179,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Closure ...$heavyDependency,
         ): array => [($heavyDependency[0])()->doMake($quux), ($heavyDependency[1])()->doMake($quux)];
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -201,7 +201,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             callable $doCallable,
         ) => ($doCallable)($quux);
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -223,7 +223,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             callable ...$doCallable,
         ) => true;
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -245,7 +245,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             iterable $validators,
         ) => true;
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -267,7 +267,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             iterable ...$validator,
         ) => true;
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -293,7 +293,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(bar: diCallable([Baz::class, 'doMake']));
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 
@@ -312,7 +312,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Baz ...$baz,                // parameter #2
         ) => true;
 
-        $ba = new BuildArguments($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $args = $ba->basedOnPhpAttributes();
 

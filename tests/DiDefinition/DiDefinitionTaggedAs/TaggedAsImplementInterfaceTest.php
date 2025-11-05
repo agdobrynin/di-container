@@ -25,6 +25,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diTaggedAs
@@ -94,7 +95,7 @@ class TaggedAsImplementInterfaceTest extends TestCase
         $this->assertInstanceOf(HeavyDepOne::class, $res->current());
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Unresolvable dependency');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+HeaveDepWithDependency::__construct\(\).+\<required\> \$someDep/');
 
         $res->next();
         $res->current();

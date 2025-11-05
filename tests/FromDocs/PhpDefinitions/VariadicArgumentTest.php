@@ -21,12 +21,12 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
  *
  * @internal
  */

@@ -117,7 +117,7 @@ class HelperFunctionTest extends TestCase
 
         yield 'closure function' => [
             new ReflectionFunction(require __DIR__.'/Fixtures/closure.php'),
-            '/^Tests\\\Function\\\Fixtures::{closure.+tests\/Function\/Fixtures\/closure.php:7}\(\)$/',
+            '/{closure.+tests\/Function\/Fixtures\/closure.php:7}\(\)/',
         ];
     }
 }

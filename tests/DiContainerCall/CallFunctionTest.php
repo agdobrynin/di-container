@@ -19,13 +19,14 @@ use function round;
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -82,8 +83,11 @@ class CallFunctionTest extends TestCase
         $res = $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
     }
 
-    public function testUserFunctionInjectByAttributeWithDefaultValue(): void
+    public function testUserFunctionInjectByAttributeFail(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Unresolvable dependency "service\.append"/');
+
         $definitions = [
             diAutowire(ClassWithSimplePublicProperty::class),
             'vars.public-property' => 'Hello',
@@ -92,9 +96,7 @@ class CallFunctionTest extends TestCase
         $config = new DiContainerConfig(useAttribute: true);
         $container = new DiContainer($definitions, $config);
 
-        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
-
-        $this->assertEquals('Hello', $res);
+        $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
     }
 
     public function testUserFunctionInjectByAttribute(): void
@@ -118,7 +120,7 @@ class CallFunctionTest extends TestCase
         $container = new DiContainer();
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty \$class/');
+        $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty/');
 
         $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
     }

@@ -14,9 +14,9 @@ use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
+ * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait
  *
  * @internal
  */

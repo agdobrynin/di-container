@@ -12,16 +12,22 @@ use Tests\DiContainer\ResolveByDiFactory\Fixtures\DependencyClass;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClass;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClassDiFactory;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClassFailDiFactory;
+use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClassMaker;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClassSingleton;
+use Tests\DiContainer\ResolveByDiFactory\Fixtures\ParameterByDiFactory;
 
 use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
+ * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
@@ -85,5 +91,22 @@ class ResolveByDiFactoryTest extends TestCase
         $this->assertInstanceOf(DependencyClass::class, $res->dependency);
         $this->assertNull($res->dependency->dependency);
         $this->assertNotSame($res, $container->get(MyClass::class));
+    }
+
+    public function testResolveParameterByBindArgumentWithDiFactory(): void
+    {
+        $container = new DiContainer(
+            [
+                diAutowire(ParameterByDiFactory::class)
+                    ->bindArguments(
+                        dependency: diAutowire(MyClassMaker::class)
+                    ),
+            ],
+            new DiContainerConfig(useAttribute: false),
+        );
+
+        $result = $container->get(ParameterByDiFactory::class);
+
+        self::assertEquals('secure_string', $result->dependency->dependency->dependency);
     }
 }

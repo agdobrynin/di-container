@@ -219,11 +219,9 @@ return static function (): \Generator {
 
     yield diAutowire(App\Services\TaggedServices::class)
         ->bindArguments(
-            srvGroup: [
-                // аргумент имеет тип array то $isLazy=false
-                diTaggedAs('tags.group_1', false),
-                diTaggedAs('tags.group_2', false),
-            ]
+            // аргумент имеет тип array то $isLazy=false
+            diTaggedAs('tags.group_1', false),
+            diTaggedAs('tags.group_2', false),
         );
 
 };
@@ -242,9 +240,34 @@ $container = (new DiContainerFactory())
 $class = $container->get(App\Services\TaggedServices::class);
 ```
 > [!NOTE]
-> При разрешении аргументов конструктора класса `App\Services\TaggedServices::class`
+> При разрешении параметров конструктора класса `App\Services\TaggedServices::class`
 > в свойстве `App\Services\TaggedServices::$srvGroup[0]` содержится массив из классов `App\Classes\One`, `App\Classes\Two`,
 > а в свойстве `App\Services\TaggedServices::$srvGroup[1]` массив из классов `App\Classes\Three`, `App\Classes\Four`.
+
+> [!TIP]
+> Для использования [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)
+> и [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list)
+> действуют правила описанные в документации php.
+
+Передать именованные аргументы для сервиса к параметру переменной длины:
+```php
+use function Kaspi\DiContainer\diTaggedAs;
+
+return static function (): \Generator
+    //...
+    yield diAutowire(App\Services\TaggedServices::class)
+        ->bindArguments(
+            // аргумент имеет тип array то $isLazy=false
+            srvGroup: diTaggedAs('tags.group_1', false),
+            srvGroup_2: diTaggedAs('tags.group_2', false),
+        );
+};
+```
+> [!NOTE]
+> При разрешении параметров конструктора класса `App\Services\TaggedServices::class`
+> в `App\Services\TaggedServices::$srvGroup` содержится массив
+> со строковыми ключами `srvGroup` и `srvGroup_2` – как переданные именование аргументы.
+
 
 ## #️⃣ Объявление тега через php атрибут.
 Для указания тегов для класса необходимо использовать php атрибут `#[Tag]` ([описание атрибута](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#tag)):

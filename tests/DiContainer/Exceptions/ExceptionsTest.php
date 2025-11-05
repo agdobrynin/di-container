@@ -23,7 +23,9 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
@@ -84,7 +86,7 @@ class ExceptionsTest extends TestCase
         $container = (new DiContainerFactory())->make();
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Unresolvable dependency.+string \$value.+DependencyClass/');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+DependencyClass::__construct\(\).+string \$value/');
 
         $container->get(SuperClass::class);
     }
@@ -97,7 +99,7 @@ class ExceptionsTest extends TestCase
         ]);
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Too many input arguments');
+        $this->expectExceptionMessageMatches('/Does not accept unknown named parameter \$value2.+DependencyClass::__construct\(\)/');
 
         $container->get(DependencyClass::class);
     }
@@ -110,7 +112,7 @@ class ExceptionsTest extends TestCase
         ]);
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Invalid input argument name "noneExistParam" at position #0.+DependencyClass::__construct\(\) has arguments: "value"/');
+        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+DependencyClass::__construct\(\).+string \$value/');
 
         $container->get(DependencyClass::class);
     }

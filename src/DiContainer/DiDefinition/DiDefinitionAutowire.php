@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
@@ -12,15 +13,17 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Kaspi\DiContainer\Traits\ParametersResolverTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionParameter;
 
 use function array_map;
 use function get_class;
@@ -36,8 +39,10 @@ use function sprintf;
 final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface, DiDefinitionInvokableInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface
 {
     use AttributeReaderTrait;
-    use BindArgumentsTrait;
-    use ParametersResolverTrait;
+    use BindArgumentsTrait {
+        bindArguments as private bindArgs;
+    }
+    use ArgumentResolverTrait;
     use DiContainerTrait;
     use DiAutowireTrait;
     use TagsTrait {
@@ -47,6 +52,13 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     }
 
     private ReflectionClass $reflectionClass;
+
+    private ArgumentBuilder|false $constructArgBuilder;
+
+    /**
+     * @var array<non-empty-string, array<non-negative-int, ArgumentBuilder>>
+     */
+    private array $setupArgBuilder = [];
 
     /**
      * Methods for setup service by PHP definition via setters (mutable or immutable).
@@ -85,6 +97,15 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     public function setup(string $method, mixed ...$argument): static
     {
         $this->setup[$method][] = [false, $argument];
+        unset($this->setupArgBuilder[$method]);
+
+        return $this;
+    }
+
+    public function bindArguments(mixed ...$argument): static
+    {
+        $this->bindArgs(...$argument);
+        unset($this->constructArgBuilder);
 
         return $this;
     }
@@ -92,6 +113,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     public function setupImmutable(string $method, mixed ...$argument): static
     {
         $this->setup[$method][] = [true, $argument];
+        unset($this->setupArgBuilder[$method]);
 
         return $this;
     }
@@ -103,19 +125,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function invoke(): mixed
     {
-        $constructParams = $this->getConstructorParams();
-
-        /**
-         * @var object $object
-         */
-        $object = [] === $constructParams
-            ? $this->getDefinition()->newInstanceWithoutConstructor()
-            : $this->getDefinition()->newInstanceArgs($this->resolveParameters($this->getBindArguments(), $constructParams, true));
-
         if ([] === $this->setup && [] === $this->getSetupByAttribute()) {
-            return $object;
+            return $this->newInstance();
         }
 
+        $object = $this->newInstance();
         // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
         $setupMerged = $this->getSetupByAttribute() + $this->setup;
 
@@ -130,20 +144,25 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                 throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
             }
 
-            $reflectionMethodParams = $reflectionMethod->getParameters();
-
             /**
              * @phpstan-var  boolean $isImmutable
              * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $callArguments
+             * @phpstan-var non-negative-int $index
              */
-            foreach ($calls as [$isImmutable, $callArguments]) {
+            foreach ($calls as $index => [$isImmutable, $callArguments]) {
+                $argBuilder = $this->setupArgBuilder[$method][$index] ?? ($this->setupArgBuilder[$method][$index] = new ArgumentBuilder($callArguments, $reflectionMethod, $this->getContainer()));
+
+                $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
+                    ? $argBuilder->basedOnBindArgumentsAsPriorityAndPhpAttributes()
+                    : $argBuilder->basedOnBindArguments();
+
                 if (!$isImmutable) {
-                    $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionMethodParams, false));
+                    $reflectionMethod->invokeArgs($object, $this->resolveArguments($args));
 
                     continue;
                 }
 
-                $result = $reflectionMethod->invokeArgs($object, $this->resolveParameters($callArguments, $reflectionMethodParams, false));
+                $result = $reflectionMethod->invokeArgs($object, $this->resolveArguments($args));
 
                 if (is_object($result) && get_class($result) === get_class($object)) {
                     $object = $result;
@@ -234,6 +253,34 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     }
 
     /**
+     * @throws AutowireExceptionInterface|ContainerExceptionInterface|ContainerNeedSetExceptionInterface|NotFoundExceptionInterface
+     */
+    private function newInstance(): object
+    {
+        if (!$this->getDefinition()->isInstantiable()) {
+            throw new AutowireException(
+                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
+            );
+        }
+
+        if (!isset($this->constructArgBuilder)) {
+            $this->constructArgBuilder = null !== ($constructor = $this->getDefinition()->getConstructor())
+                ? new ArgumentBuilder($this->getBindArguments(), $constructor, $this->getContainer())
+                : false;
+        }
+
+        if (false === $this->constructArgBuilder) {
+            return $this->getDefinition()->newInstanceWithoutConstructor();
+        }
+
+        $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
+            ? $this->constructArgBuilder->basedOnPhpAttributes()
+            : $this->constructArgBuilder->basedOnBindArguments();
+
+        return $this->getDefinition()->newInstanceArgs($this->resolveArguments($args));
+    }
+
+    /**
      * @return array<non-empty-string, TagOptions>
      *
      * @throws AutowireExceptionInterface
@@ -289,17 +336,5 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         return $this->setupByAttributes;
-    }
-
-    /**
-     * @return ReflectionParameter[]
-     */
-    private function getConstructorParams(): array
-    {
-        return $this->getDefinition()->isInstantiable()
-            ? ($this->getDefinition()->getConstructor()?->getParameters() ?? [])
-            : throw new AutowireException(
-                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
-            );
     }
 }
