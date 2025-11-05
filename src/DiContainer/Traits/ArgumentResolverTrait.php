@@ -35,11 +35,7 @@ trait ArgumentResolverTrait
      *
      * @return array<int|string, mixed>
      *
-     * @throws AutowireAttributeException
-     * @throws AutowireExceptionInterface
-     * @throws CallCircularDependencyException
-     * @throws NotFoundExceptionInterface
-     * @throws ContainerExceptionInterface
+     * @throws AutowireAttributeException|AutowireExceptionInterface|CallCircularDependencyException|ContainerExceptionInterface|NotFoundExceptionInterface
      */
     private function resolveArguments(array $inputArguments): array
     {
@@ -51,10 +47,7 @@ trait ArgumentResolverTrait
     /**
      * @param DiDefinitionArgumentType|mixed $argumentDefinition
      *
-     * @throws NotFoundExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
-     * @throws ContainerExceptionInterface
-     * @throws AutowireExceptionInterface
+     * @throws AutowireExceptionInterface|ContainerExceptionInterface|ContainerNeedSetExceptionInterface|NotFoundExceptionInterface
      */
     private function resolveInputArgument(mixed $argumentDefinition): mixed
     {
