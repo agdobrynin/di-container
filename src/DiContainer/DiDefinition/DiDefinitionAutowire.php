@@ -264,11 +264,9 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         if (!isset($this->constructArgBuilder)) {
-            $constructor = $this->getDefinition()->getConstructor();
-            $this->constructArgBuilder = match (null) {
-                $constructor => false,
-                default => new ArgumentBuilder($this->getBindArguments(), $constructor, $this->getContainer())
-            };
+            $this->constructArgBuilder = null !== ($constructor = $this->getDefinition()->getConstructor())
+                ? new ArgumentBuilder($this->getBindArguments(), $constructor, $this->getContainer())
+                : false;
         }
 
         if (false === $this->constructArgBuilder) {
