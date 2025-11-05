@@ -13,12 +13,15 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
 use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 
@@ -122,38 +125,11 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function invoke(): mixed
     {
-        if (!$this->getDefinition()->isInstantiable()) {
-            throw new AutowireException(
-                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
-            );
-        }
-
-        if (!isset($this->constructArgBuilder)) {
-            $constructor = $this->getDefinition()->getConstructor();
-            $this->constructArgBuilder = match (null) {
-                $constructor => false,
-                default => new ArgumentBuilder($this->getBindArguments(), $constructor, $this->getContainer())
-            };
-        }
-
-        if (false === $this->constructArgBuilder) {
-            // @var object $object
-            $object = $this->getDefinition()->newInstanceWithoutConstructor();
-        } else {
-            $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
-                ? $this->constructArgBuilder->basedOnPhpAttributes()
-                : $this->constructArgBuilder->basedOnBindArguments();
-
-            /**
-             * @var object $object
-             */
-            $object = $this->getDefinition()->newInstanceArgs($this->resolveArguments($args));
-        }
-
         if ([] === $this->setup && [] === $this->getSetupByAttribute()) {
-            return $object;
+            return $this->newInstance();
         }
 
+        $object = $this->newInstance();
         // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
         $setupMerged = $this->getSetupByAttribute() + $this->setup;
 
@@ -167,8 +143,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
                 throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
             }
-
-            $reflectionMethodParams = $reflectionMethod->getParameters();
 
             /**
              * @phpstan-var  boolean $isImmutable
@@ -276,6 +250,36 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         return null;
+    }
+
+    /**
+     * @throws AutowireExceptionInterface|ContainerExceptionInterface|ContainerNeedSetExceptionInterface|NotFoundExceptionInterface
+     */
+    private function newInstance(): object
+    {
+        if (!$this->getDefinition()->isInstantiable()) {
+            throw new AutowireException(
+                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
+            );
+        }
+
+        if (!isset($this->constructArgBuilder)) {
+            $constructor = $this->getDefinition()->getConstructor();
+            $this->constructArgBuilder = match (null) {
+                $constructor => false,
+                default => new ArgumentBuilder($this->getBindArguments(), $constructor, $this->getContainer())
+            };
+        }
+
+        if (false === $this->constructArgBuilder) {
+            return $this->getDefinition()->newInstanceWithoutConstructor();
+        }
+
+        $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
+            ? $this->constructArgBuilder->basedOnPhpAttributes()
+            : $this->constructArgBuilder->basedOnBindArguments();
+
+        return $this->getDefinition()->newInstanceArgs($this->resolveArguments($args));
     }
 
     /**

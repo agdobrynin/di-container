@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
@@ -20,6 +21,9 @@ use Psr\Container\NotFoundExceptionInterface;
 
 use function array_map;
 
+/**
+ * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ */
 trait ArgumentResolverTrait
 {
     use DiContainerTrait;
@@ -27,7 +31,7 @@ trait ArgumentResolverTrait
     abstract public function getContainer(): DiContainerInterface;
 
     /**
-     * @param array<non-empty-string|non-negative-int, mixed> $inputArguments
+     * @param array<non-empty-string|non-negative-int, DiDefinitionArgumentType|mixed> $inputArguments
      *
      * @return array<int|string, mixed>
      *
@@ -45,6 +49,8 @@ trait ArgumentResolverTrait
     }
 
     /**
+     * @param DiDefinitionArgumentType|mixed $argumentDefinition
+     *
      * @throws NotFoundExceptionInterface
      * @throws ContainerNeedSetExceptionInterface
      * @throws ContainerExceptionInterface
