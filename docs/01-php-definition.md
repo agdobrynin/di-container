@@ -99,7 +99,7 @@ var_dump(
 
 ### Определения для простых типов
 
-Можно добавлять любые простые определения в виде массивов, строк или любых простых php типов.
+Можно добавлять любые [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar) или массив содержащий их.
 
 ```php
 // config/values.php
@@ -159,6 +159,9 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAut
 ```php
 bindArguments(mixed ...$argument)
 ```
+Аргументы:
+- `$argument` – аргументы к параметрам конструктора класса
+
 > [!WARNING]
 > метод перезаписывает ранее определенные аргументы.
  
@@ -168,7 +171,7 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 // public function __construct(string $var1, string $var2) {}
 ```
 > [!TIP]
-> Для аргументов не объявленных через `bindArgument` контейнер попытается разрешить зависимости самостоятельно.
+> Для параметров не объявленных через `bindArgument` контейнер попытается разрешить зависимости самостоятельно.
 
 > [!TIP]
 > Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
@@ -182,6 +185,10 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 ```php 
 setup(string $method, mixed ...$argument)
 ``` 
+Аргументы:
+- `$method` – имя вызываемого метода в классе
+- `$argument` – аргументы к параметрам метода класса
+
 Возвращаемое значение из вызываемого метода не учитывается при настройке сервиса,
 контейнер вернет экземпляр класса созданного через конструктор класса.
 
@@ -191,7 +198,7 @@ setup(string $method, mixed ...$argument)
 > [!TIP]
 > Аргументы `$argument` в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
-Можно указывать именованные аргументы:
+Можно использовать именованные аргументы параметров:
 ```php
 diAutowire(...)->setup('classMethod', var1: 'value 1', var2: 'value 2')
 // $object->classMethod(string $var1, string $var2)
@@ -219,9 +226,13 @@ diAutowire(...)
 ```php 
 setupImmutable(string $method, mixed ...$argument)
 ``` 
+Аргументы:
+- `$method` – имя вызываемого метода в классе
+- `$argument` – аргументы к параметрам метода класса
+
 Возвращаемое значение метода должно быть `self`, `static`
-или того же класса, что и сам сервис,
-контейнер вернет экземпляр класса созданного через вызываемый метод.
+или того же класса, что и сам php класс.
+Контейнер вернет экземпляр класса созданного через вызываемый метод.
 
 > [!TIP]
 > Для аргументов в методе `$method` не объявленных через `setupImmutable` контейнер по попытается разрешить зависимости автоматически.
@@ -305,9 +316,12 @@ diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefi
 
 **Аргументы для определения:**
 ```php
-bindArguments(mixed ...$argument)`
+bindArguments(mixed ...$argument)
 ```
-Можно указывать имена параметров используя именованные аргументы
+Аргументы:
+- `$argument` – аргументы к параметрам метода класса
+
+Можно использовать именованные аргументы параметров
  ```php
  bindArguments(var1: 'value 1', var2: 'value 2');
  // function(string $var1, string $var2) 
@@ -792,31 +806,6 @@ $ruleCollection = $container->get(App\Services\RuleCollection::class);
 > [!TIP]
 > Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 
-## Внедрение значений зависимостей по имени аргументов
-
-Если контейнер не смог определить зависимость по типу аргумента, то будет
-выполнена попытка получить значение по имени аргумента.
-```php
-// определение класса
-namespace App;
-
-class ServiceLocation {
-
-    public function __construct(public string $locationCity) {}
-}
-```
-```php
-// определения для контейнера
-use Kaspi\DiContainer\DiContainerFactory;
-
-$definitions = [
-    'locationCity' => 'Vice city',
-];
-
-$container = (new DiContainerFactory())->make($definitions);
-
-$container->get(App\ServiceLocation::class)->locationCity; // Vice city
-```
 ## Получение класса по интерфейсу
 
 ### Получение через функцию обратного вызова – `\Closure`:
