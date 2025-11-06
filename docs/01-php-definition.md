@@ -77,13 +77,13 @@ var_dump(
 
 > [!TIP]
 > Для создания настроенного контейнера
-> можно [использовать фабрику `DiContainerFactory`](https://github.com/agdobrynin/di-container/blob/main/README.md#dicontainerfactory).
+> можно [использовать фабрику `DiContainerFactory`](../README.md#dicontainerfactory).
 
 > [!TIP]
-> `DefinitionsLoader` – [загрузчик определений в контейнер из конфигурационных файлов](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
+> `DefinitionsLoader` – [загрузчик определений в контейнер из конфигурационных файлов](04-definitions-loader.md).
 
 > [!TIP]
-> Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/01-01-pdo.php)
+> Реализация кода в [примере](../examples/01-01-pdo.php)
 
 ## Объявления для определений контейнера.
 
@@ -144,7 +144,7 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAut
 ```
 Аргументы:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
-- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
 > Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionSetupInterface`.
@@ -253,7 +253,7 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
       ->bindTag('tags.rules', priority: 100)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+> Более подробное [описание работы с тегами](05-tags.md).
 
 ##### Идентификатор контейнера для diAutowire.
 При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**)
@@ -305,8 +305,8 @@ use function \Kaspi\DiContainer\diCallable;
 diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 Аргументы:
-- `$definition` – значение которое `DiContainer` может преобразовать в [callable тип](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
-- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$definition` – значение которое `DiContainer` может преобразовать в [callable тип](03-call-method.md#поддерживаемые-типы)
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
 > Функция `diCallable` возвращает объект реализующий интерфейс `DiDefinitionArgumentsInterface`
@@ -343,7 +343,7 @@ bindArguments(mixed ...$argument)
 bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+> Более подробное [описание работы с тегами](05-tags.md).
 
 ##### Идентификатор контейнера.
 При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
@@ -398,7 +398,7 @@ require static function (): \Generator {
 ```
 > [!TIP]
 > Поддерживаемые типы для хэлпер фцнкции `diCallable` описаны
-> [в разделе о методе `DiContainer::call`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md#поддерживаемые-типы)
+> [в разделе о методе `DiContainer::call`](03-call-method.md#поддерживаемые-типы)
 
 Разрешение зависимостей через контейнер:
 ```php
@@ -438,7 +438,7 @@ var_dump($container->get('services.two') instanceof App\Services\ServiceOne); //
 
 > [!TIP]
 > Если у определения объявленного через `diCallable` присутствуют аргументы,
-> то они могут быть разрешены контейнером автоматически включая [использование php атрибутов](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
+> то они могут быть разрешены контейнером автоматически включая [использование php атрибутов](02-attribute-definition.md).
 
 #### diGet
 Определение как ссылки на другой идентификатор контейнера.
@@ -504,7 +504,7 @@ diValue(mixed $value): DiDefinitionTagArgumentInterface
 bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+> Более подробное [описание работы с тегами](05-tags.md).
 
 ##### Идентификатор контейнера.
 При объявлении зависимости через `diValue` необходимо указать в конфигурации идентификатор контейнера.
@@ -570,7 +570,7 @@ $notifyStaff = $container->get(App\Notifications\CompanyStaff::class);
 ```
 
 > [!TIP]
-> Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+> Подробнее [о ключах элементов в коллекции.](05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 #### diProxyClosure
 
@@ -585,7 +585,7 @@ diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagAr
 Аргументы:
 
 - `$definition` – имя определения или идентификатора контейнера которое содержит сервис.
-- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](https://github.com/agdobrynin/di-container/tree/main?tab=readme-ov-file#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
 > Функция `diProxyClosure` возвращает объект реализующий интерфейс `DiDefinitionTagArgumentInterface`
@@ -597,7 +597,7 @@ diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagAr
 bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+> Более подробное [описание работы с тегами](05-tags.md).
 
 ##### Идентификатор контейнера.
 При объявлении зависимости через `diProxyClosure` необходимо указать в конфигурации идентификатор контейнера.
@@ -738,8 +738,8 @@ diTaggedAs(
   если он отмечен тем же тегом что и получаемая коллекция.
 
 
-1. Подробнее [о приоритизации в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
-2. Подробнее [о ключах элементов в коллекции.](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+1. Подробнее [о приоритизации в коллекции.](05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+2. Подробнее [о ключах элементов в коллекции.](05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 > [!IMPORTANT]
 > Метод объявленный в `$priorityDefaultMethod` должен быть `public static function`
@@ -804,7 +804,7 @@ $ruleCollection = $container->get(App\Services\RuleCollection::class);
 > тегом `'tags.lite-rules'`.
 
 > [!TIP]
-> Более подробное [описание работы с тегами](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+> Более подробное [описание работы с тегами](05-tags.md).
 
 ## Получение класса по интерфейсу
 
@@ -1321,7 +1321,7 @@ $apiV2->request(); // выполнить запрос
 ### Пример #3
 Заполнение коллекции на основе callback функции.
 > [!NOTE]
-> Похожий функционал можно реализовать [через тегированные определения](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+> Похожий функционал можно реализовать [через тегированные определения](05-tags.md).
 ```php
 // src/Rules/RuleInterface.php
 namespace App\Rules;
