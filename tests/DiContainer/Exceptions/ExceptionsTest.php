@@ -40,7 +40,7 @@ class ExceptionsTest extends TestCase
         ]);
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Class "MyNonExistClass" does not exist');
+        $this->expectExceptionMessage('Failed reflection for class "MyNonExistClass".');
 
         $container->get('MyNonExistClass');
     }

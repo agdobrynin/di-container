@@ -81,7 +81,6 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
     /**
      * @throws ContainerExceptionInterface
-     * @throws DiDefinitionCallableExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws AutowireExceptionInterface
      */
@@ -92,8 +91,9 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
             ? $this->argBuilder->basedOnPhpAttributes()
             : $this->argBuilder->basedOnBindArguments();
+        $resolvedArgs = $this->resolveArguments($args);
 
-        return call_user_func_array($this->getDefinition(), $this->resolveArguments($args));
+        return call_user_func_array($this->getDefinition(), $resolvedArgs);
     }
 
     /**

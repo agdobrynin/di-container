@@ -30,6 +30,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
@@ -87,7 +88,7 @@ class SetupImmutableTest extends TestCase
         ;
 
         $this->expectException(AutowireException::class);
-        $this->expectExceptionMessageMatches('/The immutable setter .+SetupImmutable::'.$method.'\(\)" must return same class/');
+        $this->expectExceptionMessageMatches('/The immutable setter .+SetupImmutable::'.$method.'\(\) must return same class/');
 
         /** @var SetupImmutable $setupImmutableClass */
         $setupImmutableClass = $def->invoke();

@@ -240,4 +240,24 @@ class TagTest extends TestCase
 
         yield 'wrong union type return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnUnionWrong'];
     }
+
+    public function testTagsByAttributeException()
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('Failed read tags by php attribute for class "NoneExistClass"');
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')->willReturn(
+            new DiContainerConfig(
+                useAttribute: true
+            )
+        );
+
+        $def = (new DiDefinitionAutowire('NoneExistClass'))
+            ->bindTag('tags.handler-one', options: ['priority.method' => 'getPriority'])
+            ->setContainer($mockContainer)
+        ;
+
+        $def->getTags();
+    }
 }

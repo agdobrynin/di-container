@@ -11,7 +11,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionInvokableWrapper;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
-use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
@@ -143,15 +142,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
-        try {
-            return (new DiDefinitionCallable($definition))
-                ->bindArguments(...$arguments)
-                ->setContainer($this)
-                ->invoke()
-            ;
-        } catch (AutowireExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
-            throw new ContainerException(message: $e->getMessage(), previous: $e);
-        }
+        return (new DiDefinitionCallable($definition))
+            ->bindArguments(...$arguments)
+            ->setContainer($this)
+            ->invoke()
+        ;
     }
 
     public function getContainer(): DiContainerInterface
@@ -217,8 +212,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             return $this->resolved[$id] = $diDefinition->getDefinition();
-        } catch (AutowireExceptionInterface|DiDefinitionCallableExceptionInterface $e) {
-            throw new ContainerException(message: $e->getMessage(), previous: $e->getPrevious());
         } finally {
             unset($this->resolvingDependencies[$id]);
         }

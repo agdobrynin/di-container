@@ -116,7 +116,7 @@ class TaggedAsImplementInterfaceTest extends TestCase
         ;
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Class "nonExistClass" does not exist');
+        $this->expectExceptionMessage('Failed reflection for class "nonExistClass"');
 
         $container->get(ClassWithHeavyDep::class)->getDep();
     }

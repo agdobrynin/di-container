@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
@@ -29,6 +30,7 @@ use function get_class;
 use function get_debug_type;
 use function is_object;
 use function is_string;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 /**
@@ -141,7 +143,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             $reflectionMethod = $this->getDefinition()->getMethod($method);
 
             if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
-                throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
+                throw new AutowireException(sprintf('Cannot use %s as setter.', functionName($reflectionMethod)));
             }
 
             /**
@@ -156,13 +158,15 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
                     ? $argBuilder->basedOnBindArgumentsAsPriorityAndPhpAttributes()
                     : $argBuilder->basedOnBindArguments();
 
+                $resolvedArgs = $this->resolveArguments($args);
+
                 if (!$isImmutable) {
-                    $reflectionMethod->invokeArgs($object, $this->resolveArguments($args));
+                    $reflectionMethod->invokeArgs($object, $resolvedArgs);
 
                     continue;
                 }
 
-                $result = $reflectionMethod->invokeArgs($object, $this->resolveArguments($args));
+                $result = $reflectionMethod->invokeArgs($object, $resolvedArgs);
 
                 if (is_object($result) && get_class($result) === get_class($object)) {
                     $object = $result;
@@ -173,9 +177,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
                 throw new AutowireException(
                     sprintf(
-                        'The immutable setter "%s::%s()" must return same class "%s". Got type: %s',
-                        $this->getDefinition()->getName(),
-                        $method,
+                        'The immutable setter %s must return same class "%s". Got type: "%s".',
+                        functionName($reflectionMethod),
                         $this->getDefinition()->getName(),
                         get_debug_type($result)
                     )
@@ -191,13 +194,13 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         try {
             return $this->reflectionClass ??= new ReflectionClass($this->definition);
         } catch (ReflectionException $e) { // @phpstan-ignore catch.neverThrown
-            throw new AutowireException(message: $e->getMessage());
+            throw new AutowireException(
+                message: sprintf('Failed reflection for class "%s".', $this->definition),
+                previous: $e
+            );
         }
     }
 
-    /**
-     * @return class-string|non-empty-string
-     */
     public function getIdentifier(): string
     {
         return is_string($this->definition)
@@ -207,8 +210,17 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function getTags(): array
     {
+        try {
+            $tagsByAttribute = $this->getTagsByAttribute();
+        } catch (AutowireExceptionInterface $e) {
+            throw new AutowireAttributeException(
+                message: sprintf('Failed read tags by php attribute for class "%s"', $this->getIdentifier()),
+                previous: $e,
+            );
+        }
+
         // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
-        return $this->getTagsByAttribute() + $this->internalGetTags();
+        return $tagsByAttribute + $this->internalGetTags();
     }
 
     public function hasTag(string $name): bool
@@ -224,6 +236,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     /**
      * @param non-empty-string $name
      * @param TagOptions       $operationOptions
+     *
+     * @throws AutowireExceptionInterface
      */
     public function geTagPriority(string $name, array $operationOptions = []): int|string|null
     {
@@ -259,7 +273,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     {
         if (!$this->getDefinition()->isInstantiable()) {
             throw new AutowireException(
-                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
+                sprintf('The class "%s" is not instantiable.', $this->getDefinition()->getName())
             );
         }
 
@@ -277,13 +291,15 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             ? $this->constructArgBuilder->basedOnPhpAttributes()
             : $this->constructArgBuilder->basedOnBindArguments();
 
-        return $this->getDefinition()->newInstanceArgs($this->resolveArguments($args));
+        $resolvedArgs = $this->resolveArguments($args);
+
+        return $this->getDefinition()->newInstanceArgs($resolvedArgs);
     }
 
     /**
      * @return array<non-empty-string, TagOptions>
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
     private function getTagsByAttribute(): array
     {
@@ -312,6 +328,8 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     /**
      * @return array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
+     *
+     * @throws AutowireExceptionInterface|ContainerNeedSetExceptionInterface
      */
     private function getSetupByAttribute(): array
     {
