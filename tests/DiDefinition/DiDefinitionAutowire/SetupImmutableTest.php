@@ -10,11 +10,12 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\LazyDefinitionIterator;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutable;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttribute;
-use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttributeWithArgumentAsReference;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttributeWithArgumentAsDefinition;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SomeClass;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -26,7 +27,10 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -160,12 +164,12 @@ class SetupImmutableTest extends TestCase
             ])
         ;
 
-        $def = (new DiDefinitionAutowire(SetupImmutableByAttributeWithArgumentAsReference::class))
+        $def = (new DiDefinitionAutowire(SetupImmutableByAttributeWithArgumentAsDefinition::class))
             ->setupImmutable('withSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
             ->setContainer($mockContainer)
         ;
 
-        /** @var SetupImmutableByAttributeWithArgumentAsReference $class */
+        /** @var SetupImmutableByAttributeWithArgumentAsDefinition $class */
         $class = $def->invoke();
 
         self::assertInstanceOf(SomeClass::class, $class->getSomeClass());
@@ -174,6 +178,7 @@ class SetupImmutableTest extends TestCase
         self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
         self::assertEquals('@la-la-la', $class->getAnyAsEscapedString());
         self::assertEquals('any_string', $class->getAnyAsString());
+        self::assertInstanceOf(LazyDefinitionIterator::class, $class->getRules());
     }
 
     /**

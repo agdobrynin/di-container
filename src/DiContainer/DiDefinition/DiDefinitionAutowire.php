@@ -25,7 +25,6 @@ use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 
-use function array_map;
 use function get_class;
 use function get_debug_type;
 use function is_object;
@@ -328,10 +327,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         foreach ($this->getSetupAttribute($this->getDefinition()) as $setupAttr) {
             $this->setupByAttributes[$setupAttr->getIdentifier()][] = [
                 $setupAttr->isImmutable(),
-                array_map(
-                    static fn (mixed $arg) => self::convertStringArgumentToDiDefinitionGet($arg),
-                    $setupAttr->getArguments()
-                ),
+                $setupAttr->getArguments(),
             ];
         }
 

@@ -5,14 +5,22 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire\Fixtures;
 
 use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs as DiTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue as DiValue;
 
-final class SetupImmutableByAttributeWithArgumentAsReference
+final class SetupImmutableByAttributeWithArgumentAsDefinition
 {
     private ?SomeClass $someClass = null;
     private ?string $anyAsContainerIdentifier = null;
     private ?string $anyAsEscapedString = null;
 
     private ?string $anyAsString = null;
+
+    /**
+     * @var iterable<RuleInterface>
+     */
+    private iterable $rules;
 
     /**
      * Will return SomeClass::SomeClass.
@@ -46,7 +54,7 @@ final class SetupImmutableByAttributeWithArgumentAsReference
         return $this->anyAsString;
     }
 
-    #[SetupImmutable(someClass: '@services.some_class')]
+    #[SetupImmutable(someClass: new DiGet('services.some_class'))]
     public function withSomeClassAsContainerIdentifier($someClass): self
     {
         $new = clone $this;
@@ -55,7 +63,7 @@ final class SetupImmutableByAttributeWithArgumentAsReference
         return $new;
     }
 
-    #[SetupImmutable(any: '@services.any_string')]
+    #[SetupImmutable(any: new DiGet('services.any_string'))]
     public function withAnyAsContainerIdentifier(string $any): self
     {
         $new = clone $this;
@@ -64,7 +72,7 @@ final class SetupImmutableByAttributeWithArgumentAsReference
         return $new;
     }
 
-    #[SetupImmutable(any: '@@la-la-la')]
+    #[SetupImmutable(any: new DiValue('@la-la-la'))]
     public function withAnyAsEscapedString(string $any): self
     {
         $new = clone $this;
@@ -80,5 +88,19 @@ final class SetupImmutableByAttributeWithArgumentAsReference
         $new->anyAsString = $anyAsString;
 
         return $new;
+    }
+
+    #[SetupImmutable(new DiTaggedAs('tags.rule_interface'))]
+    public function withRules(iterable $rules): self
+    {
+        $new = clone $this;
+        $new->rules = $rules;
+
+        return $new;
+    }
+
+    public function getRules(): iterable
+    {
+        return $this->rules;
     }
 }

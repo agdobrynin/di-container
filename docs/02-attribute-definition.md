@@ -153,8 +153,17 @@ var_dump($container->has(SomeService::class)); // false
 - `$argument` - аргументы для передачи в вызываемый метод.
 
 Значениями для `$argument` разрешается указывать скалярные типы данных,
-массивы (array), специальный тип null и начиная с **PHP 8.1.0** объекты,
+массивы (array) содержащие скалярные типы, специальный тип null и объекты,
 которые создают синтаксисом `new ClassName()`.
+
+Для объектов передаваемых в качестве аргумента используются
+классы описывающие определения контейнера:
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – `callable` тип
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
 
 > [!TIP]
 > Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
@@ -187,20 +196,15 @@ class RuleB implements RuleInterface {}
 namespace App\Rules;
 
 use Kaspi\DiContainer\Attributes\Setup;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
 use App\Rules\{RuleA, RuleB};
 
 class RuleGenerator {
 
     private iterable $rules = [];
     
-    // Аргумент передается как объект для PHP 8.1.0 и выше.
-    #[Setup(inputRule: new DiDefinitionGet(RuleB::class))]
-    #[Setup(inputRule: new DiDefinitionGet(RuleA::class))]
-    // ⚠ для PHP 8.0.x аргумент передается как специальная строка
-    // и будет интерпретирована как идентификатор контейнера.
-    // #[Setup(inputRule: '@'.RuleB::class)] 
-    // #[Setup(inputRule: '@'.RuleA::class)]
+    #[Setup(inputRule: new DiGet(RuleB::class))]
+    #[Setup(inputRule: new DiGet(RuleA::class))]
     public function addRule(RuleInterface $inputRule): void {
         $this->rules[] = $inputRule;
     }
@@ -228,21 +232,6 @@ var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
-> [!WARNING]
-> Для случаев когда нельзя передать `$argument` как объект (_для PHP ниже версии 8.1.0_)
-> существует возможность передать строковое значение указывающее
-> контейнеру на необходимость вызвать другой сервис по идентификатору контейнера —
-> строка должна начинаться с символа `@`:
-> - `@container-identifier` — получить зависимость из контейнера по идентификатору контейнера `container-identifier`
-> 
-> Если нужно передать значение строкового аргумента начинающегося с `@`,
-> то необходимо экранировать его добавив ещё один символ `@` в начало строки,
-> чтобы контейнер не считал значение идентификатором контейнера:
-> - `@@some-string-value` — будет интерпритирована как строка `@some-string-value`
-> 
-> Если в `$argument` передано строковое значение не начинающаяся со специального символа `@`,
-> то она будет передана в метод как есть.
-
 ## SetupImmutable
 
 Применяется к методам PHP класса для настройки сервиса с учётом, 
@@ -258,8 +247,17 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 - `$argument` - аргументы для передачи в вызываемый метод.
 
 Значениями для `$argument` разрешается указывать скалярные типы данных,
-массивы (array), специальный тип null и начиная с **PHP 8.1.0** объекты,
+массивы (array) содержащие скалярные типы, специальный тип null и объекты,
 которые создают синтаксисом `new ClassName()`.
+
+Для объектов передаваемых в качестве аргумента используются
+классы описывающие определения контейнера:
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – `callable` тип
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
 
 > [!TIP]
 > Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
@@ -285,7 +283,7 @@ class MyLogger implements LoggerInterface
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\SetupImmutable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
 use App\Loggers\MyLogger;
 use Psr\Log\LoggerInterface;
 
@@ -293,11 +291,7 @@ class MyService
 {
     private ?LoggerInterface $logger;
 
-    // Аргумент передается как объект для PHP 8.1.0 и выше.    
-    #[SetupImmutable(logger: new DiDefinitionGet(MyLogger::class))]
-    // ⚠ для PHP 8.0.x аргумент передается как специальная строка
-    // и будет интерпретирована как идентификатор контейнера.
-    // #[SetupImmutable(logger: '@'.App\Loggers\MyLogger::class)]
+    #[SetupImmutable(logger: new DiGet(MyLogger::class))]
     public function withLogger(?LoggerInterface $logger): static
     {
         $new = clone $this;
@@ -329,21 +323,6 @@ $myService = $container->get(App\Services\MyService::class);
 var_dump($myService->getLogger() instanceof Psr\Log\LoggerInterface); // true
 ```
 
-> [!WARNING]
-> Для случаев когда нельзя передать `$argument` как объект (_для PHP ниже версии 8.1.0_)
-> существует возможность передать строковое значение указывающее
-> контейнеру на необходимость вызвать другой сервис по идентификатору контейнера —
-> строка должна начинаться с символа `@`:
-> - `@container-identifier` — получить зависимость из контейнера по идентификатору контейнера `container-identifier`
->
-> Если нужно передать значение строкового аргумента начинающегося с `@`,
-> то необходимо экранировать его добавив ещё один символ `@` в начало строки,
-> чтобы контейнер не считал значение идентификатором контейнера:
-> - `@@some-string-value` — будет интерпритирована как строка `@some-string-value`
->
-> Если в `$argument` передано строковое значение не начинающаяся со специального символа `@`,
-> то она будет передана в метод как есть.
-
 ## Inject
 
 Применяется к аргументам конструктора класса, метода или функции.
@@ -359,7 +338,7 @@ var_dump($myService->getLogger() instanceof Psr\Log\LoggerInterface); // true
 > результат исходя из типа аргумента.
 
 > [!WARNING]
-> При разрешении зависимости для объединенного типа (_union type_)
+> При разрешении зависимости для составного типа (_union, intersection types_)
 > может быть выброшено исключение, [для исправления этой ошибки
 > необходима конкретизация типа](#разрешение-зависимости-объединенного-типа-через-inject).
 
@@ -1075,7 +1054,7 @@ class SomeClass {}
 - `\ArrayAccess`
 - `\Psr\Container\ContainerInterface`
 - `array` требуется использовать параметр `$isLazy = false`.
-- Составной тип (_intersection types PHP 8.1 и выше_) для ленивых коллекций (`$isLazy = true`)
+- Составной тип (_intersection types) для ленивых коллекций (`$isLazy = true`)
   - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`.
 
 ```php
