@@ -149,7 +149,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
              * @phpstan-var non-negative-int $index
              */
             foreach ($calls as $index => [$isImmutable, $callArguments]) {
-                $argBuilder = $this->setupArgBuilder[$method][$index] ?? ($this->setupArgBuilder[$method][$index] = new ArgumentBuilder($callArguments, $reflectionMethod, $this->getContainer()));
+                $argBuilder = $this->setupArgBuilder[$method][$index] ??= new ArgumentBuilder($callArguments, $reflectionMethod, $this->getContainer());
 
                 $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
                     ? $argBuilder->basedOnBindArgumentsAsPriorityAndPhpAttributes()
