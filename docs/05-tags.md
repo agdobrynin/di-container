@@ -8,7 +8,7 @@
 - `\ArrayAccess`
 - `\Psr\Container\ContainerInterface`
 - `array` требуется использовать параметр `$isLazy = false`.
-- Составной тип (_intersection types PHP 8.1 и выше_) для ленивых коллекций (`$isLazy = true`)
+- Составной тип (_intersection types_) для ленивых коллекций (`$isLazy = true`)
     - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`.
 
 Любое определение в контейнере может быть отмечено

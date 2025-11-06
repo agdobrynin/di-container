@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue as DiValue;
 
 final class SetupByAttributeWithArgumentAsReference
 {
@@ -47,20 +49,20 @@ final class SetupByAttributeWithArgumentAsReference
         return $this->anyAsString;
     }
 
-    #[Setup(someClass: '@services.some_class')]
+    #[Setup(someClass: new DiGet('services.some_class'))]
     public function setSomeClassAsContainerIdentifier($someClass, SomeClass $class): void
     {
         $this->someClass = $someClass;
         $this->dependencyAutoResolve = $class;
     }
 
-    #[Setup(any: '@services.any_string')]
+    #[Setup(any: new DiGet('services.any_string'))]
     public function setAnyAsContainerIdentifier(string $any): void
     {
         $this->anyAsContainerIdentifier = $any;
     }
 
-    #[Setup(any: '@@la-la-la')]
+    #[Setup(any: new DiValue('@@la-la-la'))]
     public function setAnyAsEscapedString(string $any): void
     {
         $this->anyAsEscapedString = $any;

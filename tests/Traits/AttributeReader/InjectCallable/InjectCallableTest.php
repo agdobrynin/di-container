@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\InjectCallable;
 
-use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;

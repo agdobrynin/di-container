@@ -141,7 +141,7 @@ class SetupTest extends TestCase
         self::assertEquals('foo', $class->getSomeClass()->getValue());
 
         self::assertEquals('string from container', $class->getAnyAsContainerIdentifier());
-        self::assertEquals('@la-la-la', $class->getAnyAsEscapedString());
+        self::assertEquals('@@la-la-la', $class->getAnyAsEscapedString());
         self::assertEquals('la-la-la', $class->getAnyAsString());
     }
 
