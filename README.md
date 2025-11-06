@@ -112,7 +112,7 @@ $post = new App\Controllers\PostController(
 );
 ```
 > [!TIP]
-> Реализация кода в [примере](https://github.com/agdobrynin/di-container/blob/main/examples/00-start.php)
+> Реализация кода в [примере](examples/00-start.php)
 
 Другой вариант для примера выше можно использовать для получения результата `DiContainer::call()`:
 ```php
@@ -132,7 +132,7 @@ $container->call(
 
 ```
 > [!TIP]
-> Больше информации о [DiContainer::call()](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
+> Больше информации о [DiContainer::call()](docs/03-call-method.md)
 
 > [!NOTE]
 > Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples)
@@ -224,14 +224,14 @@ DiContainerFactory::make(
 Собирает определения для контейнера зависимостей из разных конфигурационных файлов
 (_dependency definitions_), и выполняет "импорт" классов из директорий.
 
-Подробное описание использования [DefinitionsLoader](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md).
+Подробное описание использования [DefinitionsLoader](docs/04-definitions-loader.md).
 
 ### 🧰 Подробное описание конфигурирования и использования
 
-* 🐘 [DiContainer с конфигурированием в стиле php определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md).
-* #️⃣ [DiContainer c конфигурированием через PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
-* 📦 [DiContainer::call()](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
-* 🔖 [Тэгирование определений и сервисов](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+* 🐘 [DiContainer с конфигурированием в стиле php определений](docs/01-php-definition.md).
+* #️⃣ [DiContainer c конфигурированием через PHP атрибуты](docs/02-attribute-definition.md).
+* 📦 [DiContainer::call()](docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
+* 🔖 [Тэгирование определений и сервисов](docs/05-tags.md).
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода

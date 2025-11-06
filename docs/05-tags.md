@@ -15,19 +15,19 @@
 одним или несколькими тегами.
 Каждый тег может содержать мета-данные переданные в виде массива.
 
-Тегирование сервисов можно произвести при объявлении в стиле [php определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md)
-или используя [PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
+Тегирование сервисов можно произвести при объявлении в стиле [php определений](01-php-definition.md)
+или используя [PHP атрибуты](02-attribute-definition.md).
 
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере.
 > Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
+> используя [конфигурационные файлы](04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
+> или [импорт и настройку сервисов из директорий](04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
 
 Для получения тегированных сервисов на аргументы (_параметры – конструктора, метода или аргументы функции_) нужно использовать:
-- `diTaggedAs` – [хэлпер функцию](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas) в стиле php определений 
-- `#[TaggedAs]` – [php атрибут](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas) 
+- `diTaggedAs` – [хэлпер функцию](01-php-definition.md#ditaggedas) в стиле php определений 
+- `#[TaggedAs]` – [php атрибут](02-attribute-definition.md#taggedas) 
 
 ### Ленивая коллекция
 Особенности получения коллекции в том что по умолчанию
@@ -37,8 +37,8 @@
 ### Ключ элемента в коллекции.
 По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
 определений в контейнере (_container identifier – не пустая строка_). Это поведение можно изменить
-через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хэлпер функции diTaggedAs](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
+через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хэлпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
 от идентификаторов определений (_container identifier_) представленные не пустыми строками
 или целыми числами (_последовательные значения от нуля и больше_).
 
@@ -47,7 +47,7 @@
 ## 🐘 Объявление тега в стиле php определений.
 
 Для указания тегов используется метод `bindTag`
-который доступен через [хэлпер функции](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
+который доступен через [хэлпер функции](01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
 реализующие интерфейсы:
 - `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`
 - `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`
@@ -270,7 +270,7 @@ return static function (): \Generator
 
 
 ## #️⃣ Объявление тега через php атрибут.
-Для указания тегов для класса необходимо использовать php атрибут `#[Tag]` ([описание атрибута](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#tag)):
+Для указания тегов для класса необходимо использовать php атрибут `#[Tag]` ([описание атрибута](02-attribute-definition.md#tag)):
 
 ```php
 // src/Any/One.php
@@ -291,7 +291,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 #[Tag('tags.services.group_two', priority: 10)]
 class Two {}
 ```
-Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]` ([описание атрибута](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas)):
+Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]` ([описание атрибута](02-attribute-definition.md#taggedas)):
 ```php
 // src/Services/TaggedServices.php
 namespace App\Services;
@@ -311,8 +311,8 @@ class TaggedServices {
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере.
 > Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
+> используя [конфигурационные файлы](04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
+> или [импорт и настройку сервисов из директорий](04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
 
 ```php
 use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
@@ -412,8 +412,8 @@ $class = $container->get(TaggedServices::class);
 
 > [!NOTE]
 > Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
+> используя [конфигурационные файлы](04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
+> или [импорт и настройку сервисов из директорий](04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
 
 
 ### 🐘 Использование в стиле php определений
@@ -779,8 +779,8 @@ $container->get(App\Rules\Rules::class);
 
 - `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
 - `priorityDefaultMethod` – метод указанный через
-[хэлпер функцию `diTaggedAs`](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
-или через [php атрибут #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas)
+[хэлпер функцию `diTaggedAs`](01-php-definition.md#ditaggedas)
+или через [php атрибут #[TaggedAs]](02-attribute-definition.md#taggedas)
 который **может быть реализован** в тегированном php классе возвращающий `priority`.
  
 #### 🐘 В стиле php определений
@@ -1335,8 +1335,8 @@ class ClassTaggedAs {
 если у тегированного определения не указан ключ для коллекции в метаданных (_в `$options`_).
 
 Указать метод получения ключа по умолчанию можно через аргумент
-`$keyDefaultMethod` [в хэлпер функции diTaggedAs](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas).
+`$keyDefaultMethod` [в хэлпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas).
 
 > [!IMPORTANT]
 > Метод реализующий получение ключа должен быть объявлен как `public static function` и возвращать тип `string`.
