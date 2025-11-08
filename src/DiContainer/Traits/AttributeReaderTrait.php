@@ -127,12 +127,6 @@ trait AttributeReaderTrait
             $attrs = [...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)];
 
             foreach ($attrs as $setupAttribute) {
-                if ($method->isConstructor() || $method->isDestructor()) {
-                    throw new AutowireAttributeException(
-                        sprintf('Cannot use attribute #[%s] on method %s::%s().', $setupAttribute->getName(), $reflectionClass->name, $method->name)
-                    );
-                }
-
                 /** @var DiSetupAttributeInterface $setup */
                 $setup = $setupAttribute->newInstance();
                 $setup->setMethod($method->getName());

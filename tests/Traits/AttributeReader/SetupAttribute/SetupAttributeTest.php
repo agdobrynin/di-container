@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\SetupAttribute;
 
-use Generator;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use Tests\Traits\AttributeReader\SetupAttribute\Fixtures\SetupImmutableOnConstructor;
-use Tests\Traits\AttributeReader\SetupAttribute\Fixtures\SetupImmutableOnDestructor;
-use Tests\Traits\AttributeReader\SetupAttribute\Fixtures\SetupOnConstructor;
-use Tests\Traits\AttributeReader\SetupAttribute\Fixtures\SetupOnDestructor;
+use Tests\Traits\AttributeReader\SetupAttribute\Fixtures\SetupImmutableOnMethods;
+use Tests\Traits\AttributeReader\SetupAttribute\Fixtures\SetupOnMethods;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Setup
  * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
@@ -34,25 +34,37 @@ class SetupAttributeTest extends TestCase
         };
     }
 
-    /**
-     * @dataProvider dataProviderFailSetups
-     */
-    public function testReadSetupAttributeOnConstructor(string $class, string $method): void
+    public function testReadSetupAttribute(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use attribute.+'.$method.'/');
+        /** @var Setup[] $res */
+        $res = [...$this->reader->getSetupAttribute(new ReflectionClass(SetupOnMethods::class))];
 
-        $this->reader->getSetupAttribute(new ReflectionClass($class))->valid();
+        self::assertCount(3, $res);
+
+        self::assertEquals('__construct', $res[0]->getIdentifier());
+        self::assertEquals(['x'], $res[0]->getArguments());
+
+        self::assertEquals('__destruct', $res[1]->getIdentifier());
+        self::assertEmpty($res[1]->getArguments());
+
+        self::assertEquals('demo2', $res[2]->getIdentifier());
+        self::assertEquals([new DiGet('services.foo')], $res[2]->getArguments());
     }
 
-    public function dataProviderFailSetups(): Generator
+    public function testReadSetupImmutableAttribute(): void
     {
-        yield 'on construct #Setup' => [SetupOnConstructor::class, '::__construct()'];
+        /** @var SetupImmutable[] $res */
+        $res = [...$this->reader->getSetupAttribute(new ReflectionClass(SetupImmutableOnMethods::class))];
 
-        yield 'on construct #SetupImmutable' => [SetupImmutableOnConstructor::class, '::__construct()'];
+        self::assertCount(3, $res);
 
-        yield 'on destructor #Setup' => [SetupOnDestructor::class, '::__destruct()'];
+        self::assertEquals('__construct', $res[0]->getIdentifier());
+        self::assertEquals(['bar'], $res[0]->getArguments());
 
-        yield 'on destructor #SetupImmutable' => [SetupImmutableOnDestructor::class, '::__destruct()'];
+        self::assertEquals('__destruct', $res[1]->getIdentifier());
+        self::assertEmpty($res[1]->getArguments());
+
+        self::assertEquals('demo2', $res[2]->getIdentifier());
+        self::assertEquals([new DiGet('services.foo')], $res[2]->getArguments());
     }
 }
