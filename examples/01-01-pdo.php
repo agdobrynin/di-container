@@ -7,7 +7,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 
 use function Kaspi\DiContainer\diAutowire;
 
-require_once './vendor/autoload.php';
+require_once \dirname(__DIR__).'/vendor/autoload.php';
 
 class MyUsers
 {

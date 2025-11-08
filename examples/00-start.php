@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Kaspi\DiContainer\DiContainerFactory;
 
-require_once './vendor/autoload.php';
+require_once \dirname(__DIR__).'/vendor/autoload.php';
 
 class Envelope implements Stringable
 {
