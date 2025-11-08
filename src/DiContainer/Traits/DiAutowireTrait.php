@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
@@ -23,6 +24,8 @@ trait DiAutowireTrait
     /**
      * @param non-empty-string                          $where
      * @param array<non-negative-int, non-empty-string> $supportReturnTypes
+     *
+     * @throws AutowireExceptionInterface
      */
     private static function callStaticMethod(DiDefinitionAutowireInterface $definition, mixed $method, bool $requireMethod, string $where, array $supportReturnTypes = ['int', 'string', 'null'], mixed ...$args): mixed
     {
@@ -30,7 +33,7 @@ trait DiAutowireTrait
             throw new AutowireException($where.' The value option must be non-empty string.');
         }
 
-        $isCallable = is_callable([$definition->getDefinition()->name, $method]);
+        $isCallable = is_callable([$definition->getIdentifier(), $method]);
 
         // @phpstan-ignore argument.type
         if (!$isCallable || [] !== ($types = static::diffReturnType($definition->getDefinition()->getMethod($method)->getReturnType(), ...$supportReturnTypes))) {
@@ -41,7 +44,7 @@ trait DiAutowireTrait
             $message = sprintf(
                 '%s "%s::%s()" method must be exist and be declared with the public and static modifiers. Return type must be %s.%s',
                 $where,
-                $definition->getDefinition()->name,
+                $definition->getIdentifier(),
                 $method,
                 '"'.implode('", "', $supportReturnTypes).'"',
                 isset($types) ? ' Got return type: "'.implode('", "', $types).'".' : ''
