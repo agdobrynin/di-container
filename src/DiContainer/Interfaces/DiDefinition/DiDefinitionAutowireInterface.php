@@ -16,4 +16,9 @@ interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
     public function getDefinition(): ReflectionClass;
 
     public function setContainer(DiContainerInterface $container): static;
+
+    /**
+     * @return class-string
+     */
+    public function getIdentifier(): string;
 }
