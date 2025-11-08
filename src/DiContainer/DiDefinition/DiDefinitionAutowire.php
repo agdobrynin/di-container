@@ -132,8 +132,6 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
         }
 
         $object = $this->newInstance();
-        // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
-        $setupMerged = $this->getSetupByAttribute() + $this->setup;
 
         foreach ($setupMerged as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
