@@ -124,7 +124,10 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
 
     public function invoke(): mixed
     {
-        if ([] === $this->setup && [] === $this->getSetupByAttribute()) {
+        // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
+        $setupMerged = $this->getSetupByAttribute() + $this->setup;
+
+        if ([] === $setupMerged) {
             return $this->newInstance();
         }
 
