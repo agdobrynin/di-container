@@ -202,19 +202,23 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     );
                 }
 
-                if ($taggedAs instanceof DiDefinitionAutowireInterface && str_starts_with($optionKey, 'self::')) {
-                    $method = explode('::', $optionKey)[1];
-                    $howGetOptions = sprintf('Get key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $method, $this->tag);
-
-                    /** @var string $key */
-                    $key = self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
-
-                    return '' === $key || '' === trim($key)
-                        ? throw new AutowireException(sprintf('%s return value must be non-empty string. Got value: "%s"', $howGetOptions, $key))
-                        : $key;
+                if (!$taggedAs instanceof DiDefinitionAutowireInterface) {
+                    return $optionKey;
                 }
 
-                return $optionKey;
+                if (!str_starts_with($optionKey, 'self::')) {
+                    return $optionKey;
+                }
+
+                $method = explode('::', $optionKey)[1];
+                $howGetOptions = sprintf('Get key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getIdentifier(), $method, $this->tag);
+
+                /** @var string $key */
+                $key = self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+
+                return '' === $key || '' === trim($key)
+                    ? throw new AutowireException(sprintf('%s return value must be non-empty string. Got value: "%s"', $howGetOptions, $key))
+                    : $key;
             }
         }
 
@@ -222,7 +226,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return $identifier;
         }
 
-        $howGetKeyOption = sprintf('Get default key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $this->keyDefaultMethod, $this->tag);
+        $howGetKeyOption = sprintf('Get default key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getIdentifier(), $this->keyDefaultMethod, $this->tag);
         $key = self::callStaticMethod($taggedAs, $this->keyDefaultMethod, false, $howGetKeyOption, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
 
         // @phpstan-ignore return.type
