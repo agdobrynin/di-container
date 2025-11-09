@@ -89,9 +89,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     {
         $this->reflectionFn ??= $this->reflectionFn();
         $this->argBuilder ??= new ArgumentBuilder($this->getBindArguments(), $this->reflectionFn, $this->getContainer());
-        $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
-            ? $this->argBuilder->basedOnPhpAttributes()
-            : $this->argBuilder->basedOnBindArguments();
+        $args = $this->argBuilder->build();
 
         return call_user_func_array($this->getDefinition(), $this->resolveArguments($args));
     }

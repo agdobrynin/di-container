@@ -8,16 +8,15 @@ use Generator;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait;
@@ -37,12 +36,14 @@ use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 /**
- * @phpstan-type DiDefinitionItem DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|DiDefinitionValue
+ * @phpstan-import-type DiDefinitionItem from ArgumentBuilderInterface
  */
-final class ArgumentBuilder
+final class ArgumentBuilder implements ArgumentBuilderInterface
 {
     use AttributeReaderTrait;
     use ParameterTypeByReflectionTrait;
+
+    private readonly bool $isUseAttribute;
 
     /**
      * @param array<non-empty-string|non-negative-int, DiDefinitionItem|mixed> $bindArguments
@@ -51,17 +52,40 @@ final class ArgumentBuilder
         private readonly array $bindArguments,
         private readonly ReflectionFunctionAbstract $functionOrMethod,
         private readonly DiContainerInterface $container,
-    ) {}
+    ) {
+        $this->isUseAttribute = $this->container->getConfig()?->isUseAttribute() ?? false;
+    }
+
+    public function getFunctionOrMethod(): ReflectionFunctionAbstract
+    {
+        return $this->functionOrMethod;
+    }
+
+    public function getContainer(): DiContainerInterface
+    {
+        return $this->container;
+    }
+
+    public function build(): array
+    {
+        return $this->isUseAttribute
+            ? $this->basedOnPhpAttributes()
+            : $this->basedOnBindArguments();
+    }
+
+    public function buildAsPriorityBindArguments(): array
+    {
+        return $this->isUseAttribute
+            ? $this->basedOnBindArgumentsAsPriorityAndPhpAttributes()
+            : $this->basedOnBindArguments();
+    }
 
     /**
-     * Build output arguments based on bind arguments and typed parameters
-     * without PHP attributes.
-     *
      * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
      *
      * @throws AutowireExceptionInterface
      */
-    public function basedOnBindArguments(): array
+    private function basedOnBindArguments(): array
     {
         $args = [];
 
@@ -79,14 +103,11 @@ final class ArgumentBuilder
     }
 
     /**
-     * Build output arguments based on PHP attributes, bind arguments and typed parameters.
-     * PHP attribute on a parameter has higher priority than bind argument.
-     *
      * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
      *
      * @throws AutowireExceptionInterface
      */
-    public function basedOnPhpAttributes(): array
+    private function basedOnPhpAttributes(): array
     {
         $args = [];
 
@@ -110,14 +131,11 @@ final class ArgumentBuilder
     }
 
     /**
-     *  Build output arguments based on bind arguments, PHP attributes and typed parameters.
-     *  A bind argument on a parameter has higher priority than PHP attribute.
-     *
      * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
      *
      * @throws AutowireExceptionInterface
      */
-    public function basedOnBindArgumentsAsPriorityAndPhpAttributes(): array
+    private function basedOnBindArgumentsAsPriorityAndPhpAttributes(): array
     {
         $args = [];
 

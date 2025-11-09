@@ -152,9 +152,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             foreach ($calls as $index => [$isImmutable, $callArguments]) {
                 $argBuilder = $this->setupArgBuilder[$method][$index] ??= new ArgumentBuilder($callArguments, $reflectionMethod, $this->getContainer());
 
-                $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
-                    ? $argBuilder->basedOnBindArgumentsAsPriorityAndPhpAttributes()
-                    : $argBuilder->basedOnBindArguments();
+                $args = $argBuilder->buildAsPriorityBindArguments();
 
                 if (!$isImmutable) {
                     $reflectionMethod->invokeArgs($object, $this->resolveArguments($args));
@@ -273,9 +271,7 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
             return $this->getDefinition()->newInstanceWithoutConstructor();
         }
 
-        $args = (bool) $this->getContainer()->getConfig()?->isUseAttribute()
-            ? $this->constructArgBuilder->basedOnPhpAttributes()
-            : $this->constructArgBuilder->basedOnBindArguments();
+        $args = $this->constructArgBuilder->build();
 
         return $this->getDefinition()->newInstanceArgs($this->resolveArguments($args));
     }
