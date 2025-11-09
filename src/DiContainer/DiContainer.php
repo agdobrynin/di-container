@@ -100,8 +100,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      *
      * @return mixed|T
      *
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface|NotFoundExceptionInterface
      *
      * @phpstan-ignore method.childReturnType, method.templateTypeNotInParameter
      */
@@ -174,7 +173,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      *
      * @param class-string|string $id
      *
-     * @throws ContainerExceptionInterface
+     * @throws ContainerExceptionInterface|NotFoundExceptionInterface
      */
     protected function resolve(string $id): mixed
     {
