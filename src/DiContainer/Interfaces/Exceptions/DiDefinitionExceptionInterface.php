@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Exceptions;
 
-use Throwable;
+use Psr\Container\ContainerExceptionInterface;
 
-interface DiDefinitionExceptionInterface extends Throwable {}
+interface DiDefinitionExceptionInterface extends ContainerExceptionInterface {}
