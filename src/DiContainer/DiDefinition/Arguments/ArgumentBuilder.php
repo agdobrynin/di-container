@@ -73,7 +73,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             : $this->basedOnBindArguments();
     }
 
-    public function buildAsPriorityBindArguments(): array
+    public function buildByPriorityBindArguments(): array
     {
         return $this->isUseAttribute
             ? $this->basedOnBindArgumentsAsPriorityAndPhpAttributes()

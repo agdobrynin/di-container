@@ -44,5 +44,5 @@ interface ArgumentBuilderInterface
      *
      * @throws AutowireExceptionInterface
      */
-    public function buildAsPriorityBindArguments(): array;
+    public function buildByPriorityBindArguments(): array;
 }

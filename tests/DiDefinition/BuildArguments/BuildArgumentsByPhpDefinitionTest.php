@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\BuildArguments;
 
 use ArrayIterator;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -46,6 +48,13 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $this->bindArguments();
         $this->container = $this->createMock(DiContainerInterface::class);
+        $this->container->method('getConfig')
+            ->willReturn(
+                new DiContainerConfig(
+                    useAttribute: false,
+                )
+            )
+        ;
     }
 
     public function testGetWithoutParameters(): void
@@ -79,6 +88,17 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testResolveByParameterTypeByParameterNameByDefaultValue(): void
     {
         $fn = static fn (ArrayIterator $iterator, $dto = new stdClass()): array => [$iterator, $dto];
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $args = $ba->build();
+
+        self::assertEquals([0 => diGet('ArrayIterator')], $args);
+    }
+
+    public function testResolveByParameterWhenConfigSwitchOffUsePhpAttribute(): void
+    {
+        $fn = static fn (#[Inject('services.arr_iter')] ArrayIterator $iterator): iterable => $iterator;
 
         $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 

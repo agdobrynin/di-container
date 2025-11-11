@@ -29,7 +29,7 @@ use function Kaspi\DiContainer\diGet;
  *
  * @internal
  */
-class BuildArgumentsAsPriorityBindArgumentsTest extends TestCase
+class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 {
     use BindArgumentsTrait;
 
@@ -57,7 +57,7 @@ class BuildArgumentsAsPriorityBindArgumentsTest extends TestCase
         $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-        $args = $ba->buildAsPriorityBindArguments();
+        $args = $ba->buildByPriorityBindArguments();
 
         self::assertEquals(
             [
