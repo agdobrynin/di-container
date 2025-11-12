@@ -7,8 +7,8 @@ namespace Tests\DiContainerCall\WrongDefinition;
 use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use stdClass;
 
 /**
@@ -18,6 +18,7 @@ use stdClass;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  *
  * @internal
  */
@@ -28,10 +29,9 @@ class MainTest extends TestCase
      *
      * @param mixed $definition
      */
-    public function testWrongDefinitionAsString($definition, string $expectMessage): void
+    public function testWrongDefinitionAsString(array|callable|string $definition): void
     {
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage($expectMessage);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
 
         (new DiContainer(config: new DiContainerConfig()))->call($definition);
     }
@@ -40,42 +40,58 @@ class MainTest extends TestCase
     {
         yield 'empty string' => [
             '',
-            'Definition is not callable',
         ];
 
         yield 'some random string' => [
             'service.ooo',
-            'Definition is not callable. Got: type "string", value: \'service.ooo\'',
         ];
 
         yield 'empty array' => [
             [],
-            'two array elements must be provided',
+        ];
+
+        yield 'one element provided in array' => [
+            ['one'],
         ];
 
         yield 'empty array of array' => [
             [[], []],
-            'Definition is not callable',
         ];
 
         yield 'no exist class with method as string' => [
             'SomeClass::method',
-            'Definition is not callable. Got: type "string", value: \'SomeClass::method\'',
         ];
 
         yield 'no exist class with method as array' => [
             ['SomeClass', 'method'],
-            'Definition is not callable. Got: type "array", value: array (',
         ];
 
         yield 'is not callable because method not exist' => [
             [self::class, 'method'],
-            'Definition is not callable',
         ];
 
         yield 'instance of object without method' => [
             [new stdClass(), 'method'],
-            'Definition is not callable',
+        ];
+
+        yield 'class and method is empty' => [
+            '::',
+        ];
+
+        yield 'class is empty' => [
+            '::method',
+        ];
+
+        yield 'method is empty' => [
+            'class::',
+        ];
+
+        yield 'spaces with semicolon' => [
+            '  ::  ',
+        ];
+
+        yield 'method with semicolon' => [
+            'class::  ',
         ];
     }
 }

@@ -6,10 +6,13 @@ namespace Tests\DiContainerCall;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
+use Tests\DiContainerCall\Fixtures\Foo;
 
 use function Kaspi\DiContainer\diAutowire;
 use function round;
@@ -26,6 +29,7 @@ use function round;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
@@ -123,5 +127,88 @@ class CallFunctionTest extends TestCase
         $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty/');
 
         $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
+    }
+
+    public function testClosureSuccess(): void
+    {
+        $helper = static fn (Foo $foo) => $foo->baz;
+
+        $container = new DiContainer(
+            [
+                diAutowire(Foo::class)
+                    ->bindArguments('secure_string'),
+            ],
+            new DiContainerConfig(
+                useAttribute: true
+            )
+        );
+
+        self::assertEquals('secure_string', $container->call($helper));
+    }
+
+    public function testCallableWithClassAsObjectAndNoneStaticMethod(): void
+    {
+        $object = new ClassWithSimplePublicProperty('secure_string_one');
+
+        $container = new DiContainer(
+            config: new DiContainerConfig(
+                useAttribute: true
+            )
+        );
+
+        self::assertEquals('secure_string_one method foo', $container->call([$object, 'method'], ['foo']));
+    }
+
+    public function testCallableWithClassAsObjectAndInvokeMethod(): void
+    {
+        $object = new ClassWithSimplePublicProperty('secure_string_one');
+
+        $container = new DiContainer(
+            config: new DiContainerConfig(
+                useAttribute: true
+            )
+        );
+
+        self::assertEquals('secure_string_one invoke foo', $container->call($object, ['foo']));
+    }
+
+    public function testClosureFail(): void
+    {
+        $helper = static fn (Foo $foo) => $foo->baz;
+
+        $container = new DiContainer(config: new DiContainerConfig());
+
+        $this->expectException(AutowireParameterTypeException::class);
+
+        $container->call($helper);
+    }
+
+    public function testClassNotRegisteredInContainer(): void
+    {
+        $container = new DiContainer(
+            config: new DiContainerConfig(
+                useZeroConfigurationDefinition: false
+            )
+        );
+
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
+
+        $container->call([Foo::class, 'bar'], ['ok']);
+    }
+
+    public function testClassButContainerIdentifierReturnNoneObject(): void
+    {
+        $container = new DiContainer(
+            definitions: [
+                Foo::class => 'aaaa',
+            ],
+            config: new DiContainerConfig(
+                useZeroConfigurationDefinition: false
+            )
+        );
+
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
+
+        $container->call([Foo::class, 'bar'], ['ok']);
     }
 }

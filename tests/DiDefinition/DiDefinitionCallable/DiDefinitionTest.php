@@ -7,9 +7,8 @@ namespace Tests\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\CallableArgument;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MainClass;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MakeServiceTwo;
@@ -30,6 +29,7 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  *
  * @internal
  */
@@ -40,28 +40,12 @@ class DiDefinitionTest extends TestCase
         $this->assertEquals('log', (new DiDefinitionCallable('log'))->getDefinition());
     }
 
-    public function testGetDefinitionAndParseDefinitionWithoutContainerFail(): void
+    public function testGetDefinitionAndParseDefinitionClassMethod(): void
     {
-        $this->expectException(ContainerNeedSetExceptionInterface::class);
-
-        (new DiDefinitionCallable(MainClass::class.'::getServiceName'))->getDefinition();
-    }
-
-    public function testGetDefinitionAndParseDefinitionSuccess(): void
-    {
-        $container = new DiContainer([
-            diAutowire(MainClass::class)
-                ->bindArguments(serviceName: 'someServiceName'),
-        ]);
-
-        $definition = (new DiDefinitionCallable([MainClass::class, 'getServiceName']))
-            ->setContainer($container)
-            ->getDefinition()
-        ;
-
-        $this->assertIsCallable($definition);
-        $this->assertInstanceOf(MainClass::class, $definition[0]);
-        $this->assertEquals('getServiceName', $definition[1]);
+        self::assertEquals(
+            ['Tests\DiDefinition\DiDefinitionCallable\Fixtures\MainClass', 'getServiceName'],
+            (new DiDefinitionCallable(MainClass::class.'::getServiceName'))->getDefinition()
+        );
     }
 
     public function testCallableMethodArgument(): void
@@ -88,8 +72,8 @@ class DiDefinitionTest extends TestCase
     {
         $container = new DiContainer(config: new DiContainerConfig());
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Definition is not callable. Got: type "string", value: \'noneCallableString\'.');
+        $this->expectException(DiDefinitionCallableException::class);
+        $this->expectExceptionMessage('Cannot convert definition to callable type.');
 
         $container->get(ServiceFour::class);
     }

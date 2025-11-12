@@ -4,29 +4,36 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Closure;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
 use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
-use Kaspi\DiContainer\Traits\CallableParserTrait;
 use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
+use Throwable;
 
 use function call_user_func_array;
+use function explode;
 use function is_array;
+use function is_callable;
+use function is_object;
 use function is_string;
+use function sprintf;
 use function strpos;
-
-use const PHP_VERSION_ID;
+use function var_export;
 
 /**
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
@@ -37,7 +44,6 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     use BindArgumentsTrait {
         bindArguments as private bindArgs;
     }
-    use CallableParserTrait;
     use ArgumentResolverTrait;
     use DiContainerTrait;
     use TagsTrait;
@@ -48,15 +54,13 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     private $definition;
 
     /**
-     * @var null|callable
-     *
-     * @phpstan-var ParsedCallable|null
+     * @var null|ParsedCallable
      */
     private $parsedDefinition;
 
     private ArgumentBuilder $argBuilder;
 
-    private ReflectionFunction|ReflectionMethod $reflectionFn;
+    private ReflectionFunction|ReflectionMethodByDefinition $reflectionFn;
 
     /**
      * @param NotParsedCallable|ParsedCallable $definition
@@ -91,44 +95,94 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         $this->argBuilder ??= new ArgumentBuilder($this->getBindArguments(), $this->reflectionFn, $this->getContainer());
         $args = $this->argBuilder->build();
 
-        return call_user_func_array($this->getDefinition(), $this->resolveArguments($args));
-    }
+        if ($this->reflectionFn instanceof ReflectionMethod) {
+            if ($this->reflectionFn->isStatic()) {
+                /** @var callable $callable */
+                $callable = [$this->reflectionFn->class, $this->reflectionFn->name];
 
-    /**
-     * @throws ContainerExceptionInterface|DiDefinitionCallableExceptionInterface|NotFoundExceptionInterface
-     */
-    public function getDefinition(): callable
-    {
-        return $this->parsedDefinition ??= $this->parseCallable($this->definition); // @phpstan-ignore return.type
-    }
-
-    /**
-     * @throws ContainerExceptionInterface|DiDefinitionCallableExceptionInterface|NotFoundExceptionInterface
-     */
-    private function reflectionFn(): ReflectionFunction|ReflectionMethod
-    {
-        if (is_array($this->getDefinition())) {
-            /**
-             * @var non-empty-string|object $class
-             * @var non-empty-string        $method
-             */
-            [$class, $method] = $this->getDefinition();
-
-            return new ReflectionMethod($class, $method);
-        }
-
-        if (is_string($staticMethod = $this->getDefinition()) && strpos($staticMethod, '::') > 0) {
-            if (PHP_VERSION_ID >= 80400) {
-                // @codeCoverageIgnoreStart
-                // @phpstan-ignore staticMethod.notFound, return.type
-                return ReflectionMethod::createFromMethodName($staticMethod);
-                // @codeCoverageIgnoreEnd
+                return call_user_func_array($callable, $this->resolveArguments($args));
             }
 
-            return new ReflectionMethod($this->getDefinition());
+            $class = $this->reflectionFn->objectOrClassName;
+
+            if (is_string($class)) {
+                try {
+                    $class = $this->getContainer()->get($class);
+                } catch (ContainerExceptionInterface $e) {
+                    throw $this->throw($e);
+                }
+            }
+
+            if (!is_callable($callable = [$class, $this->reflectionFn->name])) {
+                throw $this->throw(
+                    prefixMessage: sprintf('Cannot create callable from %s', var_export($callable, true)),
+                );
+            }
+
+            return call_user_func_array($callable, $this->resolveArguments($args));
         }
 
-        // @phpstan-ignore argument.type
-        return new ReflectionFunction($this->getDefinition());
+        return call_user_func_array($this->getDefinition(), $this->resolveArguments($args)); // @phpstan-ignore argument.type
+    }
+
+    /**
+     * @return ParsedCallable
+     */
+    public function getDefinition(): array|callable
+    {
+        return $this->parsedDefinition ??= $this->parseDefinition($this->definition);
+    }
+
+    /**
+     * @throws DiDefinitionCallableExceptionInterface
+     */
+    private function reflectionFn(): ReflectionFunction|ReflectionMethodByDefinition
+    {
+        try {
+            if (is_array($this->getDefinition())) {
+                return new ReflectionMethodByDefinition(...$this->getDefinition()); // @phpstan-ignore argument.type
+            }
+
+            return new ReflectionFunction($this->getDefinition()); // @phpstan-ignore argument.type
+        } catch (ReflectionException $e) {
+            throw $this->throw($e);
+        }
+    }
+
+    /**
+     * @param NotParsedCallable $definition
+     *
+     * @return ParsedCallable
+     *
+     * @throws DiDefinitionCallableException
+     */
+    private function parseDefinition(array|callable|string $definition): array|callable
+    {
+        if (is_string($definition) && strpos($definition, '::') > 0) {
+            return explode('::', $definition, 2); // @phpstan-ignore return.type
+        }
+
+        if (is_callable($definition)) {
+            return !($definition instanceof Closure) && is_object($definition)
+                ? [$definition, '__invoke']
+                : $definition;
+        }
+
+        if (is_array($definition)) {
+            // @phpstan-ignore booleanAnd.rightAlwaysTrue, isset.offset, isset.offset
+            return isset($definition[0], $definition[1]) && is_string($definition[0]) && is_string($definition[1])
+                ? [$definition[0], $definition[1]]
+                : throw $this->throw(prefixMessage: 'When the definition is an array, two array elements must be provided as none empty string');
+        }
+
+        return [$definition, '__invoke'];
+    }
+
+    private function throw(?Throwable $previous = null, string $prefixMessage = 'Cannot convert definition to callable type'): DiDefinitionCallableException
+    {
+        return new DiDefinitionCallableException(
+            message: sprintf('%s. Definition value as: %s.', $prefixMessage, var_export($this->definition, true)),
+            previous: $previous,
+        );
     }
 }

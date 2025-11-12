@@ -9,16 +9,14 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
- * @phpstan-type NotParsedCallable array{0?: object|non-empty-string, 1?:non-empty-string}|non-empty-string
- * @phpstan-type ParsedCallable array{0: object|non-empty-string, 1?:non-empty-string}|callable|\Closure|callable-string
+ * @phpstan-type NotParsedCallable array{0: object|non-empty-string, 1:non-empty-string}|class-string|callable|callable-string|non-empty-string
+ * @phpstan-type ParsedCallable array{0: object|non-empty-string, 1:non-empty-string}|callable|callable-string
  */
 interface DiContainerCallInterface
 {
     /**
-     * @param array<class-string, null|non-empty-string>|callable|class-string|non-empty-string $definition
-     * @param array<non-empty-string|non-negative-int, mixed>                                   $arguments
-     *
-     * @phpstan-param NotParsedCallable|ParsedCallable $definition
+     * @param NotParsedCallable|ParsedCallable                $definition
+     * @param array<non-empty-string|non-negative-int, mixed> $arguments
      *
      * @throws ContainerExceptionInterface
      * @throws CallCircularDependencyException
