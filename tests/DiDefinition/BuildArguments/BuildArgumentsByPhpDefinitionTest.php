@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
+use ReflectionMethod;
 use stdClass;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
@@ -386,5 +387,15 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
         $ba->build();
+    }
+
+    public function testGetters(): void
+    {
+        $fn = new ReflectionMethod(Baz::class, 'doMake');
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), $fn, $this->container);
+
+        self::assertInstanceOf(DiContainerInterface::class, $ba->getContainer());
+        self::assertSame($fn, $ba->getFunctionOrMethod());
     }
 }
