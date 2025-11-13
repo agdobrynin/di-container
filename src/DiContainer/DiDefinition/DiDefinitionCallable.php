@@ -109,7 +109,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
                 try {
                     $class = $this->getContainer()->get($class);
                 } catch (ContainerExceptionInterface $e) {
-                    throw $this->throw($e);
+                    throw $this->throw($e, sprintf('Cannot get entry by container identifier "%s"', $class));
                 }
             }
 
