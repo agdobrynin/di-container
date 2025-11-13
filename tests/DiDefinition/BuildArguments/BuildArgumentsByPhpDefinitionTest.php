@@ -29,11 +29,13 @@ use function Kaspi\DiContainer\diValue;
 
 /**
  * @covers \Kaspi\DiContainer\diAutowire
+ * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  *
  * @internal

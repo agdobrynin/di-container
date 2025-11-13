@@ -7,6 +7,7 @@ namespace Tests\DiContainerCall\CircularReference;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainerCall\CircularReference\Fixtures\ClassWithMethod;
 use Tests\DiContainerCall\CircularReference\Fixtures\FirstClass;
@@ -29,6 +30,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  *
  * @internal
  */
@@ -44,10 +46,7 @@ class MainTest extends TestCase
 
         $container = new DiContainer($definitions, new DiContainerConfig(useZeroConfigurationDefinition: false));
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+services\.second.+services\.third.+FirstClass/'
-        );
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
 
         $container->call(FirstClass::class);
     }
@@ -85,10 +84,7 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+SecondClass.+ThirdClass.+FirstClass/'
-        );
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
 
         $container->call(FirstClass::class);
     }

@@ -138,9 +138,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this;
     }
 
-    /**
-     * @phpstan-param NotParsedCallable|ParsedCallable $definition
-     */
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
         return (new DiDefinitionCallable($definition))

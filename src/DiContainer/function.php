@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -34,7 +33,7 @@ if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     /**
-     * @param array{0: non-empty-string|object, 1?:non-empty-string}|callable|callable-string|Closure|non-empty-string $definition
+     * @param array{0: non-empty-string|object, 1:non-empty-string}|callable|callable-string|class-string|non-empty-string $definition
      */
     function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {
