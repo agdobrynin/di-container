@@ -11,9 +11,9 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
@@ -25,7 +25,7 @@ if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
      * @param class-string $definition Fully Qualified Class Name
      */
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAutowireInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
     }

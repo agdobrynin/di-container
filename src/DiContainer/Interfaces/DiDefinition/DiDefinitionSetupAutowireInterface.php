@@ -7,15 +7,14 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 /**
  * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
  */
-interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInterface
+interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterface
 {
     /**
      * Call setter method for class with input arguments without return type aka void.
      * Calling method may use autowire feature.
      * This method can be used many times.
      * Arguments provided by the user added by name or index.
-     * Arguments can be mixed types
-     * or presented as object implemented DiDefinitionInterface, DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface.
+     * Arguments can be mixed types or presented as object implemented DiDefinitionInterface.
      *
      * User can set arguments by named argument:
      *
@@ -43,7 +42,7 @@ interface DiDefinitionConfigAutowireInterface extends DiDefinitionArgumentsInter
      * This method can be used many times.
      * Arguments provided by the user added by name or index.
      * Arguments can be mixed types
-     * or presented as object implemented DiDefinitionInterface, DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface.
+     * or presented as object implemented DiDefinitionInterface, DiDefinitionArgumentsInterface.
      *
      * User can set arguments by named argument:
      *

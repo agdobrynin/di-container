@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition\Arguments;
 
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use ReflectionFunctionAbstract;
 
 /**
- * @phpstan-type DiDefinitionItem DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs|DiDefinitionValue
+ * @phpstan-type DiDefinitionItem DiDefinitionInterface
  */
 interface ArgumentBuilderInterface
 {

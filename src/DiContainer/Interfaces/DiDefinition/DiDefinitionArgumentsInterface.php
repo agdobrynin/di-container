@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 /**
- * @phpstan-type DiDefinitionArgumentType DiDefinitionArgumentsInterface|DiDefinitionTagArgumentInterface|DiDefinitionLinkInterface|DiDefinitionNoArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface
+ * @phpstan-type DiDefinitionArgumentType DiDefinitionArgumentsInterface|DiDefinitionAutowireInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionTaggedAsInterface|DiDefinitionTagArgumentInterface|DiDefinitionLinkInterface|DiTaggedDefinitionInterface|DiDefinitionInterface
  */
 interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterface
 {

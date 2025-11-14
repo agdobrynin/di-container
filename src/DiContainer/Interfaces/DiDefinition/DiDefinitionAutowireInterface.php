@@ -21,4 +21,6 @@ interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
      * @return class-string|non-empty-string
      */
     public function getIdentifier(): string;
+
+    public function resolve(DiContainerInterface $container, mixed $context = null): object;
 }

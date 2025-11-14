@@ -6,7 +6,6 @@ namespace Tests\Traits\AttributeReader\Service;
 
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\Traits\AttributeReader\Service\Fixtures\Main;
@@ -30,7 +29,6 @@ class ServiceReaderTest extends TestCase
                 getServiceAttribute as public;
                 getDiFactoryAttribute as public;
             }
-            use DiContainerTrait; // abstract method cover.
         };
     }
 

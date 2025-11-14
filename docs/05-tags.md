@@ -51,7 +51,7 @@
 реализующие интерфейсы:
 - `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`
 - `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`
-- `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface`
+- `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`
 
 ```php
 bindTag(string $name, array $options = [], null|int|string $priority = null)

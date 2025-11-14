@@ -23,6 +23,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet::getDefinition
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
@@ -42,12 +43,11 @@ class SetupTest extends TestCase
             ->setup('setParameters', paramName: diValue('key1'), parameters: ['One', 'Two', 'Three'])
             ->setup('setParameters', 'key2', ['Four', 'Five', 'Six'])
         ;
-        $def->setContainer($mockContainer);
 
         /**
          * @var SetupClass $class
          */
-        $class = $def->invoke();
+        $class = $def->resolve($mockContainer);
 
         $this->assertInstanceOf(SetupClass::class, $class);
         $this->assertEquals('Piter', $class->getName());
@@ -59,26 +59,24 @@ class SetupTest extends TestCase
     public function testSetupMethodNotExist(): void
     {
         $def = (new DiDefinitionAutowire(SetupClass::class))
-            ->setContainer($this->createMock(DiContainerInterface::class))
             ->setup('methodNotExist')
         ;
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/The setter method.+\SetupClass::methodNotExist\(\)" does not exist/');
 
-        $def->invoke();
+        $def->resolve($this->createMock(DiContainerInterface::class));
     }
 
     public function testSetupWithoutParameters(): void
     {
         $def = (new DiDefinitionAutowire(SetupClass::class))
-            ->setContainer($this->createMock(DiContainerInterface::class))
             ->setup('incInc')
             ->setup('incInc')
             ->setup('incInc')
         ;
 
-        $class = $def->invoke();
+        $class = $def->resolve($this->createMock(DiContainerInterface::class));
 
         $this->assertEquals(3, $class->getInc());
     }
@@ -93,7 +91,6 @@ class SetupTest extends TestCase
         // #[Setup] on `incInc` method call 4 times.
         // #[Setup] on `setParameters` method call 2 times with arguments.
         $def = (new DiDefinitionAutowire(SetupClassByAttribute::class))
-            ->setContainer($mockContainer)
             ->setup('incInc')// override by php attribute #[Setup]
             ->setup('incInc') // override by php attribute #[Setup]
             ->setup('incInc') // override by php attribute #[Setup]
@@ -102,7 +99,7 @@ class SetupTest extends TestCase
         ;
 
         /** @var SetupClassByAttribute $class */
-        $class = $def->invoke();
+        $class = $def->resolve($mockContainer);
 
         self::assertEquals(4, $class->getInc());
         self::assertSame(
@@ -130,11 +127,10 @@ class SetupTest extends TestCase
 
         $def = (new DiDefinitionAutowire(SetupByAttributeWithArgumentAsReference::class))
             ->setup('setSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
-            ->setContainer($mockContainer)
         ;
 
         /** @var SetupByAttributeWithArgumentAsReference $class */
-        $class = $def->invoke();
+        $class = $def->resolve($mockContainer);
 
         self::assertInstanceOf(SomeClass::class, $class->getSomeClass());
         self::assertEquals('baz', $class->dependencyAutoResolve->getValue());
@@ -152,13 +148,12 @@ class SetupTest extends TestCase
     {
         $def = (new DiDefinitionAutowire($class))
             ->setup($method)
-            ->setContainer($this->createMock(DiContainerInterface::class))
         ;
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
 
-        $def->invoke();
+        $def->resolve($this->createMock(DiContainerInterface::class));
     }
 
     public function dataProviderSetupOnMethod(): Generator

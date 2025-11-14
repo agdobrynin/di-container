@@ -7,7 +7,6 @@ namespace Kaspi\DiContainer;
 use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionInvokableWrapper;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -19,13 +18,10 @@ use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
@@ -62,7 +58,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected array $definitions = [];
 
     /**
-     * @var array<class-string|string, DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface>
+     * @var array<class-string|string, DiDefinitionInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface>
      */
     protected array $diResolvedDefinition = [];
 
@@ -119,10 +115,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             || $this->isContainer($id);
     }
 
-    /**
-     * @param class-string|non-empty-string                                                            $id
-     * @param DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface|mixed $definition
-     */
     public function set(string $id, mixed $definition): static
     {
         $this->getIdentifier($id, null); // check only $id
@@ -142,18 +134,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         return (new DiDefinitionCallable($definition))
             ->bindArguments(...$arguments)
-            ->setContainer($this)
-            ->invoke()
+            ->resolve($this, $this)
         ;
     }
 
-    public function getContainer(): DiContainerInterface
-    {
-        return $this; // @codeCoverageIgnore
-    }
-
     /**
-     * @return iterable<class-string|non-empty-string, DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionLinkInterface|DiDefinitionTaggedAsInterface>
+     * @return iterable<class-string|non-empty-string, DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface>
      */
     public function getDefinitions(): iterable
     {
@@ -189,27 +175,14 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $this->resolvingDependencies[$id] = true;
 
             $diDefinition = $this->resolveDefinition($id);
+            $resolvedEntry = $diDefinition->resolve($this, $this);
 
-            if ($diDefinition instanceof DiDefinitionInvokableInterface) {
-                // Configure definition.
-                $object = ($o = $diDefinition->setContainer($this)->invoke()) instanceof DiFactoryInterface
-                    ? $o($this)
-                    : $o;
-
-                $isSingleton = $diDefinition->isSingleton() ?? $this->isSingletonDefault;
-
-                return $isSingleton
-                    ? $this->resolved[$id] = $object
-                    : $object;
+            if ($diDefinition instanceof DiDefinitionSingletonInterface
+                && !($diDefinition->isSingleton() ?? $this->isSingletonDefault)) {
+                return $resolvedEntry;
             }
 
-            if ($diDefinition instanceof DiDefinitionTaggedAsInterface) {
-                return $diDefinition->setContainer($this)
-                    ->getServicesTaggedAs()
-                ;
-            }
-
-            return $this->resolved[$id] = $diDefinition->getDefinition();
+            return $this->resolved[$id] = $resolvedEntry;
         } finally {
             unset($this->resolvingDependencies[$id]);
         }
@@ -217,13 +190,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param class-string|string $id
-     *
-     * @throws AutowireExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws DiDefinitionCallableExceptionInterface
-     * @throws ContainerExceptionInterface
      */
-    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionInvokableInterface|DiDefinitionTaggedAsInterface
+    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
         if (isset($this->diResolvedDefinition[$id])) {
             return $this->diResolvedDefinition[$id];
@@ -249,8 +217,27 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     $this->resolvingDependencies[$service->getIdentifier()] = true;
 
                     try {
-                        if (($def = $this->resolveDefinition($service->getIdentifier())) instanceof DiDefinitionInvokableInterface) {
-                            return $this->diResolvedDefinition[$id] = new DiDefinitionInvokableWrapper($def, $service->isSingleton());
+                        $def = $this->resolveDefinition($service->getIdentifier());
+
+                        if (!$def instanceof DiDefinitionLinkInterface) {
+                            return $this->diResolvedDefinition[$id] = new class($def, $service->isSingleton()) implements DiDefinitionSingletonInterface {
+                                public function __construct(private readonly DiDefinitionInterface $def, private readonly ?bool $isSingleton) {}
+
+                                public function getDefinition(): DiDefinitionInterface
+                                {
+                                    return $this->def; // @codeCoverageIgnore
+                                }
+
+                                public function resolve(DiContainerInterface $container, mixed $context = null): mixed
+                                {
+                                    return $this->def->resolve($container, $context);
+                                }
+
+                                public function isSingleton(): ?bool
+                                {
+                                    return $this->isSingleton;
+                                }
+                            };
                         }
                     } finally {
                         unset($this->resolvingDependencies[$service->getIdentifier()]);

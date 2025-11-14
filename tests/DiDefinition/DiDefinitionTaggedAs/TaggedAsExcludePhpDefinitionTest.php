@@ -55,12 +55,9 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
 
     public function testTaggedAsExcludeSelfTrue(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa'))
-            ->setCallingByService(diAutowire(TaggedAsCollection::class))
-        ;
-        $taggedAs->setContainer($this->container);
+        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa'));
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container, diAutowire(TaggedAsCollection::class));
 
         $this->assertCount(3, $collection);
         $this->assertTrue($collection->has(One::class));
@@ -71,12 +68,9 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
 
     public function testTaggedAsExcludeSelfFalse(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', selfExclude: false))
-            ->setCallingByService(diAutowire(TaggedAsCollection::class))
-        ;
-        $taggedAs->setContainer($this->container);
+        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', selfExclude: false));
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container, diAutowire(TaggedAsCollection::class));
 
         $this->assertCount(4, $collection);
         $this->assertTrue($collection->has(One::class));
@@ -87,12 +81,9 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
 
     public function testTaggedAsExcludeSelfTrueAndExcludeIds(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', containerIdExclude: [One::class, Three::class]))
-            ->setCallingByService(diAutowire(TaggedAsCollection::class))
-        ;
-        $taggedAs->setContainer($this->container);
+        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', containerIdExclude: [One::class, Three::class]));
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container, diAutowire(TaggedAsCollection::class));
 
         $this->assertCount(1, $collection);
         $this->assertFalse($collection->has(One::class));

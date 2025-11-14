@@ -7,15 +7,12 @@ namespace Tests\Traits\AttributeReader\InjectCallable;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
- * @covers \Kaspi\DiContainer\Traits\DiContainerTrait
  *
  * @internal
  */
@@ -23,7 +20,6 @@ class InjectCallableTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use AttributeReaderTrait;
-    use DiContainerTrait; // 🧨 need for abstract method getContainer in AttributeReaderTrait.
 
     public function testInjectByCallableEmpty(): void
     {

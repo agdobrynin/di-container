@@ -137,17 +137,17 @@ $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-comp
 Автоматическое создание объекта и внедрения зависимостей.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use function \Kaspi\DiContainer\diAutowire;
 
-diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAutowireInterface
+diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
 ```
 Аргументы:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
-> Функция `diAutowire` возвращает объект реализующий интерфейс `DiDefinitionSetupInterface`.
+> Функция `diAutowire` возвращает объект реализующий интерфейс `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 > 
 > Интерфейс представляет методы:
 >   - `bindArguments` - аргументы для конструктора класса
@@ -177,7 +177,7 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 > Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 >
 > Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
-> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface::class`
+> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface::class`
 > (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
 > то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
 
@@ -330,7 +330,7 @@ bindArguments(mixed ...$argument)
 > Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 >
 > Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
-> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface::class`
+> `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface::class`
 > (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
 > то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
 

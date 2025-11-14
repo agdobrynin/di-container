@@ -6,7 +6,6 @@ namespace Tests\Traits\AttributeReader\Tag;
 
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\Traits\AttributeReader\Tag\Fixtures\NoneTaggedClass;
@@ -29,7 +28,6 @@ class TagReaderTest extends TestCase
                 // @return \Generator<Tag>
                 getTagAttribute as public;
             }
-            use DiContainerTrait; // abstract method cover.
         };
     }
 

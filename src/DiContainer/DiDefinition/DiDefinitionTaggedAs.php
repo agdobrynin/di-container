@@ -6,15 +6,14 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Generator;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use SplPriorityQueue;
 
 use function array_map;
@@ -30,12 +29,12 @@ use function var_export;
 
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
-    use DiContainerTrait;
     use DiAutowireTrait;
 
     private bool $tagIsInterface;
     private string $keyOptimized;
     private bool $isUseKeysComputed;
+    private DiContainerInterface $container;
 
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
@@ -48,23 +47,29 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     public function __construct(
-        private string $tag,
-        private bool $isLazy = true,
-        private ?string $priorityDefaultMethod = null,
+        private readonly string $tag,
+        private readonly bool $isLazy = true,
+        private readonly ?string $priorityDefaultMethod = null,
         bool $useKeys = true,
-        private ?string $key = null,
-        private ?string $keyDefaultMethod = null,
-        private array $containerIdExclude = [],
-        private bool $selfExclude = true,
+        private readonly ?string $key = null,
+        private readonly ?string $keyDefaultMethod = null,
+        private readonly array $containerIdExclude = [],
+        private readonly bool $selfExclude = true,
     ) {
         $this->isUseKeysComputed = $useKeys || null !== $key || null !== $keyDefaultMethod;
     }
 
-    public function getServicesTaggedAs(): iterable
+    public function resolve(DiContainerInterface $container, mixed $context = null): iterable
     {
+        if (null === $context || $context instanceof DiDefinitionAutowireInterface) {
+            $this->callingByDefinitionAutowire = $context;
+        }
+
+        $this->container = $container;
+
         return $this->isLazy
-            ? new LazyDefinitionIterator($this->getContainer(), $this->getContainerIdentifiers())
-            : array_map(fn (string $id) => $this->getContainer()->get($id), $this->getContainerIdentifiers());
+            ? new LazyDefinitionIterator($container, $this->getContainerIdentifiers())
+            : array_map(fn (string $id) => $container->get($id), $this->getContainerIdentifiers());
     }
 
     public function getDefinition(): string
@@ -72,20 +77,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this->tag;
     }
 
-    public function getCallingByService(): ?DiDefinitionAutowireInterface
-    {
-        return $this->callingByDefinitionAutowire;
-    }
-
-    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static
-    {
-        $this->callingByDefinitionAutowire = $definitionAutowire;
-
-        return $this;
-    }
-
     /**
      * @return array<non-empty-string, non-empty-string>
+     *
+     * @throws AutowireExceptionInterface
      */
     private function getContainerIdentifiersWithKey(): array
     {
@@ -104,6 +99,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     /**
      * @return list<non-empty-string>
+     *
+     * @throws AutowireExceptionInterface
      */
     private function getContainerIdentifiersWithoutKey(): array
     {
@@ -118,6 +115,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     /**
      * @return array<non-empty-string, non-empty-string>|list<non-empty-string>
+     *
+     * @throws AutowireExceptionInterface
      */
     private function getContainerIdentifiers(): array
     {
@@ -127,7 +126,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     /**
      * @return Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
      *
-     * @throws ContainerNeedSetExceptionInterface
+     * @throws AutowireExceptionInterface
      */
     private function getContainerIdentifiersOfTaggedServiceByTag(): Generator
     {
@@ -136,27 +135,22 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $taggedServices->setExtractFlags(SplPriorityQueue::EXTR_DATA);
 
         /** @var non-empty-string $containerIdentifier */
-        foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
+        foreach ($this->container->getDefinitions() as $containerIdentifier => $definition) {
             if (false === ($definition instanceof DiTaggedDefinitionInterface)
                 || in_array($containerIdentifier, $this->containerIdExclude, true)
-                || ($this->selfExclude && $containerIdentifier === $this->getCallingByService()?->getDefinition()->getName())) {
+                || ($this->selfExclude && $containerIdentifier === $this->callingByDefinitionAutowire?->getDefinition()->getName())) {
                 continue;
             }
 
-            if ($definition instanceof DiDefinitionInvokableInterface) {
-                $definition->setContainer($this->getContainer());
+            $tagImplementInterface = false;
+
+            if ($definition instanceof DiDefinitionAutowireInterface) {
+                $definition->setContainer($this->container);
+                $tagImplementInterface = $this->tagIsInterface
+                    && $definition->getDefinition()->implementsInterface($this->tag);
             }
 
-            if (
-                (
-                    !$this->tagIsInterface && $definition->hasTag($this->tag)
-                )
-                || (
-                    $this->tagIsInterface
-                        && $definition instanceof DiDefinitionAutowireInterface
-                        && $definition->getDefinition()->implementsInterface($this->tag)
-                )
-            ) {
+            if ((!$this->tagIsInterface && $definition->hasTag($this->tag)) || $tagImplementInterface) {
                 $operationOptions = [];
 
                 if ($definition instanceof DiDefinitionAutowireInterface) {
@@ -178,6 +172,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      * @param non-empty-string $identifier
      *
      * @return non-empty-string
+     *
+     * @throws AutowireExceptionInterface
      */
     private function getKeyFromTagOptionsOrFromKeyDefaultMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
     {

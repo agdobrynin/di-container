@@ -8,7 +8,6 @@ use Closure;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Exception\ContainerNeedSetException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
@@ -57,14 +56,6 @@ class MainTest extends TestCase
         yield 'string with spaces' => ['   '];
     }
 
-    public function testContainerNeedSet(): void
-    {
-        $this->expectException(ContainerNeedSetException::class);
-        $this->expectExceptionMessage('Use method setContainer() in "Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure" class.');
-
-        (new DiDefinitionProxyClosure('ok'))->invoke();
-    }
-
     public function testContainerDefinitionHasNot(): void
     {
         $mockContainer = $this->createMock(DiContainerInterface::class);
@@ -77,8 +68,7 @@ class MainTest extends TestCase
         $this->expectExceptionMessage('Definition "ok" does not exist');
 
         (new DiDefinitionProxyClosure('ok'))
-            ->setContainer($mockContainer)
-            ->invoke()
+            ->resolve($mockContainer)
         ;
     }
 
@@ -91,8 +81,7 @@ class MainTest extends TestCase
         ;
 
         $res = (new DiDefinitionProxyClosure('ok'))
-            ->setContainer($mockContainer)
-            ->invoke()
+            ->resolve($mockContainer)
         ;
 
         $this->assertInstanceOf(Closure::class, $res);
@@ -111,8 +100,7 @@ class MainTest extends TestCase
         ;
 
         $res = (new DiDefinitionProxyClosure('ok'))
-            ->setContainer($mockContainer)
-            ->invoke()
+            ->resolve($mockContainer)
         ;
 
         $this->assertEquals('result of get', $res());

@@ -57,9 +57,8 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertIsIterable($collection);
         $this->assertEquals('aaa', $collection->key());
@@ -85,9 +84,8 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertIsIterable($collection);
         $this->assertInstanceOf(One::class, $collection['service.one']);
@@ -107,12 +105,11 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Get key by.+One::getKeyFail().+Return type must be "string"\. Got return type: "stdClass", "array"/');
 
-        $taggedAs->getServicesTaggedAs();
+        $taggedAs->resolve($this->container);
     }
 
     public function testGetKeyByMethodFailMethodNotExist(): void
@@ -128,12 +125,11 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/One::nonExistMethod().+method must be exist.+Return type must be "string"/');
 
-        $taggedAs->getServicesTaggedAs();
+        $taggedAs->resolve($this->container);
     }
 
     public function testGetKeyByDefaultMethodSuccess(): void
@@ -147,9 +143,8 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKey');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertIsIterable($collection);
         $this->assertEquals(One::class, $collection->key());
@@ -167,9 +162,8 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKeyWrongReturnType');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertIsIterable($collection);
         $this->assertEquals(Two::class, $collection->key());
@@ -192,9 +186,8 @@ class KeyTest extends TestCase
 
         // $useKeys=false override by $key, collection has keys.
         $taggedAs = diTaggedAs(tag: 'tags.some-service', useKeys: false, key: 'key');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertCount(2, $collection);
         // test use DiContainer mock and not resolve real class. Test keys.
@@ -221,9 +214,8 @@ class KeyTest extends TestCase
 
         // $useKeys=false override by $key, collection has keys.
         $taggedAs = diTaggedAs(tag: 'tags.some-service', useKeys: false, key: 'key.method');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertCount(2, $collection);
         // test use DiContainer mock and not resolve real class. Test keys.

@@ -7,7 +7,6 @@ namespace Tests\Traits\AttributeReader\ProxyClosure;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 
@@ -21,7 +20,6 @@ class ProxyClosureReaderTest extends TestCase
 {
     // 🔥 Test Trait 🔥
     use AttributeReaderTrait;
-    use DiContainerTrait; // 🧨 need for abstract method getContainer in AttributeReaderTrait.
 
     public function testNoneAsClosure(): void
     {
