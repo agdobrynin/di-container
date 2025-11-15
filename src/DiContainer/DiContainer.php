@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
@@ -41,6 +42,9 @@ use function sprintf;
 /**
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ *
+ * @phpstan-type DiDefinitionResolvable DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
@@ -58,7 +62,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected array $definitions = [];
 
     /**
-     * @var array<class-string|string, DiDefinitionInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface>
+     * @var array<class-string|string, DiDefinitionResolvable>
      */
     protected array $diResolvedDefinition = [];
 
@@ -139,7 +143,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @return iterable<class-string|non-empty-string, DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface>
+     * @return iterable<class-string|non-empty-string, DiDefinitionType>
      */
     public function getDefinitions(): iterable
     {
@@ -191,7 +195,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param class-string|string $id
      */
-    protected function resolveDefinition(string $id): DiDefinitionInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
+    protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
         if (isset($this->diResolvedDefinition[$id])) {
             return $this->diResolvedDefinition[$id];
@@ -220,24 +224,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         $def = $this->resolveDefinition($service->getIdentifier());
 
                         if (!$def instanceof DiDefinitionLinkInterface) {
-                            return $this->diResolvedDefinition[$id] = new class($def, $service->isSingleton()) implements DiDefinitionSingletonInterface {
-                                public function __construct(private readonly DiDefinitionInterface $def, private readonly ?bool $isSingleton) {}
-
-                                public function getDefinition(): DiDefinitionInterface
-                                {
-                                    return $this->def; // @codeCoverageIgnore
-                                }
-
-                                public function resolve(DiContainerInterface $container, mixed $context = null): mixed
-                                {
-                                    return $this->def->resolve($container, $context);
-                                }
-
-                                public function isSingleton(): ?bool
-                                {
-                                    return $this->isSingleton;
-                                }
-                            };
+                            return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton());
                         }
                     } finally {
                         unset($this->resolvingDependencies[$service->getIdentifier()]);
@@ -321,5 +308,30 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 sprintf('Trying call cyclical dependency. Call dependencies: %s.', $callPath)
             );
         }
+    }
+
+    private function getDiDefinitionWrapper(DiDefinitionAutowireInterface|DiDefinitionInterface $def, ?bool $singleton): DiDefinitionSingletonInterface
+    {
+        return new class($def, $singleton) implements DiDefinitionSingletonInterface {
+            public function __construct(
+                private readonly DiDefinitionAutowireInterface|DiDefinitionInterface $def,
+                private readonly ?bool $isSingleton
+            ) {}
+
+            public function getDefinition(): DiDefinitionAutowireInterface|DiDefinitionInterface
+            {
+                return $this->def; // @codeCoverageIgnore
+            }
+
+            public function resolve(DiContainerInterface $container, mixed $context = null): mixed
+            {
+                return $this->def->resolve($container, $context);
+            }
+
+            public function isSingleton(): ?bool
+            {
+                return $this->isSingleton;
+            }
+        };
     }
 }

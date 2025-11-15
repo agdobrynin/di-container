@@ -15,7 +15,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -195,9 +194,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             }
         }
 
-        return $object instanceof DiFactoryInterface
-            ? $object($container)
-            : $object;
+        return $object;
     }
 
     public function getDefinition(): ReflectionClass // @phpstan-ignore throws.unusedType

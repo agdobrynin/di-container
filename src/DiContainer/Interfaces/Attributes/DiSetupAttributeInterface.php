@@ -7,14 +7,14 @@ namespace Kaspi\DiContainer\Interfaces\Attributes;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 /**
- * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
 interface DiSetupAttributeInterface extends DiAttributeInterface
 {
     public function isImmutable(): bool;
 
     /**
-     * @return (DiDefinitionArgumentType|mixed)[]
+     * @return (DiDefinitionType|mixed)[]
      */
     public function getArguments(): array;
 

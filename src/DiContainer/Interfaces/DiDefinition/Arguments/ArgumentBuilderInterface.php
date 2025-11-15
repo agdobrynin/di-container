@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition\Arguments;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use ReflectionFunctionAbstract;
 
 /**
- * @phpstan-type DiDefinitionItem DiDefinitionInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
 interface ArgumentBuilderInterface
 {
@@ -26,7 +26,7 @@ interface ArgumentBuilderInterface
      *
      * Php attributes for bind argument pass through container configuration.
      *
-     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     * @return array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
      *
      * @throws AutowireExceptionInterface
      */
@@ -35,7 +35,7 @@ interface ArgumentBuilderInterface
     /**
      * Binding arguments as highest priority, then Php attributes, then typed parameters.
      *
-     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     * @return array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
      *
      * @throws AutowireExceptionInterface
      */

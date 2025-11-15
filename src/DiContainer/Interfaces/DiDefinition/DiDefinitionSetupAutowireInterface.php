@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 /**
- * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
 interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterface
 {
@@ -14,7 +14,7 @@ interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterf
      * Calling method may use autowire feature.
      * This method can be used many times.
      * Arguments provided by the user added by name or index.
-     * Arguments can be mixed types or presented as object implemented DiDefinitionInterface.
+     * The arguments can be of mixed types or represented as an object implemented by DiDefinitionInterface and another interface that extends DiDefinitionInterface.
      *
      * User can set arguments by named argument:
      *
@@ -29,8 +29,8 @@ interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterf
      *      ->setup('classMethod', 'value 1', 'value 2')
      *      // bind parameters by index Class->classMethod('value 1', 'value 2')
      *
-     * @param non-empty-string                 $method
-     * @param (DiDefinitionArgumentType|mixed) ...$argument
+     * @param non-empty-string         $method
+     * @param (DiDefinitionType|mixed) ...$argument
      *
      * @return $this
      */
@@ -41,8 +41,7 @@ interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterf
      * Calling method may use autowire feature.
      * This method can be used many times.
      * Arguments provided by the user added by name or index.
-     * Arguments can be mixed types
-     * or presented as object implemented DiDefinitionInterface, DiDefinitionArgumentsInterface.
+     * The arguments can be of mixed types or represented as an object implemented by DiDefinitionInterface and another interface that extends DiDefinitionInterface.
      *
      * User can set arguments by named argument:
      *
@@ -57,8 +56,8 @@ interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterf
      *      ->setupImmutable('classMethod', 'value 1', 'value 2')
      *      // bind parameters by index Class->classMethod('value 1', 'value 2')
      *
-     * @param non-empty-string                 $method
-     * @param (DiDefinitionArgumentType|mixed) ...$argument
+     * @param non-empty-string         $method
+     * @param (DiDefinitionType|mixed) ...$argument
      *
      * @return $this
      */

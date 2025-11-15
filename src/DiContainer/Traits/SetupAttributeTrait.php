@@ -11,18 +11,18 @@ use function preg_match;
 use function sprintf;
 
 /**
- * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
 trait SetupAttributeTrait
 {
     /** @var non-empty-string */
     private string $method;
 
-    /** @var (DiDefinitionArgumentType|mixed)[] */
+    /** @var (DiDefinitionType|mixed)[] */
     private array $arguments = [];
 
     /**
-     * @param (DiDefinitionArgumentType|mixed) ...$argument
+     * @param (DiDefinitionType|mixed) ...$argument
      */
     public function __construct(mixed ...$argument)
     {
@@ -30,7 +30,7 @@ trait SetupAttributeTrait
     }
 
     /**
-     * @return (DiDefinitionArgumentType|mixed)[]
+     * @return (DiDefinitionType|mixed)[]
      */
     public function getArguments(): array
     {

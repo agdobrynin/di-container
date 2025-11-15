@@ -7,14 +7,14 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 /**
- * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
 trait BindArgumentsTrait
 {
     /**
      * User defined parameters by parameter name.
      *
-     * @var array<non-empty-string|non-negative-int, DiDefinitionArgumentType|mixed>
+     * @var array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
      */
     private array $bindArguments = [];
 
@@ -26,7 +26,7 @@ trait BindArgumentsTrait
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, (DiDefinitionArgumentType|mixed)>
+     * @return array<non-empty-string|non-negative-int, (DiDefinitionType|mixed)>
      */
     private function getBindArguments(): array
     {

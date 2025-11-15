@@ -15,7 +15,10 @@ interface DiDefinitionInterface
     public function getDefinition(): mixed;
 
     /**
-     * @throws AutowireExceptionInterface|ContainerExceptionInterface|DiDefinitionCallableExceptionInterface|NotFoundExceptionInterface
+     * @throws AutowireExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws DiDefinitionCallableExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed;
 }
