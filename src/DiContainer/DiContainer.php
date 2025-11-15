@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer;
 use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -237,7 +238,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
             if ($this->config?->isUseAttribute()
                 && $factory = $this->getDiFactoryAttribute($reflectionClass)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
+                return $this->diResolvedDefinition[$id] = new DiDefinitionFactory(
                     $factory->getIdentifier(),
                     $factory->isSingleton()
                 );

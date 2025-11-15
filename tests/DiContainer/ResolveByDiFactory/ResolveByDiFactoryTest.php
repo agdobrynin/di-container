@@ -17,6 +17,7 @@ use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClassSingleton;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\ParameterByDiFactory;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diFactory;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -28,6 +29,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\diFactory
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
@@ -102,7 +104,7 @@ class ResolveByDiFactoryTest extends TestCase
             [
                 diAutowire(ParameterByDiFactory::class)
                     ->bindArguments(
-                        dependency: diAutowire(MyClassMaker::class)
+                        dependency: diFactory(MyClassMaker::class)
                     ),
             ],
             new DiContainerConfig(useAttribute: false),

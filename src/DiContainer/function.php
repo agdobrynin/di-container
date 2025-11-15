@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
@@ -15,6 +16,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 
@@ -28,6 +30,16 @@ if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
+    }
+} // @codeCoverageIgnore
+
+if (!function_exists('Kaspi\DiContainer\diFactory')) { // @codeCoverageIgnore
+    /**
+     * @param class-string<DiFactoryInterface> $definition Fully Qualified Class Name
+     */
+    function diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionNoArgumentsInterface
+    {
+        return new DiDefinitionFactory($definition, $isSingleton);
     }
 } // @codeCoverageIgnore
 

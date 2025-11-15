@@ -28,7 +28,7 @@ final class DiFactory implements DiAttributeServiceInterface
     }
 
     /**
-     * @return class-string
+     * @return class-string<DiFactoryInterface>
      */
     public function getIdentifier(): string
     {

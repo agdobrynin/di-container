@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
@@ -143,7 +144,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 $file = $importCacheFile?->openFile('wb+');
                 $file?->fwrite(
                     '<?php'.PHP_EOL
-                    .'use function Kaspi\DiContainer\{diAutowire, diGet};'.PHP_EOL
+                    .'use function Kaspi\DiContainer\{diAutowire, diFactory, diGet};'.PHP_EOL
                     .'return static function () {'.PHP_EOL
                 );
             } catch (RuntimeException $e) {
@@ -217,13 +218,22 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
-    private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionGet $definition): string
+    private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
     {
         $identifier = str_replace('"', '\"', $identifier);
 
         if ($definition instanceof DiDefinitionAutowire) {
             return sprintf(
                 '    yield "%s" => diAutowire("%s", %s);',
+                $identifier,
+                str_replace('"', '\"', $definition->getIdentifier()),
+                var_export($definition->isSingleton(), true)
+            );
+        }
+
+        if ($definition instanceof DiDefinitionFactory) {
+            return sprintf(
+                '    yield "%s" => diFactory("%s", %s);',
                 $identifier,
                 str_replace('"', '\"', $definition->getIdentifier()),
                 var_export($definition->isSingleton(), true)
@@ -240,7 +250,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @param ItemFQN $itemFQN
      *
-     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionGet>
+     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
      *
      * @throws AutowireExceptionInterface
      * @throws DefinitionsLoaderExceptionInterface
@@ -342,8 +352,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
-        if (null !== ($diFactoryAttr = $this->getDiFactoryAttribute($reflectionClass))) {
-            return [$reflectionClass->name => new DiDefinitionAutowire($diFactoryAttr->getIdentifier(), $diFactoryAttr->isSingleton())];
+        if (null !== ($factory = $this->getDiFactoryAttribute($reflectionClass))) {
+            return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
         }
 
         return $this->configDefinitions->offsetExists($reflectionClass->name)

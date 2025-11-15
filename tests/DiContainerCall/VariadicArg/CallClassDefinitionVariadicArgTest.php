@@ -13,6 +13,7 @@ use Tests\DiContainerCall\VariadicArg\Fixtures\WordSuffix;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordVariadicDiFactory;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diFactory;
 use function Kaspi\DiContainer\diGet;
 
 /**
@@ -112,7 +113,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
             useAttribute: true, // inject by attribute
         );
         $definitions = [
-            'services.words' => diAutowire(WordVariadicDiFactory::class),
+            'services.words' => diFactory(WordVariadicDiFactory::class),
         ];
         $container = new DiContainer(definitions: $definitions, config: $config);
 
@@ -121,7 +122,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
     }
 
-    public function testCallStaticMethodWitAttributeInjectByDiFactoryInInject(): void
+    public function testCallStaticMethodWitAttributeInjectByCallable(): void
     {
         $config = new DiContainerConfig(
             useAttribute: true, // inject by attribute

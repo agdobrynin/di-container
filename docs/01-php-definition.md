@@ -96,6 +96,7 @@ var_dump(
    - [diValue](#divalue) – определение «как есть».
    - [diProxyClosure](#diproxyclosure) – сервис через вызов `\Closure`
    - [diTaggedAs](#ditaggedas) – тегированные определения
+   - [diFactory](#difactory) – фабрика для разрешения зависимости
 
 ### Определения для простых типов
 
@@ -806,6 +807,85 @@ $ruleCollection = $container->get(App\Services\RuleCollection::class);
 > [!TIP]
 > Более подробное [описание работы с тегами](05-tags.md).
 
+#### diFactory
+
+Разрешение зависимости через фабрику – php класс реализующий интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
+
+```php
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use function \Kaspi\DiContainer\diFactory;
+
+diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionNoArgumentsInterface
+```
+
+Параметры:
+- `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+
+> У хэлпер функции нет дополнительных методов.
+
+> [!WARNING]
+> Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
+
+```php
+// src/Classes/MyClass.php
+namespace App\Classes;
+
+class  MyClass {
+
+    public function __construct(private App\Databases\Db $db) {}
+    // ...
+}
+```
+```php
+// src/Factories/FactoryMyClass.php
+namespace App\Factories;
+
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+use Psr\Container\ContainerInterface;
+use App\Classes\MyClass;
+
+class FactoryMyClass implements DiFactoryInterface {
+
+    public function __invoke(ContainerInterface $container): MyClass {
+
+        return new MyClass(
+            new App\Databases\Db(
+                params: ['table' => 'test', 'transaction' => true]
+            )
+        );
+
+    }    
+}
+```
+```php
+// src/config/services.php
+use function Kaspi\DiContainer\diFactory;
+
+return static function (): \Generator {
+
+    yield \App\Classes\MyClass::class => diFactory(\App\Factories\FactoryMyClass::class);
+
+};
+```
+```php
+use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+
+$definitions = (new DefinitionsLoader())
+    ->load(__DIR__.'/config/services.php')
+    ->definitions();
+
+$container = (new DiContainerFactory())->make($definitions);
+
+$container->get(\App\Classes\MyClass::class);
+```
+> [!NOTE]
+> Класс `\App\Classes\MyClass` будет создан через вызов `\App\Factories\FactoryMyClass::__invoke()`
+
+> [!TIP]
+> Для класса реализующего интерфейс `DiFactoryInterface` так же могут быть
+> разрешены зависимости в конструкторе автоматически или на основе конфигурации.
+
 ## Получение класса по интерфейсу
 
 ### Получение через функцию обратного вызова – `\Closure`:
@@ -969,69 +1049,6 @@ $class = $container->get(App\Classes\ClassInterface::class);
 
 print $class->getFilePath(); // /var/log/app.log
 ```
-
-## 🧙‍♂️ Разрешение зависимости в контейнере с помощью фабрики.
-
-> [!WARNING]
-> Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
-```php
-// src/Classes/MyClass.php
-namespace App\Classes;
-
-class  MyClass {
-
-    public function __construct(private App\Databases\Db $db) {}
-    // ...
-}
-```
-```php
-// src/Factories/FactoryMyClass.php
-namespace App\Factories;
-
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-use Psr\Container\ContainerInterface;
-use App\Classes\MyClass;
-
-class FactoryMyClass implements DiFactoryInterface {
-
-    public function __invoke(ContainerInterface $container): MyClass {
-
-        return new MyClass(
-            new App\Databases\Db(
-                params: ['table' => 'test', 'transaction' => true]
-            )
-        );
-
-    }    
-}
-```
-```php
-// src/config/services.php
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (): \Generator {
-
-    yield App\Classes\MyClass::class => diAutowire(App\Factories\FactoryMyClass::class);
-
-};
-```
-```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
-
-$definitions = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php')
-    ->definitions();
-
-$container = (new DiContainerFactory())->make($definitions);
-
-$container->get(App\Classes\MyClass::class);
-```
-> [!NOTE]
-> Класс `App\Classes\MyClass` будет создан через вызов `App\Factories\FactoryMyClass::__invoke()`
-
-> [!TIP]
-> Для класса реализующего интерфейс `DiFactoryInterface` так же могут быть
-> разрешены зависимости в конструкторе автоматически или на основе конфигурации.
 
 ## Разрешение параметров переменной длины
 
