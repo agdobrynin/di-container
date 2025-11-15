@@ -10,7 +10,6 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
-use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
@@ -45,7 +44,7 @@ class ImportAutoconfigureTest extends TestCase
             )
         ;
 
-        $this->assertFalse($container->has(Fixtures\Factories\DiFactoryPerson::class));
+        $this->assertTrue($container->has(Fixtures\Factories\DiFactoryPerson::class));
         $this->assertTrue($container->has(Fixtures\Person::class));
 
         $this->assertEquals(
@@ -58,16 +57,16 @@ class ImportAutoconfigureTest extends TestCase
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches(
-            '/Cannot automatically set definition via.+AutowireExclude.+DiFactoryPerson/'
+            '/Cannot automatically set definition via.+AutowireExclude.+Foo/'
         );
 
-        iterator_to_array(
-            (new DefinitionsLoader())
-                ->addDefinitions(false, [
-                    diAutowire(Fixtures\Factories\DiFactoryPerson::class),
-                ])
-                ->import('Tests\\', __DIR__.'/Fixtures/')
-                ->definitions()
-        );
+        (new DefinitionsLoader())
+            ->addDefinitions(false, [
+                diAutowire(Fixtures\Foo::class),
+            ])
+            ->import('Tests\\', __DIR__.'/Fixtures/')
+            ->definitions()
+            ->valid()
+        ;
     }
 }

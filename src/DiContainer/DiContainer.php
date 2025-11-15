@@ -237,7 +237,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
             if ($this->config?->isUseAttribute()
                 && $factory = $this->getDiFactoryAttribute($reflectionClass)) {
-                return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire(
+                return $this->diResolvedDefinition[$id] = new DiDefinitionCallable(
                     $factory->getIdentifier(),
                     $factory->isSingleton()
                 );

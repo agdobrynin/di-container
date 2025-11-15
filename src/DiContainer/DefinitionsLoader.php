@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
@@ -217,7 +218,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
-    private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionGet $definition): string
+    private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet $definition): string
     {
         $identifier = str_replace('"', '\"', $identifier);
 
@@ -226,6 +227,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 '    yield "%s" => diAutowire("%s", %s);',
                 $identifier,
                 str_replace('"', '\"', $definition->getIdentifier()),
+                var_export($definition->isSingleton(), true)
+            );
+        }
+
+        if ($definition instanceof DiDefinitionCallable) {
+            return sprintf(
+                '   yield "%s" => diCallable("%s", %s);',
+                $identifier,
+                str_replace('"', '\"', $definition->getDefinition()),
                 var_export($definition->isSingleton(), true)
             );
         }
@@ -240,7 +250,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @param ItemFQN $itemFQN
      *
-     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionGet>
+     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionGet>
      *
      * @throws AutowireExceptionInterface
      * @throws DefinitionsLoaderExceptionInterface
@@ -343,7 +353,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if (null !== ($diFactoryAttr = $this->getDiFactoryAttribute($reflectionClass))) {
-            return [$reflectionClass->name => new DiDefinitionAutowire($diFactoryAttr->getIdentifier(), $diFactoryAttr->isSingleton())];
+            return [$reflectionClass->name => new DiDefinitionCallable($diFactoryAttr->getIdentifier(), $diFactoryAttr->isSingleton())];
         }
 
         return $this->configDefinitions->offsetExists($reflectionClass->name)
