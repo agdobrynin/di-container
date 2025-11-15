@@ -6,7 +6,7 @@ namespace Tests\DiContainer\ResolveByDiFactory\Fixtures;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
 
-#[DiFactory(MyClassSingletonDiFactory::class, isSingleton: true)]
+#[DiFactory(MyClassDiFactory::class, isSingleton: true)]
 class MyClassSingleton
 {
     public function __construct(public DependencyClass $dependency) {}

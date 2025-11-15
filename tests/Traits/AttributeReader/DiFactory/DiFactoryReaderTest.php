@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\DiFactory;
 
-use Generator;
 use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\Main;
-use Tests\Traits\AttributeReader\DiFactory\Fixtures\MainFail;
-use Tests\Traits\AttributeReader\DiFactory\Fixtures\MainFailTwo;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\MainFirstDiFactory;
 use Tests\Traits\AttributeReader\DiFactory\Fixtures\NoDiFactories;
 
@@ -63,22 +59,5 @@ class DiFactoryReaderTest extends TestCase
         $this->expectExceptionMessageMatches('/Cannot use together attributes.+DiFactory.+Autowire\]/');
 
         $this->reader->getDiFactoryAttribute(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
-    }
-
-    /**
-     * @dataProvider dataProviderReturnTypeFromFactory
-     */
-    public function testReturnTypeFromFactory(string $class): void
-    {
-        $this->expectException(AutowireParameterTypeException::class);
-
-        $this->reader->getDiFactoryAttribute(new ReflectionClass($class));
-    }
-
-    public function dataProviderReturnTypeFromFactory(): Generator
-    {
-        yield 'For class '.MainFail::class => [MainFail::class];
-
-        yield 'For class '.MainFailTwo::class => [MainFailTwo::class];
     }
 }

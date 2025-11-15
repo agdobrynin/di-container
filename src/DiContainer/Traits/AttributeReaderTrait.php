@@ -29,7 +29,6 @@ use function array_intersect;
 use function array_keys;
 use function count;
 use function implode;
-use function is_a;
 use function sprintf;
 
 trait AttributeReaderTrait
@@ -53,17 +52,7 @@ trait AttributeReaderTrait
             );
         }
 
-        /** @var DiFactory $attr */
-        $attr = $attribute->newInstance();
-        $returnTypeDiFactoryInvoke = (string) (new ReflectionMethod($attr->getIdentifier(), '__invoke'))->getReturnType();
-
-        if (is_a($reflectionClass->getName(), $returnTypeDiFactoryInvoke, true)) {
-            return $attr;
-        }
-
-        throw new AutowireParameterTypeException(
-            sprintf('Definition factory %s::__invoke() must have return type hint as %s. Got return type: "%s"', $attr->getIdentifier(), $reflectionClass->getName(), $returnTypeDiFactoryInvoke)
-        );
+        return $attribute->newInstance();
     }
 
     /**

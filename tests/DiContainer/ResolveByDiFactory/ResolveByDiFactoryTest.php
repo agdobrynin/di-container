@@ -27,7 +27,6 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
@@ -56,9 +55,7 @@ class ResolveByDiFactoryTest extends TestCase
             useZeroConfigurationDefinition: true,
             useAttribute: true
         );
-        $container = new DiContainer([
-            'security.key' => 'foo_bar_baz',
-        ], config: $config);
+        $container = new DiContainer(config: $config);
         $res = $container->get(MyClassSingleton::class);
 
         $this->assertSame($res, $container->get(MyClassSingleton::class));
