@@ -21,7 +21,7 @@
 - **[Inject](#inject)** – внедрение зависимости в параметры конструктора PHP класса, метода.
 - **[InjectByCallable](#injectbycallable)** – внедрение зависимости в параметры конструктора PHP класса, метода через `callable` тип.
 - **[Service](#service)** – определение для интерфейса какой PHP класс будет вызван и разрешен в контейнере.
-- **[DiFactory](#difactory)** – фабрика для c помощью которой разрешается зависимость класса. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
+- **[DiFactory](#difactory)** – фабрика c помощью которой разрешается зависимость класса. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
 - **[ProxyClosure](#proxyclosure)** – внедрение зависимости в параметры конструктора PHP класса, метода или аргументов функции с отложенной инициализацией через класс `\Closure`, анонимную функцию.
 - **[Tag](#tag)** – определение тегов для класса.
 - **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода PHP класса.
@@ -875,6 +875,11 @@ return static function (): \Generator {
 Аргументы:
 - `$id` - класс (_FQCN_) реализующий интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
 - `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+
+> [!WARNING]
+> Метод `Kaspi\DiContainer\Interfaces\DiFactoryInterface::__invoke()` обязательно
+> должен иметь возвращаемый тип (_type hint_) совпадающий с классом к которому
+> применяется атрибут.
 
 ```php
 // src/Classes/SuperClass.php
