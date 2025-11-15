@@ -6,8 +6,8 @@ namespace Tests\DiContainer\ResolveByDiFactory;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\Exception\ContainerException;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\DependencyClass;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClass;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClassDiFactory;
@@ -17,7 +17,6 @@ use Tests\DiContainer\ResolveByDiFactory\Fixtures\MyClassSingleton;
 use Tests\DiContainer\ResolveByDiFactory\Fixtures\ParameterByDiFactory;
 
 use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diCallable;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
@@ -73,7 +72,7 @@ class ResolveByDiFactoryTest extends TestCase
         );
         $container = new DiContainer(config: $config);
 
-        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectException(ContainerException::class);
         $this->expectExceptionMessageMatches('/The attribute .+DiFactory.+ must have an \$id parameter as class-string.+DiFactoryInterface" interface\. Got\: "service\.one"/');
 
         $container->get(MyClassFailDiFactory::class);
@@ -86,7 +85,7 @@ class ResolveByDiFactoryTest extends TestCase
             useAttribute: false
         );
         $def = [
-            MyClassFailDiFactory::class => diCallable(MyClassDiFactory::class),
+            MyClassFailDiFactory::class => diAutowire(MyClassDiFactory::class),
         ];
         $container = new DiContainer($def, config: $config);
 
@@ -103,7 +102,7 @@ class ResolveByDiFactoryTest extends TestCase
             [
                 diAutowire(ParameterByDiFactory::class)
                     ->bindArguments(
-                        dependency: diCallable(MyClassMaker::class)
+                        dependency: diAutowire(MyClassMaker::class)
                     ),
             ],
             new DiContainerConfig(useAttribute: false),
