@@ -19,7 +19,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
-use Kaspi\DiContainer\Traits\SetupAutowireConfigTrait;
+use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -40,15 +40,15 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 {
     use AttributeReaderTrait;
     use BindArgumentsTrait {
-        bindArguments as private bindArgs;
+        bindArguments as private bindArgumentsInternal;
     }
     use DiAutowireTrait;
     use TagsTrait {
-        getTags as private internalGetTags;
-        hasTag as private internalHasTag;
-        geTagPriority as private internalGeTagPriority;
+        getTags as private getTagsInternal;
+        hasTag as private hasTagInternal;
+        geTagPriority as private geTagPriorityInternal;
     }
-    use SetupAutowireConfigTrait {
+    use SetupConfigureTrait {
         setup as private setupInternal;
         setupImmutable as private setupImmutableInternal;
     }
@@ -101,7 +101,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArgs(...$argument);
+        $this->bindArgumentsInternal(...$argument);
         unset($this->constructArgBuilder);
 
         return $this;
@@ -217,7 +217,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     public function getTags(): array
     {
         // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
-        return $this->getTagsByAttribute() + $this->internalGetTags();
+        return $this->getTagsByAttribute() + $this->getTagsInternal();
     }
 
     public function hasTag(string $name): bool
@@ -236,7 +236,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
      */
     public function geTagPriority(string $name, array $operationOptions = []): int|string|null
     {
-        if (null !== ($priority = $this->internalGeTagPriority($name, $operationOptions))) {
+        if (null !== ($priority = $this->geTagPriorityInternal($name, $operationOptions))) {
             return $priority;
         }
 

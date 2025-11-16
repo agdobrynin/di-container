@@ -41,7 +41,7 @@ use function var_export;
 final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionSingletonInterface, DiTaggedDefinitionInterface, DiDefinitionTagArgumentInterface
 {
     use BindArgumentsTrait {
-        bindArguments as private bindArgs;
+        bindArguments as private bindArgumentsInternal;
     }
     use TagsTrait;
 
@@ -74,7 +74,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArgs(...$argument);
+        $this->bindArgumentsInternal(...$argument);
         unset($this->argBuilder);
 
         return $this;
@@ -89,7 +89,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
         foreach ($this->argBuilder->build() as $argNameOrIndex => $arg) {
             $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                ? $arg->resolve($container)
+                ? $arg->resolve($container, $this)
                 : $arg;
         }
 

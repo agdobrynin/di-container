@@ -680,10 +680,9 @@ $service = $container->get(App\Services\ServiceOne::class);
 >   }
 > ```
 
-**Использование `#[InjectByCallable]` с именем класса:**
+**Использование `#[InjectByCallable]` с именем класса реализующим метод `__invoke()`:**
 
-Класс реализующий `Kaspi\DiContainer\Interfaces\DiFactoryInterface` будет вызван контейнером и исполнен метод `__invoke`
-который является результатом для InjectByCallable атрибута.
+Класс будет вызван контейнером и исполнен метод `__invoke()` который является результатом для InjectByCallable атрибута.
 ```php
 // src/Rules/RuleInterface.php
 namespace App\Rules;
@@ -706,15 +705,14 @@ class RuleA implements RuleInterface {
 namespace App\Factories;
 
 use App\Rules\RuleA;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
-class RuleAFactory implements DiFactoryInterface {
+class FactoryRuleA {
 
     public function __construct(
         private RuleA $ruleA,
     ) {}
 
-    public function __invoke(ContainerInterface $container): RuleA {
+    public function __invoke(): RuleA {
         // тут возможны дополнительные настройки объекта ruleA
         $this->ruleA->doConfig(['key' => 'abc']);
 
@@ -728,14 +726,14 @@ class RuleAFactory implements DiFactoryInterface {
 // src/Rules/RuleGenerator.php
 namespace App\Rules;
 
-use App\Factories\RulesDiFactory;
+use App\Factories\FactoryRuleA;
 use App\Rules\RuleInterface;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 
 class RuleGenerator {
 
     public function __construct(
-        #[InjectByCallable(RulesDiFactory::class)]
+        #[InjectByCallable(FactoryRuleA::class)]
         private RuleInterface $rule;
     ) {}
     

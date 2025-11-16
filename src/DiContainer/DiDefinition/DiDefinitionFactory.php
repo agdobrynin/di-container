@@ -11,7 +11,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
-use Kaspi\DiContainer\Traits\SetupAutowireConfigTrait;
+use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 
 use function is_a;
 use function sprintf;
@@ -19,9 +19,9 @@ use function sprintf;
 final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionSetupAutowireInterface
 {
     use BindArgumentsTrait {
-        bindArguments as private bindArgs;
+        bindArguments as private bindArgumentsInternal;
     }
-    use SetupAutowireConfigTrait {
+    use SetupConfigureTrait {
         setup as private setupInternal;
         setupImmutable as private setupImmutableInternal;
     }
@@ -38,7 +38,7 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
      */
     public function __construct(private readonly string $definition, private readonly ?bool $isSingleton = null) {}
 
-    public function setup(string $method, ...$argument): static
+    public function setup(string $method, mixed ...$argument): static
     {
         $this->setupInternal($method, ...$argument);
         unset($this->autowire);
@@ -46,15 +46,15 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         return $this;
     }
 
-    public function bindArguments(...$argument): static
+    public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArgs(...$argument);
+        $this->bindArgumentsInternal(...$argument);
         unset($this->autowire);
 
         return $this;
     }
 
-    public function setupImmutable(string $method, ...$argument): static
+    public function setupImmutable(string $method, mixed ...$argument): static
     {
         $this->setupImmutableInternal($method, ...$argument);
         unset($this->autowire);
@@ -67,10 +67,15 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
      */
     public function getDefinition(): string
     {
-        // @phpstan-ignore function.alreadyNarrowedType
-        return $this->verifiedDefinition ??= is_a($this->definition, DiFactoryInterface::class, true)
-            ? $this->definition
-            : throw new AutowireException(sprintf('Definition must be present as class-string. Class must have implement "%s" interface. Got: "%s".', DiFactoryInterface::class, $this->definition));
+        if (isset($this->verifiedDefinition)) {
+            return $this->verifiedDefinition;
+        }
+
+        if (!is_a($this->definition, DiFactoryInterface::class, true)) { // @phpstan-ignore function.alreadyNarrowedType
+            throw new AutowireException(sprintf('Definition must be present as class-string. Class must have implement "%s" interface. Got: "%s".', DiFactoryInterface::class, $this->definition));
+        }
+
+        return $this->verifiedDefinition = $this->definition;
     }
 
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed

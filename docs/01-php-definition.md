@@ -138,19 +138,21 @@ $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-comp
 Автоматическое создание объекта и внедрения зависимостей.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\{DiDefinitionSetupAutowireInterface, DiDefinitionTagArgumentInterface};
 use function \Kaspi\DiContainer\diAutowire;
 
-diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
+diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface & DiDefinitionTagArgumentInterface
 ```
 Аргументы:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
-> Функция `diAutowire` возвращает объект реализующий интерфейс `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+> Функция `diAutowire` возвращает объект реализующий интерфейсы
+> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`
+> и `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
 > 
-> Интерфейс представляет методы:
+> Интерфейсы представляют методы:
 >   - `bindArguments` - аргументы для конструктора класса
 >   - `setup` - вызов метода класса с параметрами (_mutable setter method_) для настройки класса
 >   - `setupImmutable` - вызов метода класса с параметрами (_immutable setter method_) и возвращаемым значением
@@ -812,17 +814,26 @@ $ruleCollection = $container->get(App\Services\RuleCollection::class);
 Разрешение зависимости через фабрику – php класс реализующий интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use function \Kaspi\DiContainer\diFactory;
 
-diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionNoArgumentsInterface
+diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
 ```
 
 Параметры:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
-> У хэлпер функции нет дополнительных методов.
+> [!IMPORTANT]
+> Функция `diFactory` возвращает объект реализующий интерфейс
+> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+>
+> Интерфейс представляет методы:
+>   - `bindArguments` - аргументы для конструктора класса
+>   - `setup` - вызов метода класса с параметрами (_mutable setter method_) для настройки класса
+>   - `setupImmutable` - вызов метода класса с параметрами (_immutable setter method_) и возвращаемым значением
+>
+> Подробное описание использования этих методов в [хэлпер функции diAutowire](#diautowire)
 
 > [!WARNING]
 > Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.

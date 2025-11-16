@@ -6,10 +6,11 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 
-trait SetupAutowireConfigTrait
+trait SetupConfigureTrait
 {
     /**
      * Methods for setup service by PHP definition via setters (mutable or immutable).
+     * Immutable method mark as flag with value `true` in this array.
      *
      * @var array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
      */
