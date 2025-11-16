@@ -63,13 +63,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     private array $setupArgBuilder = [];
 
     /**
-     * Methods for setup service by PHP attribute via setters (mutable or immutable).
-     *
-     * @var array<non-empty-string, array<non-negative-int, array{0: bool, 1: array<int|string, mixed>}>>
-     */
-    private array $setupByAttributes;
-
-    /**
      * Tags from php attributes on class.
      *
      * @var array<non-empty-string, TagOptions>
@@ -131,13 +124,10 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     {
         $this->setContainer($container);
 
-        // 🚩 Php-attribute override existing setter method defined by <self::setup()> or <self::setupImmutable()> (see documentation.)
-        $setupMerged = $this->getSetupByAttribute() + $this->setup;
-
         /** @var object $object */
         $object = $this->newInstance();
 
-        foreach ($setupMerged as $method => $calls) {
+        foreach ($this->getSetups($this->getDefinition(), $container) as $method => $calls) {
             if (!$this->getDefinition()->hasMethod($method)) {
                 throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
             }
@@ -332,30 +322,5 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         }
 
         return $this->tagsByAttribute;
-    }
-
-    /**
-     * @return array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
-     */
-    private function getSetupByAttribute(): array
-    {
-        if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
-            return [];
-        }
-
-        if (isset($this->setupByAttributes)) {
-            return $this->setupByAttributes;
-        }
-
-        $this->setupByAttributes = [];
-
-        foreach ($this->getSetupAttribute($this->getDefinition()) as $setupAttr) {
-            $this->setupByAttributes[$setupAttr->getIdentifier()][] = [
-                $setupAttr->isImmutable(),
-                $setupAttr->getArguments(),
-            ];
-        }
-
-        return $this->setupByAttributes;
     }
 }
