@@ -827,6 +827,12 @@ diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionNoArgument
 > [!WARNING]
 > Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
 
+> [!TIP]
+> Для класса реализующего интерфейс `DiFactoryInterface` так же могут быть
+> разрешены зависимости в конструкторе автоматически или на основе конфигурации.
+
+🧙‍♂️ Разрешение зависимости в контейнере с помощью фабрики:
+
 ```php
 // src/Classes/MyClass.php
 namespace App\Classes;
@@ -882,9 +888,38 @@ $container->get(\App\Classes\MyClass::class);
 > [!NOTE]
 > Класс `\App\Classes\MyClass` будет создан через вызов `\App\Factories\FactoryMyClass::__invoke()`
 
-> [!TIP]
-> Для класса реализующего интерфейс `DiFactoryInterface` так же могут быть
-> разрешены зависимости в конструкторе автоматически или на основе конфигурации.
+🧙‍♂️ Разрешение параметров для определений с помощью фабрики:
+
+```php
+// src/config/services.php
+
+use function Kaspi\DiContainer\{diAutowire, diFactory};
+
+return static function (): \Generator {
+
+    yield diAutowire(\App\Classes\Foo::class)
+        ->bindArguments(
+            apiClient: diFactory(\App\Factories\ApiClinentFactory::class)
+        );
+
+};
+```
+
+##### Идентификатор контейнера для diFactory.
+При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**)
+
+```php
+// src/config/services.php
+use function Kaspi\DiContainer\diFactory;
+
+return static function (): \Generator {
+    // $container->get(\App\Factories\FactoryMyClass::class)
+    yield diFactory(\App\Factories\FactoryMyClass::class);
+
+    // $container->get('factories.my_factory')
+    yield 'factories.my_factory' => diFactory(\App\Factories\FactoryMyClass::class);
+};
+```
 
 ## Получение класса по интерфейсу
 
