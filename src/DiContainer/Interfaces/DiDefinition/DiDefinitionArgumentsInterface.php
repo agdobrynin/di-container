@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 /**
  * @phpstan-type DiDefinitionType DiDefinitionArgumentsInterface|DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTagArgumentInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionInterface
+ * @phpstan-type BindArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
  */
 interface DiDefinitionArgumentsInterface
 {

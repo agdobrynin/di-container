@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\Attributes;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type SetupConfigureArgumentsType from SetupConfigureTrait
  */
 interface DiSetupAttributeInterface extends DiAttributeInterface
 {
-    public function isImmutable(): bool;
-
     /**
-     * @return (DiDefinitionType|mixed)[]
+     * @return SetupConfigureArgumentsType
      */
     public function getArguments(): array;
 

@@ -10,7 +10,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use ReflectionFunctionAbstract;
 
 /**
- * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type BindArgumentsType from DiDefinitionArgumentsInterface
  */
 interface ArgumentBuilderInterface
 {
@@ -26,7 +26,7 @@ interface ArgumentBuilderInterface
      *
      * Php attributes for bind argument pass through container configuration.
      *
-     * @return array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
+     * @return BindArgumentsType
      *
      * @throws AutowireExceptionInterface
      */
@@ -35,7 +35,7 @@ interface ArgumentBuilderInterface
     /**
      * Binding arguments as highest priority, then Php attributes, then typed parameters.
      *
-     * @return array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
+     * @return BindArgumentsType
      *
      * @throws AutowireExceptionInterface
      */

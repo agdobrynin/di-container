@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -35,6 +36,7 @@ use function sprintf;
 /**
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
+ * @phpstan-import-type SetupConfigureItem from SetupConfigureTrait
  */
 final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface, DiDefinitionTagArgumentInterface
 {
@@ -138,12 +140,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                 throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
             }
 
-            /**
-             * @phpstan-var  boolean $isImmutable
-             * @phpstan-var  array<non-negative-int|non-empty-string, mixed> $callArguments
-             * @phpstan-var non-negative-int $index
-             */
-            foreach ($calls as $index => [$isImmutable, $callArguments]) {
+            foreach ($calls as $index => [$setupConfigureType, $callArguments]) {
                 $argBuilder = $this->setupArgBuilder[$method][$index] ??= new ArgumentBuilder($callArguments, $reflectionMethod, $this->getContainer());
 
                 $resolvedArguments = [];
@@ -154,7 +151,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                         : $arg;
                 }
 
-                if (!$isImmutable) {
+                if (SetupConfigureMethod::Mutable === $setupConfigureType) {
                     $reflectionMethod->invokeArgs($object, $resolvedArguments);
 
                     continue;
