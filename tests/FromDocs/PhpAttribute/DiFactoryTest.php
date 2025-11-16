@@ -14,6 +14,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\ClassOne;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
  *
  * @internal
  */
@@ -27,5 +28,6 @@ class DiFactoryTest extends TestCase
 
         $this->assertEquals('Piter', $myClass->name);
         $this->assertEquals(22, $myClass->age);
+        $this->assertSame($myClass, $container->get(ClassOne::class));
     }
 }

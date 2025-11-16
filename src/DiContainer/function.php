@@ -12,7 +12,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
@@ -27,7 +26,7 @@ if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
      * @param class-string $definition Fully Qualified Class Name
      */
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface&DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
     }
@@ -37,7 +36,7 @@ if (!function_exists('Kaspi\DiContainer\diFactory')) { // @codeCoverageIgnore
     /**
      * @param class-string<DiFactoryInterface> $definition Fully Qualified Class Name
      */
-    function diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionNoArgumentsInterface
+    function diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
     {
         return new DiDefinitionFactory($definition, $isSingleton);
     }
@@ -47,7 +46,7 @@ if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
     /**
      * @param array{0: non-empty-string|object, 1:non-empty-string}|callable|callable-string|class-string|non-empty-string $definition
      */
-    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
+    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface&DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionCallable($definition, $isSingleton);
     }
@@ -67,7 +66,7 @@ if (!function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
     /**
      * @param non-empty-string $containerIdentifier
      */
-    function diGet(string $containerIdentifier): DiDefinitionInterface
+    function diGet(string $containerIdentifier): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionGet($containerIdentifier);
     }

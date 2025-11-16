@@ -7,15 +7,25 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\SetupAutowireConfigTrait;
 
 use function is_a;
 use function sprintf;
 
-final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionNoArgumentsInterface
+final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionSetupAutowireInterface
 {
+    use BindArgumentsTrait {
+        bindArguments as private bindArgs;
+    }
+    use SetupAutowireConfigTrait {
+        setup as private setupInternal;
+        setupImmutable as private setupImmutableInternal;
+    }
+
     private DiDefinitionAutowire $autowire;
 
     /**
@@ -27,6 +37,30 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
      * @param class-string<DiFactoryInterface> $definition
      */
     public function __construct(private readonly string $definition, private readonly ?bool $isSingleton = null) {}
+
+    public function setup(string $method, ...$argument): static
+    {
+        $this->setupInternal($method, ...$argument);
+        unset($this->autowire);
+
+        return $this;
+    }
+
+    public function bindArguments(...$argument): static
+    {
+        $this->bindArgs(...$argument);
+        unset($this->autowire);
+
+        return $this;
+    }
+
+    public function setupImmutable(string $method, ...$argument): static
+    {
+        $this->setupImmutableInternal($method, ...$argument);
+        unset($this->autowire);
+
+        return $this;
+    }
 
     /**
      * @return class-string<DiFactoryInterface>
@@ -41,7 +75,11 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
 
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
-        $this->autowire ??= new DiDefinitionAutowire($this->getDefinition());
+        if (!isset($this->autowire)) {
+            $this->autowire = new DiDefinitionAutowire($this->getDefinition());
+            $this->autowire->bindArguments(...$this->getBindArguments());
+            $this->copySetupToDefinition($this->autowire);
+        }
 
         /** @var DiFactoryInterface $object */
         $object = $this->autowire->resolve($container, $this);

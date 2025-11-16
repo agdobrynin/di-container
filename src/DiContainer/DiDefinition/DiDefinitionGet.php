@@ -7,10 +7,11 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
 use function trim;
 
-final class DiDefinitionGet implements DiDefinitionLinkInterface
+final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNoArgumentsInterface
 {
     /**
      * @var non-empty-string

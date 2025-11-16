@@ -19,6 +19,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
+use Kaspi\DiContainer\Traits\SetupAutowireConfigTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -35,7 +36,7 @@ use function sprintf;
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
  */
-final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface
+final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface, DiDefinitionTagArgumentInterface
 {
     use AttributeReaderTrait;
     use BindArgumentsTrait {
@@ -47,6 +48,10 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         hasTag as private internalHasTag;
         geTagPriority as private internalGeTagPriority;
     }
+    use SetupAutowireConfigTrait {
+        setup as private setupInternal;
+        setupImmutable as private setupImmutableInternal;
+    }
 
     private ReflectionClass $reflectionClass;
 
@@ -56,13 +61,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
      * @var array<non-empty-string, array<non-negative-int, ArgumentBuilder>>
      */
     private array $setupArgBuilder = [];
-
-    /**
-     * Methods for setup service by PHP definition via setters (mutable or immutable).
-     *
-     * @var array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
-     */
-    private array $setup = [];
 
     /**
      * Methods for setup service by PHP attribute via setters (mutable or immutable).
@@ -95,8 +93,8 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
      */
     public function setup(string $method, mixed ...$argument): static
     {
-        $this->setup[$method][] = [false, $argument];
         unset($this->setupArgBuilder[$method]);
+        $this->setupInternal($method, ...$argument);
 
         return $this;
     }
@@ -111,7 +109,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
     public function setupImmutable(string $method, mixed ...$argument): static
     {
-        $this->setup[$method][] = [true, $argument];
+        $this->setupImmutableInternal($method, ...$argument);
         unset($this->setupArgBuilder[$method]);
 
         return $this;

@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 /**
  * @phpstan-type DiDefinitionType DiDefinitionArgumentsInterface|DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTagArgumentInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionInterface
  */
-interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterface
+interface DiDefinitionArgumentsInterface
 {
     /**
      * Arguments provided by the user added by name or index.
