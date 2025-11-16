@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
  */
-trait SetupTrait
+trait SetupAttributeTrait
 {
     /** @var non-empty-string */
     private string $method;
