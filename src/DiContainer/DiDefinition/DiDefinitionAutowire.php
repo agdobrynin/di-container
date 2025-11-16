@@ -65,7 +65,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     /**
      * Methods for setup service by PHP attribute via setters (mutable or immutable).
      *
-     * @var array<non-empty-string, array<non-negative-int, array{0: bool, array<int|string, mixed>}>>
+     * @var array<non-empty-string, array<non-negative-int, array{0: bool, 1: array<int|string, mixed>}>>
      */
     private array $setupByAttributes;
 
