@@ -8,6 +8,7 @@ use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
 
+use function sprintf;
 use function trim;
 
 #[Attribute(Attribute::TARGET_CLASS)]
@@ -19,7 +20,9 @@ final class Service implements DiAttributeServiceInterface
     public function __construct(private string $id, private ?bool $isSingleton = null)
     {
         if ('' === trim($id)) {
-            throw new AutowireAttributeException('The $id parameter must be a non-empty string.');
+            throw new AutowireAttributeException(
+                sprintf('The attribute #[%s] must have $id parameter as non-empty string.', self::class)
+            );
         }
     }
 
