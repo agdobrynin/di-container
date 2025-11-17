@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
+use function sprintf;
 use function trim;
 
 /**
@@ -24,7 +25,9 @@ final class Tag implements DiAttributeInterface
     public function __construct(private string $name, private array $options = [], private int|string|null $priority = null, private ?string $priorityMethod = null)
     {
         if ('' === trim($name)) {
-            throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
+            throw new AutowireAttributeException(
+                sprintf('The attribute #[%s] must have $name parameter as non-empty string.', self::class)
+            );
         }
     }
 

@@ -22,7 +22,7 @@ class TagTest extends TestCase
     public function testTagFail(string $name): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('parameter must be a non-empty string');
+        $this->expectExceptionMessage('The attribute #[Kaspi\DiContainer\Attributes\Tag] must have $name parameter as non-empty string.');
 
         new Tag($name);
     }
