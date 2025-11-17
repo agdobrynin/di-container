@@ -153,11 +153,11 @@ trait AttributeReaderTrait
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
-    private function getAttributeOnParameter(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
+    private function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
         $groupAttributes = [];
 
-        foreach ($reflectionParameter->getAttributes() as $attribute) {
+        foreach ($param->getAttributes() as $attribute) {
             $groupAttributes[$attribute->getName()][] = $attribute;
         }
 
@@ -170,29 +170,29 @@ trait AttributeReaderTrait
 
         if (count($intersectAttrs) > 1) {
             throw new AutowireAttributeException(
-                sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $intersectAttrs).']')
+                sprintf('Only one of the attributes %s may be declared at %s in %s.', '#['.implode('], #[', $intersectAttrs).']', $param, functionName($param->getDeclaringFunction()))
             );
         }
 
         if (isset($groupAttributes[Inject::class])) {
-            yield from $this->getInjectAttribute($reflectionParameter, $container);
+            yield from $this->getInjectAttribute($param, $container);
 
             return;
         }
 
         if (isset($groupAttributes[ProxyClosure::class])) {
-            yield from $this->getProxyClosureAttribute($reflectionParameter);
+            yield from $this->getProxyClosureAttribute($param);
 
             return;
         }
 
         if (isset($groupAttributes[TaggedAs::class])) {
-            yield from $this->getTaggedAsAttribute($reflectionParameter);
+            yield from $this->getTaggedAsAttribute($param);
 
             return;
         }
 
-        yield from $this->getInjectByCallableAttribute($reflectionParameter);
+        yield from $this->getInjectByCallableAttribute($param);
     }
 
     /**

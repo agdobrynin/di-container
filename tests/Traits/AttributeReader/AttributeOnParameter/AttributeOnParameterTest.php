@@ -17,6 +17,7 @@ use ReflectionFunction;
 use ReflectionParameter;
 
 /**
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
@@ -31,6 +32,7 @@ class AttributeOnParameterTest extends TestCase
     public function testAttributeOnParameterIntersect(ReflectionParameter $param): void
     {
         $this->expectException(AutowireAttributeException::class);
+        $this->expectExceptionMessageMatches('/Only one of the attributes.+at Parameter #0 \[ \<required\> \$param \].+AttributeOnParameterTest\:\:.+\(\)/');
 
         $this->getAttributeOnParameter(
             $param,
