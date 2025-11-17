@@ -7,26 +7,30 @@ namespace Kaspi\DiContainer\Traits;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 /**
- * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type BindArgumentsType from DiDefinitionArgumentsInterface
  */
 trait BindArgumentsTrait
 {
     /**
      * User defined parameters by parameter name.
      *
-     * @var array<non-empty-string|non-negative-int, DiDefinitionArgumentType|mixed>
+     * @var BindArgumentsType
      */
     private array $bindArguments = [];
 
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArguments = $argument; // @phpstan-ignore assign.propertyType
+        /**
+         * @phpstan-var BindArgumentsType $argument
+         */
+        $this->bindArguments = $argument;
 
         return $this;
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, (DiDefinitionArgumentType|mixed)>
+     * @return BindArgumentsType
      */
     private function getBindArguments(): array
     {

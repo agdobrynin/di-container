@@ -8,7 +8,6 @@ use Generator;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 
@@ -28,7 +27,6 @@ class TaggedAsReaderTest extends TestCase
             use AttributeReaderTrait {
                 getTaggedAsAttribute as public;
             }
-            use DiContainerTrait; // abstract method cover.
         };
     }
 

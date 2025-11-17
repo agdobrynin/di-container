@@ -24,8 +24,7 @@ class InstantiableTest extends TestCase
         $this->expectExceptionMessage('Class "'.NotExist::class.'" does not exist');
 
         (new DiDefinitionAutowire(NotExist::class))
-            ->setContainer($this->createMock(DiContainerInterface::class))
-            ->invoke()
+            ->resolve($this->createMock(DiContainerInterface::class))
         ;
     }
 
@@ -35,8 +34,7 @@ class InstantiableTest extends TestCase
         $this->expectExceptionMessageMatches('/SuperInterface.+class is not instantiable/');
 
         (new DiDefinitionAutowire(SuperInterface::class))
-            ->setContainer($this->createMock(DiContainerInterface::class))
-            ->invoke()
+            ->resolve($this->createMock(DiContainerInterface::class))
         ;
     }
 
@@ -46,8 +44,7 @@ class InstantiableTest extends TestCase
         $this->expectExceptionMessageMatches('/SuperClassPrivateConstructor.+class is not instantiable/');
 
         (new DiDefinitionAutowire(SuperClassPrivateConstructor::class))
-            ->setContainer($this->createMock(DiContainerInterface::class))
-            ->invoke()
+            ->resolve($this->createMock(DiContainerInterface::class))
         ;
     }
 }

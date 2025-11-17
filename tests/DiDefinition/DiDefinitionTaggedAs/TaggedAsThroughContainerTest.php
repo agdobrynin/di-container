@@ -48,11 +48,9 @@ class TaggedAsThroughContainerTest extends TestCase
             'three' => diValue('services.three')->bindTag('tags.system.voters'),
         ]);
 
-        $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', true))
-            ->setContainer($container)
+        $taggedServices = (new DiDefinitionTaggedAs('tags.system.voters', true))
+            ->resolve($container)
         ;
-
-        $taggedServices = $taggedAs->getServicesTaggedAs();
 
         $this->assertTrue($taggedServices->valid());
         $this->assertEquals('services.one', $taggedServices->current());
@@ -71,11 +69,9 @@ class TaggedAsThroughContainerTest extends TestCase
             'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 100]),
         ]);
 
-        $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', true))
-            ->setContainer($container)
+        $taggedServices = (new DiDefinitionTaggedAs('tags.system.voters', true))
+            ->resolve($container)
         ;
-
-        $taggedServices = $taggedAs->getServicesTaggedAs();
 
         $this->assertTrue($taggedServices->valid());
         $this->assertEquals('services.three', $taggedServices->current());
@@ -93,11 +89,10 @@ class TaggedAsThroughContainerTest extends TestCase
             'three' => diValue('services.three')->bindTag('tags.system.voters', ['priority' => 1000]),
         ]);
 
-        $taggedAs = (new DiDefinitionTaggedAs('tags.system.voters', false)) // 🚩 lazy FALSE
-            ->setContainer($container)
+        $taggedServices = (new DiDefinitionTaggedAs('tags.system.voters', false)) // 🚩 lazy FALSE
+            ->resolve($container)
         ;
 
-        $taggedServices = $taggedAs->getServicesTaggedAs();
         $this->assertCount(2, $taggedServices);
 
         // access by key as container identifier

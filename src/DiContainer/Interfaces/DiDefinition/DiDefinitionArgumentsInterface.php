@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 /**
- * @phpstan-type DiDefinitionArgumentType DiDefinitionArgumentsInterface|DiDefinitionTagArgumentInterface|DiDefinitionLinkInterface|DiDefinitionNoArgumentsInterface|DiDefinitionInterface|DiDefinitionInvokableInterface
+ * @phpstan-type DiDefinitionType DiDefinitionArgumentsInterface|DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTagArgumentInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionInterface
+ * @phpstan-type BindArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
  */
-interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterface
+interface DiDefinitionArgumentsInterface
 {
     /**
      * Arguments provided by the user added by name or index.
@@ -18,7 +19,7 @@ interface DiDefinitionArgumentsInterface extends DiDefinitionTagArgumentInterfac
      *
      * ⚠ This method replaces all previously defined arguments.
      *
-     * @param (DiDefinitionArgumentType|mixed) ...$argument
+     * @param (DiDefinitionType|mixed) ...$argument
      *
      * @return $this
      */

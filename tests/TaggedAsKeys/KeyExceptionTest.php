@@ -50,12 +50,11 @@ class KeyExceptionTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: $key);
-        $taggedAs->setContainer($this->container);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('Argument $key must be non-empty string');
 
-        $taggedAs->getServicesTaggedAs();
+        $taggedAs->resolve($this->container);
     }
 
     public static function dataProviderEmptyString(): Generator
@@ -74,12 +73,11 @@ class KeyExceptionTest extends TestCase
             ->method('getDefinitions')
             ->willReturn($getDefinitions)
         ;
-        $taggedAs->setContainer($this->container);
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('the value must be non-empty string');
 
-        $taggedAs->getServicesTaggedAs();
+        $taggedAs->resolve($this->container);
     }
 
     public static function dataProviderInvalidDefinitions(): Generator
@@ -116,12 +114,10 @@ class KeyExceptionTest extends TestCase
             ->willReturn($getDefinitions)
         ;
 
-        $taggedAs->setContainer($this->container);
-
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('return value must be non-empty string');
 
-        $taggedAs->getServicesTaggedAs();
+        $taggedAs->resolve($this->container);
     }
 
     public function dataProviderKeyOptionFromMethod(): Generator

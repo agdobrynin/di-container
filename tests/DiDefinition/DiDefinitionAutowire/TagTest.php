@@ -7,9 +7,11 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use stdClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagOne;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwo;
@@ -239,5 +241,16 @@ class TagTest extends TestCase
         yield 'array return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnArray'];
 
         yield 'wrong union type return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnUnionWrong'];
+    }
+
+    public function testGetTagWithoutSetContainer(): void
+    {
+        $this->expectException(DiDefinitionException::class);
+        $this->expectExceptionMessage('Need set container implementation');
+
+        (new DiDefinitionAutowire(new ReflectionClass(new class {})))
+            ->bindTag('tags.handler-one')
+            ->hasTag('tags.handler-one')
+        ;
     }
 }

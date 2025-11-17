@@ -20,6 +20,9 @@ return (new PhpCsFixer\Config())
         '@PhpCsFixer' => true,
         'declare_strict_types' => true,
         'php_unit_test_class_requires_covers' => false,
+        'phpdoc_to_comment' => [
+            'ignored_tags' => ['phpstan-var', 'phpstan-param'],
+        ],
         'native_function_invocation' => [
             'include' => ['@all'],
             'scope' => 'all',

@@ -6,18 +6,17 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Closure;
 use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 use function sprintf;
 use function trim;
 
-final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
+final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
 {
-    use DiContainerTrait;
     use TagsTrait;
 
     /**
@@ -28,21 +27,21 @@ final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, 
     /**
      * @param non-empty-string $definition
      */
-    public function __construct(private string $definition, private ?bool $isSingleton = null) {}
+    public function __construct(private readonly string $definition, private readonly ?bool $isSingleton = null) {}
 
     public function isSingleton(): ?bool
     {
         return $this->isSingleton;
     }
 
-    public function invoke(): Closure
+    public function resolve(DiContainerInterface $container, mixed $context = null): Closure
     {
-        if (!$this->getContainer()->has($this->getDefinition())) {
+        if (!$container->has($this->getDefinition())) {
             throw new AutowireException(sprintf('Definition "%s" does not exist.', $this->getDefinition()));
         }
 
-        return function () {
-            return $this->container->get($this->getDefinition());
+        return function () use ($container) {
+            return $container->get($this->getDefinition());
         };
     }
 

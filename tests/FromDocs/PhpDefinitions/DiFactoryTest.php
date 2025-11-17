@@ -10,14 +10,15 @@ use SplFileInfo;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependency;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependencyDiFactory;
 
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diFactory;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
+ * @covers \Kaspi\DiContainer\diFactory
  *
  * @internal
  */
@@ -26,7 +27,7 @@ class DiFactoryTest extends TestCase
     public function testCreateByDiFactory(): void
     {
         $definitions = [
-            ClassWithDependency::class => diAutowire(ClassWithDependencyDiFactory::class, isSingleton: true),
+            ClassWithDependency::class => diFactory(ClassWithDependencyDiFactory::class, isSingleton: true),
         ];
 
         $container = (new DiContainerFactory())->make($definitions);
@@ -37,5 +38,14 @@ class DiFactoryTest extends TestCase
         $this->assertInstanceOf(SplFileInfo::class, $class->splFileInfo);
         $this->assertEquals('file1.txt', $class->splFileInfo->getFilename());
         $this->assertSame($class, $container->get(ClassWithDependency::class));
+    }
+
+    public function testDiFactoryIdentifier(): void
+    {
+        $container = (new DiContainerFactory())->make([
+            diFactory(ClassWithDependencyDiFactory::class, isSingleton: true),
+        ]);
+
+        self::assertInstanceOf(ClassWithDependency::class, $container->get(ClassWithDependencyDiFactory::class));
     }
 }

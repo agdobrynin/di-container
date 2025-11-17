@@ -551,80 +551,6 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 > через [конфигурационные файлы](04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
 > и [импорт и настройку сервисов из директорий](04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
 
-### Атрибут #[Inject] и класс реализующий DiFactoryInterface
-Класс реализующий `Kaspi\DiContainer\Interfaces\DiFactoryInterface` будет вызван контейнером и исполнен метод `__invoke`
-который является результатом для Inject атрибута.
-```php
-// src/Rules/RuleInterface.php
-namespace App\Rules;
-
-interface RuleInterface {}
-```
-```php
-// src/Rules/RuleA.php
-namespace App\Rules;
-
-class RuleA implements RuleInterface {
-    // ...
-    public function doConfig(array $config): void {
-        // configure rule here
-    }
-}
-```
-```php
-// src/Factories/RuleAFactory.php
-namespace App\Factories;
-
-use App\Rules\RuleA;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-
-class RuleAFactory implements DiFactoryInterface {
-
-    public function __construct(
-        private RuleA $ruleA,
-    ) {}
-
-    public function __invoke(ContainerInterface $container): RuleA {
-        // тут возможны дополнительные настройки объекта ruleA
-        $this->ruleA->doConfig(['key' => 'abc']);
-
-        return $this->ruleA;
-    }
-
-}
-```
-```php
-// src/Rules/RuleGenerator.php
-namespace App\Rules;
-
-use App\Factories\RulesDiFactory;
-use App\Rules\RuleInterface;
-
-class RuleGenerator {
-
-    public function __construct(
-        #[Inject(RulesDiFactory::class)]
-        private RuleInterface $rule;
-    ) {}
-    
-    public function getRule(): RuleInterface {
-        return $this->rule;
-    }
-
-}
-```
-```php
-// определения для контейнера
-use Kaspi\DiContainer\DiContainerFactory;
-
-$container = (new DiContainerFactory())->make();
-
-// ... more code
-
-$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
-
-var_dump($ruleGenerator->getRule() instanceof App\Rules\RuleA); // true
-```
 
 ### Атрибут **#[Inject]** при внедрении класса для интерфейса.
 ```php
@@ -753,6 +679,82 @@ $service = $container->get(App\Services\ServiceOne::class);
 > 
 >   }
 > ```
+
+**Использование `#[InjectByCallable]` с именем класса реализующим метод `__invoke()`:**
+
+Класс будет вызван контейнером и исполнен метод `__invoke()` который является результатом для InjectByCallable атрибута.
+```php
+// src/Rules/RuleInterface.php
+namespace App\Rules;
+
+interface RuleInterface {}
+```
+```php
+// src/Rules/RuleA.php
+namespace App\Rules;
+
+class RuleA implements RuleInterface {
+    // ...
+    public function doConfig(array $config): void {
+        // configure rule here
+    }
+}
+```
+```php
+// src/Factories/RuleAFactory.php
+namespace App\Factories;
+
+use App\Rules\RuleA;
+
+class FactoryRuleA {
+
+    public function __construct(
+        private RuleA $ruleA,
+    ) {}
+
+    public function __invoke(): RuleA {
+        // тут возможны дополнительные настройки объекта ruleA
+        $this->ruleA->doConfig(['key' => 'abc']);
+
+        return $this->ruleA;
+    }
+
+}
+```
+
+```php
+// src/Rules/RuleGenerator.php
+namespace App\Rules;
+
+use App\Factories\FactoryRuleA;
+use App\Rules\RuleInterface;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
+
+class RuleGenerator {
+
+    public function __construct(
+        #[InjectByCallable(FactoryRuleA::class)]
+        private RuleInterface $rule;
+    ) {}
+    
+    public function getRule(): RuleInterface {
+        return $this->rule;
+    }
+
+}
+```
+```php
+// определения для контейнера
+use Kaspi\DiContainer\DiContainerFactory;
+
+$container = (new DiContainerFactory())->make();
+
+// ... more code
+
+$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
+
+var_dump($ruleGenerator->getRule() instanceof App\Rules\RuleA); // true
+```
 
 ## Service
 

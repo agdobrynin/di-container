@@ -30,7 +30,6 @@ use function round;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
- * @covers \Kaspi\DiContainer\Traits\ArgumentResolverTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal

@@ -12,9 +12,4 @@ use Kaspi\DiContainer\Traits\SetupAttributeTrait;
 final class Setup implements DiSetupAttributeInterface
 {
     use SetupAttributeTrait;
-
-    public function isImmutable(): bool
-    {
-        return false;
-    }
 }

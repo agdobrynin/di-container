@@ -11,26 +11,27 @@ use function preg_match;
 use function sprintf;
 
 /**
- * @phpstan-import-type DiDefinitionArgumentType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type SetupConfigureArgumentsType from SetupConfigureTrait
  */
 trait SetupAttributeTrait
 {
     /** @var non-empty-string */
     private string $method;
 
-    /** @var (DiDefinitionArgumentType|mixed)[] */
+    /** @var SetupConfigureArgumentsType */
     private array $arguments = [];
 
-    /**
-     * @param (DiDefinitionArgumentType|mixed) ...$argument
-     */
     public function __construct(mixed ...$argument)
     {
+        /**
+         * @phpstan-var SetupConfigureArgumentsType $argument
+         */
         $this->arguments = $argument;
     }
 
     /**
-     * @return (DiDefinitionArgumentType|mixed)[]
+     * @return SetupConfigureArgumentsType
      */
     public function getArguments(): array
     {

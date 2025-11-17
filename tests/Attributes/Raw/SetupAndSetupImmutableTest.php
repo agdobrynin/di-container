@@ -84,7 +84,6 @@ class SetupAndSetupImmutableTest extends TestCase
 
         self::assertEquals($method, $s->getIdentifier());
         self::assertEquals([], $s->getArguments());
-        self::assertFalse($s->isImmutable());
     }
 
     /**
@@ -97,7 +96,6 @@ class SetupAndSetupImmutableTest extends TestCase
 
         self::assertEquals($method, $s->getIdentifier());
         self::assertEquals([], $s->getArguments());
-        self::assertTrue($s->isImmutable());
     }
 
     public function dataProviderSuccessMethod(): Generator
@@ -132,7 +130,6 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new Setup('first', two: 'second');
 
         self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
-        self::assertFalse($s->isImmutable());
     }
 
     public function testSetupImmutableMixedNamedArgument(): void
@@ -140,7 +137,6 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new SetupImmutable('first', two: 'second');
 
         self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
-        self::assertTrue($s->isImmutable());
     }
 
     public function testSetupMixedNamedArgumentWithValueAsObject(): void
@@ -148,7 +144,6 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new Setup('first', two: diGet('service.one'));
 
         self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
-        self::assertFalse($s->isImmutable());
     }
 
     public function testSetupImmutableMixedNamedArgumentWithValueAsObject(): void
@@ -156,6 +151,5 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new SetupImmutable('first', two: diGet('service.one'));
 
         self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
-        self::assertTrue($s->isImmutable());
     }
 }

@@ -23,6 +23,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
  * @covers \Kaspi\DiContainer\ImportLoader
@@ -45,9 +46,6 @@ class ImportAutoconfigureTest extends TestCase
             )
         ;
 
-        $this->assertFalse($container->has(Fixtures\Factories\DiFactoryPerson::class));
-        $this->assertTrue($container->has(Fixtures\Person::class));
-
         $this->assertEquals(
             ['name' => 'Ivan', 'surname' => 'Petrov', 'age' => 22],
             (array) $container->get(Fixtures\Person::class)
@@ -58,16 +56,17 @@ class ImportAutoconfigureTest extends TestCase
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches(
-            '/Cannot automatically set definition via.+AutowireExclude.+DiFactoryPerson/'
+            '/Cannot automatically set definition via.+AutowireExclude.+Foo/'
         );
 
-        iterator_to_array(
-            (new DefinitionsLoader())
-                ->addDefinitions(false, [
-                    diAutowire(Fixtures\Factories\DiFactoryPerson::class),
-                ])
-                ->import('Tests\\', __DIR__.'/Fixtures/')
-                ->definitions()
-        );
+        $defs = (new DefinitionsLoader())
+            ->addDefinitions(false, [
+                diAutowire(Fixtures\Foo::class),
+            ])
+            ->import('Tests\\', __DIR__.'/Fixtures/')
+            ->definitions()
+        ;
+
+        iterator_to_array($defs);
     }
 }

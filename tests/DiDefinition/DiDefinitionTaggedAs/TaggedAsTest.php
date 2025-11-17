@@ -24,29 +24,27 @@ class TaggedAsTest extends TestCase
 {
     public function testTaggedAsEmptyLazy(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.empty', true))
-            ->setContainer(new DiContainer([
-                's1' => diValue(['ok']),
-                's2' => diValue(['ok-ko']),
-            ]))
-        ;
+        $taggedAs = (new DiDefinitionTaggedAs('tags.empty', true));
+        $container = new DiContainer([
+            's1' => diValue(['ok']),
+            's2' => diValue(['ok-ko']),
+        ]);
 
         $this->assertEquals('tags.empty', $taggedAs->getDefinition());
         // return generator because definition marked as lazy.
-        $this->assertFalse($taggedAs->getServicesTaggedAs()->valid());
+        $this->assertFalse($taggedAs->resolve($container)->valid());
     }
 
     public function testTaggedAsEmptyNotLazy(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.empty', false))
-            ->setContainer(new DiContainer([
-                's1' => diValue(['ok']),
-                's2' => diValue(['ok-ko']),
-            ]))
-        ;
+        $taggedAs = (new DiDefinitionTaggedAs('tags.empty', false));
+        $container = new DiContainer([
+            's1' => diValue(['ok']),
+            's2' => diValue(['ok-ko']),
+        ]);
 
-        $this->assertIsArray($taggedAs->getServicesTaggedAs());
-        $this->assertCount(0, $taggedAs->getServicesTaggedAs());
+        $this->assertIsArray($taggedAs->resolve($container));
+        $this->assertCount(0, $taggedAs->resolve($container));
     }
 
     public function testTaggedAsWithTagsOptions(): void

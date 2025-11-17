@@ -55,11 +55,10 @@ class SetupImmutableTest extends TestCase
     {
         $def = (new DiDefinitionAutowire(SetupImmutable::class, isSingleton: true))
             ->setupImmutable($method) // argument $someClass resolve by typehint.
-            ->setContainer($this->mockContainer)
         ;
 
         /** @var SetupImmutable $setupImmutableClass */
-        $setupImmutableClass = $def->invoke();
+        $setupImmutableClass = $def->resolve($this->mockContainer);
 
         self::assertInstanceOf(SetupImmutable::class, $setupImmutableClass);
         self::assertInstanceOf(SomeClass::class, $setupImmutableClass->getSomeClass());
@@ -83,14 +82,12 @@ class SetupImmutableTest extends TestCase
     {
         $def = (new DiDefinitionAutowire(SetupImmutable::class, isSingleton: true))
             ->setupImmutable($method) // argument $someClass resolve by typehint.
-            ->setContainer($this->mockContainer)
         ;
 
         $this->expectException(AutowireException::class);
         $this->expectExceptionMessageMatches('/The immutable setter .+SetupImmutable::'.$method.'\(\)" must return same class/');
 
-        /** @var SetupImmutable $setupImmutableClass */
-        $setupImmutableClass = $def->invoke();
+        $def->resolve($this->mockContainer);
     }
 
     public function dataProviderImmutableFail(): Generator
@@ -108,11 +105,9 @@ class SetupImmutableTest extends TestCase
             ->willReturn(new DiContainerConfig(useAttribute: true))
         ;
 
-        $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
-            ->setContainer($this->mockContainer)
-        ;
+        $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class));
 
-        $setupImmutableClass = $def->invoke();
+        $setupImmutableClass = $def->resolve($this->mockContainer);
 
         self::assertInstanceOf(SomeClass::class, $setupImmutableClass->getSomeClass());
     }
@@ -123,11 +118,9 @@ class SetupImmutableTest extends TestCase
             ->willReturn(new DiContainerConfig(useAttribute: false))
         ;
 
-        $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
-            ->setContainer($this->mockContainer)
-        ;
+        $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class));
 
-        $setupImmutableClass = $def->invoke();
+        $setupImmutableClass = $def->resolve($this->mockContainer);
 
         self::assertNull($setupImmutableClass->getSomeClass());
     }
@@ -141,11 +134,9 @@ class SetupImmutableTest extends TestCase
         $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
             ->setupImmutable('withSomeClass', someClass: null)
             ->setupImmutable('withSomeClass', someClass: diAutowire(SomeClass::class)->bindArguments('aaa'))
-
-            ->setContainer($this->mockContainer)
         ;
 
-        $setupImmutableClass = $def->invoke();
+        $setupImmutableClass = $def->resolve($this->mockContainer);
 
         self::assertInstanceOf(SomeClass::class, $setupImmutableClass->getSomeClass());
         self::assertNull($setupImmutableClass->getSomeClass()->getValue());
@@ -166,11 +157,10 @@ class SetupImmutableTest extends TestCase
 
         $def = (new DiDefinitionAutowire(SetupImmutableByAttributeWithArgumentAsDefinition::class))
             ->setupImmutable('withSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
-            ->setContainer($mockContainer)
         ;
 
         /** @var SetupImmutableByAttributeWithArgumentAsDefinition $class */
-        $class = $def->invoke();
+        $class = $def->resolve($mockContainer);
 
         self::assertInstanceOf(SomeClass::class, $class->getSomeClass());
         self::assertEquals('foo', $class->getSomeClass()->getValue());
@@ -188,13 +178,12 @@ class SetupImmutableTest extends TestCase
     {
         $def = (new DiDefinitionAutowire($class))
             ->setupImmutable($method)
-            ->setContainer($this->createMock(DiContainerInterface::class))
         ;
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
 
-        $def->invoke();
+        $def->resolve($this->createMock(DiContainerInterface::class));
     }
 
     public function dataProviderSetupOnMethod(): Generator

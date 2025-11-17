@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait;
@@ -36,7 +37,8 @@ use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 /**
- * @phpstan-import-type DiDefinitionItem from ArgumentBuilderInterface
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type BindArgumentsType from DiDefinitionArgumentsInterface
  */
 final class ArgumentBuilder implements ArgumentBuilderInterface
 {
@@ -46,7 +48,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     private readonly bool $isUseAttribute;
 
     /**
-     * @param array<non-empty-string|non-negative-int, DiDefinitionItem|mixed> $bindArguments
+     * @param BindArgumentsType $bindArguments
      */
     public function __construct(
         private readonly array $bindArguments,
@@ -81,7 +83,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     * @return BindArgumentsType
      *
      * @throws AutowireExceptionInterface
      */
@@ -103,7 +105,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     * @return BindArgumentsType
      *
      * @throws AutowireExceptionInterface
      */
@@ -131,7 +133,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     * @return BindArgumentsType
      *
      * @throws AutowireExceptionInterface
      */
@@ -159,7 +161,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @param array<non-empty-string|non-negative-int, DiDefinitionItem|mixed> $args
+     * @param BindArgumentsType $args
      *
      * @throws AutowireParameterTypeException
      */
@@ -177,7 +179,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @param array<non-empty-string|non-negative-int, DiDefinitionItem|mixed> $args
+     * @param BindArgumentsType $args
      *
      * @return bool when argument found return true
      */
@@ -224,7 +226,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      * This can be useful for functions without arguments or tail argument
      * that use functions like `func_get_args()` or any `func_*()`.
      *
-     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     * @return BindArgumentsType
      *
      * @throws AutowireException
      */
@@ -249,7 +251,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, DiDefinitionItem|mixed>
+     * @return BindArgumentsType
      */
     private function capturingVariadicArguments(int|string $argumentNameOrIndex): array
     {
@@ -267,7 +269,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<DiDefinitionItem>
+     * @return Generator<(DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */

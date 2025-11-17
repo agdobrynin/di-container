@@ -46,13 +46,13 @@ class ExamplesTest extends TestCase
         $sum1 = (new DiDefinitionAutowire(Sum::class))
             ->bindArguments(init: 50)
             ->setContainer($container)
-            ->invoke()
+            ->resolve($container)
         ;
 
         $sum2 = (new DiDefinitionAutowire(Sum::class))
             ->bindArguments(init: 20)
             ->setContainer($container)
-            ->invoke()
+            ->resolve($container)
         ;
 
         $this->assertNotSame($sum1, $sum2);

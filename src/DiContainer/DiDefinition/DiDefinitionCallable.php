@@ -8,18 +8,17 @@ use Closure;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
-use Kaspi\DiContainer\Traits\ArgumentResolverTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -39,19 +38,17 @@ use function var_export;
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
  */
-final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionInvokableInterface, DiTaggedDefinitionInterface
+final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionSingletonInterface, DiTaggedDefinitionInterface, DiDefinitionTagArgumentInterface
 {
     use BindArgumentsTrait {
-        bindArguments as private bindArgs;
+        bindArguments as private bindArgumentsInternal;
     }
-    use ArgumentResolverTrait;
-    use DiContainerTrait;
     use TagsTrait;
 
     /**
      * @var NotParsedCallable|ParsedCallable
      */
-    private $definition;
+    private readonly mixed $definition;
 
     /**
      * @var null|ParsedCallable
@@ -65,7 +62,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     /**
      * @param NotParsedCallable|ParsedCallable $definition
      */
-    public function __construct(array|callable|string $definition, private ?bool $isSingleton = null)
+    public function __construct(array|callable|string $definition, private readonly ?bool $isSingleton = null)
     {
         $this->definition = $definition;
     }
@@ -77,37 +74,38 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArgs(...$argument);
+        $this->bindArgumentsInternal(...$argument);
         unset($this->argBuilder);
 
         return $this;
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws DiDefinitionCallableExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws AutowireExceptionInterface
-     */
-    public function invoke(): mixed
+    public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
         $this->reflectionFn ??= $this->reflectionFn();
-        $this->argBuilder ??= new ArgumentBuilder($this->getBindArguments(), $this->reflectionFn, $this->getContainer());
-        $args = $this->argBuilder->build();
+        $this->argBuilder ??= new ArgumentBuilder($this->getBindArguments(), $this->reflectionFn, $container);
+
+        $resolvedArgs = [];
+
+        foreach ($this->argBuilder->build() as $argNameOrIndex => $arg) {
+            $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
+                ? $arg->resolve($container, $this)
+                : $arg;
+        }
 
         if ($this->reflectionFn instanceof ReflectionMethod) {
             if ($this->reflectionFn->isStatic()) {
                 /** @var callable $callable */
                 $callable = [$this->reflectionFn->class, $this->reflectionFn->name];
 
-                return call_user_func_array($callable, $this->resolveArguments($args));
+                return call_user_func_array($callable, $resolvedArgs);
             }
 
             $class = $this->reflectionFn->objectOrClassName;
 
             if (is_string($class)) {
                 try {
-                    $class = $this->getContainer()->get($class);
+                    $class = $container->get($class);
                 } catch (ContainerExceptionInterface $e) {
                     throw $this->throw($e, sprintf('Cannot get entry by container identifier "%s"', $class));
                 }
@@ -119,10 +117,10 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
                 );
             }
 
-            return call_user_func_array($callable, $this->resolveArguments($args));
+            return call_user_func_array($callable, $resolvedArgs);
         }
 
-        return call_user_func_array($this->getDefinition(), $this->resolveArguments($args)); // @phpstan-ignore argument.type
+        return call_user_func_array($this->getDefinition(), $resolvedArgs); // @phpstan-ignore argument.type
     }
 
     /**

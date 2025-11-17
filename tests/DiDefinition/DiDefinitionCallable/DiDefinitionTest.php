@@ -53,9 +53,8 @@ class DiDefinitionTest extends TestCase
         $def = (new DiDefinitionCallable(CallableArgument::class))
             ->bindArguments('ok')
         ;
-        $def->setContainer(new DiContainer(config: new DiContainerConfig()));
 
-        $this->assertEquals('ok 😀', $def->invoke());
+        $this->assertEquals('ok 😀', $def->resolve(new DiContainer(config: new DiContainerConfig())));
     }
 
     public function testCallableByContainer(): void

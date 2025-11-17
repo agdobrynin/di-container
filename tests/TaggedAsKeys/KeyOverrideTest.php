@@ -59,8 +59,8 @@ class KeyOverrideTest extends TestCase
 
         // get item with highest priority - One::class with priority 100, Two::class with priority 0
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.override');
-        $taggedAs->setContainer($this->container);
-        $items = $taggedAs->getServicesTaggedAs();
+
+        $items = $taggedAs->resolve($this->container);
 
         $this->assertCount(1, $items);
         $this->assertInstanceOf(One::class, $items['key-service']);
@@ -85,8 +85,7 @@ class KeyOverrideTest extends TestCase
 
         // get item with highest priority - One::class with priority 100, Two::class with priority 0
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.override');
-        $taggedAs->setContainer($this->container);
-        $items = $taggedAs->getServicesTaggedAs();
+        $items = $taggedAs->resolve($this->container);
 
         $this->assertCount(1, $items);
         $this->assertInstanceOf(Fixtures\One::class, $items->get('key-service'));
