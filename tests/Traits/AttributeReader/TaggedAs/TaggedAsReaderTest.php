@@ -13,6 +13,7 @@ use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
@@ -53,7 +54,7 @@ class TaggedAsReaderTest extends TestCase
         $p = new ReflectionParameter($fn, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
+        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0 \[ \<required\> iterable \$tagged \] in .+TaggedAsReaderTest\:\:.+\(\)/');
 
         /** @var Generator<TaggedAs> $res */
         $res = $this->reader->getTaggedAsAttribute($p);

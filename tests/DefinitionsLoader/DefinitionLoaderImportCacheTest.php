@@ -24,10 +24,12 @@ use function unlink;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Autowire
+ * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DefinitionsLoader
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
@@ -36,8 +38,6 @@ use function unlink;
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
  * @covers \Kaspi\DiContainer\ImportLoader
  * @covers \Kaspi\DiContainer\ImportLoaderCollection
- * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
  *
  * @internal
  */
@@ -154,11 +154,12 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
         $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
 
-        //test Factory on class
+        // test Factory on class
         /** @var DiDefinitionFactory $factory */
         $factory = $arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo'];
         $this->assertInstanceOf(DiDefinitionFactory::class, $factory);
         $this->assertEquals('Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo', $factory->getDefinition());
+
         /** @var Foo $resolveFactory */
         $resolveFactory = $factory->resolve($this->createMock(DiContainerInterface::class));
         $this->assertEquals('secure_string', $resolveFactory->secure);

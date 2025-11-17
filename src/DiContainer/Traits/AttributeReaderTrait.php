@@ -30,6 +30,7 @@ use function array_keys;
 use function count;
 use function implode;
 use function is_a;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 trait AttributeReaderTrait
@@ -277,11 +278,11 @@ trait AttributeReaderTrait
         }
     }
 
-    private function checkVariadic(ReflectionParameter $reflectionParameter, int $countAttributes, string $attribute): void
+    private function checkVariadic(ReflectionParameter $param, int $countAttributes, string $attribute): void
     {
-        if ($countAttributes > 1 && !$reflectionParameter->isVariadic()) {
+        if ($countAttributes > 1 && !$param->isVariadic()) {
             throw new AutowireAttributeException(
-                sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
+                sprintf('The attribute #[%s] can only be applied once per non-variadic %s in %s.', $attribute, $param, functionName($param->getDeclaringFunction()))
             );
         }
     }
