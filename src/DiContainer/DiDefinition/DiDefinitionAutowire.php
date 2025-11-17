@@ -96,16 +96,16 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArgumentsInternal(...$argument);
         unset($this->constructArgBuilder);
+        $this->bindArgumentsInternal(...$argument);
 
         return $this;
     }
 
     public function setupImmutable(string $method, mixed ...$argument): static
     {
-        $this->setupImmutableInternal($method, ...$argument);
         unset($this->setupArgBuilder[$method]);
+        $this->setupImmutableInternal($method, ...$argument);
 
         return $this;
     }

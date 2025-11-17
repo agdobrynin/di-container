@@ -74,8 +74,8 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArgumentsInternal(...$argument);
         unset($this->argBuilder);
+        $this->bindArgumentsInternal(...$argument);
 
         return $this;
     }

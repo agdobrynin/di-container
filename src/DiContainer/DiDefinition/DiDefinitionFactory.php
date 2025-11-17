@@ -40,24 +40,24 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
 
     public function setup(string $method, mixed ...$argument): static
     {
-        $this->setupInternal($method, ...$argument);
         unset($this->autowire);
+        $this->setupInternal($method, ...$argument);
 
         return $this;
     }
 
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArgumentsInternal(...$argument);
         unset($this->autowire);
+        $this->bindArgumentsInternal(...$argument);
 
         return $this;
     }
 
     public function setupImmutable(string $method, mixed ...$argument): static
     {
-        $this->setupImmutableInternal($method, ...$argument);
         unset($this->autowire);
+        $this->setupImmutableInternal($method, ...$argument);
 
         return $this;
     }
