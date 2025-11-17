@@ -74,11 +74,9 @@ trait SetupConfigureTrait
             $this->setupByAttributes = [];
 
             foreach ($this->getSetupAttribute($class) as $setupAttr) {
-                $setupConfigureType = $setupAttr instanceof Setup
-                    ? SetupConfigureMethod::Mutable
-                    : SetupConfigureMethod::Immutable;
-
-                $this->setupByAttributes[$setupAttr->getIdentifier()][] = [$setupConfigureType, $setupAttr->getArguments()];
+                $this->setupByAttributes[$setupAttr->getIdentifier()][] = [
+                    SetupConfigureMethod::fromAttribute($setupAttr), $setupAttr->getArguments(),
+                ];
             }
         }
 
