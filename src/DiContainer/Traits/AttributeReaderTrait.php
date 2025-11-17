@@ -96,7 +96,7 @@ trait AttributeReaderTrait
 
             if ($containerIdentifier === $autowire->getIdentifier()) {
                 throw new AutowireAttributeException(
-                    sprintf('Container identifier "%s" already defined by #[%s] for class "%s".', $autowire->getIdentifier(), Autowire::class, $reflectionClass->name),
+                    sprintf('Container identifier "%s" already defined previous php attribute #[%s] for class "%s".', $containerIdentifier, Autowire::class, $reflectionClass->name),
                 );
             }
 
