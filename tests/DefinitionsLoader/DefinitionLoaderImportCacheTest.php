@@ -6,11 +6,14 @@ namespace Tests\DefinitionsLoader;
 
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo;
 use Throwable;
 
 use function array_keys;
@@ -33,6 +36,8 @@ use function unlink;
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
  * @covers \Kaspi\DiContainer\ImportLoader
  * @covers \Kaspi\DiContainer\ImportLoaderCollection
+ * @covers \Kaspi\DiContainer\Attributes\DiFactory
+ * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
  *
  * @internal
  */
@@ -129,6 +134,8 @@ class DefinitionLoaderImportCacheTest extends TestCase
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\SubOne\Two',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\SubTwo\Three',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\One',
+            'Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo',
+            'Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo',
         ];
 
         sort($getKeys);
@@ -146,6 +153,15 @@ class DefinitionLoaderImportCacheTest extends TestCase
         $this->assertEquals('services.any', $srvOI->getDefinition());
 
         $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
+
+        //test Factory on class
+        /** @var DiDefinitionFactory $factory */
+        $factory = $arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo'];
+        $this->assertInstanceOf(DiDefinitionFactory::class, $factory);
+        $this->assertEquals('Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo', $factory->getDefinition());
+        /** @var Foo $resolveFactory */
+        $resolveFactory = $factory->resolve($this->createMock(DiContainerInterface::class));
+        $this->assertEquals('secure_string', $resolveFactory->secure);
 
         @unlink($fileName);
     }
