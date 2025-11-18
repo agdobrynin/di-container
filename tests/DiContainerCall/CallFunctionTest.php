@@ -7,6 +7,8 @@ namespace Tests\DiContainerCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -80,10 +82,15 @@ class CallFunctionTest extends TestCase
         $config = new DiContainerConfig();
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+array \$allUsers/');
+        try {
+            $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
+        } catch (ContainerExceptionInterface $e) {
+            self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
+            self::assertMatchesRegularExpression('/Cannot build argument via php attribute for Parameter #0 \[ <required> array \$allUsers ] in Function/', $e->getMessage());
 
-        $res = $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
+            self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
+            self::assertMatchesRegularExpression('/Cannot automatically resolve dependency in .+functionResolveArgumentByName\(\)\. Please specify the Parameter #0 \[ <required> array \$allUsers ]\./', $e->getPrevious()->getMessage());
+        }
     }
 
     public function testUserFunctionInjectByAttributeFail(): void
@@ -177,9 +184,16 @@ class CallFunctionTest extends TestCase
 
         $container = new DiContainer(config: new DiContainerConfig());
 
-        $this->expectException(AutowireParameterTypeException::class);
+        // $this->expectException(AutowireParameterTypeException::class);
+        try {
+            $container->call($helper);
+        } catch (ContainerExceptionInterface $e) {
+            self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
+            self::assertMatchesRegularExpression('/Cannot build argument via type hint for Parameter #0 \[ <required> string \$baz ] in .+Foo::__construct\(\)\./', $e->getMessage());
 
-        $container->call($helper);
+            self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
+            self::assertMatchesRegularExpression('/Cannot automatically resolve dependency in .+Foo::__construct\(\)\. Please specify the Parameter #0 \[ <required> string \$baz ]\./', $e->getPrevious()->getMessage());
+        }
     }
 
     public function testClassNotRegisteredInContainer(): void

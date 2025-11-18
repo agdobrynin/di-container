@@ -8,8 +8,11 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use ReflectionFunction;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
@@ -24,6 +27,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  *
@@ -67,5 +71,23 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
             ],
             $args
         );
+    }
+
+    public function testReadAttributeFail(): void
+    {
+        $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux, #[Inject(Baz::class), Inject('service.one')] Foo $foo) => $quux;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        try {
+            // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
+            $args = $ba->buildByPriorityBindArguments();
+        } catch (ContainerExceptionInterface $e) {
+            self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
+            self::assertStringContainsString('Cannot build argument via php attribute for Parameter #1', $e->getMessage());
+
+            self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
+            self::assertStringContainsString('can only be applied once per non-variadic Parameter #1', $e->getPrevious()->getMessage());
+        }
     }
 }

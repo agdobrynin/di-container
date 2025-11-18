@@ -95,7 +95,7 @@ class TaggedAsImplementInterfaceTest extends TestCase
         $this->assertInstanceOf(HeavyDepOne::class, $res->current());
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+HeaveDepWithDependency::__construct\(\).+\<required\> \$someDep/');
+        $this->expectExceptionMessageMatches('/Cannot build argument via type hint for Parameter #0 \[ <required> \$someDep ] in .+HeaveDepWithDependency::__construct\(\)\./');
 
         $res->next();
         $res->current();

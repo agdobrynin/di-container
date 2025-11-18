@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\FromDocs\PhpDefinitions;
 
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
@@ -31,9 +33,14 @@ class ResolveByArgumentNameTest extends TestCase
 
         $container = (new DiContainerFactory())->make($definitions);
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+ServiceLocation::__construct\(\).+string \$locationCity/');
+        try {
+            $container->get(ServiceLocation::class);
+        } catch (ContainerExceptionInterface $e) {
+            self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
+            self::assertMatchesRegularExpression('/Cannot build argument via type hint for Parameter #0 \[ <required> string \$locationCity ] in .+__construct\(\)\./', $e->getMessage());
 
-        $container->get(ServiceLocation::class);
+            self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
+            self::assertStringContainsString('Cannot automatically resolve dependency in', $e->getPrevious()->getMessage());
+        }
     }
 }

@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -76,7 +76,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
     public function testGetWithoutParametersAndNamedArgument(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(ArgumentBuilderExceptionInterface::class);
         $this->expectExceptionMessage('Does not accept unknown named parameter $service');
 
         $fn = static fn () => '';
@@ -149,8 +149,8 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
     public function testExceptionGetParameterIntersectionType(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/^Cannot automatically resolve dependency.+Bar&.+Foo \$fooBar/');
+        $this->expectException(ArgumentBuilderExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/^Cannot build argument via type hint for Parameter #0.+\[ \<required\> .+Bar&.+Foo \$fooBar \]/');
 
         $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
 
@@ -373,7 +373,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
     public function testTailArgs(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(ArgumentBuilderExceptionInterface::class);
         $this->expectExceptionMessage('Does not accept unknown named parameter $other_one');
 
         $fn = static fn (string $str) => func_get_args();
