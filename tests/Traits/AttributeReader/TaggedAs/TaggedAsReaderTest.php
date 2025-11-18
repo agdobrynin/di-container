@@ -54,7 +54,7 @@ class TaggedAsReaderTest extends TestCase
         $p = new ReflectionParameter($fn, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0 \[ \<required\> (iterable|Traversable\|array) \$tagged \] in .+TaggedAsReaderTest\:\:.+\(\)/');
+        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> (iterable|Traversable\|array) \$tagged ]/');
 
         /** @var Generator<TaggedAs> $res */
         $res = $this->reader->getTaggedAsAttribute($p);

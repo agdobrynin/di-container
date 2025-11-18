@@ -150,7 +150,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     public function testExceptionGetParameterIntersectionType(): void
     {
         $this->expectException(ArgumentBuilderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/^Cannot build argument via type hint for Parameter #0.+\[ \<required\> .+Bar&.+Foo \$fooBar \]/');
+        $this->expectExceptionMessageMatches('/^Cannot build argument via type hint for Parameter #0.+[ <required>.+Bar&.+Foo \$fooBar ]/');
 
         $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
 

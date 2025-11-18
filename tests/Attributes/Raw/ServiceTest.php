@@ -38,7 +38,7 @@ class ServiceTest extends TestCase
     public function testServiceWithEmptyId(string $id): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('The attribute #[Kaspi\DiContainer\Attributes\Service] must have $id parameter as non-empty string.');
+        $this->expectExceptionMessage('The $id parameter must be a non-empty string.');
 
         new Service($id);
     }

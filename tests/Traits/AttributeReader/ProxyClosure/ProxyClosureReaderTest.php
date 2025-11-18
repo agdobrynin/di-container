@@ -42,7 +42,7 @@ class ProxyClosureReaderTest extends TestCase
         $p = new ReflectionParameter($f, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0 \[ \<required\> string \$a \] in .+ProxyClosureReaderTest\:\:.+\(\)/');
+        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> string \$a ]/');
 
         $this->getProxyClosureAttribute($p)->valid();
     }

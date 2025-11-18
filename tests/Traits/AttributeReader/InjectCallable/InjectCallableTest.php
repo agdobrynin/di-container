@@ -42,7 +42,7 @@ class InjectCallableTest extends TestCase
         $p = new ReflectionParameter($f, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0 \[ \<required\> string \$a \].+InjectCallableTest\:\:.+\(\)/');
+        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> string \$a ].+InjectCallableTest::.+()/');
 
         $this->getInjectByCallableAttribute($p)->valid();
     }

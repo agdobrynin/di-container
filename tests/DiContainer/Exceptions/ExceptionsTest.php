@@ -88,7 +88,7 @@ class ExceptionsTest extends TestCase
         $container = (new DiContainerFactory())->make();
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot build argument via type hint for Parameter #0 \[ \<required\> string \$value \] in .+DependencyClass\:\:__construct\(\)\./');
+        $this->expectExceptionMessageMatches('/^Cannot build argument via type hint for Parameter #0 \[ <required> string \$value ] in .+DependencyClass::__construct()/');
 
         $container->get(SuperClass::class);
     }

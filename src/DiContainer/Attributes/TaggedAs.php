@@ -8,7 +8,6 @@ use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
-use function sprintf;
 use function trim;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
@@ -33,9 +32,7 @@ final class TaggedAs implements DiAttributeInterface
         private bool $selfExclude = true,
     ) {
         if ('' === trim($name)) {
-            throw new AutowireAttributeException(
-                sprintf('The attribute #[%s] must have $name parameter as non-empty string.', self::class)
-            );
+            throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
         }
     }
 
