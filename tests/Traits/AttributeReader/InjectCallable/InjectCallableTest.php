@@ -12,6 +12,7 @@ use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
@@ -41,7 +42,7 @@ class InjectCallableTest extends TestCase
         $p = new ReflectionParameter($f, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('can only be applied once per non-variadic parameter');
+        $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> string \$a ].+InjectCallableTest::.+()/');
 
         $this->getInjectByCallableAttribute($p)->valid();
     }

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionTaggedAs;
 
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Circular\One;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Circular\Service;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Circular\ServiceUse;
@@ -33,6 +33,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  */
@@ -40,6 +41,9 @@ class TaggedAsThroughContainerCircularTest extends TestCase
 {
     public function testCircularTaggedAsByPhpDefinition(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+One::__construct()/');
+
         $container = (new DiContainerFactory())->make([
             diAutowire(One::class)
                 ->bindTag('tags.service-item'),
@@ -52,14 +56,14 @@ class TaggedAsThroughContainerCircularTest extends TestCase
         $class = $container->get(Service::class);
         $this->assertInstanceOf(Service::class, $class);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
-
         $class->services->current();
     }
 
     public function testCircularTaggedAsByPhpAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+One::__construct()/');
+
         $container = (new DiContainerFactory())->make([
             diAutowire(Fixtures\Circular\Attributes\One::class),
             diAutowire(Fixtures\Circular\Attributes\Two::class),
@@ -69,14 +73,14 @@ class TaggedAsThroughContainerCircularTest extends TestCase
 
         $this->assertInstanceOf(Fixtures\Circular\Attributes\Service::class, $class);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
-
         iterator_to_array($class->services);
     }
 
     public function testCircularTaggedByInterfaceByPhpDefinition(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ServiceUseOne::__construct()/');
+
         $container = (new DiContainerFactory())->make([
             diAutowire(ServiceUseOne::class),
             diAutowire(ServiceUseTwo::class),
@@ -87,14 +91,14 @@ class TaggedAsThroughContainerCircularTest extends TestCase
         $class = $container->get(ServiceUse::class);
         $this->assertInstanceOf(ServiceUse::class, $class);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
-
         $class->services->current();
     }
 
     public function testCircularTaggedByInterfaceByPhpAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ServiceUseOne::__construct()/');
+
         $container = (new DiContainerFactory())->make([
             diAutowire(Fixtures\Circular\Attributes\ServiceUseOne::class),
             diAutowire(Fixtures\Circular\Attributes\ServiceUseTwo::class),
@@ -103,9 +107,6 @@ class TaggedAsThroughContainerCircularTest extends TestCase
         $class = $container->get(Fixtures\Circular\Attributes\ServiceUse::class);
 
         $this->assertInstanceOf(Fixtures\Circular\Attributes\ServiceUse::class, $class);
-
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches('/Trying call cyclical dependency.+One.+Two.+One/');
 
         iterator_to_array($class->services);
     }

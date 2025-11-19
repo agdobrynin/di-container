@@ -12,7 +12,7 @@ use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
@@ -86,8 +86,8 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
     public function testInjectRegularParametersAndTailArgs(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Does not accept unknown named parameter $other_two');
+        $this->expectException(ArgumentBuilderExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot build arguments for.+ Does not accept unknown named parameter \$other_two\./');
 
         $fn = static fn (#[Inject] Quux $quux) => $quux;
 

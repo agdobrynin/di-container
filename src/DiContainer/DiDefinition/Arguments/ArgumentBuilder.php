@@ -12,13 +12,12 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
-use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait;
 use ReflectionFunctionAbstract;
@@ -85,18 +84,18 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     /**
      * @return BindArgumentsType
      *
-     * @throws AutowireExceptionInterface
+     * @throws ArgumentBuilderException
      */
     private function basedOnBindArguments(): array
     {
         $args = [];
 
-        foreach ($this->functionOrMethod->getParameters() as $parameter) {
-            if (false !== $this->pushFromBindArguments($args, $parameter)) {
+        foreach ($this->functionOrMethod->getParameters() as $param) {
+            if (false !== $this->pushFromBindArguments($args, $param)) {
                 continue;
             }
 
-            $this->pushFromParameterType($args, $parameter);
+            $this->pushFromParameterType($args, $param);
         }
 
         array_push($args, ...$this->getTailArguments());
@@ -107,24 +106,31 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     /**
      * @return BindArgumentsType
      *
-     * @throws AutowireExceptionInterface
+     * @throws ArgumentBuilderException
      */
     private function basedOnPhpAttributes(): array
     {
         $args = [];
 
-        foreach ($this->functionOrMethod->getParameters() as $parameter) {
-            if (($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                array_push($args, ...$definitions);
+        foreach ($this->functionOrMethod->getParameters() as $param) {
+            try {
+                if (($definitions = $this->getDefinitionByAttributes($param))->valid()) {
+                    array_push($args, ...$definitions);
 
+                    continue;
+                }
+            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+                throw new ArgumentBuilderException(
+                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
+                    previous: $e
+                );
+            }
+
+            if (false !== $this->pushFromBindArguments($args, $param)) {
                 continue;
             }
 
-            if (false !== $this->pushFromBindArguments($args, $parameter)) {
-                continue;
-            }
-
-            $this->pushFromParameterType($args, $parameter);
+            $this->pushFromParameterType($args, $param);
         }
 
         array_push($args, ...$this->getTailArguments());
@@ -135,24 +141,31 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     /**
      * @return BindArgumentsType
      *
-     * @throws AutowireExceptionInterface
+     * @throws ArgumentBuilderException
      */
     private function basedOnBindArgumentsAsPriorityAndPhpAttributes(): array
     {
         $args = [];
 
-        foreach ($this->functionOrMethod->getParameters() as $parameter) {
-            if (false !== $this->pushFromBindArguments($args, $parameter)) {
+        foreach ($this->functionOrMethod->getParameters() as $param) {
+            if (false !== $this->pushFromBindArguments($args, $param)) {
                 continue;
             }
 
-            if (($definitions = $this->getDefinitionByAttributes($parameter))->valid()) {
-                array_push($args, ...$definitions);
+            try {
+                if (($definitions = $this->getDefinitionByAttributes($param))->valid()) {
+                    array_push($args, ...$definitions);
 
-                continue;
+                    continue;
+                }
+            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+                throw new ArgumentBuilderException(
+                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
+                    previous: $e
+                );
             }
 
-            $this->pushFromParameterType($args, $parameter);
+            $this->pushFromParameterType($args, $param);
         }
 
         array_push($args, ...$this->getTailArguments());
@@ -163,17 +176,20 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     /**
      * @param BindArgumentsType $args
      *
-     * @throws AutowireParameterTypeException
+     * @throws ArgumentBuilderException
      */
-    private function pushFromParameterType(array &$args, ReflectionParameter $parameter): void
+    private function pushFromParameterType(array &$args, ReflectionParameter $param): void
     {
         try {
-            $strType = $this->getParameterType($parameter, $this->container);
+            $strType = $this->getParameterType($param, $this->container);
             // @phpstan-ignore parameterByRef.type
-            $args[$parameter->getPosition()] = new DiDefinitionGet($strType);
+            $args[$param->getPosition()] = new DiDefinitionGet($strType);
         } catch (AutowireParameterTypeException $e) {
-            if (!$parameter->isDefaultValueAvailable()) {
-                throw $e;
+            if (!$param->isDefaultValueAvailable()) {
+                throw new ArgumentBuilderException(
+                    message: sprintf('Cannot build argument via type hint for %s in %s.', $param, functionName($param->getDeclaringFunction())),
+                    previous: $e
+                );
             }
         }
     }
@@ -183,16 +199,16 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      *
      * @return bool when argument found return true
      */
-    private function pushFromBindArguments(array &$args, ReflectionParameter $parameter): bool
+    private function pushFromBindArguments(array &$args, ReflectionParameter $param): bool
     {
         $argNameOrIndex = match (true) {
-            array_key_exists($parameter->name, $this->bindArguments) => $parameter->name,
-            array_key_exists($parameter->getPosition(), $this->bindArguments) => $parameter->getPosition(),
+            array_key_exists($param->name, $this->bindArguments) => $param->name,
+            array_key_exists($param->getPosition(), $this->bindArguments) => $param->getPosition(),
             default => false,
         };
 
         if (false !== $argNameOrIndex) {
-            if ($parameter->isVariadic()) {
+            if ($param->isVariadic()) {
                 foreach ($this->capturingVariadicArguments($argNameOrIndex) as $argKey => $definition) {
                     $args[$argKey] = $definition;
                 }
@@ -201,7 +217,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             }
 
             // @phpstan-ignore parameterByRef.type
-            $args[$parameter->getPosition()] = $this->bindArguments[$argNameOrIndex];
+            $args[$param->getPosition()] = $this->bindArguments[$argNameOrIndex];
 
             return true;
         }
@@ -210,8 +226,8 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
          * Even if the binding argument is not found by position or named argument,
          * it is possible to pass a named argument by any name.
          */
-        if ($parameter->isVariadic()) {
-            foreach ($this->capturingVariadicArguments($parameter->name) as $argKey => $definition) {
+        if ($param->isVariadic()) {
+            foreach ($this->capturingVariadicArguments($param->name) as $argKey => $definition) {
                 $args[$argKey] = $definition;
             }
 
@@ -228,7 +244,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      *
      * @return BindArgumentsType
      *
-     * @throws AutowireException
+     * @throws ArgumentBuilderException
      */
     private function getTailArguments(): array
     {
@@ -238,8 +254,8 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
             foreach ($tailArgs as $key => $value) {
                 if (is_string($key)) {
-                    throw new AutowireException(
-                        sprintf('Does not accept unknown named parameter $%s in %s', $key, functionName($this->functionOrMethod))
+                    throw new ArgumentBuilderException(
+                        sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', functionName($this->functionOrMethod), $key)
                     );
                 }
             }
@@ -273,9 +289,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
-    private function getDefinitionByAttributes(ReflectionParameter $parameter): Generator
+    private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        $attrs = $this->getAttributeOnParameter($parameter, $this->container);
+        $attrs = $this->getAttributeOnParameter($param, $this->container);
 
         if (!$attrs->valid()) {
             return;

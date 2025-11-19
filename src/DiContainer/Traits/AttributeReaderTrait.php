@@ -30,6 +30,7 @@ use function array_keys;
 use function count;
 use function implode;
 use function is_a;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 trait AttributeReaderTrait
@@ -95,7 +96,7 @@ trait AttributeReaderTrait
 
             if ($containerIdentifier === $autowire->getIdentifier()) {
                 throw new AutowireAttributeException(
-                    sprintf('Container identifier "%s" already defined by #[%s] for class "%s".', $autowire->getIdentifier(), Autowire::class, $reflectionClass->name),
+                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $containerIdentifier, Autowire::class, $containerIdentifier, $reflectionClass->name),
                 );
             }
 
@@ -152,11 +153,11 @@ trait AttributeReaderTrait
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
-    private function getAttributeOnParameter(ReflectionParameter $reflectionParameter, ContainerInterface $container): Generator
+    private function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
         $groupAttributes = [];
 
-        foreach ($reflectionParameter->getAttributes() as $attribute) {
+        foreach ($param->getAttributes() as $attribute) {
             $groupAttributes[$attribute->getName()][] = $attribute;
         }
 
@@ -169,29 +170,29 @@ trait AttributeReaderTrait
 
         if (count($intersectAttrs) > 1) {
             throw new AutowireAttributeException(
-                sprintf('Only one of the attributes %s may be declared.', '#['.implode('], #[', $intersectAttrs).']')
+                sprintf('Only one of the attributes %s may be declared at %s in %s.', '#['.implode('], #[', $intersectAttrs).']', $param, functionName($param->getDeclaringFunction()))
             );
         }
 
         if (isset($groupAttributes[Inject::class])) {
-            yield from $this->getInjectAttribute($reflectionParameter, $container);
+            yield from $this->getInjectAttribute($param, $container);
 
             return;
         }
 
         if (isset($groupAttributes[ProxyClosure::class])) {
-            yield from $this->getProxyClosureAttribute($reflectionParameter);
+            yield from $this->getProxyClosureAttribute($param);
 
             return;
         }
 
         if (isset($groupAttributes[TaggedAs::class])) {
-            yield from $this->getTaggedAsAttribute($reflectionParameter);
+            yield from $this->getTaggedAsAttribute($param);
 
             return;
         }
 
-        yield from $this->getInjectByCallableAttribute($reflectionParameter);
+        yield from $this->getInjectByCallableAttribute($param);
     }
 
     /**
@@ -277,11 +278,11 @@ trait AttributeReaderTrait
         }
     }
 
-    private function checkVariadic(ReflectionParameter $reflectionParameter, int $countAttributes, string $attribute): void
+    private function checkVariadic(ReflectionParameter $param, int $countAttributes, string $attribute): void
     {
-        if ($countAttributes > 1 && !$reflectionParameter->isVariadic()) {
+        if ($countAttributes > 1 && !$param->isVariadic()) {
             throw new AutowireAttributeException(
-                sprintf('The attribute #[%s] can only be applied once per non-variadic parameter.', $attribute)
+                sprintf('The attribute #[%s] can only be applied once per non-variadic %s in %s.', $attribute, $param, functionName($param->getDeclaringFunction()))
             );
         }
     }

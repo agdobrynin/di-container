@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition\Arguments;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use ReflectionFunctionAbstract;
 
 /**
@@ -28,7 +28,7 @@ interface ArgumentBuilderInterface
      *
      * @return BindArgumentsType
      *
-     * @throws AutowireExceptionInterface
+     * @throws ArgumentBuilderExceptionInterface
      */
     public function build(): array;
 
@@ -37,7 +37,7 @@ interface ArgumentBuilderInterface
      *
      * @return BindArgumentsType
      *
-     * @throws AutowireExceptionInterface
+     * @throws ArgumentBuilderExceptionInterface
      */
     public function buildByPriorityBindArguments(): array;
 }

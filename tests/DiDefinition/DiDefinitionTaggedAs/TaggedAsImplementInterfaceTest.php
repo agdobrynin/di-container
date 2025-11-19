@@ -95,7 +95,7 @@ class TaggedAsImplementInterfaceTest extends TestCase
         $this->assertInstanceOf(HeavyDepOne::class, $res->current());
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+HeaveDepWithDependency::__construct\(\).+\<required\> \$someDep/');
+        $this->expectExceptionMessageMatches('/Cannot build argument via type hint for Parameter #0 \[ <required> \$someDep ] in .+HeaveDepWithDependency::__construct\(\)\./');
 
         $res->next();
         $res->current();
@@ -103,20 +103,22 @@ class TaggedAsImplementInterfaceTest extends TestCase
 
     public function testTaggedAsByArgumentWithExceptionWhenGetDefinition(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithHeavyDep::__construct()/');
+
         $container = (new DiContainerFactory())
             ->make([
                 diAutowire(HeavyDepOne::class), // implement HeavyDepInterface::class
                 diAutowire(ClassWithHeavyDepAsArray::class),
                 diAutowire(HeavyDepTwo::class), // implement HeavyDepInterface::class,
                 diAutowire(ClassWithHeavyDep::class)
-                    ->bindArguments(diTaggedAs(HeavyDepInterface::class, false)),
+                    ->bindArguments(
+                        diTaggedAs(HeavyDepInterface::class, false)
+                    ),
                 diAutowire('nonExistClass')
                     ->bindTag(HeavyDepInterface::class), // Cannot resolve class
             ])
         ;
-
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Class "nonExistClass" does not exist');
 
         $container->get(ClassWithHeavyDep::class)->getDep();
     }

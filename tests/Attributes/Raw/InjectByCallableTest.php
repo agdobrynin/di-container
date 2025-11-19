@@ -40,7 +40,7 @@ class InjectByCallableTest extends TestCase
     public function testFailure(string $id): void
     {
         $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessage('The $callable parameter must be a non-empty string and must not contain spaces');
+        $this->expectExceptionMessage('The $callable parameter must be a non-empty string and must not contain spaces.');
 
         new InjectByCallable($id);
     }

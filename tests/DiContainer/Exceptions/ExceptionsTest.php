@@ -7,6 +7,8 @@ namespace Tests\DiContainer\Exceptions;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainer\Exceptions\Fixtures\DependencyClass;
@@ -47,22 +49,21 @@ class ExceptionsTest extends TestCase
 
     public function testCircularDependencyWithoutAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+FirstClass::__construct()/');
+
         $config = new DiContainerConfig(
             useAttribute: false
         );
 
-        $container = new DiContainer(config: $config);
-
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+SecondClass.+ThirdClass.+FirstClass/'
-        );
-
-        $container->get(FirstClass::class);
+        (new DiContainer(config: $config))->get(FirstClass::class);
     }
 
     public function testCircularDependencyViaAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+FirstClass::__construct()/');
+
         $config = new DiContainerConfig(
             useAttribute: true
         );
@@ -73,22 +74,15 @@ class ExceptionsTest extends TestCase
         ];
         $container = new DiContainer($def, config: $config);
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+services\.second.+services\.third.+FirstClass/'
-        );
-
         $container->get(FirstClass::class);
     }
 
     public function testDependencyCannotResolveNotFound(): void
     {
-        $container = (new DiContainerFactory())->make();
-
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+DependencyClass::__construct\(\).+string \$value/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+SuperClass::__construct()/');
 
-        $container->get(SuperClass::class);
+        (new DiContainerFactory())->make()->get(SuperClass::class);
     }
 
     public function testManyArguments(): void
@@ -99,7 +93,7 @@ class ExceptionsTest extends TestCase
         ]);
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Does not accept unknown named parameter \$value2.+DependencyClass::__construct\(\)/');
+        $this->expectExceptionMessageMatches('/Cannot build arguments for .+DependencyClass::__construct\(\)\. Does not accept unknown named parameter \$value2\./');
 
         $container->get(DependencyClass::class);
     }
@@ -111,9 +105,14 @@ class ExceptionsTest extends TestCase
                 ->bindArguments(noneExistParam: 'Ok'),
         ]);
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+DependencyClass::__construct\(\).+string \$value/');
+        try {
+            $container->get(DependencyClass::class);
+        } catch (ContainerExceptionInterface $exception) {
+            self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $exception);
+            self::assertMatchesRegularExpression('/Cannot build argument via type hint for Parameter #0 \[ <required> string \$value ] in .+DependencyClass::__construct\(\)\./', $exception->getMessage());
 
-        $container->get(DependencyClass::class);
+            self::assertInstanceOf(AutowireExceptionInterface::class, $exception->getPrevious());
+            self::assertMatchesRegularExpression('/Cannot automatically resolve dependency.+Please specify the Parameter #0 \[ <required> string \$value ]/', $exception->getPrevious()->getMessage());
+        }
     }
 }

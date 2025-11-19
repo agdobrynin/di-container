@@ -6,6 +6,9 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 
 interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
@@ -22,5 +25,11 @@ interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
      */
     public function getIdentifier(): string;
 
+    /**
+     * @throws AutowireExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws DiDefinitionExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function resolve(DiContainerInterface $container, mixed $context = null): object;
 }
