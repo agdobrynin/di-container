@@ -324,7 +324,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
     public function testParameterByTypeAndInjectToParameterWithDefaultValue(): void
     {
-        $fn = static fn (Bar $bar, #[Inject] ?BazInterface $baz = null, Foo ...$foo) => $baz;
+        $fn = static fn (
+            Bar $bar,
+            #[Inject]
+            ?BazInterface $baz = null,
+            Foo ...$foo
+        ) => $baz;
 
         $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
 
