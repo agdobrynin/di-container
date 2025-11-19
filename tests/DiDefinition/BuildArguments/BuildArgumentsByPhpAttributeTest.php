@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\BuildArguments;
 
 use Closure;
+use DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
@@ -307,5 +308,30 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         // argument order is important
         self::assertCount(1, $args);
         self::assertEquals(diGet(Quux::class), $args[0]);
+    }
+
+    public function testInjectToParameterWithDefaultValue(): void
+    {
+        $fn = static fn (?Bar $bar = null, #[Inject] ?BazInterface $baz = null, Foo ...$foo) => $baz;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $arg = $ba->build();
+
+        self::assertCount(1, $arg);
+        self::assertEquals(diGet(BazInterface::class), $arg[0]);
+    }
+
+    public function testParameterByTypeAndInjectToParameterWithDefaultValue(): void
+    {
+        $fn = static fn (Bar $bar, #[Inject] ?BazInterface $baz = null, Foo ...$foo) => $baz;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $arg = $ba->build();
+
+        self::assertCount(2, $arg);
+        self::assertEquals(diGet(Bar::class), $arg[0]);
+        self::assertEquals(diGet(BazInterface::class), $arg[1]);
     }
 }

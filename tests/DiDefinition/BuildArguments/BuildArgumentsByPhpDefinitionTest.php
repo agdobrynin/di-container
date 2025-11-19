@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\BuildArguments;
 
 use ArrayIterator;
+use DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
@@ -397,5 +398,16 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         self::assertInstanceOf(DiContainerInterface::class, $ba->getContainer());
         self::assertSame($fn, $ba->getFunctionOrMethod());
+    }
+
+    public function testToParameterWithDefaultValue(): void
+    {
+        $fn = static fn (?BazInterface $baz = null, BazInterface ...$opt) => $baz;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+
+        $arg = $ba->build();
+
+        self::assertEmpty($arg);
     }
 }

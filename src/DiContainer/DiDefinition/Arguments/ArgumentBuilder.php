@@ -182,8 +182,10 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     {
         try {
             $strType = $this->getParameterType($param, $this->container);
-            // @phpstan-ignore parameterByRef.type
-            $args[$param->getPosition()] = new DiDefinitionGet($strType);
+
+            if ($this->container->has($strType) || !$param->isDefaultValueAvailable()) {
+                $args[$param->getPosition()] = new DiDefinitionGet($strType); // @phpstan-ignore parameterByRef.type
+            }
         } catch (AutowireParameterTypeException $e) {
             if (!$param->isDefaultValueAvailable()) {
                 throw new ArgumentBuilderException(
