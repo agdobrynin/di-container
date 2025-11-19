@@ -7,7 +7,7 @@ namespace Tests\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\CallableArgument;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MainClass;
@@ -29,6 +29,7 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  *
  * @internal
@@ -69,12 +70,10 @@ class DiDefinitionTest extends TestCase
 
     public function testInjectNonCallable(): void
     {
-        $container = new DiContainer(config: new DiContainerConfig());
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ServiceFour::__construct()/');
 
-        $this->expectException(DiDefinitionCallableException::class);
-        $this->expectExceptionMessage('Cannot convert definition to callable type.');
-
-        $container->get(ServiceFour::class);
+        (new DiContainer(config: new DiContainerConfig()))->get(ServiceFour::class);
     }
 
     public function testInjectCallableFromStaticMethod(): void

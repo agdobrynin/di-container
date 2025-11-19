@@ -29,8 +29,10 @@ use ReflectionException;
 
 use function get_class;
 use function get_debug_type;
+use function is_int;
 use function is_object;
 use function is_string;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 /**
@@ -146,9 +148,13 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                 $resolvedArguments = [];
 
                 foreach ($argBuilder->buildByPriorityBindArguments() as $argNameOrIndex => $arg) {
-                    $resolvedArguments[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                        ? $arg->resolve($container, $this)
-                        : $arg;
+                    try {
+                        $resolvedArguments[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
+                            ? $arg->resolve($container, $this)
+                            : $arg;
+                    } catch (ContainerExceptionInterface $e) {
+                        throw $this->exceptionWhenResolveArgument($argNameOrIndex, $argBuilder, $e);
+                    }
                 }
 
                 if (SetupConfigureMethod::Mutable === $setupConfigureType) {
@@ -283,9 +289,13 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $resolvedArguments = [];
 
         foreach ($this->constructArgBuilder->build() as $argNameOrIndex => $arg) {
-            $resolvedArguments[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                ? $arg->resolve($this->getContainer(), $this)
-                : $arg;
+            try {
+                $resolvedArguments[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
+                    ? $arg->resolve($this->getContainer(), $this)
+                    : $arg;
+            } catch (ContainerExceptionInterface $e) {
+                throw $this->exceptionWhenResolveArgument($argNameOrIndex, $this->constructArgBuilder, $e);
+            }
         }
 
         return $this->getDefinition()->newInstanceArgs($resolvedArguments);
@@ -319,5 +329,17 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         }
 
         return $this->tagsByAttribute;
+    }
+
+    private function exceptionWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder, ContainerExceptionInterface $e): AutowireException
+    {
+        $argMessage = is_int($argNameOrIndex)
+            ? sprintf('at position #%d', $argNameOrIndex)
+            : sprintf('by named argument $%s', $argNameOrIndex);
+
+        return new AutowireException(
+            message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod())),
+            previous: $e
+        );
     }
 }

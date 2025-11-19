@@ -6,13 +6,11 @@ namespace Tests\DiContainerCall;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
 use Tests\DiContainerCall\Fixtures\Foo;
 
@@ -96,7 +94,7 @@ class CallFunctionTest extends TestCase
     public function testUserFunctionInjectByAttributeFail(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Unresolvable dependency "service\.append"/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #1.+funcWithDependencyClass()/');
 
         $definitions = [
             diAutowire(ClassWithSimplePublicProperty::class),
@@ -127,12 +125,10 @@ class CallFunctionTest extends TestCase
 
     public function testUserFunctionUnresolvedArgument(): void
     {
-        $container = new DiContainer();
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+funcWithDependencyClass()/');
 
-        $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Unresolvable dependency.+ClassWithSimplePublicProperty/');
-
-        $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
+        (new DiContainer())->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
     }
 
     public function testClosureSuccess(): void
@@ -180,20 +176,12 @@ class CallFunctionTest extends TestCase
 
     public function testClosureFail(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+{closure.+()/');
+
         $helper = static fn (Foo $foo) => $foo->baz;
 
-        $container = new DiContainer(config: new DiContainerConfig());
-
-        // $this->expectException(AutowireParameterTypeException::class);
-        try {
-            $container->call($helper);
-        } catch (ContainerExceptionInterface $e) {
-            self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
-            self::assertMatchesRegularExpression('/Cannot build argument via type hint for Parameter #0 \[ <required> string \$baz ] in .+Foo::__construct\(\)\./', $e->getMessage());
-
-            self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
-            self::assertMatchesRegularExpression('/Cannot automatically resolve dependency in .+Foo::__construct\(\)\. Please specify the Parameter #0 \[ <required> string \$baz ]\./', $e->getPrevious()->getMessage());
-        }
+        (new DiContainer(config: new DiContainerConfig()))->call($helper);
     }
 
     public function testClassNotRegisteredInContainer(): void

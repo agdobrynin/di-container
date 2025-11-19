@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Closure;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -28,8 +29,10 @@ use function call_user_func_array;
 use function explode;
 use function is_array;
 use function is_callable;
+use function is_int;
 use function is_object;
 use function is_string;
+use function Kaspi\DiContainer\functionName;
 use function sprintf;
 use function strpos;
 use function var_export;
@@ -88,9 +91,20 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         $resolvedArgs = [];
 
         foreach ($this->argBuilder->build() as $argNameOrIndex => $arg) {
-            $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                ? $arg->resolve($container, $this)
-                : $arg;
+            try {
+                $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
+                    ? $arg->resolve($container, $this)
+                    : $arg;
+            } catch (ContainerExceptionInterface $e) {
+                $argMessage = is_int($argNameOrIndex)
+                    ? sprintf('at position #%d', $argNameOrIndex)
+                    : sprintf('by named argument $%s', $argNameOrIndex);
+
+                throw new AutowireException(
+                    message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($this->argBuilder->getFunctionOrMethod())),
+                    previous: $e
+                );
+            }
         }
 
         if ($this->reflectionFn instanceof ReflectionMethod) {

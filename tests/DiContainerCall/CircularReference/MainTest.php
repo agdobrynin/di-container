@@ -6,9 +6,9 @@ namespace Tests\DiContainerCall\CircularReference;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainerCall\CircularReference\Fixtures\ClassWithMethod;
 use Tests\DiContainerCall\CircularReference\Fixtures\FirstClass;
 use Tests\DiContainerCall\CircularReference\Fixtures\SecondClass;
@@ -30,6 +30,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  *
  * @internal
@@ -53,6 +54,9 @@ class MainTest extends TestCase
 
     public function testCircularByInjectInMethod(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithMethod::method()/');
+
         $definitions = [
             diAutowire(FirstClass::class),
             'services.second' => diAutowire(SecondClass::class),
@@ -62,15 +66,7 @@ class MainTest extends TestCase
 
         $container = new DiContainer($definitions, new DiContainerConfig(useZeroConfigurationDefinition: false));
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+services\.second.+services\.third.+FirstClass/'
-        );
-
-        $container->call(
-            [ClassWithMethod::class, 'method'],
-            ['service' => diGet('services.second')]
-        );
+        $container->call([ClassWithMethod::class, 'method'], ['service' => diGet('services.second')]);
     }
 
     public function testCircularWithoutAttribute(): void
@@ -91,6 +87,9 @@ class MainTest extends TestCase
 
     public function testCircularInMethodWithoutAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithMethod::method()/');
+
         $definitions = [
             diAutowire(FirstClass::class),
             diAutowire(SecondClass::class),
@@ -101,19 +100,14 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+SecondClass.+FirstClass/'
-        );
-
-        $container->call(
-            [ClassWithMethod::class, 'method'],
-            ['service' => diAutowire(ThirdClass::class)]
-        );
+        $container->call([ClassWithMethod::class, 'method'], ['service' => diAutowire(ThirdClass::class)]);
     }
 
     public function testCircularInMethodByTaggedAsWithoutAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithMethod::method()/');
+
         $definitions = [
             diAutowire(FirstClass::class),
             diAutowire(SecondClass::class),
@@ -125,14 +119,6 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+ThirdClass.+FirstClass.+SecondClass.+ThirdClass/'
-        );
-
-        $container->call(
-            [ClassWithMethod::class, 'method'],
-            ['service' => diTaggedAs('tag-one', false)]
-        );
+        $container->call([ClassWithMethod::class, 'method'], ['service' => diTaggedAs('tag-one', false)]);
     }
 }
