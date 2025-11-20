@@ -7,7 +7,7 @@ namespace Tests\DiContainer\Constructor;
 use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -15,6 +15,7 @@ use function Kaspi\DiContainer\diCallable;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\Exception\ContainerIdentifierException
  *
  * @internal
  */
@@ -25,8 +26,8 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
      */
     public function testDefinitionWithoutStringIdentifier(iterable $definition): void
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('must be a non-empty string');
+        $this->expectException(ContainerIdentifierExceptionInterface::class);
+        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
 
         new DiContainer($definition);
     }
@@ -35,9 +36,11 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
     {
         yield 'digit only' => [[10]];
 
-        yield 'object' => [[new stdClass()]];
+        yield 'object' => [[20 => new stdClass()]];
 
         yield 'array' => [[[]]];
+
+        yield 'one string' => [['string']];
 
         yield 'try pass class implement DiDefinitionInterface' => [[diCallable(static fn () => 'string')]];
     }
@@ -59,12 +62,6 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
             'definitions' => ['string' => 'foo'],
             'identifier' => 'string',
             'definition' => 'foo',
-        ];
-
-        yield 'string only' => [
-            'definitions' => ['string'],
-            'identifier' => 'string',
-            'definition' => 'string',
         ];
 
         $class = new class implements DiDefinitionIdentifierInterface {
