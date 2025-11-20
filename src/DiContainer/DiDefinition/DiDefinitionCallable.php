@@ -96,9 +96,9 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
                     ? $arg->resolve($container, $this)
                     : $arg;
             } catch (ContainerExceptionInterface $e) {
-                $argMessage = is_int($argNameOrIndex)
-                    ? sprintf('at position #%d', $argNameOrIndex)
-                    : sprintf('by named argument $%s', $argNameOrIndex);
+                $argMessage = is_int($argPresentedBy = $this->argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex))
+                    ? sprintf('at position #%d', $argPresentedBy)
+                    : sprintf('by named argument $%s', $argPresentedBy);
 
                 throw new AutowireException(
                     message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($this->argBuilder->getFunctionOrMethod())),

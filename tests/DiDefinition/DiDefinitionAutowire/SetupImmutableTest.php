@@ -8,17 +8,21 @@ use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\Foo;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooBar;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutable;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttribute;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupImmutableByAttributeWithArgumentAsDefinition;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SomeClass;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
@@ -31,6 +35,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
+ * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
@@ -184,7 +189,7 @@ class SetupImmutableTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
 
-        $def->resolve($this->createMock(DiContainerInterface::class));
+        $def->resolve($this->mockContainer);
     }
 
     public function dataProviderSetupOnMethod(): Generator
@@ -192,5 +197,61 @@ class SetupImmutableTest extends TestCase
         yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
 
         yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
+    }
+
+    public function testResolveFailBindNamedArgumentWithoutAttribute(): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$rule in.+Foo::method()/');
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: false))
+        ;
+
+        $mockContainer->method('get')
+            ->willReturnCallback(static function (string $id) {
+                if ('services.secure_string' === $id) {
+                    return 'secure_string';
+                }
+
+                throw new NotFoundException();
+            })
+        ;
+
+        $def = (new DiDefinitionAutowire(Foo::class))
+            ->setupImmutable(
+                'method',
+                diGet('services.secure_string'),
+                rule: diGet('services.rule_a')
+            )
+        ;
+
+        $def->resolve($mockContainer);
+    }
+
+    public function testResolveFailBindNamedArgumentByAttribute(): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$rule in.+FooBar::method()/');
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $mockContainer->method('get')
+            ->willReturnCallback(static function (string $id) {
+                if ('services.secure_string' === $id) {
+                    return 'secure_string';
+                }
+
+                throw new NotFoundException();
+            })
+        ;
+
+        (new DiDefinitionAutowire(FooBar::class))
+            ->resolve($mockContainer)
+        ;
     }
 }

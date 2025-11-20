@@ -333,9 +333,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
     private function exceptionWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder, ContainerExceptionInterface $e): AutowireException
     {
-        $argMessage = is_int($argNameOrIndex)
-            ? sprintf('at position #%d', $argNameOrIndex)
-            : sprintf('by named argument $%s', $argNameOrIndex);
+        $argMessage = is_int($argPresentedBy = $argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex))
+            ? sprintf('at position #%d', $argPresentedBy)
+            : sprintf('by named argument $%s', $argPresentedBy);
 
         return new AutowireException(
             message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod())),
