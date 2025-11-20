@@ -55,7 +55,7 @@ class MainTest extends TestCase
     public function testCircularByInjectInMethod(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithMethod::method()/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method()/');
 
         $definitions = [
             diAutowire(FirstClass::class),
@@ -88,7 +88,7 @@ class MainTest extends TestCase
     public function testCircularInMethodWithoutAttribute(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithMethod::method()/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method()/');
 
         $definitions = [
             diAutowire(FirstClass::class),
@@ -106,7 +106,7 @@ class MainTest extends TestCase
     public function testCircularInMethodByTaggedAsWithoutAttribute(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithMethod::method()/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method()/');
 
         $definitions = [
             diAutowire(FirstClass::class),
