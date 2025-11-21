@@ -12,7 +12,6 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo;
 use Throwable;
 
@@ -34,6 +33,7 @@ use function unlink;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
  * @covers \Kaspi\DiContainer\ImportLoader
@@ -211,9 +211,10 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
     public function testImportCacheFileUnlinkWhenHasThrow(): void
     {
-        $fileName = __DIR__.'/../_var/cache/'.__FUNCTION__.'_cache.php';
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Interface ".+ContainerInterface" not found/');
 
-        $this->expectException(RuntimeException::class);
+        $fileName = __DIR__.'/../_var/cache/'.__FUNCTION__.'_cache.php';
 
         (new DefinitionsLoader(importCacheFile: $fileName))
             ->import('Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\\', __DIR__.'/Fixtures/ImportReflectionFail')

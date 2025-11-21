@@ -6,9 +6,7 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
 interface DefinitionsLoaderInterface
 {
@@ -22,7 +20,6 @@ interface DefinitionsLoaderInterface
      * @return $this
      *
      * @throws DefinitionsLoaderExceptionInterface
-     * @throws ContainerAlreadyRegisteredExceptionInterface
      */
     public function load(string ...$file): static;
 
@@ -42,8 +39,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws DiDefinitionExceptionInterface
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static;
 
