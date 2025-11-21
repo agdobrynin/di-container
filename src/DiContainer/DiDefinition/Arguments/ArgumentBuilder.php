@@ -272,9 +272,14 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
             foreach ($tailArgs as $key => $value) {
                 if (is_string($key)) {
-                    throw new ArgumentBuilderException(
+                    throw (new ArgumentBuilderException(
                         sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', functionName($this->functionOrMethod), $key)
-                    );
+                    ))
+                        ->setContext(
+                            bind_arguments: $this->bindArguments,
+                            tail_args: $tailArgs,
+                        )
+                    ;
                 }
             }
 
