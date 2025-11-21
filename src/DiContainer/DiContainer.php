@@ -24,7 +24,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
@@ -80,7 +80,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      *
-     * @throws DiDefinitionExceptionInterface
+     * @throws ContainerIdentifierExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
      */
     public function __construct(
@@ -122,7 +122,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function set(string $id, mixed $definition): static
     {
-        $this->getIdentifier($id, null); // check only $id
+        $this->getIdentifier($id, $definition);
 
         if (array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException(

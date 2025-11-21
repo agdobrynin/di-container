@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Kaspi\DiContainer\DefinitionsLoader
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\Exception\ContainerIdentifierException
  *
  * @internal
  */

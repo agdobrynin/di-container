@@ -13,7 +13,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 
 interface DiContainerSetterInterface
 {
@@ -22,7 +22,7 @@ interface DiContainerSetterInterface
      * @param DiDefinitionArgumentsInterface|DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTagArgumentInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionInterface|mixed|object $definition
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface
-     * @throws DiDefinitionExceptionInterface
+     * @throws ContainerIdentifierExceptionInterface
      */
     public function set(string $id, mixed $definition): static;
 }

@@ -6,12 +6,15 @@ namespace Tests\DiContainer\Set;
 
 use Generator;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
  * @covers \Kaspi\DiContainer\DiContainer
+ * @covers \Kaspi\DiContainer\Exception\ContainerIdentifierException
  *
  * @internal
  */
@@ -20,19 +23,18 @@ class DiContainerSetTest extends TestCase
     /**
      * @dataProvider dataProviderWrongIdentifier
      */
-    public function testWrongIdentifier(string $id): void
+    public function testWrongIdentifier(string $identifier, mixed $definition): void
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('must be a non-empty string');
+        $this->expectException(ContainerIdentifierExceptionInterface::class);
 
-        (new DiContainer())->set($id, 'foo');
+        (new DiContainer())->set($identifier, $definition);
     }
 
     public function dataProviderWrongIdentifier(): Generator
     {
-        yield 'empty string' => [''];
+        yield 'empty string' => ['', new stdClass()];
 
-        yield 'spaces' => ['   '];
+        yield 'empty definition and definition without identifier' => ['', new DiDefinitionValue('oooo')];
     }
 
     /**
