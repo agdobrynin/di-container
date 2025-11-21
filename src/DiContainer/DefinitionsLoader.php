@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
@@ -99,9 +100,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
-                throw new DefinitionsLoaderInvalidArgumentException(
+                throw new ContainerAlreadyRegisteredException(
                     sprintf(
-                        'Definition with identifier "%s" is already registered. Item position #%d.',
+                        'Definition with identifier "%s" is already registered in container. Item position #%d.',
                         $identifier,
                         $itemCount
                     )
@@ -402,7 +403,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             try {
                 $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
                 unset($srcFile);
-            } catch (DefinitionsLoaderExceptionInterface $e) {
+            } catch (ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('Invalid definition in file "%s".', $srcFile),
                     previous: $e

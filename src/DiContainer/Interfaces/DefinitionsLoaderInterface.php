@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
@@ -39,7 +40,7 @@ interface DefinitionsLoaderInterface
      *
      * @return $this
      *
-     * @throws DefinitionsLoaderExceptionInterface
+     * @throws ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface
      */
     public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static;
 

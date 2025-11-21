@@ -6,6 +6,7 @@ namespace Tests\DefinitionsLoader;
 
 use Generator;
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -81,5 +82,23 @@ class DefinitionsLoaderTest extends TestCase
         $loader->loadOverride(__DIR__.'/Fixtures/config2.php');
 
         $this->assertEquals('ok2', $loader->definitions()->current()());
+    }
+
+    public function testContainerIdentifierAlreadyRegistered(): void
+    {
+        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+
+        $config = static function (): Generator {
+            yield 'services.foo' => 'foo';
+
+            yield 'services.bar' => 'bar';
+        };
+
+        $config2 = static function (): Generator {
+            yield 'services.foo' => 'baz';
+        };
+
+        $def = (new DefinitionsLoader())->addDefinitions(false, $config());
+        $def->addDefinitions(false, $config2());
     }
 }
