@@ -16,17 +16,17 @@ class ContainerIdentifierExceptionTest extends TestCase
 {
     public function testDefaultMessage(): void
     {
-        $e = new ContainerIdentifierException(100, ['foo' => 'bar']);
+        $e = new ContainerIdentifierException(context_id: 100, contect_definition: ['foo' => 'bar']);
 
         self::assertEquals('Definition identifier must be a non-empty string.', $e->getMessage());
-        self::assertSame(100, $e->getIdentifier());
-        self::assertSame(['foo' => 'bar'], $e->getDefinition());
+        self::assertEquals(['context_id' => 100, 'contect_definition' => ['foo' => 'bar']], $e->getContext());
     }
 
     public function testCustomMessage(): void
     {
-        $e = new ContainerIdentifierException(100, ['foo' => 'bar'], 'Lorem ipsum dolor sit amet.');
+        $e = new ContainerIdentifierException('Lorem ipsum dolor sit amet.');
 
         self::assertEquals('Lorem ipsum dolor sit amet.', $e->getMessage());
+        self::assertEmpty($e->getContext());
     }
 }

@@ -8,7 +8,8 @@ use Psr\Container\ContainerExceptionInterface;
 
 interface ContainerIdentifierExceptionInterface extends ContainerExceptionInterface
 {
-    public function getIdentifier(): mixed;
-
-    public function getDefinition(): mixed;
+    /**
+     * @return array<non-negative-int|string, mixed>
+     */
+    public function getContext(): array;
 }
