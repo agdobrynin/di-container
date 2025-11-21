@@ -18,18 +18,14 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use ParseError;
-use Psr\Container\ContainerExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
@@ -68,7 +64,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private SplFileInfo $splFileInfoImportCacheFile;
 
     public function __construct(
-        private ?string $importCacheFile = null,
+        private readonly ?string $importCacheFile = null,
         private ?ImportLoaderCollectionInterface $importLoaderCollection = null,
     ) {
         $this->configDefinitions = new ArrayIterator();
@@ -97,7 +93,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 /** @var class-string|non-empty-string $identifier */
                 $identifier = $this->getIdentifier($identifier, $definition);
             } catch (ContainerIdentifierExceptionInterface $e) {
-                throw new DiDefinitionException(
+                throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('%s Item position #%d.', $e->getMessage(), $itemCount),
                     previous: $e
                 );
@@ -106,7 +102,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
                 throw new ContainerAlreadyRegisteredException(
                     sprintf(
-                        'Definition with identifier "%s" is already registered. Item position #%d.',
+                        'Definition with identifier "%s" is already registered in container. Item position #%d.',
                         $identifier,
                         $itemCount
                     )
@@ -128,11 +124,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
             if (!$importCacheFile->isReadable()) {
-                throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf(
+                throw new DefinitionsLoaderException(
+                    message: sprintf(
                         'Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".',
                         $importCacheFile->getPathname()
-                    )
+                    ),
+                    context_file: $importCacheFile
                 );
             }
 
@@ -149,7 +146,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     .'return static function () {'.PHP_EOL
                 );
             } catch (RuntimeException $e) {
-                throw new DefinitionsLoaderInvalidArgumentException(
+                throw new DefinitionsLoaderException(
                     sprintf(
                         'Cannot create cache file for imported definitions via DefinitionsLoader::import(). File: "%s".',
                         $importCacheFile->getPathname()
@@ -169,7 +166,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         }
                     }
                 }
-            } catch (AutowireExceptionInterface|DiDefinitionExceptionInterface|InvalidArgumentException|RuntimeException $e) {
+            } catch (DefinitionsLoaderExceptionInterface|InvalidArgumentException|RuntimeException $e) {
                 if (null !== $file) {
                     @unlink($file->getPathname());
                 }
@@ -253,9 +250,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
      *
-     * @throws AutowireExceptionInterface
      * @throws DefinitionsLoaderExceptionInterface
-     * @throws DiDefinitionExceptionInterface
      */
     private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
@@ -263,12 +258,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
             throw new DefinitionsLoaderInvalidArgumentException(
-                sprintf(
+                message: sprintf(
                     'Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.',
                     T_INTERFACE,
                     T_CLASS,
                     var_export($tokenId, true)
-                )
+                ),
+                context_item_f_q_n: $itemFQN
             );
         }
 
@@ -296,13 +292,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if ($this->isAutowireExclude($reflectionClass)) {
             return $this->configDefinitions->offsetExists($reflectionClass->name)
-                ? throw new DiDefinitionException(
-                    sprintf(
+                ? throw new DefinitionsLoaderInvalidArgumentException(
+                    message: sprintf(
                         'Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.',
                         AutowireExclude::class,
                         $reflectionClass->name,
                         $reflectionClass->name
-                    )
+                    ),
+                    context_reflection_class: $reflectionClass
                 )
                 : [];
         }
@@ -315,13 +312,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
-                throw new DiDefinitionException(
-                    sprintf(
+                throw new DefinitionsLoaderInvalidArgumentException(
+                    message: sprintf(
                         'Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.',
                         Service::class,
                         $reflectionClass->name,
                         $reflectionClass->name
-                    )
+                    ),
+                    context_reflection_class: $reflectionClass
                 );
             }
 
@@ -337,13 +335,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             foreach ($autowireAttrs as $autowireAttr) {
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
-                    throw new DiDefinitionException(
-                        sprintf(
+                    throw new DefinitionsLoaderInvalidArgumentException(
+                        message: sprintf(
                             'Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.',
                             Autowire::class,
                             $autowireAttr->getIdentifier(),
                             $reflectionClass->name
-                        )
+                        ),
+                        context_reflection_class: $reflectionClass
                     );
                 }
 
@@ -362,13 +361,16 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             : [$reflectionClass->name => new DiDefinitionAutowire($reflectionClass->name)];
     }
 
+    /**
+     * @throws DefinitionsLoaderException
+     */
     private function getIteratorFromFile(string $srcFile): Generator
     {
         try {
             ob_start();
             $content = require $srcFile;
         } catch (Error|ParseError $e) {
-            throw new DefinitionsLoaderInvalidArgumentException(
+            throw new DefinitionsLoaderException(
                 sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $srcFile),
                 previous: $e
             );
@@ -379,25 +381,32 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return match (true) {
             is_iterable($content) => yield from $content,
             $content instanceof Closure && is_iterable($content()) => yield from $content(),
-            default => throw new DefinitionsLoaderInvalidArgumentException(
-                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile)
+            default => throw new DefinitionsLoaderException(
+                message: sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile),
+                context_content: $content
             )
         };
     }
 
+    /**
+     * @throws DefinitionsLoaderInvalidArgumentException
+     */
     private function loadFormFile(bool $overrideDefinitions, string ...$file): void
     {
         foreach ($file as $srcFile) {
             if (!file_exists($srcFile) || !is_readable($srcFile)) {
-                throw new DefinitionsLoaderInvalidArgumentException(sprintf('The file "%s" does not exist or is not readable.', $srcFile));
+                throw new DefinitionsLoaderInvalidArgumentException(
+                    sprintf('The file "%s" does not exist or is not readable.', $srcFile)
+                );
             }
 
             try {
                 $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
                 unset($srcFile);
-            } catch (ContainerExceptionInterface|DiDefinitionExceptionInterface $e) {
+            } catch (ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('Invalid definition in file "%s". Reason: %s', $srcFile, $e->getMessage())
+                    message: sprintf('Invalid definition in file "%s".', $srcFile),
+                    previous: $e
                 );
             }
         }

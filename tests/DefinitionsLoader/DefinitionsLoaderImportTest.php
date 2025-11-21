@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use ArrayIterator;
-use InvalidArgumentException;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
@@ -15,7 +14,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
-use RuntimeException;
 use Tests\AppClass;
 use Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\Two;
 
@@ -38,6 +36,7 @@ use const T_TRAIT;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
  * @covers \Kaspi\DiContainer\ImportLoader
@@ -170,12 +169,12 @@ class DefinitionsLoaderImportTest extends TestCase
 
     public function testImportAlreadyExists(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('is already imported');
+
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('is already imported');
 
         $loader->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import');
     }
@@ -218,7 +217,7 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import('Tests\\', __DIR__.'/Fixtures/ImportReflectionFail')
         ;
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Reason: Interface "Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\ContainerInterface" not found');
 
         (new DiContainerFactory())->make($loader->definitions());
@@ -245,6 +244,9 @@ class DefinitionsLoaderImportTest extends TestCase
 
     public function testImportWhenFinderFullyQualifiedNameReturnNotValidToken(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Unsupported token id');
+
         $importLoaderCollection = $this->createMock(ImportLoaderCollectionInterface::class);
         $importLoaderCollection->method('getFullyQualifiedName')
             // iterable<non-negative-int, array{namespace: non-empty-string, itemFQN: ItemFQN}>
@@ -258,9 +260,6 @@ class DefinitionsLoaderImportTest extends TestCase
                 ],
             ])
         ;
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Unsupported token id');
 
         (new DefinitionsLoader(importLoaderCollection: $importLoaderCollection))
             ->import('Tests\\', __DIR__.'/../')

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use Generator;
-use InvalidArgumentException;
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\Exception\ContainerIdentifierException
+ * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
  *
  * @internal
  */
@@ -25,8 +26,8 @@ class DefinitionsLoaderTest extends TestCase
      */
     public function testInvalidFileContent(string $file): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('return not valid format');
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Invalid definition in file');
 
         (new DefinitionsLoader())->load($file);
     }
@@ -40,7 +41,7 @@ class DefinitionsLoaderTest extends TestCase
 
     public function testFileNotFound(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('does not exist or is not readable');
 
         (new DefinitionsLoader())->load('f.php');
@@ -52,7 +53,7 @@ class DefinitionsLoaderTest extends TestCase
     public function testDefinitionException(string $file): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('~Invalid definition in file "'.$file.'".+Definition identifier must be a non-empty string~');
+        $this->expectExceptionMessage('Invalid definition in file "'.$file.'".');
 
         (new DefinitionsLoader())->load($file);
     }
@@ -67,7 +68,7 @@ class DefinitionsLoaderTest extends TestCase
     public function testOverrideDefinitionException(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('already registered');
+        $this->expectExceptionMessage('Invalid definition in file');
 
         (new DefinitionsLoader())->load(
             __DIR__.'/Fixtures/config1.php',
@@ -81,5 +82,23 @@ class DefinitionsLoaderTest extends TestCase
         $loader->loadOverride(__DIR__.'/Fixtures/config2.php');
 
         $this->assertEquals('ok2', $loader->definitions()->current()());
+    }
+
+    public function testContainerIdentifierAlreadyRegistered(): void
+    {
+        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+
+        $config = static function (): Generator {
+            yield 'services.foo' => 'foo';
+
+            yield 'services.bar' => 'bar';
+        };
+
+        $config2 = static function (): Generator {
+            yield 'services.foo' => 'baz';
+        };
+
+        $def = (new DefinitionsLoader())->addDefinitions(false, $config());
+        $def->addDefinitions(false, $config2());
     }
 }
