@@ -9,13 +9,16 @@ use Throwable;
 
 final class ContainerIdentifierException extends ContainerException implements ContainerIdentifierExceptionInterface
 {
-    public function __construct(
-        private readonly mixed $identifier,
-        private readonly mixed $definition,
-        string $message = '',
-        int $code = 0,
-        ?Throwable $previous = null
-    ) {
+    /** @var array<non-negative-int|string, mixed> */
+    private readonly array $context;
+
+    public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null, mixed ...$context)
+    {
+        /**
+         * @phpstan-var array<string|non-negative-int, mixed> $context
+         */
+        $this->context = $context;
+
         if ('' === $message) {
             $message = 'Definition identifier must be a non-empty string.';
         }
@@ -23,13 +26,8 @@ final class ContainerIdentifierException extends ContainerException implements C
         parent::__construct($message, $code, $previous);
     }
 
-    public function getIdentifier(): mixed
+    public function getContext(): array
     {
-        return $this->identifier;
-    }
-
-    public function getDefinition(): mixed
-    {
-        return $this->definition;
+        return $this->context;
     }
 }
