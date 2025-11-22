@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Closure;
-use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
@@ -37,7 +37,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
     public function resolve(DiContainerInterface $container, mixed $context = null): Closure
     {
         if (!$container->has($this->getDefinition())) {
-            throw new AutowireException(sprintf('Definition "%s" does not exist.', $this->getDefinition()));
+            throw new DiDefinitionException(sprintf('Cannot get entry by container identifier "%s"', $this->getDefinition()));
         }
 
         return function () use ($container) {
@@ -50,8 +50,14 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
      */
     public function getDefinition(): string
     {
-        return $this->verifyDefinition ??= '' === trim($this->definition)
-            ? throw new AutowireException(sprintf('Definition for "%s" must be non-empty string.', __CLASS__))
-            : $this->definition;
+        if (isset($this->verifyDefinition)) {
+            return $this->verifyDefinition;
+        }
+
+        if ('' === trim($this->definition)) {
+            throw new DiDefinitionException(sprintf('Parameter $definition for %s::__construct() must be non-empty string.', __CLASS__));
+        }
+
+        return $this->verifyDefinition = $this->definition;
     }
 }
