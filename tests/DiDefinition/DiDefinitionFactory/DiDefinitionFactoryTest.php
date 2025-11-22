@@ -8,7 +8,7 @@ use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Bar;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Bat;
@@ -46,7 +46,7 @@ class DiDefinitionFactoryTest extends TestCase
      */
     public function testGetDefinitionFail(string $class): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
 
         $factory = new DiDefinitionFactory($class);
 
