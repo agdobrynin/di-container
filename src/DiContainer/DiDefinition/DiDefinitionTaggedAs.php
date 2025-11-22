@@ -211,11 +211,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
                 try {
                     $method = explode('::', $optionKey)[1];
-                    $key = $this->getKeyFromMethod($taggedAs->getIdentifier(), $method, $taggedAs);
 
-                    return '' === $key || '' === trim($key)
-                        ? throw new AutowireException('Return value must be non-empty string.')
-                        : $key;
+                    return $this->getKeyFromMethod($taggedAs->getIdentifier(), $method, $taggedAs);
                 } catch (AutowireExceptionInterface|ReflectionException $e) {
                     throw new DiDefinitionException(
                         message: sprintf('Cannot get key for tag "%s" by method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
@@ -230,11 +227,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         }
 
         try {
-            $key = $this->getKeyFromMethod($taggedAs->getIdentifier(), $this->keyDefaultMethod, $taggedAs);
-
-            return '' === $key || '' === trim($key)
-                ? throw new AutowireException('Return value must be non-empty string.')
-                : $key;
+            return $this->getKeyFromMethod($taggedAs->getIdentifier(), $this->keyDefaultMethod, $taggedAs);
         } catch (ReflectionException) {
             return $identifier;
         } catch (AutowireExceptionInterface $e) {
@@ -246,13 +239,15 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
+     * @return non-empty-string
+     *
      * @throws AutowireException|ReflectionException
      */
     private function getKeyFromMethod(string $class, string $method, DiTaggedDefinitionInterface $taggedAs): string
     {
         $rm = new ReflectionMethod($class, $method);
 
-        if (!$rm->isPublic() && !$rm->isStatic()) {
+        if (!$rm->isPublic() || !$rm->isStatic()) {
             throw new AutowireException('Method must be declared with public and static modifiers.');
         }
 
@@ -260,6 +255,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             throw new AutowireException(sprintf('Method must return type "string" but return type is "%s"', $rt));
         }
 
-        return $rm->invoke(null, $this->tag, $taggedAs->getTag($this->tag) ?? []); // @phpstan-ignore return.type
+        /** @var string $key */
+        $key = $rm->invoke(null, $this->tag, $taggedAs->getTag($this->tag) ?? []);
+
+        return '' === $key || '' === trim($key)
+            ? throw new AutowireException('Return value must be non-empty string.')
+            : $key;
     }
 }
