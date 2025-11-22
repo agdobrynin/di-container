@@ -25,6 +25,7 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
+use Throwable;
 
 use function call_user_func;
 use function get_class;
@@ -138,12 +139,10 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             try {
                 $reflectionMethod = $this->getDefinition()->getMethod($method);
             } catch (ReflectionException $e) {
-                throw (new DiDefinitionException(
+                throw $this->exceptionWhenClassExist(
                     message: sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method),
                     previous: $e
-                ))
-                    ->setContext(context_reflection_class: $this->getDefinition())
-                ;
+                );
             }
 
             if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
@@ -161,7 +160,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                             ? $arg->resolve($container, $this)
                             : $arg;
                     } catch (ContainerExceptionInterface $e) {
-                        throw $this->exceptionWhenResolveArgument($argNameOrIndex, $argBuilder, $e);
+                        throw $this->exceptionWhenClassExist(
+                            message: $this->exceptionMessageWhenResolveArgument($argNameOrIndex, $argBuilder),
+                            previous: $e,
+                            context_argument: $arg
+                        );
                     }
                 }
 
@@ -181,17 +184,16 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     continue;
                 }
 
-                throw (new DiDefinitionException(
-                    sprintf(
+                throw $this->exceptionWhenClassExist(
+                    message: sprintf(
                         'The immutable setter "%s::%s()" must return same class "%s". Got type: %s',
                         $this->getDefinition()->getName(),
                         $method,
                         $this->getDefinition()->getName(),
                         get_debug_type($result)
-                    )
-                ))
-                    ->setContext(context_reflection_class: $this->getDefinition(), context_method_result: $result)
-                ;
+                    ),
+                    context_method_result: $result
+                );
             }
         }
 
@@ -203,7 +205,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         try {
             return $this->reflectionClass ??= new ReflectionClass($this->definition);
         } catch (ReflectionException $e) { // @phpstan-ignore catch.neverThrown
-            throw new DiDefinitionException(message: $e->getMessage());
+            throw (new DiDefinitionException(message: $e->getMessage()))
+                ->setContext(context_definition: $this->definition)
+            ;
         }
     }
 
@@ -304,11 +308,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     private function newInstance(): object
     {
         if (!$this->getDefinition()->isInstantiable()) {
-            throw (new DiDefinitionException(
-                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
-            ))
-                ->setContext(context_reflection_class: $this->getDefinition())
-            ;
+            throw $this->exceptionWhenClassExist(sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName()));
         }
 
         if (!isset($this->constructArgBuilder)) {
@@ -329,7 +329,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     ? $arg->resolve($this->getContainer(), $this)
                     : $arg;
             } catch (ContainerExceptionInterface $e) {
-                throw $this->exceptionWhenResolveArgument($argNameOrIndex, $this->constructArgBuilder, $e);
+                throw $this->exceptionWhenClassExist(
+                    message: $this->exceptionMessageWhenResolveArgument($argNameOrIndex, $this->constructArgBuilder),
+                    previous: $e,
+                    context_argument: $arg
+                );
             }
         }
 
@@ -366,17 +370,22 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         return $this->tagsByAttribute;
     }
 
-    private function exceptionWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder, ContainerExceptionInterface $e): DiDefinitionException
+    private function exceptionMessageWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder): string
     {
         $argMessage = is_int($argPresentedBy = $argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex))
             ? sprintf('at position #%d', $argPresentedBy)
             : sprintf('by named argument $%s', $argPresentedBy);
 
-        return (new DiDefinitionException(
-            message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod())),
-            previous: $e
-        ))
-            ->setContext(context_argument_name_or_index: $argNameOrIndex, context_argument_builder: $argBuilder)
+        return sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod()));
+    }
+
+    private function exceptionWhenClassExist(string $message, ?Throwable $previous = null, mixed ...$context): DiDefinitionException
+    {
+        return (new DiDefinitionException(message: $message, previous: $previous))
+            ->setContext(
+                ...$context,
+                context_reflection_class: $this->getDefinition(),
+            )
         ;
     }
 

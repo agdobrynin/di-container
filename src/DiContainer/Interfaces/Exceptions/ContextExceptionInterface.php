@@ -13,5 +13,8 @@ interface ContextExceptionInterface extends ContainerExceptionInterface
      */
     public function getContext(): array;
 
+    /**
+     * @return $this
+     */
     public function setContext(mixed ...$context): self;
 }
