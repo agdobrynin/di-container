@@ -73,9 +73,9 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         }
 
         if (!is_a($this->definition, DiFactoryInterface::class, true)) { // @phpstan-ignore function.alreadyNarrowedType
-            throw (new DiDefinitionException(sprintf('Definition must be present as class-string. Class must have implement "%s" interface. Got: "%s".', DiFactoryInterface::class, $this->definition)))
-                ->setContext(context_definition: $this->definition)
-            ;
+            throw new DiDefinitionException(
+                sprintf('Definition must be present as class-string. Class must have implement "%s" interface. Got: "%s".', DiFactoryInterface::class, $this->definition)
+            );
         }
 
         return $this->verifiedDefinition = $this->definition;
