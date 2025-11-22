@@ -8,7 +8,7 @@ use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupByAttributeWithArgumentAsReference;
@@ -28,6 +28,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait::getParameterType
  *
  * @internal
@@ -59,12 +60,12 @@ class SetupTest extends TestCase
 
     public function testSetupMethodNotExist(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/The setter method.+\SetupClass::methodNotExist\(\)" does not exist/');
+
         $def = (new DiDefinitionAutowire(SetupClass::class))
             ->setup('methodNotExist')
         ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/The setter method.+\SetupClass::methodNotExist\(\)" does not exist/');
 
         $def->resolve($this->createMock(DiContainerInterface::class));
     }
@@ -147,12 +148,12 @@ class SetupTest extends TestCase
      */
     public function testSetupOnMethod(string $class, string $method): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
+
         $def = (new DiDefinitionAutowire($class))
             ->setup($method)
         ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
 
         $def->resolve($this->createMock(DiContainerInterface::class));
     }

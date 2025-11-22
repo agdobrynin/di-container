@@ -136,10 +136,12 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     continue;
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
-                throw new ArgumentBuilderException(
+                throw (new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
                     previous: $e
-                );
+                ))
+                    ->setContext(context_param: $param)
+                ;
             }
 
             if (false !== $this->pushFromBindArguments($args, $param)) {
@@ -175,10 +177,12 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     continue;
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
-                throw new ArgumentBuilderException(
+                throw (new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
                     previous: $e
-                );
+                ))
+                    ->setContext(context_param: $param)
+                ;
             }
 
             $this->pushFromParameterType($args, $param);
@@ -204,10 +208,12 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             }
         } catch (AutowireParameterTypeException $e) {
             if (!$param->isDefaultValueAvailable()) {
-                throw new ArgumentBuilderException(
+                throw (new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via type hint for %s in %s.', $param, functionName($param->getDeclaringFunction())),
                     previous: $e
-                );
+                ))
+                    ->setContext(context_parameter: $param)
+                ;
             }
         }
     }

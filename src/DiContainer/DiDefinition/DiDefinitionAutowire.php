@@ -7,7 +7,6 @@ namespace Kaspi\DiContainer\DiDefinition;
 use InvalidArgumentException;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
-use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -17,13 +16,13 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 
@@ -136,14 +135,19 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $object = $this->newInstance();
 
         foreach ($this->getSetups($this->getDefinition(), $container) as $method => $calls) {
-            if (!$this->getDefinition()->hasMethod($method)) {
-                throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
+            try {
+                $reflectionMethod = $this->getDefinition()->getMethod($method);
+            } catch (ReflectionException $e) {
+                throw (new DiDefinitionException(
+                    message: sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method),
+                    previous: $e
+                ))
+                    ->setContext(context_reflection_class: $this->getDefinition())
+                ;
             }
 
-            $reflectionMethod = $this->getDefinition()->getMethod($method);
-
             if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
-                throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
+                throw new DiDefinitionException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
             }
 
             foreach ($calls as $index => [$setupConfigureType, $callArguments]) {
@@ -177,7 +181,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     continue;
                 }
 
-                throw new AutowireException(
+                throw (new DiDefinitionException(
                     sprintf(
                         'The immutable setter "%s::%s()" must return same class "%s". Got type: %s',
                         $this->getDefinition()->getName(),
@@ -185,7 +189,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                         $this->getDefinition()->getName(),
                         get_debug_type($result)
                     )
-                );
+                ))
+                    ->setContext(context_reflection_class: $this->getDefinition(), context_method_result: $result)
+                ;
             }
         }
 
@@ -197,7 +203,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         try {
             return $this->reflectionClass ??= new ReflectionClass($this->definition);
         } catch (ReflectionException $e) { // @phpstan-ignore catch.neverThrown
-            throw new AutowireException(message: $e->getMessage());
+            throw new DiDefinitionException(message: $e->getMessage());
         }
     }
 
@@ -293,14 +299,16 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     }
 
     /**
-     * @throws AutowireExceptionInterface|ContainerExceptionInterface|NotFoundExceptionInterface
+     * @throws ArgumentBuilderExceptionInterface|DiDefinitionExceptionInterface
      */
     private function newInstance(): object
     {
         if (!$this->getDefinition()->isInstantiable()) {
-            throw new AutowireException(
+            throw (new DiDefinitionException(
                 sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
-            );
+            ))
+                ->setContext(context_reflection_class: $this->getDefinition())
+            ;
         }
 
         if (!isset($this->constructArgBuilder)) {
@@ -331,7 +339,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     /**
      * @return array<non-empty-string, TagOptions>
      *
-     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     private function getTagsByAttribute(): array
     {
@@ -358,16 +366,18 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         return $this->tagsByAttribute;
     }
 
-    private function exceptionWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder, ContainerExceptionInterface $e): AutowireException
+    private function exceptionWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder, ContainerExceptionInterface $e): DiDefinitionException
     {
         $argMessage = is_int($argPresentedBy = $argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex))
             ? sprintf('at position #%d', $argPresentedBy)
             : sprintf('by named argument $%s', $argPresentedBy);
 
-        return new AutowireException(
+        return (new DiDefinitionException(
             message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod())),
             previous: $e
-        );
+        ))
+            ->setContext(context_argument_name_or_index: $argNameOrIndex, context_argument_builder: $argBuilder)
+        ;
     }
 
     /**

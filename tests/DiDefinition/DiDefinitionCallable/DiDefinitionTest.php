@@ -7,7 +7,7 @@ namespace Tests\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\CallableArgument;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MainClass;
@@ -31,6 +31,7 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */
@@ -70,7 +71,7 @@ class DiDefinitionTest extends TestCase
 
     public function testInjectNonCallable(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ServiceFour::__construct()/');
 
         (new DiContainer(config: new DiContainerConfig()))->get(ServiceFour::class);
