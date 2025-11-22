@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Generator;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
@@ -14,6 +15,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Traits\DiAutowireTrait;
+use ReflectionException;
+use ReflectionMethod;
 use SplPriorityQueue;
 
 use function array_map;
@@ -206,15 +209,16 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     return $optionKey;
                 }
 
-                $method = explode('::', $optionKey)[1];
-                $howGetOptions = sprintf('Get key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getIdentifier(), $method, $this->tag);
+                try {
+                    $method = explode('::', $optionKey)[1];
 
-                /** @var string $key */
-                $key = self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
-
-                return '' === $key || '' === trim($key)
-                    ? throw new AutowireException(sprintf('%s return value must be non-empty string. Got value: "%s"', $howGetOptions, $key))
-                    : $key;
+                    return $this->getKeyFromMethod($taggedAs->getIdentifier(), $method, $taggedAs);
+                } catch (AutowireExceptionInterface|ReflectionException $e) {
+                    throw new DiDefinitionException(
+                        message: sprintf('Cannot get key for tag "%s" by method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
+                        previous: $e
+                    );
+                }
             }
         }
 
@@ -222,12 +226,40 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return $identifier;
         }
 
-        $howGetKeyOption = sprintf('Get default key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getIdentifier(), $this->keyDefaultMethod, $this->tag);
-        $key = self::callStaticMethod($taggedAs, $this->keyDefaultMethod, false, $howGetKeyOption, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+        try {
+            return $this->getKeyFromMethod($taggedAs->getIdentifier(), $this->keyDefaultMethod, $taggedAs);
+        } catch (ReflectionException) {
+            return $identifier;
+        } catch (AutowireExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get key for tag "%s" by default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
+                previous: $e
+            );
+        }
+    }
 
-        // @phpstan-ignore return.type
-        return null === $key || '' === $key
-            ? $identifier
+    /**
+     * @return non-empty-string
+     *
+     * @throws AutowireException|ReflectionException
+     */
+    private function getKeyFromMethod(string $class, string $method, DiTaggedDefinitionInterface $taggedAs): string
+    {
+        $rm = new ReflectionMethod($class, $method);
+
+        if (!$rm->isPublic() || !$rm->isStatic()) {
+            throw new AutowireException('Method must be declared with public and static modifiers.');
+        }
+
+        if ('string' !== ($rt = (string) $rm->getReturnType())) {
+            throw new AutowireException(sprintf('Method must return type "string" but return type is "%s"', $rt));
+        }
+
+        /** @var string $key */
+        $key = $rm->invoke(null, $this->tag, $taggedAs->getTag($this->tag) ?? []);
+
+        return '' === $key || '' === trim($key)
+            ? throw new AutowireException('Return value must be non-empty string.')
             : $key;
     }
 }

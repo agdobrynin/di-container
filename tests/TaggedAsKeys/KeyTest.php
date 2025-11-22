@@ -7,7 +7,7 @@ namespace Tests\TaggedAsKeys;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\TaggedAsKeys\Fixtures\One;
 use Tests\TaggedAsKeys\Fixtures\Two;
@@ -94,6 +94,8 @@ class KeyTest extends TestCase
 
     public function testGetKeyByMethodFailReturn(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
@@ -104,16 +106,13 @@ class KeyTest extends TestCase
             ])
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Get key by.+One::getKeyFail().+Return type must be "string"\. Got return type: "stdClass", "array"/');
-
-        $taggedAs->resolve($this->container);
+        (new DiDefinitionTaggedAs('tags.one', key: 'key.my_key'))->resolve($this->container);
     }
 
     public function testGetKeyByMethodFailMethodNotExist(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
@@ -124,12 +123,7 @@ class KeyTest extends TestCase
             ])
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/One::nonExistMethod().+method must be exist.+Return type must be "string"/');
-
-        $taggedAs->resolve($this->container);
+        (new DiDefinitionTaggedAs('tags.one', key: 'key.my_key'))->resolve($this->container);
     }
 
     public function testGetKeyByDefaultMethodSuccess(): void
@@ -154,6 +148,8 @@ class KeyTest extends TestCase
 
     public function testGetKeyByDefaultMethodWrongReturnType(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
@@ -161,12 +157,9 @@ class KeyTest extends TestCase
             ])
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKeyWrongReturnType');
-
-        $collection = $taggedAs->resolve($this->container);
-
-        $this->assertIsIterable($collection);
-        $this->assertEquals(Two::class, $collection->key());
+        (new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKeyWrongReturnType'))
+            ->resolve($this->container)
+        ;
     }
 
     public function testGetKeyCollectionWithPhpAttribute(): void
