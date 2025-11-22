@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\TaggedAsKeys\Fixtures\OptionKeyReturnEmptyString;
 
@@ -109,13 +110,12 @@ class KeyExceptionTest extends TestCase
      */
     public function testKeyOptionFromMethod(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn($getDefinitions)
         ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('return value must be non-empty string');
 
         $taggedAs->resolve($this->container);
     }
