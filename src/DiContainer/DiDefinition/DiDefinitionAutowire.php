@@ -28,7 +28,6 @@ use ReflectionClass;
 use ReflectionException;
 use Throwable;
 
-use function call_user_func;
 use function get_class;
 use function get_debug_type;
 use function is_callable;
@@ -258,18 +257,30 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     ? 'value with key "priority.method" in the $options parameter in '.DiDefinitionTagArgumentInterface::class.'::bindTag()'
                     : 'the $priorityMethod parameter or the value with key "priority.method" in the $options parameter in the php attribute #[Tag]';
 
-                throw new DiDefinitionException(
-                    sprintf('Cannot get tag priority for tag "%s" via method in class %s. The name of the priority method is specified by %s. Priority method must be present none-empty string. Got: %s', $name, $this->getIdentifier(), $wherePriorityMethod, var_export($method, true))
-                );
+                throw (
+                    new DiDefinitionException(
+                        sprintf('Cannot get tag priority for tag "%s" via method in class %s. The name of the priority method is specified by %s. Priority method must be present none-empty string. Got: %s', $name, $this->getIdentifier(), $wherePriorityMethod, var_export($method, true))
+                    )
+                )
+                    ->setContext(context_tag_options: $tagOptions)
+                ;
             }
 
             try {
                 return $this->getTagPriorityFromMethod($method, $name, $tagOptions);
             } catch (AutowireException|InvalidArgumentException $e) {
-                throw new DiDefinitionException(
-                    message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s().', $name, $this->getIdentifier(), $method),
-                    previous: $e
-                );
+                throw (
+                    new DiDefinitionException(
+                        message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s().', $name, $this->getIdentifier(), $method),
+                        previous: $e
+                    )
+                )
+                    ->setContext(
+                        context_callable: [$this->getIdentifier(), $method],
+                        context_operation_options: $operationOptions,
+                        context_tag_options: $tagOptions
+                    )
+                ;
             }
         }
 
@@ -285,10 +296,18 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         } catch (InvalidArgumentException) {
             return null;
         } catch (AutowireException $e) {
-            throw new DiDefinitionException(
-                message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s().', $name, $this->getIdentifier(), $priorityDefaultMethod),
-                previous: $e
-            );
+            throw (
+                new DiDefinitionException(
+                    message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s().', $name, $this->getIdentifier(), $priorityDefaultMethod),
+                    previous: $e
+                )
+            )
+                ->setContext(
+                    context_callable: [$this->getIdentifier(), $priorityDefaultMethod],
+                    context_operation_options: $operationOptions,
+                    context_tag_options: $tagOptions
+                )
+            ;
         }
     }
 
@@ -403,7 +422,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             throw new InvalidArgumentException('Method must be declared with public and static modifiers.');
         }
 
-        $priority = call_user_func($callable, $tag, $tagOptions);
+        $priority = $callable($tag, $tagOptions);
 
         if (is_int($priority) || is_string($priority) || is_null($priority)) {
             return $priority;
