@@ -6,8 +6,8 @@ namespace Tests\TaggedAsKeys;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\TaggedAsKeys\Fixtures\Failed\Foo;
@@ -21,6 +21,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\TagsTrait
  *
  * @internal
@@ -44,6 +45,9 @@ class KeyExceptionTest extends TestCase
      */
     public function testKeyIsEmptyString(string $key): void
     {
+        $this->expectException(DiDefinitionException::class);
+        $this->expectExceptionMessage('The value must be non-empty string.');
+
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn([
@@ -51,12 +55,9 @@ class KeyExceptionTest extends TestCase
             ])
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', key: $key);
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Argument $key must be non-empty string');
-
-        $taggedAs->resolve($this->container);
+        (new DiDefinitionTaggedAs('tags.one', key: $key))
+            ->resolve($this->container)
+        ;
     }
 
     public static function dataProviderEmptyString(): Generator
@@ -71,13 +72,13 @@ class KeyExceptionTest extends TestCase
      */
     public function testKeyOptionIsNonEmptyString(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('The value of option name "key_srv" must be non-empty string.');
+
         $this->container->expects(self::once())
             ->method('getDefinitions')
             ->willReturn($getDefinitions)
         ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('the value must be non-empty string');
 
         $taggedAs->resolve($this->container);
     }

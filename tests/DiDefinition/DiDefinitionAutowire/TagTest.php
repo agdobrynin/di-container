@@ -23,6 +23,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Foo;
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */
