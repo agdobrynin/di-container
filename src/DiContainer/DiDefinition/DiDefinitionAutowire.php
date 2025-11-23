@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 use InvalidArgumentException;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
+use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -264,7 +265,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
             try {
                 return $this->getTagPriorityFromMethod($method, $name, $tagOptions);
-            } catch (AutowireExceptionInterface|InvalidArgumentException $e) {
+            } catch (AutowireException|InvalidArgumentException $e) {
                 throw new DiDefinitionException(
                     message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s().', $name, $this->getIdentifier(), $method),
                     previous: $e
@@ -283,7 +284,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             return $this->getTagPriorityFromMethod($priorityDefaultMethod, $name, $tagOptions);
         } catch (InvalidArgumentException) {
             return null;
-        } catch (AutowireExceptionInterface $e) {
+        } catch (AutowireException $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s().', $name, $this->getIdentifier(), $priorityDefaultMethod),
                 previous: $e
