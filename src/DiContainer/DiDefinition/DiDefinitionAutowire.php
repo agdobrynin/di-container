@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use InvalidArgumentException;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
@@ -19,7 +20,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
-use Kaspi\DiContainer\Traits\DiAutowireTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
@@ -27,13 +27,18 @@ use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 
+use function call_user_func;
 use function get_class;
 use function get_debug_type;
+use function is_callable;
 use function is_int;
+use function is_null;
 use function is_object;
 use function is_string;
 use function Kaspi\DiContainer\functionName;
 use function sprintf;
+use function trim;
+use function var_export;
 
 /**
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
@@ -46,7 +51,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
     }
-    use DiAutowireTrait;
     use TagsTrait {
         getTags as private getTagsInternal;
         hasTag as private hasTagInternal;
@@ -236,22 +240,45 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $tagOptions = $operationOptions + ($this->getTag($name) ?? []);
 
         if (isset($tagOptions['priority.method'])) {
-            $howGetPriority = sprintf('Get priority by option "priority.method" for tag "%s".', $name);
+            $method = $tagOptions['priority.method'];
 
-            // @phpstan-ignore return.type
-            return self::callStaticMethod($this, $tagOptions['priority.method'], true, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
+            if (!is_string($method) || '' === trim($method)) {
+                $wherePriorityMethod = isset($this->getTagsInternal()[$name]['priority.method'])
+                    ? 'value with key "priority.method" in the $options parameter in '.DiDefinitionTagArgumentInterface::class.'::bindTag()'
+                    : 'the $priorityMethod parameter or the value with key "priority.method" in the $options parameter in the php attribute #[Tag]';
+
+                throw new DiDefinitionException(
+                    sprintf('Cannot get tag priority for tag "%s" via method in class %s. The name of the priority method is specified by %s. Priority method must be present none-empty string. Got: %s', $name, $this->getIdentifier(), $wherePriorityMethod, var_export($method, true))
+                );
+            }
+
+            try {
+                return $this->getTagPriorityFromMethod($method, $name, $tagOptions);
+            } catch (AutowireExceptionInterface|InvalidArgumentException $e) {
+                throw new DiDefinitionException(
+                    message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s().', $name, $this->getIdentifier(), $method),
+                    previous: $e
+                );
+            }
         }
 
-        $priorityDefaultMethod = ($tagOptions['priority.default_method'] ?? null);
+        // Option (meta-key) only from $operationOptions. It uses through DiDefinitionTaggedAs.
+        $priorityDefaultMethod = ($operationOptions['priority.default_method'] ?? null);
 
-        if (null !== $priorityDefaultMethod) {
-            $howGetPriority = sprintf('Get priority by option "priority.default_method" for class "%s".', $this->getDefinition()->getName());
-
-            // @phpstan-ignore return.type
-            return self::callStaticMethod($this, $priorityDefaultMethod, false, $howGetPriority, ['int', 'string', 'null'], $name, $tagOptions);
+        if (!is_string($priorityDefaultMethod)) {
+            return null;
         }
 
-        return null;
+        try {
+            return $this->getTagPriorityFromMethod($priorityDefaultMethod, $name, $tagOptions);
+        } catch (InvalidArgumentException) {
+            return null;
+        } catch (AutowireExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s().', $name, $this->getIdentifier(), $priorityDefaultMethod),
+                previous: $e
+            );
+        }
     }
 
     private function getContainer(): DiContainerInterface
@@ -340,6 +367,30 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         return new AutowireException(
             message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod())),
             previous: $e
+        );
+    }
+
+    /**
+     * @param TagOptions $tagOptions
+     *
+     * @throws AutowireException|InvalidArgumentException
+     */
+    private function getTagPriorityFromMethod(string $method, string $tag, array $tagOptions): int|string|null
+    {
+        $callable = [$this->getIdentifier(), $method];
+
+        if (!is_callable($callable)) {
+            throw new InvalidArgumentException('Method must be declared with public and static modifiers.');
+        }
+
+        $priority = call_user_func($callable, $tag, $tagOptions);
+
+        if (is_int($priority) || is_string($priority) || is_null($priority)) {
+            return $priority;
+        }
+
+        throw new AutowireException(
+            sprintf('Method must return type "int|string|null" but return type "%s".', get_debug_type($priority)),
         );
     }
 }

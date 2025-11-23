@@ -9,13 +9,15 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagOne;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwo;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefault;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Bar;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Foo;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\Tag
@@ -146,14 +148,13 @@ class TagTest extends TestCase
      */
     public function testGetPriorityByPriorityTagMethodWrongType(mixed $priorityTagMethod): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
             ->bindTag('tags.handler-one', ['priority.method' => $priorityTagMethod])
             ->setContainer($mockContainer)
         ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('The value option must be non-empty string');
 
         $def->geTagPriority('tags.handler-one');
     }
@@ -166,18 +167,47 @@ class TagTest extends TestCase
     }
 
     /**
+     * @dataProvider dataProviderPriorityMethodByPhpAttributeWithWrongType
+     */
+    public function testGetPriorityMethodByPhpAttributeWithWrongType(string $class, string $tagName): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('in the php attribute #[Tag]');
+
+        $container = $this->createMock(DiContainerInterface::class);
+        $container->method('getConfig')->willReturn(
+            new DiContainerConfig(
+                useAttribute: true,
+            )
+        );
+
+        $def = (new DiDefinitionAutowire($class))
+            ->setContainer($container)
+        ;
+
+        $def->geTagPriority($tagName);
+    }
+
+    public function dataProviderPriorityMethodByPhpAttributeWithWrongType(): Generator
+    {
+        yield 'provide by parameter $priorityMethod' => [Bar::class, 'tags.baz'];
+
+        yield 'provide bt parameter $options with key "priority.method"' => [Foo::class, 'tags.baz'];
+    }
+
+    /**
      * @dataProvider dataProviderPriorityTagMethodByOptionsWrongType
      */
     public function testGetPriorityByPriorityTagMethodByOptionsWrongType(array $options): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Priority method must be present none-empty string.');
+
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire(TaggedClassBindTagOne::class))
             ->bindTag('tags.handler-one', options: $options)
             ->setContainer($mockContainer)
         ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('The value option must be non-empty string');
 
         $def->geTagPriority('tags.handler-one');
     }
@@ -222,22 +252,19 @@ class TagTest extends TestCase
      */
     public function testWrongReturnType(string $class, string $method): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $def = (new DiDefinitionAutowire($class))
             ->bindTag('tags.handler-one', options: ['priority.method' => $method])
             ->setContainer($mockContainer)
         ;
 
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Return type must be "int", "string", "null"');
-
         $def->geTagPriority('tags.handler-one');
     }
 
     public static function dataProviderWrongReturnType(): Generator
     {
-        yield 'none return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnEmpty'];
-
         yield 'array return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnArray'];
 
         yield 'wrong union type return' => [TaggedClassBindTagOne::class, 'getTaggedPriorityReturnUnionWrong'];

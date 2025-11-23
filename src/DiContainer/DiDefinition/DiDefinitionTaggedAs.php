@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Generator;
+use InvalidArgumentException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -14,16 +15,15 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
-use Kaspi\DiContainer\Traits\DiAutowireTrait;
-use ReflectionException;
-use ReflectionMethod;
 use SplPriorityQueue;
 
 use function array_map;
+use function call_user_func;
 use function explode;
 use function get_debug_type;
 use function in_array;
 use function interface_exists;
+use function is_callable;
 use function is_string;
 use function sprintf;
 use function str_starts_with;
@@ -32,8 +32,6 @@ use function var_export;
 
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
-    use DiAutowireTrait;
-
     private bool $tagIsInterface;
     private string $keyOptimized;
     private bool $isUseKeysComputed;
@@ -90,7 +88,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $mapKeyCollectionToContainerIdentifier = [];
 
         foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
-            $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $definition);
+            $keyCollection = $this->getTagKeyFromTagOptionsOrFromClassMethod($containerIdentifier, $definition);
 
             if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
                 $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
@@ -178,7 +176,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @throws AutowireExceptionInterface
      */
-    private function getKeyFromTagOptionsOrFromKeyDefaultMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
+    private function getTagKeyFromTagOptionsOrFromClassMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
     {
         if (null !== $this->key) {
             $this->keyOptimized ??= '' !== trim($this->key)
@@ -212,10 +210,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 try {
                     $method = explode('::', $optionKey)[1];
 
-                    return $this->getKeyFromMethod($taggedAs->getIdentifier(), $method, $taggedAs);
-                } catch (AutowireExceptionInterface|ReflectionException $e) {
+                    return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $method, $taggedAs);
+                } catch (AutowireException|InvalidArgumentException $e) {
                     throw new DiDefinitionException(
-                        message: sprintf('Cannot get key for tag "%s" by method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
+                        message: sprintf('Cannot get key for tag "%s" via method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
                         previous: $e
                     );
                 }
@@ -227,12 +225,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         }
 
         try {
-            return $this->getKeyFromMethod($taggedAs->getIdentifier(), $this->keyDefaultMethod, $taggedAs);
-        } catch (ReflectionException) {
+            return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $this->keyDefaultMethod, $taggedAs);
+        } catch (InvalidArgumentException) {
             return $identifier;
-        } catch (AutowireExceptionInterface $e) {
+        } catch (AutowireException $e) {
             throw new DiDefinitionException(
-                message: sprintf('Cannot get key for tag "%s" by default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
+                message: sprintf('Cannot get key for tag "%s" via default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
                 previous: $e
             );
         }
@@ -241,22 +239,21 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     /**
      * @return non-empty-string
      *
-     * @throws AutowireException|ReflectionException
+     * @throws AutowireException|InvalidArgumentException
      */
-    private function getKeyFromMethod(string $class, string $method, DiTaggedDefinitionInterface $taggedAs): string
+    private function getTagKeyFromClassMethod(string $class, string $method, DiTaggedDefinitionInterface $taggedAs): string
     {
-        $rm = new ReflectionMethod($class, $method);
+        $callable = [$class, $method];
 
-        if (!$rm->isPublic() || !$rm->isStatic()) {
-            throw new AutowireException('Method must be declared with public and static modifiers.');
+        if (!is_callable($callable)) {
+            throw new InvalidArgumentException('Method must be declared with public and static modifiers.');
         }
 
-        if ('string' !== ($rt = (string) $rm->getReturnType())) {
-            throw new AutowireException(sprintf('Method must return type "string" but return type is "%s"', $rt));
-        }
+        $key = call_user_func($callable, $this->tag, $taggedAs->getTag($this->tag) ?? []);
 
-        /** @var string $key */
-        $key = $rm->invoke(null, $this->tag, $taggedAs->getTag($this->tag) ?? []);
+        if (!is_string($key)) {
+            throw new AutowireException(sprintf('Method must return type "string" but return type is "%s"', get_debug_type($key)));
+        }
 
         return '' === $key || '' === trim($key)
             ? throw new AutowireException('Return value must be non-empty string.')
