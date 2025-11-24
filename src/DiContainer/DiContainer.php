@@ -26,7 +26,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -50,7 +49,6 @@ use function sprintf;
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     use AttributeReaderTrait;
-    use DefinitionIdentifierTrait;
 
     /**
      * Default singleton for definitions.
@@ -90,7 +88,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
 
         foreach ($definitions as $identifier => $definition) {
-            $this->set($this->getIdentifier($identifier, $definition), $definition);
+            $this->set(Helper::getContainerIdentifier($identifier, $definition), $definition);
         }
     }
 
@@ -122,7 +120,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function set(string $id, mixed $definition): static
     {
-        $this->getIdentifier($id, $definition);
+        Helper::getContainerIdentifier($id, $definition);
 
         if (array_key_exists($id, $this->definitions)) {
             throw new ContainerAlreadyRegisteredException(

@@ -17,6 +17,7 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

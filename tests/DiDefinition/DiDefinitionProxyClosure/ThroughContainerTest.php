@@ -26,6 +26,7 @@ use function Kaspi\DiContainer\diProxyClosure;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
  * @covers \Kaspi\DiContainer\diProxyClosure
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  */
 class ThroughContainerTest extends TestCase

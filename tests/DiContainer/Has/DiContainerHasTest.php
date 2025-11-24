@@ -17,6 +17,7 @@ use Tests\DiContainer\Has\Fixtures\MyInterface;
 /**
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

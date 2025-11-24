@@ -17,6 +17,7 @@ use Psr\Container\ContainerInterface;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

@@ -18,6 +18,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  */
 class TaggedAsTest extends TestCase
