@@ -24,7 +24,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use ParseError;
 use ReflectionClass;
 use ReflectionException;
@@ -51,7 +50,6 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    use DefinitionIdentifierTrait;
     use AttributeReaderTrait;
 
     private ArrayIterator $configDefinitions;
@@ -91,7 +89,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         foreach ($definitions as $identifier => $definition) {
             try {
                 /** @var class-string|non-empty-string $identifier */
-                $identifier = $this->getIdentifier($identifier, $definition);
+                $identifier = Helper::getContainerIdentifier($identifier, $definition);
             } catch (ContainerIdentifierExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('%s Item position #%d.', $e->getMessage(), $itemCount),
