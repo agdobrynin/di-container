@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
+use function sprintf;
 use function trim;
 
 final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNoArgumentsInterface
@@ -31,7 +32,7 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
     public function getDefinition(): string
     {
         return $this->validContainerIdentifier ??= '' === trim($this->containerIdentifier)
-            ? throw new DiDefinitionException('Definition identifier must be a non-empty string.')
+            ? throw new DiDefinitionException(sprintf('Parameter $containerIdentifier for %s::__construct() must be non-empty string.', self::class))
             : $this->containerIdentifier;
     }
 
