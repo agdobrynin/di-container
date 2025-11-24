@@ -6,7 +6,6 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Closure;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -100,9 +99,10 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
                     ? sprintf('at position #%d', $argPresentedBy)
                     : sprintf('by named argument $%s', $argPresentedBy);
 
-                throw new AutowireException(
+                throw $this->exceptionWhenCallableFunction(
                     message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($this->argBuilder->getFunctionOrMethod())),
-                    previous: $e
+                    previous: $e,
+                    context_argument: $arg
                 );
             }
         }
@@ -121,13 +121,18 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
                 try {
                     $class = $container->get($class);
                 } catch (ContainerExceptionInterface $e) {
-                    throw $this->throw($e, sprintf('Cannot get entry by container identifier "%s"', $class));
+                    throw $this->exceptionWhenCallableFunction(
+                        message: sprintf('Cannot get entry via container identifier "%s" for create callable definition.', $class),
+                        previous: $e,
+                        context_callable: [$class, $this->reflectionFn->method]
+                    );
                 }
             }
 
             if (!is_callable($callable = [$class, $this->reflectionFn->name])) {
-                throw $this->throw(
-                    prefixMessage: sprintf('Cannot create callable from %s', var_export($callable, true)),
+                throw $this->exceptionWhenCallableFunction(
+                    message: sprintf('Cannot create callable from %s.', var_export($callable, true)),
+                    context_callable: $callable
                 );
             }
 
@@ -157,7 +162,14 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
             return new ReflectionFunction($this->getDefinition()); // @phpstan-ignore argument.type
         } catch (ReflectionException $e) {
-            throw $this->throw($e);
+            throw (
+                new DiDefinitionCallableException(
+                    message: sprintf('Cannot create callable from %s.', var_export($this->getDefinition(), true)),
+                    previous: $e,
+                )
+            )
+                ->setContext(context_definition: $this->definition)
+            ;
         }
     }
 
@@ -181,20 +193,27 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         }
 
         if (is_array($definition)) {
-            // @phpstan-ignore booleanAnd.rightAlwaysTrue, isset.offset, isset.offset
-            return isset($definition[0], $definition[1]) && is_string($definition[0]) && is_string($definition[1])
-                ? [$definition[0], $definition[1]]
-                : throw $this->throw(prefixMessage: 'When the definition is an array, two array elements must be provided as none empty string');
+            // @phpstan-ignore isset.offset, isset.offset
+            if (isset($definition[0], $definition[1]) && is_string($definition[0]) && is_string($definition[1])) {
+                return [$definition[0], $definition[1]];
+            }
+
+            throw (
+                new DiDefinitionCallableException(
+                    message: sprintf('When the definition present is an array, two array elements must be provided as none empty string. Got: %s', var_export($definition, true)),
+                )
+            )
+                ->setContext(context_definition: $definition)
+            ;
         }
 
         return [$definition, '__invoke'];
     }
 
-    private function throw(?Throwable $previous = null, string $prefixMessage = 'Cannot convert definition to callable type'): DiDefinitionCallableException
+    private function exceptionWhenCallableFunction(string $message, ?Throwable $previous = null, mixed ...$context): DiDefinitionCallableException
     {
-        return new DiDefinitionCallableException(
-            message: sprintf('%s. Definition value as: %s.', $prefixMessage, var_export($this->definition, true)),
-            previous: $previous,
-        );
+        return (new DiDefinitionCallableException(message: $message, previous: $previous))
+            ->setContext(...$context, context_reflection_function: $this->reflectionFn, context_definition: $this->definition)
+        ;
     }
 }

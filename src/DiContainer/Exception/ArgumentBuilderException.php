@@ -6,4 +6,4 @@ namespace Kaspi\DiContainer\Exception;
 
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 
-class ArgumentBuilderException extends AutowireException implements ArgumentBuilderExceptionInterface {}
+final class ArgumentBuilderException extends AutowireException implements ArgumentBuilderExceptionInterface {}

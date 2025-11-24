@@ -7,10 +7,9 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
@@ -37,6 +36,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -86,12 +86,12 @@ class SetupImmutableTest extends TestCase
      */
     public function testImmutableFail(string $method): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/The immutable setter .+SetupImmutable::'.$method.'\(\)" must return same class/');
+
         $def = (new DiDefinitionAutowire(SetupImmutable::class, isSingleton: true))
             ->setupImmutable($method) // argument $someClass resolve by typehint.
         ;
-
-        $this->expectException(AutowireException::class);
-        $this->expectExceptionMessageMatches('/The immutable setter .+SetupImmutable::'.$method.'\(\)" must return same class/');
 
         $def->resolve($this->mockContainer);
     }
@@ -182,12 +182,12 @@ class SetupImmutableTest extends TestCase
      */
     public function testSetupOnMethod(string $class, string $method): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
+
         $def = (new DiDefinitionAutowire($class))
             ->setupImmutable($method)
         ;
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
 
         $def->resolve($this->mockContainer);
     }
@@ -201,7 +201,7 @@ class SetupImmutableTest extends TestCase
 
     public function testResolveFailBindNamedArgumentWithoutAttribute(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$rule in.+Foo::method()/');
 
         $mockContainer = $this->createMock(DiContainerInterface::class);
@@ -232,7 +232,7 @@ class SetupImmutableTest extends TestCase
 
     public function testResolveFailBindNamedArgumentByAttribute(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$rule in.+FooBar::method()/');
 
         $mockContainer = $this->createMock(DiContainerInterface::class);

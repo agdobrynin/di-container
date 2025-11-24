@@ -13,12 +13,11 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use SplPriorityQueue;
 
 use function array_map;
-use function call_user_func;
 use function explode;
 use function get_debug_type;
 use function in_array;
@@ -33,7 +32,7 @@ use function var_export;
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
     private bool $tagIsInterface;
-    private string $keyOptimized;
+    private bool $keyChecked;
     private bool $isUseKeysComputed;
     private DiContainerInterface $container;
 
@@ -79,9 +78,21 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
+     * @return array<non-empty-string, non-empty-string>|list<non-empty-string>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    private function getContainerIdentifiers(): array
+    {
+        return $this->isUseKeysComputed
+            ? $this->getContainerIdentifiersWithKey()
+            : $this->getContainerIdentifiersWithoutKey();
+    }
+
+    /**
      * @return array<non-empty-string, non-empty-string>
      *
-     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     private function getContainerIdentifiersWithKey(): array
     {
@@ -101,7 +112,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     /**
      * @return list<non-empty-string>
      *
-     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     private function getContainerIdentifiersWithoutKey(): array
     {
@@ -115,19 +126,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @return array<non-empty-string, non-empty-string>|list<non-empty-string>
-     *
-     * @throws AutowireExceptionInterface
-     */
-    private function getContainerIdentifiers(): array
-    {
-        return $this->isUseKeysComputed ? $this->getContainerIdentifiersWithKey() : $this->getContainerIdentifiersWithoutKey();
-    }
-
-    /**
      * @return Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
      *
-     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     private function getContainerIdentifiersOfTaggedServiceByTag(): Generator
     {
@@ -174,29 +175,30 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @return non-empty-string
      *
-     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     private function getTagKeyFromTagOptionsOrFromClassMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
     {
         if (null !== $this->key) {
-            $this->keyOptimized ??= '' !== trim($this->key)
-                ? $this->key
-                : throw new AutowireException('Argument $key must be non-empty string.');
+            if (!isset($this->keyChecked)) {
+                if ('' === trim($this->key)) {
+                    throw new DiDefinitionException(
+                        sprintf('Parameter $key for %s::__construct() must be non-empty string. Tag is "%s".', self::class, $this->tag)
+                    );
+                }
 
-            $optionKey = $taggedAs->getTag($this->tag)[$this->keyOptimized] ?? null;
+                $this->keyChecked = true;
+            }
+
+            $optionKey = $taggedAs->getTag($this->tag)[$this->key] ?? null;
 
             if (null !== $optionKey) {
                 if (!is_string($optionKey) || '' === trim($optionKey)) {
-                    throw new AutowireException(
-                        sprintf(
-                            'Tag option "%s" for container identifier "%s" with tag "%s" has an error: the value must be non-empty string. Got: type "%s", value: %s.',
-                            $this->keyOptimized,
-                            $identifier,
-                            $this->tag,
-                            get_debug_type($optionKey),
-                            var_export($optionKey, true)
+                    throw (
+                        new DiDefinitionException(
+                            sprintf('Cannot get key for tag "%s" via tag options. The value of option name "%s" must be non-empty string. Got value: %s', $this->tag, $this->key, var_export($optionKey, true))
                         )
-                    );
+                    )->setContext(context_tagged_as_definition: $taggedAs);
                 }
 
                 if (!$taggedAs instanceof DiDefinitionAutowireInterface) {
@@ -212,10 +214,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
                     return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $method, $taggedAs);
                 } catch (AutowireException|InvalidArgumentException $e) {
-                    throw new DiDefinitionException(
-                        message: sprintf('Cannot get key for tag "%s" via method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
-                        previous: $e
-                    );
+                    throw (
+                        new DiDefinitionException(
+                            message: sprintf('Cannot get key for tag "%s" via method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
+                            previous: $e
+                        )
+                    )->setContext(context_tagged_as_definition: $taggedAs);
                 }
             }
         }
@@ -229,10 +233,14 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         } catch (InvalidArgumentException) {
             return $identifier;
         } catch (AutowireException $e) {
-            throw new DiDefinitionException(
-                message: sprintf('Cannot get key for tag "%s" via default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
-                previous: $e
-            );
+            throw (
+                new DiDefinitionException(
+                    message: sprintf('Cannot get key for tag "%s" via default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
+                    previous: $e
+                )
+            )
+                ->setContext(context_tagged_as_definition: $taggedAs)
+            ;
         }
     }
 
@@ -249,7 +257,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             throw new InvalidArgumentException('Method must be declared with public and static modifiers.');
         }
 
-        $key = call_user_func($callable, $this->tag, $taggedAs->getTag($this->tag) ?? []);
+        $key = $callable($this->tag, $taggedAs->getTag($this->tag) ?? []);
 
         if (!is_string($key)) {
             throw new AutowireException(sprintf('Method must return type "string" but return type is "%s"', get_debug_type($key)));

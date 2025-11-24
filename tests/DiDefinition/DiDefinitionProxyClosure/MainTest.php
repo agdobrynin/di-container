@@ -7,9 +7,8 @@ namespace Tests\DiDefinition\DiDefinitionProxyClosure;
 use Closure;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
-use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,7 +40,7 @@ class MainTest extends TestCase
      */
     public function testDefinitionFail(string $id): void
     {
-        $this->expectException(AutowireException::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be non-empty string');
 
         (new DiDefinitionProxyClosure($id))->getDefinition();
@@ -64,8 +63,8 @@ class MainTest extends TestCase
             ->willReturn(false)
         ;
 
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Definition "ok" does not exist');
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get entry by container identifier "ok"');
 
         (new DiDefinitionProxyClosure('ok'))
             ->resolve($mockContainer)

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
+use Psr\Container\ContainerExceptionInterface;
 
 use function is_a;
 use function sprintf;
@@ -72,7 +73,9 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         }
 
         if (!is_a($this->definition, DiFactoryInterface::class, true)) { // @phpstan-ignore function.alreadyNarrowedType
-            throw new AutowireException(sprintf('Definition must be present as class-string. Class must have implement "%s" interface. Got: "%s".', DiFactoryInterface::class, $this->definition));
+            throw new DiDefinitionException(
+                sprintf('Parameter $definition for %s::__construct() must be present as class-string. Class must have implement "%s" interface. Got: "%s".', self::class, DiFactoryInterface::class, $this->definition)
+            );
         }
 
         return $this->verifiedDefinition = $this->definition;
@@ -86,8 +89,19 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
             $this->copySetupToDefinition($this->autowire);
         }
 
-        /** @var DiFactoryInterface $object */
-        $object = $this->autowire->resolve($container, $this);
+        try {
+            /** @var DiFactoryInterface $object */
+            $object = $this->autowire->resolve($container, $this);
+        } catch (ContainerExceptionInterface $e) {
+            throw (
+                new DiDefinitionException(
+                    message: sprintf('Cannot resolve factory class "%s".', $this->getDefinition()),
+                    previous: $e
+                )
+            )
+                ->setContext(context_factory_di_definition_autowire: $this->autowire)
+            ;
+        }
 
         return $object($container);
     }

@@ -7,7 +7,7 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\Quux;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\RuleBar;
@@ -21,6 +21,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */
@@ -28,7 +29,7 @@ class FailResolveBindArgumentForVariadicTest extends TestCase
 {
     public function testResolveVariadicFailAndExceptionMessage(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$rule_quux in.+Quux::__construct()/');
 
         $container = $this->createMock(DiContainerInterface::class);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -14,7 +14,7 @@ use ReflectionClass;
 interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
 {
     /**
-     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     public function getDefinition(): ReflectionClass;
 
@@ -26,7 +26,7 @@ interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
     public function getIdentifier(): string;
 
     /**
-     * @throws AutowireExceptionInterface
+     * @throws ArgumentBuilderExceptionInterface
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionExceptionInterface
      * @throws NotFoundExceptionInterface

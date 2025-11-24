@@ -30,6 +30,7 @@ use function round;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
@@ -125,7 +126,7 @@ class CallFunctionTest extends TestCase
 
     public function testUserFunctionUnresolvedArgument(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+funcWithDependencyClass()/');
 
         (new DiContainer())->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');

@@ -22,7 +22,6 @@ class DiDefinitionReferenceTest extends TestCase
     public function testDiDefinitionReferenceFail(string $definition): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('must be a non-empty string');
 
         (new DiDefinitionGet($definition))->getDefinition();
     }

@@ -31,6 +31,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal

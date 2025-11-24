@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use InvalidArgumentException;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
@@ -17,17 +18,17 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
+use Throwable;
 
-use function call_user_func;
 use function get_class;
 use function get_debug_type;
 use function is_callable;
@@ -136,14 +137,17 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $object = $this->newInstance();
 
         foreach ($this->getSetups($this->getDefinition(), $container) as $method => $calls) {
-            if (!$this->getDefinition()->hasMethod($method)) {
-                throw new AutowireException(sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method));
+            try {
+                $reflectionMethod = $this->getDefinition()->getMethod($method);
+            } catch (ReflectionException $e) {
+                throw $this->exceptionWhenClassExist(
+                    message: sprintf('The setter method "%s::%s()" does not exist.', $this->getDefinition()->getName(), $method),
+                    previous: $e
+                );
             }
 
-            $reflectionMethod = $this->getDefinition()->getMethod($method);
-
             if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
-                throw new AutowireException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
+                throw new DiDefinitionException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
             }
 
             foreach ($calls as $index => [$setupConfigureType, $callArguments]) {
@@ -157,7 +161,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                             ? $arg->resolve($container, $this)
                             : $arg;
                     } catch (ContainerExceptionInterface $e) {
-                        throw $this->exceptionWhenResolveArgument($argNameOrIndex, $argBuilder, $e);
+                        throw $this->exceptionWhenClassExist(
+                            message: $this->exceptionMessageWhenResolveArgument($argNameOrIndex, $argBuilder),
+                            previous: $e,
+                            context_argument: $arg
+                        );
                     }
                 }
 
@@ -177,14 +185,15 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     continue;
                 }
 
-                throw new AutowireException(
-                    sprintf(
+                throw $this->exceptionWhenClassExist(
+                    message: sprintf(
                         'The immutable setter "%s::%s()" must return same class "%s". Got type: %s',
                         $this->getDefinition()->getName(),
                         $method,
                         $this->getDefinition()->getName(),
                         get_debug_type($result)
-                    )
+                    ),
+                    context_method_result: $result
                 );
             }
         }
@@ -197,7 +206,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         try {
             return $this->reflectionClass ??= new ReflectionClass($this->definition);
         } catch (ReflectionException $e) { // @phpstan-ignore catch.neverThrown
-            throw new AutowireException(message: $e->getMessage());
+            throw (new DiDefinitionException(message: $e->getMessage()))
+                ->setContext(context_definition: $this->definition)
+            ;
         }
     }
 
@@ -211,25 +222,57 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             : $this->reflectionClass->getName();
     }
 
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
     public function getTags(): array
     {
-        // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
-        return $this->getTagsByAttribute() + $this->getTagsInternal();
+        try {
+            // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
+            return $this->getTagsByAttribute() + $this->getTagsInternal();
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get tags on class "%s".', $this->getIdentifier()),
+                previous: $e,
+            );
+        }
     }
 
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
     public function hasTag(string $name): bool
     {
-        return isset($this->getTags()[$name]);
+        try {
+            return isset($this->getTags()[$name]);
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot check exist tag "%s" on class "%s".', $name, $this->getIdentifier()),
+                previous: $e,
+            );
+        }
     }
 
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
     public function getTag(string $name): ?array
     {
-        return $this->getTags()[$name] ?? null;
+        try {
+            return $this->getTags()[$name] ?? null;
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get tag "%s" on class "%s".', $name, $this->getIdentifier()),
+                previous: $e,
+            );
+        }
     }
 
     /**
      * @param non-empty-string $name
      * @param TagOptions       $operationOptions
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function geTagPriority(string $name, array $operationOptions = []): int|string|null
     {
@@ -247,18 +290,30 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     ? 'value with key "priority.method" in the $options parameter in '.DiDefinitionTagArgumentInterface::class.'::bindTag()'
                     : 'the $priorityMethod parameter or the value with key "priority.method" in the $options parameter in the php attribute #[Tag]';
 
-                throw new DiDefinitionException(
-                    sprintf('Cannot get tag priority for tag "%s" via method in class %s. The name of the priority method is specified by %s. Priority method must be present none-empty string. Got: %s', $name, $this->getIdentifier(), $wherePriorityMethod, var_export($method, true))
-                );
+                throw (
+                    new DiDefinitionException(
+                        sprintf('Cannot get tag priority for tag "%s" via method in class %s. The name of the priority method is specified by %s. Priority method must be present none-empty string. Got: %s', $name, $this->getIdentifier(), $wherePriorityMethod, var_export($method, true))
+                    )
+                )
+                    ->setContext(context_tag_options: $tagOptions)
+                ;
             }
 
             try {
                 return $this->getTagPriorityFromMethod($method, $name, $tagOptions);
-            } catch (AutowireExceptionInterface|InvalidArgumentException $e) {
-                throw new DiDefinitionException(
-                    message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s().', $name, $this->getIdentifier(), $method),
-                    previous: $e
-                );
+            } catch (AutowireException|InvalidArgumentException $e) {
+                throw (
+                    new DiDefinitionException(
+                        message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s().', $name, $this->getIdentifier(), $method),
+                        previous: $e
+                    )
+                )
+                    ->setContext(
+                        context_callable: [$this->getIdentifier(), $method],
+                        context_operation_options: $operationOptions,
+                        context_tag_options: $tagOptions
+                    )
+                ;
             }
         }
 
@@ -273,11 +328,19 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             return $this->getTagPriorityFromMethod($priorityDefaultMethod, $name, $tagOptions);
         } catch (InvalidArgumentException) {
             return null;
-        } catch (AutowireExceptionInterface $e) {
-            throw new DiDefinitionException(
-                message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s().', $name, $this->getIdentifier(), $priorityDefaultMethod),
-                previous: $e
-            );
+        } catch (AutowireException $e) {
+            throw (
+                new DiDefinitionException(
+                    message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s().', $name, $this->getIdentifier(), $priorityDefaultMethod),
+                    previous: $e
+                )
+            )
+                ->setContext(
+                    context_callable: [$this->getIdentifier(), $priorityDefaultMethod],
+                    context_operation_options: $operationOptions,
+                    context_tag_options: $tagOptions
+                )
+            ;
         }
     }
 
@@ -293,14 +356,12 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     }
 
     /**
-     * @throws AutowireExceptionInterface|ContainerExceptionInterface|NotFoundExceptionInterface
+     * @throws ArgumentBuilderExceptionInterface|DiDefinitionExceptionInterface
      */
     private function newInstance(): object
     {
         if (!$this->getDefinition()->isInstantiable()) {
-            throw new AutowireException(
-                sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName())
-            );
+            throw $this->exceptionWhenClassExist(sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName()));
         }
 
         if (!isset($this->constructArgBuilder)) {
@@ -321,7 +382,11 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     ? $arg->resolve($this->getContainer(), $this)
                     : $arg;
             } catch (ContainerExceptionInterface $e) {
-                throw $this->exceptionWhenResolveArgument($argNameOrIndex, $this->constructArgBuilder, $e);
+                throw $this->exceptionWhenClassExist(
+                    message: $this->exceptionMessageWhenResolveArgument($argNameOrIndex, $this->constructArgBuilder),
+                    previous: $e,
+                    context_argument: $arg
+                );
             }
         }
 
@@ -331,7 +396,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     /**
      * @return array<non-empty-string, TagOptions>
      *
-     * @throws AutowireExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     private function getTagsByAttribute(): array
     {
@@ -345,7 +410,16 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         $this->tagsByAttribute = [];
 
-        foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
+        try {
+            $tagAttributes = $this->getTagAttribute($this->getDefinition());
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot read php attribute #[%s] on class "%s".', Tag::class, $this->getIdentifier()),
+                previous: $e,
+            );
+        }
+
+        foreach ($tagAttributes as $tagAttribute) {
             $priorityMethod = null !== $tagAttribute->getPriorityMethod()
                 ? ['priority.method' => $tagAttribute->getPriorityMethod()]
                 : [];
@@ -358,16 +432,23 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         return $this->tagsByAttribute;
     }
 
-    private function exceptionWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder, ContainerExceptionInterface $e): AutowireException
+    private function exceptionMessageWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder): string
     {
         $argMessage = is_int($argPresentedBy = $argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex))
             ? sprintf('at position #%d', $argPresentedBy)
             : sprintf('by named argument $%s', $argPresentedBy);
 
-        return new AutowireException(
-            message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod())),
-            previous: $e
-        );
+        return sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod()));
+    }
+
+    private function exceptionWhenClassExist(string $message, ?Throwable $previous = null, mixed ...$context): DiDefinitionException
+    {
+        return (new DiDefinitionException(message: $message, previous: $previous))
+            ->setContext(
+                ...$context,
+                context_reflection_class: $this->getDefinition(),
+            )
+        ;
     }
 
     /**
@@ -383,7 +464,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             throw new InvalidArgumentException('Method must be declared with public and static modifiers.');
         }
 
-        $priority = call_user_func($callable, $tag, $tagOptions);
+        $priority = $callable($tag, $tagOptions);
 
         if (is_int($priority) || is_string($priority) || is_null($priority)) {
             return $priority;
