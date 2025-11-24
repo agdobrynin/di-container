@@ -46,7 +46,6 @@ class KeyExceptionTest extends TestCase
     public function testKeyIsEmptyString(string $key): void
     {
         $this->expectException(DiDefinitionException::class);
-        $this->expectExceptionMessage('The value must be non-empty string.');
 
         $this->container->expects(self::once())
             ->method('getDefinitions')

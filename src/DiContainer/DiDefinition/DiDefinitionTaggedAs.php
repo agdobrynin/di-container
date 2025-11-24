@@ -183,7 +183,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             if (!isset($this->keyChecked)) {
                 if ('' === trim($this->key)) {
                     throw new DiDefinitionException(
-                        sprintf('Parameter $key for tag "%s" is invalid. The value must be non-empty string.', $this->tag)
+                        sprintf('Parameter $key for %s::__construct() must be non-empty string. Tag is "%s".', self::class, $this->tag)
                     );
                 }
 
