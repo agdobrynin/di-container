@@ -18,6 +18,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
@@ -35,8 +36,6 @@ use function sprintf;
 
 trait AttributeReaderTrait
 {
-    use ParameterTypeByReflectionTrait;
-
     public function isAutowireExclude(ReflectionClass $reflectionClass): bool
     {
         return !([] === $reflectionClass->getAttributes(AutowireExclude::class));
@@ -216,7 +215,7 @@ trait AttributeReaderTrait
 
             if ('' === $inject->getIdentifier()) {
                 $inject = new Inject(
-                    $this->getParameterType($reflectionParameter, $container)
+                    Helper::getParameterTypeHint($reflectionParameter, $container)
                 );
             }
 

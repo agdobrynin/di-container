@@ -15,11 +15,11 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 use Throwable;
@@ -43,7 +43,6 @@ use function sprintf;
 final class ArgumentBuilder implements ArgumentBuilderInterface
 {
     use AttributeReaderTrait;
-    use ParameterTypeByReflectionTrait;
 
     private readonly bool $isUseAttribute;
 
@@ -200,7 +199,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     private function pushFromParameterType(array &$args, ReflectionParameter $param): void
     {
         try {
-            $strType = $this->getParameterType($param, $this->container);
+            $strType = Helper::getParameterTypeHint($param, $this->container);
 
             if ($this->container->has($strType) || !$param->isDefaultValueAvailable()) {
                 $args[$param->getPosition()] = new DiDefinitionGet($strType); // @phpstan-ignore parameterByRef.type

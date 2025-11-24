@@ -31,6 +31,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
