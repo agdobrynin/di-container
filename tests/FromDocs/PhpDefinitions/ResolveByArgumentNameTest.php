@@ -12,7 +12,6 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
 
 /**
- * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory

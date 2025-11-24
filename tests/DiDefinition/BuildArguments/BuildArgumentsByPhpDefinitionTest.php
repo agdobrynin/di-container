@@ -30,7 +30,6 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diValue;
 
 /**
- * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder

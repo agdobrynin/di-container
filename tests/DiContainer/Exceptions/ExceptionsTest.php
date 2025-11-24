@@ -20,7 +20,6 @@ use Tests\DiContainer\Exceptions\Fixtures\ThirdClass;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
- * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer

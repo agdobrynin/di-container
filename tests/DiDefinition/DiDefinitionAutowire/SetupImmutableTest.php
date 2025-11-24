@@ -24,7 +24,6 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainerConfig

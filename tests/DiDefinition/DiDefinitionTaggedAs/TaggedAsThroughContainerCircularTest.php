@@ -22,7 +22,6 @@ use function Kaspi\DiContainer\diTaggedAs;
 /**
  * @internal
  *
- * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diAutowire

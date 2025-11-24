@@ -19,7 +19,6 @@ use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Quux;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire

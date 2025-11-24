@@ -17,7 +17,6 @@ use function Kaspi\DiContainer\diFactory;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Attributes\Inject::getIdentifier
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
  * @covers \Kaspi\DiContainer\diAutowire
