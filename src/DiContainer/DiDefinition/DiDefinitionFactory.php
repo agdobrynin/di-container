@@ -99,7 +99,7 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
                     previous: $e
                 )
             )
-                ->setContext(context_di_factory_definition: $this->autowire)
+                ->setContext(context_factory_di_definition_autowire: $this->autowire)
             ;
         }
 
