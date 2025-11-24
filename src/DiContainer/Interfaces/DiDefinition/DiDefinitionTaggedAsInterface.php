@@ -8,6 +8,7 @@ use ArrayAccess;
 use Countable;
 use Iterator;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -21,6 +22,7 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     public function resolve(DiContainerInterface $container, mixed $context = null): iterable;
 }
