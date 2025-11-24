@@ -20,7 +20,6 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Helper
  *
  * @internal

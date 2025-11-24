@@ -32,7 +32,6 @@ use function Kaspi\DiContainer\diFactory;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diFactory
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Helper
  *
  * @internal

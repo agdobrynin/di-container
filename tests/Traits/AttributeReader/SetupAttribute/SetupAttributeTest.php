@@ -16,7 +16,7 @@ use Tests\Traits\AttributeReader\SetupAttribute\Fixtures\SetupOnMethods;
 /**
  * @covers \Kaspi\DiContainer\Attributes\Setup
  * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal

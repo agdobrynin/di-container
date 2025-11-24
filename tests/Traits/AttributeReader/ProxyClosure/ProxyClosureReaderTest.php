@@ -12,7 +12,7 @@ use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal

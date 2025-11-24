@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
@@ -36,7 +37,6 @@ use function is_int;
 use function is_null;
 use function is_object;
 use function is_string;
-use function Kaspi\DiContainer\functionName;
 use function sprintf;
 use function trim;
 use function var_export;
@@ -438,7 +438,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             ? sprintf('at position #%d', $argPresentedBy)
             : sprintf('by named argument $%s', $argPresentedBy);
 
-        return sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($argBuilder->getFunctionOrMethod()));
+        return sprintf('Cannot resolve parameter %s in %s.', $argMessage, Helper::functionName($argBuilder->getFunctionOrMethod()));
     }
 
     private function exceptionWhenClassExist(string $message, ?Throwable $previous = null, mixed ...$context): DiDefinitionException

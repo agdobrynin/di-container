@@ -12,7 +12,7 @@ use ReflectionParameter;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal

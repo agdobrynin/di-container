@@ -44,7 +44,6 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait

@@ -29,7 +29,7 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *

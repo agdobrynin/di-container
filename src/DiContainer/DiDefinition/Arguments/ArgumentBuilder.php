@@ -33,7 +33,6 @@ use function count;
 use function in_array;
 use function is_int;
 use function is_string;
-use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 /**
@@ -207,7 +206,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         } catch (AutowireParameterTypeException $e) {
             if (!$param->isDefaultValueAvailable()) {
                 throw $this->exceptionWithContext(
-                    message: sprintf('Cannot build argument via type hint for %s in %s.', $param, functionName($param->getDeclaringFunction())),
+                    message: sprintf('Cannot build argument via type hint for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e,
                     context_param: $param
                 );
@@ -276,7 +275,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             foreach ($tailArgs as $key => $value) {
                 if (is_string($key)) {
                     throw $this->exceptionWithContext(
-                        message: sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', functionName($this->functionOrMethod), $key),
+                        message: sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', Helper::functionName($this->functionOrMethod), $key),
                         context_tail_args: $tailArgs
                     );
                 }

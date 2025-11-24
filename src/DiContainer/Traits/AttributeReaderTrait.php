@@ -31,7 +31,6 @@ use function array_keys;
 use function count;
 use function implode;
 use function is_a;
-use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 trait AttributeReaderTrait
@@ -169,7 +168,7 @@ trait AttributeReaderTrait
 
         if (count($intersectAttrs) > 1) {
             throw new AutowireAttributeException(
-                sprintf('Only one of the attributes %s may be declared at %s in %s.', '#['.implode('], #[', $intersectAttrs).']', $param, functionName($param->getDeclaringFunction()))
+                sprintf('Only one of the attributes %s may be declared at %s in %s.', '#['.implode('], #[', $intersectAttrs).']', $param, Helper::functionName($param->getDeclaringFunction()))
             );
         }
 
@@ -281,7 +280,7 @@ trait AttributeReaderTrait
     {
         if ($countAttributes > 1 && !$param->isVariadic()) {
             throw new AutowireAttributeException(
-                sprintf('The attribute #[%s] can only be applied once per non-variadic %s in %s.', $attribute, $param, functionName($param->getDeclaringFunction()))
+                sprintf('The attribute #[%s] can only be applied once per non-variadic %s in %s.', $attribute, $param, Helper::functionName($param->getDeclaringFunction()))
             );
         }
     }
