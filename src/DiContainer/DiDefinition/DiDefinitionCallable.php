@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Closure;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -31,7 +32,6 @@ use function is_callable;
 use function is_int;
 use function is_object;
 use function is_string;
-use function Kaspi\DiContainer\functionName;
 use function sprintf;
 use function strpos;
 use function var_export;
@@ -100,7 +100,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
                     : sprintf('by named argument $%s', $argPresentedBy);
 
                 throw $this->exceptionWhenCallableFunction(
-                    message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, functionName($this->argBuilder->getFunctionOrMethod())),
+                    message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, Helper::functionName($this->argBuilder->getFunctionOrMethod())),
                     previous: $e,
                     context_argument: $arg
                 );

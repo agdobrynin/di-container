@@ -6,6 +6,8 @@ namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Psr\Container\ContainerInterface;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
@@ -45,11 +47,22 @@ final class Helper
 
             return 1 === count($types)
                 ? $types[0]
-                : throw new AutowireParameterTypeException(sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionName($parameter->getDeclaringFunction()), $parameter));
+                : throw new AutowireParameterTypeException(sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', self::functionName($parameter->getDeclaringFunction()), $parameter));
         }
 
         throw new AutowireParameterTypeException(
-            sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', functionName($parameter->getDeclaringFunction()), $parameter)
+            sprintf('Cannot automatically resolve dependency in %s. Please specify the %s.', self::functionName($parameter->getDeclaringFunction()), $parameter)
         );
+    }
+
+    public static function functionName(ReflectionFunctionAbstract $fn): string
+    {
+        $fnName = $fn->isClosure() && false !== $fn->getFileName() && false !== $fn->getStartLine()
+            ? sprintf('%s{closure:%s:%d}()', $fn->inNamespace() ? $fn->getNamespaceName().'::' : '', $fn->getFileName(), $fn->getStartLine())
+            : $fn->getName().'()';
+
+        return $fn instanceof ReflectionMethod
+            ? $fn->getDeclaringClass()->getName().'::'.$fnName
+            : $fnName;
     }
 }

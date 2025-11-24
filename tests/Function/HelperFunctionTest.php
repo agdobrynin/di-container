@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Helper;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
@@ -21,9 +22,9 @@ use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
-use function Kaspi\DiContainer\functionName;
 
 /**
+ * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
@@ -34,7 +35,6 @@ use function Kaspi\DiContainer\functionName;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\functionName
  *
  * @internal
  */
@@ -90,7 +90,7 @@ class HelperFunctionTest extends TestCase
      */
     public function testFunctionName(ReflectionFunctionAbstract $fn, string $expectRegExp): void
     {
-        self::assertMatchesRegularExpression($expectRegExp, functionName($fn));
+        self::assertMatchesRegularExpression($expectRegExp, Helper::functionName($fn));
     }
 
     public function dataProviderReflectionFn(): Generator

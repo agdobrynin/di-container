@@ -16,11 +16,11 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\RuleFoo;
 use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal

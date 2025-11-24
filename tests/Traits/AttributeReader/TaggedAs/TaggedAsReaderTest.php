@@ -12,8 +12,8 @@ use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 
 /**
+ * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal

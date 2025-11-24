@@ -23,11 +23,11 @@ use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait

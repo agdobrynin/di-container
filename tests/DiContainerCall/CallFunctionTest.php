@@ -18,6 +18,7 @@ use function Kaspi\DiContainer\diAutowire;
 use function round;
 
 /**
+ * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -28,7 +29,6 @@ use function round;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait

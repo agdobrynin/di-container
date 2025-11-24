@@ -17,7 +17,7 @@ use ReflectionFunction;
 use ReflectionParameter;
 
 /**
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal

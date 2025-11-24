@@ -19,6 +19,7 @@ use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Quux;
 use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Helper::functionName
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
@@ -26,7 +27,6 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
- * @covers \Kaspi\DiContainer\functionName
  * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\SetupAttributeTrait
