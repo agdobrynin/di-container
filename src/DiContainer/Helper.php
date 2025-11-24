@@ -20,7 +20,7 @@ final class Helper
      *
      * @throws AutowireParameterTypeException
      */
-    public static function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): string
+    public static function getParameterTypeHint(ReflectionParameter $parameter, ContainerInterface $container): string
     {
         $type = $parameter->getType();
 

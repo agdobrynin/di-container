@@ -199,7 +199,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     private function pushFromParameterType(array &$args, ReflectionParameter $param): void
     {
         try {
-            $strType = Helper::getParameterType($param, $this->container);
+            $strType = Helper::getParameterTypeHint($param, $this->container);
 
             if ($this->container->has($strType) || !$param->isDefaultValueAvailable()) {
                 $args[$param->getPosition()] = new DiDefinitionGet($strType); // @phpstan-ignore parameterByRef.type

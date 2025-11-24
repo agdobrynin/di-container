@@ -215,7 +215,7 @@ trait AttributeReaderTrait
 
             if ('' === $inject->getIdentifier()) {
                 $inject = new Inject(
-                    Helper::getParameterType($reflectionParameter, $container)
+                    Helper::getParameterTypeHint($reflectionParameter, $container)
                 );
             }
 
