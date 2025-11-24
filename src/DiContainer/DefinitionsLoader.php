@@ -124,13 +124,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
             if (!$importCacheFile->isReadable()) {
-                throw new DefinitionsLoaderException(
-                    message: sprintf(
-                        'Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".',
-                        $importCacheFile->getPathname()
-                    ),
-                    context_file: $importCacheFile
-                );
+                throw (
+                    new DefinitionsLoaderException(
+                        message: sprintf('Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".', $importCacheFile->getPathname()),
+                    )
+                )
+                    ->setContext(context_file: $importCacheFile)
+                ;
             }
 
             yield from $this->getIteratorFromFile($importCacheFile->getPathname()); // @phpstan-ignore generator.keyType
@@ -257,15 +257,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
         if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
-            throw new DefinitionsLoaderInvalidArgumentException(
-                message: sprintf(
-                    'Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.',
-                    T_INTERFACE,
-                    T_CLASS,
-                    var_export($tokenId, true)
-                ),
-                context_item_f_q_n: $itemFQN
-            );
+            throw (
+                new DefinitionsLoaderInvalidArgumentException(
+                    message: sprintf('Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.', T_INTERFACE, T_CLASS, var_export($tokenId, true))
+                )
+            )
+                ->setContext(context_item_f_q_n: $itemFQN)
+            ;
         }
 
         if (!$useAttribute) {
@@ -291,17 +289,17 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if ($this->isAutowireExclude($reflectionClass)) {
-            return $this->configDefinitions->offsetExists($reflectionClass->name)
-                ? throw new DefinitionsLoaderInvalidArgumentException(
-                    message: sprintf(
-                        'Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.',
-                        AutowireExclude::class,
-                        $reflectionClass->name,
-                        $reflectionClass->name
-                    ),
-                    context_reflection_class: $reflectionClass
+            if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
+                throw (
+                    new DefinitionsLoaderInvalidArgumentException(
+                        message: sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', AutowireExclude::class, $reflectionClass->name, $reflectionClass->name)
+                    )
                 )
-                : [];
+                    ->setContext(context_reflection_class: $reflectionClass)
+                ;
+            }
+
+            return [];
         }
 
         if ($reflectionClass->isInterface()) {
@@ -312,15 +310,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
-                throw new DefinitionsLoaderInvalidArgumentException(
-                    message: sprintf(
-                        'Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.',
-                        Service::class,
-                        $reflectionClass->name,
-                        $reflectionClass->name
-                    ),
-                    context_reflection_class: $reflectionClass
-                );
+                throw (
+                    new DefinitionsLoaderInvalidArgumentException(
+                        message: sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
+                    )
+                )
+                    ->setContext(context_reflection_class: $reflectionClass)
+                ;
             }
 
             return [
@@ -335,15 +331,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             foreach ($autowireAttrs as $autowireAttr) {
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
-                    throw new DefinitionsLoaderInvalidArgumentException(
-                        message: sprintf(
-                            'Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.',
-                            Autowire::class,
-                            $autowireAttr->getIdentifier(),
-                            $reflectionClass->name
-                        ),
-                        context_reflection_class: $reflectionClass
-                    );
+                    throw (
+                        new DefinitionsLoaderInvalidArgumentException(
+                            message: sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                        )
+                    )
+                        ->setContext(context_reflection_class: $reflectionClass)
+                    ;
                 }
 
                 $services[$autowireAttr->getIdentifier()] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton());
@@ -381,10 +375,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return match (true) {
             is_iterable($content) => yield from $content,
             $content instanceof Closure && is_iterable($content()) => yield from $content(),
-            default => throw new DefinitionsLoaderException(
-                message: sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile),
-                context_content: $content
+            default => throw (
+                new DefinitionsLoaderException(
+                    message: sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile),
+                )
             )
+                ->setContext(context_content: $content)
         };
     }
 
