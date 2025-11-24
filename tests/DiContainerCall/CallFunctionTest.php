@@ -126,7 +126,7 @@ class CallFunctionTest extends TestCase
 
     public function testUserFunctionUnresolvedArgument(): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectException(DiDefinitionCallableExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+funcWithDependencyClass()/');
 
         (new DiContainer())->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
