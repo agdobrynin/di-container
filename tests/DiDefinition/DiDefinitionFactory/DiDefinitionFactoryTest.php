@@ -26,6 +26,8 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
+ * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\SetupAttributeTrait
  *
  * @internal
@@ -146,5 +148,14 @@ class DiDefinitionFactoryTest extends TestCase
             'ok Tests\DiDefinition\DiDefinitionFactory\Fixtures\Bar',
             $factory->resolve($container)
         );
+    }
+
+    public function testExceptionWhenResolve(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve factory class ".+Foo"/');
+
+        $factory = new DiDefinitionFactory(Foo::class);
+        $factory->resolve($this->createMock(DiContainerInterface::class));
     }
 }
