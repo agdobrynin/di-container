@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use InvalidArgumentException;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
@@ -221,25 +222,57 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             : $this->reflectionClass->getName();
     }
 
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
     public function getTags(): array
     {
-        // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
-        return $this->getTagsByAttribute() + $this->getTagsInternal();
+        try {
+            // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
+            return $this->getTagsByAttribute() + $this->getTagsInternal();
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get tags on class "%s".', $this->getIdentifier()),
+                previous: $e,
+            );
+        }
     }
 
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
     public function hasTag(string $name): bool
     {
-        return isset($this->getTags()[$name]);
+        try {
+            return isset($this->getTags()[$name]);
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot check exist tag "%s" on class "%s".', $name, $this->getIdentifier()),
+                previous: $e,
+            );
+        }
     }
 
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
     public function getTag(string $name): ?array
     {
-        return $this->getTags()[$name] ?? null;
+        try {
+            return $this->getTags()[$name] ?? null;
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get tag "%s" on class "%s".', $name, $this->getIdentifier()),
+                previous: $e,
+            );
+        }
     }
 
     /**
      * @param non-empty-string $name
      * @param TagOptions       $operationOptions
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function geTagPriority(string $name, array $operationOptions = []): int|string|null
     {
@@ -377,7 +410,16 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         $this->tagsByAttribute = [];
 
-        foreach ($this->getTagAttribute($this->getDefinition()) as $tagAttribute) {
+        try {
+            $tagAttributes = $this->getTagAttribute($this->getDefinition());
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot read php attribute #[%s] on class "%s".', Tag::class, $this->getIdentifier()),
+                previous: $e,
+            );
+        }
+
+        foreach ($tagAttributes as $tagAttribute) {
             $priorityMethod = null !== $tagAttribute->getPriorityMethod()
                 ? ['priority.method' => $tagAttribute->getPriorityMethod()]
                 : [];

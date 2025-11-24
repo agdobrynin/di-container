@@ -7,7 +7,6 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 use Generator;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
@@ -273,12 +272,33 @@ class TagTest extends TestCase
 
     public function testGetTagWithoutSetContainer(): void
     {
-        $this->expectException(DiDefinitionException::class);
-        $this->expectExceptionMessage('Need set container implementation');
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot check exist tag "tags.handler-one" on class');
 
         (new DiDefinitionAutowire(new ReflectionClass(new class {})))
             ->bindTag('tags.handler-one')
             ->hasTag('tags.handler-one')
+        ;
+    }
+
+    public function testGetTagOnWrongDefinition(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get tag "tags.handler-one" on class');
+
+        $container = $this->createMock(DiContainerInterface::class);
+        $container->method('getConfig')
+            ->willReturn(
+                new DiContainerConfig(
+                    useAttribute: true,
+                )
+            )
+        ;
+
+        (new DiDefinitionAutowire(NoneExist::class))
+            ->setContainer($container)
+            ->bindTag('tags.handler-one')
+            ->getTag('tags.handler-one')
         ;
     }
 }
