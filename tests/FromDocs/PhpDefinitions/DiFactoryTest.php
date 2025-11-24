@@ -19,6 +19,7 @@ use function Kaspi\DiContainer\diFactory;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
  * @covers \Kaspi\DiContainer\diFactory
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

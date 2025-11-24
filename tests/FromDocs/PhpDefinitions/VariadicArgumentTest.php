@@ -27,6 +27,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */
