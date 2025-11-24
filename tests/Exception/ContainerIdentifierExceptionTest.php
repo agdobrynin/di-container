@@ -14,19 +14,21 @@ use PHPUnit\Framework\TestCase;
  */
 class ContainerIdentifierExceptionTest extends TestCase
 {
-    public function testDefaultMessage(): void
+    public function testContextAsNamedArgument(): void
     {
-        $e = new ContainerIdentifierException(context_id: 100, contect_definition: ['foo' => 'bar']);
+        $e = (new ContainerIdentifierException())
+            ->setContext(context_id: 100, context_definition: ['foo' => 'bar'])
+        ;
 
-        self::assertEquals('Definition identifier must be a non-empty string.', $e->getMessage());
-        self::assertEquals(['context_id' => 100, 'contect_definition' => ['foo' => 'bar']], $e->getContext());
+        self::assertEquals(['context_id' => 100, 'context_definition' => ['foo' => 'bar']], $e->getContext());
     }
 
-    public function testCustomMessage(): void
+    public function testContextAsIndexesArgument(): void
     {
-        $e = new ContainerIdentifierException('Lorem ipsum dolor sit amet.');
+        $e = (new ContainerIdentifierException())
+            ->setContext(100, ['foo' => 'bar'])
+        ;
 
-        self::assertEquals('Lorem ipsum dolor sit amet.', $e->getMessage());
-        self::assertEmpty($e->getContext());
+        self::assertEquals([0 => 100, 1 => ['foo' => 'bar']], $e->getContext());
     }
 }
