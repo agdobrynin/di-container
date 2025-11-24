@@ -95,7 +95,7 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         } catch (ContainerExceptionInterface $e) {
             throw (
                 new DiDefinitionException(
-                    message: sprintf('Cannot resolve factory class %s', $this->getDefinition()),
+                    message: sprintf('Cannot resolve factory class "%s".', $this->getDefinition()),
                     previous: $e
                 )
             )
