@@ -33,7 +33,7 @@ use function Kaspi\DiContainer\diFactory;
  * @covers \Kaspi\DiContainer\diFactory
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\functionName
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

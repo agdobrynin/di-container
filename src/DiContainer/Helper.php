@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer\Traits;
+namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Psr\Container\ContainerInterface;
@@ -11,17 +11,16 @@ use ReflectionParameter;
 use ReflectionUnionType;
 
 use function count;
-use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
-trait ParameterTypeByReflectionTrait
+final class Helper
 {
     /**
      * @return non-empty-string
      *
      * @throws AutowireParameterTypeException
      */
-    private function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): string
+    public static function getParameterType(ReflectionParameter $parameter, ContainerInterface $container): string
     {
         $type = $parameter->getType();
 
@@ -32,7 +31,7 @@ trait ParameterTypeByReflectionTrait
         if ($type instanceof ReflectionUnionType) {
             /** @var non-empty-string[] $types */
             $types = [];
-            foreach ($type->getTypes() as $t) { // @phpstan-ignore-line
+            foreach ($type->getTypes() as $t) {
                 /**
                  * @phpstan-var ReflectionNamedType $t
                  * @phpstan-var non-empty-string $name
