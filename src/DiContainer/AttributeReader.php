@@ -238,7 +238,7 @@ final class AttributeReader
 
         if (count($intersectAttrs) > 1) {
             throw new AutowireAttributeException(
-                sprintf('Only one of the attributes %s may be declared at %s in %s.', '#['.implode('], #[', $intersectAttrs).']', $param, Helper::functionName($param->getDeclaringFunction()))
+                sprintf('Only one of the php attributes %s::class may be declared at %s in %s.', implode('::class, ', $intersectAttrs), $param, Helper::functionName($param->getDeclaringFunction()))
             );
         }
 
