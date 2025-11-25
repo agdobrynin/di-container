@@ -9,6 +9,7 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
@@ -20,12 +21,24 @@ use ReflectionParameter;
  */
 class TaggedAsReaderTest extends TestCase
 {
+    private ?ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = $this->createMock(ContainerInterface::class);
+    }
+
+    public function tearDown(): void
+    {
+        $this->container = null;
+    }
+
     public function testNonTaggedAs(): void
     {
         $fn = static fn (iterable $tagged) => '';
         $p = new ReflectionParameter($fn, 0);
 
-        $this->assertFalse(AttributeReader::getTaggedAsAttribute($p)->valid());
+        $this->assertFalse(AttributeReader::getAttributeOnParameter($p, $this->container)->valid());
     }
 
     public function testTaggedAsManyForNonVariadic(): void
@@ -41,7 +54,7 @@ class TaggedAsReaderTest extends TestCase
         $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> (iterable|Traversable\|array) \$tagged ]/');
 
         /** @var Generator<TaggedAs> $res */
-        $res = AttributeReader::getTaggedAsAttribute($p);
+        $res = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertFalse($res->valid());
     }
@@ -56,7 +69,7 @@ class TaggedAsReaderTest extends TestCase
         $p = new ReflectionParameter($fn, 0);
 
         /** @var Generator<TaggedAs> $res */
-        $res = AttributeReader::getTaggedAsAttribute($p);
+        $res = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertTrue($res->valid());
         $this->assertEquals('tags.handlers-opa', $res->current()->getIdentifier());

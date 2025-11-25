@@ -36,7 +36,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse(AttributeReader::getInjectAttribute($p, $this->container)->valid());
+        $this->assertFalse(AttributeReader::getAttributeOnParameter($p, $this->container)->valid());
     }
 
     public function testManyInjectNonVariadicParameter(): void
@@ -51,7 +51,7 @@ class InjectReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic Parameter #0 [ <required> string $a ] in');
 
-        AttributeReader::getInjectAttribute($p, $this->container)->valid();
+        AttributeReader::getAttributeOnParameter($p, $this->container)->valid();
     }
 
     public function testInjectNonVariadicParameterFail(): void
@@ -65,7 +65,7 @@ class InjectReaderTest extends TestCase
         $this->expectException(AutowireParameterTypeException::class);
         $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+string \$a/');
 
-        AttributeReader::getInjectAttribute($p, $this->container)->valid();
+        AttributeReader::getAttributeOnParameter($p, $this->container)->valid();
     }
 
     public function testInjectVariadicParameter(): void
@@ -78,7 +78,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = AttributeReader::getInjectAttribute($p, $this->container);
+        $injects = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertTrue($injects->valid());
 
@@ -99,7 +99,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = AttributeReader::getInjectAttribute($p, $this->container);
+        $injects = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertTrue($injects->valid());
         $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());
@@ -118,7 +118,7 @@ class InjectReaderTest extends TestCase
             ->willReturn(true)
         ;
 
-        $injects = AttributeReader::getInjectAttribute($p, $this->container);
+        $injects = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertTrue($injects->valid());
         $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());

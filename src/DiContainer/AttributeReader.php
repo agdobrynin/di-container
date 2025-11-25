@@ -29,6 +29,7 @@ use function array_intersect;
 use function array_keys;
 use function count;
 use function implode;
+use function in_array;
 use function is_a;
 use function sprintf;
 
@@ -41,7 +42,10 @@ final class AttributeReader
 
     public static function getDiFactoryAttribute(ReflectionClass $class): ?DiFactory
     {
-        if (null === $attr = ($class->getAttributes(DiFactory::class)[0] ?? null)) {
+        /** @var list<ReflectionAttribute<DiFactory>> $attrs */
+        $attrs = $class->getAttributes(DiFactory::class);
+
+        if ([] === $attrs) {
             return null;
         }
 
@@ -52,7 +56,7 @@ final class AttributeReader
         }
 
         /** @var DiFactory $attrFactory */
-        $attrFactory = $attr->newInstance();
+        $attrFactory = $attrs[0]->newInstance();
         $returnTypeDiFactoryInvoke = (string) (new ReflectionMethod($attrFactory->getIdentifier(), '__invoke'))->getReturnType();
 
         if (is_a($class->getName(), $returnTypeDiFactoryInvoke, true)) {
@@ -69,7 +73,10 @@ final class AttributeReader
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
-        if ([] === ($attrs = $class->getAttributes(Autowire::class))) {
+        /** @var list<ReflectionAttribute<Autowire>> $attrs */
+        $attrs = $class->getAttributes(Autowire::class);
+
+        if ([] === $attrs) {
             return;
         }
 
@@ -81,11 +88,9 @@ final class AttributeReader
 
         $containerIdentifier = '';
 
+        /** @var ReflectionAttribute<Autowire> $attr */
         foreach ($attrs as $attr) {
-            /** @var Autowire $autowire */
-            $autowire = $attr->newInstance();
-
-            if ('' === $autowire->getIdentifier()) {
+            if ('' === ($autowire = $attr->newInstance())->getIdentifier()) {
                 $autowire = new Autowire($class->name, $autowire->isSingleton());
             }
 
@@ -103,7 +108,12 @@ final class AttributeReader
 
     public static function getServiceAttribute(ReflectionClass $class): ?Service
     {
-        return ($class->getAttributes(Service::class)[0] ?? null)?->newInstance();
+        /** @var list<ReflectionAttribute<Service>> $attrs */
+        $attrs = $class->getAttributes(Service::class);
+
+        return [] === $attrs
+            ? null
+            : $attrs[0]->newInstance();
     }
 
     /**
@@ -111,11 +121,7 @@ final class AttributeReader
      */
     public static function getTagAttribute(ReflectionClass $class): Generator
     {
-        if ([] === ($attrs = $class->getAttributes(Tag::class))) {
-            return;
-        }
-
-        foreach ($attrs as $attr) {
+        foreach ($class->getAttributes(Tag::class) as $attr) {
             yield $attr->newInstance();
         }
     }
@@ -128,91 +134,15 @@ final class AttributeReader
         $methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
-            /** @var ReflectionAttribute[] $attrs */
+            /** @var list<ReflectionAttribute<Setup|SetupImmutable>> $attrs */
             $attrs = [...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)];
 
             foreach ($attrs as $setupAttribute) {
-                /** @var DiSetupAttributeInterface $setup */
                 $setup = $setupAttribute->newInstance();
                 $setup->setMethod($method->getName());
 
                 yield $setup;
             }
-        }
-    }
-
-    /**
-     * @return Generator<Inject>
-     *
-     * @throws AutowireAttributeException|AutowireParameterTypeException
-     */
-    public static function getInjectAttribute(ReflectionParameter $param, ContainerInterface $container): Generator
-    {
-        if ([] === ($attrs = $param->getAttributes(Inject::class))) {
-            return;
-        }
-
-        self::checkVariadic($param, count($attrs), Inject::class);
-
-        foreach ($attrs as $attr) {
-            /** @var Inject $inject */
-            $inject = $attr->newInstance();
-
-            if ('' === $inject->getIdentifier()) {
-                $inject = new Inject(
-                    Helper::getParameterTypeHint($param, $container)
-                );
-            }
-
-            yield $inject;
-        }
-    }
-
-    /**
-     * @return Generator<ProxyClosure>
-     */
-    public static function getProxyClosureAttribute(ReflectionParameter $param): Generator
-    {
-        if ([] === ($attrs = $param->getAttributes(ProxyClosure::class))) {
-            return;
-        }
-
-        self::checkVariadic($param, count($attrs), ProxyClosure::class);
-
-        foreach ($attrs as $attr) {
-            yield $attr->newInstance();
-        }
-    }
-
-    /**
-     * @return Generator<TaggedAs>
-     */
-    public static function getTaggedAsAttribute(ReflectionParameter $param): Generator
-    {
-        if ([] === ($attrs = $param->getAttributes(TaggedAs::class))) {
-            return;
-        }
-
-        self::checkVariadic($param, count($attrs), TaggedAs::class);
-
-        foreach ($attrs as $attr) {
-            yield $attr->newInstance();
-        }
-    }
-
-    /**
-     * @return Generator<InjectByCallable>
-     */
-    public static function getInjectByCallableAttribute(ReflectionParameter $param): Generator
-    {
-        if ([] === ($attrs = $param->getAttributes(InjectByCallable::class))) {
-            return;
-        }
-
-        self::checkVariadic($param, count($attrs), InjectByCallable::class);
-
-        foreach ($attrs as $attr) {
-            yield $attr->newInstance();
         }
     }
 
@@ -223,10 +153,23 @@ final class AttributeReader
      */
     public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
+        $availableAttrs = [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class];
+
+        /**
+         * @var array<non-empty-string, non-empty-list<ReflectionAttribute>> $groupAttrs
+         */
         $groupAttrs = [];
 
         foreach ($param->getAttributes() as $attr) {
-            $groupAttrs[$attr->getName()][] = $attr;
+            if (in_array($attr->getName(), $availableAttrs, true)) {
+                if (!$param->isVariadic() && isset($groupAttrs[$attr->getName()])) {
+                    throw new AutowireAttributeException(
+                        sprintf('The php attribute %s::class can only be applied once per non-variadic %s in %s.', $attr->getName(), $param, Helper::functionName($param->getDeclaringFunction()))
+                    );
+                }
+
+                $groupAttrs[$attr->getName()][] = $attr;
+            }
         }
 
         if ([] === $groupAttrs) {
@@ -234,7 +177,7 @@ final class AttributeReader
         }
 
         // ⚠ attributes cannot be used together.
-        $intersectAttrs = array_intersect(array_keys($groupAttrs), [Inject::class, ProxyClosure::class, TaggedAs::class, InjectByCallable::class]);
+        $intersectAttrs = array_intersect(array_keys($groupAttrs), $availableAttrs);
 
         if (count($intersectAttrs) > 1) {
             throw new AutowireAttributeException(
@@ -243,32 +186,42 @@ final class AttributeReader
         }
 
         if (isset($groupAttrs[Inject::class])) {
-            yield from AttributeReader::getInjectAttribute($param, $container);
+            $paramTypeHint = null;
+
+            /** @var ReflectionAttribute<Inject> $attr */
+            foreach ($groupAttrs[Inject::class] as $attr) {
+                if ('' === ($inject = $attr->newInstance())->getIdentifier()) {
+                    $paramTypeHint ??= Helper::getParameterTypeHint($param, $container);
+                    $inject = new Inject($paramTypeHint);
+                }
+
+                yield $inject;
+            }
 
             return;
         }
 
         if (isset($groupAttrs[ProxyClosure::class])) {
-            yield from AttributeReader::getProxyClosureAttribute($param);
+            /** @var ReflectionAttribute<ProxyClosure> $attr */
+            foreach ($groupAttrs[ProxyClosure::class] as $attr) {
+                yield $attr->newInstance();
+            }
 
             return;
         }
 
         if (isset($groupAttrs[TaggedAs::class])) {
-            yield from AttributeReader::getTaggedAsAttribute($param);
+            /** @var ReflectionAttribute<TaggedAs> $attr */
+            foreach ($groupAttrs[TaggedAs::class] as $attr) {
+                yield $attr->newInstance();
+            }
 
             return;
         }
 
-        yield from AttributeReader::getInjectByCallableAttribute($param);
-    }
-
-    private static function checkVariadic(ReflectionParameter $param, int $countAttrs, string $attrClassName): void
-    {
-        if ($countAttrs > 1 && !$param->isVariadic()) {
-            throw new AutowireAttributeException(
-                sprintf('The attribute #[%s] can only be applied once per non-variadic %s in %s.', $attrClassName, $param, Helper::functionName($param->getDeclaringFunction()))
-            );
+        /** @var ReflectionAttribute<InjectByCallable> $attr */
+        foreach ($groupAttrs[InjectByCallable::class] as $attr) {
+            yield $attr->newInstance();
         }
     }
 }

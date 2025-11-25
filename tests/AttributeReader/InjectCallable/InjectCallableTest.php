@@ -8,6 +8,7 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
@@ -19,6 +20,18 @@ use ReflectionParameter;
  */
 class InjectCallableTest extends TestCase
 {
+    private ?ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = $this->createMock(ContainerInterface::class);
+    }
+
+    public function tearDown(): void
+    {
+        $this->container = null;
+    }
+
     public function testInjectByCallableEmpty(): void
     {
         $f = static fn (
@@ -26,7 +39,7 @@ class InjectCallableTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse(AttributeReader::getInjectByCallableAttribute($p)->valid());
+        $this->assertFalse(AttributeReader::getAttributeOnParameter($p, $this->container)->valid());
     }
 
     public function testManyInjectByCallableNonVariadicParameter(): void
@@ -41,7 +54,7 @@ class InjectCallableTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> string \$a ].+InjectCallableTest::.+()/');
 
-        AttributeReader::getInjectByCallableAttribute($p)->valid();
+        AttributeReader::getAttributeOnParameter($p, $this->container)->valid();
     }
 
     public function testInjectByCallableNonVariadicParameter(): void
@@ -52,16 +65,16 @@ class InjectCallableTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = AttributeReader::getInjectByCallableAttribute($p);
+        $attrs = AttributeReader::getAttributeOnParameter($p, $this->container);
 
-        $this->assertTrue($injects->valid());
+        $this->assertTrue($attrs->valid());
 
-        $this->assertInstanceOf(InjectByCallable::class, $injects->current());
-        $this->assertEquals('func', $injects->current()->getIdentifier());
+        $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
+        $this->assertEquals('func', $attrs->current()->getIdentifier());
 
-        $injects->next(); // One element Inject for argument $a in function $f.
+        $attrs->next(); // One element Inject for argument $a in function $f.
 
-        $this->assertFalse($injects->valid());
+        $this->assertFalse($attrs->valid());
     }
 
     public function testInjectByCallableVariadicParameter(): void
@@ -74,25 +87,25 @@ class InjectCallableTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = AttributeReader::getInjectByCallableAttribute($p);
+        $attrs = AttributeReader::getAttributeOnParameter($p, $this->container);
 
-        $this->assertTrue($injects->valid());
+        $this->assertTrue($attrs->valid());
 
-        $this->assertInstanceOf(InjectByCallable::class, $injects->current());
-        $this->assertEquals('func1', $injects->current()->getIdentifier());
+        $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
+        $this->assertEquals('func1', $attrs->current()->getIdentifier());
 
-        $injects->next();
+        $attrs->next();
 
-        $this->assertInstanceOf(InjectByCallable::class, $injects->current());
-        $this->assertEquals('func2', $injects->current()->getIdentifier());
+        $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
+        $this->assertEquals('func2', $attrs->current()->getIdentifier());
 
-        $injects->next();
+        $attrs->next();
 
-        $this->assertInstanceOf(InjectByCallable::class, $injects->current());
-        $this->assertEquals('func3', $injects->current()->getIdentifier());
+        $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
+        $this->assertEquals('func3', $attrs->current()->getIdentifier());
 
-        $injects->next();
+        $attrs->next();
 
-        $this->assertFalse($injects->valid());
+        $this->assertFalse($attrs->valid());
     }
 }

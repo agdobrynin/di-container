@@ -8,6 +8,7 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
@@ -19,6 +20,18 @@ use ReflectionParameter;
  */
 class ProxyClosureReaderTest extends TestCase
 {
+    private ?ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = $this->createMock(ContainerInterface::class);
+    }
+
+    public function tearDown(): void
+    {
+        $this->container = null;
+    }
+
     public function testNoneAsClosure(): void
     {
         $f = static fn (
@@ -26,7 +39,7 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse(AttributeReader::getProxyClosureAttribute($p)->valid());
+        $this->assertFalse(AttributeReader::getAttributeOnParameter($p, $this->container)->valid());
     }
 
     public function testManyAsClosureNonVariadicParameter(): void
@@ -41,7 +54,7 @@ class ProxyClosureReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> string \$a ]/');
 
-        AttributeReader::getProxyClosureAttribute($p)->valid();
+        AttributeReader::getAttributeOnParameter($p, $this->container)->valid();
     }
 
     public function testInjectNonVariadicParameter(): void
@@ -52,17 +65,17 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = AttributeReader::getProxyClosureAttribute($p);
+        $attrs = AttributeReader::getAttributeOnParameter($p, $this->container);
 
-        $this->assertTrue($injects->valid());
-        $injects->rewind();
+        $this->assertTrue($attrs->valid());
+        $attrs->rewind();
 
-        $this->assertInstanceOf(ProxyClosure::class, $injects->current());
-        $this->assertEquals('ok', $injects->current()->getIdentifier());
+        $this->assertInstanceOf(ProxyClosure::class, $attrs->current());
+        $this->assertEquals('ok', $attrs->current()->getIdentifier());
 
-        $injects->next(); // One element Inject for argument $a in function $f.
+        $attrs->next(); // One element Inject for argument $a in function $f.
 
-        $this->assertFalse($injects->valid());
+        $this->assertFalse($attrs->valid());
     }
 
     public function testInjectVariadicParameter(): void
@@ -75,14 +88,14 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = AttributeReader::getProxyClosureAttribute($p);
+        $attrs = AttributeReader::getAttributeOnParameter($p, $this->container);
 
-        $this->assertTrue($injects->valid());
+        $this->assertTrue($attrs->valid());
 
-        foreach ($injects as $inject) {
+        foreach ($attrs as $inject) {
             $this->assertContains($inject->getIdentifier(), ['one', 'two', 'three']);
         }
 
-        $this->assertFalse($injects->valid()); // All Inject fetched, generator empty.
+        $this->assertFalse($attrs->valid()); // All Inject fetched, generator empty.
     }
 }
