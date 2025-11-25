@@ -5,27 +5,25 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\AttributeOnParameter;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use ReflectionParameter;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
  */
 class AttributeOnParameterTest extends TestCase
 {
-    use AttributeReaderTrait;
-
     /**
      * @dataProvider dataProviderParam
      */
@@ -34,7 +32,7 @@ class AttributeOnParameterTest extends TestCase
         $this->expectException(AutowireAttributeException::class);
         $this->expectExceptionMessageMatches('/Only one of the attributes.+at Parameter #0.+[ <required> \$param ].+AttributeOnParameterTest::.+()/');
 
-        $this->getAttributeOnParameter(
+        AttributeReader::getAttributeOnParameter(
             $param,
             $this->createMock(DiContainerInterface::class)
         )->valid();

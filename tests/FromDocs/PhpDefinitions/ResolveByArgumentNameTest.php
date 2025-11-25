@@ -12,6 +12,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory

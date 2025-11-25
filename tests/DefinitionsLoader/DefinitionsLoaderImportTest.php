@@ -25,6 +25,7 @@ use function sort;
 use const T_TRAIT;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Autowire
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DefinitionsLoader

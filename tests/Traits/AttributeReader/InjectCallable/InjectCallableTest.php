@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\InjectCallable;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
  */
 class InjectCallableTest extends TestCase
 {
-    // 🔥 Test Trait 🔥
-    use AttributeReaderTrait;
-
     public function testInjectByCallableEmpty(): void
     {
         $f = static fn (
@@ -29,7 +26,7 @@ class InjectCallableTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse($this->getInjectByCallableAttribute($p)->valid());
+        $this->assertFalse(AttributeReader::getInjectByCallableAttribute($p)->valid());
     }
 
     public function testManyInjectByCallableNonVariadicParameter(): void
@@ -44,7 +41,7 @@ class InjectCallableTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> string \$a ].+InjectCallableTest::.+()/');
 
-        $this->getInjectByCallableAttribute($p)->valid();
+        AttributeReader::getInjectByCallableAttribute($p)->valid();
     }
 
     public function testInjectByCallableNonVariadicParameter(): void
@@ -55,7 +52,7 @@ class InjectCallableTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = $this->getInjectByCallableAttribute($p);
+        $injects = AttributeReader::getInjectByCallableAttribute($p);
 
         $this->assertTrue($injects->valid());
 
@@ -77,7 +74,7 @@ class InjectCallableTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = $this->getInjectByCallableAttribute($p);
+        $injects = AttributeReader::getInjectByCallableAttribute($p);
 
         $this->assertTrue($injects->valid());
 

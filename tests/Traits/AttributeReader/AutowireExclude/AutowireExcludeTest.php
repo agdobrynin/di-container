@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\AutowireExclude;
 
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
+use Kaspi\DiContainer\AttributeReader;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\Traits\AttributeReader\AutowireExclude\Fixtures\ClassWillBeExcluded;
@@ -13,23 +13,21 @@ use Tests\Traits\AttributeReader\AutowireExclude\Fixtures\ClassWillNotBeExcluded
 /**
  * @internal
  *
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
+ * @covers \Kaspi\DiContainer\AttributeReader
  */
 class AutowireExcludeTest extends TestCase
 {
-    use AttributeReaderTrait;
-
     public function testAutowireExclude(): void
     {
         $this->assertTrue(
-            $this->isAutowireExclude(new ReflectionClass(ClassWillBeExcluded::class))
+            AttributeReader::isAutowireExclude(new ReflectionClass(ClassWillBeExcluded::class))
         );
     }
 
     public function testAutowireNotExclude(): void
     {
         $this->assertFalse(
-            $this->isAutowireExclude(new ReflectionClass(ClassWillNotBeExcluded::class))
+            AttributeReader::isAutowireExclude(new ReflectionClass(ClassWillNotBeExcluded::class))
         );
     }
 }

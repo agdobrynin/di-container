@@ -5,43 +5,27 @@ declare(strict_types=1);
 namespace Tests\Traits\AttributeReader\TaggedAs;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
  */
 class TaggedAsReaderTest extends TestCase
 {
-    protected $reader;
-
-    public function setUp(): void
-    {
-        $this->reader = new class {
-            use AttributeReaderTrait {
-                getTaggedAsAttribute as public;
-            }
-        };
-    }
-
-    public function tearDown(): void
-    {
-        $this->reader = null;
-    }
-
     public function testNonTaggedAs(): void
     {
         $fn = static fn (iterable $tagged) => '';
         $p = new ReflectionParameter($fn, 0);
 
-        $this->assertFalse($this->reader->getTaggedAsAttribute($p)->valid());
+        $this->assertFalse(AttributeReader::getTaggedAsAttribute($p)->valid());
     }
 
     public function testTaggedAsManyForNonVariadic(): void
@@ -57,7 +41,7 @@ class TaggedAsReaderTest extends TestCase
         $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> (iterable|Traversable\|array) \$tagged ]/');
 
         /** @var Generator<TaggedAs> $res */
-        $res = $this->reader->getTaggedAsAttribute($p);
+        $res = AttributeReader::getTaggedAsAttribute($p);
 
         $this->assertFalse($res->valid());
     }
@@ -72,7 +56,7 @@ class TaggedAsReaderTest extends TestCase
         $p = new ReflectionParameter($fn, 0);
 
         /** @var Generator<TaggedAs> $res */
-        $res = $this->reader->getTaggedAsAttribute($p);
+        $res = AttributeReader::getTaggedAsAttribute($p);
 
         $this->assertTrue($res->valid());
         $this->assertEquals('tags.handlers-opa', $res->current()->getIdentifier());

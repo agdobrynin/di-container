@@ -23,7 +23,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterfac
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use ParseError;
 use ReflectionClass;
 use ReflectionException;
@@ -50,8 +49,6 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    use AttributeReaderTrait;
-
     private ArrayIterator $configDefinitions;
 
     /**
@@ -286,7 +283,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        if ($this->isAutowireExclude($reflectionClass)) {
+        if (AttributeReader::isAutowireExclude($reflectionClass)) {
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw (
                     new DefinitionsLoaderInvalidArgumentException(
@@ -301,7 +298,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if ($reflectionClass->isInterface()) {
-            $service = $this->getServiceAttribute($reflectionClass);
+            $service = AttributeReader::getServiceAttribute($reflectionClass);
 
             if (null === $service) {
                 return [];
@@ -324,7 +321,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ];
         }
 
-        if (($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
+        if (($autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
@@ -344,7 +341,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
-        if (null !== ($factory = $this->getDiFactoryAttribute($reflectionClass))) {
+        if (null !== ($factory = AttributeReader::getDiFactoryAttribute($reflectionClass))) {
             return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
         }
 

@@ -12,6 +12,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\RuleGeneratorInjectByContainerIdentifie
 use function Kaspi\DiContainer\diCallable;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer

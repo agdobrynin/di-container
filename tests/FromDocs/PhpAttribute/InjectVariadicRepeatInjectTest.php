@@ -11,6 +11,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\RuleB;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleGeneratorInjectRepeat;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig

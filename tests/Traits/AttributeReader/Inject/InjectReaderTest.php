@@ -4,26 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\Inject;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 use Tests\Traits\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
  */
 class InjectReaderTest extends TestCase
 {
-    // 🔥 Test Trait 🔥
-    use AttributeReaderTrait;
     private ContainerInterface $container;
 
     public function setUp(): void
@@ -38,7 +36,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse($this->getInjectAttribute($p, $this->container)->valid());
+        $this->assertFalse(AttributeReader::getInjectAttribute($p, $this->container)->valid());
     }
 
     public function testManyInjectNonVariadicParameter(): void
@@ -53,7 +51,7 @@ class InjectReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessage('can only be applied once per non-variadic Parameter #0 [ <required> string $a ] in');
 
-        $this->getInjectAttribute($p, $this->container)->valid();
+        AttributeReader::getInjectAttribute($p, $this->container)->valid();
     }
 
     public function testInjectNonVariadicParameterFail(): void
@@ -67,7 +65,7 @@ class InjectReaderTest extends TestCase
         $this->expectException(AutowireParameterTypeException::class);
         $this->expectExceptionMessageMatches('/Cannot automatically resolve dependency.+string \$a/');
 
-        $this->getInjectAttribute($p, $this->container)->valid();
+        AttributeReader::getInjectAttribute($p, $this->container)->valid();
     }
 
     public function testInjectVariadicParameter(): void
@@ -80,7 +78,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = $this->getInjectAttribute($p, $this->container);
+        $injects = AttributeReader::getInjectAttribute($p, $this->container);
 
         $this->assertTrue($injects->valid());
 
@@ -101,7 +99,7 @@ class InjectReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = $this->getInjectAttribute($p, $this->container);
+        $injects = AttributeReader::getInjectAttribute($p, $this->container);
 
         $this->assertTrue($injects->valid());
         $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());
@@ -120,7 +118,7 @@ class InjectReaderTest extends TestCase
             ->willReturn(true)
         ;
 
-        $injects = $this->getInjectAttribute($p, $this->container);
+        $injects = AttributeReader::getInjectAttribute($p, $this->container);
 
         $this->assertTrue($injects->valid());
         $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());

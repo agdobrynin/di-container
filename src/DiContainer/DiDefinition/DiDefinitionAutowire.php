@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use InvalidArgumentException;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
@@ -21,7 +22,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
@@ -48,7 +48,6 @@ use function var_export;
  */
 final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface, DiDefinitionTagArgumentInterface
 {
-    use AttributeReaderTrait;
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
     }
@@ -411,7 +410,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $this->tagsByAttribute = [];
 
         try {
-            $tagAttributes = $this->getTagAttribute($this->getDefinition());
+            $tagAttributes = AttributeReader::getTagAttribute($this::getDefinition());
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot read php attribute #[%s] on class "%s".', Tag::class, $this->getIdentifier()),

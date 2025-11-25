@@ -14,6 +14,7 @@ use function glob;
 use function putenv;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\DefinitionsLoader
  * @covers \Kaspi\DiContainer\diAutowire

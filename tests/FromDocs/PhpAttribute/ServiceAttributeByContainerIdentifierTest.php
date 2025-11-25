@@ -12,6 +12,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\SuperSrv;
 use function Kaspi\DiContainer\diCallable;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer

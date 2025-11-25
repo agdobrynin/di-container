@@ -12,6 +12,7 @@ use ReflectionProperty;
 use Tests\FromDocs\PhpAttribute\Fixtures\ClassWithHeavyDependency;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer

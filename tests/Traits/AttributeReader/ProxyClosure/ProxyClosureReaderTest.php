@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\ProxyClosure;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
  */
 class ProxyClosureReaderTest extends TestCase
 {
-    // 🔥 Test Trait 🔥
-    use AttributeReaderTrait;
-
     public function testNoneAsClosure(): void
     {
         $f = static fn (
@@ -29,7 +26,7 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse($this->getProxyClosureAttribute($p)->valid());
+        $this->assertFalse(AttributeReader::getProxyClosureAttribute($p)->valid());
     }
 
     public function testManyAsClosureNonVariadicParameter(): void
@@ -44,7 +41,7 @@ class ProxyClosureReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/can only be applied once per non-variadic Parameter #0.+[ <required> string \$a ]/');
 
-        $this->getProxyClosureAttribute($p)->valid();
+        AttributeReader::getProxyClosureAttribute($p)->valid();
     }
 
     public function testInjectNonVariadicParameter(): void
@@ -55,7 +52,7 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = $this->getProxyClosureAttribute($p);
+        $injects = AttributeReader::getProxyClosureAttribute($p);
 
         $this->assertTrue($injects->valid());
         $injects->rewind();
@@ -78,7 +75,7 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $injects = $this->getProxyClosureAttribute($p);
+        $injects = AttributeReader::getProxyClosureAttribute($p);
 
         $this->assertTrue($injects->valid());
 

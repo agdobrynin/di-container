@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Traits\AttributeReader\Autowire;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\Traits\AttributeReader\Autowire\Fixtures\ClassWithDiFactoryAndAutowire;
@@ -15,26 +15,24 @@ use Tests\Traits\AttributeReader\Autowire\Fixtures\MultipleAutowireFail;
 use function iterator_to_array;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Autowire
- * @covers \Kaspi\DiContainer\Traits\AttributeReaderTrait
  *
  * @internal
  */
 class AutowireTest extends TestCase
 {
-    use AttributeReaderTrait;
-
     public function testAutowireCannotUseWithDiFactoryAndAutowire(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot use together attributes.+DiFactory.+Autowire/');
 
-        $this->getAutowireAttribute(new ReflectionClass(ClassWithDiFactoryAndAutowire::class))->valid();
+        AttributeReader::getAutowireAttribute(new ReflectionClass(ClassWithDiFactoryAndAutowire::class))->valid();
     }
 
     public function testMultipleAutowireSuccess(): void
     {
-        $attrs = $this->getAutowireAttribute(new ReflectionClass(MultipleAutowire::class));
+        $attrs = AttributeReader::getAutowireAttribute(new ReflectionClass(MultipleAutowire::class));
 
         $this->assertTrue($attrs->valid());
 
@@ -58,7 +56,7 @@ class AutowireTest extends TestCase
 
     public function testAutowireContainerIdentifierNoneUnique(): void
     {
-        $attrs = $this->getAutowireAttribute(new ReflectionClass(MultipleAutowireFail::class));
+        $attrs = AttributeReader::getAutowireAttribute(new ReflectionClass(MultipleAutowireFail::class));
 
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Container identifier "service" already defined/');
