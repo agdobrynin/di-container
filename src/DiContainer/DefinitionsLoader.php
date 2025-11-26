@@ -167,10 +167,16 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     @unlink($file->getPathname());
                 }
 
-                throw new DefinitionsLoaderException(
+                $newE = new DefinitionsLoaderException(
                     sprintf('There was an error loading definitions. Reason: %s', $e->getMessage()),
                     previous: $e
                 );
+
+                if (isset($itemFQN)) {
+                    $newE->setContext(context_item_f_q_n: $itemFQN);
+                }
+
+                throw $newE;
             }
 
             $file?->fwrite('};'.PHP_EOL);
@@ -253,13 +259,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
         if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
-            throw (
-                new DefinitionsLoaderInvalidArgumentException(
-                    message: sprintf('Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.', T_INTERFACE, T_CLASS, var_export($tokenId, true))
-                )
-            )
-                ->setContext(context_item_f_q_n: $itemFQN)
-            ;
+            throw new DefinitionsLoaderInvalidArgumentException(
+                message: sprintf('Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.', T_INTERFACE, T_CLASS, var_export($tokenId, true))
+            );
         }
 
         if (!$useAttribute) {
@@ -329,7 +331,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
                     throw (
                         new DefinitionsLoaderInvalidArgumentException(
-                            message: sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                            message: sprintf('Cannot automatically set definition via php attribute %s::class for container identifier "%s". Configure class "%s" via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
                         )
                     )
                         ->setContext(context_reflection_class: $reflectionClass)
