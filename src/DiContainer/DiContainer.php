@@ -23,8 +23,10 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContextExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -190,6 +192,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param class-string|string $id
+     *
+     * @throws AutowireExceptionInterface&ContextExceptionInterface
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {

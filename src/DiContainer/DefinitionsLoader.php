@@ -11,10 +11,13 @@ use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
@@ -321,7 +324,20 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ];
         }
 
-        if (($autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
+        try {
+            $autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass);
+        } catch (AutowireAttributeException $e) {
+            throw (
+                new DefinitionsLoaderInvalidArgumentException(
+                    message: sprintf('Cannot automatically set definition via php attribute %s::class for %s::class.', Autowire::class, $reflectionClass->name),
+                    previous: $e
+                )
+            )
+                ->setContext(context_reflection_class: $reflectionClass)
+            ;
+        }
+
+        if ($autowireAttrs->valid()) {
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
@@ -341,7 +357,20 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
-        if (null !== ($factory = AttributeReader::getDiFactoryAttribute($reflectionClass))) {
+        try {
+            $factory = AttributeReader::getDiFactoryAttribute($reflectionClass);
+        } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+            throw (
+                new DefinitionsLoaderInvalidArgumentException(
+                    message: sprintf('Cannot automatically set definition via php attribute %s::class for %s::class.', DiFactory::class, $reflectionClass->name),
+                    previous: $e
+                )
+            )
+                ->setContext(context_reflection_class: $reflectionClass)
+            ;
+        }
+
+        if (null !== $factory) {
             return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
         }
 

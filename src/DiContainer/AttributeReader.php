@@ -40,6 +40,9 @@ final class AttributeReader
         return !([] === $class->getAttributes(AutowireExclude::class));
     }
 
+    /**
+     * @throws AutowireAttributeException|AutowireParameterTypeException
+     */
     public static function getDiFactoryAttribute(ReflectionClass $class): ?DiFactory
     {
         $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
@@ -63,6 +66,8 @@ final class AttributeReader
 
     /**
      * @return Generator<Autowire>
+     *
+     * @throws AutowireAttributeException
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
