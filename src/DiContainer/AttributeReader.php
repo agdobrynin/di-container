@@ -42,21 +42,14 @@ final class AttributeReader
 
     public static function getDiFactoryAttribute(ReflectionClass $class): ?DiFactory
     {
-        /** @var list<ReflectionAttribute<DiFactory>> $attrs */
-        $attrs = $class->getAttributes(DiFactory::class);
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class->name.'::class');
 
-        if ([] === $attrs) {
+        if (!isset($groupAttrs[DiFactory::class])) {
             return null;
         }
 
-        if ([] !== $class->getAttributes(Autowire::class)) {
-            throw new AutowireAttributeException(
-                sprintf('Only one of the php attributes %s::class may be declared at %s::class.', implode('::class, ', [Autowire::class, DiFactory::class]), $class->name)
-            );
-        }
-
         /** @var DiFactory $attrFactory */
-        $attrFactory = $attrs[0]->newInstance();
+        $attrFactory = $groupAttrs[DiFactory::class][0]->newInstance();
         $returnTypeDiFactoryInvoke = (string) (new ReflectionMethod($attrFactory->getIdentifier(), '__invoke'))->getReturnType();
 
         if (is_a($class->getName(), $returnTypeDiFactoryInvoke, true)) {
@@ -73,23 +66,16 @@ final class AttributeReader
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
-        /** @var list<ReflectionAttribute<Autowire>> $attrs */
-        $attrs = $class->getAttributes(Autowire::class);
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class->name.'::class');
 
-        if ([] === $attrs) {
+        if (!isset($groupAttrs[Autowire::class])) {
             return;
-        }
-
-        if ([] !== $class->getAttributes(DiFactory::class)) {
-            throw new AutowireAttributeException(
-                sprintf('Only one of the php attributes %s::class may be declared at %s::class.', implode('::class, ', [Autowire::class, DiFactory::class]), $class->name)
-            );
         }
 
         $containerIdentifier = '';
 
         /** @var ReflectionAttribute<Autowire> $attr */
-        foreach ($attrs as $attr) {
+        foreach ($groupAttrs[Autowire::class] as $attr) {
             if ('' === ($autowire = $attr->newInstance())->getIdentifier()) {
                 $autowire = new Autowire($class->name, $autowire->isSingleton());
             }
@@ -153,36 +139,20 @@ final class AttributeReader
      */
     public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
-        $availableAttrs = [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class];
-
-        /**
-         * @var array<non-empty-string, non-empty-list<ReflectionAttribute>> $groupAttrs
-         */
-        $groupAttrs = [];
-
-        foreach ($param->getAttributes() as $attr) {
-            if (in_array($attr->getName(), $availableAttrs, true)) {
-                if (!$param->isVariadic() && isset($groupAttrs[$attr->getName()])) {
-                    throw new AutowireAttributeException(
-                        sprintf('The php attribute %s::class can only be applied once per non-variadic %s in %s.', $attr->getName(), $param, Helper::functionName($param->getDeclaringFunction()))
-                    );
-                }
-
-                $groupAttrs[$attr->getName()][] = $attr;
-            }
-        }
+        $groupAttrs = self::getNotIntersectGroupAttrs($param->getAttributes(), [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class], (string) $param.' in '.Helper::functionName($param->getDeclaringFunction()));
 
         if ([] === $groupAttrs) {
             return;
         }
 
-        // ⚠ attributes cannot be used together.
-        $intersectAttrs = array_intersect(array_keys($groupAttrs), $availableAttrs);
-
-        if (count($intersectAttrs) > 1) {
-            throw new AutowireAttributeException(
-                sprintf('Only one of the php attributes %s::class may be declared at %s in %s.', implode('::class, ', $intersectAttrs), $param, Helper::functionName($param->getDeclaringFunction()))
-            );
+        if (!$param->isVariadic()) {
+            foreach ($groupAttrs as $attrClassName => $attrs) {
+                if (1 < count($attrs)) {
+                    throw new AutowireAttributeException(
+                        sprintf('The php attribute %s::class can only be applied once per non-variadic %s in %s.', $attrClassName, $param, Helper::functionName($param->getDeclaringFunction()))
+                    );
+                }
+            }
         }
 
         if (isset($groupAttrs[Inject::class])) {
@@ -223,5 +193,38 @@ final class AttributeReader
         foreach ($groupAttrs[InjectByCallable::class] as $attr) {
             yield $attr->newInstance();
         }
+    }
+
+    /**
+     * @param list<ReflectionAttribute> $attrs
+     * @param list<class-string>        $availableAttrs
+     *
+     * @return array<class-string, list<ReflectionAttribute>>
+     */
+    private static function getNotIntersectGroupAttrs(array $attrs, array $availableAttrs, string $messageWhereUseAttribute): array
+    {
+        $groupAttrs = [];
+
+        foreach ($attrs as $attr) {
+            if (in_array($attr->getName(), $availableAttrs, true)) {
+                $groupAttrs[$attr->getName()][] = $attr;
+            }
+        }
+
+        if ([] === $groupAttrs) {
+            return [];
+        }
+
+        $intersectAttrs = array_intersect(array_keys($groupAttrs), $availableAttrs);
+
+        if (count($intersectAttrs) > 1) {
+            $strIntersect = implode('::class, ', $intersectAttrs).'::class';
+
+            throw new AutowireAttributeException(
+                sprintf('Only one of the php attributes %s may be declared at %s.', $strIntersect, $messageWhereUseAttribute)
+            );
+        }
+
+        return $groupAttrs;
     }
 }
