@@ -113,6 +113,40 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
+    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
+    {
+        if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
+            return $file->isReadable()
+                ? $this
+                : throw new DefinitionsLoaderInvalidArgumentException(
+                    sprintf(
+                        'Cache file for imported definitions via %s::import() is not readable. File: "%s".',
+                        self::class,
+                        $file->getPathname()
+                    )
+                );
+        }
+
+        if (null === $this->importLoaderCollection) {
+            $this->importLoaderCollection = new ImportLoaderCollection();
+        }
+
+        try {
+            $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
+        } catch (InvalidArgumentException|RuntimeException $e) {
+            throw new DefinitionsLoaderInvalidArgumentException(
+                sprintf('Cannot import from namespace "%s". Reason: %s', $namespace, $e->getMessage()),
+                previous: $e
+            );
+        }
+
+        if ($useAttribute) {
+            $this->mapNamespaceUseAttribute[$namespace] = true;
+        }
+
+        return $this;
+    }
+
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
@@ -122,9 +156,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
             if (!$importCacheFile->isReadable()) {
                 throw (
-                    new DefinitionsLoaderException(
-                        message: sprintf('Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".', $importCacheFile->getPathname()),
-                    )
+                new DefinitionsLoaderException(
+                    message: sprintf('Cache file for imported definitions via %s::import() is not readable. File: "%s".', self::class, $importCacheFile->getPathname()),
+                )
                 )
                     ->setContext(context_file: $importCacheFile)
                 ;
@@ -144,10 +178,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             } catch (RuntimeException $e) {
                 throw new DefinitionsLoaderException(
-                    sprintf(
-                        'Cannot create cache file for imported definitions via DefinitionsLoader::import(). File: "%s".',
-                        $importCacheFile->getPathname()
-                    ),
+                    sprintf('Cannot create cache file for imported definitions via %s::import(). File: "%s".',self::class, $importCacheFile->getPathname()),
                     previous: $e
                 );
             }
@@ -178,39 +209,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
-    }
-
-    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
-    {
-        if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
-            return $file->isReadable()
-                ? $this
-                : throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf(
-                        'Cache file for imported definitions via DefinitionsLoader::import() is not readable. File: "%s".',
-                        $file->getPathname()
-                    )
-                );
-        }
-
-        if (null === $this->importLoaderCollection) {
-            $this->importLoaderCollection = new ImportLoaderCollection();
-        }
-
-        try {
-            $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
-        } catch (InvalidArgumentException|RuntimeException $e) {
-            throw new DefinitionsLoaderInvalidArgumentException(
-                sprintf('Cannot import from namespace "%s". Reason: %s', $namespace, $e->getMessage()),
-                previous: $e
-            );
-        }
-
-        if ($useAttribute) {
-            $this->mapNamespaceUseAttribute[$namespace] = true;
-        }
-
-        return $this;
     }
 
     private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
@@ -289,7 +287,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw (
                     new DefinitionsLoaderInvalidArgumentException(
-                        message: sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', AutowireExclude::class, $reflectionClass->name, $reflectionClass->name)
+                        message: sprintf('Cannot automatically set definition via php attribute %s::class for container identifier "%s". Configure class "%s" via php attribute or via config file.', AutowireExclude::class, $reflectionClass->name, $reflectionClass->name)
                     )
                 )
                     ->setContext(context_reflection_class: $reflectionClass)
@@ -309,7 +307,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw (
                     new DefinitionsLoaderInvalidArgumentException(
-                        message: sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
+                        message: sprintf('Cannot automatically set definition via php attribute %s::class for container identifier "%s". Configure class "%s" via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
                     )
                 )
                     ->setContext(context_reflection_class: $reflectionClass)
@@ -330,7 +328,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
                     throw (
                         new DefinitionsLoaderInvalidArgumentException(
-                            message: sprintf('Cannot automatically set definition via #[%s] attribute for container identifier "%s". Configure class "%s" via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                            message: sprintf('Cannot automatically set definition via php attribute %s::class for container identifier "%s". Configure class "%s" via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
                         )
                     )
                         ->setContext(context_reflection_class: $reflectionClass)

@@ -190,7 +190,7 @@ class DefinitionsLoaderImportTest extends TestCase
         ]);
 
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Autowire\].+"services\.two".+/');
+        $this->expectExceptionMessageMatches('/Cannot automatically set definition via php attribute .+Autowire::class.+"services\.two".+/');
 
         (new DiContainerFactory())->make($loader->definitions());
     }
@@ -207,7 +207,7 @@ class DefinitionsLoaderImportTest extends TestCase
         ]);
 
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Service\].+".+\\\TokenInterface".+/');
+        $this->expectExceptionMessageMatches('/Cannot automatically set definition via php attribute .+Service::class.+".+\\\TokenInterface".+/');
 
         (new DiContainerFactory())->make($loader->definitions());
     }

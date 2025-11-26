@@ -52,7 +52,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
         ;
 
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
+        $this->expectExceptionMessageMatches('/Cache file for imported definitions via .+DefinitionsLoader::import\(\) is not readable/');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
             ->definitions()
@@ -68,7 +68,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
         ;
 
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
+        $this->expectExceptionMessageMatches('/Cache file for imported definitions via .+DefinitionsLoader::import\(\) is not readable/');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
             ->import('App\\', __DIR__)
