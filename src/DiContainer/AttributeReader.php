@@ -42,7 +42,7 @@ final class AttributeReader
 
     public static function getDiFactoryAttribute(ReflectionClass $class): ?DiFactory
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class->name.'::class');
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
 
         if (!isset($groupAttrs[DiFactory::class])) {
             return null;
@@ -66,7 +66,7 @@ final class AttributeReader
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class->name.'::class');
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
 
         if (!isset($groupAttrs[Autowire::class])) {
             return;
@@ -139,7 +139,7 @@ final class AttributeReader
      */
     public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($param->getAttributes(), [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class], (string) $param.' in '.Helper::functionName($param->getDeclaringFunction()));
+        $groupAttrs = self::getNotIntersectGroupAttrs($param->getAttributes(), [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class], $param);
 
         if ([] === $groupAttrs) {
             return;
@@ -201,7 +201,7 @@ final class AttributeReader
      *
      * @return array<class-string, list<ReflectionAttribute>>
      */
-    private static function getNotIntersectGroupAttrs(array $attrs, array $availableAttrs, string $messageWhereUseAttribute): array
+    private static function getNotIntersectGroupAttrs(array $attrs, array $availableAttrs, ReflectionClass|ReflectionParameter $whereUseAttribute): array
     {
         $groupAttrs = [];
 
@@ -219,6 +219,9 @@ final class AttributeReader
 
         if (count($intersectAttrs) > 1) {
             $strIntersect = implode('::class, ', $intersectAttrs).'::class';
+            $messageWhereUseAttribute = $whereUseAttribute instanceof ReflectionParameter
+                ? $whereUseAttribute.' in '.Helper::functionName($whereUseAttribute->getDeclaringFunction())
+                : $whereUseAttribute->name.'::class';
 
             throw new AutowireAttributeException(
                 sprintf('Only one of the php attributes %s may be declared at %s.', $strIntersect, $messageWhereUseAttribute)
