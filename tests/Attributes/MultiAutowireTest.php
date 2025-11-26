@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Attributes\Fixtures\MultiAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Autowire
  * @covers \Kaspi\DiContainer\DefinitionsLoader
  * @covers \Kaspi\DiContainer\DiContainer
@@ -18,6 +19,7 @@ use Tests\Attributes\Fixtures\MultiAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\ImportLoader
  * @covers \Kaspi\DiContainer\ImportLoaderCollection
  *

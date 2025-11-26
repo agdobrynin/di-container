@@ -18,6 +18,7 @@ use function Kaspi\DiContainer\diProxyClosure;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -26,6 +27,7 @@ use function Kaspi\DiContainer\diProxyClosure;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
  * @covers \Kaspi\DiContainer\diProxyClosure
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  */
 class ThroughContainerTest extends TestCase

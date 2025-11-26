@@ -16,6 +16,7 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -24,7 +25,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

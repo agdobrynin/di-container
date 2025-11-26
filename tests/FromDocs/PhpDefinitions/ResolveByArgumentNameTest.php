@@ -12,15 +12,15 @@ use Psr\Container\ContainerExceptionInterface;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */

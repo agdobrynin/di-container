@@ -25,6 +25,7 @@ use function sort;
 use const T_TRAIT;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Autowire
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\DefinitionsLoader
@@ -39,9 +40,9 @@ use const T_TRAIT;
  * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\ImportLoader
  * @covers \Kaspi\DiContainer\ImportLoaderCollection
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */

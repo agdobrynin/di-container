@@ -11,6 +11,7 @@ use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\One;
 use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Two;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Autowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig

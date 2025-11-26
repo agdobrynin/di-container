@@ -20,6 +20,7 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diFactory;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
@@ -32,8 +33,7 @@ use function Kaspi\DiContainer\diFactory;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diFactory
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\functionName
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

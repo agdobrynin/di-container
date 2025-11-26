@@ -17,6 +17,7 @@ use function Kaspi\DiContainer\diGet;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -25,6 +26,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  */
 class ThroughContainerTest extends TestCase

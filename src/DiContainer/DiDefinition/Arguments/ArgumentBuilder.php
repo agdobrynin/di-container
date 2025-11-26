@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition\Arguments;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
@@ -15,11 +16,10 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 use Throwable;
@@ -33,7 +33,6 @@ use function count;
 use function in_array;
 use function is_int;
 use function is_string;
-use function Kaspi\DiContainer\functionName;
 use function sprintf;
 
 /**
@@ -42,9 +41,6 @@ use function sprintf;
  */
 final class ArgumentBuilder implements ArgumentBuilderInterface
 {
-    use AttributeReaderTrait;
-    use ParameterTypeByReflectionTrait;
-
     private readonly bool $isUseAttribute;
 
     /**
@@ -200,7 +196,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     private function pushFromParameterType(array &$args, ReflectionParameter $param): void
     {
         try {
-            $strType = $this->getParameterType($param, $this->container);
+            $strType = Helper::getParameterTypeHint($param, $this->container);
 
             if ($this->container->has($strType) || !$param->isDefaultValueAvailable()) {
                 $args[$param->getPosition()] = new DiDefinitionGet($strType); // @phpstan-ignore parameterByRef.type
@@ -208,7 +204,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         } catch (AutowireParameterTypeException $e) {
             if (!$param->isDefaultValueAvailable()) {
                 throw $this->exceptionWithContext(
-                    message: sprintf('Cannot build argument via type hint for %s in %s.', $param, functionName($param->getDeclaringFunction())),
+                    message: sprintf('Cannot build argument via type hint for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e,
                     context_param: $param
                 );
@@ -277,7 +273,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             foreach ($tailArgs as $key => $value) {
                 if (is_string($key)) {
                     throw $this->exceptionWithContext(
-                        message: sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', functionName($this->functionOrMethod), $key),
+                        message: sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', Helper::functionName($this->functionOrMethod), $key),
                         context_tail_args: $tailArgs
                     );
                 }
@@ -314,7 +310,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        $attrs = $this->getAttributeOnParameter($param, $this->container);
+        $attrs = AttributeReader::getAttributeOnParameter($param, $this->container);
 
         if (!$attrs->valid()) {
             return;

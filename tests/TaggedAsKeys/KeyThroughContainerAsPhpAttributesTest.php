@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diAutowire
@@ -21,6 +22,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  *

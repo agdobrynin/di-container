@@ -21,6 +21,7 @@ use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Service
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\diCallable
@@ -31,7 +32,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

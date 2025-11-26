@@ -14,6 +14,7 @@ use Tests\TaggedAsKeys\Fixtures\Attributes\Two;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainerConfig

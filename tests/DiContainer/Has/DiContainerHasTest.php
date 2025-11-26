@@ -15,8 +15,10 @@ use Tests\DiContainer\Has\Fixtures\ExcludeInterface;
 use Tests\DiContainer\Has\Fixtures\MyInterface;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

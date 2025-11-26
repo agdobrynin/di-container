@@ -20,6 +20,7 @@ use Tests\DiContainer\Exceptions\Fixtures\ThirdClass;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -28,9 +29,8 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */

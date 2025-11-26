@@ -19,6 +19,7 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -30,7 +31,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *

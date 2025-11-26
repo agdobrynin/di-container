@@ -18,6 +18,7 @@ use function Kaspi\DiContainer\diGet;
 use function putenv;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
@@ -29,6 +30,7 @@ use function putenv;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

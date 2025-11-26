@@ -24,6 +24,7 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -34,10 +35,9 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */

@@ -13,12 +13,14 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependencyDiFactory;
 use function Kaspi\DiContainer\diFactory;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
  * @covers \Kaspi\DiContainer\diFactory
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

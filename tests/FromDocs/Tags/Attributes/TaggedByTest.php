@@ -23,6 +23,7 @@ use function Kaspi\DiContainer\diAutowire;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diAutowire
@@ -32,6 +33,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  */
 class TaggedByTest extends TestCase

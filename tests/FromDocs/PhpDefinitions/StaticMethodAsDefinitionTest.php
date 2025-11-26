@@ -13,6 +13,7 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
@@ -22,8 +23,8 @@ use function Kaspi\DiContainer\diCallable;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  *
  * @internal
  */

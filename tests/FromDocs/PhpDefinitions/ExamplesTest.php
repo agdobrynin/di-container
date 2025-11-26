@@ -13,12 +13,14 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\SumInterface;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

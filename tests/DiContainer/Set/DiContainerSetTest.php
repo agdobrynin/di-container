@@ -15,6 +15,7 @@ use stdClass;
 /**
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\Exception\ContainerIdentifierException
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

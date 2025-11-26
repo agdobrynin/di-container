@@ -22,6 +22,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Tag
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diAutowire
@@ -33,10 +34,9 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\functionName
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
  */
 class TaggedAsThroughContainerCircularTest extends TestCase
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -19,8 +19,6 @@ use ReflectionClass;
  */
 trait SetupConfigureTrait
 {
-    use AttributeReaderTrait;
-
     /**
      * Methods for setup service by PHP definition via setters (mutable or immutable).
      *
@@ -73,7 +71,7 @@ trait SetupConfigureTrait
         if (!isset($this->setupByAttributes)) {
             $this->setupByAttributes = [];
 
-            foreach ($this->getSetupAttribute($class) as $setupAttr) {
+            foreach (AttributeReader::getSetupAttribute($class) as $setupAttr) {
                 $this->setupByAttributes[$setupAttr->getIdentifier()][] = [
                     SetupConfigureMethod::fromAttribute($setupAttr), $setupAttr->getArguments(),
                 ];

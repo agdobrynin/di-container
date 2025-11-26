@@ -12,6 +12,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\MyFile;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -20,7 +21,7 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

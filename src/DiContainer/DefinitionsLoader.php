@@ -19,12 +19,11 @@ use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
-use Kaspi\DiContainer\Traits\DefinitionIdentifierTrait;
 use ParseError;
 use ReflectionClass;
 use ReflectionException;
@@ -51,9 +50,6 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    use DefinitionIdentifierTrait;
-    use AttributeReaderTrait;
-
     private ArrayIterator $configDefinitions;
 
     /**
@@ -91,7 +87,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         foreach ($definitions as $identifier => $definition) {
             try {
                 /** @var class-string|non-empty-string $identifier */
-                $identifier = $this->getIdentifier($identifier, $definition);
+                $identifier = Helper::getContainerIdentifier($identifier, $definition);
             } catch (ContainerIdentifierExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('%s Item position #%d.', $e->getMessage(), $itemCount),
@@ -166,7 +162,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         }
                     }
                 }
-            } catch (DefinitionsLoaderExceptionInterface|InvalidArgumentException|RuntimeException $e) {
+            } catch (AutowireExceptionInterface|DefinitionsLoaderExceptionInterface|InvalidArgumentException|RuntimeException $e) {
                 if (null !== $file) {
                     @unlink($file->getPathname());
                 }
@@ -250,7 +246,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
      *
-     * @throws DefinitionsLoaderExceptionInterface
+     * @throws AutowireExceptionInterface|DefinitionsLoaderExceptionInterface
      */
     private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
@@ -288,7 +284,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        if ($this->isAutowireExclude($reflectionClass)) {
+        if (AttributeReader::isAutowireExclude($reflectionClass)) {
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw (
                     new DefinitionsLoaderInvalidArgumentException(
@@ -303,7 +299,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if ($reflectionClass->isInterface()) {
-            $service = $this->getServiceAttribute($reflectionClass);
+            $service = AttributeReader::getServiceAttribute($reflectionClass);
 
             if (null === $service) {
                 return [];
@@ -326,7 +322,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ];
         }
 
-        if (($autowireAttrs = $this->getAutowireAttribute($reflectionClass))->valid()) {
+        if (($autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
@@ -346,7 +342,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
-        if (null !== ($factory = $this->getDiFactoryAttribute($reflectionClass))) {
+        if (null !== ($factory = AttributeReader::getDiFactoryAttribute($reflectionClass))) {
             return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
         }
 

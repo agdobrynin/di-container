@@ -24,7 +24,7 @@ use function Kaspi\DiContainer\diProxyClosure;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
  * @covers \Kaspi\DiContainer\diProxyClosure
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

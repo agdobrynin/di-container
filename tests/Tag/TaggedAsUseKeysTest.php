@@ -15,6 +15,7 @@ use function Kaspi\DiContainer\diValue;
 /**
  * @internal
  *
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diCallable
  * @covers \Kaspi\DiContainer\DiContainer
@@ -26,6 +27,7 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\diValue
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  */
 class TaggedAsUseKeysTest extends TestCase

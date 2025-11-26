@@ -19,6 +19,7 @@ use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\TaggedAs
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
@@ -30,6 +31,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
  * @covers \Kaspi\DiContainer\diProxyClosure
  * @covers \Kaspi\DiContainer\diTaggedAs
+ * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  *
  * @internal
