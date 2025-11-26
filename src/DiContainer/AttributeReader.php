@@ -200,6 +200,8 @@ final class AttributeReader
      * @param list<class-string>        $availableAttrs
      *
      * @return array<class-string, list<ReflectionAttribute>>
+     *
+     * @throws AutowireAttributeException
      */
     private static function getNotIntersectGroupAttrs(array $attrs, array $availableAttrs, ReflectionClass|ReflectionParameter $whereUseAttribute): array
     {
