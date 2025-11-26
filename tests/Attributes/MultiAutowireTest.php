@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Attributes\Fixtures\MultiAutowire;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Autowire
  * @covers \Kaspi\DiContainer\DefinitionsLoader
  * @covers \Kaspi\DiContainer\DiContainer

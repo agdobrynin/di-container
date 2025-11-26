@@ -10,10 +10,10 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
+use Tests\FinderClosureCode\Fixture\SomeTrait;
 use Tests\FinderClosureCode\Fixture\Y;
 
 use function dirname;
@@ -250,7 +250,7 @@ EXPECT;
     public function testUseTraitInAnonymousClass(): void
     {
         $fn = static fn (ReflectionClass $reflectionClass) => new class {
-            use AttributeReaderTrait;
+            use SomeTrait;
 
             public function __construct(private ReflectionClass $reflectionClass) {}
 
@@ -263,7 +263,7 @@ EXPECT;
         $code = (new FinderClosureCode())->getCode($fn);
         $expectCode = <<< 'EXPECT'
 static fn (\ReflectionClass $reflectionClass) => new class {
-            use \Kaspi\DiContainer\Traits\AttributeReaderTrait;
+            use \Tests\FinderClosureCode\Fixture\SomeTrait;
 
             public function __construct(private \ReflectionClass $reflectionClass) {}
 

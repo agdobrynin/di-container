@@ -23,9 +23,10 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContextExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -48,8 +49,6 @@ use function sprintf;
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
-    use AttributeReaderTrait;
-
     /**
      * Default singleton for definitions.
      */
@@ -193,6 +192,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param class-string|string $id
+     *
+     * @throws AutowireExceptionInterface&ContextExceptionInterface
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
@@ -215,7 +216,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if ($reflectionClass->isInterface()) {
                 // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
                 if ($this->config?->isUseAttribute()
-                    && $service = $this->getServiceAttribute($reflectionClass)) {
+                    && $service = AttributeReader::getServiceAttribute($reflectionClass)) {
                     $this->checkCyclicalDependencyCall($service->getIdentifier());
                     $this->resolvingDependencies[$service->getIdentifier()] = true;
 
@@ -235,7 +236,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
             if ($this->config?->isUseAttribute()
-                && $factory = $this->getDiFactoryAttribute($reflectionClass)) {
+                && $factory = AttributeReader::getDiFactoryAttribute($reflectionClass)) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionFactory(
                     $factory->getIdentifier(),
                     $factory->isSingleton()
@@ -244,7 +245,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
             if ($this->config?->isUseAttribute()
-                && ($autowires = $this->getAutowireAttribute($reflectionClass))->valid()) {
+                && ($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
                 foreach ($autowires as $autowire) {
                     if ($autowire->getIdentifier() === $reflectionClass->name) {
                         return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton());
@@ -292,7 +293,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         if (class_exists($id) || interface_exists($id)) {
-            return !$this->config->isUseAttribute() || !$this->isAutowireExclude(new ReflectionClass($id));
+            return !$this->config->isUseAttribute() || !AttributeReader::isAutowireExclude(new ReflectionClass($id));
         }
 
         return false;

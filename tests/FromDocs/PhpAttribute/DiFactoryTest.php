@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\ClassOne;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\DiFactory
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig

@@ -19,6 +19,7 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer

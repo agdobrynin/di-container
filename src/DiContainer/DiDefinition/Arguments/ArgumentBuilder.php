@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition\Arguments;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
@@ -19,7 +20,6 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Traits\AttributeReaderTrait;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 use Throwable;
@@ -41,8 +41,6 @@ use function sprintf;
  */
 final class ArgumentBuilder implements ArgumentBuilderInterface
 {
-    use AttributeReaderTrait;
-
     private readonly bool $isUseAttribute;
 
     /**
@@ -312,7 +310,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        $attrs = $this->getAttributeOnParameter($param, $this->container);
+        $attrs = AttributeReader::getAttributeOnParameter($param, $this->container);
 
         if (!$attrs->valid()) {
             return;

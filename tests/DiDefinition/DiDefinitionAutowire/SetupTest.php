@@ -19,6 +19,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SomeClass;
 use function Kaspi\DiContainer\diValue;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Setup
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder

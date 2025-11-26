@@ -32,6 +32,7 @@ use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
+ * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
