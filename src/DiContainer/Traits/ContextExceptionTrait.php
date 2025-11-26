@@ -17,7 +17,7 @@ trait ContextExceptionTrait
         return $this->context;
     }
 
-    public function setContext(mixed ...$context): self
+    public function setContext(mixed ...$context): static
     {
         /**
          * @phpstan-var array<string|non-negative-int, mixed> $context

@@ -16,5 +16,5 @@ interface ContextExceptionInterface extends ContainerExceptionInterface
     /**
      * @return $this
      */
-    public function setContext(mixed ...$context): self;
+    public function setContext(mixed ...$context): static;
 }
