@@ -51,7 +51,7 @@ final class AttributeReader
 
         if ([] !== $class->getAttributes(Autowire::class)) {
             throw new AutowireAttributeException(
-                sprintf('Cannot use together attributes #[%s] and #[%s] for class "%s".', DiFactory::class, Autowire::class, $class->name)
+                sprintf('Only one of the php attributes %s::class may be declared at %s::class.', implode('::class, ', [Autowire::class, DiFactory::class]), $class->name)
             );
         }
 
@@ -82,7 +82,7 @@ final class AttributeReader
 
         if ([] !== $class->getAttributes(DiFactory::class)) {
             throw new AutowireAttributeException(
-                sprintf('Cannot use together attributes #[%s] and #[%s] for class "%s".', Autowire::class, DiFactory::class, $class->name)
+                sprintf('Only one of the php attributes %s::class may be declared at %s::class.', implode('::class, ', [Autowire::class, DiFactory::class]), $class->name)
             );
         }
 

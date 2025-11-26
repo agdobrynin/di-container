@@ -25,7 +25,7 @@ class AutowireTest extends TestCase
     public function testAutowireCannotUseWithDiFactoryAndAutowire(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use together attributes.+DiFactory.+Autowire/');
+        $this->expectExceptionMessageMatches('/Only one of the php attributes.+DiFactory::class.+Autowire::class/');
 
         AttributeReader::getAutowireAttribute(new ReflectionClass(ClassWithDiFactoryAndAutowire::class))->valid();
     }
