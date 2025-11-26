@@ -15,11 +15,12 @@ use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -162,7 +163,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         }
                     }
                 }
-            } catch (AutowireExceptionInterface|DefinitionsLoaderExceptionInterface|InvalidArgumentException|RuntimeException $e) {
+            } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException|InvalidArgumentException|RuntimeException $e) {
                 if (null !== $file) {
                     @unlink($file->getPathname());
                 }
@@ -246,7 +247,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
      *
-     * @throws AutowireExceptionInterface|DefinitionsLoaderExceptionInterface
+     * @throws AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException
      */
     private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
