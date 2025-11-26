@@ -11,17 +11,15 @@ use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
-use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
-use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -164,7 +162,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         }
                     }
                 }
-            } catch (DefinitionsLoaderExceptionInterface|InvalidArgumentException|RuntimeException $e) {
+            } catch (AutowireExceptionInterface|DefinitionsLoaderExceptionInterface|InvalidArgumentException|RuntimeException $e) {
                 if (null !== $file) {
                     @unlink($file->getPathname());
                 }
@@ -248,7 +246,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
      *
-     * @throws DefinitionsLoaderExceptionInterface
+     * @throws AutowireExceptionInterface|DefinitionsLoaderExceptionInterface
      */
     private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
     {
@@ -324,20 +322,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ];
         }
 
-        try {
-            $autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass);
-        } catch (AutowireAttributeException $e) {
-            throw (
-                new DefinitionsLoaderInvalidArgumentException(
-                    message: sprintf('Cannot automatically set definition via php attribute %s::class for %s::class.', Autowire::class, $reflectionClass->name),
-                    previous: $e
-                )
-            )
-                ->setContext(context_reflection_class: $reflectionClass)
-            ;
-        }
-
-        if ($autowireAttrs->valid()) {
+        if (($autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
@@ -357,20 +342,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
-        try {
-            $factory = AttributeReader::getDiFactoryAttribute($reflectionClass);
-        } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
-            throw (
-                new DefinitionsLoaderInvalidArgumentException(
-                    message: sprintf('Cannot automatically set definition via php attribute %s::class for %s::class.', DiFactory::class, $reflectionClass->name),
-                    previous: $e
-                )
-            )
-                ->setContext(context_reflection_class: $reflectionClass)
-            ;
-        }
-
-        if (null !== $factory) {
+        if (null !== ($factory = AttributeReader::getDiFactoryAttribute($reflectionClass))) {
             return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
         }
 
