@@ -182,15 +182,15 @@ class DefinitionsLoaderImportTest extends TestCase
 
     public function testConflictConfigContainerIdentifierByAutowireAttributeAndConfig(): void
     {
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically set definition via php attribute .+Autowire::class.+"services\.two".+/');
-
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
         $loader->addDefinitions(false, [
             'services.two' => static fn () => new ArrayIterator([]),
         ]);
+
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Autowire\].+"services\.two".+/');
 
         (new DiContainerFactory())->make($loader->definitions());
     }
