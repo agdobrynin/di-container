@@ -120,7 +120,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $file->isReadable()
                 ? $this
                 : throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('The cache file for importing definitions is not readable. File: "%s".', $file->getPathname())
+                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $file->getPathname())
                 );
         }
 
@@ -153,7 +153,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             if (!$importCacheFile->isReadable()) {
                 throw (
                     new DefinitionsLoaderException(
-                        message: sprintf('The cache file for importing definitions is not readable. File: "%s".', $importCacheFile->getPathname()),
+                        message: sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $importCacheFile->getPathname()),
                     )
                 )
                     ->setContext(context_file: $importCacheFile)
@@ -179,7 +179,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             } catch (RuntimeException $e) {
                 throw new DefinitionsLoaderException(
-                    sprintf('The cache file for importing definitions is not writable. File: "%s".', $importCacheFile->getPathname()),
+                    sprintf('The cache file for importing definitions isn\'t writable. File: "%s".', $importCacheFile->getPathname()),
                     previous: $e
                 );
             }
@@ -390,7 +390,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         foreach ($file as $srcFile) {
             if (!file_exists($srcFile) || !is_readable($srcFile)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('The file "%s" does not exist or is not readable.', $srcFile)
+                    sprintf('The file "%s" does not exist or isn\'t readable.', $srcFile)
                 );
             }
 
