@@ -11,6 +11,8 @@ use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderInterface;
 
+use function sprintf;
+
 /**
  * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
  */
@@ -32,6 +34,16 @@ final class ImportLoader implements ImportLoaderInterface
         }
     }
 
+    public function getFinderFile(): ?FinderFileInterface
+    {
+        return $this->finderFile;
+    }
+
+    public function getFinderFullyQualifiedName(): ?FinderFullyQualifiedNameInterface
+    {
+        return $this->finderFullyQualifiedName;
+    }
+
     public function setSrc(string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static
     {
         if (null === $this->finderFile) {
@@ -46,10 +58,19 @@ final class ImportLoader implements ImportLoaderInterface
         return $this;
     }
 
+    public function getSrc(): string
+    {
+        if (null === $this->finderFile) {
+            throw new InvalidArgumentException(sprintf('Need set source directory. Use method %s::setSrc().', self::class));
+        }
+
+        return $this->finderFile->getSrc();
+    }
+
     public function getFullyQualifiedName(string $namespace): iterable
     {
         if (null === $this->finderFile) {
-            throw new InvalidArgumentException('Need set source directory. Use method ImportLoader::setSrc().');
+            throw new InvalidArgumentException(sprintf('Need set source directory. Use method %s::setSrc().', self::class));
         }
 
         if (null === $this->finderFullyQualifiedName) {

@@ -30,6 +30,7 @@ use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
 use SplFileInfo;
+use SplFileObject;
 
 use function class_exists;
 use function file_exists;
@@ -135,7 +136,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
         } catch (InvalidArgumentException|RuntimeException $e) {
             throw new DefinitionsLoaderInvalidArgumentException(
-                sprintf('Cannot import from namespace "%s". Reason: %s', $namespace, $e->getMessage()),
+                sprintf('Cannot import fully qualified names for php class or interface from source directory "%s" with namespace prefix "%s". Reason: %s', $src, $namespace, $e->getMessage()),
                 previous: $e
             );
         }
@@ -150,15 +151,18 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
-        // @var null|SplFileObject $importCacheFile
+
+        /**
+         * @var null|SplFileObject $importCacheFile
+         */
         $importCacheFile = $this->getImportCacheFile();
 
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
             if (!$importCacheFile->isReadable()) {
                 throw (
-                new DefinitionsLoaderException(
-                    message: sprintf('Cache file for imported definitions via %s::import() is not readable. File: "%s".', self::class, $importCacheFile->getPathname()),
-                )
+                    new DefinitionsLoaderException(
+                        message: sprintf('Cache file for imported definitions via %s::import() is not readable. File: "%s".', self::class, $importCacheFile->getPathname()),
+                    )
                 )
                     ->setContext(context_file: $importCacheFile)
                 ;
@@ -178,14 +182,45 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             } catch (RuntimeException $e) {
                 throw new DefinitionsLoaderException(
-                    sprintf('Cannot create cache file for imported definitions via %s::import(). File: "%s".',self::class, $importCacheFile->getPathname()),
+                    sprintf('Cannot create cache file for imported definitions via %s::import(). File: "%s".', self::class, $importCacheFile->getPathname()),
                     previous: $e
                 );
             }
 
-            try {
-                foreach ($this->importLoaderCollection->getFullyQualifiedName() as ['namespace' => $namespace, 'itemFQN' => $itemFQN]) {
-                    $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$namespace]));
+            $unlinkCacheFile = static function () use ($file) {
+                if (null !== $file) {
+                    @unlink($file->getPathname());
+                }
+            };
+
+            foreach ($this->importLoaderCollection->getImportLoaders() as $namespacePrefix => $importLoader) {
+                /** @var Generator<non-negative-int, ItemFQN> $fullyQualifiedName */
+                $fullyQualifiedName = $importLoader->getFullyQualifiedName($namespacePrefix);
+
+                do {
+                    try {
+                        /** @var ItemFQN $itemFQN */
+                        $itemFQN = $fullyQualifiedName->current();
+                    } catch (InvalidArgumentException|RuntimeException $e) {
+                        $unlinkCacheFile();
+
+                        throw new DefinitionsLoaderException(
+                            sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace prefix "%s". Reason: %s', $importLoader->getSrc(), $namespacePrefix, $e->getMessage()),
+                            previous: $e
+                        );
+                    }
+
+                    try {
+                        $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$namespacePrefix]));
+                    } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
+                        $unlinkCacheFile();
+
+                        throw new DefinitionsLoaderException(
+                            sprintf('Cannot make container definition from source directory "%s" with namespace prefix "%s". Class "%s" in file %s:%d. Reason: %s', $importLoader->getSrc(), $namespacePrefix, $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
+                            previous: $e
+                        );
+                    }
+
                     if ([] !== $definition) {
                         foreach ($definition as $identifier => $definitionItem) {
                             $file?->fwrite($this->generateYieldStringDefinition($identifier, $definitionItem).PHP_EOL);
@@ -193,16 +228,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                             yield $identifier => $definitionItem;
                         }
                     }
-                }
-            } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException|InvalidArgumentException|RuntimeException $e) {
-                if (null !== $file) {
-                    @unlink($file->getPathname());
-                }
 
-                throw new DefinitionsLoaderException(
-                    sprintf('There was an error loading definitions. Reason: %s', $e->getMessage()),
-                    previous: $e
-                );
+                    $fullyQualifiedName->next();
+                } while ($fullyQualifiedName->valid());
             }
 
             $file?->fwrite('};'.PHP_EOL);
@@ -252,13 +280,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
         if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
-            throw (
-                new DefinitionsLoaderInvalidArgumentException(
-                    message: sprintf('Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.', T_INTERFACE, T_CLASS, var_export($tokenId, true))
-                )
-            )
-                ->setContext(context_item_f_q_n: $itemFQN)
-            ;
+            throw new DefinitionsLoaderInvalidArgumentException(
+                sprintf('Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.', T_INTERFACE, T_CLASS, var_export($tokenId, true))
+            );
         }
 
         if (!$useAttribute) {
@@ -285,13 +309,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (AttributeReader::isAutowireExclude($reflectionClass)) {
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
-                throw (
-                    new DefinitionsLoaderInvalidArgumentException(
-                        message: sprintf('Cannot automatically set definition via php attribute %s::class for container identifier "%s". Configure class "%s" via php attribute or via config file.', AutowireExclude::class, $reflectionClass->name, $reflectionClass->name)
-                    )
-                )
-                    ->setContext(context_reflection_class: $reflectionClass)
-                ;
+                throw new DefinitionsLoaderInvalidArgumentException(
+                    sprintf('Definition "%s" mark as excluded via php attribute "%s". This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, AutowireExclude::class, $reflectionClass->name)
+                );
             }
 
             return [];
@@ -305,13 +325,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
-                throw (
-                    new DefinitionsLoaderInvalidArgumentException(
-                        message: sprintf('Cannot automatically set definition via php attribute %s::class for container identifier "%s". Configure class "%s" via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
-                    )
-                )
-                    ->setContext(context_reflection_class: $reflectionClass)
-                ;
+                throw new DefinitionsLoaderInvalidArgumentException(
+                    sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
+                );
             }
 
             return [
@@ -326,13 +342,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             foreach ($autowireAttrs as $autowireAttr) {
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
-                    throw (
-                        new DefinitionsLoaderInvalidArgumentException(
-                            message: sprintf('Cannot automatically set definition via php attribute %s::class for container identifier "%s". Configure class "%s" via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
-                        )
-                    )
-                        ->setContext(context_reflection_class: $reflectionClass)
-                    ;
+                    throw new DefinitionsLoaderInvalidArgumentException(
+                        sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                    );
                 }
 
                 $services[$autowireAttr->getIdentifier()] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton());

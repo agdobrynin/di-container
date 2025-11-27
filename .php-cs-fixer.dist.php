@@ -11,6 +11,7 @@ $finder = (new PhpCsFixer\Finder())
         'tests/FinderFullyQualifiedClassName/Fixtures',
         'tests/_var',
         'tests/FinderClosureCode/Fixture/',
+        'tests/DefinitionsLoader/Fixtures/PhpFileCannotParse/',
     ])
 ;
 

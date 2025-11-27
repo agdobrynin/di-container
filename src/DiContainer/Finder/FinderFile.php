@@ -46,19 +46,28 @@ final class FinderFile implements FinderFileInterface
 
         if (false === $fixedSrc) {
             throw new InvalidArgumentException(
-                sprintf('Cannot resolve source directory by "\realpath()" from argument $src. Got: "%s".', $src)
+                sprintf('Cannot resolve source directory by "\realpath()" from parameter $src. Got: "%s".', $src)
             );
         }
 
         if (!is_dir($fixedSrc) || !is_readable($fixedSrc)) {
             throw new InvalidArgumentException(
-                sprintf('Source directory from argument $src must be readable. Got: "%s".', $fixedSrc)
+                sprintf('Source directory from parameter $src must be readable. Got: "%s".', $fixedSrc)
             );
         }
 
         $this->src = $fixedSrc;
 
         return $this;
+    }
+
+    public function getSrc(): string
+    {
+        if (!isset($this->src)) {
+            throw new InvalidArgumentException(sprintf('Need set source directory. Use method %s::setSrc().', self::class));
+        }
+
+        return $this->src;
     }
 
     public function setExcludeRegExpPattern(array $excludeRegExpPattern): static
@@ -78,7 +87,7 @@ final class FinderFile implements FinderFileInterface
     public function getFiles(): Iterator
     {
         if (!isset($this->src)) {
-            throw new InvalidArgumentException('Need set source directory. Use method FinderFile::setSrc().');
+            throw new InvalidArgumentException(sprintf('Need set source directory. Use method %s::setSrc().', self::class));
         }
 
         $iterator = new RecursiveIteratorIterator(

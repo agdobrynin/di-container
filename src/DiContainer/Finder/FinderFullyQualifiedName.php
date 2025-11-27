@@ -108,7 +108,6 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
      * @return Generator<non-negative-int, ItemFQN>
      *
      * @throws RuntimeException
-     * @throws InvalidArgumentException
      */
     private function findInFile(SplFileInfo $file, string $requiredNamespace, int &$key): Generator
     {
@@ -121,10 +120,8 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
         try {
             $tokens = token_get_all($code, TOKEN_PARSE);
-        } catch (ParseError $exception) {
-            throw new RuntimeException(
-                sprintf('Cannot parse code from file "%s". Reason: %s', $file, $exception->getMessage())
-            );
+        } catch (ParseError $e) {
+            throw new RuntimeException(message: sprintf('Cannot parse code from file "%s".', $file), previous: $e);
         }
 
         $namespace = '';

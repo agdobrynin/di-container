@@ -12,6 +12,7 @@ use Kaspi\DiContainer\ImportLoader;
 use Kaspi\DiContainer\ImportLoaderCollection;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
+use Kaspi\DiContainer\Interfaces\ImportLoaderInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\AppClass;
@@ -182,6 +183,9 @@ class DefinitionsLoaderImportTest extends TestCase
 
     public function testConflictConfigContainerIdentifierByAutowireAttributeAndConfig(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Container identifier "services.two" already registered');
+
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
@@ -189,14 +193,14 @@ class DefinitionsLoaderImportTest extends TestCase
             'services.two' => static fn () => new ArrayIterator([]),
         ]);
 
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically set definition via php attribute .+Autowire::class.+"services\.two".+/');
-
         (new DiContainerFactory())->make($loader->definitions());
     }
 
     public function testConflictConfigContainerIdentifierByServiceAttributeAndConfig(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Container identifier "Tests\DefinitionsLoader\Fixtures\Import\TokenInterface" already registered');
+
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
@@ -205,9 +209,6 @@ class DefinitionsLoaderImportTest extends TestCase
                 ->bindArguments(token: 'secure-token'),
             Fixtures\Import\TokenInterface::class => static fn (Fixtures\Import\One $one) => new Fixtures\Import\Two($one),
         ]);
-
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically set definition via php attribute .+Service::class.+".+\\\TokenInterface".+/');
 
         (new DiContainerFactory())->make($loader->definitions());
     }
@@ -248,24 +249,44 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Unsupported token id');
 
-        $importLoaderCollection = $this->createMock(ImportLoaderCollectionInterface::class);
-        $importLoaderCollection->method('getFullyQualifiedName')
-            // iterable<non-negative-int, array{namespace: non-empty-string, itemFQN: ItemFQN}>
-            ->willReturn([
-                0 => [
-                    'namespace' => 'Tests\\',
-                    'itemFQN' => [
+        $importLoaderMock = $this->createMock(ImportLoaderInterface::class);
+
+        $importLoaderMock->method('getFullyQualifiedName')
+            ->with('Tests\\')
+            ->willReturnCallback(
+                function () {
+                    yield 0 => [
                         'fqn' => 'Tests\SomeTrait',
                         'tokenId' => T_TRAIT,
-                    ],
-                ],
-            ])
+                        'file' => 'tests/SomeTrait.php',
+                        'line' => 3,
+                    ];
+                }
+            )
+        ;
+
+        $importLoaderCollection = $this->createMock(ImportLoaderCollectionInterface::class);
+        $importLoaderCollection->method('getImportLoaders')
+            ->willReturnCallback(function () use ($importLoaderMock) {
+                yield 'Tests\\' => $importLoaderMock;
+            })
         ;
 
         (new DefinitionsLoader(importLoaderCollection: $importLoaderCollection))
-            ->import('Tests\\', __DIR__.'/../')
+            ->import('Tests\\', __DIR__)
             ->definitions()
             ->current()
         ;
+    }
+
+    public function testFailParsePhpFile(): void
+    {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/PhpFileCannotParse')
+        ;
+
+        $loader->definitions()->valid();
     }
 }
