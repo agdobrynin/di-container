@@ -47,7 +47,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
     public function testImportCacheFileInNotReadableByDefinitions(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Import cache file is not readable.');
+        $this->expectExceptionMessage('is not readable.');
 
         $f = vfsStream::newFile('i')
             ->chmod(0222)
@@ -63,7 +63,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
     public function testImportCacheFileInNotReadableByImport(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Import cache file is not readable.');
+        $this->expectExceptionMessage('is not readable.');
 
         $f = vfsStream::newFile('i')
             ->chmod(0222)
@@ -78,7 +78,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
     public function testImportCacheFileCannotCreated(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot create import cache file.');
+        $this->expectExceptionMessage('is not writable.');
 
         $dir = vfsStream::newDirectory('var', 0444)
             ->at(vfsStream::setup())

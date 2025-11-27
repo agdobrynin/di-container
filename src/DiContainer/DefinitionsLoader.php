@@ -147,10 +147,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
-
-        /**
-         * @var null|SplFileObject $importCacheFile
-         */
         $importCacheFile = $this->getImportCacheFile();
 
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
