@@ -120,11 +120,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $file->isReadable()
                 ? $this
                 : throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf(
-                        'Cache file for imported definitions via %s::import() is not readable. File: "%s".',
-                        self::class,
-                        $file->getPathname()
-                    )
+                    sprintf('The cache file for importing definitions is not readable. File: "%s".', $file->getPathname())
                 );
         }
 
@@ -136,7 +132,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
         } catch (InvalidArgumentException|RuntimeException $e) {
             throw new DefinitionsLoaderInvalidArgumentException(
-                sprintf('Cannot import fully qualified names for php class or interface from source directory "%s" with namespace prefix "%s". Reason: %s', $src, $namespace, $e->getMessage()),
+                sprintf('Cannot import fully qualified names for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $src, $namespace, $e->getMessage()),
                 previous: $e
             );
         }
@@ -161,7 +157,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             if (!$importCacheFile->isReadable()) {
                 throw (
                     new DefinitionsLoaderException(
-                        message: sprintf('Cache file for imported definitions via %s::import() is not readable. File: "%s".', self::class, $importCacheFile->getPathname()),
+                        message: sprintf('The cache file for importing definitions is not readable. File: "%s".', $importCacheFile->getPathname()),
                     )
                 )
                     ->setContext(context_file: $importCacheFile)
@@ -172,58 +168,57 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if (isset($this->importLoaderCollection)) {
+            $cacheFileDelete = static function (?SplFileObject $f) {
+                if (null !== $f) {
+                    @unlink($f->getPathname());
+                }
+            };
+
             try {
-                // @var null|SplFileObject $file
-                $file = $importCacheFile?->openFile('wb+');
-                $file?->fwrite(
+                $cacheFileOpened = $importCacheFile?->openFile('wb+');
+                $cacheFileOpened?->fwrite(
                     '<?php'.PHP_EOL
                     .'use function Kaspi\DiContainer\{diAutowire, diFactory, diGet};'.PHP_EOL
                     .'return static function () {'.PHP_EOL
                 );
             } catch (RuntimeException $e) {
                 throw new DefinitionsLoaderException(
-                    sprintf('Cannot create cache file for imported definitions via %s::import(). File: "%s".', self::class, $importCacheFile->getPathname()),
+                    sprintf('The cache file for importing definitions is not writable. File: "%s".', $importCacheFile->getPathname()),
                     previous: $e
                 );
             }
 
-            $unlinkCacheFile = static function () use ($file) {
-                if (null !== $file) {
-                    @unlink($file->getPathname());
-                }
-            };
-
-            foreach ($this->importLoaderCollection->getImportLoaders() as $namespacePrefix => $importLoader) {
+            foreach ($this->importLoaderCollection->getImportLoaders() as $namespace => $importLoader) {
                 /** @var Generator<non-negative-int, ItemFQN> $fullyQualifiedName */
-                $fullyQualifiedName = $importLoader->getFullyQualifiedName($namespacePrefix);
+                $fullyQualifiedName = $importLoader->getFullyQualifiedName($namespace);
 
                 do {
                     try {
                         /** @var ItemFQN $itemFQN */
                         $itemFQN = $fullyQualifiedName->current();
                     } catch (InvalidArgumentException|RuntimeException $e) {
-                        $unlinkCacheFile();
+                        $cacheFileDelete($cacheFileOpened);
 
                         throw new DefinitionsLoaderException(
-                            sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace prefix "%s". Reason: %s', $importLoader->getSrc(), $namespacePrefix, $e->getMessage()),
+                            sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $importLoader->getSrc(), $namespace, $e->getMessage()),
                             previous: $e
                         );
                     }
 
                     try {
-                        $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$namespacePrefix]));
+                        $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$namespace]));
                     } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
-                        $unlinkCacheFile();
+                        $cacheFileDelete($cacheFileOpened);
 
                         throw new DefinitionsLoaderException(
-                            sprintf('Cannot make container definition from source directory "%s" with namespace prefix "%s". Class "%s" in file %s:%d. Reason: %s', $importLoader->getSrc(), $namespacePrefix, $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
+                            sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $importLoader->getSrc(), $namespace, $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
                             previous: $e
                         );
                     }
 
                     if ([] !== $definition) {
                         foreach ($definition as $identifier => $definitionItem) {
-                            $file?->fwrite($this->generateYieldStringDefinition($identifier, $definitionItem).PHP_EOL);
+                            $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definitionItem).PHP_EOL);
 
                             yield $identifier => $definitionItem;
                         }
@@ -233,7 +228,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 } while ($fullyQualifiedName->valid());
             }
 
-            $file?->fwrite('};'.PHP_EOL);
+            $cacheFileOpened?->fwrite('};'.PHP_EOL);
         }
 
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
@@ -310,7 +305,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (AttributeReader::isAutowireExclude($reflectionClass)) {
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('Definition "%s" mark as excluded via php attribute "%s". This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, AutowireExclude::class, $reflectionClass->name)
+                    sprintf('The fully qualified name "%s" mark as excluded via php attribute "%s". This fully qualified name "%s" must be configure via php attribute or via config file.', $reflectionClass->name, AutowireExclude::class, $reflectionClass->name)
                 );
             }
 
@@ -326,7 +321,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
+                    sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This interface "%s" must be configure via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
                 );
             }
 
@@ -343,7 +338,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             foreach ($autowireAttrs as $autowireAttr) {
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
                     throw new DefinitionsLoaderInvalidArgumentException(
-                        sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                        sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This fully qualified name "%s" must be configure via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
                     );
                 }
 

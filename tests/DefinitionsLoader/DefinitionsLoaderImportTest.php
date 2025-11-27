@@ -172,7 +172,7 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportAlreadyExists(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('is already imported');
+        $this->expectExceptionMessage('The namespace "Tests\DefinitionsLoader\" has already been added to the import collection for source');
 
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')

@@ -35,7 +35,7 @@ final class ImportLoaderCollection implements ImportLoaderCollectionInterface
     {
         if (isset($this->import[$namespace])) {
             throw new InvalidArgumentException(
-                sprintf('Namespace prefix "%s" is already imported for source directory "%s".', $namespace, $this->import[$namespace]->getSrc())
+                sprintf('The namespace "%s" has already been added to the import collection for source directory "%s".', $namespace, $this->import[$namespace]->getSrc())
             );
         }
 
