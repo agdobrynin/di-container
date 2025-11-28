@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use InvalidArgumentException;
+use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
 
@@ -32,7 +33,7 @@ final class FinderFullyQualifiedNameCollection implements FinderFullyQualifiedNa
         return $this;
     }
 
-    public function get(): iterable
+    public function get(): Iterator
     {
         yield from $this->import;
     }

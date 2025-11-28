@@ -27,7 +27,7 @@ class FinderFileTest extends TestCase
     public function testFinderFileConstructorFail(string $src, string $expectMessage): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches($expectMessage);
+        $this->expectExceptionMessage($expectMessage);
 
         (new FinderFile($src))->getFiles()->current();
     }
@@ -36,12 +36,12 @@ class FinderFileTest extends TestCase
     {
         yield 'none exist directory' => [
             __DIR__.'/no-dir',
-            '/Cannot resolve source directory by "\\\realpath\(\)".+\/no-dir/',
+            'from parameter $src is invalid',
         ];
 
         yield 'none-directory' => [
             __FILE__,
-            '/Source directory from parameter \$src must be readable/',
+            'from parameter $src must be readable',
         ];
     }
 

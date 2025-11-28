@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use InvalidArgumentException;
+use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 
 /**
@@ -20,7 +21,7 @@ interface FinderFullyQualifiedNameCollectionInterface
     public function add(FinderFullyQualifiedNameInterface $finderFullyQualifiedName): static;
 
     /**
-     * @return iterable<non-empty-string, FinderFullyQualifiedNameInterface>
+     * @return Iterator<non-empty-string, FinderFullyQualifiedNameInterface>
      */
-    public function get(): iterable;
+    public function get(): Iterator;
 }

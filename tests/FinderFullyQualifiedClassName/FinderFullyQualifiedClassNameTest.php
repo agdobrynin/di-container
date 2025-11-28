@@ -49,22 +49,22 @@ class FinderFullyQualifiedClassNameTest extends TestCase
     {
         yield 'empty string' => [
             '',
-            'Argument $namespace must be end with symbol "\"',
+            '$namespace must be end with symbol "\"',
         ];
 
         yield 'invalid namespace #1' => [
             '11App\\',
-            'Argument $namespace must be compatible with PSR-4',
+            '$namespace must be compatible with PSR-4',
         ];
 
         yield 'invalid namespace #2' => [
             '   App\\',
-            'Argument $namespace must be compatible with PSR-4',
+            '$namespace must be compatible with PSR-4',
         ];
 
         yield 'invalid namespace #3' => [
             '\\',
-            'Argument $namespace must be compatible with PSR-4',
+            '$namespace must be compatible with PSR-4',
         ];
     }
 

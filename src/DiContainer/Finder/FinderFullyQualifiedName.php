@@ -41,7 +41,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     private string $verifiedNamespace;
 
     /**
-     * @param non-empty-string $namespace PSR-4 namespace prefix
+     * @param non-empty-string $namespace PSR-4 namespace
      */
     public function __construct(private readonly string $namespace, private readonly FinderFileInterface $finderFile) {}
 
@@ -60,14 +60,14 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         if (!isset($this->verifiedNamespace)) {
             if (!str_ends_with($this->namespace, '\\')) {
                 throw new InvalidArgumentException(
-                    sprintf('Argument $namespace must be end with symbol "\". Got: "%s".', $this->namespace)
+                    sprintf('Argument "%s" from parameter $namespace must be end with symbol "\".', $this->namespace)
                 );
             }
 
             // @see https://www.php.net/manual/en/language.variables.basics.php
             if (1 !== preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $this->namespace)) {
                 throw new InvalidArgumentException(
-                    sprintf('Argument $namespace must be compatible with PSR-4. Got "%s".', $this->namespace)
+                    sprintf('Argument "%s" from parameter $namespace must be compatible with PSR-4.', $this->namespace)
                 );
             }
 

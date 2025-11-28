@@ -58,13 +58,13 @@ final class FinderFile implements FinderFileInterface
 
             if (false === $fixedSrc) {
                 throw new InvalidArgumentException(
-                    sprintf('Cannot resolve source directory by "\realpath()" from parameter $src. Got: "%s".', $this->src)
+                    sprintf('Argument "%s" from parameter $src is invalid.', $this->src)
                 );
             }
 
             if (!is_dir($fixedSrc) || !is_readable($fixedSrc)) {
                 throw new InvalidArgumentException(
-                    sprintf('Source directory from parameter $src must be readable. Got: "%s".', $fixedSrc)
+                    sprintf('Source directory "%s" from parameter $src must be readable.', $fixedSrc)
                 );
             }
 

@@ -16,7 +16,7 @@ use RuntimeException;
 interface FinderFullyQualifiedNameInterface
 {
     /**
-     * Get PSR-4 namespace prefix.
+     * Get PSR-4 namespace.
      *
      * @return non-empty-string
      */

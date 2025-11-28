@@ -192,12 +192,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
-                $foundFQN = $finderFQN->get();
+                $fullQualifiedName = $finderFQN->get();
 
                 do {
                     try {
                         /** @var null|ItemFQN $itemFQN */
-                        $itemFQN = $foundFQN->current();
+                        $itemFQN = $fullQualifiedName->current();
 
                         if (null === $itemFQN) {
                             break;
@@ -230,8 +230,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         }
                     }
 
-                    $foundFQN->next();
-                } while ($foundFQN->valid());
+                    $fullQualifiedName->next();
+                } while ($fullQualifiedName->valid());
             }
 
             $cacheFileOpened?->fwrite('};'.PHP_EOL);
