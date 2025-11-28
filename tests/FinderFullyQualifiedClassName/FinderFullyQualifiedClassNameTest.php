@@ -40,7 +40,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             namespace: $namespace,
             finderFile: $this->createMock(FinderFileInterface::class)
         ))
-            ->find()
+            ->get()
             ->current()
         ;
     }
@@ -90,7 +90,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         });
 
         (new FinderFullyQualifiedName('App\\', $finderFileMock))
-            ->find()
+            ->get()
             ->valid()
         ;
     }
@@ -106,7 +106,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         });
 
         (new FinderFullyQualifiedName('App\\', $finderFileMock))
-            ->find()
+            ->get()
             ->valid()
         ;
     }
@@ -118,7 +118,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             ->willReturn(new FilesystemIterator(__DIR__.'/Fixtures/Success/'))
         ;
 
-        $fqNames = (new FinderFullyQualifiedName('Tests\\', $finderFileMock))->find();
+        $fqNames = (new FinderFullyQualifiedName('Tests\\', $finderFileMock))->get();
 
         $this->assertTrue($fqNames->valid());
 

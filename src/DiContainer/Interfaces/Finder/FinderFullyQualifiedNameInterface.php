@@ -37,5 +37,5 @@ interface FinderFullyQualifiedNameInterface
      * @throws RuntimeException
      * @throws InvalidArgumentException
      */
-    public function find(): Iterator;
+    public function get(): Iterator;
 }

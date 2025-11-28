@@ -107,7 +107,7 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithPreconfiguredImportLoader(): void
     {
         $loader = (new DefinitionsLoader(
-            importLoaderCollection: new FinderFullyQualifiedNameCollection()
+            finderFullyQualifiedNameCollection: new FinderFullyQualifiedNameCollection()
         ))
             ->import(
                 'Tests\DefinitionsLoader\\',
@@ -243,7 +243,7 @@ class DefinitionsLoaderImportTest extends TestCase
 
         $importLoaderMock = $this->createMock(FinderFullyQualifiedNameInterface::class);
 
-        $importLoaderMock->method('find')
+        $importLoaderMock->method('get')
             ->willReturnCallback(
                 function () {
                     yield 0 => [
@@ -263,7 +263,7 @@ class DefinitionsLoaderImportTest extends TestCase
             })
         ;
 
-        (new DefinitionsLoader(importLoaderCollection: $importLoaderCollection))
+        (new DefinitionsLoader(finderFullyQualifiedNameCollection: $importLoaderCollection))
             ->import('Tests\\', __DIR__)
             ->definitions()
             ->current()

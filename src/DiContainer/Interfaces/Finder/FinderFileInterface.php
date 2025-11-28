@@ -25,7 +25,7 @@ interface FinderFileInterface
     public function getSrc(): string;
 
     /**
-     * Get exclude matching by regexp pattern.
+     * Get exclude matching by regexp pattern files.
      *
      * @return list<non-empty-string>
      */

@@ -55,7 +55,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         return $this->finderFile->getSrc();
     }
 
-    public function find(): Iterator
+    public function get(): Iterator
     {
         if (!isset($this->verifiedNamespace)) {
             if (!str_ends_with($this->namespace, '\\')) {

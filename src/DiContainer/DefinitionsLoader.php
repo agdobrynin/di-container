@@ -65,7 +65,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function __construct(
         private readonly ?string $importCacheFile = null,
-        private ?FinderFullyQualifiedNameCollectionInterface $importLoaderCollection = null,
+        private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
         $this->configDefinitions = new ArrayIterator();
     }
@@ -126,12 +126,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
         }
 
-        if (null === $this->importLoaderCollection) {
-            $this->importLoaderCollection = new FinderFullyQualifiedNameCollection();
+        if (null === $this->finderFullyQualifiedNameCollection) {
+            $this->finderFullyQualifiedNameCollection = new FinderFullyQualifiedNameCollection();
         }
 
         try {
-            $this->importLoaderCollection->add(
+            $this->finderFullyQualifiedNameCollection->add(
                 new FinderFullyQualifiedName(
                     $namespace,
                     new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions)
@@ -170,7 +170,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             yield from $this->getIteratorFromFile($importCacheFile->getPathname()); // @phpstan-ignore generator.keyType
         }
 
-        if (isset($this->importLoaderCollection)) {
+        if (isset($this->finderFullyQualifiedNameCollection)) {
             $cacheFileDelete = static function (?SplFileObject $f) {
                 if (null !== $f) {
                     @unlink($f->getPathname());
@@ -191,8 +191,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            foreach ($this->importLoaderCollection->get() as $finderFQN) {
-                $foundFQN = $finderFQN->find();
+            foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
+                $foundFQN = $finderFQN->get();
 
                 do {
                     try {
