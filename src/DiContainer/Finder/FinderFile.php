@@ -58,7 +58,7 @@ final class FinderFile implements FinderFileInterface
 
             if (false === $fixedSrc) {
                 throw new InvalidArgumentException(
-                    sprintf('Argument "%s" from parameter $src is invalid.', $this->src)
+                    sprintf('Source directory "%s" from parameter $src is invalid.', $this->src)
                 );
             }
 
