@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Finder;
 use Generator;
 use InvalidArgumentException;
 use Iterator;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use ParseError;
 use RuntimeException;
@@ -36,68 +37,47 @@ use const TOKEN_PARSE;
  */
 final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterface
 {
-    /**
-     * PSR-4 namespace prefix.
-     *
-     * @var non-empty-string
-     */
-    private string $namespace;
+    /** @var non-empty-string */
+    private string $verifiedNamespace;
 
     /**
-     * Files for parsing.
-     *
-     * @var iterable<non-negative-int, SplFileInfo>
+     * @param non-empty-string $namespace PSR-4 namespace prefix
      */
-    private iterable $files;
-
-    public function __construct() {}
-
-    public function setNamespace(string $namespace): static
-    {
-        if (!str_ends_with($namespace, '\\')) {
-            throw new InvalidArgumentException(
-                sprintf('Argument $namespace must be end with symbol "\". Got: "%s".', $namespace)
-            );
-        }
-
-        // @see https://www.php.net/manual/en/language.variables.basics.php
-        if (1 !== preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $namespace)) {
-            throw new InvalidArgumentException(
-                sprintf('Argument $namespace must be compatible with PSR-4. Got "%s".', $namespace)
-            );
-        }
-
-        $this->namespace = $namespace;
-
-        return $this;
-    }
+    public function __construct(private readonly string $namespace, private readonly FinderFileInterface $finderFile) {}
 
     public function getNamespace(): string
     {
-        if (!isset($this->namespace)) {
-            throw new InvalidArgumentException('Need set "namespace". Use method FinderFile::setNamespace().');
-        }
-
         return $this->namespace;
     }
 
-    public function setFiles(iterable $files): static
+    public function getSrc(): string
     {
-        $this->files = $files;
-
-        return $this;
+        return $this->finderFile->getSrc();
     }
 
     public function find(): Iterator
     {
-        if (!isset($this->files)) {
-            throw new InvalidArgumentException('Need set files for parsing. Use method FinderFile::setFiles().');
+        if (!isset($this->verifiedNamespace)) {
+            if (!str_ends_with($this->namespace, '\\')) {
+                throw new InvalidArgumentException(
+                    sprintf('Argument $namespace must be end with symbol "\". Got: "%s".', $this->namespace)
+                );
+            }
+
+            // @see https://www.php.net/manual/en/language.variables.basics.php
+            if (1 !== preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $this->namespace)) {
+                throw new InvalidArgumentException(
+                    sprintf('Argument $namespace must be compatible with PSR-4. Got "%s".', $this->namespace)
+                );
+            }
+
+            $this->verifiedNamespace = $this->namespace;
         }
 
         $key = 0;
 
-        foreach ($this->files as $file) {
-            yield from $this->findInFile($file, $this->getNamespace(), $key);
+        foreach ($this->finderFile->getFiles() as $file) {
+            yield from $this->findInFile($file, $this->verifiedNamespace, $key);
         }
     }
 

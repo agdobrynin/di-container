@@ -23,76 +23,59 @@ use function strtolower;
 
 final class FinderFile implements FinderFileInterface
 {
-    /**
-     * @var non-empty-string
-     */
-    private string $src;
+    /** @var non-empty-string */
+    private string $normalizedSrc;
+
+    /** @var list<non-empty-string> */
+    private array $normalizedAvailableExtensions;
 
     /**
-     * @var list<non-empty-string>
+     * @param non-empty-string       $src                  source directory
+     * @param list<non-empty-string> $excludeRegExpPattern exclude matching by regexp pattern files
+     * @param list<non-empty-string> $availableExtensions  available file extensions
      */
-    private array $excludeRegExpPattern = [];
-
-    /**
-     * @var list<non-empty-string>
-     */
-    private array $extensions = ['php'];
-
-    public function __construct() {}
-
-    public function setSrc(string $src): static
-    {
-        $fixedSrc = realpath($src);
-
-        if (false === $fixedSrc) {
-            throw new InvalidArgumentException(
-                sprintf('Cannot resolve source directory by "\realpath()" from parameter $src. Got: "%s".', $src)
-            );
-        }
-
-        if (!is_dir($fixedSrc) || !is_readable($fixedSrc)) {
-            throw new InvalidArgumentException(
-                sprintf('Source directory from parameter $src must be readable. Got: "%s".', $fixedSrc)
-            );
-        }
-
-        $this->src = $fixedSrc;
-
-        return $this;
-    }
+    public function __construct(private readonly string $src, private readonly array $excludeRegExpPattern = [], private readonly array $availableExtensions = ['php']) {}
 
     public function getSrc(): string
     {
-        if (!isset($this->src)) {
-            throw new InvalidArgumentException(sprintf('Need set source directory. Use method %s::setSrc().', self::class));
-        }
-
         return $this->src;
     }
 
-    public function setExcludeRegExpPattern(array $excludeRegExpPattern): static
+    public function getExcludeRegExpPattern(): array
     {
-        $this->excludeRegExpPattern = $excludeRegExpPattern;
-
-        return $this;
+        return $this->excludeRegExpPattern;
     }
 
-    public function setAvailableExtensions(array $extensions): static
+    public function getAvailableExtensions(): array
     {
-        $this->extensions = array_map(strtolower(...), $extensions);
-
-        return $this;
+        return $this->availableExtensions;
     }
 
     public function getFiles(): Iterator
     {
-        if (!isset($this->src)) {
-            throw new InvalidArgumentException(sprintf('Need set source directory. Use method %s::setSrc().', self::class));
+        if (!isset($this->normalizedSrc)) {
+            $fixedSrc = realpath($this->src);
+
+            if (false === $fixedSrc) {
+                throw new InvalidArgumentException(
+                    sprintf('Cannot resolve source directory by "\realpath()" from parameter $src. Got: "%s".', $this->src)
+                );
+            }
+
+            if (!is_dir($fixedSrc) || !is_readable($fixedSrc)) {
+                throw new InvalidArgumentException(
+                    sprintf('Source directory from parameter $src must be readable. Got: "%s".', $fixedSrc)
+                );
+            }
+
+            $this->normalizedSrc = $fixedSrc;
         }
+
+        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
-                $this->src,
+                $this->normalizedSrc,
                 FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
             )
         );
@@ -102,7 +85,7 @@ final class FinderFile implements FinderFileInterface
             if (($realPath = $entry->getRealPath())
                 && !$this->isExcluded($realPath)
                 && $entry->isFile()
-                && ([] === $this->extensions || in_array(strtolower($entry->getExtension()), $this->extensions, true))
+                && ([] === $this->normalizedAvailableExtensions || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true))
             ) {
                 yield $entry; // @phpstan-ignore generator.keyType
             }
