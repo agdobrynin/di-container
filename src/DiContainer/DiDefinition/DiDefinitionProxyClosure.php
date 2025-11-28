@@ -40,9 +40,9 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
             throw new DiDefinitionException(sprintf('Cannot get entry by container identifier "%s"', $this->getDefinition()));
         }
 
-        return function () use ($container) {
-            return $container->get($this->getDefinition());
-        };
+        $identifier = $this->getDefinition();
+
+        return static fn () => $container->get($identifier);
     }
 
     /**
