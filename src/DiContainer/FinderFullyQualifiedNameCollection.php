@@ -17,8 +17,6 @@ final class FinderFullyQualifiedNameCollection implements FinderFullyQualifiedNa
      */
     private array $import = [];
 
-    public function __construct() {}
-
     public function add(FinderFullyQualifiedNameInterface $finderFullyQualifiedName): static
     {
         $existItem = $this->import[$finderFullyQualifiedName->getNamespace()] ?? null;

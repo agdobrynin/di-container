@@ -30,9 +30,9 @@ final class FinderFile implements FinderFileInterface
     private array $normalizedAvailableExtensions;
 
     /**
-     * @param non-empty-string       $src
-     * @param list<non-empty-string> $excludeRegExpPattern
-     * @param list<non-empty-string> $availableExtensions
+     * @param non-empty-string       $src                  source directory
+     * @param list<non-empty-string> $excludeRegExpPattern exclude matching by regexp pattern files
+     * @param list<non-empty-string> $availableExtensions  available file extensions
      */
     public function __construct(private readonly string $src, private readonly array $excludeRegExpPattern = [], private readonly array $availableExtensions = ['php']) {}
 
