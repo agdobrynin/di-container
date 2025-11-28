@@ -8,10 +8,11 @@ use ArrayIterator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\ImportLoader;
+use Kaspi\DiContainer\ImportLoaderCollection;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
-use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
+use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
+use Kaspi\DiContainer\Interfaces\ImportLoaderInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\AppClass;
@@ -40,8 +41,9 @@ use const T_TRAIT;
  * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
  * @covers \Kaspi\DiContainer\Helper
+ * @covers \Kaspi\DiContainer\ImportLoader
+ * @covers \Kaspi\DiContainer\ImportLoaderCollection
  *
  * @internal
  */
@@ -107,7 +109,13 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithPreconfiguredImportLoader(): void
     {
         $loader = (new DefinitionsLoader(
-            importLoaderCollection: new FinderFullyQualifiedNameCollection()
+            importLoaderCollection: new ImportLoaderCollection(
+                /*
+                 * Use preconfigured argument.
+                 * Test clone this argument when "import()" use more than once.
+                 */
+                new ImportLoader()
+            )
         ))
             ->import(
                 'Tests\DefinitionsLoader\\',
@@ -241,9 +249,10 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Unsupported token id');
 
-        $importLoaderMock = $this->createMock(FinderFullyQualifiedNameInterface::class);
+        $importLoaderMock = $this->createMock(ImportLoaderInterface::class);
 
-        $importLoaderMock->method('find')
+        $importLoaderMock->method('getFullyQualifiedName')
+            ->with('Tests\\')
             ->willReturnCallback(
                 function () {
                     yield 0 => [
@@ -256,8 +265,8 @@ class DefinitionsLoaderImportTest extends TestCase
             )
         ;
 
-        $importLoaderCollection = $this->createMock(FinderFullyQualifiedNameCollectionInterface::class);
-        $importLoaderCollection->method('get')
+        $importLoaderCollection = $this->createMock(ImportLoaderCollectionInterface::class);
+        $importLoaderCollection->method('getImportLoaders')
             ->willReturnCallback(function () use ($importLoaderMock) {
                 yield 'Tests\\' => $importLoaderMock;
             })

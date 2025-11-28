@@ -18,24 +18,35 @@ interface FinderFileInterface
     public function getFiles(): Iterator;
 
     /**
+     * Source directory.
+     *
+     * @param non-empty-string $src
+     *
+     * @throws InvalidArgumentException
+     */
+    public function setSrc(string $src): static;
+
+    /**
      * Get source directory.
      *
      * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
      */
     public function getSrc(): string;
 
     /**
-     * Get exclude matching by regexp pattern files.
+     * Exclude matching by regexp pattern.
      *
-     * @return list<non-empty-string>
+     * @param list<non-empty-string> $excludeRegExpPattern
      */
-    public function getExcludeRegExpPattern(): array;
+    public function setExcludeRegExpPattern(array $excludeRegExpPattern): static;
 
     /**
-     * Get available file extensions.
+     * Available file extensions.
      * Empty list available all files.
      *
-     * @return list<non-empty-string>
+     * @param list<non-empty-string> $extensions
      */
-    public function getAvailableExtensions(): array;
+    public function setAvailableExtensions(array $extensions): static;
 }

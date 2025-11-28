@@ -20,13 +20,11 @@ use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
-use Kaspi\DiContainer\Finder\FinderFile;
-use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
-use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
+use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
 use ParseError;
 use ReflectionClass;
 use ReflectionException;
@@ -65,7 +63,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function __construct(
         private readonly ?string $importCacheFile = null,
-        private ?FinderFullyQualifiedNameCollectionInterface $importLoaderCollection = null,
+        private ?ImportLoaderCollectionInterface $importLoaderCollection = null,
     ) {
         $this->configDefinitions = new ArrayIterator();
     }
@@ -127,17 +125,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if (null === $this->importLoaderCollection) {
-            $this->importLoaderCollection = new FinderFullyQualifiedNameCollection();
+            $this->importLoaderCollection = new ImportLoaderCollection();
         }
 
         try {
-            $this->importLoaderCollection->add(
-                new FinderFullyQualifiedName(
-                    $namespace,
-                    new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions)
-                )
-            );
-        } catch (InvalidArgumentException $e) {
+            $this->importLoaderCollection->importFromNamespace($namespace, $src, $excludeFilesRegExpPattern, $availableExtensions);
+        } catch (InvalidArgumentException|RuntimeException $e) {
             throw new DefinitionsLoaderInvalidArgumentException(
                 sprintf('Cannot import fully qualified names for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $src, $namespace, $e->getMessage()),
                 previous: $e
@@ -191,33 +184,30 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            foreach ($this->importLoaderCollection->get() as $finderFQN) {
-                $foundFQN = $finderFQN->find();
+            foreach ($this->importLoaderCollection->getImportLoaders() as $namespace => $importLoader) {
+                /** @var Generator<non-negative-int, ItemFQN> $fullyQualifiedName */
+                $fullyQualifiedName = $importLoader->getFullyQualifiedName($namespace);
 
                 do {
                     try {
-                        /** @var null|ItemFQN $itemFQN */
-                        $itemFQN = $foundFQN->current();
-
-                        if (null === $itemFQN) {
-                            break;
-                        }
+                        /** @var ItemFQN $itemFQN */
+                        $itemFQN = $fullyQualifiedName->current();
                     } catch (InvalidArgumentException|RuntimeException $e) {
                         $cacheFileDelete($cacheFileOpened);
 
                         throw new DefinitionsLoaderException(
-                            sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
+                            sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $importLoader->getSrc(), $namespace, $e->getMessage()),
                             previous: $e
                         );
                     }
 
                     try {
-                        $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$finderFQN->getNamespace()]));
+                        $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$namespace]));
                     } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
                         $cacheFileDelete($cacheFileOpened);
 
                         throw new DefinitionsLoaderException(
-                            sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
+                            sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $importLoader->getSrc(), $namespace, $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
                             previous: $e
                         );
                     }
@@ -230,8 +220,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         }
                     }
 
-                    $foundFQN->next();
-                } while ($foundFQN->valid());
+                    $fullyQualifiedName->next();
+                } while ($fullyQualifiedName->valid());
             }
 
             $cacheFileOpened?->fwrite('};'.PHP_EOL);
