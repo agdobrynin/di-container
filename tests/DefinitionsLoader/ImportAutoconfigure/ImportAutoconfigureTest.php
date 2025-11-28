@@ -28,9 +28,8 @@ use function Kaspi\DiContainer\diAutowire;
  * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
+ * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\ImportLoader
- * @covers \Kaspi\DiContainer\ImportLoaderCollection
  */
 class ImportAutoconfigureTest extends TestCase
 {
