@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use InvalidArgumentException;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use RuntimeException;
 
@@ -51,8 +50,4 @@ interface ImportLoaderInterface
      * @throws InvalidArgumentException
      */
     public function getSrc(): string;
-
-    public function getFinderFile(): ?FinderFileInterface;
-
-    public function getFinderFullyQualifiedName(): ?FinderFullyQualifiedNameInterface;
 }

@@ -35,7 +35,7 @@ interface ImportLoaderCollectionInterface
     /**
      * Get import loader collection.
      *
-     * Collection key present as namespace attached to it.
+     * Collection key present as namespace attached to the collection with source directory.
      *
      * @return iterable<non-empty-string, ImportLoaderInterface>
      */

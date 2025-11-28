@@ -8,8 +8,6 @@ use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\ImportLoader;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -32,24 +30,26 @@ class ImportLoaderTest extends TestCase
     public function testGetSrcFail(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/Need set source directory. Use method .+ImportLoader::setSrc\(\)/');
+        $this->expectExceptionMessageMatches('/Need set source directory\. Use method .+ImportLoader::setSrc\(\)/');
 
         (new ImportLoader())->getSrc();
     }
 
-    public function testConstructorProvideDependenciesCloneMethod(): void
+    public function testClone(): void
     {
-        $finderFile = new FinderFile();
-        $finderFQN = new FinderFullyQualifiedName();
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/Need set source directory\. Use method .+FinderFile::setSrc\(\)/');
 
-        $il = new ImportLoader(finderFile: $finderFile, finderFullyQualifiedName: $finderFQN);
+        $il = (
+            new ImportLoader(
+                new FinderFile(),
+                (new FinderFullyQualifiedName())->setNamespace('App\\')
+            ))
+                ->setSrc(__DIR__.'/Fixtures')
+        ;
 
-        $new = clone $il;
+        $liClone = clone $il;
 
-        self::assertInstanceOf(FinderFullyQualifiedNameInterface::class, $new->getFinderFullyQualifiedName());
-        self::assertNotSame($finderFile, $new->getFinderFullyQualifiedName());
-
-        self::assertInstanceOf(FinderFileInterface::class, $new->getFinderFile());
-        self::assertNotSame($finderFQN, $new->getFinderFile());
+        $liClone->getFullyQualifiedName('Tests\ImportLoader\Fixtures\\')->valid();
     }
 }

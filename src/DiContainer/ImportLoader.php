@@ -34,16 +34,6 @@ final class ImportLoader implements ImportLoaderInterface
         }
     }
 
-    public function getFinderFile(): ?FinderFileInterface
-    {
-        return $this->finderFile;
-    }
-
-    public function getFinderFullyQualifiedName(): ?FinderFullyQualifiedNameInterface
-    {
-        return $this->finderFullyQualifiedName;
-    }
-
     public function setSrc(string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static
     {
         if (null === $this->finderFile) {
