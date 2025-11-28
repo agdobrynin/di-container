@@ -18,7 +18,7 @@ interface ImportLoaderCollectionInterface
     public function __clone(): void;
 
     /**
-     * Import fully qualified names from directory.
+     * Import fully qualified names from a directory.
      *
      * @param non-empty-string       $namespace                 PSR-4 namespace prefix
      * @param non-empty-string       $src                       source directory
@@ -33,12 +33,11 @@ interface ImportLoaderCollectionInterface
     public function importFromNamespace(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php']): static;
 
     /**
-     * Get fully qualified names.
+     * Get import loader collection.
      *
-     * @return iterable<non-negative-int, array{namespace: non-empty-string, itemFQN: ItemFQN}>
+     * Collection key present as namespace attached to the collection with source directory.
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
+     * @return iterable<non-empty-string, ImportLoaderInterface>
      */
-    public function getFullyQualifiedName(): iterable;
+    public function getImportLoaders(): iterable;
 }

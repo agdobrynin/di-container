@@ -59,7 +59,7 @@ class ImportAutoconfigureTest extends TestCase
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches(
-            '/Cannot automatically set definition via.+AutowireExclude.+Foo/'
+            '/mark as excluded via php attribute.+AutowireExclude.+Foo/'
         );
 
         $defs = (new DefinitionsLoader())

@@ -46,13 +46,13 @@ class DefinitionLoaderImportCacheTest extends TestCase
 {
     public function testImportCacheFileInNotReadableByDefinitions(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('isn\'t readable.');
+
         $f = vfsStream::newFile('i')
             ->chmod(0222)
             ->withContent('')->at(vfsStream::setup())
         ;
-
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
             ->definitions()
@@ -62,13 +62,13 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
     public function testImportCacheFileInNotReadableByImport(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('isn\'t readable.');
+
         $f = vfsStream::newFile('i')
             ->chmod(0222)
             ->withContent('')->at(vfsStream::setup())
         ;
-
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
             ->import('App\\', __DIR__)
@@ -77,12 +77,12 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
     public function testImportCacheFileCannotCreated(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('isn\'t writable.');
+
         $dir = vfsStream::newDirectory('var', 0444)
             ->at(vfsStream::setup())
         ;
-
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot create cache file');
 
         (new DefinitionsLoader(importCacheFile: $dir->url().'/cache.php'))
             ->import('App\\', __DIR__)

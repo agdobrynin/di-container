@@ -26,10 +26,10 @@ class ImportLoaderCollectionTest extends TestCase
             ->importFromNamespace('Tests\ImportLoaderCollection\\', __DIR__.'/Fixtures')
         ;
 
-        $this->assertTrue($collection->getFullyQualifiedName()->valid());
+        $this->assertTrue($collection->getImportLoaders()->valid());
 
         $collectionClone = clone $collection;
 
-        $this->assertFalse($collectionClone->getFullyQualifiedName()->valid());
+        $this->assertFalse($collectionClone->getImportLoaders()->valid());
     }
 }

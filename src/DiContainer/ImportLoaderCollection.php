@@ -35,7 +35,7 @@ final class ImportLoaderCollection implements ImportLoaderCollectionInterface
     {
         if (isset($this->import[$namespace])) {
             throw new InvalidArgumentException(
-                sprintf('Namespace "%s" is already imported.', $namespace)
+                sprintf('The namespace "%s" has already been added to the import collection for source directory "%s".', $namespace, $this->import[$namespace]->getSrc())
             );
         }
 
@@ -53,14 +53,10 @@ final class ImportLoaderCollection implements ImportLoaderCollectionInterface
         return $this;
     }
 
-    public function getFullyQualifiedName(): iterable
+    public function getImportLoaders(): iterable
     {
-        $key = 0;
-
         foreach ($this->import as $namespace => $importLoader) {
-            foreach ($importLoader->getFullyQualifiedName($namespace) as $item) {
-                yield $key++ => ['namespace' => $namespace, 'itemFQN' => $item];
-            }
+            yield $namespace => $importLoader;
         }
     }
 }

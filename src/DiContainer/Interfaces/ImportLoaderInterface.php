@@ -41,4 +41,13 @@ interface ImportLoaderInterface
      * @throws RuntimeException
      */
     public function getFullyQualifiedName(string $namespace): iterable;
+
+    /**
+     * Get source directory.
+     *
+     * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getSrc(): string;
 }

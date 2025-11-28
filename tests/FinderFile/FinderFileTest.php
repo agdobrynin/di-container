@@ -41,7 +41,7 @@ class FinderFileTest extends TestCase
 
         yield 'none-directory' => [
             __FILE__,
-            '/Source directory from argument \$src must be readable/',
+            '/Source directory from parameter \$src must be readable/',
         ];
     }
 
@@ -51,6 +51,14 @@ class FinderFileTest extends TestCase
         $this->expectExceptionMessage('Need set source directory');
 
         (new FinderFile())->getFiles()->valid();
+    }
+
+    public function testFinderFileGetSrcFail(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Need set source directory');
+
+        (new FinderFile())->getSrc();
     }
 
     public function testFilesWithPhpExtension(): void

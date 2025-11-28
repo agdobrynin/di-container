@@ -43,7 +43,7 @@ class DefinitionsLoaderTest extends TestCase
     public function testFileNotFound(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('does not exist or is not readable');
+        $this->expectExceptionMessage('does not exist or isn\'t readable');
 
         (new DefinitionsLoader())->load('f.php');
     }

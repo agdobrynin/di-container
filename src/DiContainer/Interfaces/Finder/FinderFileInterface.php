@@ -27,6 +27,15 @@ interface FinderFileInterface
     public function setSrc(string $src): static;
 
     /**
+     * Get source directory.
+     *
+     * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getSrc(): string;
+
+    /**
      * Exclude matching by regexp pattern.
      *
      * @param list<non-empty-string> $excludeRegExpPattern
