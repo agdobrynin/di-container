@@ -24,7 +24,7 @@ use function strtolower;
 final class FinderFile implements FinderFileInterface
 {
     /** @var non-empty-string */
-    private string $verifiedSrc;
+    private string $normalizedSrc;
 
     /** @var list<non-empty-string> */
     private array $normalizedAvailableExtensions;
@@ -53,7 +53,7 @@ final class FinderFile implements FinderFileInterface
 
     public function getFiles(): Iterator
     {
-        if (!isset($this->verifiedSrc)) {
+        if (!isset($this->normalizedSrc)) {
             $fixedSrc = realpath($this->src);
 
             if (false === $fixedSrc) {
@@ -68,14 +68,14 @@ final class FinderFile implements FinderFileInterface
                 );
             }
 
-            $this->verifiedSrc = $fixedSrc;
+            $this->normalizedSrc = $fixedSrc;
         }
 
         $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
-                $this->verifiedSrc,
+                $this->normalizedSrc,
                 FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
             )
         );
