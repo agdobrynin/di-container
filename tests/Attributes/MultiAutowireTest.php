@@ -19,8 +19,9 @@ use Tests\Attributes\Fixtures\MultiAutowire;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
  * @covers \Kaspi\DiContainer\Helper
+ * @covers \Kaspi\DiContainer\ImportLoader
+ * @covers \Kaspi\DiContainer\ImportLoaderCollection
  *
  * @internal
  */

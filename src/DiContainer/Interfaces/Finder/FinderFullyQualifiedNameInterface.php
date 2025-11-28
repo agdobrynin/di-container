@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Interfaces\Finder;
 use InvalidArgumentException;
 use Iterator;
 use RuntimeException;
+use SplFileInfo;
 
 /**
  * @phpstan-type ItemFQN array{fqn: class-string, tokenId: \T_CLASS | \T_INTERFACE, line: null|int, file: string}
@@ -16,18 +17,27 @@ use RuntimeException;
 interface FinderFullyQualifiedNameInterface
 {
     /**
-     * Get PSR-4 namespace prefix.
+     * PSR-4 namespace prefix.
      *
+     * @param non-empty-string $namespace
+     *
+     * @throws InvalidArgumentException
+     */
+    public function setNamespace(string $namespace): static;
+
+    /**
      * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
      */
     public function getNamespace(): string;
 
     /**
-     * Get source directory.
+     * Files for parsing.
      *
-     * @return non-empty-string
+     * @param iterable<non-negative-int, SplFileInfo> $files
      */
-    public function getSrc(): string;
+    public function setFiles(iterable $files): static;
 
     /**
      * Find all fully qualified names for classes and interfaces.
