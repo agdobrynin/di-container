@@ -8,10 +8,10 @@ use FilesystemIterator;
 use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SplFileInfo;
-use SplFileObject;
 
 use function array_filter;
 use function in_array;
@@ -36,48 +36,47 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectMessage);
 
-        (new FinderFullyQualifiedName())->setNamespace($namespace)->setFiles([]);
+        (new FinderFullyQualifiedName(
+            namespace: $namespace,
+            finderFile: $this->createMock(FinderFileInterface::class)
+        ))
+            ->get()
+            ->current()
+        ;
     }
 
     public static function dataProviderFinderClassConstructFail(): Generator
     {
         yield 'empty string' => [
             '',
-            'Argument $namespace must be end with symbol "\"',
+            '$namespace must be end with symbol "\"',
         ];
 
         yield 'invalid namespace #1' => [
             '11App\\',
-            'Argument $namespace must be compatible with PSR-4',
+            '$namespace must be compatible with PSR-4',
         ];
 
         yield 'invalid namespace #2' => [
             '   App\\',
-            'Argument $namespace must be compatible with PSR-4',
+            '$namespace must be compatible with PSR-4',
         ];
 
         yield 'invalid namespace #3' => [
             '\\',
-            'Argument $namespace must be compatible with PSR-4',
+            '$namespace must be compatible with PSR-4',
         ];
     }
 
-    public function testNeedSetNamespace(): void
+    public function testAsIsParameterWithoutValidate(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Need set "namespace". Use method FinderFile::setNamespace().');
+        $finderFileMock = $this->createMock(FinderFileInterface::class);
+        $finderFileMock->method('getSrc')->willReturn('foo');
 
-        (new FinderFullyQualifiedName())->setFiles([
-            new SplFileObject(__DIR__.'/Fixtures/Success/QueueInterface.php'),
-        ])->find()->valid();
-    }
+        $fqn = new FinderFullyQualifiedName('aa aaa', $finderFileMock);
 
-    public function testNeedSetFiles(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Need set files for parsing. Use method FinderFile::setFiles().');
-
-        (new FinderFullyQualifiedName())->find()->valid();
+        self::assertEquals('aa aaa', $fqn->getNamespace());
+        self::assertEquals('foo', $fqn->getSrc());
     }
 
     public function testCannotOpenFile(): void
@@ -85,10 +84,13 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to open stream');
 
-        (new FinderFullyQualifiedName())
-            ->setNamespace('App\\')
-            ->setFiles([new SplFileInfo('file-not-found.php')])
-            ->find()
+        $finderFileMock = $this->createMock(FinderFileInterface::class);
+        $finderFileMock->method('getFiles')->willReturnCallback(static function (): Generator {
+            yield new SplFileInfo('file-not-found.php');
+        });
+
+        (new FinderFullyQualifiedName('App\\', $finderFileMock))
+            ->get()
             ->valid()
         ;
     }
@@ -98,22 +100,25 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot parse code');
 
-        (new FinderFullyQualifiedName())
-            ->setNamespace('App\\')
-            ->setFiles([new SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php')])
-            ->find()
+        $finderFileMock = $this->createMock(FinderFileInterface::class);
+        $finderFileMock->method('getFiles')->willReturnCallback(static function (): Generator {
+            yield new SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php');
+        });
+
+        (new FinderFullyQualifiedName('App\\', $finderFileMock))
+            ->get()
             ->valid()
         ;
     }
 
     public function testGetClasses(): void
     {
-        $dir = new FilesystemIterator(__DIR__.'/Fixtures/Success/');
-        $fqNames = (new FinderFullyQualifiedName())
-            ->setNamespace('Tests\\')
-            ->setFiles($dir)
-            ->find()
+        $finderFileMock = $this->createMock(FinderFileInterface::class);
+        $finderFileMock->method('getFiles')
+            ->willReturn(new FilesystemIterator(__DIR__.'/Fixtures/Success/'))
         ;
+
+        $fqNames = (new FinderFullyQualifiedName('Tests\\', $finderFileMock))->get();
 
         $this->assertTrue($fqNames->valid());
 

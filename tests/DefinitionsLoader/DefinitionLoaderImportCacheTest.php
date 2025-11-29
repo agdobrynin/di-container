@@ -37,8 +37,7 @@ use function unlink;
  * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\ImportLoader
- * @covers \Kaspi\DiContainer\ImportLoaderCollection
+ * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
  *
  * @internal
  */
