@@ -6,9 +6,9 @@ namespace Tests\Attributes\Raw;
 
 use Generator;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use PHPUnit\Framework\TestCase;
-use Tests\Attributes\Raw\Fixtures\MyDiFactory;
+use Tests\Attributes\Raw\Fixtures\Bar;
+use Tests\Attributes\Raw\Fixtures\Foo;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
@@ -20,41 +20,25 @@ class InjectByCallableTest extends TestCase
     /**
      * @dataProvider successIdsDataProvider
      */
-    public function testSuccess(string $id, string $expectIdentifier): void
+    public function testSuccess(callable $def): void
     {
-        $attr = new InjectByCallable($id);
-
-        $this->assertEquals($expectIdentifier, $attr->getIdentifier());
+        $this->assertEquals($def, (new InjectByCallable($def))->getCallable());
     }
 
     public function successIdsDataProvider(): Generator
     {
-        yield 'string' => ['ok', 'ok'];
+        yield 'function' => ['log'];
 
-        yield 'string invoke method' => [MyDiFactory::class, 'Tests\Attributes\Raw\Fixtures\MyDiFactory'];
-    }
+        yield 'static method as string with full namespace' => ['Tests\Attributes\Raw\Fixtures\Foo::bar'];
 
-    /**
-     * @dataProvider failIdsDataProvider
-     */
-    public function testFailure(string $id): void
-    {
-        $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessage('The $callable parameter must be a non-empty string and must not contain spaces.');
+        yield 'static method as string with safe declaration class' => [Foo::class.'::bar'];
 
-        new InjectByCallable($id);
-    }
+        yield 'static method as array' => [[Foo::class, 'bar']];
 
-    public function failIdsDataProvider(): Generator
-    {
-        yield 'empty string' => [''];
+        yield 'with class as objet and method' => [[new Bar('secure_string'), 'baz']];
 
-        yield 'empty spaces' => ['  '];
+        yield 'as closure' => [static function () { return new Bar('secure_string'); }];
 
-        yield 'string with spaces in middle' => ['ok  yes'];
-
-        yield 'string with space trailing' => [' yes'];
-
-        yield 'string with space ending' => ['yes '];
+        yield 'as first callable class' => [log(...)];
     }
 }

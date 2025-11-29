@@ -210,7 +210,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         $fn = static fn (
             QuuxInterface $quux,
             #[InjectByCallable(Baz::class.'::doMake')]
-            #[InjectByCallable('App\Helpers\fn\funcUser')]
+            #[InjectByCallable('log')]
             callable ...$doCallable,
         ) => true;
 
@@ -222,7 +222,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             [
                 0 => diGet(QuuxInterface::class),
                 1 => diCallable(Baz::class.'::doMake'),
-                2 => diCallable('App\Helpers\fn\funcUser'),
+                2 => diCallable('log'),
             ],
             $args,
         );

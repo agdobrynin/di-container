@@ -60,7 +60,7 @@ class InjectCallableTest extends TestCase
     public function testInjectByCallableNonVariadicParameter(): void
     {
         $f = static fn (
-            #[InjectByCallable('func')]
+            #[InjectByCallable('\uniqid')]
             string $a
         ) => '';
         $p = new ReflectionParameter($f, 0);
@@ -70,7 +70,7 @@ class InjectCallableTest extends TestCase
         $this->assertTrue($attrs->valid());
 
         $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
-        $this->assertEquals('func', $attrs->current()->getIdentifier());
+        $this->assertEquals('\uniqid', $attrs->current()->getCallable());
 
         $attrs->next(); // One element Inject for argument $a in function $f.
 
@@ -80,9 +80,8 @@ class InjectCallableTest extends TestCase
     public function testInjectByCallableVariadicParameter(): void
     {
         $f = static fn (
-            #[InjectByCallable('func1')]
-            #[InjectByCallable('func2')]
-            #[InjectByCallable('func3')]
+            #[InjectByCallable('\uniqid')]
+            #[InjectByCallable('\microtime')]
             string ...$a
         ) => '';
         $p = new ReflectionParameter($f, 0);
@@ -92,17 +91,12 @@ class InjectCallableTest extends TestCase
         $this->assertTrue($attrs->valid());
 
         $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
-        $this->assertEquals('func1', $attrs->current()->getIdentifier());
+        $this->assertEquals('\uniqid', $attrs->current()->getCallable());
 
         $attrs->next();
 
         $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
-        $this->assertEquals('func2', $attrs->current()->getIdentifier());
-
-        $attrs->next();
-
-        $this->assertInstanceOf(InjectByCallable::class, $attrs->current());
-        $this->assertEquals('func3', $attrs->current()->getIdentifier());
+        $this->assertEquals('\microtime', $attrs->current()->getCallable());
 
         $attrs->next();
 

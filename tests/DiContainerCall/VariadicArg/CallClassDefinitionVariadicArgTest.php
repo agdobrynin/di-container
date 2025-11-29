@@ -20,6 +20,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject::getIdentifier
  * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
+ * @covers \Kaspi\DiContainer\DefinitionDiCall
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -124,19 +125,6 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call([Talk::class, 'staticMethodByReferenceOneToMany']);
 
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
-    }
-
-    public function testCallStaticMethodWitAttributeInjectByCallable(): void
-    {
-        $config = new DiContainerConfig(
-            useAttribute: true, // inject by attribute
-        );
-        $container = new DiContainer(config: $config);
-
-        $res = $container->call([Talk::class, 'staticMethodByDiFactoryOneToMany']);
-
-        $this->assertCount(1, $res);
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
     }
 

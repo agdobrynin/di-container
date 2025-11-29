@@ -6,7 +6,7 @@ namespace Tests\DiContainerCall\CircularReference;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainerCall\CircularReference\Fixtures\ClassWithMethod;
@@ -21,6 +21,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 /**
  * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\DefinitionDiCall
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -42,6 +43,9 @@ class MainTest extends TestCase
 {
     public function testCircularInjectByAttribute(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot get entry via container identifier ".+FirstClass" for create callable definition\./');
+
         $definitions = [
             diAutowire(FirstClass::class),
             'services.second' => diAutowire(SecondClass::class),
@@ -50,15 +54,13 @@ class MainTest extends TestCase
 
         $container = new DiContainer($definitions, new DiContainerConfig(useZeroConfigurationDefinition: false));
 
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
-
         $container->call(FirstClass::class);
     }
 
     public function testCircularByInjectInMethod(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method()/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method\(\)/');
 
         $definitions = [
             diAutowire(FirstClass::class),
@@ -74,6 +76,9 @@ class MainTest extends TestCase
 
     public function testCircularWithoutAttribute(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot get entry via container identifier ".+FirstClass" for create callable definition\./');
+
         $definitions = [
             diAutowire(FirstClass::class),
             diAutowire(SecondClass::class),
@@ -83,15 +88,13 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
-
         $container->call(FirstClass::class);
     }
 
     public function testCircularInMethodWithoutAttribute(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method()/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method\(\)\./');
 
         $definitions = [
             diAutowire(FirstClass::class),
@@ -109,7 +112,7 @@ class MainTest extends TestCase
     public function testCircularInMethodByTaggedAsWithoutAttribute(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method()/');
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method\(\)\./');
 
         $definitions = [
             diAutowire(FirstClass::class),

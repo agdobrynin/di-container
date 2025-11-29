@@ -7,11 +7,12 @@ namespace Tests\DiContainerCall\WrongDefinition;
 use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 /**
+ * @covers \Kaspi\DiContainer\DefinitionDiCall
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
@@ -32,7 +33,8 @@ class MainTest extends TestCase
      */
     public function testWrongDefinitionAsString(array|callable|string $definition): void
     {
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/(Cannot create callable from)|(When the definition present is an array)/');
 
         (new DiContainer(config: new DiContainerConfig()))->call($definition);
     }

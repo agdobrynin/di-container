@@ -8,7 +8,6 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -21,6 +20,7 @@ use function round;
 /**
  * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\DefinitionDiCall
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -195,7 +195,7 @@ class CallFunctionTest extends TestCase
             )
         );
 
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
 
         $container->call([Foo::class, 'bar'], ['ok']);
     }
@@ -211,7 +211,7 @@ class CallFunctionTest extends TestCase
             )
         );
 
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
 
         $container->call([Foo::class, 'bar'], ['ok']);
     }
