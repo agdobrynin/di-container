@@ -1363,8 +1363,7 @@ $container = (new DiContainerFactory())
 $apiV1 = (new DiDefinitionAutowire(App\Api\MyApiRequest::class))
     // SomeDependency $dependency будет разрешено контейнером
    ->bindArguments(endpoint: 'http://www.site.com/apiv1/')
-  ->setContainer($container)
-  ->invoke();
+   ->resolve($container);
 
 $apiV1->request(); // выполнить запрос
 
@@ -1372,9 +1371,7 @@ $apiV1->request(); // выполнить запрос
 $apiV2 = (new DiDefinitionAutowire(App\Api\MyApiRequest::class))
     // SomeDependency $dependency будет разрешено контейнером
    ->bindArguments(endpoint: 'http://www.site.com/apiv2/')
-  ->setContainer($container)
-  ->setUseAttribute(true) // ✔ использовать php-атрибуты
-  ->invoke();
+  ->resolve($container);
 
 $apiV2->request(); // выполнить запрос
 ```
