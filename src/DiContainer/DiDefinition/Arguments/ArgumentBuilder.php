@@ -134,7 +134,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
                 throw $this->exceptionWithContext(
-                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
+                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e,
                     context_param: $param
                 );
@@ -174,7 +174,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
                 throw $this->exceptionWithContext(
-                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
+                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e,
                     context_param: $param
                 );

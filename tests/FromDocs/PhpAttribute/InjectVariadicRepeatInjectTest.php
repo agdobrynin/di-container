@@ -17,6 +17,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\RuleGeneratorInjectRepeat;
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiContainerFactory
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
  *

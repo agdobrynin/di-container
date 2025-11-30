@@ -6,12 +6,11 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Closure;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Exception\DiDefinitionCallableException;
-use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
@@ -29,7 +28,6 @@ use function call_user_func_array;
 use function explode;
 use function is_array;
 use function is_callable;
-use function is_int;
 use function is_object;
 use function is_string;
 use function sprintf;
@@ -86,26 +84,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
     {
         $this->reflectionFn ??= $this->reflectionFn();
         $this->argBuilder ??= new ArgumentBuilder($this->getBindArguments(), $this->reflectionFn, $container);
-
-        $resolvedArgs = [];
-
-        foreach ($this->argBuilder->build() as $argNameOrIndex => $arg) {
-            try {
-                $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                    ? $arg->resolve($container, $this)
-                    : $arg;
-            } catch (ContainerExceptionInterface $e) {
-                $argMessage = is_int($argPresentedBy = $this->argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex))
-                    ? sprintf('at position #%d', $argPresentedBy)
-                    : sprintf('by named argument $%s', $argPresentedBy);
-
-                throw $this->exceptionWhenCallableFunction(
-                    message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, Helper::functionName($this->argBuilder->getFunctionOrMethod())),
-                    previous: $e,
-                    context_argument: $arg
-                );
-            }
-        }
+        $resolvedArgs = ArgumentResolver::resolve($this->argBuilder, $container, $this);
 
         if ($this->reflectionFn instanceof ReflectionMethod) {
             if ($this->reflectionFn->isStatic()) {

@@ -8,14 +8,13 @@ use InvalidArgumentException;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
@@ -25,7 +24,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
-use Psr\Container\ContainerExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -152,21 +150,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             foreach ($calls as $index => [$setupConfigureType, $callArguments]) {
                 $argBuilder = $this->setupArgBuilder[$method][$index] ??= new ArgumentBuilder($callArguments, $reflectionMethod, $this->getContainer());
 
-                $resolvedArguments = [];
-
-                foreach ($argBuilder->buildByPriorityBindArguments() as $argNameOrIndex => $arg) {
-                    try {
-                        $resolvedArguments[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                            ? $arg->resolve($container, $this)
-                            : $arg;
-                    } catch (ContainerExceptionInterface $e) {
-                        throw $this->exceptionWhenClassExist(
-                            message: $this->exceptionMessageWhenResolveArgument($argNameOrIndex, $argBuilder),
-                            previous: $e,
-                            context_argument: $arg
-                        );
-                    }
-                }
+                $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
 
                 if (SetupConfigureMethod::Mutable === $setupConfigureType) {
                     $reflectionMethod->invokeArgs($object, $resolvedArguments);
@@ -373,23 +357,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             return $this->getDefinition()->newInstanceWithoutConstructor();
         }
 
-        $resolvedArguments = [];
-
-        foreach ($this->constructArgBuilder->build() as $argNameOrIndex => $arg) {
-            try {
-                $resolvedArguments[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                    ? $arg->resolve($this->getContainer(), $this)
-                    : $arg;
-            } catch (ContainerExceptionInterface $e) {
-                throw $this->exceptionWhenClassExist(
-                    message: $this->exceptionMessageWhenResolveArgument($argNameOrIndex, $this->constructArgBuilder),
-                    previous: $e,
-                    context_argument: $arg
-                );
-            }
-        }
-
-        return $this->getDefinition()->newInstanceArgs($resolvedArguments);
+        return $this->getDefinition()->newInstanceArgs(
+            ArgumentResolver::resolve($this->constructArgBuilder, $this->getContainer(), $this)
+        );
     }
 
     /**
@@ -429,15 +399,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         }
 
         return $this->tagsByAttribute;
-    }
-
-    private function exceptionMessageWhenResolveArgument(int|string $argNameOrIndex, ArgumentBuilder $argBuilder): string
-    {
-        $argMessage = is_int($argPresentedBy = $argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex))
-            ? sprintf('at position #%d', $argPresentedBy)
-            : sprintf('by named argument $%s', $argPresentedBy);
-
-        return sprintf('Cannot resolve parameter %s in %s.', $argMessage, Helper::functionName($argBuilder->getFunctionOrMethod()));
     }
 
     private function exceptionWhenClassExist(string $message, ?Throwable $previous = null, mixed ...$context): DiDefinitionException

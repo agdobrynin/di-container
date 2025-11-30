@@ -24,6 +24,7 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
