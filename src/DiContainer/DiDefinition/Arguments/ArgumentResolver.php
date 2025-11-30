@@ -54,7 +54,7 @@ final class ArgumentResolver
     /**
      * @throws DiDefinitionExceptionInterface
      */
-    private static function resolveArg(mixed $arg, int|string $argNameOrIndex, ArgumentBuilderInterface $argBuilder, DiContainerInterface $container, ?DiDefinitionInterface $context = null): mixed
+    private static function resolveArg(mixed $arg, int|string $argNameOrIndex, ArgumentBuilderInterface $argBuilder, DiContainerInterface $container, ?DiDefinitionInterface $context): mixed
     {
         try {
             return $arg instanceof DiDefinitionInterface
