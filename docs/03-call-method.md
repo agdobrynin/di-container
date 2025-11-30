@@ -4,17 +4,17 @@
 или [преобразуемый в callable тип](#класс-с-нестатическим-методом-).
 
 #### Поддерживаемые типы:
-- Функция `is_callable`
+- Функция
   ```php
     function userFunc() { /*... do something ... */ }
     // ...
     $container->call('userFunc');
   ```
-- Callback функция (`\Closure`) `is_callable`
+- Callback функция `\Closure`
     ```php
     $container->call(static function() { /*... do something ... */ });
     ```
-- Статические методы класса `is_callable`
+- Статические методы класса
   ```php
   $container->call('App\MyClass::someStaticMethod');
   $container->call(App\MyClass::class.'::someStaticMethod');
@@ -24,25 +24,25 @@
   ```php
   $container->call([App\MyClass::class, 'someMethod']);
   ```
-- Класс реализующий метод __invoke() [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
+- Класс реализующий метод `__invoke()` [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
   ```php
   $container->call(App\MyClass::class);
   ```
 #### Класс с нестатическим методом (*)
 
-- поддерживаемые преобразования в callable Тип
-  ```php
-  $container->call(App\MyClass::class); // исполнение метода __invoke
-  $container->call([App\MyClass::class, 'someMethod']);
+- поддерживаемые преобразования в `callable` тип, через создание объекта через конструктор класса с разрешением зависимостей в конструкторе и вызовом метода
+ ```php
+  $container->call(App\MyClass::class);
+  // будет преобразовано
+  $callable = [new App\MyClass(), '__invoke'];
+ ```  
+ ```php
+  $container->call([App\MyClass::class, 'someMethod']); 
   $container->call(App\MyClass::class.'::someMethod');
   $container->call('App\MyClass::someMethod');
-  ```
-
-> [!NOTE]
-> При вызове будет создан экземпляр класса `App\MyClass::class` с разрешением
-> зависимостей в конструкторе класса и затем будет исполнен указанный метод. Если метод
-> не указан, то будет попытка вызвать метод `__invoke` 
-
+  // будет преобразовано
+  $callable = [new App\MyClass(), 'someMethod'];
+ ```
 
 Метод:
 ```php
@@ -53,8 +53,7 @@ call(array|callable|string $definition, array $arguments = [])
 - `$arguments` - аргументы для подстановки в `callable` определение.
 
 > [!TIP]
-> Можно использовать именованные аргументы в `$arguments`
-> для подстановки.
+> Можно использовать именованные аргументы в `$arguments` для подстановки.
 
 > [!TIP]
 > Для аргументов не объявленных в `$arguments` контейнер попытается разрешить зависимости самостоятельно.
