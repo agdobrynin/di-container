@@ -15,6 +15,11 @@ use ReflectionFunctionAbstract;
 interface ArgumentBuilderInterface
 {
     /**
+     * @return BindArgumentsType
+     */
+    public function getBindArguments(): array;
+
+    /**
      * Function or class method witch building arguments.
      */
     public function getFunctionOrMethod(): ReflectionFunctionAbstract;

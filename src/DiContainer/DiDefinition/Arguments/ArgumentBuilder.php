@@ -54,20 +54,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         $this->isUseAttribute = $this->container->getConfig()?->isUseAttribute() ?? false;
     }
 
-    /**
-     * @internal
-     */
-    public function getArgumentNameOrIndexFromBindArguments(int|string $argNameOrIndex): int|string
+    public function getBindArguments(): array
     {
-        if (is_string($argNameOrIndex)) {
-            return $argNameOrIndex;
-        }
-
-        $param = $this->functionOrMethod->getParameters()[$argNameOrIndex] ?? null;
-
-        return null !== $param && array_key_exists($param->getName(), $this->bindArguments)
-            ? $param->getName()
-            : $argNameOrIndex;
+        return $this->bindArguments;
     }
 
     public function getFunctionOrMethod(): ReflectionFunctionAbstract
@@ -134,7 +123,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
                 throw $this->exceptionWithContext(
-                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
+                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e,
                     context_param: $param
                 );
@@ -174,7 +163,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
                 throw $this->exceptionWithContext(
-                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, $param->getDeclaringFunction()),
+                    message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e,
                     context_param: $param
                 );

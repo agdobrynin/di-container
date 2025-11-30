@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
@@ -24,6 +25,7 @@ use function round;
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
  * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
+ * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
@@ -85,7 +87,7 @@ class CallFunctionTest extends TestCase
             $container->call('\Tests\DiContainerCall\Fixtures\functionResolveArgumentByName');
         } catch (ContainerExceptionInterface $e) {
             self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
-            self::assertMatchesRegularExpression('/Cannot build argument via php attribute for Parameter #0 \[ <required> array \$allUsers ] in Function/', $e->getMessage());
+            self::assertMatchesRegularExpression('/Cannot build argument via php attribute for Parameter #0 \[ <required> array \$allUsers ] in .+functionResolveArgumentByName\(\)/', $e->getMessage());
 
             self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
             self::assertMatchesRegularExpression('/Cannot automatically resolve dependency in .+functionResolveArgumentByName\(\)\. Please specify the Parameter #0 \[ <required> array \$allUsers ]\./', $e->getPrevious()->getMessage());
@@ -126,7 +128,7 @@ class CallFunctionTest extends TestCase
 
     public function testUserFunctionUnresolvedArgument(): void
     {
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+funcWithDependencyClass()/');
 
         (new DiContainer())->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
