@@ -189,19 +189,23 @@ class CallFunctionTest extends TestCase
 
     public function testClassNotRegisteredInContainer(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get entry via container identifier');
+
         $container = new DiContainer(
             config: new DiContainerConfig(
                 useZeroConfigurationDefinition: false
             )
         );
 
-        $this->expectException(DiDefinitionExceptionInterface::class);
-
         $container->call([Foo::class, 'bar'], ['ok']);
     }
 
     public function testClassButContainerIdentifierReturnNoneObject(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot create callable from array');
+
         $container = new DiContainer(
             definitions: [
                 Foo::class => 'aaaa',
@@ -210,8 +214,6 @@ class CallFunctionTest extends TestCase
                 useZeroConfigurationDefinition: false
             )
         );
-
-        $this->expectException(DiDefinitionExceptionInterface::class);
 
         $container->call([Foo::class, 'bar'], ['ok']);
     }
