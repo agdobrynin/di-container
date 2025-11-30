@@ -54,20 +54,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         $this->isUseAttribute = $this->container->getConfig()?->isUseAttribute() ?? false;
     }
 
-    /**
-     * @internal
-     */
-    public function getArgumentNameOrIndexFromBindArguments(int|string $argNameOrIndex): int|string
+    public function getBindArguments(): array
     {
-        if (is_string($argNameOrIndex)) {
-            return $argNameOrIndex;
-        }
-
-        $param = $this->functionOrMethod->getParameters()[$argNameOrIndex] ?? null;
-
-        return null !== $param && array_key_exists($param->getName(), $this->bindArguments)
-            ? $param->getName()
-            : $argNameOrIndex;
+        return $this->bindArguments;
     }
 
     public function getFunctionOrMethod(): ReflectionFunctionAbstract

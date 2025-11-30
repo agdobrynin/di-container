@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 
+use function array_key_exists;
 use function is_int;
 use function sprintf;
 
@@ -60,12 +61,18 @@ final class ArgumentResolver
                 ? $arg->resolve($container, $context)
                 : $arg;
         } catch (ContainerExceptionInterface $e) {
-            if ($argBuilder instanceof ArgumentBuilder) {
-                $argNameOrIndex = $argBuilder->getArgumentNameOrIndexFromBindArguments($argNameOrIndex);
+            if (is_int($argNameOrIndex)) {
+                $param = $argBuilder->getFunctionOrMethod()->getParameters()[$argNameOrIndex] ?? null;
+                $argPresentedBy = null !== $param && array_key_exists($param->getName(), $argBuilder->getBindArguments())
+                    ? $param->getName()
+                    : $argNameOrIndex;
+            } else {
+                $argPresentedBy = $argNameOrIndex;
             }
-            $argMessage = is_int($argNameOrIndex)
-                ? sprintf('at position #%d', $argNameOrIndex)
-                : sprintf('by named argument $%s', $argNameOrIndex);
+
+            $argMessage = is_int($argPresentedBy)
+                ? sprintf('at position #%d', $argPresentedBy)
+                : sprintf('by named argument $%s', $argPresentedBy);
 
             throw (
                 new DiDefinitionException(
