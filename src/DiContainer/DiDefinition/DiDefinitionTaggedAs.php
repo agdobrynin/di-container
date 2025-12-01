@@ -194,11 +194,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
             if (null !== $optionKey) {
                 if (!is_string($optionKey) || '' === trim($optionKey)) {
-                    throw (
-                        new DiDefinitionException(
-                            sprintf('Cannot get key for tag "%s" via tag options. The value of option name "%s" must be non-empty string. Got value: %s', $this->tag, $this->key, var_export($optionKey, true))
-                        )
-                    )->setContext(context_tagged_as_definition: $taggedAs);
+                    throw new DiDefinitionException(
+                        sprintf('Cannot get key for tag "%s" via tag options. The value of option name "%s" must be non-empty string. Got value: %s', $this->tag, $this->key, var_export($optionKey, true))
+                    );
                 }
 
                 if (!$taggedAs instanceof DiDefinitionAutowireInterface) {
@@ -214,12 +212,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
                     return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $method, $taggedAs);
                 } catch (AutowireException|InvalidArgumentException $e) {
-                    throw (
-                        new DiDefinitionException(
-                            message: sprintf('Cannot get key for tag "%s" via method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
-                            previous: $e
-                        )
-                    )->setContext(context_tagged_as_definition: $taggedAs);
+                    throw new DiDefinitionException(
+                        message: sprintf('Cannot get key for tag "%s" via method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
+                        previous: $e
+                    );
                 }
             }
         }
@@ -233,14 +229,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         } catch (InvalidArgumentException) {
             return $identifier;
         } catch (AutowireException $e) {
-            throw (
-                new DiDefinitionException(
-                    message: sprintf('Cannot get key for tag "%s" via default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
-                    previous: $e
-                )
-            )
-                ->setContext(context_tagged_as_definition: $taggedAs)
-            ;
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get key for tag "%s" via default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
+                previous: $e
+            );
         }
     }
 

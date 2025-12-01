@@ -41,14 +41,10 @@ final class DefinitionDiCall
                 ? new ReflectionMethodByDefinition(...$parsedDefinition) // @phpstan-ignore argument.type
                 : new ReflectionFunction($parsedDefinition); // @phpstan-ignore argument.type
         } catch (ReflectionException $e) {
-            throw (
-                new DiDefinitionException(
-                    message: sprintf('Cannot create callable from %s.', var_export($parsedDefinition, true)),
-                    previous: $e,
-                )
-            )
-                ->setContext(context_parsed_definition: $parsedDefinition, context_definition: $definition)
-            ;
+            throw new DiDefinitionException(
+                message: sprintf('Cannot create callable from %s.', var_export($parsedDefinition, true)),
+                previous: $e,
+            );
         }
     }
 
@@ -77,13 +73,7 @@ final class DefinitionDiCall
                 return [$definition[0], $definition[1]];
             }
 
-            throw (
-                new DiDefinitionException(
-                    message: sprintf('When the definition present is an array, two array elements must be provided as none empty string. Got: %s', var_export($definition, true)),
-                )
-            )
-                ->setContext(context_definition: $definition)
-            ;
+            throw new DiDefinitionException(sprintf('When the definition present is an array, two array elements must be provided as none empty string. Got: %s', var_export($definition, true)));
         }
 
         return [$definition, '__invoke'];

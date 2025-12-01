@@ -38,7 +38,6 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
  * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */

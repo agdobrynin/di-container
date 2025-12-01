@@ -13,7 +13,6 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperInterface;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */

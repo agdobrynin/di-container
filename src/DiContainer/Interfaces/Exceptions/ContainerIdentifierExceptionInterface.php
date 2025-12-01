@@ -6,10 +6,4 @@ namespace Kaspi\DiContainer\Interfaces\Exceptions;
 
 use Psr\Container\ContainerExceptionInterface;
 
-interface ContainerIdentifierExceptionInterface extends ContainerExceptionInterface
-{
-    /**
-     * @return array<non-negative-int|string, mixed>
-     */
-    public function getContext(): array;
-}
+interface ContainerIdentifierExceptionInterface extends ContainerExceptionInterface {}

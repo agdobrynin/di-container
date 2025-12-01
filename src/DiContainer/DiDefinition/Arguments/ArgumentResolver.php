@@ -73,14 +73,10 @@ final class ArgumentResolver
                     ? sprintf('at position #%d', $argPresentedBy)
                     : sprintf('by named argument $%s', $argPresentedBy);
 
-                throw (
-                    new DiDefinitionException(
-                        message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, Helper::functionName($argBuilder->getFunctionOrMethod())),
-                        previous: $e
-                    )
-                )
-                    ->setContext(context_argument: $arg, context_fn_reflection: $argBuilder->getFunctionOrMethod())
-                ;
+                throw new DiDefinitionException(
+                    message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, Helper::functionName($argBuilder->getFunctionOrMethod())),
+                    previous: $e
+                );
             }
         }
 

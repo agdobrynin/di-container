@@ -22,7 +22,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
-use Throwable;
 
 use function array_column;
 use function array_filter;
@@ -122,10 +121,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     continue;
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
-                throw $this->exceptionWithContext(
+                throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
-                    previous: $e,
-                    context_param: $param
+                    previous: $e
                 );
             }
 
@@ -162,10 +160,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     continue;
                 }
             } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
-                throw $this->exceptionWithContext(
+                throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
-                    previous: $e,
-                    context_param: $param
+                    previous: $e
                 );
             }
 
@@ -192,10 +189,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             }
         } catch (AutowireParameterTypeException $e) {
             if (!$param->isDefaultValueAvailable()) {
-                throw $this->exceptionWithContext(
+                throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via type hint for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
-                    previous: $e,
-                    context_param: $param
+                    previous: $e
                 );
             }
         }
@@ -261,9 +257,8 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
             foreach ($tailArgs as $key => $value) {
                 if (is_string($key)) {
-                    throw $this->exceptionWithContext(
-                        message: sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', Helper::functionName($this->functionOrMethod), $key),
-                        context_tail_args: $tailArgs
+                    throw new ArgumentBuilderException(
+                        sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', Helper::functionName($this->functionOrMethod), $key)
                     );
                 }
             }
@@ -327,16 +322,5 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
             yield $definition;
         }
-    }
-
-    private function exceptionWithContext(string $message, ?Throwable $previous = null, mixed ...$context): ArgumentBuilderException
-    {
-        return (new ArgumentBuilderException(message: $message, previous: $previous))
-            ->setContext(
-                ...$context,
-                context_reflection_function: $this->functionOrMethod,
-                context_bind_arguments: $this->bindArguments,
-            )
-        ;
     }
 }

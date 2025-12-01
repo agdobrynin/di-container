@@ -26,7 +26,6 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\TagsTrait
  *
  * @internal

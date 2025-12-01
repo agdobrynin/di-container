@@ -21,7 +21,6 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */
