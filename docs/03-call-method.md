@@ -20,11 +20,11 @@
   $container->call(App\MyClass::class.'::someStaticMethod');
   $container->call([App\MyClass::class, 'someStaticMethod']);
   ```
-- Метод у созданного класса [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
+- Нестатический метод PHP класса [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
   ```php
   $container->call([App\MyClass::class, 'someMethod']);
   ```
-- Класс реализующий метод `__invoke()` [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
+- Нестатический метод `__invoke()` PHP класса [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
   ```php
   $container->call(App\MyClass::class);
   ```
@@ -43,14 +43,14 @@
   // будет преобразовано
   $callable = [new App\MyClass(), 'someMethod'];
  ```
-
-Метод:
+## Метод контейнера `DiContainer::call()`
+Получение результата `callable` типа или преобразуемого в `callable` выражения, с разрешением зависимостей через контейнер.
 ```php
 call(array|callable|string $definition, array $arguments = [])
 ```
 Аргументы:
-- `$definition` - значение преобразуемое к `callable` типу.
-- `$arguments` - аргументы для подстановки в `callable` определение.
+- `$definition` - `callable` тип или значение преобразуемое к `callable`.
+- `$arguments` - аргументы для подстановки в `callable` тип.
 
 > [!TIP]
 > Можно использовать именованные аргументы в `$arguments` для подстановки.
