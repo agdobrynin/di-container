@@ -322,7 +322,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     $attr->isSelfExclude(),
                 );
             } else {
-                $definition = new DiDefinitionCallable($attr->getIdentifier());
+                $definition = new DiDefinitionCallable($attr->getCallable());
             }
 
             yield $definition;

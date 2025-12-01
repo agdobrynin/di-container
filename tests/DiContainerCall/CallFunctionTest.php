@@ -8,7 +8,6 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCallableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -21,6 +20,7 @@ use function round;
 /**
  * @covers \Kaspi\DiContainer\AttributeReader
  * @covers \Kaspi\DiContainer\Attributes\Inject
+ * @covers \Kaspi\DiContainer\DefinitionDiCall
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig
@@ -189,19 +189,23 @@ class CallFunctionTest extends TestCase
 
     public function testClassNotRegisteredInContainer(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get entry via container identifier');
+
         $container = new DiContainer(
             config: new DiContainerConfig(
                 useZeroConfigurationDefinition: false
             )
         );
 
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
-
         $container->call([Foo::class, 'bar'], ['ok']);
     }
 
     public function testClassButContainerIdentifierReturnNoneObject(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot create callable from array');
+
         $container = new DiContainer(
             definitions: [
                 Foo::class => 'aaaa',
@@ -210,8 +214,6 @@ class CallFunctionTest extends TestCase
                 useZeroConfigurationDefinition: false
             )
         );
-
-        $this->expectException(DiDefinitionCallableExceptionInterface::class);
 
         $container->call([Foo::class, 'bar'], ['ok']);
     }

@@ -593,17 +593,16 @@ var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 
 ## InjectByCallable
 
-Применяется к параметрам конструктора класса, метода или функции через [`callable` тип](03-call-method.md#поддерживаемые-типы)
-на основе [вызова `DiContainer::call()`](03-call-method.md).
+Применяется к параметрам конструктора класса, метода или функции через `callable` тип.
 
 ```php
-#[InjectByCallable(string $callable)]
+#[InjectByCallable(callable $callable)]
 ```
 Аргументы:
-- `$callable` - строка которая может быть преобразована к `callable` для получения результата внедрения.
+- `$callable` - выполнение `callable` типа для получения результата внедрения.
 
 > [!TIP]
-> Аргументы указанные в `callable` вызове могут быть разрешены
+> Параметры указанные в `callable` вызове могут быть разрешены
 > контейнером автоматически.
 
 Пример использования:
@@ -615,7 +614,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 
 class One {
     
-    public function __construct(ptivate string $code) {}
+    public function __construct(private string $code) {}
     
     public static function config(
         #[Inject('config.secure_code')]
@@ -635,7 +634,7 @@ use Kaspi\DiContainer\Attributes\InjectByCallable;
 class ServiceOne {
 
     public function __construct(
-        #[InjectByCallable('App\Classes\One::config')]
+        #[InjectByCallable([App\Classes\One::class, 'config'])]
         private One $one
     ) {}
 
@@ -662,8 +661,11 @@ $service = $container->get(App\Services\ServiceOne::class);
 
 > [!TIP]
 > Объявить строку для аргумента `$callable` у php атрибута `#[InjectByCallable]`
-> можно используя безопасное объявление через магическую константу
+> можно используя через безопасное объявление класса – магическую константу
 > `::class`:
+> 1. в виде строки для параметра `$one`;
+> 2. в виде массива являющегося `callable` типом для параметра `$two`;
+> 
 > ```php
 >   namespace App\Services;
 > 
@@ -673,88 +675,14 @@ $service = $container->get(App\Services\ServiceOne::class);
 >   class ServiceOne {
 >
 >       public function __construct(
->            #[InjectByCallable(One::class.'::config')]
->           private One $one
+>           #[InjectByCallable(One::class.'::config')]
+>           private One $one,
+>           #[InjectByCallable([One::class, '::config'])]
+>           private One $tow
 >       ) {}
 > 
 >   }
 > ```
-
-**Использование `#[InjectByCallable]` с именем класса реализующим метод `__invoke()`:**
-
-Класс будет вызван контейнером и исполнен метод `__invoke()` который является результатом для InjectByCallable атрибута.
-```php
-// src/Rules/RuleInterface.php
-namespace App\Rules;
-
-interface RuleInterface {}
-```
-```php
-// src/Rules/RuleA.php
-namespace App\Rules;
-
-class RuleA implements RuleInterface {
-    // ...
-    public function doConfig(array $config): void {
-        // configure rule here
-    }
-}
-```
-```php
-// src/Factories/RuleAFactory.php
-namespace App\Factories;
-
-use App\Rules\RuleA;
-
-class FactoryRuleA {
-
-    public function __construct(
-        private RuleA $ruleA,
-    ) {}
-
-    public function __invoke(): RuleA {
-        // тут возможны дополнительные настройки объекта ruleA
-        $this->ruleA->doConfig(['key' => 'abc']);
-
-        return $this->ruleA;
-    }
-
-}
-```
-
-```php
-// src/Rules/RuleGenerator.php
-namespace App\Rules;
-
-use App\Factories\FactoryRuleA;
-use App\Rules\RuleInterface;
-use Kaspi\DiContainer\Attributes\InjectByCallable;
-
-class RuleGenerator {
-
-    public function __construct(
-        #[InjectByCallable(FactoryRuleA::class)]
-        private RuleInterface $rule;
-    ) {}
-    
-    public function getRule(): RuleInterface {
-        return $this->rule;
-    }
-
-}
-```
-```php
-// определения для контейнера
-use Kaspi\DiContainer\DiContainerFactory;
-
-$container = (new DiContainerFactory())->make();
-
-// ... more code
-
-$ruleGenerator = $container->get(App\Rules\RuleGenerator::class);
-
-var_dump($ruleGenerator->getRule() instanceof App\Rules\RuleA); // true
-```
 
 ## Service
 

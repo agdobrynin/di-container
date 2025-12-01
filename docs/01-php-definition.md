@@ -305,10 +305,10 @@ $definitions = [
 use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use function \Kaspi\DiContainer\diCallable; 
 
-diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
+diCallable(callable $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 Аргументы:
-- `$definition` – значение которое `DiContainer` может преобразовать в [callable тип](03-call-method.md#поддерживаемые-типы)
+- `$definition` – определение.
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
@@ -349,7 +349,7 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 > Более подробное [описание работы с тегами](05-tags.md).
 
 ##### Идентификатор контейнера.
-При объявлении зависимости необходимо указать в конфигурации идентификатор контейнера.
+Если нужно объявить определение в контейнере то необходимо указать в конфигурации идентификатор контейнера.
 
 **Пример.**
 
@@ -399,9 +399,6 @@ require static function (): \Generator {
 
 };
 ```
-> [!TIP]
-> Поддерживаемые типы для хэлпер фцнкции `diCallable` описаны
-> [в разделе о методе `DiContainer::call`](03-call-method.md#поддерживаемые-типы)
 
 Разрешение зависимостей через контейнер:
 ```php

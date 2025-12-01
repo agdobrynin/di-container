@@ -14,6 +14,7 @@ use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @covers \Kaspi\DiContainer\AttributeReader
+ * @covers \Kaspi\DiContainer\DefinitionDiCall
  * @covers \Kaspi\DiContainer\diAutowire
  * @covers \Kaspi\DiContainer\DiContainer
  * @covers \Kaspi\DiContainer\DiContainerConfig

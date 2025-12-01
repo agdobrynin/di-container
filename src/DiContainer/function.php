@@ -40,10 +40,7 @@ if (!function_exists('Kaspi\DiContainer\diFactory')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
-    /**
-     * @param array{0: non-empty-string|object, 1:non-empty-string}|callable|callable-string|class-string|non-empty-string $definition
-     */
-    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface&DiDefinitionTagArgumentInterface
+    function diCallable(callable $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface&DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionCallable($definition, $isSingleton);
     }

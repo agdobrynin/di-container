@@ -24,6 +24,7 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
+use TypeError;
 
 use function array_intersect;
 use function array_keys;
@@ -196,7 +197,14 @@ final class AttributeReader
 
         /** @var ReflectionAttribute<InjectByCallable> $attr */
         foreach ($groupAttrs[InjectByCallable::class] as $attr) {
-            yield $attr->newInstance();
+            try {
+                yield $attr->newInstance();
+            } catch (TypeError $e) {
+                throw new AutowireAttributeException(
+                    message: sprintf('Unable to create an instance of PHP attribute "%s". Parameter $callable must be of type callable.', InjectByCallable::class),
+                    previous: $e
+                );
+            }
         }
     }
 

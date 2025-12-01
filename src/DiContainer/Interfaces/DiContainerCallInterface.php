@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -19,7 +19,7 @@ interface DiContainerCallInterface
      * @param array<non-empty-string|non-negative-int, mixed> $arguments
      *
      * @throws ContainerExceptionInterface
-     * @throws CallCircularDependencyException
+     * @throws DiDefinitionExceptionInterface
      * @throws NotFoundExceptionInterface
      */
     public function call(array|callable|string $definition, array $arguments = []): mixed;

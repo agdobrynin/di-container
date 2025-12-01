@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use Closure;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
@@ -31,14 +34,19 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
+use ReflectionMethod;
 
 use function array_key_exists;
 use function array_keys;
+use function call_user_func_array;
 use function class_exists;
 use function implode;
 use function in_array;
 use function interface_exists;
+use function is_callable;
+use function is_string;
 use function sprintf;
+use function var_export;
 
 /**
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
@@ -134,10 +142,43 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function call(array|callable|string $definition, array $arguments = []): mixed
     {
-        return (new DiDefinitionCallable($definition))
-            ->bindArguments(...$arguments)
-            ->resolve($this, $this)
-        ;
+        $reflectionDefinition = DefinitionDiCall::getReflection($definition);
+
+        if ($reflectionDefinition instanceof ReflectionMethod) {
+            if ($reflectionDefinition->isStatic()) {
+                return call_user_func_array(
+                    [$reflectionDefinition->class, $reflectionDefinition->name], // @phpstan-ignore argument.type
+                    ArgumentResolver::resolve(new ArgumentBuilder($arguments, $reflectionDefinition, $this), $this)
+                );
+            }
+
+            $class = $reflectionDefinition->objectOrClassName;
+
+            if (is_string($class)) {
+                try {
+                    $class = $this->get($class);
+                } catch (ContainerExceptionInterface $e) {
+                    throw new DiDefinitionException(
+                        message: sprintf('Cannot get entry via container identifier "%s" for create callable definition.', $class),
+                        previous: $e
+                    );
+                }
+            }
+
+            if (!is_callable($callable = [$class, $reflectionDefinition->name])) {
+                throw new DiDefinitionException(sprintf('Cannot create callable from %s.', var_export($callable, true)));
+            }
+
+            return call_user_func_array(
+                $callable,
+                ArgumentResolver::resolve(new ArgumentBuilder($arguments, $reflectionDefinition, $this), $this)
+            );
+        }
+
+        return call_user_func_array(
+            $definition, // @phpstan-ignore argument.type
+            ArgumentResolver::resolve(new ArgumentBuilder($arguments, $reflectionDefinition, $this), $this)
+        );
     }
 
     /**
