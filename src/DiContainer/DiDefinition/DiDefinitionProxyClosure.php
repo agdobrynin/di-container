@@ -6,14 +6,15 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Closure;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 use function sprintf;
-use function trim;
 
 final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
 {
@@ -22,12 +23,12 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
     /**
      * @var non-empty-string
      */
-    private string $verifyDefinition;
+    private string $validContainerIdentifier;
 
     /**
-     * @param non-empty-string $definition
+     * @param non-empty-string $containerIdentifier
      */
-    public function __construct(private readonly string $definition, private readonly ?bool $isSingleton = null) {}
+    public function __construct(private readonly string $containerIdentifier, private readonly ?bool $isSingleton = null) {}
 
     public function isSingleton(): ?bool
     {
@@ -50,14 +51,17 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
      */
     public function getDefinition(): string
     {
-        if (isset($this->verifyDefinition)) {
-            return $this->verifyDefinition;
+        if (isset($this->validContainerIdentifier)) {
+            return $this->validContainerIdentifier;
         }
 
-        if ('' === trim($this->definition)) {
-            throw new DiDefinitionException(sprintf('Parameter $definition for %s::__construct() must be non-empty string.', __CLASS__));
+        try {
+            return $this->validContainerIdentifier = Helper::getContainerIdentifier($this->containerIdentifier, null);
+        } catch (ContainerIdentifierExceptionInterface $e) {
+            throw new DiDefinitionException(
+                sprintf('Parameter $containerIdentifier for %s::__construct() must be non-empty string.', self::class),
+                previous: $e
+            );
         }
-
-        return $this->verifyDefinition = $this->definition;
     }
 }

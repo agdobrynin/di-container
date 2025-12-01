@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */
@@ -33,26 +34,16 @@ class MainTest extends TestCase
         yield 'string with space' => [' ok', ' ok'];
 
         yield 'string with spaces' => [' ok ', ' ok '];
+
+        yield 'one space' => [' ', ' '];
     }
 
-    /**
-     * @dataProvider failDefinitionDataProvider
-     */
-    public function testDefinitionFail(string $id): void
+    public function testDefinitionFail(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be non-empty string');
 
-        (new DiDefinitionProxyClosure($id))->getDefinition();
-    }
-
-    public function failDefinitionDataProvider(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'string with space' => [' '];
-
-        yield 'string with spaces' => ['   '];
+        (new DiDefinitionProxyClosure(''))->getDefinition();
     }
 
     public function testContainerDefinitionHasNot(): void

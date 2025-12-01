@@ -48,11 +48,11 @@ if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
     /**
-     * @param class-string $definition Fully Qualified Class Name
+     * @param class-string $containerIdentifier Fully Qualified Class Name
      */
-    function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
+    function diProxyClosure(string $containerIdentifier, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
     {
-        return new DiDefinitionProxyClosure($definition, $isSingleton);
+        return new DiDefinitionProxyClosure($containerIdentifier, $isSingleton);
     }
 } // @codeCoverageIgnore
 

@@ -580,11 +580,11 @@ $notifyStaff = $container->get(App\Notifications\CompanyStaff::class);
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use function Kaspi\DiContainer\diProxyClosure;
 
-diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
+diProxyClosure(string $containerIdentifier, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
 ```
 Аргументы:
 
-- `$definition` – имя определения или идентификатора контейнера которое содержит сервис.
+- `$containerIdentifier` - идентификатора контейнера (php класс, интерфейс) реализующий сервис который необходимо разрешить отложено.
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!IMPORTANT]
@@ -600,12 +600,24 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 > Более подробное [описание работы с тегами](05-tags.md).
 
 ##### Идентификатор контейнера.
-При объявлении зависимости через `diProxyClosure` необходимо указать в конфигурации идентификатор контейнера.
+Если нужно объявить определение в контейнере, то необходимо указать в конфигурации идентификатор контейнера.
 
-##### Пример для отложенной инициализации сервиса.
+```php
+// config/services.php
+use App\Classes\HeavyDependency;
+use function Kaspi\DiContainer\diProxyClosure;
+
+return static function(): \Generator {
+
+    yield 'services.heavy_dependency' => diProxyClosure(HeavyDependency::class, isSingleton: true)
+
+};
+```
+
+##### Пример для отложенной инициализации сервиса как аргумента.
 
 Такое объявление сервиса пригодится для «тяжёлых» зависимостей,
-требующих длительного времени инициализации или ресурсоёмких вычислений.
+требующих длительного времени инициализации или ресурсоёмкий вычислений.
 ```php
 // src/Classes/HeavyDependency.php
 namespace App\Classes;
