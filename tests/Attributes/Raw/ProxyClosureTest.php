@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */
@@ -33,23 +34,15 @@ class ProxyClosureTest extends TestCase
         yield 'has start space' => [' ok', ' ok'];
 
         yield 'has start spaces' => [' ok ', ' ok '];
+
+        yield 'one spaces' => [' ', ' '];
     }
 
-    /**
-     * @dataProvider failIdsDataProvider
-     */
-    public function testFailure(string $id): void
+    public function testFailure(): void
     {
         $this->expectException(AutowireAttributeException::class);
         $this->expectExceptionMessage('The $id parameter must be a non-empty string.');
 
-        new ProxyClosure($id);
-    }
-
-    public function failIdsDataProvider(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'empty spaces' => ['  '];
+        new ProxyClosure('');
     }
 }
