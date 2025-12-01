@@ -168,7 +168,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                 }
 
                 throw new DiDefinitionException(
-                    message: sprintf(
+                    sprintf(
                         'The immutable setter "%s::%s()" must return same class "%s". Got type: %s',
                         $this->getDefinition()->getName(),
                         $method,
