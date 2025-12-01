@@ -38,6 +38,7 @@ use function unlink;
  * @covers \Kaspi\DiContainer\Finder\FinderFile
  * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
  * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */

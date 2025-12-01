@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 
 use function sprintf;
-use function trim;
 
 final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNoArgumentsInterface
 {
@@ -31,9 +32,18 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
      */
     public function getDefinition(): string
     {
-        return $this->validContainerIdentifier ??= '' === trim($this->containerIdentifier)
-            ? throw new DiDefinitionException(sprintf('Parameter $containerIdentifier for %s::__construct() must be non-empty string.', self::class))
-            : $this->containerIdentifier;
+        if (isset($this->validContainerIdentifier)) {
+            return $this->validContainerIdentifier;
+        }
+
+        try {
+            return $this->validContainerIdentifier = Helper::getContainerIdentifier($this->containerIdentifier, null);
+        } catch (ContainerIdentifierExceptionInterface $e) {
+            throw new DiDefinitionException(
+                sprintf('Parameter $containerIdentifier for %s::__construct() must be non-empty string.', self::class),
+                previous: $e
+            );
+        }
     }
 
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed

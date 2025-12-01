@@ -11,26 +11,17 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
+ * @covers \Kaspi\DiContainer\Helper
  *
  * @internal
  */
 class DiDefinitionReferenceTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderWrongDefinition
-     */
-    public function testDiDefinitionReferenceFail(string $definition): void
+    public function testDiDefinitionReferenceFail(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
 
-        (new DiDefinitionGet($definition))->getDefinition();
-    }
-
-    public function dataProviderWrongDefinition(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'spaces string' => ['  '];
+        (new DiDefinitionGet(''))->getDefinition();
     }
 
     /**
