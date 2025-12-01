@@ -6,10 +6,4 @@ namespace Kaspi\DiContainer\Interfaces\Exceptions;
 
 use Throwable;
 
-interface DefinitionsLoaderExceptionInterface extends Throwable
-{
-    /**
-     * @return array<non-negative-int|string, mixed>
-     */
-    public function getContext(): array;
-}
+interface DefinitionsLoaderExceptionInterface extends Throwable {}

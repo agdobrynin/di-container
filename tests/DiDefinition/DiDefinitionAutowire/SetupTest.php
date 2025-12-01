@@ -31,7 +31,6 @@ use function Kaspi\DiContainer\diValue;
  * @covers \Kaspi\DiContainer\diValue
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */

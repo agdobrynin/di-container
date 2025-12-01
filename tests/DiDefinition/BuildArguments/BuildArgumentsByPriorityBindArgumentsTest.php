@@ -30,7 +30,6 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  *
  * @internal
  */

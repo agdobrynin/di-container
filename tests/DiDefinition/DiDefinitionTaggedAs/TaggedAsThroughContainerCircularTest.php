@@ -37,7 +37,6 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @covers \Kaspi\DiContainer\diTaggedAs
  * @covers \Kaspi\DiContainer\Helper
  * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  */
 class TaggedAsThroughContainerCircularTest extends TestCase
 {

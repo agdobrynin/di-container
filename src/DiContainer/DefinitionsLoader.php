@@ -158,13 +158,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (null !== $importCacheFile && $importCacheFile->isFile()) {
             if (!$importCacheFile->isReadable()) {
-                throw (
-                    new DefinitionsLoaderException(
-                        message: sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $importCacheFile->getPathname()),
-                    )
-                )
-                    ->setContext(context_file: $importCacheFile)
-                ;
+                throw new DefinitionsLoaderException(
+                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $importCacheFile->getPathname()),
+                );
             }
 
             yield from $this->getIteratorFromFile($importCacheFile->getPathname()); // @phpstan-ignore generator.keyType
@@ -383,12 +379,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return match (true) {
             is_iterable($content) => yield from $content,
             $content instanceof Closure && is_iterable($content()) => yield from $content(),
-            default => throw (
-                new DefinitionsLoaderException(
-                    message: sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile),
-                )
+            default => throw new DefinitionsLoaderException(
+                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile),
             )
-                ->setContext(context_content: $content)
         };
     }
 

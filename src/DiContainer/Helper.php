@@ -85,8 +85,6 @@ final class Helper
             return $definition->getIdentifier();
         }
 
-        throw (new ContainerIdentifierException(message: 'Definition identifier must be a non-empty string.'))
-            ->setContext(identifier: $identifier, definition: $definition)
-        ;
+        throw new ContainerIdentifierException('Definition identifier must be a non-empty string.');
     }
 }

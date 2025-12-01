@@ -6,9 +6,5 @@ namespace Kaspi\DiContainer\Exception;
 
 use Exception;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Traits\ContextExceptionTrait;
 
-class DefinitionsLoaderException extends Exception implements DefinitionsLoaderExceptionInterface
-{
-    use ContextExceptionTrait;
-}
+class DefinitionsLoaderException extends Exception implements DefinitionsLoaderExceptionInterface {}

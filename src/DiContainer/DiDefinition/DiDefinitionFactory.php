@@ -93,14 +93,10 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
             /** @var DiFactoryInterface $object */
             $object = $this->autowire->resolve($container, $this);
         } catch (ContainerExceptionInterface $e) {
-            throw (
-                new DiDefinitionException(
-                    message: sprintf('Cannot resolve factory class "%s".', $this->getDefinition()),
-                    previous: $e
-                )
-            )
-                ->setContext(context_factory_di_definition_autowire: $this->autowire)
-            ;
+            throw new DiDefinitionException(
+                message: sprintf('Cannot resolve factory class "%s".', $this->getDefinition()),
+                previous: $e
+            );
         }
 
         return $object($container);

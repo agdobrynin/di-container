@@ -29,7 +29,6 @@ use function Kaspi\DiContainer\diGet;
  * @covers \Kaspi\DiContainer\diGet
  * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
  * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\ContextExceptionTrait
  * @covers \Kaspi\DiContainer\Traits\SetupAttributeTrait
  *
  * @internal
