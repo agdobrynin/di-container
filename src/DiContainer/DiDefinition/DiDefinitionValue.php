@@ -50,7 +50,7 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
             try {
                 $tmp = $this->definition;
 
-                array_walk_recursive($tmp, function (mixed $item) {
+                array_walk_recursive($tmp, static function (mixed $item) {
                     if (null !== $item && !is_scalar($item) && !($item instanceof UnitEnum)) {
                         throw new InvalidArgumentException(sprintf('The value in array is invalid type "%s".', get_debug_type($item)));
                     }
