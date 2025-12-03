@@ -68,7 +68,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     /**
      * @var list<array{0: DiDefinitionSetupConfigureInterface, 1: ArgumentBuilderInterface}>
      */
-    private array $setupArgBuilder;
+    private array $setupArgBuilders;
 
     /**
      * Tags from php attributes on class.
@@ -94,7 +94,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
      */
     public function setup(string $method, mixed ...$argument): static
     {
-        unset($this->setupArgBuilder);
+        unset($this->setupArgBuilders);
         $this->setupInternal($method, ...$argument);
 
         return $this;
@@ -102,7 +102,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
     public function setupImmutable(string $method, mixed ...$argument): static
     {
-        unset($this->setupArgBuilder);
+        unset($this->setupArgBuilders);
         $this->setupImmutableInternal($method, ...$argument);
 
         return $this;
@@ -144,7 +144,8 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
     {
-        $setupArgBuilder = [];
+        $this->checkIsInstantiable();
+        $setupArgBuilders = [];
 
         foreach ($this->getSetups($this->getDefinition(), $container) as $method => $calls) {
             try {
@@ -161,26 +162,26 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             }
 
             foreach ($calls as [$setupConfigureType, $callArguments]) {
-                $setupArgBuilder[] = [$setupConfigureType, new ArgumentBuilder($callArguments, $reflectionMethod, $container)];
+                $setupArgBuilders[] = [$setupConfigureType, new ArgumentBuilder($callArguments, $reflectionMethod, $container)];
             }
         }
 
-        return $setupArgBuilder;
+        return $setupArgBuilders;
     }
 
     public function resolve(DiContainerInterface $container, mixed $context = null): object
     {
-        $this->constructArgBuilder ??= $this->exposeArgumentBuilder($container) ?? false;
+        $this->constructArgBuilder ??= ($this->exposeArgumentBuilder($container) ?? false);
 
         /** @var object $object */
         $object = (false === $this->constructArgBuilder)
             ? $this->getDefinition()->newInstanceWithoutConstructor()
             : $this->getDefinition()->newInstanceArgs(ArgumentResolver::resolve($this->constructArgBuilder, $container, $this));
 
-        $this->setupArgBuilder ??= $this->exposeSetupArgumentBuilders($container);
+        $this->setupArgBuilders ??= $this->exposeSetupArgumentBuilders($container);
 
         /** @var ArgumentBuilderInterface $argBuilder */
-        foreach ($this->setupArgBuilder as [$setupConfigureType, $argBuilder]) {
+        foreach ($this->setupArgBuilders as [$setupConfigureType, $argBuilder]) {
             $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
             $reflectionMethod = $argBuilder->getFunctionOrMethod();
 

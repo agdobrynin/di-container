@@ -66,12 +66,12 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
 
     public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
     {
-        return $this->initAutowire()->exposeArgumentBuilder($container);
+        return $this->getFactoryAutowire()->exposeArgumentBuilder($container);
     }
 
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
     {
-        return $this->initAutowire()->exposeSetupArgumentBuilders($container);
+        return $this->getFactoryAutowire()->exposeSetupArgumentBuilders($container);
     }
 
     /**
@@ -94,11 +94,9 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
 
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
-        $this->autowire ??= $this->initAutowire();
-
         try {
             /** @var DiFactoryInterface $object */
-            $object = $this->autowire->resolve($container, $this);
+            $object = $this->getFactoryAutowire()->resolve($container, $this);
         } catch (ContainerExceptionInterface $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot resolve factory class "%s".', $this->getDefinition()),
@@ -122,12 +120,16 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         return $this->definition;
     }
 
-    private function initAutowire(): DiDefinitionAutowire
+    private function getFactoryAutowire(): DiDefinitionAutowire
     {
+        if (isset($this->autowire)) {
+            return $this->autowire;
+        }
+
         $autowire = new DiDefinitionAutowire($this->getDefinition());
         $autowire->bindArguments(...$this->getBindArguments());
         $this->copySetupToDefinition($autowire);
 
-        return $autowire;
+        return $this->autowire = $autowire;
     }
 }
