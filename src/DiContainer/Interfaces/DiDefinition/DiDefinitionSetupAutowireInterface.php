@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
@@ -62,4 +66,11 @@ interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterf
      * @return $this
      */
     public function setupImmutable(string $method, mixed ...$argument): static;
+
+    /**
+     * @return list<array{0: DiDefinitionSetupConfigureInterface, 1: ArgumentBuilderInterface}>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function exposeSetupArgumentBuilders(DiContainerInterface $container): array;
 }

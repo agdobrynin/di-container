@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
@@ -63,6 +64,16 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         return $this;
     }
 
+    public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
+    {
+        return $this->initAutowire()->exposeArgumentBuilder($container);
+    }
+
+    public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
+    {
+        return $this->initAutowire()->exposeSetupArgumentBuilders($container);
+    }
+
     /**
      * @return class-string<DiFactoryInterface>
      */
@@ -83,11 +94,7 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
 
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
-        if (!isset($this->autowire)) {
-            $this->autowire = new DiDefinitionAutowire($this->getDefinition());
-            $this->autowire->bindArguments(...$this->getBindArguments());
-            $this->copySetupToDefinition($this->autowire);
-        }
+        $this->autowire ??= $this->initAutowire();
 
         try {
             /** @var DiFactoryInterface $object */
@@ -113,5 +120,14 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
     public function getIdentifier(): string
     {
         return $this->definition;
+    }
+
+    private function initAutowire(): DiDefinitionAutowire
+    {
+        $autowire = new DiDefinitionAutowire($this->getDefinition());
+        $autowire->bindArguments(...$this->getBindArguments());
+        $this->copySetupToDefinition($autowire);
+
+        return $autowire;
     }
 }
