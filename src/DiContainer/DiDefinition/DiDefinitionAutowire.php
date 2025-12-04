@@ -153,7 +153,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             }
 
             if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
-                throw new DiDefinitionException(sprintf('Cannot use %s as setter.', Helper::functionName($reflectionMethod)));
+                throw new DiDefinitionException(sprintf('Cannot use "%s" as setter.', Helper::functionName($reflectionMethod)));
             }
 
             foreach ($calls as [$setupConfigureType, $callArguments]) {

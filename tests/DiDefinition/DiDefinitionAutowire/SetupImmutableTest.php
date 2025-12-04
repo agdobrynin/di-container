@@ -183,7 +183,7 @@ class SetupImmutableTest extends TestCase
     public function testSetupOnMethod(string $class, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot use.+'.$method.'\(\) as setter/');
+        $this->expectExceptionMessageMatches('/Cannot use ".+'.$method.'\(\)" as setter/');
 
         $def = (new DiDefinitionAutowire($class))
             ->setupImmutable($method)
