@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
@@ -63,6 +64,16 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         return $this;
     }
 
+    public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
+    {
+        return $this->createFactoryAutowire()->exposeArgumentBuilder($container);
+    }
+
+    public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
+    {
+        return $this->createFactoryAutowire()->exposeSetupArgumentBuilders($container);
+    }
+
     /**
      * @return class-string<DiFactoryInterface>
      */
@@ -83,15 +94,9 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
 
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
-        if (!isset($this->autowire)) {
-            $this->autowire = new DiDefinitionAutowire($this->getDefinition());
-            $this->autowire->bindArguments(...$this->getBindArguments());
-            $this->copySetupToDefinition($this->autowire);
-        }
-
         try {
             /** @var DiFactoryInterface $object */
-            $object = $this->autowire->resolve($container, $this);
+            $object = $this->createFactoryAutowire()->resolve($container, $this);
         } catch (ContainerExceptionInterface $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot resolve factory class "%s".', $this->getDefinition()),
@@ -113,5 +118,18 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
     public function getIdentifier(): string
     {
         return $this->definition;
+    }
+
+    private function createFactoryAutowire(): DiDefinitionAutowire
+    {
+        if (isset($this->autowire)) {
+            return $this->autowire;
+        }
+
+        $autowire = new DiDefinitionAutowire($this->getDefinition());
+        $autowire->bindArguments(...$this->getBindArguments());
+        $this->copySetupToDefinition($autowire);
+
+        return $this->autowire = $autowire;
     }
 }

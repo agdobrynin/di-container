@@ -12,14 +12,16 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupConfigureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
@@ -27,6 +29,7 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
 use ReflectionException;
 
+use function call_user_func_array;
 use function get_class;
 use function get_debug_type;
 use function is_callable;
@@ -60,12 +63,12 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
     private ReflectionClass $reflectionClass;
 
-    private ArgumentBuilder|false $constructArgBuilder;
+    private ArgumentBuilderInterface|false $constructArgBuilder;
 
     /**
-     * @var array<non-empty-string, array<non-negative-int, ArgumentBuilder>>
+     * @var list<array{0: DiDefinitionSetupConfigureInterface, 1: ArgumentBuilderInterface}>
      */
-    private array $setupArgBuilder = [];
+    private array $setupArgBuilders;
 
     /**
      * Tags from php attributes on class.
@@ -91,8 +94,16 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
      */
     public function setup(string $method, mixed ...$argument): static
     {
-        unset($this->setupArgBuilder[$method]);
+        unset($this->setupArgBuilders);
         $this->setupInternal($method, ...$argument);
+
+        return $this;
+    }
+
+    public function setupImmutable(string $method, mixed ...$argument): static
+    {
+        unset($this->setupArgBuilders);
+        $this->setupImmutableInternal($method, ...$argument);
 
         return $this;
     }
@@ -101,14 +112,6 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     {
         unset($this->constructArgBuilder);
         $this->bindArgumentsInternal(...$argument);
-
-        return $this;
-    }
-
-    public function setupImmutable(string $method, mixed ...$argument): static
-    {
-        unset($this->setupArgBuilder[$method]);
-        $this->setupImmutableInternal($method, ...$argument);
 
         return $this;
     }
@@ -125,12 +128,19 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         return $this;
     }
 
-    public function resolve(DiContainerInterface $container, mixed $context = null): object
+    public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
     {
-        $this->setContainer($container);
+        $this->checkIsInstantiable();
 
-        /** @var object $object */
-        $object = $this->newInstance();
+        return (null !== ($constructor = $this->getDefinition()->getConstructor()))
+            ? new ArgumentBuilder($this->bindArguments, $constructor, $container)
+            : null;
+    }
+
+    public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
+    {
+        $this->checkIsInstantiable();
+        $setupArgBuilders = [];
 
         foreach ($this->getSetups($this->getDefinition(), $container) as $method => $calls) {
             try {
@@ -143,40 +153,53 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             }
 
             if ($reflectionMethod->isConstructor() || $reflectionMethod->isDestructor()) {
-                throw new DiDefinitionException(sprintf('Cannot use %s::%s() as setter.', $this->getDefinition()->name, $method));
+                throw new DiDefinitionException(sprintf('Cannot use "%s" as setter.', Helper::functionName($reflectionMethod)));
             }
 
-            foreach ($calls as $index => [$setupConfigureType, $callArguments]) {
-                $argBuilder = $this->setupArgBuilder[$method][$index] ??= new ArgumentBuilder($callArguments, $reflectionMethod, $this->getContainer());
-
-                $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
-
-                if (SetupConfigureMethod::Mutable === $setupConfigureType) {
-                    $reflectionMethod->invokeArgs($object, $resolvedArguments);
-
-                    continue;
-                }
-
-                $result = $reflectionMethod->invokeArgs($object, $resolvedArguments);
-
-                if (is_object($result) && get_class($result) === get_class($object)) {
-                    /** @var object $object */
-                    $object = $result;
-                    unset($result);
-
-                    continue;
-                }
-
-                throw new DiDefinitionException(
-                    sprintf(
-                        'The immutable setter "%s::%s()" must return same class "%s". Got type: %s',
-                        $this->getDefinition()->getName(),
-                        $method,
-                        $this->getDefinition()->getName(),
-                        get_debug_type($result)
-                    )
-                );
+            foreach ($calls as [$setupConfigureType, $callArguments]) {
+                $setupArgBuilders[] = [$setupConfigureType, new ArgumentBuilder($callArguments, $reflectionMethod, $container)];
             }
+        }
+
+        return $setupArgBuilders;
+    }
+
+    public function resolve(DiContainerInterface $container, mixed $context = null): object
+    {
+        $this->constructArgBuilder ??= ($this->exposeArgumentBuilder($container) ?? false);
+
+        /** @var object $object */
+        $object = (false === $this->constructArgBuilder)
+            ? $this->getDefinition()->newInstanceWithoutConstructor()
+            : $this->getDefinition()->newInstanceArgs(ArgumentResolver::resolve($this->constructArgBuilder, $container, $this));
+
+        $this->setupArgBuilders ??= $this->exposeSetupArgumentBuilders($container);
+
+        /** @var ArgumentBuilderInterface $argBuilder */
+        foreach ($this->setupArgBuilders as [$setupConfigureType, $argBuilder]) {
+            $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
+            $reflectionMethod = $argBuilder->getFunctionOrMethod();
+
+            /** @var callable $callable */
+            $callable = [$object, $reflectionMethod->name];
+
+            if (SetupConfigureMethod::Mutable === $setupConfigureType) {
+                call_user_func_array($callable, $resolvedArguments);
+
+                continue;
+            }
+
+            $result = call_user_func_array($callable, $resolvedArguments);
+
+            if (is_object($result) && get_class($result) === get_class($object)) {
+                /** @var object $object */
+                $object = $result;
+                unset($result);
+
+                continue;
+            }
+
+            throw new DiDefinitionException(sprintf('The immutable setter "%s" must return same class "%s". Got type: %s', Helper::functionName($reflectionMethod), $this->getDefinition()->getName(), get_debug_type($result)));
         }
 
         return $object;
@@ -315,27 +338,13 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
     }
 
     /**
-     * @throws ArgumentBuilderExceptionInterface|DiDefinitionExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
-    private function newInstance(): object
+    private function checkIsInstantiable(): void
     {
         if (!$this->getDefinition()->isInstantiable()) {
             throw new DiDefinitionException(sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName()));
         }
-
-        if (!isset($this->constructArgBuilder)) {
-            $this->constructArgBuilder = null !== ($constructor = $this->getDefinition()->getConstructor())
-                ? new ArgumentBuilder($this->getBindArguments(), $constructor, $this->getContainer())
-                : false;
-        }
-
-        if (false === $this->constructArgBuilder) {
-            return $this->getDefinition()->newInstanceWithoutConstructor();
-        }
-
-        return $this->getDefinition()->newInstanceArgs(
-            ArgumentResolver::resolve($this->constructArgBuilder, $this->getContainer(), $this)
-        );
     }
 
     /**

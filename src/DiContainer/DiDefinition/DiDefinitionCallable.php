@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
@@ -33,9 +34,7 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
      */
     private $definition;
 
-    private ArgumentBuilder $argBuilder;
-
-    private ReflectionFunction|ReflectionMethod $reflectionFn;
+    private ArgumentBuilderInterface $argBuilder;
 
     public function __construct(callable $definition, private readonly ?bool $isSingleton = null)
     {
@@ -55,10 +54,14 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
         return $this;
     }
 
+    public function exposeArgumentBuilder(DiContainerInterface $container): ArgumentBuilderInterface
+    {
+        return new ArgumentBuilder($this->bindArguments, $this->reflectionFunction(), $container);
+    }
+
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
-        $this->reflectionFn ??= $this->reflectionFunction();
-        $this->argBuilder ??= new ArgumentBuilder($this->getBindArguments(), $this->reflectionFn, $container);
+        $this->argBuilder ??= $this->exposeArgumentBuilder($container);
 
         return ($this->definition)(...ArgumentResolver::resolve($this->argBuilder, $container, $this));
     }
