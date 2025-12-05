@@ -62,7 +62,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $this->callingByDefinitionAutowire = $context;
         }
 
-        $sorterDefinition = $this->sortDefinitionByPriority($container->findTaggedDefinitions($this->tag));
+        $sorterDefinition = $this->filterByExcludeSortDefinitionByPriority($container->findTaggedDefinitions($this->tag));
 
         $mapKeyToContainerIdentifier = [];
 
@@ -94,7 +94,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @throws DiDefinitionExceptionInterface
      */
-    private function sortDefinitionByPriority(iterable $definitions): Generator
+    private function filterByExcludeSortDefinitionByPriority(iterable $definitions): Generator
     {
         if ($definitions instanceof Generator && !$definitions->valid()) {
             return;
