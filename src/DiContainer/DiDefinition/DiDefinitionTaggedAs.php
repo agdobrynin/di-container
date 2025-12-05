@@ -21,7 +21,6 @@ use function array_map;
 use function explode;
 use function get_debug_type;
 use function in_array;
-use function interface_exists;
 use function is_callable;
 use function is_string;
 use function sprintf;
@@ -31,10 +30,8 @@ use function var_export;
 
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
-    private bool $tagIsInterface;
     private bool $keyChecked;
     private bool $isUseKeysComputed;
-    private DiContainerInterface $container;
 
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
@@ -65,11 +62,24 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $this->callingByDefinitionAutowire = $context;
         }
 
-        $this->container = $container;
+        $sorterDefinition = $this->sortDefinitionByPriority($container->findTaggedDefinitions($this->tag));
+
+        $mapKeyToContainerIdentifier = [];
+
+        foreach ($sorterDefinition as [$containerIdentifier, $definition]) {
+            if ($this->isUseKeysComputed) {
+                $keyCollection = $this->getTagKeyFromTagOptionsOrFromClassMethod($containerIdentifier, $definition);
+                if (!isset($mapKeyToContainerIdentifier[$keyCollection])) {
+                    $mapKeyToContainerIdentifier[$keyCollection] = $containerIdentifier;
+                }
+            } else {
+                $mapKeyToContainerIdentifier[] = $containerIdentifier;
+            }
+        }
 
         return $this->isLazy
-            ? new LazyDefinitionIterator($container, $this->getContainerIdentifiers())
-            : array_map(fn (string $id) => $container->get($id), $this->getContainerIdentifiers());
+            ? new LazyDefinitionIterator($container, $mapKeyToContainerIdentifier)
+            : array_map(static fn (string $id) => $container->get($id), $mapKeyToContainerIdentifier);
     }
 
     public function getDefinition(): string
@@ -78,90 +88,35 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @return array<non-empty-string, non-empty-string>|list<non-empty-string>
+     * @param iterable<non-empty-string, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface> $definitions
      *
-     * @throws DiDefinitionExceptionInterface
-     */
-    private function getContainerIdentifiers(): array
-    {
-        return $this->isUseKeysComputed
-            ? $this->getContainerIdentifiersWithKey()
-            : $this->getContainerIdentifiersWithoutKey();
-    }
-
-    /**
-     * @return array<non-empty-string, non-empty-string>
-     *
-     * @throws DiDefinitionExceptionInterface
-     */
-    private function getContainerIdentifiersWithKey(): array
-    {
-        $mapKeyCollectionToContainerIdentifier = [];
-
-        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier, $definition]) {
-            $keyCollection = $this->getTagKeyFromTagOptionsOrFromClassMethod($containerIdentifier, $definition);
-
-            if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
-                $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
-            }
-        }
-
-        return $mapKeyCollectionToContainerIdentifier;
-    }
-
-    /**
-     * @return list<non-empty-string>
-     *
-     * @throws DiDefinitionExceptionInterface
-     */
-    private function getContainerIdentifiersWithoutKey(): array
-    {
-        $containerIdentifiers = [];
-
-        foreach ($this->getContainerIdentifiersOfTaggedServiceByTag() as [$containerIdentifier]) {
-            $containerIdentifiers[] = $containerIdentifier;
-        }
-
-        return $containerIdentifiers;
-    }
-
-    /**
      * @return Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
      *
      * @throws DiDefinitionExceptionInterface
      */
-    private function getContainerIdentifiersOfTaggedServiceByTag(): Generator
+    private function sortDefinitionByPriority(iterable $definitions): Generator
     {
-        $this->tagIsInterface ??= interface_exists($this->tag);
+        if ($definitions instanceof Generator && !$definitions->valid()) {
+            return;
+        }
+
         $taggedServices = new SplPriorityQueue();
         $taggedServices->setExtractFlags(SplPriorityQueue::EXTR_DATA);
 
-        /** @var non-empty-string $containerIdentifier */
-        foreach ($this->container->getDefinitions() as $containerIdentifier => $definition) {
-            if (false === ($definition instanceof DiTaggedDefinitionInterface)
-                || in_array($containerIdentifier, $this->containerIdExclude, true)
+        foreach ($definitions as $containerIdentifier => $definition) {
+            if (in_array($containerIdentifier, $this->containerIdExclude, true)
                 || ($this->selfExclude && $containerIdentifier === $this->callingByDefinitionAutowire?->getDefinition()->getName())) {
                 continue;
             }
 
-            $tagImplementInterface = false;
+            $operationOptions = [];
 
             if ($definition instanceof DiDefinitionAutowireInterface) {
-                $definition->setContainer($this->container);
-                $tagImplementInterface = $this->tagIsInterface
-                    && $definition->getDefinition()->implementsInterface($this->tag);
+                $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
             }
 
-            if ((!$this->tagIsInterface && $definition->hasTag($this->tag)) || $tagImplementInterface) {
-                $operationOptions = [];
-
-                if ($definition instanceof DiDefinitionAutowireInterface) {
-                    $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
-                }
-
-                // 🚩 Tag with higher priority early in list.
-                $taggedServices->insert([$containerIdentifier, $definition], $definition->geTagPriority($this->tag, $operationOptions));
-            }
+            // 🚩 Tag with higher priority early in list.
+            $taggedServices->insert([$containerIdentifier, $definition], $definition->geTagPriority($this->tag, $operationOptions));
         }
 
         /** @var array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
