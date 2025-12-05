@@ -40,4 +40,11 @@ interface DiContainerInterface extends ContainerInterface
     public function getDefinitions(): iterable;
 
     public function getConfig(): ?DiContainerConfigInterface;
+
+    /**
+     * @param non-empty-string $tag
+     *
+     * @return iterable<non-empty-string, (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface>
+     */
+    public function findTaggedDefinitions(string $tag): iterable;
 }
