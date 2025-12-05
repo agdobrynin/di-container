@@ -10,7 +10,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\One;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\TaggedAsCollection;
@@ -22,7 +21,6 @@ use function Kaspi\DiContainer\diAutowire;
 /**
  * @internal
  */
-#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
@@ -34,15 +32,20 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
     public function setUp(): void
     {
         $this->container = $this->createMock(DiContainerInterface::class);
-        $this->container->method('getDefinitions')
+        $this->container->method('findTaggedDefinitions')
+            ->with('tags.aaa')
             ->willReturn([
-                One::class => diAutowire(One::class)
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
-                Two::class => diAutowire(Two::class)
+                Two::class => (new DiDefinitionAutowire(Two::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
-                Three::class => diAutowire(Three::class)
+                Three::class => (new DiDefinitionAutowire(Three::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
-                TaggedAsCollection::class => diAutowire(TaggedAsCollection::class)
+                TaggedAsCollection::class => (new DiDefinitionAutowire(TaggedAsCollection::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
             ])
         ;

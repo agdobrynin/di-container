@@ -12,17 +12,13 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\TaggedAsKeys\Fixtures\Attributes\One;
 use Tests\TaggedAsKeys\Fixtures\Attributes\Two;
 
-use function Kaspi\DiContainer\diAutowire;
-
 /**
  * @internal
  */
-#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(\Kaspi\DiContainer\Attributes\Tag::class)]
 #[CoversClass(DiContainerConfig::class)]
@@ -47,10 +43,13 @@ class KeyOverrideTest extends TestCase
     public function testKeyOverrideLazyPhpAttribute(): void
     {
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                One::class => diAutowire(One::class), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 100)]
-                Two::class => diAutowire(Two::class), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 0)]
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->setContainer($this->container), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 100)]
+                Two::class => (new DiDefinitionAutowire(Two::class))
+                    ->setContainer($this->container), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 0)]
             ])
         ;
 
@@ -75,11 +74,14 @@ class KeyOverrideTest extends TestCase
     public function testKeyOverrideLazyPhpDefinition(): void
     {
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                Fixtures\One::class => diAutowire(Fixtures\One::class)
+                Fixtures\One::class => (new DiDefinitionAutowire(Fixtures\One::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.one', options: ['key.override' => 'key-service'], priority: 100),
-                Fixtures\Two::class => diAutowire(Fixtures\Two::class)
+                Fixtures\Two::class => (new DiDefinitionAutowire(Fixtures\Two::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.one', options: ['key.override' => 'key-service'], priority: 0),
             ])
         ;

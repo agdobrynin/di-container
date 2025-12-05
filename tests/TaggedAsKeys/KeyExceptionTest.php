@@ -25,7 +25,6 @@ use function Kaspi\DiContainer\diValue;
 /**
  * @internal
  */
-#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
@@ -51,7 +50,8 @@ class KeyExceptionTest extends TestCase
         $this->expectException(DiDefinitionException::class);
 
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
                 'service.oka' => diValue('oka')->bindTag('tags.one', options: ['key' => 'aaa']),
             ])
@@ -76,7 +76,8 @@ class KeyExceptionTest extends TestCase
         $this->expectExceptionMessage('The value of option name "key_srv" must be non-empty string.');
 
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn($getDefinitions)
         ;
 
@@ -113,7 +114,8 @@ class KeyExceptionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
 
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn($getDefinitions)
         ;
 
@@ -145,7 +147,8 @@ class KeyExceptionTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
 
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn($getDefinitions)
         ;
 

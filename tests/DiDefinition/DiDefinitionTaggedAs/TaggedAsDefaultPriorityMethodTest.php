@@ -45,7 +45,10 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
             )
         );
 
-        $container->method('getDefinitions')->willReturn($definitions);
+        $container->method('findTaggedDefinitions')
+            ->with($tagName)
+            ->willReturn($definitions)
+        ;
 
         $t = new DiDefinitionTaggedAs($tagName, isLazy: false, priorityDefaultMethod: $method);
         $t->resolve($container);
@@ -56,8 +59,8 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         yield 'return object' => [
             'tags.bat',
             [
-                diAutowire(Foo::class),
-                diAutowire(Baz::class),
+                new DiDefinitionAutowire(Foo::class),
+                new DiDefinitionAutowire(Baz::class),
             ],
             'getPriorityDefaultOne',
         ];
