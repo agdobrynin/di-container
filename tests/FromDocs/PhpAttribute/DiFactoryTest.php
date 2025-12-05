@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\ClassOne;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiFactory::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionFactory::class)]
 class DiFactoryTest extends TestCase
 {
     public function testDiFactory(): void

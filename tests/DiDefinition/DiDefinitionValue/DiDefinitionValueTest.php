@@ -6,25 +6,24 @@ namespace Tests\DiDefinition\DiDefinitionValue;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- *
  * @internal
  */
+#[CoversClass(DiDefinitionValue::class)]
 class DiDefinitionValueTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderDiDefinitionValue
-     */
+    #[DataProvider('dataProviderDiDefinitionValue')]
     public function testDiDefinitionValue(mixed $definition, mixed $expect): void
     {
         $this->assertEquals($expect, (new DiDefinitionValue($definition))->getDefinition());
     }
 
-    public function dataProviderDiDefinitionValue(): Generator
+    public static function dataProviderDiDefinitionValue(): Generator
     {
         yield 'set 1' => [null, null];
 

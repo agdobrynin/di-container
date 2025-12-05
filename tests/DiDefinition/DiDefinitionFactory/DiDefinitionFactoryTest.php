@@ -5,10 +5,21 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionFactory;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Enum\SetupConfigureMethod;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\SetupAttributeTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Bar;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Bat;
@@ -19,20 +30,19 @@ use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Quux;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\SetupAttributeTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionFactory::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(SetupConfigureMethod::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(SetupAttributeTrait::class)]
 class DiDefinitionFactoryTest extends TestCase
 {
     public function testGetDefinitionSuccess(): void
@@ -44,9 +54,7 @@ class DiDefinitionFactoryTest extends TestCase
         self::assertEquals(Foo::class, $factory->getDefinition());
     }
 
-    /**
-     * @dataProvider dataProviderFail
-     */
+    #[DataProvider('dataProviderFail')]
     public function testGetDefinitionFail(string $class): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -56,7 +64,7 @@ class DiDefinitionFactoryTest extends TestCase
         $factory->getDefinition();
     }
 
-    public function dataProviderFail(): Generator
+    public static function dataProviderFail(): Generator
     {
         yield 'class not implemented Kaspi\DiContainer\Interfaces\DiFactoryInterface' => [Bar::class];
 

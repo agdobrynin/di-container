@@ -5,7 +5,16 @@ declare(strict_types=1);
 namespace Tests\FromDocs\PhpDefinitions;
 
 use FilesystemIterator;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 
@@ -14,18 +23,17 @@ use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversFunction('Kaspi\DiContainer\diAutowire')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(Helper::class)]
 class CustomContainerIdentifierDefinitionTest extends TestCase
 {
     public function testCustomContainerIdentifierDefinition(): void

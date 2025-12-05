@@ -4,26 +4,33 @@ declare(strict_types=1);
 
 namespace Tests\Attributes;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Attributes\Fixtures\MultiAutowire;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- * @covers \Kaspi\DiContainer\DefinitionsLoader
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(Helper::class)]
+#[CoversClass(FinderFullyQualifiedNameCollection::class)]
+#[CoversClass(FinderFullyQualifiedName::class)]
+#[CoversClass(FinderFile::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DefinitionsLoader::class)]
+#[CoversClass(Autowire::class)]
+#[CoversClass(AttributeReader::class)]
 class MultiAutowireTest extends TestCase
 {
     public function testMultiAutowireWithoutDefinitionsLoader(): void

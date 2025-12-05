@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\Quux;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\RuleBar;
@@ -16,15 +22,14 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\RuleFoo;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(Helper::class)]
 class FailResolveBindArgumentForVariadicTest extends TestCase
 {
     public function testResolveVariadicFailAndExceptionMessage(): void

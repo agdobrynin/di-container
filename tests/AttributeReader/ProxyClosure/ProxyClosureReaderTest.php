@@ -6,18 +6,19 @@ namespace Tests\AttributeReader\ProxyClosure;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(Helper::class)]
+#[CoversClass(ProxyClosure::class)]
+#[CoversClass(AttributeReader::class)]
 class ProxyClosureReaderTest extends TestCase
 {
     private ?ContainerInterface $container;

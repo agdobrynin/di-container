@@ -7,15 +7,15 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperClassPrivateConstructor;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperInterface;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- *
  * @internal
  */
+#[CoversClass(DiDefinitionAutowire::class)]
 class InstantiableTest extends TestCase
 {
     public function testAutowireIsNotInstantiableStringByInvoke(): void

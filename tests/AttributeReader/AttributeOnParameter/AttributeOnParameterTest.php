@@ -11,22 +11,22 @@ use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use ReflectionParameter;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(Helper::class)]
+#[CoversClass(AttributeReader::class)]
 class AttributeOnParameterTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderParam
-     */
+    #[DataProvider('dataProviderParam')]
     public function testAttributeOnParameterIntersect(ReflectionParameter $param): void
     {
         $this->expectException(AutowireAttributeException::class);
@@ -38,7 +38,7 @@ class AttributeOnParameterTest extends TestCase
         )->valid();
     }
 
-    public function dataProviderParam(): Generator
+    public static function dataProviderParam(): Generator
     {
         yield 'Inject and ProxyClosure' => [
             (new ReflectionFunction(static fn (#[Inject, ProxyClosure('service.one')] $param) => true))->getParameters()[0],

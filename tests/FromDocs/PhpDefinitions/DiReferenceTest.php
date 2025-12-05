@@ -5,7 +5,20 @@ declare(strict_types=1);
 namespace Tests\FromDocs\PhpDefinitions;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 use Tests\FromDocs\PhpDefinitions\Fixtures\MyEmployers;
@@ -18,28 +31,25 @@ use function Kaspi\DiContainer\diGet;
 use function putenv;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
 class DiReferenceTest extends TestCase
 {
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testdiGet(string $envValue, string $expectFile): void
     {
         putenv('APP_TEST_FILE');
@@ -64,7 +74,7 @@ class DiReferenceTest extends TestCase
         $this->assertEquals($expectFile, $container->get(SplFileInfo::class)->getFilename());
     }
 
-    public function dataProvider(): Generator
+    public static function dataProvider(): Generator
     {
         yield 'env APP_TEST_FILE=prod' => ['prod', 'file1.txt'];
 

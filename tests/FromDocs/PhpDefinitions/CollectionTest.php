@@ -6,6 +6,14 @@ namespace Tests\FromDocs\PhpDefinitions;
 
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\IterableArg;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleA;
@@ -19,20 +27,19 @@ use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(Helper::class)]
 class CollectionTest extends TestCase
 {
     public function testCollection(): void

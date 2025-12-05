@@ -6,18 +6,19 @@ namespace Tests\AttributeReader\InjectCallable;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(Helper::class)]
+#[CoversClass(InjectByCallable::class)]
+#[CoversClass(AttributeReader::class)]
 class InjectCallableTest extends TestCase
 {
     private ?ContainerInterface $container;

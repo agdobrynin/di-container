@@ -7,18 +7,19 @@ namespace Tests\AttributeReader\TaggedAs;
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\TaggedAs
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(Helper::class)]
+#[CoversClass(TaggedAs::class)]
+#[CoversClass(AttributeReader::class)]
 class TaggedAsReaderTest extends TestCase
 {
     private ?ContainerInterface $container;

@@ -4,7 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\Call;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\DefinitionDiCall;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\Call\Fixtires\ServiceOne;
 
@@ -13,21 +25,20 @@ use function array_filter;
 use const ARRAY_FILTER_USE_BOTH;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\DefinitionDiCall
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DefinitionDiCall::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
 class CallTest extends TestCase
 {
     public function testController(): void

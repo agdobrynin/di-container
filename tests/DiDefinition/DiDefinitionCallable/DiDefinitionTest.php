@@ -4,29 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionCallable;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceFour;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceOne;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceTwo;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(InjectByCallable::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
 class DiDefinitionTest extends TestCase
 {
     public function testGetDefinitionWhenDefinitionIsCallable(): void

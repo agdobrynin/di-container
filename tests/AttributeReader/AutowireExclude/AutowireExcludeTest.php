@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\AttributeReader\AutowireExclude;
 
 use Kaspi\DiContainer\AttributeReader;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\AttributeReader\AutowireExclude\Fixtures\ClassWillBeExcluded;
@@ -12,9 +13,8 @@ use Tests\AttributeReader\AutowireExclude\Fixtures\ClassWillNotBeExcluded;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\AttributeReader
  */
+#[CoversClass(AttributeReader::class)]
 class AutowireExcludeTest extends TestCase
 {
     public function testAutowireExclude(): void

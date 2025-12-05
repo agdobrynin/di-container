@@ -7,19 +7,21 @@ namespace Tests\DiDefinition\DiDefinitionFactory;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooPrivateConstructor;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooSetup;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionFactory::class)]
+#[CoversClass(Helper::class)]
 class ExposeArgumentBuilderTestTest extends TestCase
 {
     public function testExposeArgumentBuilderException(): void
@@ -42,9 +44,7 @@ class ExposeArgumentBuilderTestTest extends TestCase
         ;
     }
 
-    /**
-     * @dataProvider exposeSetupArgumentBuildersMethodProvider
-     */
+    #[DataProvider('exposeSetupArgumentBuildersMethodProvider')]
     public function testExposeSetupArgumentBuildersMethod(string $class, string $method, string $expectMessageMatches): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -56,7 +56,7 @@ class ExposeArgumentBuilderTestTest extends TestCase
         ;
     }
 
-    public function exposeSetupArgumentBuildersMethodProvider(): Generator
+    public static function exposeSetupArgumentBuildersMethodProvider(): Generator
     {
         yield 'method not exist' => [FooSetup::class, 'baz', '/The setter method ".+FooSetup::baz\(\)" does not exist\./'];
 

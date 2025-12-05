@@ -7,20 +7,26 @@ namespace Tests\Attributes\Raw;
 use Generator;
 use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Setup
- * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\diGet
- *
  * @internal
  */
+#[
+    CoversClass(DiDefinitionAutowire::class),
+    CoversClass(SetupImmutable::class),
+    CoversClass(Setup::class),
+    CoversClass(DiDefinitionGet::class),
+    CoversFunction('Kaspi\DiContainer\diGet')
+]
 class SetupAndSetupImmutableTest extends TestCase
 {
     public function testFailSetupNotSetMethod(): void
@@ -37,9 +43,7 @@ class SetupAndSetupImmutableTest extends TestCase
         (new SetupImmutable())->getIdentifier();
     }
 
-    /**
-     * @dataProvider dataProviderMethod
-     */
+    #[DataProvider('dataProviderMethod')]
     public function testFailSetupSetMethod(string $method): void
     {
         $this->expectException(AutowireExceptionInterface::class);
@@ -48,9 +52,7 @@ class SetupAndSetupImmutableTest extends TestCase
         $s->setMethod($method);
     }
 
-    /**
-     * @dataProvider dataProviderMethod
-     */
+    #[DataProvider('dataProviderMethod')]
     public function testFailSetupImmutableSetMethod(string $method): void
     {
         $this->expectException(AutowireExceptionInterface::class);
@@ -59,7 +61,7 @@ class SetupAndSetupImmutableTest extends TestCase
         $s->setMethod($method);
     }
 
-    public function dataProviderMethod(): Generator
+    public static function dataProviderMethod(): Generator
     {
         yield 'empty string' => [''];
 
@@ -74,9 +76,7 @@ class SetupAndSetupImmutableTest extends TestCase
         yield 'not valid string " method"' => [' method'];
     }
 
-    /**
-     * @dataProvider dataProviderSuccessMethod
-     */
+    #[DataProvider('dataProviderSuccessMethod')]
     public function testSuccessSetupSetMethod(string $method): void
     {
         $s = new Setup();
@@ -86,9 +86,7 @@ class SetupAndSetupImmutableTest extends TestCase
         self::assertEquals([], $s->getArguments());
     }
 
-    /**
-     * @dataProvider dataProviderSuccessMethod
-     */
+    #[DataProvider('dataProviderSuccessMethod')]
     public function testSuccessSetupImmutableSetMethod(string $method): void
     {
         $s = new SetupImmutable();
@@ -98,7 +96,7 @@ class SetupAndSetupImmutableTest extends TestCase
         self::assertEquals([], $s->getArguments());
     }
 
-    public function dataProviderSuccessMethod(): Generator
+    public static function dataProviderSuccessMethod(): Generator
     {
         yield 'success name #1' => ['withLogger'];
 

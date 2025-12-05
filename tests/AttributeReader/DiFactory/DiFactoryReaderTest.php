@@ -9,6 +9,8 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
@@ -19,11 +21,10 @@ use Tests\AttributeReader\DiFactory\Fixtures\MainFirstDiFactory;
 use Tests\AttributeReader\DiFactory\Fixtures\NoDiFactories;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\DiFactory
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiFactory::class)]
 class DiFactoryReaderTest extends TestCase
 {
     public function testHasOneAttribute(): void
@@ -49,9 +50,7 @@ class DiFactoryReaderTest extends TestCase
         AttributeReader::getDiFactoryAttribute(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
     }
 
-    /**
-     * @dataProvider dataProviderReturnTypeFromFactory
-     */
+    #[DataProvider('dataProviderReturnTypeFromFactory')]
     public function testReturnTypeFromFactory(string $class): void
     {
         $this->expectException(AutowireParameterTypeException::class);
@@ -59,7 +58,7 @@ class DiFactoryReaderTest extends TestCase
         AttributeReader::getDiFactoryAttribute(new ReflectionClass($class));
     }
 
-    public function dataProviderReturnTypeFromFactory(): Generator
+    public static function dataProviderReturnTypeFromFactory(): Generator
     {
         yield 'For class '.MainFail::class => [MainFail::class];
 

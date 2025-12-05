@@ -7,6 +7,8 @@ namespace Tests\FinderFile;
 use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 
@@ -15,15 +17,12 @@ use function count;
 use function iterator_to_array;
 
 /**
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- *
  * @internal
  */
+#[CoversClass(FinderFile::class)]
 class FinderFileTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderConstructor
-     */
+    #[DataProvider('dataProviderConstructor')]
     public function testFinderFileConstructorFail(string $src, string $expectMessage): void
     {
         $this->expectException(InvalidArgumentException::class);

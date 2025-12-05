@@ -9,6 +9,8 @@ use Generator;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use LogicException;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use RuntimeException;
@@ -16,9 +18,8 @@ use Tests\FinderClosureCode\Fixture\Yoo;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\Finder\FinderClosureCode
  */
+#[CoversClass(FinderClosureCode::class)]
 class FinderClosureCodeExceptionsTest extends TestCase
 {
     public function testFunctionCantGetSourceFile(): void
@@ -47,9 +48,7 @@ class FinderClosureCodeExceptionsTest extends TestCase
         (new FinderClosureCode())->getCode($res['a']);
     }
 
-    /**
-     * @dataProvider dataProviderNoneStatic
-     */
+    #[DataProvider('dataProviderNoneStatic')]
     public function testShortClosureNoneStatic(Closure $fn): void
     {
         $this->expectException(LogicException::class);
@@ -58,7 +57,7 @@ class FinderClosureCodeExceptionsTest extends TestCase
         (new FinderClosureCode())->getCode($fn);
     }
 
-    public function dataProviderNoneStatic(): Generator
+    public static function dataProviderNoneStatic(): Generator
     {
         yield 'short function' => [fn () => true];
 

@@ -7,19 +7,19 @@ namespace Tests\Attributes\Raw;
 use Generator;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(ProxyClosure::class)]
+#[CoversClass(Helper::class)]
 class ProxyClosureTest extends TestCase
 {
-    /**
-     * @dataProvider successIdsDataProvider
-     */
+    #[DataProvider('successIdsDataProvider')]
     public function testSuccess(string $id, string $expect): void
     {
         $asClosureAttr = new ProxyClosure($id);
@@ -27,7 +27,7 @@ class ProxyClosureTest extends TestCase
         $this->assertEquals($expect, $asClosureAttr->getIdentifier());
     }
 
-    public function successIdsDataProvider(): Generator
+    public static function successIdsDataProvider(): Generator
     {
         yield 'string' => ['ok', 'ok'];
 

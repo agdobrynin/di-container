@@ -4,9 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall\CircularReference;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainerCall\CircularReference\Fixtures\ClassWithMethod;
@@ -19,25 +32,24 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\DefinitionDiCall
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Inject::class)]
+#[CoversClass(DefinitionDiCall::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
 class MainTest extends TestCase
 {
     public function testCircularInjectByAttribute(): void

@@ -7,18 +7,17 @@ namespace Tests\Attributes\Raw;
 use Generator;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\TaggedAs
- *
  * @internal
  */
+#[CoversClass(TaggedAs::class)]
 class TaggedAsTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderFail
-     */
+    #[DataProvider('dataProviderFail')]
     public function testTagFail(string $name): void
     {
         $this->expectException(AutowireExceptionInterface::class);

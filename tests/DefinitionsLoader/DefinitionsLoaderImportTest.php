@@ -5,13 +5,25 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use ArrayIterator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\AppClass;
@@ -25,27 +37,26 @@ use function sort;
 use const T_TRAIT;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- * @covers \Kaspi\DiContainer\Attributes\Service
- * @covers \Kaspi\DiContainer\DefinitionsLoader
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(\Kaspi\DiContainer\Attributes\Autowire::class)]
+#[CoversClass(\Kaspi\DiContainer\Attributes\Service::class)]
+#[CoversClass(DefinitionsLoader::class)]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(DefinitionsLoaderException::class)]
+#[CoversClass(FinderFile::class)]
+#[CoversClass(FinderFullyQualifiedName::class)]
+#[CoversClass(FinderFullyQualifiedNameCollection::class)]
+#[CoversClass(Helper::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void

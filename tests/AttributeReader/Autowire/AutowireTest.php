@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\AttributeReader\Autowire;
 
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\AttributeReader\Autowire\Fixtures\ClassWithDiFactoryAndAutowire;
@@ -15,11 +17,10 @@ use Tests\AttributeReader\Autowire\Fixtures\MultipleAutowireFail;
 use function iterator_to_array;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- *
  * @internal
  */
+#[CoversClass(Autowire::class)]
+#[CoversClass(AttributeReader::class)]
 class AutowireTest extends TestCase
 {
     public function testAutowireCannotUseWithDiFactoryAndAutowire(): void
