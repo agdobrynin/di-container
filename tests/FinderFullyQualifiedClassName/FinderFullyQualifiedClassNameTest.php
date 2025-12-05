@@ -9,6 +9,8 @@ use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SplFileInfo;
@@ -22,15 +24,12 @@ use const T_CLASS;
 use const T_INTERFACE;
 
 /**
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- *
  * @internal
  */
+#[CoversClass(FinderFullyQualifiedName::class)]
 class FinderFullyQualifiedClassNameTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderFinderClassConstructFail
-     */
+    #[DataProvider('dataProviderFinderClassConstructFail')]
     public function testFinderClassConstructFail(string $namespace, string $expectMessage): void
     {
         $this->expectException(InvalidArgumentException::class);

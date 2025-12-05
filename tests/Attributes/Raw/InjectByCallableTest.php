@@ -6,26 +6,25 @@ namespace Tests\Attributes\Raw;
 
 use Generator;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Attributes\Raw\Fixtures\Bar;
 use Tests\Attributes\Raw\Fixtures\Foo;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- *
  * @internal
  */
+#[CoversClass(InjectByCallable::class)]
 class InjectByCallableTest extends TestCase
 {
-    /**
-     * @dataProvider successIdsDataProvider
-     */
+    #[DataProvider('successIdsDataProvider')]
     public function testSuccess(callable $def): void
     {
         $this->assertEquals($def, (new InjectByCallable($def))->getCallable());
     }
 
-    public function successIdsDataProvider(): Generator
+    public static function successIdsDataProvider(): Generator
     {
         yield 'function' => ['log'];
 

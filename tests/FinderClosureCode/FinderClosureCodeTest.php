@@ -10,6 +10,8 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -20,11 +22,10 @@ use function dirname;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Finder\FinderClosureCode
  */
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversClass(FinderClosureCode::class)]
+#[CoversClass(DiDefinitionCallable::class)]
 class FinderClosureCodeTest extends TestCase
 {
     private static array $namespace_brace_services1;

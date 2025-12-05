@@ -6,25 +6,29 @@ namespace Tests\DefinitionsLoader;
 
 use Generator;
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\Exception\ContainerIdentifierException;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\DefinitionsLoader
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Exception\ContainerIdentifierException
- * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(DefinitionsLoader::class)]
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(ContainerIdentifierException::class)]
+#[CoversClass(DefinitionsLoaderException::class)]
+#[CoversClass(Helper::class)]
 class DefinitionsLoaderTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderInvalidContent
-     */
+    #[DataProvider('dataProviderInvalidContent')]
     public function testInvalidFileContent(string $file): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
@@ -33,7 +37,7 @@ class DefinitionsLoaderTest extends TestCase
         (new DefinitionsLoader())->load($file);
     }
 
-    public function dataProviderInvalidContent(): Generator
+    public static function dataProviderInvalidContent(): Generator
     {
         yield 'no return' => [__DIR__.'/Fixtures/FailContent/f1.php'];
 
@@ -48,9 +52,7 @@ class DefinitionsLoaderTest extends TestCase
         (new DefinitionsLoader())->load('f.php');
     }
 
-    /**
-     * @dataProvider dataProvideDefinitionException
-     */
+    #[DataProvider('dataProvideDefinitionException')]
     public function testDefinitionException(string $file): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
@@ -59,7 +61,7 @@ class DefinitionsLoaderTest extends TestCase
         (new DefinitionsLoader())->load($file);
     }
 
-    public function dataProvideDefinitionException(): Generator
+    public static function dataProvideDefinitionException(): Generator
     {
         yield 'definition without container identifier' => [__DIR__.'/Fixtures/DefinitionException/no-identifier.php'];
 

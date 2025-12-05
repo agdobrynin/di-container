@@ -5,10 +5,16 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionTaggedAs;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\DefaultPriorityMethodWrong\Baz;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\DefaultPriorityMethodWrong\Foo;
@@ -16,20 +22,17 @@ use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\DefaultPriorityMethodWrong\
 use function Kaspi\DiContainer\diAutowire;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Tag
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Tag::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
 class TaggedAsDefaultPriorityMethodTest extends TestCase
 {
-    /**
-     * @dataProvider dataProviderDefaultPriorityMethodWrongWithPhpAttribute
-     */
+    #[DataProvider('dataProviderDefaultPriorityMethodWrongWithPhpAttribute')]
     public function testGetDefaultPriorityMethodWrongWithPhpAttribute(string $tagName, array $definitions, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -48,7 +51,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         $t->resolve($container);
     }
 
-    public function dataProviderDefaultPriorityMethodWrongWithPhpAttribute(): Generator
+    public static function dataProviderDefaultPriorityMethodWrongWithPhpAttribute(): Generator
     {
         yield 'return object' => [
             'tags.bat',
@@ -69,9 +72,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider dataProviderDefaultPriorityMethodWrong
-     */
+    #[DataProvider('dataProviderDefaultPriorityMethodWrong')]
     public function testGetDefaultPriorityMethodWrong(string $tagName, array $definitions, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -86,7 +87,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         $t->resolve($container);
     }
 
-    public function dataProviderDefaultPriorityMethodWrong(): Generator
+    public static function dataProviderDefaultPriorityMethodWrong(): Generator
     {
         yield 'return object' => [
             'tags.baz',

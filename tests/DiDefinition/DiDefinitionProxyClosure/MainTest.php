@@ -7,27 +7,27 @@ namespace Tests\DiDefinition\DiDefinitionProxyClosure;
 use Closure;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(DiDefinitionProxyClosure::class)]
+#[CoversClass(Helper::class)]
 class MainTest extends TestCase
 {
-    /**
-     * @dataProvider successDefinitionDataProvider
-     */
+    #[DataProvider('successDefinitionDataProvider')]
     public function testDefinitionSuccess(string $id, string $expect): void
     {
         $this->assertEquals($expect, (new DiDefinitionProxyClosure($id))->getDefinition());
     }
 
-    public function successDefinitionDataProvider(): Generator
+    public static function successDefinitionDataProvider(): Generator
     {
         yield 'string' => ['ok', 'ok'];
 

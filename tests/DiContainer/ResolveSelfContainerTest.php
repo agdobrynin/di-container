@@ -8,34 +8,31 @@ use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- *
  * @internal
  */
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
 class ResolveSelfContainerTest extends TestCase
 {
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testResolveWithoutConfig(string $id): void
     {
         $this->assertInstanceOf(DiContainer::class, (new DiContainer())->get($id));
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testResolveWithConfig(string $id): void
     {
         $this->assertInstanceOf(DiContainer::class, (new DiContainer(config: new DiContainerConfig()))->get($id));
     }
 
-    public function dataProvider(): Generator
+    public static function dataProvider(): Generator
     {
         yield 'ContainerInterface' => [ContainerInterface::class];
 

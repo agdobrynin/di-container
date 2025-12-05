@@ -4,7 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Tag;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diCallable;
@@ -12,19 +22,18 @@ use function Kaspi\DiContainer\diTaggedAs;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\Helper
  */
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(Helper::class)]
 class TaggedAsVariadicTest extends TestCase
 {
     public function testTaggedAsForVariadicByIndex(): void

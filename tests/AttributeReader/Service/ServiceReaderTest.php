@@ -6,6 +6,7 @@ namespace Tests\AttributeReader\Service;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Service;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\AttributeReader\Service\Fixtures\Main;
@@ -13,11 +14,10 @@ use Tests\AttributeReader\Service\Fixtures\MainInterface;
 use Tests\AttributeReader\Service\Fixtures\NoServiceInterface;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Service
- *
  * @internal
  */
+#[CoversClass(Service::class)]
+#[CoversClass(AttributeReader::class)]
 class ServiceReaderTest extends TestCase
 {
     public function testHasOneAttribute(): void

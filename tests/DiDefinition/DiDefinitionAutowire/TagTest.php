@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
@@ -19,13 +24,13 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Bar;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Foo;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Tag
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Tag::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionGet::class)]
 class TagTest extends TestCase
 {
     public function testTagsByBindTag(): void
@@ -143,9 +148,7 @@ class TagTest extends TestCase
         $this->assertTrue($def->hasTag('tags.validator.two'));
     }
 
-    /**
-     * @dataProvider dataProviderPriorityTagMethodWrongType
-     */
+    #[DataProvider('dataProviderPriorityTagMethodWrongType')]
     public function testGetPriorityByPriorityTagMethodWrongType(mixed $priorityTagMethod): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -166,9 +169,7 @@ class TagTest extends TestCase
         yield 'string with spaces' => ['   '];
     }
 
-    /**
-     * @dataProvider dataProviderPriorityMethodByPhpAttributeWithWrongType
-     */
+    #[DataProvider('dataProviderPriorityMethodByPhpAttributeWithWrongType')]
     public function testGetPriorityMethodByPhpAttributeWithWrongType(string $class, string $tagName): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -188,16 +189,14 @@ class TagTest extends TestCase
         $def->geTagPriority($tagName);
     }
 
-    public function dataProviderPriorityMethodByPhpAttributeWithWrongType(): Generator
+    public static function dataProviderPriorityMethodByPhpAttributeWithWrongType(): Generator
     {
         yield 'provide by parameter $priorityMethod' => [Bar::class, 'tags.baz'];
 
         yield 'provide bt parameter $options with key "priority.method"' => [Foo::class, 'tags.baz'];
     }
 
-    /**
-     * @dataProvider dataProviderPriorityTagMethodByOptionsWrongType
-     */
+    #[DataProvider('dataProviderPriorityTagMethodByOptionsWrongType')]
     public function testGetPriorityByPriorityTagMethodByOptionsWrongType(array $options): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -247,9 +246,7 @@ class TagTest extends TestCase
         $this->assertNull($def->geTagPriority('tags.handler-one', ['priority.default_method' => 'getTaggedPriorityNonExist']));
     }
 
-    /**
-     * @dataProvider dataProviderWrongReturnType
-     */
+    #[DataProvider('dataProviderWrongReturnType')]
     public function testWrongReturnType(string $class, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);

@@ -6,15 +6,23 @@ namespace Tests\DiDefinition\BuildArguments;
 
 use Closure;
 use DiDefinition\BuildArguments\Fixtures\BazInterface;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
@@ -32,24 +40,25 @@ use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
- * @covers \Kaspi\DiContainer\Attributes\TaggedAs
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diProxyClosure
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
- *
  * @internal
  */
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(TaggedAs::class)]
+#[CoversClass(ProxyClosure::class)]
+#[CoversClass(InjectByCallable::class)]
+#[CoversClass(Inject::class)]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diProxyClosure')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversClass(Helper::class)]
+#[CoversClass(BindArgumentsTrait::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionProxyClosure::class)]
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;

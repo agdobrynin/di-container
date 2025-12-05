@@ -5,10 +5,20 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Enum\SetupConfigureMethod;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupByAttributeWithArgumentAsReference;
@@ -19,21 +29,19 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SomeClass;
 use function Kaspi\DiContainer\diValue;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Setup
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet::getDefinition
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Enum\SetupConfigureMethod
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(\Kaspi\DiContainer\Attributes\Setup::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(SetupConfigureMethod::class)]
+#[CoversClass(Helper::class)]
 class SetupTest extends TestCase
 {
     public function testSetupSuccess(): void
@@ -144,9 +152,7 @@ class SetupTest extends TestCase
         self::assertEquals('la-la-la', $class->getAnyAsString());
     }
 
-    /**
-     * @dataProvider dataProviderSetupOnMethod
-     */
+    #[DataProvider('dataProviderSetupOnMethod')]
     public function testSetupOnMethod(string $class, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -159,7 +165,7 @@ class SetupTest extends TestCase
         $def->resolve($this->createMock(DiContainerInterface::class));
     }
 
-    public function dataProviderSetupOnMethod(): Generator
+    public static function dataProviderSetupOnMethod(): Generator
     {
         yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
 

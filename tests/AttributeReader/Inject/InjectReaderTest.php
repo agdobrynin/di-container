@@ -7,19 +7,20 @@ namespace Tests\AttributeReader\Inject;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 use Tests\AttributeReader\Inject\Fixtures\SuperClass;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(Helper::class)]
+#[CoversClass(Inject::class)]
+#[CoversClass(AttributeReader::class)]
 class InjectReaderTest extends TestCase
 {
     private ContainerInterface $container;

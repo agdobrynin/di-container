@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration\ResolveParameterWithDefaultValue;
 
 use Kaspi\DiContainer\DiContainerFactory;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\Integration\ResolveParameterWithDefaultValue\Fixtures\Foo;
@@ -13,10 +14,9 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @coversNothing
- *
  * @internal
  */
+#[CoversNothing]
 class ExceptionMessageWhenBindArgIsNamedArgumentTest extends TestCase
 {
     public function testExceptionMessage(): void

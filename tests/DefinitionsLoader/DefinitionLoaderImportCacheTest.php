@@ -4,13 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo;
 use Throwable;
@@ -22,26 +34,25 @@ use function sort;
 use function unlink;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\Attributes\Service
- * @covers \Kaspi\DiContainer\DefinitionsLoader
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Exception\DefinitionsLoaderException
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\FinderFullyQualifiedNameCollection
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Autowire::class)]
+#[CoversClass(DiFactory::class)]
+#[CoversClass(Service::class)]
+#[CoversClass(DefinitionsLoader::class)]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionFactory::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversClass(DefinitionsLoaderException::class)]
+#[CoversClass(FinderFile::class)]
+#[CoversClass(FinderFullyQualifiedName::class)]
+#[CoversClass(FinderFullyQualifiedNameCollection::class)]
+#[CoversClass(Helper::class)]
 class DefinitionLoaderImportCacheTest extends TestCase
 {
     public function testImportCacheFileInNotReadableByDefinitions(): void

@@ -10,7 +10,11 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
@@ -24,20 +28,20 @@ use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diProxyClosure
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diProxyClosure')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionProxyClosure::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
 class HelperFunctionTest extends TestCase
 {
     public function testFunctiondiGet(): void
@@ -85,15 +89,13 @@ class HelperFunctionTest extends TestCase
         $this->assertInstanceOf(DiDefinitionTaggedAs::class, $def);
     }
 
-    /**
-     * @dataProvider dataProviderReflectionFn
-     */
+    #[DataProvider('dataProviderReflectionFn')]
     public function testFunctionName(ReflectionFunctionAbstract $fn, string $expectRegExp): void
     {
         self::assertMatchesRegularExpression($expectRegExp, Helper::functionName($fn));
     }
 
-    public function dataProviderReflectionFn(): Generator
+    public static function dataProviderReflectionFn(): Generator
     {
         yield 'in class method' => [
             (new ReflectionClass(AnyClass::class))->getMethod('foo'),

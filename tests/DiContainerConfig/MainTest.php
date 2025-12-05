@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\DiContainerConfig;
 
 use Kaspi\DiContainer\DiContainerConfig;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainerConfig
- *
  * @internal
  */
+#[CoversClass(DiContainerConfig::class)]
 class MainTest extends TestCase
 {
     public function testDefaultValues(): void

@@ -6,6 +6,7 @@ namespace Tests\FromDocs\Tags\Attributes\TestFromIssues;
 
 use Kaspi\DiContainer\DiContainerFactory;
 use LogicException;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\Tags\Attributes\TestFromIssues\Fixtures\RuleMinLength;
 use Tests\FromDocs\Tags\Attributes\TestFromIssues\Fixtures\RuleTaggedByInterface;
@@ -15,9 +16,8 @@ use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @internal
- *
- * @coversNothing
  */
+#[CoversNothing]
 class IssueExampleTest extends TestCase
 {
     public function testIssueExample(): void

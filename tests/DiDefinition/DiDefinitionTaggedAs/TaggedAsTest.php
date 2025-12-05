@@ -7,20 +7,23 @@ namespace Tests\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\LazyDefinitionIterator;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diValue;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  */
+#[CoversFunction('Kaspi\DiContainer\diValue')]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(LazyDefinitionIterator::class)]
 class TaggedAsTest extends TestCase
 {
     public function testTaggedAsEmptyLazy(): void

@@ -6,17 +6,17 @@ namespace Tests\AttributeReader\Tag;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Tag;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\AttributeReader\Tag\Fixtures\NoneTaggedClass;
 use Tests\AttributeReader\Tag\Fixtures\TaggedClass;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Tag
- *
  * @internal
  */
+#[CoversClass(Tag::class)]
+#[CoversClass(AttributeReader::class)]
 class TagReaderTest extends TestCase
 {
     public function testNoneTaggedClassReader(): void

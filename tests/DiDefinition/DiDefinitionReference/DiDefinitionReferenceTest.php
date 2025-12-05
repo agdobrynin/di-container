@@ -6,15 +6,17 @@ namespace Tests\DiDefinition\DiDefinitionReference;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(Helper::class)]
 class DiDefinitionReferenceTest extends TestCase
 {
     public function testDiDefinitionReferenceFail(): void
@@ -24,9 +26,7 @@ class DiDefinitionReferenceTest extends TestCase
         (new DiDefinitionGet(''))->getDefinition();
     }
 
-    /**
-     * @dataProvider dataProviderDefinitionSuccess
-     */
+    #[DataProvider('dataProviderDefinitionSuccess')]
     public function testDiDefinitionReferenceSuccess(string $definition, string $expect): void
     {
         $def = new DiDefinitionGet($definition);
@@ -34,7 +34,7 @@ class DiDefinitionReferenceTest extends TestCase
         $this->assertEquals($expect, $def->getDefinition());
     }
 
-    public function dataProviderDefinitionSuccess(): Generator
+    public static function dataProviderDefinitionSuccess(): Generator
     {
         yield 'set 1' => ['key1', 'key1'];
 

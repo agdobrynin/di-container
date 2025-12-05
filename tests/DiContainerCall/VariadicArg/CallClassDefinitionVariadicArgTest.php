@@ -4,8 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall\VariadicArg;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainerCall\VariadicArg\Fixtures\Talk;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordHello;
@@ -17,26 +31,29 @@ use function Kaspi\DiContainer\diFactory;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Inject::getIdentifier
- * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- * @covers \Kaspi\DiContainer\DefinitionDiCall
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diFactory
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
+ * @covers
  *
  * @internal
  */
+#[
+    CoversFunction('\Kaspi\DiContainer\diAutowire'),
+    CoversFunction('\Kaspi\DiContainer\diGet'),
+    CoversFunction('\Kaspi\DiContainer\diFactory'),
+    CoversClass(AttributeReader::class),
+    CoversClass(Inject::class),
+    CoversClass(ReflectionMethodByDefinition::class),
+    CoversClass(Helper::class),
+    CoversClass(DiDefinitionGet::class),
+    CoversClass(DiDefinitionFactory::class),
+    CoversClass(DiDefinitionCallable::class),
+    CoversClass(DiDefinitionAutowire::class),
+    CoversClass(ArgumentResolver::class),
+    CoversClass(ArgumentBuilder::class),
+    CoversClass(DiContainerConfig::class),
+    CoversClass(DiContainer::class),
+    CoversClass(DefinitionDiCall::class),
+    CoversClass(InjectByCallable::class),
+]
 class CallClassDefinitionVariadicArgTest extends TestCase
 {
     public function testCallStaticMethodWithoutAttributePassArgumentBydiGet(): void

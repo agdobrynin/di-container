@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\BuildArguments;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use ReflectionFunction;
@@ -23,16 +28,16 @@ use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Inject::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(BindArgumentsTrait::class)]
 class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 {
     use BindArgumentsTrait;

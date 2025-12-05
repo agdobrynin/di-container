@@ -4,7 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependency;
@@ -13,17 +21,16 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependencyDiFactory;
 use function Kaspi\DiContainer\diFactory;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory
- * @covers \Kaspi\DiContainer\diFactory
- * @covers \Kaspi\DiContainer\Helper
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diFactory')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionFactory::class)]
+#[CoversClass(Helper::class)]
 class DiFactoryTest extends TestCase
 {
     public function testCreateByDiFactory(): void

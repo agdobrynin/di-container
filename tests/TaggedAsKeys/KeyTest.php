@@ -4,10 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\TaggedAsKeys;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\LazyDefinitionIterator;
+use Kaspi\DiContainer\Traits\TagsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\TaggedAsKeys\Fixtures\One;
 use Tests\TaggedAsKeys\Fixtures\Two;
@@ -17,19 +25,19 @@ use function Kaspi\DiContainer\diTaggedAs;
 use function Kaspi\DiContainer\diValue;
 
 /**
- * @covers \Kaspi\DiContainer\AttributeReader
- * @covers \Kaspi\DiContainer\Attributes\Tag
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- * @covers \Kaspi\DiContainer\Traits\TagsTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Tag::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(TagsTrait::class)]
 class KeyTest extends TestCase
 {
     private ?object $container;

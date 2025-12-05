@@ -5,31 +5,37 @@ declare(strict_types=1);
 namespace Tests\DiContainerCall\WrongDefinition;
 
 use Generator;
+use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 /**
- * @covers \Kaspi\DiContainer\DefinitionDiCall
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
- *
  * @internal
  */
+#[CoversClass(DefinitionDiCall::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
 class MainTest extends TestCase
 {
     /**
-     * @dataProvider dataProviderWrongDefinition
-     *
      * @param mixed $definition
      */
+    #[DataProvider('dataProviderWrongDefinition')]
     public function testWrongDefinitionAsString(array|callable|string $definition): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -38,7 +44,7 @@ class MainTest extends TestCase
         (new DiContainer(config: new DiContainerConfig()))->call($definition);
     }
 
-    public function dataProviderWrongDefinition(): Generator
+    public static function dataProviderWrongDefinition(): Generator
     {
         yield 'empty string' => [
             '',

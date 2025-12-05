@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Attributes\Raw;
 
 use Kaspi\DiContainer\Attributes\Autowire;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- *
  * @internal
  */
+#[CoversClass(Autowire::class)]
 class AutowireTest extends TestCase
 {
     public function testAutowireWithDefault(): void

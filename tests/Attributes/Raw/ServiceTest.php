@@ -7,13 +7,14 @@ namespace Tests\Attributes\Raw;
 use Generator;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Service
- *
  * @internal
  */
+#[CoversClass(Service::class)]
 class ServiceTest extends TestCase
 {
     public function testServiceWithDefaultValue(): void
@@ -32,9 +33,7 @@ class ServiceTest extends TestCase
         $this->assertTrue($service->isSingleton());
     }
 
-    /**
-     * @dataProvider dataProviderServiceIdFail
-     */
+    #[DataProvider('dataProviderServiceIdFail')]
     public function testServiceWithEmptyId(string $id): void
     {
         $this->expectException(AutowireExceptionInterface::class);
@@ -43,7 +42,7 @@ class ServiceTest extends TestCase
         new Service($id);
     }
 
-    public function dataProviderServiceIdFail(): Generator
+    public static function dataProviderServiceIdFail(): Generator
     {
         yield 'empty id' => [''];
 

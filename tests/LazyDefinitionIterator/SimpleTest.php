@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\LazyDefinitionIterator;
 
 use Kaspi\DiContainer\LazyDefinitionIterator;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 /**
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- *
  * @internal
  */
+#[CoversClass(LazyDefinitionIterator::class)]
 class SimpleTest extends TestCase
 {
     private ?object $container;

@@ -9,9 +9,16 @@ use DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
@@ -30,18 +37,19 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diValue;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Helper
- * @covers \Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition
- * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(BindArgumentsTrait::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionValue::class)]
 class BuildArgumentsByPhpDefinitionTest extends TestCase
 {
     use BindArgumentsTrait;
