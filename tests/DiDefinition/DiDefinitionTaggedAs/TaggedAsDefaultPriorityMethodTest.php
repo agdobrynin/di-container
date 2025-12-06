@@ -39,7 +39,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
     public function testGetDefaultPriorityMethodWrongWithPhpAttribute(string $tagName, array $definitions, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/via default priority method .+Baz::'.$method.'()/');
+        $this->expectExceptionMessageMatches('/via default priority method .+Baz::'.$method.'\(\).+Method must return type "int\|string\|null"/');
 
         $container = $this->createMock(DiContainerInterface::class);
         $container->method('getConfig')->willReturn(

@@ -177,7 +177,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $method, $taggedAs);
                 } catch (AutowireException|InvalidArgumentException $e) {
                     throw new DiDefinitionException(
-                        message: sprintf('Cannot get key for tag "%s" via method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $method),
+                        message: sprintf('Cannot get key for tag "%s" via method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getIdentifier(), $method, $e->getMessage()),
                         previous: $e
                     );
                 }
@@ -194,7 +194,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return $identifier;
         } catch (AutowireException $e) {
             throw new DiDefinitionException(
-                message: sprintf('Cannot get key for tag "%s" via default method %s::%s().', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod),
+                message: sprintf('Cannot get key for tag "%s" via default method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod, $e->getMessage()),
                 previous: $e
             );
         }
