@@ -47,7 +47,11 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
 
         $container->method('findTaggedDefinitions')
             ->with($tagName)
-            ->willReturn($definitions)
+            ->willReturnCallback(function () use ($definitions, $container) {
+                foreach ($definitions as $definition) {
+                    yield $definition->setContainer($container);
+                }
+            })
         ;
 
         $t = new DiDefinitionTaggedAs($tagName, isLazy: false, priorityDefaultMethod: $method);
@@ -84,7 +88,14 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         // Php attribute disabled.
         $container = $this->createMock(DiContainerInterface::class);
 
-        $container->method('getDefinitions')->willReturn($definitions);
+        $container->method('findTaggedDefinitions')
+            ->with($tagName)
+            ->willReturnCallback(function () use ($definitions, $container) {
+                foreach ($definitions as $definition) {
+                    yield $definition->setContainer($container);
+                }
+            })
+        ;
 
         $t = new DiDefinitionTaggedAs($tagName, isLazy: false, priorityDefaultMethod: $method);
         $t->resolve($container);

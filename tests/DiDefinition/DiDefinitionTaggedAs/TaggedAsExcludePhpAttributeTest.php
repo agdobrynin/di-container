@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Attribute\One;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Attribute\TaggedAsCollection;
@@ -23,6 +24,7 @@ use function Kaspi\DiContainer\diAutowire;
 /**
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Tag::class)]
 #[CoversClass(DiContainerConfig::class)]
