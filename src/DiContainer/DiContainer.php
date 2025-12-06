@@ -26,6 +26,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
@@ -193,6 +194,30 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function getConfig(): ?DiContainerConfigInterface
     {
         return $this->config;
+    }
+
+    public function findTaggedDefinitions(string $tag): iterable
+    {
+        $tagIsInterface = null;
+
+        foreach ($this->definitions as $containerIdentifier => $definition) {
+            if ($definition instanceof DiTaggedDefinitionInterface) {
+                if ($definition instanceof DiDefinitionAutowireInterface) {
+                    $tagIsInterface ??= interface_exists($tag);
+                    // Pass container with configuration for determinate using php attribute or not.
+                    $definition->setContainer($this);
+                    $hasTag = true === $tagIsInterface
+                        ? $definition->getDefinition()->implementsInterface($tag)
+                        : $definition->hasTag($tag);
+                } else {
+                    $hasTag = $definition->hasTag($tag);
+                }
+
+                if ($hasTag) {
+                    yield $containerIdentifier => $definition;
+                }
+            }
+        }
     }
 
     /**

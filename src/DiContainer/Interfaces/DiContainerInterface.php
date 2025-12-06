@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -40,4 +41,13 @@ interface DiContainerInterface extends ContainerInterface
     public function getDefinitions(): iterable;
 
     public function getConfig(): ?DiContainerConfigInterface;
+
+    /**
+     * @param non-empty-string $tag
+     *
+     * @return iterable<non-empty-string, (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function findTaggedDefinitions(string $tag): iterable;
 }

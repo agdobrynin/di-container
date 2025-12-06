@@ -32,11 +32,14 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 class TaggedAsDefaultPriorityMethodTest extends TestCase
 {
+    /**
+     * @param DiDefinitionAutowire[] $definitions
+     */
     #[DataProvider('dataProviderDefaultPriorityMethodWrongWithPhpAttribute')]
     public function testGetDefaultPriorityMethodWrongWithPhpAttribute(string $tagName, array $definitions, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/via default priority method .+Baz::'.$method.'()/');
+        $this->expectExceptionMessageMatches('/via default priority method .+Baz::'.$method.'\(\).+Method must return type "int\|string\|null"/');
 
         $container = $this->createMock(DiContainerInterface::class);
         $container->method('getConfig')->willReturn(
@@ -45,7 +48,14 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
             )
         );
 
-        $container->method('getDefinitions')->willReturn($definitions);
+        $container->method('findTaggedDefinitions')
+            ->with($tagName)
+            ->willReturnCallback(function () use ($definitions, $container) {
+                foreach ($definitions as $definition) {
+                    yield $definition->getIdentifier() => $definition->setContainer($container);
+                }
+            })
+        ;
 
         $t = new DiDefinitionTaggedAs($tagName, isLazy: false, priorityDefaultMethod: $method);
         $t->resolve($container);
@@ -56,8 +66,8 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         yield 'return object' => [
             'tags.bat',
             [
-                diAutowire(Foo::class),
-                diAutowire(Baz::class),
+                new DiDefinitionAutowire(Foo::class),
+                new DiDefinitionAutowire(Baz::class),
             ],
             'getPriorityDefaultOne',
         ];
@@ -72,6 +82,9 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         ];
     }
 
+    /**
+     * @param DiDefinitionAutowire[] $definitions
+     */
     #[DataProvider('dataProviderDefaultPriorityMethodWrong')]
     public function testGetDefaultPriorityMethodWrong(string $tagName, array $definitions, string $method): void
     {
@@ -81,7 +94,14 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         // Php attribute disabled.
         $container = $this->createMock(DiContainerInterface::class);
 
-        $container->method('getDefinitions')->willReturn($definitions);
+        $container->method('findTaggedDefinitions')
+            ->with($tagName)
+            ->willReturnCallback(function () use ($definitions, $container) {
+                foreach ($definitions as $definition) {
+                    yield $definition->getIdentifier() => $definition->setContainer($container);
+                }
+            })
+        ;
 
         $t = new DiDefinitionTaggedAs($tagName, isLazy: false, priorityDefaultMethod: $method);
         $t->resolve($container);

@@ -301,7 +301,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                 return $this->getTagPriorityFromMethod($method, $name, $tagOptions);
             } catch (AutowireException|InvalidArgumentException $e) {
                 throw new DiDefinitionException(
-                    message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s().', $name, $this->getIdentifier(), $method),
+                    message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s(). Caused by: %s', $name, $this->getIdentifier(), $method, $e->getMessage()),
                     previous: $e
                 );
             }
@@ -320,7 +320,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             return null;
         } catch (AutowireException $e) {
             throw new DiDefinitionException(
-                message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s().', $name, $this->getIdentifier(), $priorityDefaultMethod),
+                message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s(). Caused by: %s', $name, $this->getIdentifier(), $priorityDefaultMethod, $e->getMessage()),
                 previous: $e
             );
         }
@@ -365,7 +365,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $this->tagsByAttribute = [];
 
         try {
-            $tagAttributes = AttributeReader::getTagAttribute($this::getDefinition());
+            $tagAttributes = AttributeReader::getTagAttribute($this->getDefinition());
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot read php attribute #[%s] on class "%s".', Tag::class, $this->getIdentifier()),
