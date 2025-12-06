@@ -32,6 +32,9 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 class TaggedAsDefaultPriorityMethodTest extends TestCase
 {
+    /**
+     * @param DiDefinitionAutowire[] $definitions
+     */
     #[DataProvider('dataProviderDefaultPriorityMethodWrongWithPhpAttribute')]
     public function testGetDefaultPriorityMethodWrongWithPhpAttribute(string $tagName, array $definitions, string $method): void
     {
@@ -49,7 +52,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
             ->with($tagName)
             ->willReturnCallback(function () use ($definitions, $container) {
                 foreach ($definitions as $definition) {
-                    yield $definition->setContainer($container);
+                    yield $definition->getIdentifier() => $definition->setContainer($container);
                 }
             })
         ;
@@ -79,6 +82,9 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
         ];
     }
 
+    /**
+     * @param DiDefinitionAutowire[] $definitions
+     */
     #[DataProvider('dataProviderDefaultPriorityMethodWrong')]
     public function testGetDefaultPriorityMethodWrong(string $tagName, array $definitions, string $method): void
     {
@@ -92,7 +98,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
             ->with($tagName)
             ->willReturnCallback(function () use ($definitions, $container) {
                 foreach ($definitions as $definition) {
-                    yield $definition->setContainer($container);
+                    yield $definition->getIdentifier() => $definition->setContainer($container);
                 }
             })
         ;

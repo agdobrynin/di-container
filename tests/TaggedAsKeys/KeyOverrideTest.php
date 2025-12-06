@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\TaggedAsKeys;
 
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
@@ -20,7 +21,7 @@ use Tests\TaggedAsKeys\Fixtures\Attributes\Two;
  * @internal
  */
 #[CoversClass(AttributeReader::class)]
-#[CoversClass(\Kaspi\DiContainer\Attributes\Tag::class)]
+#[CoversClass(Tag::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]

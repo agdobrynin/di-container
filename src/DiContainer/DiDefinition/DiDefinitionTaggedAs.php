@@ -210,7 +210,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         $callable = [$class, $method];
 
         if (!is_callable($callable)) {
-            throw new InvalidArgumentException('Method must be declared with public and static modifiers.');
+            throw new InvalidArgumentException('Method must be exist and declared with public and static modifiers.');
         }
 
         $key = $callable($this->tag, $taggedAs->getTag($this->tag) ?? []);

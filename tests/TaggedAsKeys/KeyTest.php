@@ -107,6 +107,7 @@ class KeyTest extends TestCase
     public function testGetKeyByMethodFailReturn(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get key for tag "tags.one" via method');
 
         $this->container->expects(self::once())
             ->method('findTaggedDefinitions')
@@ -116,7 +117,7 @@ class KeyTest extends TestCase
                     ->bindTag(
                         'tags.one',
                         options: ['key.my_key' => 'self::getKeyFail']
-                    ),
+                    )->setContainer($this->container),
             ])
         ;
 
@@ -126,6 +127,7 @@ class KeyTest extends TestCase
     public function testGetKeyByMethodFailMethodNotExist(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get key for tag "tags.one" via method');
 
         $this->container->expects(self::once())
             ->method('findTaggedDefinitions')
@@ -135,7 +137,8 @@ class KeyTest extends TestCase
                     ->bindTag(
                         'tags.one',
                         options: ['key.my_key' => 'self::nonExistMethod']
-                    ),
+                    )
+                    ->setContainer($this->container),
             ])
         ;
 
