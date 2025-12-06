@@ -19,7 +19,6 @@ use SplPriorityQueue;
 
 use function array_map;
 use function explode;
-use function get_debug_type;
 use function in_array;
 use function is_callable;
 use function is_string;
@@ -216,12 +215,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         $key = $callable($this->tag, $taggedAs->getTag($this->tag) ?? []);
 
-        if (!is_string($key)) {
-            throw new AutowireException(sprintf('Method must return type "string" but return type is "%s"', get_debug_type($key)));
-        }
-
-        return '' === $key || '' === trim($key)
-            ? throw new AutowireException('Return value must be non-empty string.')
-            : $key;
+        return is_string($key) && '' !== $key
+            ? $key
+            : throw new AutowireException(sprintf('Method must return non-empty string but return "%s"', var_export($key, true)));
     }
 }

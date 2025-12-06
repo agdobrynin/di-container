@@ -206,12 +206,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     $tagIsInterface ??= interface_exists($tag);
                     // Pass container with configuration for determinate using php attribute or not.
                     $definition->setContainer($this);
-
-                    if (true === $tagIsInterface) {
-                        $hasTag = $definition->getDefinition()->implementsInterface($tag);
-                    } else {
-                        $hasTag = $definition->hasTag($tag);
-                    }
+                    $hasTag = true === $tagIsInterface
+                        ? $definition->getDefinition()->implementsInterface($tag)
+                        : $definition->hasTag($tag);
                 } else {
                     $hasTag = $definition->hasTag($tag);
                 }
