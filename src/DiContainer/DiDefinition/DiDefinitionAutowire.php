@@ -365,7 +365,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $this->tagsByAttribute = [];
 
         try {
-            $tagAttributes = AttributeReader::getTagAttribute($this::getDefinition());
+            $tagAttributes = AttributeReader::getTagAttribute($this->getDefinition());
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot read php attribute #[%s] on class "%s".', Tag::class, $this->getIdentifier()),
