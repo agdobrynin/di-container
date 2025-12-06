@@ -58,15 +58,32 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     public function resolve(DiContainerInterface $container, mixed $context = null): iterable
     {
-        if (null === $context || $context instanceof DiDefinitionAutowireInterface) {
+        $mapKeyToContainerIdentifier = $this->makeMapTaggedKeyToContainerIdentifier($container, $context);
+
+        return $this->isLazy
+            ? new LazyDefinitionIterator($container, $mapKeyToContainerIdentifier)
+            : array_map(static fn (string $id) => $container->get($id), $mapKeyToContainerIdentifier);
+    }
+
+    public function getDefinition(): string
+    {
+        return $this->tag;
+    }
+
+    /**
+     * @return array<non-empty-string|non-negative-int, non-empty-string>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    private function makeMapTaggedKeyToContainerIdentifier(DiContainerInterface $container, mixed $context): array
+    {
+        if ($context instanceof DiDefinitionAutowireInterface) {
             $this->callingByDefinitionAutowire = $context;
         }
 
-        $sorterDefinition = $this->filterByExcludeSortDefinitionByPriority($container->findTaggedDefinitions($this->tag));
-
         $mapKeyToContainerIdentifier = [];
 
-        foreach ($sorterDefinition as [$containerIdentifier, $definition]) {
+        foreach ($this->filterByExcludeSortDefinitionByPriority($container->findTaggedDefinitions($this->tag)) as [$containerIdentifier, $definition]) {
             if ($this->isUseKeysComputed) {
                 $keyCollection = $this->getTagKeyFromTagOptionsOrFromClassMethod($containerIdentifier, $definition);
                 if (!isset($mapKeyToContainerIdentifier[$keyCollection])) {
@@ -77,14 +94,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
         }
 
-        return $this->isLazy
-            ? new LazyDefinitionIterator($container, $mapKeyToContainerIdentifier)
-            : array_map(static fn (string $id) => $container->get($id), $mapKeyToContainerIdentifier);
-    }
-
-    public function getDefinition(): string
-    {
-        return $this->tag;
+        return $mapKeyToContainerIdentifier;
     }
 
     /**
