@@ -57,11 +57,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
     public function resolve(DiContainerInterface $container, mixed $context = null): iterable
     {
-        $mapKeyToContainerIdentifier = $this->makeMapTaggedKeyToContainerIdentifier($container, $context);
-
         return $this->isLazy
-            ? new LazyDefinitionIterator($container, $mapKeyToContainerIdentifier)
-            : array_map(static fn (string $id) => $container->get($id), $mapKeyToContainerIdentifier);
+            ? new LazyDefinitionIterator($container, $this->exposeContainerIdentifiers($container, $context))
+            : array_map(static fn (string $id) => $container->get($id), $this->exposeContainerIdentifiers($container, $context));
     }
 
     public function getDefinition(): string
@@ -74,7 +72,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @throws DiDefinitionExceptionInterface
      */
-    private function makeMapTaggedKeyToContainerIdentifier(DiContainerInterface $container, mixed $context): array
+    public function exposeContainerIdentifiers(DiContainerInterface $container, mixed $context = null): iterable
     {
         if ($context instanceof DiDefinitionAutowireInterface) {
             $this->callingByDefinitionAutowire = $context;
