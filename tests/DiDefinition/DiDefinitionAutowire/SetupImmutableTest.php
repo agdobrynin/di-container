@@ -51,6 +51,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(SetupConfigureMethod::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(NotFoundException::class)]
 class SetupImmutableTest extends TestCase
 {
     private DiContainerInterface $mockContainer;

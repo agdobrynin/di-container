@@ -19,7 +19,6 @@ use function is_string;
 use function key;
 use function next;
 use function reset;
-use function sprintf;
 
 /**
  * @template-covariant TValue
@@ -82,7 +81,7 @@ final class LazyDefinitionIterator implements Iterator, ContainerInterface, Arra
             return $this->container->get($this->mapKeyToContainerIdentifier[$id]);
         }
 
-        throw new NotFoundException(sprintf('Definition "%s" not found.', $id));
+        throw new NotFoundException($id);
     }
 
     public function has(string $id): bool

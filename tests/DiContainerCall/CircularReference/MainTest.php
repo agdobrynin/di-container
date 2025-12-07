@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
@@ -50,6 +51,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(CallCircularDependencyException::class)]
 class MainTest extends TestCase
 {
     public function testCircularInjectByAttribute(): void

@@ -30,6 +30,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(NotFoundException::class)]
 class FailResolveBindArgumentForVariadicTest extends TestCase
 {
     public function testResolveVariadicFailAndExceptionMessage(): void
