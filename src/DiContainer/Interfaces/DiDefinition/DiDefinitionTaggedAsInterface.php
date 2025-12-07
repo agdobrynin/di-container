@@ -25,4 +25,20 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
      * @throws DiDefinitionExceptionInterface
      */
     public function resolve(DiContainerInterface $container, mixed $context = null): iterable;
+
+    /**
+     * Expose tagged container identifiers with keys.
+     *
+     * @return iterable<non-empty-string|non-negative-int, non-empty-string>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function exposeContainerIdentifiers(DiContainerInterface $container, mixed $context = null): iterable;
+
+    /**
+     * Tag name.
+     *
+     * @return non-empty-string
+     */
+    public function getDefinition(): string;
 }
