@@ -234,7 +234,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if (!$this->has($id)) {
-                throw new NotFoundException($id);
+                throw new NotFoundException(id: $id);
             }
 
             $this->checkCyclicalDependencyCall($id);
@@ -295,7 +295,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                throw new NotFoundException($id, sprintf('Try resolve interface "%s".', $id));
+                throw new NotFoundException(sprintf('Attempting to resolve interface "%s".', $id), id: $id);
             }
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
@@ -366,7 +366,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function checkCyclicalDependencyCall(string $id): void
     {
         if (array_key_exists($id, $this->resolvingDependencies)) {
-            throw new CallCircularDependencyException(array_keys($this->resolvingDependencies + [$id => true]));
+            throw new CallCircularDependencyException(callIds: array_keys($this->resolvingDependencies + [$id => true]));
         }
     }
 

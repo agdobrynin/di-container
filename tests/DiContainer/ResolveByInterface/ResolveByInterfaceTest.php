@@ -172,7 +172,7 @@ class ResolveByInterfaceTest extends TestCase
     public function testResolveByInterfaceWithZeroConfigWithoutAttribute(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Try resolve interface');
+        $this->expectExceptionMessage('Attempting to resolve interface');
 
         $container = new DiContainer(config: new DiContainerConfig());
 

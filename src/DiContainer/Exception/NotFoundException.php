@@ -12,7 +12,10 @@ use function sprintf;
 
 class NotFoundException extends ContainerException implements NotFoundExceptionInterface
 {
-    public function __construct(string $id = '', string $message = '', int $code = 0, ?Throwable $previous = null)
+    /**
+     * @param string $id container identifier
+     */
+    public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null, string $id = '')
     {
         if ('' !== $id) {
             $message = ltrim(

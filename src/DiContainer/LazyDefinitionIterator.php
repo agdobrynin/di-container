@@ -81,7 +81,7 @@ final class LazyDefinitionIterator implements Iterator, ContainerInterface, Arra
             return $this->container->get($this->mapKeyToContainerIdentifier[$id]);
         }
 
-        throw new NotFoundException($id);
+        throw new NotFoundException(id: $id);
     }
 
     public function has(string $id): bool

@@ -172,7 +172,7 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->assertTrue($container->has(Fixtures\Import\TokenInterface::class));
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Try resolve interface');
+        $this->expectExceptionMessage('Attempting to resolve interface');
 
         // import skip attribute Service on interface
         $container->get(Fixtures\Import\TokenInterface::class);

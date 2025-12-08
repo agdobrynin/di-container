@@ -13,13 +13,13 @@ use function sprintf;
 class CallCircularDependencyException extends ContainerException
 {
     /**
-     * @param string[] $ids container identifiers in circular call
+     * @param string[] $callIds container identifiers in circular call
      */
-    public function __construct(array $ids = [], string $message = '', int $code = 0, ?Throwable $previous = null)
+    public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null, array $callIds = [])
     {
-        if ([] !== $ids) {
+        if ([] !== $callIds) {
             $message = ltrim(
-                sprintf('%s Trying call cyclical dependency. Call dependencies: %s.', $message, implode(' -> ', $ids)),
+                sprintf('%s Trying call cyclical dependency. Container\'s identifier call stack: "%s".', $message, implode('" -> "', $callIds)),
                 ' '
             );
         }
