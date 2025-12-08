@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 namespace Events {
-    use App\Qux as Q;
+    use Tests\_var\cache\Qux as Q;
     // static fn(\Events\Foo $a, \Events\Bar $b, \App\Qux $q) => true
     $fn1 = static fn(Foo $a, Bar $b, Q $q) => true;
 }

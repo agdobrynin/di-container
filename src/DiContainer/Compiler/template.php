@@ -1,11 +1,17 @@
+declare(strict_types=1);
+<?php if ($this->containerNamespace) {
+    echo 'namespace '.$this->containerNamespace.';'.PHP_EOL;
+}?>
+
 use Psr\Container\ContainerInterface;
 use Kaspi\DiContainer\Exception\{CallCircularDependencyException, NotFoundException};
 use \Kaspi\DiContainer\DiContainer;
 use \Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 use function array_keys;
+use function array_key_exists;
 
-class <?php print $this->containerClass?> implements \Psr\Container\ContainerInterface
+class <?php echo $this->containerClass; ?> implements \Psr\Container\ContainerInterface
 {
     /**
     * When resolving dependency check circular call.
@@ -22,7 +28,7 @@ class <?php print $this->containerClass?> implements \Psr\Container\ContainerInt
     public function get(string $id): mixed
     {
         if (false !== $this->containerMap($id)) {
-            if (array_key_exist($id, $this->singletonServices)) {
+            if (array_key_exists($id, $this->singletonServices)) {
                 return $this->singletonServices[$id];
             }
 
@@ -52,14 +58,13 @@ class <?php print $this->containerClass?> implements \Psr\Container\ContainerInt
         return match($id)
         {
 <?php foreach ($this->mapContainerIdToMethod as $id => ['method' => $method]) {
-            print sprintf('%s => %s,', var_export($id, true), var_export($method, true)).PHP_EOL;
-            } ?>
+    echo \sprintf('%s => %s,', \var_export($id, true), \var_export($method, true)).PHP_EOL;
+} ?>
             default => false,
         };
     }
 <?php foreach ($this->mapContainerIdToMethod as $id => ['method' => $method, 'compiledEntry' => $compiledEntry]) {
-
-    print sprintf('private %s(): %s
+    echo \sprintf('private %s(): %s
     {
         %s
     }', $method, $compiledEntry->getReturnType(), $compiledEntry->getExpression());

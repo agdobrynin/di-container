@@ -19,8 +19,8 @@ return [
      * }
      */
     'services.roots.from_proj' => static function (
-        App\Environment $environment,
-        Psr\Log\LoggerInterface $logger,
+        Tests\_var\cache\Environment $environment,
+        Psr\Log\LoggerInterface      $logger,
     ) {
         $tempDir = $environment->getTempDirectory() . DIRECTORY_SEPARATOR . 'cache';
         $cacheInterface = new Symfony\Component\Cache\Adapter\FilesystemAdapter(
