@@ -6,6 +6,8 @@ namespace Tests\DefinitionsLoader;
 
 use ArrayIterator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
@@ -15,6 +17,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -40,8 +43,8 @@ use const T_TRAIT;
  * @internal
  */
 #[CoversClass(AttributeReader::class)]
-#[CoversClass(\Kaspi\DiContainer\Attributes\Autowire::class)]
-#[CoversClass(\Kaspi\DiContainer\Attributes\Service::class)]
+#[CoversClass(Autowire::class)]
+#[CoversClass(Service::class)]
 #[CoversClass(DefinitionsLoader::class)]
 #[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversClass(DiContainer::class)]
@@ -57,6 +60,7 @@ use const T_TRAIT;
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(FinderFullyQualifiedNameCollection::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(NotFoundException::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void
@@ -168,7 +172,8 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->assertTrue($container->has(Fixtures\Import\TokenInterface::class));
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition not found for interface');
+        $this->expectExceptionMessage('Attempting to resolve interface');
+
         // import skip attribute Service on interface
         $container->get(Fixtures\Import\TokenInterface::class);
     }

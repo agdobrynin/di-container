@@ -13,6 +13,8 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -46,6 +48,8 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(NotFoundException::class)]
+#[CoversClass(CallCircularDependencyException::class)]
 class ResolveByInterfaceTest extends TestCase
 {
     public function testResolveByInterfaceViaAttributeWithZeroConfig(): void
@@ -167,10 +171,10 @@ class ResolveByInterfaceTest extends TestCase
 
     public function testResolveByInterfaceWithZeroConfigWithoutAttribute(): void
     {
-        $container = new DiContainer(config: new DiContainerConfig());
-
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Definition not found for');
+        $this->expectExceptionMessage('Attempting to resolve interface');
+
+        $container = new DiContainer(config: new DiContainerConfig());
 
         $container->get(FreeInterface::class);
     }

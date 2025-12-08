@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -48,6 +49,7 @@ use function round;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(NotFoundException::class)]
 class CallFunctionTest extends TestCase
 {
     public function testBuiltinFunction(): void

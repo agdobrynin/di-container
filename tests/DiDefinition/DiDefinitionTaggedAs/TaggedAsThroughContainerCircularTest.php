@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -51,6 +52,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(CallCircularDependencyException::class)]
 class TaggedAsThroughContainerCircularTest extends TestCase
 {
     public function testCircularTaggedAsByPhpDefinition(): void

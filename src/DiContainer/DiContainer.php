@@ -40,7 +40,6 @@ use function array_key_exists;
 use function array_keys;
 use function call_user_func_array;
 use function class_exists;
-use function implode;
 use function in_array;
 use function interface_exists;
 use function is_callable;
@@ -235,7 +234,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if (!$this->has($id)) {
-                throw new NotFoundException(sprintf('Unresolvable dependency "%s".', $id));
+                throw new NotFoundException(id: $id);
             }
 
             $this->checkCyclicalDependencyCall($id);
@@ -296,7 +295,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     }
                 }
 
-                throw new NotFoundException(sprintf('Definition not found for interface "%s".', $id));
+                throw new NotFoundException(sprintf('Attempting to resolve interface "%s".', $id), id: $id);
             }
 
             // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
@@ -367,11 +366,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function checkCyclicalDependencyCall(string $id): void
     {
         if (array_key_exists($id, $this->resolvingDependencies)) {
-            $callPath = implode(' -> ', array_keys($this->resolvingDependencies)).' -> '.$id;
-
-            throw new CallCircularDependencyException(
-                sprintf('Trying call cyclical dependency. Call dependencies: %s.', $callPath)
-            );
+            throw new CallCircularDependencyException(callIds: array_keys($this->resolvingDependencies + [$id => true]));
         }
     }
 
