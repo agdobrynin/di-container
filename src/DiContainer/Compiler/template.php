@@ -1,3 +1,8 @@
+<?php
+use Kaspi\DiContainer\Compiler\CompiledEntry;
+/** @var array<non-empty-string, array{0: non-empty-string, 1:CompiledEntry}> $mapContainerIdToMethod */
+$mapContainerIdToMethod = $this->mapContainerIdToMethod;
+?>
 declare(strict_types=1);
 
 <?php
@@ -27,7 +32,9 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
 
     public function get(string $id): mixed
     {
-        if (false !== $this->containerMap($id)) {
+        $mapMethod = $this->containerMap($id);
+
+        if (false !== $mapMethod) {
             if (array_key_exists($id, $this->singletonServices)) {
                 return $this->singletonServices[$id];
             }
@@ -39,7 +46,7 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
 
                 $this->resolvingContainerIds[$id] = true;
 
-                return $this->containerMap($id);
+                return $this->$mapMethod();
             } finally {
                 unset($this->resolvingContainerIds[$id]);
             }
@@ -67,7 +74,16 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
     private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>
 
     {
-        return <?php echo $compiledEntry->getExpression(); ?>;
+<?php if ('' !== $compiledEntry->getStatements()) {?>
+        <?php echo  $compiledEntry->getStatements()?>
+
+<?php } ?>
+<?php if ($compiledEntry->isSingleton()) {?>
+        return $this->singletonServices[<?php echo var_export($id, true) ?>] = <?php echo $compiledEntry->getExpression().';'; ?>
+<?php }else{ ?>
+        return <?php echo $compiledEntry->getExpression().';'; ?>
+<?php } ?>
+
     }
 <?php } ?>
 }

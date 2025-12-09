@@ -24,7 +24,7 @@ final class Compiler
         private readonly string $containerClass,
         private readonly string $containerFile,
     ) {
-        $containerEntry = new CompiledEntry('$this', [], ['$this'], 'self');
+        $containerEntry = new CompiledEntry('$this', 'print "x";'.PHP_EOL.'$o = new stdClass;', ['$this', '$o'], true, 'self');
 
         $this->mapContainerIdToMethod = [
             ContainerInterface::class => ['getPsrContainer', $containerEntry],
@@ -34,6 +34,10 @@ final class Compiler
 
     public function compile(): void
     {
+        foreach($this->container->getDefinitions() as $id => $definition) {
+            //$this->compileDefinition('$this', $definition);
+        }
+
         $fileOper = new FileOperation($this->containerFile);
         ob_start();
 
