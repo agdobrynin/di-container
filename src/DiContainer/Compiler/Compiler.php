@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
-use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerInterface;
 
@@ -15,7 +14,7 @@ use function sprintf;
 final class Compiler
 {
     /**
-     * @var array<non-empty-string, CompiledEntry>
+     * @var array<non-empty-string, array{0: non-empty-string, 1:CompiledEntry}>
      */
     private array $mapContainerIdToMethod = [];
 
@@ -25,13 +24,12 @@ final class Compiler
         private readonly string $containerClass,
         private readonly string $containerFile,
     ) {
-        //        $containerEntry = new CompiledEntry('$this', '', '');
-        //
-        //        $this->mapContainerIdToMethod = [
-        //            ContainerInterface::class => $containerEntry,
-        //            DiContainerInterface::class => $containerEntry,
-        //            DiContainer::class => $containerEntry,
-        //        ];
+        $containerEntry = new CompiledEntry('$this', [], ['$this'], 'self');
+
+        $this->mapContainerIdToMethod = [
+            ContainerInterface::class => ['getPsrContainer', $containerEntry],
+            DiContainerInterface::class => ['getDiContainer', $containerEntry],
+        ];
     }
 
     public function compile(): void

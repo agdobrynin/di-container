@@ -1,17 +1,17 @@
 declare(strict_types=1);
-<?php if ($this->containerNamespace) {
+
+<?php
+if ($this->containerNamespace) {
     echo 'namespace '.$this->containerNamespace.';'.PHP_EOL;
 }?>
 
 use Psr\Container\ContainerInterface;
 use Kaspi\DiContainer\Exception\{CallCircularDependencyException, NotFoundException};
-use \Kaspi\DiContainer\DiContainer;
-use \Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 use function array_keys;
 use function array_key_exists;
 
-class <?php echo $this->containerClass; ?> implements \Psr\Container\ContainerInterface
+class <?php echo $this->containerClass; ?> implements ContainerInterface
 {
     /**
     * When resolving dependency check circular call.
@@ -55,18 +55,19 @@ class <?php echo $this->containerClass; ?> implements \Psr\Container\ContainerIn
 
     private function containerMap(string $id): false|string
     {
-        return match($id)
-        {
-<?php foreach ($this->mapContainerIdToMethod as $id => ['method' => $method]) {
-    echo \sprintf('%s => %s,', \var_export($id, true), \var_export($method, true)).PHP_EOL;
-} ?>
+        return match($id) {
+<?php foreach ($this->mapContainerIdToMethod as $id => [$method]) {?>
+            <?php echo \var_export($id, true); ?> => <?php echo \var_export($method, true); ?>,
+<?php } ?>
             default => false,
         };
     }
-<?php foreach ($this->mapContainerIdToMethod as $id => ['method' => $method, 'compiledEntry' => $compiledEntry]) {
-    echo \sprintf('private %s(): %s
+<?php foreach ($this->mapContainerIdToMethod as $id => [$method, $compiledEntry]) {?>
+
+    private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>
+
     {
-        %s
-    }', $method, $compiledEntry->getReturnType(), $compiledEntry->getExpression());
-} ?>
+        return <?php echo $compiledEntry->getExpression(); ?>;
+    }
+<?php } ?>
 }

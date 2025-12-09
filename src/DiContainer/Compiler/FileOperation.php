@@ -8,6 +8,7 @@ use RuntimeException;
 
 use function error_get_last;
 use function fclose;
+use function flock;
 use function fopen;
 use function fseek;
 use function fwrite;
@@ -24,7 +25,21 @@ final class FileOperation
     /** @var resource */
     private $file;
 
-    public function __construct(private readonly string $fileToCompile)
+    public function __construct(private readonly string $filepathToCompile) {}
+
+    public function __destruct()
+    {
+        if (is_resource($this->tmp)) {
+            fclose($this->tmp);
+        }
+
+        if (is_resource($this->file)) {
+            flock($this->file, LOCK_UN);
+            fclose($this->file);
+        }
+    }
+
+    public function content(string $content): int
     {
         $this->tmp = tmpfile();
 
@@ -36,29 +51,21 @@ final class FileOperation
         if (false === @fwrite($this->tmp, '<?php'.PHP_EOL)) {
             throw new RuntimeException('Cannot write to tmp file: '.(error_get_last()['message'] ?? ''));
         }
-    }
 
-    public function __destruct()
-    {
-        if (is_resource($this->tmp)) {
-            fclose($this->tmp);
-        }
-
-        if (is_resource($this->file)) {
-            fclose($this->file);
-        }
-    }
-
-    public function content(string $content): int
-    {
         if (false === @fwrite($this->tmp, $content)) {
             throw new RuntimeException('Cannot write to tmp file: '.(error_get_last()['message'] ?? ''));
         }
 
         // create compiled container file.
-        if (false === $this->file = @fopen($this->fileToCompile, 'wb+')) {
+        if (false === $this->file = @fopen($this->filepathToCompile, 'wb+')) {
             throw new RuntimeException(
-                sprintf('Cannot create compiled container file: "%s". Caused by: %s', $this->fileToCompile, error_get_last()['message'] ?? '')
+                sprintf('Cannot create compiled container file: "%s". Caused by: %s', $this->filepathToCompile, error_get_last()['message'] ?? '')
+            );
+        }
+
+        if (!flock($this->file, LOCK_EX)) {
+            throw new RuntimeException(
+                sprintf('Cannot lock compiled container file "%s"', $this->filepathToCompile)
             );
         }
 
@@ -66,7 +73,7 @@ final class FileOperation
         fseek($this->tmp, 0);
         if (false === ($bytes = @stream_copy_to_stream($this->tmp, $this->file))) {
             throw new RuntimeException(
-                sprintf('Cannot copy temporary file to "%s". Caused by: %s', $this->fileToCompile, error_get_last()['message'] ?? '')
+                sprintf('Cannot copy temporary file to "%s". Caused by: %s', $this->filepathToCompile, error_get_last()['message'] ?? '')
             );
         }
 
