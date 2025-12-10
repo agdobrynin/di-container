@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
+use Kaspi\DiContainer\Exception\DiDefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCompileInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCompileExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 use function ob_get_clean;
@@ -33,14 +37,18 @@ final class Compiler
         ];
     }
 
+    /**
+     * @throws DiDefinitionCompileExceptionInterface
+     */
     public function compile(): void
     {
         $num = 0;
         foreach($this->container->getDefinitions() as $id => $definition) {
-            if (!$definition instanceof CompiledDefinitionInterface) {
-                throw new \RuntimeException('Cannot compile definition of type "%s"' . get_debug_type($definition));
+            if (!$definition instanceof DiDefinitionCompileInterface) {
+                throw new DiDefinitionCompileException('Cannot compile definition of type "%s"' . get_debug_type($definition));
             }
 
+            // TODO how about name generator for method name in container.
             $this->mapContainerIdToMethod[$id] = ['getService'.++$num, $definition->compile('$this', $this->container)];
         }
 

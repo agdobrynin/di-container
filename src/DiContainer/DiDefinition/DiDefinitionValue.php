@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use InvalidArgumentException;
+use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Exception\DiDefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCompileInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use UnitEnum;
-
 use function array_walk_recursive;
 use function get_debug_type;
 use function is_array;
@@ -40,10 +41,10 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
         return $this->definition;
     }
 
-    public function compile(): string
+    public function compile(string $containerVariableName, DiContainerInterface $container): CompiledEntryInterface
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
-            return var_export($this->definition, true);
+            return new CompiledEntry(var_export($this->definition, true), '', [], true, get_debug_type($this->definition));
         }
 
         if (is_array($this->definition)) {
@@ -56,7 +57,7 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
                     }
                 });
 
-                return var_export($this->definition, true);
+                return new CompiledEntry(var_export($this->definition, true), '', [], true, 'array');
             } catch (InvalidArgumentException $exceptionInArray) {
             }
         }

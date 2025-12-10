@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
-final class CompiledEntry
+use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
+
+final class CompiledEntry implements CompiledEntryInterface
 {
     public function __construct(
         private readonly string $expression,
