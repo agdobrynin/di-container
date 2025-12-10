@@ -25,6 +25,7 @@ interface CompiledEntryInterface
 
     /**
      * Compiled container entity is singleton.
+     * When value is `null` container entity resolve directly.
      */
     public function isSingleton(): ?bool;
 
