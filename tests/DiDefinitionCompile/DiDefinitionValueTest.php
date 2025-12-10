@@ -149,11 +149,11 @@ class DiDefinitionValueTest extends TestCase
       0 => 200000,
       \'null\' => NULL,
       \'enum\' => 
-      '.(PHP_VERSION_ID >= 80200 ? '\\' : '').'Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz,
+      \Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz,
     ),
   ),
   1 => 
-  '.(PHP_VERSION_ID >= 80200 ? '\\' : '').'Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Bar,
+  \Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Bar,
 )',
                 'return_type' => 'array',
             ],

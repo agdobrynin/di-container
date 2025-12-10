@@ -45,7 +45,10 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
     public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
-            return new CompiledEntry(var_export($this->definition, true), '', [], true, get_debug_type($this->definition));
+            /** @var non-empty-string $returnType */
+            $returnType = get_debug_type($this->definition);
+
+            return new CompiledEntry(var_export($this->definition, true), '', [], null, $returnType);
         }
 
         $exceptionMessage = 'Cannot compile definition type "%s". Support only a scalar-type, null value, UnitEnum type or array with that types.';
@@ -60,7 +63,7 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
                     }
                 });
 
-                return new CompiledEntry(var_export($this->definition, true), '', [], true, 'array');
+                return new CompiledEntry(var_export($this->definition, true), '', [], null, 'array');
             } catch (InvalidArgumentException $e) {
                 throw new DiDefinitionCompileException(sprintf($exceptionMessage.' %s', get_debug_type($this->definition), $e->getMessage()));
             }

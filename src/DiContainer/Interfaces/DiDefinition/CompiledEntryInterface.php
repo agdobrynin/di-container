@@ -6,13 +6,32 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 interface CompiledEntryInterface
 {
+    /**
+     * TODO make description for this method.
+     */
     public function getExpression(): string;
 
+    /**
+     * TODO make description for this method.
+     */
     public function getStatements(): string;
 
+    /**
+     * TODO make description for this method.
+     *
+     * @return list<non-empty-string>
+     */
     public function getScopeVariables(): array;
 
-    public function isSingleton(): bool;
+    /**
+     * Compiled container entity is singleton.
+     */
+    public function isSingleton(): ?bool;
 
+    /**
+     * Return type of compiled container entity.
+     *
+     * @return non-empty-string
+     */
     public function getReturnType(): string;
 }

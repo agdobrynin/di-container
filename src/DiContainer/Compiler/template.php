@@ -33,9 +33,16 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
 
     public function get(string $id): mixed
     {
-        $mapMethod = $this->containerMap($id);
+        /** @var false|array{0: bool|null, 1: non-empty-string} $containerMap */
+        $containerMap = $this->containerMap($id);
 
-        if (false !== $mapMethod) {
+        if (false !== $containerMap) {
+            [$isSingleton, $method] = $containerMap;
+
+            if (null === $isSingleton) {
+                return $this->$method();
+            }
+
             if (array_key_exists($id, $this->singletonServices)) {
                 return $this->singletonServices[$id];
             }
@@ -47,7 +54,7 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
 
                 $this->resolvingContainerIds[$id] = true;
 
-                return $this->$mapMethod();
+                return $this->$method();
             } finally {
                 unset($this->resolvingContainerIds[$id]);
             }
@@ -61,11 +68,14 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
         return false !== $this->containerMap($id);
     }
 
-    private function containerMap(string $id): false|string
+    /**
+     * @return false|array{0: bool|null, 1: non-empty-string}
+     */
+    private function containerMap(string $id): false|array
     {
         return match($id) {
-<?php foreach ($this->mapContainerIdToMethod as $id => [$method]) {?>
-            <?php echo \var_export($id, true); ?> => <?php echo \var_export($method, true); ?>,
+<?php foreach ($this->mapContainerIdToMethod as $id => [$method, $compiledEntry]) {?>
+            <?php echo \var_export($id, true); ?> => [<?php \var_export($compiledEntry->isSingleton())?>, <?php echo \var_export($method, true); ?>],
 <?php } ?>
             default => false,
         };
