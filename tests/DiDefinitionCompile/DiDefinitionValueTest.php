@@ -37,7 +37,7 @@ class DiDefinitionValueTest extends TestCase
                 ...$expect,
                 'statements' => '',
                 'scope_variables' => [],
-                'is_singleton' => true,
+                'is_singleton' => null,
             ],
             [
                 'expression' => $compiledEntry->getExpression(),
@@ -99,15 +99,11 @@ class DiDefinitionValueTest extends TestCase
             ],
         ];
 
-        $v = (PHP_VERSION_ID < 80200)
-            ? 'Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz'
-            : '\Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz';
-
         yield 'enum value' => [
             FooEnum::Baz,
             [
-                'expression' => $v,
-                'return_type' => FooEnum::class,
+                'expression' => '\Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz',
+                'return_type' => '\Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum',
             ],
         ];
 

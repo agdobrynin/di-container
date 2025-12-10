@@ -75,7 +75,7 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
     {
         return match($id) {
 <?php foreach ($this->mapContainerIdToMethod as $id => [$method, $compiledEntry]) {?>
-            <?php echo \var_export($id, true); ?> => [<?php echo \var_export($compiledEntry->isSingleton(), true)?>, <?php echo \var_export($method, true); ?>],
+            <?php echo \var_export($id, true); ?> => [<?php echo \var_export($compiledEntry->isSingleton(), true); ?>, <?php echo \var_export($method, true); ?>],
 <?php } ?>
             default => false,
         };

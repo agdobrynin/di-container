@@ -45,10 +45,15 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
     public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
-            /** @var non-empty-string $returnType */
-            $returnType = get_debug_type($this->definition);
+            if ($this->definition instanceof UnitEnum && PHP_VERSION_ID < 80200) {
+                $returnType = '\\'.get_debug_type($this->definition);
+                $expression = '\\'.var_export($this->definition, true);
+            } else {
+                $returnType = get_debug_type($this->definition);
+                $expression = var_export($this->definition, true);
+            }
 
-            return new CompiledEntry(var_export($this->definition, true), '', [], null, $returnType);
+            return new CompiledEntry($expression, '', [], null, $returnType);
         }
 
         $exceptionMessage = 'Cannot compile definition type "%s". Support only a scalar-type, null value, UnitEnum type or array with that types.';
@@ -63,7 +68,7 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
                     }
                 });
 
-                return new CompiledEntry(var_export($this->definition, true), '', [], null, 'array');
+                return new CompiledEntry(var_export($tmp, true), '', [], null, 'array');
             } catch (InvalidArgumentException $e) {
                 throw new DiDefinitionCompileException(sprintf($exceptionMessage.' %s', get_debug_type($this->definition), $e->getMessage()));
             }
