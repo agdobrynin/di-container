@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\DiDefinitionCompile;
 
 use Generator;
+use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCompileExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -20,45 +22,102 @@ use Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum;
  */
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(CompiledEntry::class)]
 class DiDefinitionValueTest extends TestCase
 {
     #[DataProvider('scalarValueAndNullProvider')]
-    public function testCompileScalarOrNullOrEnum(mixed $definition, string $expect): void
+    public function testCompileScalarOrNullOrEnum(mixed $definition, array $expect): void
     {
-        self::assertEqualsIgnoringCase($expect, (new DiDefinitionValue($definition))->compile());
+        $compiledEntry = (new DiDefinitionValue($definition))
+            ->compile('', $this->createMock(DiContainerInterface::class))
+        ;
+
+        self::assertEquals(
+            [
+                ...$expect,
+                'statements' => '',
+                'scope_variables' => [],
+                'is_singleton' => true,
+            ],
+            [
+                'expression' => $compiledEntry->getExpression(),
+                'return_type' => $compiledEntry->getReturnType(),
+                'statements' => $compiledEntry->getStatements(),
+                'scope_variables' => $compiledEntry->getScopeVariables(),
+                'is_singleton' => $compiledEntry->isSingleton(),
+            ]
+        );
     }
 
     public static function scalarValueAndNullProvider(): Generator
     {
-        yield 'string value' => ['Lorem ipsum dolor sit amet, consectetur adipiscing elit.', '\'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\''];
+        yield 'string value' => [
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            [
+                'expression' => '\'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\'',
+                'return_type' => 'string',
+            ],
+        ];
 
-        yield 'int value' => [1_000_000, '1000000'];
+        yield 'int value' => [
+            1_000_000,
+            [
+                'expression' => '1000000',
+                'return_type' => 'int',
+            ],
+        ];
 
-        yield 'int negative value' => [-100, '-100'];
+        yield 'int negative value' => [
+            -100,
+            [
+                'expression' => '-100',
+                'return_type' => 'int',
+            ],
+        ];
 
-        yield 'float value' => [100_000.256, '100000.256'];
+        yield 'float value' => [
+            100_000.256,
+            [
+                'expression' => '100000.256',
+                'return_type' => 'float',
+            ],
+        ];
 
-        yield 'bool value' => [true, 'true'];
+        yield 'bool value' => [
+            true,
+            [
+                'expression' => 'true',
+                'return_type' => 'bool',
+            ],
+        ];
 
-        yield 'null value' => [null, 'null'];
+        yield 'null value' => [
+            null,
+            [
+                'expression' => 'NULL',
+                'return_type' => 'null',
+            ],
+        ];
 
         $v = (PHP_VERSION_ID < 80200)
             ? 'Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz'
             : '\Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz';
 
-        yield 'enum value' => [FooEnum::Baz, $v];
-    }
+        yield 'enum value' => [
+            FooEnum::Baz,
+            [
+                'expression' => $v,
+                'return_type' => FooEnum::class,
+            ],
+        ];
 
-    #[DataProvider('scalarAndNullInArrayProvider')]
-    public function testCompileScalarAndNullInArray(array $definition, string $expect): void
-    {
-        self::assertEqualsIgnoringCase($expect, (new DiDefinitionValue($definition))->compile());
-    }
-
-    public static function scalarAndNullInArrayProvider(): Generator
-    {
-        yield 'empty array' => [[], 'array (
-)'];
+        yield 'empty array' => [
+            [], [
+                'expression' => 'array (
+)',
+                'return_type' => 'array',
+            ],
+        ];
 
         yield 'array' => [
             [
@@ -75,7 +134,9 @@ class DiDefinitionValueTest extends TestCase
                     ],
                 ],
                 FooEnum::Bar,
-            ], 'array (
+            ],
+            [
+                'expression' => 'array (
   \'foo\' => \'bar\',
   0 => 200000,
   \'null\' => NULL,
@@ -93,7 +154,10 @@ class DiDefinitionValueTest extends TestCase
   ),
   1 => 
   '.(PHP_VERSION_ID >= 80200 ? '\\' : '').'Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Bar,
-)', ];
+)',
+                'return_type' => 'array',
+            ],
+        ];
     }
 
     #[DataProvider('failCompileProvider')]
@@ -102,7 +166,7 @@ class DiDefinitionValueTest extends TestCase
         $this->expectException(DiDefinitionCompileExceptionInterface::class);
         $this->expectExceptionMessage($expectMessage);
 
-        (new DiDefinitionValue($definition))->compile();
+        (new DiDefinitionValue($definition))->compile('', $this->createMock(DiContainerInterface::class));
     }
 
     public static function failCompileProvider(): Generator

@@ -6,11 +6,11 @@ namespace Kaspi\DiContainer\Compiler;
 
 use Kaspi\DiContainer\Exception\DiDefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCompileInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionCompileExceptionInterface;
 use Psr\Container\ContainerInterface;
 
+use function get_debug_type;
 use function ob_get_clean;
 use function ob_start;
 use function sprintf;
@@ -43,13 +43,13 @@ final class Compiler
     public function compile(): void
     {
         $num = 0;
-        foreach($this->container->getDefinitions() as $id => $definition) {
+        foreach ($this->container->getDefinitions() as $id => $definition) {
             if (!$definition instanceof DiDefinitionCompileInterface) {
-                throw new DiDefinitionCompileException('Cannot compile definition of type "%s"' . get_debug_type($definition));
+                throw new DiDefinitionCompileException('Cannot compile definition of type "%s"'.get_debug_type($definition));
             }
 
             // TODO how about name generator for method name in container.
-            $this->mapContainerIdToMethod[$id] = ['getService'.++$num, $definition->compile('$this', $this->container)];
+            $this->mapContainerIdToMethod[$id] = ['getService'.++$num, $definition->compile('$this', $this->container, '$service')];
         }
 
         $fileOper = new FileOperation($this->containerFile);

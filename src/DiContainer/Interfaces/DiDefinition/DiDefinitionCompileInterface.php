@@ -12,5 +12,5 @@ interface DiDefinitionCompileInterface
     /**
      * @throws DiDefinitionCompileExceptionInterface
      */
-    public function compile(string $containerVariableName, DiContainerInterface $container): CompiledEntryInterface;
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface;
 }

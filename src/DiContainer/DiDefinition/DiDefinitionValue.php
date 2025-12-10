@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use UnitEnum;
+
 use function array_walk_recursive;
 use function get_debug_type;
 use function is_array;
@@ -41,11 +42,13 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
         return $this->definition;
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
             return new CompiledEntry(var_export($this->definition, true), '', [], true, get_debug_type($this->definition));
         }
+
+        $exceptionMessage = 'Cannot compile definition type "%s". Support only a scalar-type, null value, UnitEnum type or array with that types.';
 
         if (is_array($this->definition)) {
             try {
@@ -58,17 +61,11 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
                 });
 
                 return new CompiledEntry(var_export($this->definition, true), '', [], true, 'array');
-            } catch (InvalidArgumentException $exceptionInArray) {
+            } catch (InvalidArgumentException $e) {
+                throw new DiDefinitionCompileException(sprintf($exceptionMessage.' %s', get_debug_type($this->definition), $e->getMessage()));
             }
         }
 
-        $causedBy = isset($exceptionInArray)
-            ? ' Caused by: '.$exceptionInArray->getMessage()
-            : '';
-
-        throw new DiDefinitionCompileException(
-            sprintf('Cannot compile definition type "%s". Support only a scalar-type, null value, UnitEnum type or array with that types.'.$causedBy, get_debug_type($this->definition)),
-            previous: $exceptionInArray ?? null,
-        );
+        throw new DiDefinitionCompileException(sprintf($exceptionMessage, get_debug_type($this->definition)));
     }
 }

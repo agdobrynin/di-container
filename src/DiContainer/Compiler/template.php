@@ -1,5 +1,6 @@
 <?php
 use Kaspi\DiContainer\Compiler\CompiledEntry;
+
 /** @var array<non-empty-string, array{0: non-empty-string, 1:CompiledEntry}> $mapContainerIdToMethod */
 $mapContainerIdToMethod = $this->mapContainerIdToMethod;
 ?>
@@ -75,10 +76,10 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
 
     {
 <?php if ('' !== $compiledEntry->getStatements()) {?>
-        <?php echo  $compiledEntry->getStatements()?>
+        <?php echo $compiledEntry->getStatements(); ?>
 
 <?php } ?>
-        return  <?php if ($compiledEntry->isSingleton()) {?> $this->singletonServices[<?php echo var_export($id, true) ?>] = <?php } ?><?php echo $compiledEntry->getExpression().';'; ?>
+        return  <?php if ($compiledEntry->isSingleton()) {?> $this->singletonServices[<?php echo \var_export($id, true); ?>] = <?php } ?><?php echo $compiledEntry->getExpression().';'; ?>
 
     }
 <?php } ?>
