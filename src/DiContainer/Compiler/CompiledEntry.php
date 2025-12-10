@@ -9,8 +9,8 @@ final class CompiledEntry
     public function __construct(
         private readonly string $expression,
         private readonly string $statements,
-        private readonly array $usesVariables,
-        private readonly bool $isSingleton,
+        private readonly array  $scopeVariables,
+        private readonly bool   $isSingleton,
         private readonly string $returnType = 'mixed',
     ) {}
 
@@ -24,9 +24,9 @@ final class CompiledEntry
         return $this->statements;
     }
 
-    public function getUseVariables(): array
+    public function getScopeVariables(): array
     {
-        return $this->usesVariables;
+        return $this->scopeVariables;
     }
 
     public function isSingleton(): bool

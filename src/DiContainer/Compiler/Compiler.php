@@ -24,7 +24,8 @@ final class Compiler
         private readonly string $containerClass,
         private readonly string $containerFile,
     ) {
-        $containerEntry = new CompiledEntry('$this', 'print "x";'.PHP_EOL.'$o = new stdClass;', ['$this', '$o'], true, 'self');
+        // TODO check available namespace, container class name.
+        $containerEntry = new CompiledEntry('$this', '', [], true, 'self');
 
         $this->mapContainerIdToMethod = [
             ContainerInterface::class => ['getPsrContainer', $containerEntry],
@@ -34,8 +35,13 @@ final class Compiler
 
     public function compile(): void
     {
+        $num = 0;
         foreach($this->container->getDefinitions() as $id => $definition) {
-            //$this->compileDefinition('$this', $definition);
+            if (!$definition instanceof CompiledDefinitionInterface) {
+                throw new \RuntimeException('Cannot compile definition of type "%s"' . get_debug_type($definition));
+            }
+
+            $this->mapContainerIdToMethod[$id] = ['getService'.++$num, $definition->compile('$this', $this->container)];
         }
 
         $fileOper = new FileOperation($this->containerFile);
