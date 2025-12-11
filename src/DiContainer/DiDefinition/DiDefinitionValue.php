@@ -16,11 +16,11 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use UnitEnum;
 
-use function array_walk_recursive;
 use function get_debug_type;
 use function is_array;
 use function is_scalar;
 use function sprintf;
+use function str_repeat;
 use function var_export;
 
 final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface, DiDefinitionCompileInterface
@@ -60,15 +60,34 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
 
         if (is_array($this->definition)) {
             try {
-                $tmp = $this->definition;
+                $tabLevel = static fn (int $level): string => 0 === $level ? '' : str_repeat('  ', $level);
 
-                array_walk_recursive($tmp, static function (mixed $item) {
-                    if (null !== $item && !is_scalar($item) && !($item instanceof UnitEnum)) {
-                        throw new InvalidArgumentException(sprintf('The value in array is invalid type "%s".', get_debug_type($item)));
+                $array_export = static function (array $items, int $level = 0) use (&$array_export, $tabLevel): string {
+                    $output = '['.PHP_EOL;
+
+                    foreach ($items as $key => $value) {
+                        if (is_array($value)) {
+                            $output .= $tabLevel($level + 1).var_export($key, true).' => ';
+                            $output .= $array_export($value, $level + 1);
+                        } else {
+                            if (null !== $value && !is_scalar($value) && !($value instanceof UnitEnum)) {
+                                throw new InvalidArgumentException(sprintf('The value in array is invalid type "%s".', get_debug_type($value)));
+                            }
+
+                            $var = $value instanceof UnitEnum && PHP_VERSION_ID < 80200
+                                ? '\\'.var_export($value, true)
+                                : var_export($value, true);
+                            $expression = var_export($key, true).' => '.$var.','.PHP_EOL;
+                            $output .= $tabLevel($level + 1).$expression;
+                        }
                     }
-                });
 
-                return new CompiledEntry(var_export($tmp, true), '', [], null, 'array');
+                    return 0 === $level
+                        ? $output.']'
+                        : $output.$tabLevel($level).'],'.PHP_EOL;
+                };
+
+                return new CompiledEntry($array_export($this->definition), '', [], null, 'array');
             } catch (InvalidArgumentException $e) {
                 throw new DiDefinitionCompileException(sprintf($exceptionMessage.' %s', get_debug_type($this->definition), $e->getMessage()));
             }

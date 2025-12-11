@@ -47,6 +47,8 @@ class DiDefinitionValueTest extends TestCase
                 'is_singleton' => $compiledEntry->isSingleton(),
             ]
         );
+
+        self::assertTrue($definition === eval('return '.$compiledEntry->getExpression().';'));
     }
 
     public static function scalarValueAndNullProvider(): Generator
@@ -109,8 +111,8 @@ class DiDefinitionValueTest extends TestCase
 
         yield 'empty array' => [
             [], [
-                'expression' => 'array (
-)',
+                'expression' => '[
+]',
                 'return_type' => 'array',
             ],
         ];
@@ -132,25 +134,21 @@ class DiDefinitionValueTest extends TestCase
                 FooEnum::Bar,
             ],
             [
-                'expression' => 'array (
+                'expression' => '[
   \'foo\' => \'bar\',
   0 => 200000,
   \'null\' => NULL,
-  \'sub_arr\' => 
-  array (
-    0 => 
-    array (
+  \'sub_arr\' => [
+    0 => [
       \'bool\' => true,
       \'foo\' => \'bar\',
       0 => 200000,
       \'null\' => NULL,
-      \'enum\' => 
-      \Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz,
-    ),
-  ),
-  1 => 
-  \Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Bar,
-)',
+      \'enum\' => \Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Baz,
+    ],
+  ],
+  1 => \Tests\DiDefinitionCompile\Fixtures\DiValue\FooEnum::Bar,
+]',
                 'return_type' => 'array',
             ],
         ];
