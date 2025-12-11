@@ -20,12 +20,13 @@ final class Compiler
     /**
      * @var array<non-empty-string, array{0: non-empty-string, 1:CompiledEntry}>
      */
-    private array $mapContainerIdToMethod = [];
+    private array $mapContainerIdToMethod;
 
     public function __construct(
         private readonly DiContainerInterface $container,
         private readonly string $containerNamespace,
         private readonly string $containerClass,
+        private readonly string $compilerDirectory,
         private readonly string $containerFile,
     ) {
         // TODO check available namespace, container class name.
@@ -49,7 +50,10 @@ final class Compiler
             }
 
             // TODO how about name generator for method name in container.
-            $this->mapContainerIdToMethod[$id] = ['getService'.++$num, $definition->compile('$this', $this->container, '$service')];
+            $compiledEntity = $definition->compile('$this', $this->container, '$service');
+            $serviceMethod = 'getService'.++$num;
+
+            $this->mapContainerIdToMethod[$id] = [$serviceMethod, $compiledEntity];
         }
 
         $fileOper = new FileOperation($this->containerFile);
