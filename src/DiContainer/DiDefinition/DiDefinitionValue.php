@@ -46,9 +46,11 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
             if ($this->definition instanceof UnitEnum && PHP_VERSION_ID < 80200) {
+                /** @var non-falsy-string $returnType */
                 $returnType = '\\'.get_debug_type($this->definition);
                 $expression = '\\'.var_export($this->definition, true);
             } else {
+                /** @var non-falsy-string $returnType */
                 $returnType = get_debug_type($this->definition);
                 $expression = var_export($this->definition, true);
             }
