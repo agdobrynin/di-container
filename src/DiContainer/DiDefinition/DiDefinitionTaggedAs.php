@@ -32,6 +32,8 @@ use function str_starts_with;
 use function trim;
 use function var_export;
 
+use const PHP_EOL;
+
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface, DiDefinitionCompileInterface
 {
     private bool $keyChecked;
@@ -78,28 +80,33 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             );
         }
 
-        $items = (new DiDefinitionValue($mapContainerIdentifiers))
-            ->compile($containerVariableName, $container)
-            ->getExpression()
-        ;
-
         if ($this->isLazy) {
-            $statements = [];
-            // TODO check unique name $ids in $scopeServiceVariableName and in array $scopeVariableNames
-            $statements[] = sprintf('// Lazy load services for tag %s', var_export($this->tag, true));
-            $statements[] = '$ids = '.$items.';';
-            $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, $ids)', $containerVariableName);
+            // build map tagged key => container identifier
+            $ids = '['.PHP_EOL;
 
-            return new CompiledEntry($expression, implode(PHP_EOL, $statements), ['$ids'], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
+            foreach ($mapContainerIdentifiers as $key => $containerIdentifier) {
+                $ids .= sprintf('  %s => %s,'.PHP_EOL, var_export($key, true), var_export($containerIdentifier, true));
+            }
+
+            $ids .= ']'.PHP_EOL;
+            $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVariableName, $ids);
+
+            $comment = sprintf('// Lazy load services for tag %s', var_export($this->tag, true));
+
+            return new CompiledEntry($expression, $comment, [], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
         }
 
-        $statements = [];
-        // TODO check unique name $ids in $scopeServiceVariableName and in array $scopeVariableNames
-        $statements[] = sprintf('// Services for tag %s', var_export($this->tag, true));
-        $statements[] = '$ids = '.$items.';';
-        $expression = sprintf('\array_map(fn (string $id) => %s->get($id), $ids)', $containerVariableName);
+        $expression = '[';
 
-        return new CompiledEntry($expression, implode(PHP_EOL, $statements), ['$ids'], false, 'array');
+        foreach ($mapContainerIdentifiers as $key => $containerIdentifier) {
+            $expression .= sprintf('  %s => %s->get(%s),'.PHP_EOL, var_export($key, true), $containerVariableName, var_export($containerIdentifier, true));
+        }
+
+        $expression .= ']';
+
+        $comment = sprintf('// Services for tag %s', var_export($this->tag, true));
+
+        return new CompiledEntry($expression, $comment, [], false, 'array');
     }
 
     public function getDefinition(): string

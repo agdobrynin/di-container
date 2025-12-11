@@ -50,7 +50,7 @@ final class Compiler
             }
 
             // TODO how about name generator for method name in container.
-            $compiledEntity = $definition->compile('$this', $this->container, '$service');
+            $compiledEntity = $definition->compile('$this', $this->container);
             $serviceMethod = 'getService'.++$num;
 
             $this->mapContainerIdToMethod[$id] = [$serviceMethod, $compiledEntity];
