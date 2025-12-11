@@ -89,7 +89,7 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
         <?php echo $compiledEntry->getStatements(); ?>
 
 <?php } ?>
-        return  <?php if ($compiledEntry->isSingleton()) {?> $this->singletonServices[<?php echo \var_export($id, true); ?>] = <?php } ?><?php echo $compiledEntry->getExpression().';'; ?>
+        return <?php if ($compiledEntry->isSingleton()) {?> $this->singletonServices[<?php echo \var_export($id, true); ?>] = <?php } ?><?php echo $compiledEntry->getExpression().';'; ?>
 
     }
 <?php } ?>
