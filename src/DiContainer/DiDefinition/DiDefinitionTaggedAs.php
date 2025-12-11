@@ -6,10 +6,14 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Generator;
 use InvalidArgumentException;
+use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\DiDefinitionCompileException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCompileInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
@@ -19,6 +23,7 @@ use SplPriorityQueue;
 
 use function array_map;
 use function explode;
+use function implode;
 use function in_array;
 use function is_callable;
 use function is_string;
@@ -27,7 +32,7 @@ use function str_starts_with;
 use function trim;
 use function var_export;
 
-final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
+final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface, DiDefinitionCompileInterface
 {
     private bool $keyChecked;
     private bool $isUseKeysComputed;
@@ -60,6 +65,41 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this->isLazy
             ? new LazyDefinitionIterator($container, $this->exposeContainerIdentifiers($container, $context))
             : array_map(static fn (string $id) => $container->get($id), $this->exposeContainerIdentifiers($container, $context));
+    }
+
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
+    {
+        try {
+            $mapContainerIdentifiers = $this->exposeContainerIdentifiers($container);
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionCompileException(
+                sprintf('Cannot compile tagged services. Tag "%s".', $this->tag),
+                previous: $e
+            );
+        }
+
+        $items = (new DiDefinitionValue($mapContainerIdentifiers))
+            ->compile($containerVariableName, $container)
+            ->getExpression()
+        ;
+
+        if ($this->isLazy) {
+            $statements = [];
+            // TODO check unique name $ids in $scopeServiceVariableName and in array $scopeVariableNames
+            $statements[] = sprintf('// Lazy load services for tag %s', var_export($this->tag, true));
+            $statements[] = '$ids = '.$items.';';
+            $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, $ids)', $containerVariableName);
+
+            return new CompiledEntry($expression, implode(PHP_EOL, $statements), ['$ids'], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
+        }
+
+        $statements = [];
+        // TODO check unique name $ids in $scopeServiceVariableName and in array $scopeVariableNames
+        $statements[] = sprintf('// Services for tag %s', var_export($this->tag, true));
+        $statements[] = '$ids = '.$items.';';
+        $expression = sprintf('\array_map(fn (string $id) => %s->get($id), $ids)', $containerVariableName);
+
+        return new CompiledEntry($expression, implode(PHP_EOL, $statements), ['$ids'], false, 'array');
     }
 
     public function getDefinition(): string
