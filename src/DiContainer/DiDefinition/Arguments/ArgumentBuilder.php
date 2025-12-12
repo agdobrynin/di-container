@@ -40,8 +40,6 @@ use function sprintf;
  */
 final class ArgumentBuilder implements ArgumentBuilderInterface
 {
-    private readonly bool $isUseAttribute;
-
     /**
      * @param BindArgumentsType $bindArguments
      */
@@ -49,9 +47,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         private readonly array $bindArguments,
         private readonly ReflectionFunctionAbstract $functionOrMethod,
         private readonly DiContainerInterface $container,
-    ) {
-        $this->isUseAttribute = $this->container->getConfig()?->isUseAttribute() ?? false;
-    }
+    ) {}
 
     public function getBindArguments(): array
     {
@@ -70,14 +66,14 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     public function build(): array
     {
-        return $this->isUseAttribute
+        return $this->container->getConfig()->isUseAttribute()
             ? $this->basedOnPhpAttributes()
             : $this->basedOnBindArguments();
     }
 
     public function buildByPriorityBindArguments(): array
     {
-        return $this->isUseAttribute
+        return $this->container->getConfig()->isUseAttribute()
             ? $this->basedOnBindArgumentsAsPriorityAndPhpAttributes()
             : $this->basedOnBindArguments();
     }

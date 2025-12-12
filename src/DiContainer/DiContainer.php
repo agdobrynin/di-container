@@ -57,11 +57,6 @@ use function var_export;
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     /**
-     * Default singleton for definitions.
-     */
-    protected bool $isSingletonDefault;
-
-    /**
      * @var array<class-string|non-empty-string, mixed>
      */
     protected array $definitions = [];
@@ -89,10 +84,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function __construct(
         iterable $definitions = [],
-        protected ?DiContainerConfigInterface $config = null
+        protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
     ) {
-        $this->isSingletonDefault = $this->config?->isSingletonServiceDefault() ?? false;
-
         foreach ($definitions as $identifier => $definition) {
             $this->set(Helper::getContainerIdentifier($identifier, $definition), $definition);
         }
@@ -190,7 +183,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
     }
 
-    public function getConfig(): ?DiContainerConfigInterface
+    public function getConfig(): DiContainerConfigInterface
     {
         return $this->config;
     }
@@ -244,7 +237,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $resolvedEntry = $diDefinition->resolve($this, $this);
 
             if ($diDefinition instanceof DiDefinitionSingletonInterface
-                && !($diDefinition->isSingleton() ?? $this->isSingletonDefault)) {
+                && !($diDefinition->isSingleton() ?? $this->config->isSingletonServiceDefault())) {
                 return $resolvedEntry;
             }
 
@@ -278,9 +271,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $reflectionClass = new ReflectionClass($id); // @todo come up with a test for throw ReflectionException
 
             if ($reflectionClass->isInterface()) {
-                // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
-                if ($this->config?->isUseAttribute()
-                    && $service = AttributeReader::getServiceAttribute($reflectionClass)) {
+                if ($this->config->isUseAttribute()
+                    && null !== ($service = AttributeReader::getServiceAttribute($reflectionClass))) {
                     $this->checkCyclicalDependencyCall($service->getIdentifier());
                     $this->resolvingDependencies[$service->getIdentifier()] = true;
 
@@ -298,17 +290,15 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 throw new NotFoundException(sprintf('Attempting to resolve interface "%s".', $id), id: $id);
             }
 
-            // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
-            if ($this->config?->isUseAttribute()
-                && $factory = AttributeReader::getDiFactoryAttribute($reflectionClass)) {
+            if ($this->config->isUseAttribute()
+                && null !== ($factory = AttributeReader::getDiFactoryAttribute($reflectionClass))) {
                 return $this->diResolvedDefinition[$id] = new DiDefinitionFactory(
                     $factory->getIdentifier(),
                     $factory->isSingleton()
                 );
             }
 
-            // @phpstan-ignore-next-line booleanAnd.leftNotBoolean
-            if ($this->config?->isUseAttribute()
+            if ($this->config->isUseAttribute()
                 && ($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
                 foreach ($autowires as $autowire) {
                     if ($autowire->getIdentifier() === $reflectionClass->name) {
@@ -317,7 +307,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 }
             }
 
-            return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->isSingletonDefault);
+            return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->config->isSingletonServiceDefault());
         }
 
         $definition = $this->clarificationOfDefinition($this->definitions[$id]);
@@ -340,7 +330,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         return match (true) {
             $definition instanceof DiDefinitionInterface => $definition,
-            $definition instanceof Closure => new DiDefinitionCallable($definition, $this->isSingletonDefault),
+            $definition instanceof Closure => new DiDefinitionCallable($definition, $this->config->isSingletonServiceDefault()),
             default => new DiDefinitionValue($definition)
         };
     }
@@ -352,7 +342,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
-        if (!$this->config?->isUseZeroConfigurationDefinition()) { // @phpstan-ignore booleanNot.exprNotBoolean
+        if (!$this->config->isUseZeroConfigurationDefinition()) {
             return false;
         }
 

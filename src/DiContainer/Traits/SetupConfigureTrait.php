@@ -64,7 +64,7 @@ trait SetupConfigureTrait
      */
     private function getSetups(ReflectionClass $class, DiContainerInterface $container): array
     {
-        if (false === (bool) $container->getConfig()?->isUseAttribute()) {
+        if (!$container->getConfig()->isUseAttribute()) {
             return $this->setup;
         }
 

@@ -354,7 +354,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
      */
     private function getTagsByAttribute(): array
     {
-        if (false === (bool) $this->getContainer()->getConfig()?->isUseAttribute()) {
+        if (!$this->getContainer()->getConfig()->isUseAttribute()) {
             return [];
         }
 
