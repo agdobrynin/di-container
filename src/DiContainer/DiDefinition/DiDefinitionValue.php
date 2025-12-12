@@ -42,7 +42,7 @@ final class DiDefinitionValue implements DiDefinitionInterface, DiDefinitionTagA
         return $this->definition;
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
             if ($this->definition instanceof UnitEnum && PHP_VERSION_ID < 80200) {

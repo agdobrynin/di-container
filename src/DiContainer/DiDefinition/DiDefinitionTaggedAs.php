@@ -68,10 +68,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             : array_map(static fn (string $id) => $container->get($id), $this->exposeContainerIdentifiers($container, $context));
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
-            $mapContainerIdentifiers = $this->exposeContainerIdentifiers($container);
+            $mapContainerIdentifiers = $this->exposeContainerIdentifiers($container, $context);
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DiDefinitionCompileException(
                 sprintf('Cannot compile tagged services. Tag "%s".', $this->tag),

@@ -57,7 +57,7 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
         return $container->get($this->getDefinition());
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $containerIdentifier = $this->getDefinition();

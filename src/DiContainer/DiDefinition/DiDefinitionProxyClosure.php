@@ -48,7 +48,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
         return static fn () => $container->get($identifier);
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $identifier = $this->getValidContainerIdentifier($container);
