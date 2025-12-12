@@ -46,7 +46,9 @@ final class Compiler
         $num = 0;
         foreach ($this->container->getDefinitions() as $id => $definition) {
             if (!$definition instanceof DiDefinitionCompileInterface) {
-                throw new DiDefinitionCompileException('Cannot compile definition of type "%s"'.get_debug_type($definition));
+                throw new DiDefinitionCompileException(
+                    sprintf('Cannot compile the definition with container identifier "%s" and type "%s". The definition must implement "%s"', $id, get_debug_type($definition), DiDefinitionCompileInterface::class)
+                );
             }
 
             // TODO how about name generator for method name in container.
