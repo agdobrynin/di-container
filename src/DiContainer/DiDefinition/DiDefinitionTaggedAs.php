@@ -88,9 +88,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             }
 
             $ids .= ']'.PHP_EOL;
-            $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVariableName, $ids);
 
             $comment = sprintf('// Lazy load services for tag %s', var_export($this->tag, true));
+            $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVariableName, $ids);
 
             return new CompiledEntry($expression, $comment, [], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
         }
