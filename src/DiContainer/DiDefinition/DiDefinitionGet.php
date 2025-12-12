@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\Compiler\CompiledEntry;
+use Kaspi\DiContainer\Exception\DiDefinitionCompileException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCompileInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
 use function sprintf;
+use function var_export;
 
-final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNoArgumentsInterface
+final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNoArgumentsInterface, DiDefinitionCompileInterface
 {
     /**
      * @var non-empty-string
@@ -49,5 +55,21 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
         return $container->get($this->getDefinition());
+    }
+
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = []): CompiledEntryInterface
+    {
+        try {
+            $containerIdentifier = $this->getDefinition();
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionCompileException(
+                sprintf('Cannot compile reference definition with container identifier "%s".', $this->containerIdentifier),
+                previous: $e
+            );
+        }
+
+        $expression = sprintf('%s->get(%s)', $containerVariableName, var_export($containerIdentifier, true));
+
+        return new CompiledEntry($expression, '', [], false);
     }
 }
