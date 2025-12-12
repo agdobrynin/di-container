@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
@@ -50,6 +51,7 @@ use function round;
 #[CoversClass(Helper::class)]
 #[CoversClass(ReflectionMethodByDefinition::class)]
 #[CoversClass(NotFoundException::class)]
+#[CoversClass(DiContainerNullConfig::class)]
 class CallFunctionTest extends TestCase
 {
     public function testBuiltinFunction(): void
