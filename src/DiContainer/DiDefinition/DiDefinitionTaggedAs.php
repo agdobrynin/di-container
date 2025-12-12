@@ -95,7 +95,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return new CompiledEntry($expression, $comment, [], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
         }
 
-        $expression = '[';
+        $expression = '['.PHP_EOL;
 
         foreach ($mapContainerIdentifiers as $key => $containerIdentifier) {
             $expression .= sprintf('  %s => %s->get(%s),'.PHP_EOL, var_export($key, true), $containerVariableName, var_export($containerIdentifier, true));
