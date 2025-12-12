@@ -15,6 +15,7 @@ final class CompiledEntry implements CompiledEntryInterface
     public function __construct(
         private readonly string $expression,
         private readonly string $statements,
+        private readonly string $scopeServiceVariableName,
         private readonly array $scopeVariables,
         private readonly ?bool $isSingleton,
         private readonly string $returnType = 'mixed',
@@ -28,6 +29,11 @@ final class CompiledEntry implements CompiledEntryInterface
     public function getStatements(): string
     {
         return $this->statements;
+    }
+
+    public function getScopeServiceVariableName(): string
+    {
+        return $this->scopeServiceVariableName;
     }
 
     public function getScopeVariables(): array

@@ -18,6 +18,11 @@ interface CompiledEntryInterface
 
     /**
      * TODO make description for this method.
+     */
+    public function getScopeServiceVariableName(): ?string;
+
+    /**
+     * TODO make description for this method.
      *
      * @return list<non-empty-string>
      */

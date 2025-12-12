@@ -30,7 +30,7 @@ final class Compiler
         private readonly string $containerFile,
     ) {
         // TODO check available namespace, container class name.
-        $containerEntry = new CompiledEntry('$this', '', [], null, 'self');
+        $containerEntry = new CompiledEntry('$this', '', '', [], null, 'self');
 
         $this->mapContainerIdToMethod = [
             ContainerInterface::class => ['getPsrContainer', $containerEntry],

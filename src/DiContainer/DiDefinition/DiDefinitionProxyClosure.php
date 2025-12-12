@@ -62,7 +62,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
         $expression = sprintf('fn () => %s->get(%s)', $containerVariableName, var_export($identifier, true));
         $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
 
-        return new CompiledEntry($expression, '', [], $isSingleton, '\Closure');
+        return new CompiledEntry($expression, '', '', [], $isSingleton, '\Closure');
     }
 
     /**

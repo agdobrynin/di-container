@@ -7,15 +7,19 @@ namespace Kaspi\DiContainer\DiDefinition;
 use InvalidArgumentException;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\DiDefinitionCompileException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCompileInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupConfigureInterface;
@@ -29,9 +33,11 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
 use ReflectionException;
 
+use function array_push;
 use function call_user_func_array;
 use function get_class;
 use function get_debug_type;
+use function in_array;
 use function is_callable;
 use function is_int;
 use function is_null;
@@ -39,6 +45,7 @@ use function is_object;
 use function is_string;
 use function sprintf;
 use function trim;
+use function uniqid;
 use function var_export;
 
 /**
@@ -46,7 +53,7 @@ use function var_export;
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
  * @phpstan-import-type SetupConfigureItem from SetupConfigureTrait
  */
-final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface, DiDefinitionTagArgumentInterface
+final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface, DiDefinitionTagArgumentInterface, DiDefinitionCompileInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -203,6 +210,70 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         }
 
         return $object;
+    }
+
+    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    {
+        try {
+            $argBuilder = $this->exposeArgumentBuilder($container);
+            $setupArgBuilders = $this->exposeSetupArgumentBuilders($container);
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DiDefinitionCompileException(
+                sprintf('Cannot compile definition "%s".', $this->getDefinition()->getName()),
+                previous: $e
+            );
+        }
+
+        $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
+        $fullyName = '\\'.$this->getDefinition()->getName();
+
+        do {
+            $scopeServiceVariableName = null === $scopeServiceVariableName
+                ? '$service'
+                : uniqid('$service_', true);
+            // TODO check max trying generate variable name?
+        } while (in_array($scopeServiceVariableName, $scopeVariableNames, true));
+
+        $scopeVariableNames[] = $scopeServiceVariableName;
+
+        $constructorCompiledEntities = [];
+
+        if (null !== $argBuilder) {
+            foreach ($argBuilder->build() as $argIndexOrName => $arg) {
+                /** @var DiDefinitionCompileInterface $argToCompile */
+                $argToCompile = $arg instanceof DiDefinitionCompileInterface
+                    ? $arg
+                    : new DiDefinitionValue($arg);
+
+                $compiledEntity = $argToCompile->compile($containerVariableName, $container, null, $scopeVariableNames);
+                array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
+                $constructorCompiledEntities[$argIndexOrName] = $compiledEntity;
+            }
+        }
+
+        //        $setupCompiledEntities = [];
+        //        /** @var ArgumentBuilderInterface $argBuilder */
+        //        foreach ($setupArgBuilders as  [$setupConfigureType, $argBuilder]) {
+        //            foreach ($argBuilder->buildByPriorityBindArguments() as $argIndexOrName => $arg) {
+        //                $setupCompiledEntities[$argIndexOrName] = $arg instanceof DiDefinitionCompileInterface
+        //                    ? $arg->compile($containerVariableName, $container, $scopeServiceVariableName)
+        //                    : (new DiDefinitionValue($arg))->compile($containerVariableName, $container, $scopeServiceVariableName);
+        //
+        //                if (SetupConfigureMethod::Immutable === $setupConfigureType) {
+        //
+        //                }
+        //            }
+        //        }
+
+        if ([] === $constructorCompiledEntities) {
+            $expression = sprintf('new %s', $fullyName);
+            $statements = '';
+        } else {
+            $expression = $scopeServiceVariableName;
+            $statements = ''; // TODO make via implode(';'.PHP_EOL)
+        }
+
+        return new CompiledEntry($expression, $statements, $scopeServiceVariableName, $scopeVariableNames, $isSingleton, $fullyName);
     }
 
     public function getDefinition(): ReflectionClass

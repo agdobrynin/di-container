@@ -92,7 +92,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $comment = sprintf('// Lazy load services for tag %s', var_export($this->tag, true));
             $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVariableName, $ids);
 
-            return new CompiledEntry($expression, $comment, [], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
+            return new CompiledEntry($expression, $comment, '', [], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
         }
 
         $expression = '['.PHP_EOL;
@@ -105,7 +105,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         $comment = sprintf('// Services for tag %s', var_export($this->tag, true));
 
-        return new CompiledEntry($expression, $comment, [], false, 'array');
+        return new CompiledEntry($expression, $comment, '', [], false, 'array');
     }
 
     public function getDefinition(): string

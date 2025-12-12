@@ -70,6 +70,6 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
 
         $expression = sprintf('%s->get(%s)', $containerVariableName, var_export($containerIdentifier, true));
 
-        return new CompiledEntry($expression, '', [], false);
+        return new CompiledEntry($expression, '', '', [], false);
     }
 }
