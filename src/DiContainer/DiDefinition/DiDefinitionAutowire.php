@@ -237,7 +237,8 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         $scopeVariableNames[] = $scopeServiceVariableName;
 
-        $constructorCompiledEntities = [];
+        $classStm = '';
+        $classExp = sprintf('new %s(', $fullyName);
 
         if (null !== $argBuilder) {
             try {
@@ -257,11 +258,30 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
                 $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $this);
                 array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
-                $constructorCompiledEntities[$argIndexOrName] = $compiledEntity;
+
+                if ('' !== $compiledEntity->getStatements()) {
+                    $classStm .= $compiledEntity->getStatements().PHP_EOL;
+                    $argExpression = $compiledEntity->getScopeServiceVariableName();
+                } else {
+                    $argExpression = $compiledEntity->getExpression();
+                }
+
+                $classExp .= is_string($argIndexOrName)
+                    ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $argExpression)
+                    : sprintf(PHP_EOL.'  %s,', $argExpression);
             }
         }
 
-        $setupStatements = '';
+        $classExp .= PHP_EOL.')';
+
+        $serviceExpression = '' !== $classStm
+            ? $scopeServiceVariableName
+            : $classExp;
+        $serviceStatements = '' !== $classStm
+            ? sprintf('%s'.PHP_EOL.'  %s = %s;'.PHP_EOL, $classStm, $scopeServiceVariableName, $classExp)
+            : '';
+
+        $serviceSetupStatements = '';
 
         /**
          * @var ArgumentBuilderInterface $setupArgBuilder
@@ -278,9 +298,9 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                 );
             }
 
-            $setupStatements .= SetupConfigureMethod::Mutable === $setupConfigureType
-                ? sprintf('%s->%s('.PHP_EOL, $scopeServiceVariableName, $methodName)
-                : sprintf('%s = %s->%s('.PHP_EOL, $scopeServiceVariableName, $scopeServiceVariableName, $methodName);
+            $serviceSetupStatements .= SetupConfigureMethod::Mutable === $setupConfigureType
+                ? sprintf('    %s->%s('.PHP_EOL, $scopeServiceVariableName, $methodName)
+                : sprintf('    %s = %s->%s('.PHP_EOL, $scopeServiceVariableName, $scopeServiceVariableName, $methodName);
 
             foreach ($args as $argIndexOrName => $arg) {
                 /** @var DiDefinitionCompileInterface $argToCompile */
@@ -289,33 +309,24 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     : new DiDefinitionValue($arg);
                 $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $this);
                 array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
-                $setupStatements .= is_string($argIndexOrName)
-                    ? sprintf('  %s: %s,'.PHP_EOL, $argIndexOrName, $compiledEntity->getExpression())
-                    : sprintf('  %s,'.PHP_EOL, $compiledEntity->getExpression());
+                $serviceSetupStatements .= is_string($argIndexOrName)
+                    ? sprintf('        %s: %s,'.PHP_EOL, $argIndexOrName, $compiledEntity->getExpression())
+                    : sprintf('        %s,'.PHP_EOL, $compiledEntity->getExpression());
             }
 
-            $setupStatements .= ');'.PHP_EOL;
+            $serviceSetupStatements .= '    );'.PHP_EOL;
         }
 
-        $constructorStatements = '';
-        $classExpression = sprintf('new %s('.PHP_EOL, $fullyName);
-        foreach ($constructorCompiledEntities as $argIndexOrName => $constructorCompiledEntity) {
-            $classExpression .= is_string($argIndexOrName)
-                ? sprintf('  %s: %s,'.PHP_EOL, $argIndexOrName, $constructorCompiledEntity->getExpression())
-                : sprintf('  %s,'.PHP_EOL, $constructorCompiledEntity->getExpression());
-            if ('' !== $constructorCompiledEntity->getStatements()) {
-                $constructorStatements .= $constructorCompiledEntity->getStatements().PHP_EOL;
-            }
-        }
-        $classExpression .= ')';
-
-        if ('' !== $constructorStatements || '' !== $setupStatements) {
-            $statements = sprintf('%s = %s;'.PHP_EOL, $scopeServiceVariableName, $classExpression);
-            $statements .= $setupStatements;
+        if ('' !== $serviceSetupStatements) {
             $expression = $scopeServiceVariableName;
+            $serviceStm = '' === $serviceStatements
+                ? sprintf('%s = %s;', $scopeServiceVariableName, $serviceExpression)
+                : $serviceStatements;
+
+            $statements = $serviceStm.PHP_EOL.$serviceSetupStatements;
         } else {
-            $expression = $classExpression;
-            $statements = '';
+            $expression = $serviceExpression;
+            $statements = $serviceStatements;
         }
 
         return new CompiledEntry($expression, $isSingleton, $statements, $scopeServiceVariableName, $scopeVariableNames, $fullyName);
