@@ -14,10 +14,10 @@ final class CompiledEntry implements CompiledEntryInterface
      */
     public function __construct(
         private readonly string $expression,
-        private readonly string $statements,
-        private readonly string $scopeServiceVariableName,
-        private readonly array $scopeVariables,
         private readonly ?bool $isSingleton,
+        private readonly string $statements = '',
+        private readonly string $scopeServiceVariableName = '',
+        private readonly array $scopeVariables = [],
         private readonly string $returnType = 'mixed',
     ) {}
 

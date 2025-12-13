@@ -57,7 +57,7 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
         return $container->get($this->getDefinition());
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $containerIdentifier = $this->getDefinition();
@@ -70,6 +70,6 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
 
         $expression = sprintf('%s->get(%s)', $containerVariableName, var_export($containerIdentifier, true));
 
-        return new CompiledEntry($expression, '', '', [], false);
+        return new CompiledEntry($expression, false);
     }
 }

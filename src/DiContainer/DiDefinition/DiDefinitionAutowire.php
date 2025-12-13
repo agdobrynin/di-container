@@ -212,7 +212,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         return $object;
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $argBuilder = $this->exposeArgumentBuilder($container);
@@ -226,13 +226,12 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
         $fullyName = '\\'.$this->getDefinition()->getName();
+        $scopeServiceVariableName = '$service';
 
-        do {
-            $scopeServiceVariableName = null === $scopeServiceVariableName
-                ? '$service'
-                : uniqid('$service_', true);
+        while (in_array($scopeServiceVariableName, $scopeVariableNames, true)) {
             // TODO check max trying generate variable name?
-        } while (in_array($scopeServiceVariableName, $scopeVariableNames, true));
+            $scopeServiceVariableName = uniqid('$service_', true);
+        }
 
         $scopeVariableNames[] = $scopeServiceVariableName;
 
@@ -245,7 +244,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     ? $arg
                     : new DiDefinitionValue($arg);
 
-                $compiledEntity = $argToCompile->compile($containerVariableName, $container, null, $scopeVariableNames);
+                $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames);
                 array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
                 $constructorCompiledEntities[$argIndexOrName] = $compiledEntity;
             }
@@ -273,7 +272,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             $statements = ''; // TODO make via implode(';'.PHP_EOL)
         }
 
-        return new CompiledEntry($expression, $statements, $scopeServiceVariableName, $scopeVariableNames, $isSingleton, $fullyName);
+        return new CompiledEntry($expression, $isSingleton, $statements, $scopeServiceVariableName, $scopeVariableNames, $fullyName);
     }
 
     public function getDefinition(): ReflectionClass

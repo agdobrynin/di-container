@@ -68,7 +68,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             : array_map(static fn (string $id) => $container->get($id), $this->exposeContainerIdentifiers($container, $context));
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $mapContainerIdentifiers = $this->exposeContainerIdentifiers($container, $context);
@@ -92,7 +92,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $comment = sprintf('// Lazy load services for tag %s', var_export($this->tag, true));
             $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVariableName, $ids);
 
-            return new CompiledEntry($expression, $comment, '', [], false, '\Kaspi\DiContainer\LazyDefinitionIterator');
+            return new CompiledEntry($expression, false, $comment, returnType: '\Kaspi\DiContainer\LazyDefinitionIterator');
         }
 
         $expression = '['.PHP_EOL;
@@ -105,7 +105,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         $comment = sprintf('// Services for tag %s', var_export($this->tag, true));
 
-        return new CompiledEntry($expression, $comment, '', [], false, 'array');
+        return new CompiledEntry($expression, false, $comment, returnType: 'array');
     }
 
     public function getDefinition(): string

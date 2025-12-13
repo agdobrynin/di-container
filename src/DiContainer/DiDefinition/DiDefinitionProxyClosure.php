@@ -48,7 +48,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
         return static fn () => $container->get($identifier);
     }
 
-    public function compile(string $containerVariableName, DiContainerInterface $container, ?string $scopeServiceVariableName = null, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVariableName, DiContainerInterface $container, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $identifier = $this->getValidContainerIdentifier($container);
@@ -62,7 +62,7 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
         $expression = sprintf('fn () => %s->get(%s)', $containerVariableName, var_export($identifier, true));
         $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
 
-        return new CompiledEntry($expression, '', '', [], $isSingleton, '\Closure');
+        return new CompiledEntry($expression, $isSingleton, returnType: '\Closure');
     }
 
     /**

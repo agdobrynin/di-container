@@ -19,7 +19,7 @@ interface CompiledEntryInterface
     /**
      * TODO make description for this method.
      */
-    public function getScopeServiceVariableName(): ?string;
+    public function getScopeServiceVariableName(): string;
 
     /**
      * TODO make description for this method.
