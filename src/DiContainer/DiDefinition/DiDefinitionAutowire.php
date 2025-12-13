@@ -37,6 +37,7 @@ use Throwable;
 
 use function array_key_last;
 use function array_push;
+use function bin2hex;
 use function call_user_func_array;
 use function get_class;
 use function get_debug_type;
@@ -46,9 +47,9 @@ use function is_int;
 use function is_null;
 use function is_object;
 use function is_string;
+use function random_bytes;
 use function sprintf;
 use function trim;
-use function uniqid;
 use function var_export;
 
 /**
@@ -231,7 +232,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         while (in_array($scopeServiceVariableName, $scopeVariableNames, true)) {
             // TODO check max trying generate variable name?
-            $scopeServiceVariableName = uniqid('$service_', true);
+            $scopeServiceVariableName = '$service_'.bin2hex(random_bytes(5));
         }
 
         $scopeVariableNames[] = $scopeServiceVariableName;
