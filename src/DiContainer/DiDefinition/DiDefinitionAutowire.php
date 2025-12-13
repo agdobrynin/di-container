@@ -26,6 +26,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupConfigureInterfac
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
@@ -226,6 +227,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
         $fullyName = '\\'.$this->getDefinition()->getName();
+
         $scopeServiceVariableName = '$service';
 
         while (in_array($scopeServiceVariableName, $scopeVariableNames, true)) {
@@ -238,7 +240,16 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
         $constructorCompiledEntities = [];
 
         if (null !== $argBuilder) {
-            foreach ($argBuilder->build() as $argIndexOrName => $arg) {
+            try {
+                $args = $argBuilder->build();
+            } catch (ArgumentBuilderExceptionInterface $e) {
+                throw new DiDefinitionCompileException(
+                    sprintf('Cannot compile definition "%s".', $this->getDefinition()->getName()),
+                    previous: $e
+                );
+            }
+
+            foreach ($args as $argIndexOrName => $arg) {
                 /** @var DiDefinitionCompileInterface $argToCompile */
                 $argToCompile = $arg instanceof DiDefinitionCompileInterface
                     ? $arg
@@ -250,26 +261,61 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             }
         }
 
-        //        $setupCompiledEntities = [];
-        //        /** @var ArgumentBuilderInterface $argBuilder */
-        //        foreach ($setupArgBuilders as  [$setupConfigureType, $argBuilder]) {
-        //            foreach ($argBuilder->buildByPriorityBindArguments() as $argIndexOrName => $arg) {
-        //                $setupCompiledEntities[$argIndexOrName] = $arg instanceof DiDefinitionCompileInterface
-        //                    ? $arg->compile($containerVariableName, $container, $scopeServiceVariableName)
-        //                    : (new DiDefinitionValue($arg))->compile($containerVariableName, $container, $scopeServiceVariableName);
-        //
-        //                if (SetupConfigureMethod::Immutable === $setupConfigureType) {
-        //
-        //                }
-        //            }
-        //        }
+        $setupStatements = '';
 
-        if ([] === $constructorCompiledEntities) {
-            $expression = sprintf('new %s', $fullyName);
-            $statements = '';
-        } else {
+        /**
+         * @var ArgumentBuilderInterface $setupArgBuilder
+         * @var SetupConfigureMethod     $setupConfigureType
+         */
+        foreach ($setupArgBuilders as [$setupConfigureType, $setupArgBuilder]) {
+            try {
+                $args = $setupArgBuilder->buildByPriorityBindArguments();
+                $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
+            } catch (ArgumentBuilderExceptionInterface $e) {
+                throw new DiDefinitionCompileException(
+                    sprintf('Cannot compile definition "%s".', $this->getDefinition()->getName()),
+                    previous: $e
+                );
+            }
+
+            $setupStatements .= SetupConfigureMethod::Mutable === $setupConfigureType
+                ? sprintf('%s->%s('.PHP_EOL, $scopeServiceVariableName, $methodName)
+                : sprintf('%s = %s->%s('.PHP_EOL, $scopeServiceVariableName, $scopeServiceVariableName, $methodName);
+
+            foreach ($args as $argIndexOrName => $arg) {
+                /** @var DiDefinitionCompileInterface $argToCompile */
+                $argToCompile = $arg instanceof DiDefinitionCompileInterface
+                    ? $arg
+                    : new DiDefinitionValue($arg);
+                $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames);
+                array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
+                $setupStatements .= is_string($argIndexOrName)
+                    ? sprintf('  %s: %s,'.PHP_EOL, $argIndexOrName, $compiledEntity->getExpression())
+                    : sprintf('  %s,'.PHP_EOL, $compiledEntity->getExpression());
+            }
+
+            $setupStatements .= ');'.PHP_EOL;
+        }
+
+        $constructorStatements = '';
+        $classExpression = sprintf('new %s('.PHP_EOL, $fullyName);
+        foreach ($constructorCompiledEntities as $argIndexOrName => $constructorCompiledEntity) {
+            $classExpression .= is_string($argIndexOrName)
+                ? sprintf('  %s: %s,'.PHP_EOL, $argIndexOrName, $constructorCompiledEntity->getExpression())
+                : sprintf('  %s,'.PHP_EOL, $constructorCompiledEntity->getExpression());
+            if ('' !== $constructorCompiledEntity->getStatements()) {
+                $constructorStatements .= $constructorCompiledEntity->getStatements().PHP_EOL;
+            }
+        }
+        $classExpression .= ')';
+
+        if ('' !== $constructorStatements || '' !== $setupStatements) {
+            $statements = sprintf('%s = %s;'.PHP_EOL, $scopeServiceVariableName, $classExpression);
+            $statements .= $setupStatements;
             $expression = $scopeServiceVariableName;
-            $statements = ''; // TODO make via implode(';'.PHP_EOL)
+        } else {
+            $expression = $classExpression;
+            $statements = '';
         }
 
         return new CompiledEntry($expression, $isSingleton, $statements, $scopeServiceVariableName, $scopeVariableNames, $fullyName);
