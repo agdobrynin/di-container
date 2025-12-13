@@ -164,11 +164,9 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
             : '';
 
         $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
-        $returnType = null === $fn->getReturnType()
-            ? 'mixed'
-            : (string) $fn->getReturnType();
+        // TODO add check return type, not only `mixed` type.
 
-        return new CompiledEntry($serviceExpression, $isSingleton, $serviceStatements, $scopeServiceVariableName, $scopeVariableNames, $returnType);
+        return new CompiledEntry($serviceExpression, $isSingleton, $serviceStatements, $scopeServiceVariableName, $scopeVariableNames);
     }
 
     public function getDefinition(): callable
