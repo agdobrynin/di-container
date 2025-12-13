@@ -20,14 +20,23 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
+use LogicException;
 use ReflectionFunction;
 use ReflectionMethod;
+use RuntimeException;
 
+use function array_key_last;
+use function array_push;
 use function explode;
+use function get_debug_type;
+use function in_array;
 use function is_array;
+use function is_object;
 use function is_string;
 use function sprintf;
 use function strpos;
+use function uniqid;
+use function var_export;
 
 final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDefinitionSingletonInterface, DiTaggedDefinitionInterface, DiDefinitionTagArgumentInterface, DiDefinitionCompileInterface
 {
@@ -97,40 +106,69 @@ final class DiDefinitionCallable implements DiDefinitionArgumentsInterface, DiDe
 
         $fn = $this->reflectionFunction();
 
-        $argBuilder->getFunctionOrMethod()->isClosure();
-        $argBuilder->getFunctionOrMethod() instanceof ReflectionFunction;
-        $argBuilder->getFunctionOrMethod() instanceof ReflectionMethod;
+        if ($fn->isClosure()) {
+            try {
+                $callableExp = '('.(new FinderClosureCode())->getCode($this->definition).')(';
+            } catch (LogicException|RuntimeException $e) {
+                throw new DiDefinitionCompileException(
+                    'Cannot compile Closure definition.',
+                    previous: $e
+                );
+            }
+        } elseif ($fn instanceof ReflectionFunction) {
+            $callableExp = sprintf('\%s(', $fn->getName());
+        } else {
+            $callableExp = sprintf('[\%s, %s](', $fn->getDeclaringClass()->name, $fn->getName());
+        }
 
-//        $callableStm = '';
-//        $callableExp = match (true) {
-//            $fn->isClosure() => (new FinderClosureCode())->getCode($this->definition).'(',
-//            $fn instanceof ReflectionFunction => sprintf('%s(', $fn->getName())
-//        };
-//
-//        foreach ($args as $argIndexOrName => $arg) {
-//            /** @var DiDefinitionCompileInterface $argToCompile */
-//            $argToCompile = $arg instanceof DiDefinitionCompileInterface
-//                ? $arg
-//                : new DiDefinitionValue($arg);
-//
-//            $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $this);
-//            array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
-//
-//            if ('' !== $compiledEntity->getStatements()) {
-//                $callableStm .= $compiledEntity->getStatements().PHP_EOL;
-//                $argExpression = $compiledEntity->getScopeServiceVariableName();
-//            } else {
-//                $argExpression = $compiledEntity->getExpression();
-//            }
-//
-//            $callableExp .= is_string($argIndexOrName)
-//                ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $argExpression)
-//                : sprintf(PHP_EOL.'  %s,', $argExpression);
-//        }
-//
-//        $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
-//
-//        return new CompiledEntry();
+        $scopeServiceVariableName = '$service';
+
+        while (in_array($scopeServiceVariableName, $scopeVariableNames, true)) {
+            // TODO check max trying generate variable name?
+            $scopeServiceVariableName = uniqid('$service_', true);
+        }
+
+        $scopeVariableNames[] = $scopeServiceVariableName;
+        $callableStm = '';
+
+        foreach ($args as $argIndexOrName => $arg) {
+            /** @var DiDefinitionCompileInterface $argToCompile */
+            $argToCompile = $arg instanceof DiDefinitionCompileInterface
+                ? $arg
+                : new DiDefinitionValue($arg);
+
+            $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $this);
+            array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
+
+            if ('' !== $compiledEntity->getStatements()) {
+                $callableStm .= $compiledEntity->getStatements().PHP_EOL;
+                $argExpression = $compiledEntity->getScopeServiceVariableName();
+            } else {
+                $argExpression = $compiledEntity->getExpression();
+            }
+
+            $callableExp .= is_string($argIndexOrName)
+                ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $argExpression)
+                : sprintf(PHP_EOL.'  %s,', $argExpression);
+        }
+
+        $callableExp .= null !== array_key_last($args)
+            ? \PHP_EOL.')'
+            : ')';
+
+        $serviceExpression = '' !== $callableStm
+            ? $scopeServiceVariableName
+            : $callableExp;
+        $serviceStatements = '' !== $callableStm
+            ? sprintf('%s'.PHP_EOL.'  %s = %s;'.PHP_EOL, $callableStm, $scopeServiceVariableName, $callableExp)
+            : '';
+
+        $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
+        $returnType = null === $fn->getReturnType()
+            ? 'mixed'
+            : (string) $fn->getReturnType();
+
+        return new CompiledEntry($serviceExpression, $isSingleton, $serviceStatements, $scopeServiceVariableName, $scopeVariableNames, $returnType);
     }
 
     public function getDefinition(): callable
