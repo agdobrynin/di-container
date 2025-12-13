@@ -34,6 +34,7 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
 use ReflectionException;
 
+use function array_key_last;
 use function array_push;
 use function call_user_func_array;
 use function get_class;
@@ -270,9 +271,13 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $argExpression)
                     : sprintf(PHP_EOL.'  %s,', $argExpression);
             }
+
+            if (null !== array_key_last($args)) {
+                $classExp .= PHP_EOL;
+            }
         }
 
-        $classExp .= PHP_EOL.')';
+        $classExp .= ')';
 
         $serviceExpression = '' !== $classStm
             ? $scopeServiceVariableName
