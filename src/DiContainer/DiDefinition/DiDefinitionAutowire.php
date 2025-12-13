@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionCompileException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Compiler\Helper as HelperCompiler;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\CompiledEntryInterface;
@@ -227,6 +228,28 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
         $fullyName = '\\'.$this->getDefinition()->getName();
+
+        if (null !== $argBuilder) {
+            try {
+                $args = $argBuilder->build();
+            } catch (ArgumentBuilderExceptionInterface $e) {
+                throw $this->compileException($e);
+            }
+        } else {
+            $args = null;
+        }
+
+        $compiledConstructorArgsEntity = HelperCompiler::compileArguments(
+            '$service',
+            $args,
+            $containerVariableName,
+            $container,
+            $scopeVariableNames,
+            $context,
+        );
+
+        $classExp = sprintf('new %s', $fullyName);
+        $compiledConstructorArgsEntity->
 
         $scopeServiceVariableName = '$service';
 
