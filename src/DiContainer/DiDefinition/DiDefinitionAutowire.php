@@ -255,7 +255,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                     ? $arg
                     : new DiDefinitionValue($arg);
 
-                $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames);
+                $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $this);
                 array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
                 $constructorCompiledEntities[$argIndexOrName] = $compiledEntity;
             }
@@ -287,7 +287,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                 $argToCompile = $arg instanceof DiDefinitionCompileInterface
                     ? $arg
                     : new DiDefinitionValue($arg);
-                $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames);
+                $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $this);
                 array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
                 $setupStatements .= is_string($argIndexOrName)
                     ? sprintf('  %s: %s,'.PHP_EOL, $argIndexOrName, $compiledEntity->getExpression())
