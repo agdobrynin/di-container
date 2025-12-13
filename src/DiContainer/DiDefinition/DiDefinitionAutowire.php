@@ -33,6 +33,7 @@ use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
 use ReflectionException;
+use Throwable;
 
 use function array_key_last;
 use function array_push;
@@ -220,10 +221,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             $argBuilder = $this->exposeArgumentBuilder($container);
             $setupArgBuilders = $this->exposeSetupArgumentBuilders($container);
         } catch (DiDefinitionExceptionInterface $e) {
-            throw new DiDefinitionCompileException(
-                sprintf('Cannot compile definition "%s".', $this->getDefinition()->getName()),
-                previous: $e
-            );
+            throw $this->compileException($e);
         }
 
         $isSingleton = $this->isSingleton() ?? $container->getConfig()->isSingletonServiceDefault();
@@ -245,10 +243,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
             try {
                 $args = $argBuilder->build();
             } catch (ArgumentBuilderExceptionInterface $e) {
-                throw new DiDefinitionCompileException(
-                    sprintf('Cannot compile definition "%s".', $this->getDefinition()->getName()),
-                    previous: $e
-                );
+                throw $this->compileException($e);
             }
 
             foreach ($args as $argIndexOrName => $arg) {
@@ -297,10 +292,7 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
                 $args = $setupArgBuilder->buildByPriorityBindArguments();
                 $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
             } catch (ArgumentBuilderExceptionInterface $e) {
-                throw new DiDefinitionCompileException(
-                    sprintf('Cannot compile definition "%s".', $this->getDefinition()->getName()),
-                    previous: $e
-                );
+                throw $this->compileException($e);
             }
 
             $serviceSetupStatements .= SetupConfigureMethod::Mutable === $setupConfigureType
@@ -539,6 +531,14 @@ final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, 
 
         throw new AutowireException(
             sprintf('Method must return type "int|string|null" but return type "%s".', get_debug_type($priority))
+        );
+    }
+
+    private function compileException(?Throwable $previous = null): DiDefinitionCompileException
+    {
+        return new DiDefinitionCompileException(
+            sprintf('Cannot compile class definition "%s".', $this->getIdentifier()),
+            previous: $previous
         );
     }
 }
