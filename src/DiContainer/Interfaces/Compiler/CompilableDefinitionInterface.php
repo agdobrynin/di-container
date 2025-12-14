@@ -23,5 +23,8 @@ interface CompilableDefinitionInterface
      */
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface;
 
-    public function getDiDefinition(): DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface;
+    /**
+     * @return DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface|mixed
+     */
+    public function getDiDefinition(): mixed;
 }
