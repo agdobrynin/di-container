@@ -76,5 +76,25 @@ class <?php echo $this->containerClass; ?> implements ContainerInterface
     */
     private function containerMap(string $id): false|array
     {
+        return match($id) {
+<?php foreach ($this->mapContainerIdToMethod as $id => [$method, $compiledEntry]) {?>
+            <?php echo \var_export($id, true); ?> => [<?php echo \var_export($compiledEntry->isSingleton(), true); ?>, <?php echo \var_export($method, true); ?>],
+<?php } ?>
+            default => false,
+        };
     }
+
+<?php foreach ($this->mapContainerIdToMethod as $id => [$method, $compiledEntry]) {?>
+
+    private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>
+
+    {
+    <?php if ('' !== $compiledEntry->getStatements()) {?>
+        <?php echo $compiledEntry->getStatements(); ?>
+
+    <?php } ?>
+    return <?php if ($compiledEntry->isSingleton()) {?> $this->singletonServices[<?php echo \var_export($id, true); ?>] = <?php } ?><?php echo $compiledEntry->getExpression().';'; ?>
+
+    }
+<?php } ?>
 }
