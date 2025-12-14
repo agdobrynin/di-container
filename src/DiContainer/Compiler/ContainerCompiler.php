@@ -102,7 +102,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         foreach ($this->container->getDefinitions() as $id => $definition) {
             $compiledEntity = $this->definitionTransform
-                ->transform($definition)
+                ->transform($definition, $this->container)
                 ->compile('$this', context: $definition)
             ;
             // TODO how about name generator for method name in container.

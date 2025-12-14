@@ -10,14 +10,16 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 
 use function gettype;
 use function sprintf;
 
 final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 {
-    public function transform(mixed $definition): CompilableDefinitionInterface
+    public function transform(mixed $definition, DiContainerInterface $container): CompilableDefinitionInterface
     {
         if ($definition instanceof DiDefinitionValue) {
             return new Value($definition->getDefinition());
