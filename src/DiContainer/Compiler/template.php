@@ -1,17 +1,20 @@
 <?php
 
 declare(strict_types=1);
+use Kaspi\DiContainer\Compiler\ContainerCompiler;
 
 /**
  * Template for compiled container.
  */
+/** @var ContainerCompiler $this */
+echo '<?php';
 ?>
 
 declare(strict_types=1);
 
 <?php
-if ($this->containerNamespace) {
-    echo 'namespace '.$this->containerNamespace.';'.PHP_EOL;
+if ($this->getContainerFQN()->getNamespace()) {
+    echo 'namespace '.$this->getContainerFQN()->getNamespace().';'.PHP_EOL;
 }?>
 
 use Psr\Container\ContainerInterface;
@@ -20,7 +23,7 @@ use Kaspi\DiContainer\Exception\{CallCircularDependencyException, NotFoundExcept
 use function array_keys;
 use function array_key_exists;
 
-class <?php echo $this->containerClass; ?> implements ContainerInterface
+class <?php echo $this->getContainerFQN()->getClass(); ?> implements ContainerInterface
 {
     /**
     * When resolving dependency check circular call.
