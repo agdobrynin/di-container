@@ -41,4 +41,6 @@ interface DiDefinitionTaggedAsInterface extends DiDefinitionInterface
      * @return non-empty-string
      */
     public function getDefinition(): string;
+
+    public function isLazy(): bool;
 }
