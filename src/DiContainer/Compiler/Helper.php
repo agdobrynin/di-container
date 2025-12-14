@@ -27,7 +27,7 @@ final class Helper
 {
     /**
      * @param non-empty-string       $scopeServiceVariableName
-     * @param null|BindArgumentsType $args
+     * @param BindArgumentsType      $args
      * @param non-empty-string       $containerVariableName
      * @param list<non-empty-string> $scopeVariableNames
      *
@@ -35,7 +35,7 @@ final class Helper
      */
     public static function compileArguments(
         string $scopeServiceVariableName,
-        ?array $args,
+        array $args,
         string $containerVariableName,
         DiContainerInterface $container,
         array $scopeVariableNames,
@@ -58,34 +58,30 @@ final class Helper
         $expression = '(';
         $statements = '';
 
-        if (null !== $args) {
-            foreach ($args as $argIndexOrName => $arg) {
-                /** @var DiDefinitionCompileInterface $argToCompile */
-                $argToCompile = $arg instanceof DiDefinitionCompileInterface
-                    ? $arg
-                    : new DiDefinitionValue($arg);
+        foreach ($args as $argIndexOrName => $arg) {
+            /** @var DiDefinitionCompileInterface $argToCompile */
+            $argToCompile = $arg instanceof DiDefinitionCompileInterface
+                ? $arg
+                : new DiDefinitionValue($arg);
 
-                $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $context);
-                array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
+            $compiledEntity = $argToCompile->compile($containerVariableName, $container, $scopeVariableNames, $context);
+            array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
 
-                if ('' !== $compiledEntity->getStatements()) {
-                    $statements .= $compiledEntity->getStatements();
-                    $argExpression = $compiledEntity->getScopeServiceVariableName();
-                } else {
-                    $argExpression = $compiledEntity->getExpression();
-                }
-
-                $expression .= is_string($argIndexOrName)
-                    ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $argExpression)
-                    : sprintf(PHP_EOL.'  %s,', $argExpression);
+            if ('' !== $compiledEntity->getStatements()) {
+                $statements .= $compiledEntity->getStatements();
+                $argExpression = $compiledEntity->getScopeServiceVariableName();
+            } else {
+                $argExpression = $compiledEntity->getExpression();
             }
 
-            $expression .= null !== array_key_last($args)
-                ? \PHP_EOL.')'
-                : ')';
-        } else {
-            $expression .= ')';
+            $expression .= is_string($argIndexOrName)
+                ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $argExpression)
+                : sprintf(PHP_EOL.'  %s,', $argExpression);
         }
+
+        $expression .= null !== array_key_last($args)
+            ? \PHP_EOL.')'
+            : ')';
 
         return new CompiledEntry($expression, null, $statements, $scopeServiceVariableName, $scopeVariableNames);
     }
