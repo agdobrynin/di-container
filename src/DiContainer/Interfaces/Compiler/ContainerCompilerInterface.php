@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Compiler;
 
+use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
+
 interface ContainerCompilerInterface
 {
     public function getOutputDirectory(): string;
 
-    public function getContainerClass(): string;
+    public function getContainerFQN(): CompiledContainerFQN;
 
-    public function getContainerNamespace(): string;
-
+    /**
+     * @throws DefinitionCompileExceptionInterface
+     */
     public function compile(): string;
 }
