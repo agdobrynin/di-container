@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kaspi\DiContainer\Compiler\DefinitionCompiler;
+
+use Kaspi\DiContainer\Compiler\CompiledEntry;
+use Kaspi\DiContainer\Exception\DefinitionCompileException;
+use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
+use function sprintf;
+use function var_export;
+
+final class Get implements CompilableDefinitionInterface
+{
+    public function __construct(private readonly DiDefinitionLinkInterface $definition) {}
+
+    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    {
+        try {
+            $containerIdentifier = $this->definition->getDefinition();
+        } catch (DiDefinitionExceptionInterface $e) {
+            throw new DefinitionCompileException('Cannot compile reference definition.', previous: $e);
+        }
+
+        $expression = sprintf('%s->get(%s)', $containerVariableName, var_export($containerIdentifier, true));
+
+        return new CompiledEntry($expression, false);
+    }
+
+    public function getDiDefinition(): DiDefinitionLinkInterface
+    {
+        return $this->definition;
+    }
+}
