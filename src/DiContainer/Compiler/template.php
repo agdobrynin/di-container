@@ -3,9 +3,7 @@
 declare(strict_types=1);
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
 
-/**
- * Template for compiled container.
- */
+// Template for compiled container.
 /** @var ContainerCompiler $this */
 echo '<?php';
 ?>
