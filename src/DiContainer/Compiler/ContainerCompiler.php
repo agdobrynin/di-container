@@ -7,9 +7,11 @@ namespace Kaspi\DiContainer\Compiler;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerInterface;
 
+use function ltrim;
 use function ob_get_clean;
 use function ob_start;
 use function strrpos;
@@ -33,7 +35,8 @@ final class ContainerCompiler implements ContainerCompilerInterface
     public function __construct(
         private readonly DiContainerInterface $container,
         private readonly string $outputDirectory,
-        private readonly string $containerClass
+        private readonly string $containerClass,
+        private readonly DiDefinitionTransformerInterface $definitionTransform,
     ) {}
 
     public function getOutputDirectory(): string
@@ -49,12 +52,17 @@ final class ContainerCompiler implements ContainerCompilerInterface
         }
 
         $pos = strrpos($this->containerClass, '\\');
+
+        /** @var class-string $class */
         $class = false === $pos ? $this->containerClass : substr($this->containerClass, $pos + 1);
-        $namespace = false === $pos ? '\\' : substr($this->containerClass, 0, -$pos);
+        $namespace = false === $pos ? '' : ltrim(substr($this->containerClass, 0, $pos), '\\');
 
         return $this->compiledContainerFQN = new class($namespace, $class) implements CompiledContainerFQN {
             private string $fqn;
 
+            /**
+             * @param class-string $class
+             */
             public function __construct(private readonly string $namespace, private readonly string $class) {}
 
             public function getNamespace(): string
@@ -69,9 +77,16 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
             public function getFQN(): string
             {
-                return $this->fqn ??= $this->namespace.'\\'.$this->class;
+                return $this->fqn ??= '' !== $this->namespace
+                    ? '\\'.$this->namespace.'\\'.$this->class
+                    : '\\'.$this->class;
             }
         };
+    }
+
+    public function getDefinitionTransformer(): DiDefinitionTransformerInterface
+    {
+        return $this->definitionTransform;
     }
 
     public function compile(): string
@@ -83,11 +98,13 @@ final class ContainerCompiler implements ContainerCompilerInterface
             DiContainerInterface::class => ['getDiContainer', $containerEntry],
         ];
 
-        $dt = new DiDefinitionTransform();
         $num = 0;
 
         foreach ($this->container->getDefinitions() as $id => $definition) {
-            $compiledEntity = $dt->transform($definition)->compile('$this', context: $definition);
+            $compiledEntity = $this->definitionTransform
+                ->transform($definition)
+                ->compile('$this', context: $definition)
+            ;
             // TODO how about name generator for method name in container.
             $serviceMethod = 'getService'.++$num;
 
