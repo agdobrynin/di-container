@@ -50,6 +50,7 @@ class DiDefinitionFactoryTest extends TestCase
         $factory = new DiDefinitionFactory(Foo::class);
 
         self::assertEquals(Foo::class, $factory->getDefinition());
+        self::assertEquals('__invoke', $factory->getFactoryMethod());
         // get again with DiDefinitionFactory::$verifiedDefinition
         self::assertEquals(Foo::class, $factory->getDefinition());
     }
@@ -59,9 +60,15 @@ class DiDefinitionFactoryTest extends TestCase
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
 
-        $factory = new DiDefinitionFactory($class);
+        (new DiDefinitionFactory($class))->getDefinition();
+    }
 
-        $factory->getDefinition();
+    #[DataProvider('dataProviderFail')]
+    public function testGetFactoryMethodFail(string $class): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
+        (new DiDefinitionFactory($class))->getFactoryMethod();
     }
 
     public static function dataProviderFail(): Generator
