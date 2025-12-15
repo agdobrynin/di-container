@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer\Compiler\DefinitionCompiler;
+namespace Kaspi\DiContainer\Compiler\CompilableDefinition;
 
 use InvalidArgumentException;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
@@ -18,7 +18,7 @@ use function sprintf;
 use function str_repeat;
 use function var_export;
 
-final class Value implements CompilableDefinitionInterface
+final class ValueEntry implements CompilableDefinitionInterface
 {
     public function __construct(private readonly mixed $definition) {}
 

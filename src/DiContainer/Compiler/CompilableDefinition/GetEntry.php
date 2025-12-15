@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer\Compiler\DefinitionCompiler;
+namespace Kaspi\DiContainer\Compiler\CompilableDefinition;
 
 use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
@@ -14,7 +14,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use function sprintf;
 use function var_export;
 
-final class Get implements CompilableDefinitionInterface
+final class GetEntry implements CompilableDefinitionInterface
 {
     public function __construct(private readonly DiDefinitionLinkInterface $definition) {}
 
