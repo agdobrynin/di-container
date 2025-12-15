@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Compiler;
 
 use Kaspi\DiContainer\Compiler\DefinitionCompiler\Get;
+use Kaspi\DiContainer\Compiler\DefinitionCompiler\GetViaProxyClosure;
 use Kaspi\DiContainer\Compiler\DefinitionCompiler\TaggedAs;
 use Kaspi\DiContainer\Compiler\DefinitionCompiler\Value;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
@@ -32,6 +34,10 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 
         if ($definition instanceof DiDefinitionTaggedAsInterface) {
             return new TaggedAs($definition, $container);
+        }
+
+        if ($definition instanceof DiDefinitionProxyClosure) {
+            return new GetViaProxyClosure($definition, $container);
         }
 
         throw new DefinitionCompileException(sprintf('Unsupported definition type "%s"', gettype($definition)));
