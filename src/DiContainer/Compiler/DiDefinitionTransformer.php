@@ -16,12 +16,15 @@ use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 
 use function gettype;
 use function sprintf;
 
 final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 {
+    public function __construct(private readonly FinderClosureCodeInterface $closureParser) {}
+
     public function transform(mixed $definition, DiContainerInterface $container): CompilableDefinitionInterface
     {
         if ($definition instanceof DiDefinitionValue) {
@@ -41,5 +44,10 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
         }
 
         throw new DefinitionCompileException(sprintf('Unsupported definition type "%s"', gettype($definition)));
+    }
+
+    public function getClosureParser(): FinderClosureCodeInterface
+    {
+        return $this->closureParser;
     }
 }
