@@ -8,7 +8,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
-interface DiDefinitionCallableInterface extends DiDefinitionInterface
+interface DiDefinitionCallableInterface extends DiDefinitionSingletonInterface
 {
     public function getDefinition(): callable;
 

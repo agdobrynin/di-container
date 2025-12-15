@@ -12,7 +12,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 
-interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
+interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface
 {
     /**
      * @throws DiDefinitionExceptionInterface

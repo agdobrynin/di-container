@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
@@ -19,7 +18,7 @@ use Psr\Container\ContainerExceptionInterface;
 use function is_a;
 use function sprintf;
 
-final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionSetupAutowireInterface
+final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionIdentifierInterface, DiDefinitionSetupAutowireInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;

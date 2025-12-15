@@ -95,9 +95,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @param iterable<non-empty-string, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface> $definitions
+     * @param iterable<non-empty-string, (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface> $definitions
      *
-     * @return Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
+     * @return Generator<array{0: non-empty-string, 1: (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface}>
      *
      * @throws DiDefinitionExceptionInterface
      */
@@ -126,14 +126,15 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $taggedServices->insert([$containerIdentifier, $definition], $definition->geTagPriority($this->tag, $operationOptions));
         }
 
-        /** @var array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
+        /** @var array{0: non-empty-string, 1: (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface} $item */
         foreach ($taggedServices as $item) {
             yield $item;
         }
     }
 
     /**
-     * @param non-empty-string $identifier
+     * @param non-empty-string                                                                        $identifier
+     * @param (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface $taggedAs
      *
      * @return non-empty-string
      *
