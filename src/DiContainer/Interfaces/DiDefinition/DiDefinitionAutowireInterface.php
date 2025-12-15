@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -32,4 +33,16 @@ interface DiDefinitionAutowireInterface extends DiTaggedDefinitionInterface
      * @throws NotFoundExceptionInterface
      */
     public function resolve(DiContainerInterface $container, mixed $context = null): object;
+
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface;
+
+    /**
+     * @return list<array{0: DiDefinitionSetupConfigureInterface, 1: ArgumentBuilderInterface}>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function exposeSetupArgumentBuilders(DiContainerInterface $container): array;
 }

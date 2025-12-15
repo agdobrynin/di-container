@@ -46,7 +46,7 @@ use function var_export;
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
  * @phpstan-import-type SetupConfigureItem from SetupConfigureTrait
  */
-final class DiDefinitionAutowire implements DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionAutowireInterface, DiDefinitionTagArgumentInterface
+final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
