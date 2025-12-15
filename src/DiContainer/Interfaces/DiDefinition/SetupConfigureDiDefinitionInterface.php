@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use UnitEnum;
 
-interface DiDefinitionSetupConfigureInterface extends UnitEnum
+interface SetupConfigureDiDefinitionInterface extends UnitEnum
 {
     public static function fromAttribute(DiSetupAttributeInterface $attribute): static;
 }

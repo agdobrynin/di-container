@@ -40,7 +40,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface
     public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface;
 
     /**
-     * @return list<array{0: DiDefinitionSetupConfigureInterface, 1: ArgumentBuilderInterface}>
+     * @return list<array{0: SetupConfigureDiDefinitionInterface, 1: ArgumentBuilderInterface}>
      *
      * @throws DiDefinitionExceptionInterface
      */
