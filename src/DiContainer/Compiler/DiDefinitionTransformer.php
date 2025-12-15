@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
+use Closure;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\CallableEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ProxyClosureEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\TaggedAsEntry;
@@ -14,18 +16,19 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 
-use function gettype;
+use function get_debug_type;
 use function sprintf;
 
 final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 {
     public function __construct(private readonly FinderClosureCodeInterface $closureParser) {}
 
-    public function transform(mixed $definition, DiContainerInterface $container): CompilableDefinitionInterface
+    public function transform(mixed $definition, DiContainerInterface $container, ?Closure $fallback = null): CompilableDefinitionInterface
     {
         if ($definition instanceof DiDefinitionValue) {
             return new ValueEntry($definition->getDefinition());
@@ -43,7 +46,15 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
             return new ProxyClosureEntry($definition, $container);
         }
 
-        throw new DefinitionCompileException(sprintf('Unsupported definition type "%s"', gettype($definition)));
+        if ($definition instanceof DiDefinitionCallableInterface) {
+            return new CallableEntry($definition, $container, $this->closureParser, $this);
+        }
+
+        if (null !== $fallback) {
+            return ($fallback)($definition, $container);
+        }
+
+        throw new DefinitionCompileException(sprintf('Unsupported definition type "%s"', get_debug_type($definition)));
     }
 
     public function getClosureParser(): FinderClosureCodeInterface
