@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Compiler\CompilableDefinition;
 
 use Kaspi\DiContainer\Compiler\CompiledEntry;
-use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -24,11 +24,11 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
         try {
             $identifier = $this->definition->getDefinition();
         } catch (DiDefinitionExceptionInterface $e) {
-            throw new DiDefinitionException('Cannot compile definition. Container identifier is invalid.', previous: $e);
+            throw new DefinitionCompileException('Cannot compile definition. Container identifier is invalid.', previous: $e);
         }
 
         if (!$this->container->has($identifier)) {
-            throw new DiDefinitionException(sprintf('Cannot compile definition. Entry not found via container identifier "%s".', $identifier));
+            throw new DefinitionCompileException(sprintf('Cannot compile definition. Entry not found via container identifier "%s".', $identifier));
         }
 
         $expression = sprintf('fn () => %s->get(%s)', $containerVariableName, var_export($identifier, true));
