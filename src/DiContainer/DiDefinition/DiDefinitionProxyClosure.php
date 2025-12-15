@@ -8,7 +8,7 @@ use Closure;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
@@ -16,7 +16,7 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 
 use function sprintf;
 
-final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
+final class DiDefinitionProxyClosure implements DiDefinitionProxyClosureInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
 {
     use TagsTrait;
 
@@ -46,9 +46,6 @@ final class DiDefinitionProxyClosure implements DiDefinitionSingletonInterface, 
         return static fn () => $container->get($identifier);
     }
 
-    /**
-     * @return non-empty-string
-     */
     public function getDefinition(): string
     {
         if (isset($this->validContainerIdentifier)) {

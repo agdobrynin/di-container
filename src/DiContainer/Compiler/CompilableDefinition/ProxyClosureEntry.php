@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Compiler\CompilableDefinition;
 
 use Kaspi\DiContainer\Compiler\CompiledEntry;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
 use function sprintf;
@@ -17,7 +17,7 @@ use function var_export;
 
 final class ProxyClosureEntry implements CompilableDefinitionInterface
 {
-    public function __construct(private readonly DiDefinitionProxyClosure $definition, private readonly DiContainerInterface $container) {}
+    public function __construct(private readonly DiDefinitionProxyClosureInterface $definition, private readonly DiContainerInterface $container) {}
 
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
@@ -37,7 +37,7 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
         return new CompiledEntry($expression, $isSingleton, returnType: '\Closure');
     }
 
-    public function getDiDefinition(): DiDefinitionProxyClosure
+    public function getDiDefinition(): DiDefinitionProxyClosureInterface
     {
         return $this->definition;
     }
