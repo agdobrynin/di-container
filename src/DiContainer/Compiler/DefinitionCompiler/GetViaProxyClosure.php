@@ -24,11 +24,11 @@ final class GetViaProxyClosure implements CompilableDefinitionInterface
         try {
             $identifier = $this->definition->getDefinition();
         } catch (DiDefinitionExceptionInterface $e) {
-            throw new DiDefinitionException('Cannot compile definition. Cannot get entry by container identifier.', previous: $e);
+            throw new DiDefinitionException('Cannot compile definition. Container identifier is invalid.', previous: $e);
         }
 
         if (!$this->container->has($identifier)) {
-            throw new DiDefinitionException(sprintf('Cannot compile definition. Cannot get entry by container identifier "%s".', $identifier));
+            throw new DiDefinitionException(sprintf('Cannot compile definition. Entry not found via container identifier "%s".', $identifier));
         }
 
         $expression = sprintf('fn () => %s->get(%s)', $containerVariableName, var_export($identifier, true));
