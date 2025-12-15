@@ -6,33 +6,23 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use ReflectionClass;
 
-interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface
+interface DiDefinitionFactoryInterface extends DiDefinitionSingletonInterface
 {
     /**
+     * @return class-string
+     *
      * @throws DiDefinitionExceptionInterface
      */
-    public function getDefinition(): ReflectionClass;
-
-    public function setContainer(DiContainerInterface $container): static;
+    public function getDefinition(): string;
 
     /**
-     * @return class-string|non-empty-string
-     */
-    public function getIdentifier(): string;
-
-    /**
-     * @throws ArgumentBuilderExceptionInterface
-     * @throws ContainerExceptionInterface
+     * @return non-empty-string
+     *
      * @throws DiDefinitionExceptionInterface
-     * @throws NotFoundExceptionInterface
      */
-    public function resolve(DiContainerInterface $container, mixed $context = null): object;
+    public function getFactoryMethod(): string;
 
     /**
      * @throws DiDefinitionExceptionInterface

@@ -7,9 +7,9 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
@@ -18,7 +18,7 @@ use Psr\Container\ContainerExceptionInterface;
 use function is_a;
 use function sprintf;
 
-final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDefinitionIdentifierInterface, DiDefinitionSetupAutowireInterface
+final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionIdentifierInterface, DiDefinitionSetupAutowireInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -92,6 +92,13 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
         return $this->verifiedDefinition = $this->definition;
     }
 
+    public function getFactoryMethod(): string
+    {
+        $this->getDefinition();
+
+        return '__invoke';
+    }
+
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
         try {
@@ -113,7 +120,7 @@ final class DiDefinitionFactory implements DiDefinitionSingletonInterface, DiDef
     }
 
     /**
-     * @return class-string<DiFactoryInterface>
+     * @return non-empty-string
      */
     public function getIdentifier(): string
     {
