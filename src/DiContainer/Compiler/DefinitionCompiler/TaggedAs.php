@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
@@ -33,6 +34,12 @@ final class TaggedAs implements CompilableDefinitionInterface
             );
         }
 
+        $isSingleton = false;
+
+        if ($this->definition instanceof DiDefinitionSingletonInterface) {
+            $isSingleton = $this->definition->isSingleton() ?? $this->container->getConfig()->isSingletonServiceDefault();
+        }
+
         if ($this->definition->isLazy()) {
             // build map tagged key => container identifier
             $ids = '['.PHP_EOL;
@@ -41,12 +48,12 @@ final class TaggedAs implements CompilableDefinitionInterface
                 $ids .= sprintf('  %s => %s,'.PHP_EOL, var_export($key, true), var_export($containerIdentifier, true));
             }
 
-            $ids .= ']'.PHP_EOL;
+            $ids .= ']';
 
             $comment = sprintf('/* Lazy load services for tag %s */', var_export($this->definition->getDefinition(), true));
             $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVariableName, $ids);
 
-            return new CompiledEntry($expression, false, $comment, returnType: '\Kaspi\DiContainer\LazyDefinitionIterator');
+            return new CompiledEntry($expression, $isSingleton, $comment, returnType: '\Kaspi\DiContainer\LazyDefinitionIterator');
         }
 
         $expression = '['.PHP_EOL;
@@ -59,7 +66,7 @@ final class TaggedAs implements CompilableDefinitionInterface
 
         $comment = sprintf('/* Services for tag %s */', var_export($this->definition->getDefinition(), true));
 
-        return new CompiledEntry($expression, false, $comment, returnType: 'array');
+        return new CompiledEntry($expression, $isSingleton, $comment, returnType: 'array');
     }
 
     public function getDiDefinition(): DiDefinitionTaggedAsInterface
