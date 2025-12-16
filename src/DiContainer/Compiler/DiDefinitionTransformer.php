@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Compiler;
 use Closure;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\CallableEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ProxyClosureEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\TaggedAsEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
@@ -16,6 +17,7 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
@@ -48,6 +50,10 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 
         if ($definition instanceof DiDefinitionCallableInterface) {
             return new CallableEntry($definition, $container, $this->closureParser, $this);
+        }
+
+        if ($definition instanceof DiDefinitionAutowireInterface) {
+            return new ObjectEntry($definition, $container, $this);
         }
 
         if (null !== $fallback) {

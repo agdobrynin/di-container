@@ -16,6 +16,7 @@ use function array_push;
 use function bin2hex;
 use function in_array;
 use function is_string;
+use function preg_match;
 use function random_bytes;
 use function sprintf;
 
@@ -38,16 +39,7 @@ final class Helper
         array $args,
         mixed $context = null
     ): CompiledEntry {
-        while (in_array($scopeServiceVariableName, $scopeVariableNames, true)) {
-            // TODO check max trying generate variable name?
-            try {
-                $scopeServiceVariableName = '$service_'.bin2hex(random_bytes(5));
-            } catch (Exception $e) {
-                throw new DefinitionCompileException('Cannot generate random service variable name.', previous: $e);
-            }
-        }
-
-        $scopeVariableNames[] = $scopeServiceVariableName;
+        $scopeServiceVariableName = self::genUniqueVarName($scopeServiceVariableName, $containerVariableName, $scopeVariableNames);
 
         $expression = '(';
         $statements = '';
@@ -75,5 +67,34 @@ final class Helper
             : ')';
 
         return new CompiledEntry($expression, null, $statements, $scopeServiceVariableName, $scopeVariableNames);
+    }
+
+    /**
+     * @param non-empty-string       $varName
+     * @param non-empty-string       $containerVariableName
+     * @param list<non-empty-string> $varNames
+     *
+     * @return non-empty-string
+     */
+    public static function genUniqueVarName(string $varName, string $containerVariableName, array &$varNames): string
+    {
+        if (1 !== preg_match('/^\$[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $varName)) {
+            throw new DefinitionCompileException(
+                sprintf('Variable name "%s" is invalid. Variables in PHP are represented by a dollar sign followed by the name.', $varName)
+            );
+        }
+
+        while (in_array($varName, $varNames, true) && $containerVariableName !== $varName) {
+            // TODO check max trying generate variable name?
+            try {
+                $varName = $varName.'_'.bin2hex(random_bytes(5));
+            } catch (Exception $e) {
+                throw new DefinitionCompileException('Cannot generate random service variable name.', previous: $e);
+            }
+        }
+
+        $varNames[] = $varName;
+
+        return $varName;
     }
 }
