@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
@@ -64,14 +64,9 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         return $this;
     }
 
-    public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
+    public function getFactoryAutowire(): DiDefinitionAutowireInterface
     {
-        return $this->createFactoryAutowire()->exposeArgumentBuilder($container);
-    }
-
-    public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
-    {
-        return $this->createFactoryAutowire()->exposeSetupArgumentBuilders($container);
+        return $this->createFactoryAutowire();
     }
 
     /**

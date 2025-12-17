@@ -30,6 +30,7 @@ class ExposeArgumentBuilderTestTest extends TestCase
         $this->expectExceptionMessage('class is not instantiable.');
 
         (new DiDefinitionFactory(FooPrivateConstructor::class))
+            ->getFactoryAutowire()
             ->exposeArgumentBuilder($this->createMock(DiContainerInterface::class))
         ;
     }
@@ -40,6 +41,7 @@ class ExposeArgumentBuilderTestTest extends TestCase
         $this->expectExceptionMessage('class is not instantiable.');
 
         (new DiDefinitionFactory(FooPrivateConstructor::class))
+            ->getFactoryAutowire()
             ->exposeSetupArgumentBuilders($this->createMock(DiContainerInterface::class))
         ;
     }
@@ -50,8 +52,9 @@ class ExposeArgumentBuilderTestTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessageMatches($expectMessageMatches);
 
-        (new DiDefinitionAutowire($class))
+        (new DiDefinitionFactory($class))
             ->setup($method)
+            ->getFactoryAutowire()
             ->exposeSetupArgumentBuilders($this->createMock(DiContainerInterface::class))
         ;
     }
