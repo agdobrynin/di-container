@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\SetupAttributeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -53,6 +54,14 @@ class DiDefinitionFactoryTest extends TestCase
         self::assertEquals('__invoke', $factory->getFactoryMethod());
         // get again with DiDefinitionFactory::$verifiedDefinition
         self::assertEquals(Foo::class, $factory->getDefinition());
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+
+        $argBuilder = $factory->exposeFactoryMethodArgumentBuilder($mockContainer);
+        self::assertInstanceOf(ArgumentBuilderInterface::class, $argBuilder);
+        self::assertEquals('__invoke', $argBuilder->getFunctionOrMethod()->getName());
+        // test cached get argumentBuilder
+        self::assertInstanceOf(ArgumentBuilderInterface::class, $factory->exposeFactoryMethodArgumentBuilder($mockContainer));
     }
 
     #[DataProvider('dataProviderFail')]
