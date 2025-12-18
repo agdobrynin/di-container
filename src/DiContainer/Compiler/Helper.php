@@ -50,16 +50,11 @@ final class Helper
             ;
             array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
 
-            if ('' !== $compiledEntity->getStatements()) {
-                $statements .= $compiledEntity->getStatements();
-                $argExpression = $compiledEntity->getScopeServiceVariableName();
-            } else {
-                $argExpression = $compiledEntity->getExpression();
-            }
+            $statements .= $compiledEntity->getStatements();
 
             $expression .= is_string($argIndexOrName)
-                ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $argExpression)
-                : sprintf(PHP_EOL.'  %s,', $argExpression);
+                ? sprintf(PHP_EOL.'  %s: %s,', $argIndexOrName, $compiledEntity->getExpression())
+                : sprintf(PHP_EOL.'  %s,', $compiledEntity->getExpression());
         }
 
         $expression .= null !== array_key_last($args)
