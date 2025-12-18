@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
@@ -14,6 +16,7 @@ use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Psr\Container\ContainerExceptionInterface;
+use ReflectionMethod;
 
 use function is_a;
 use function sprintf;
@@ -34,6 +37,8 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
      * @var class-string<DiFactoryInterface>
      */
     private string $verifiedDefinition;
+
+    private ArgumentBuilderInterface $factoryMethodArgumentBuilder;
 
     /**
      * @param class-string<DiFactoryInterface> $definition
@@ -67,6 +72,17 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
     public function getFactoryAutowire(): DiDefinitionAutowireInterface
     {
         return $this->createFactoryAutowire();
+    }
+
+    public function exposeFactoryMethodArgumentBuilder(DiContainerInterface $container): ArgumentBuilderInterface
+    {
+        if (isset($this->factoryMethodArgumentBuilder)) {
+            return $this->factoryMethodArgumentBuilder;
+        }
+
+        $reflectionMethod = new ReflectionMethod($this->getDefinition(), $this->getFactoryMethod());
+
+        return $this->factoryMethodArgumentBuilder = new ArgumentBuilder([], $reflectionMethod, $container);
     }
 
     /**
