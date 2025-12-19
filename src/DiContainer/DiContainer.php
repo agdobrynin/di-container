@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
@@ -202,6 +203,25 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
+     * @return DiDefinitionInterface&DiDefinitionType
+     */
+    public function getDefinition(string $id): DiDefinitionInterface
+    {
+        if ($this->has($id)) {
+            try {
+                return $this->resolveDefinition($id);
+            } catch (AutowireExceptionInterface $e) {
+                throw new ContainerException(
+                    sprintf('Cannot create definition via container identifier "%s".', $id),
+                    previous: $e
+                );
+            }
+        }
+
+        throw new NotFoundException(id: $id);
+    }
+
+    /**
      * Resolve dependencies.
      *
      * @param class-string|string $id
@@ -239,7 +259,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param class-string|string $id
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireExceptionInterface|NotFoundExceptionInterface
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
