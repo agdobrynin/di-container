@@ -10,8 +10,8 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Helper as CommonHelper;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
@@ -24,14 +24,16 @@ final class FactoryEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionFactoryInterface $definition,
-        private readonly DiContainerInterface $container,
+        private readonly DiContainerDefinitionsInterface $containerDefinitions,
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
-            $bindArgBuilder = $this->definition->exposeFactoryMethodArgumentBuilder($this->container);
+            $bindArgBuilder = $this->definition->exposeFactoryMethodArgumentBuilder(
+                $this->containerDefinitions->getContainer()
+            );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
                 sprintf('Cannot to expose arguments for factory method in definition "%s".', $this->definition->getDefinition()),
@@ -48,7 +50,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
             );
         }
 
-        $compiledObjectEntry = (new ObjectEntry($this->definition->getFactoryAutowire(), $this->container, $this->transformer))
+        $compiledObjectEntry = (new ObjectEntry($this->definition->getFactoryAutowire(), $this->containerDefinitions, $this->transformer))
             ->compile($containerVariableName, $scopeVariableNames, $context)
         ;
 
@@ -59,7 +61,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
 
         $compiledFactoryMethodArguments = Helper::compileArguments(
             $this->transformer,
-            $this->container,
+            $this->containerDefinitions,
             $containerVariableName,
             $scopeObjectVar,
             $compiledObjectEntry->getScopeVariables(),
@@ -74,7 +76,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
             $compiledFactoryMethodArguments->getExpression()
         );
 
-        $isSingleton = $this->definition->isSingleton() ?? $this->container->getConfig()->isSingletonServiceDefault();
+        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
 
         return new CompiledEntry(
             $factoryExpression,

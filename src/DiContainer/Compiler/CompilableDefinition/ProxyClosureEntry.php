@@ -8,7 +8,7 @@ use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
@@ -17,7 +17,10 @@ use function var_export;
 
 final class ProxyClosureEntry implements CompilableDefinitionInterface
 {
-    public function __construct(private readonly DiDefinitionProxyClosureInterface $definition, private readonly DiContainerInterface $container) {}
+    public function __construct(
+        private readonly DiDefinitionProxyClosureInterface $definition,
+        private readonly DiContainerDefinitionsInterface $containerDefinitions,
+    ) {}
 
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
@@ -27,12 +30,14 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
             throw new DefinitionCompileException('Cannot compile definition. Container identifier is invalid.', previous: $e);
         }
 
-        if (!$this->container->has($identifier)) {
-            throw new DefinitionCompileException(sprintf('Cannot compile definition. Entry not found via container identifier "%s".', $identifier));
+        if (!$this->containerDefinitions->getContainer()->has($identifier)) {
+            throw new DefinitionCompileException(
+                sprintf('Cannot compile definition. Entry not found via container identifier "%s".', $identifier)
+            );
         }
 
         $expression = sprintf('fn () => %s->get(%s)', $containerVariableName, var_export($identifier, true));
-        $isSingleton = $this->definition->isSingleton() ?? $this->container->getConfig()->isSingletonServiceDefault();
+        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
 
         return new CompiledEntry($expression, $isSingleton, returnType: '\Closure');
     }

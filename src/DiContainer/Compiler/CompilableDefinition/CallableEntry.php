@@ -11,13 +11,12 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Helper as CommonHelper;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use LogicException;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
@@ -33,8 +32,7 @@ final class CallableEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionCallableInterface $definition,
-        private readonly DiContainerInterface $container,
-        private readonly FinderClosureCodeInterface $closureParser,
+        private readonly DiContainerDefinitionsInterface $containerDefinitions,
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
@@ -52,7 +50,7 @@ final class CallableEntry implements CompilableDefinitionInterface
         }
 
         try {
-            $argBuilder = $this->definition->exposeArgumentBuilder($this->container);
+            $argBuilder = $this->definition->exposeArgumentBuilder($this->containerDefinitions->getContainer());
         } catch (DiDefinitionExceptionInterface $e) {
             $defAsString = isset($class, $method)
                 ? sprintf('["%s", "%s"]', var_export($class, true), var_export($method, true))
@@ -76,7 +74,15 @@ final class CallableEntry implements CompilableDefinitionInterface
         }
 
         try {
-            $compiledArgumentsEntry = Helper::compileArguments($this->transformer, $this->container, $containerVariableName, '$closure', $scopeVariableNames, $args, $context);
+            $compiledArgumentsEntry = Helper::compileArguments(
+                $this->transformer,
+                $this->containerDefinitions,
+                $containerVariableName,
+                '$closure',
+                $scopeVariableNames,
+                $args,
+                $context,
+            );
         } catch (DefinitionCompileExceptionInterface $e) {
             throw new DefinitionCompileException(
                 sprintf('Cannot compile arguments for callable definition %s.', CommonHelper::functionName($argBuilder->getFunctionOrMethod())),
@@ -84,13 +90,15 @@ final class CallableEntry implements CompilableDefinitionInterface
             );
         }
 
+        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
+
         // TODO add check return type, not only `mixed` type.
         return new CompiledEntry(
             $expression.$compiledArgumentsEntry->getExpression(),
-            $this->definition->isSingleton() ?? $this->container->getConfig()->isSingletonServiceDefault(),
+            $isSingleton,
             $compiledArgumentsEntry->getStatements(),
             $compiledArgumentsEntry->getScopeServiceVariableName(),
-            $compiledArgumentsEntry->getScopeVariables()
+            $compiledArgumentsEntry->getScopeVariables(),
         );
     }
 
@@ -113,7 +121,7 @@ final class CallableEntry implements CompilableDefinitionInterface
             /** @var Closure $closure */
             $closure = $this->definition->getDefinition();
 
-            return '('.$this->closureParser->getCode($closure).')';
+            return '('.$this->transformer->getClosureParser()->getCode($closure).')';
         } catch (LogicException|RuntimeException $e) {
             throw new DefinitionCompileException('Cannot compile Closure definition.', previous: $e);
         }

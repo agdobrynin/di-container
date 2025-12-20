@@ -12,8 +12,6 @@ interface ContainerCompilerInterface
 
     public function getContainerFQN(): CompiledContainerFQN;
 
-    public function getDefinitionTransformer(): DiDefinitionTransformerInterface;
-
     /**
      * @throws DefinitionCompileExceptionInterface
      */

@@ -7,9 +7,9 @@ namespace Kaspi\DiContainer\Compiler;
 use Exception;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 
 use function array_key_last;
 use function array_push;
@@ -32,7 +32,7 @@ final class Helper
      */
     public static function compileArguments(
         DiDefinitionTransformerInterface $transformer,
-        DiContainerInterface $container,
+        DiContainerDefinitionsInterface $containerDefinitionIterator,
         string $containerVariableName,
         string $scopeServiceVariableName,
         array $scopeVariableNames,
@@ -45,7 +45,7 @@ final class Helper
         $statements = '';
 
         foreach ($args as $argIndexOrName => $arg) {
-            $compiledEntity = $transformer->transform($arg, $container, static fn (mixed $arg) => new ValueEntry($arg))
+            $compiledEntity = $transformer->transform($arg, $containerDefinitionIterator, static fn (mixed $arg) => new ValueEntry($arg))
                 ->compile($containerVariableName, $scopeVariableNames, $context)
             ;
             array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());

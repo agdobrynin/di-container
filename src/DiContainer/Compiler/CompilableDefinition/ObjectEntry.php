@@ -11,8 +11,8 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Helper as CommonHelper;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
@@ -25,14 +25,16 @@ final class ObjectEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionAutowireInterface $definition,
-        private readonly DiContainerInterface $container,
+        private readonly DiContainerDefinitionsInterface $containerDefinitions,
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
-            $argBuilder = $this->definition->exposeArgumentBuilder($this->container);
+            $argBuilder = $this->definition->exposeArgumentBuilder(
+                $this->containerDefinitions->getContainer()
+            );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
                 sprintf('Cannot to expose constructor arguments for definition "%s".', $this->definition->getIdentifier()),
@@ -41,7 +43,9 @@ final class ObjectEntry implements CompilableDefinitionInterface
         }
 
         try {
-            $setupArgBuilders = $this->definition->exposeSetupArgumentBuilders($this->container);
+            $setupArgBuilders = $this->definition->exposeSetupArgumentBuilders(
+                $this->containerDefinitions->getContainer()
+            );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
                 sprintf('Cannot to expose setter method arguments in definition "%s".', $this->definition->getIdentifier()),
@@ -60,10 +64,11 @@ final class ObjectEntry implements CompilableDefinitionInterface
             );
         }
 
-        $isSingleton = $this->definition->isSingleton() ?? $this->container->getConfig()->isSingletonServiceDefault();
         $fullyName = '\\'.$this->definition->getDefinition()->getName();
         $objectExpression = sprintf('new %s', $fullyName);
         $scopeServiceVariableName = Helper::genUniqueVarName('$object', $containerVariableName, $scopeVariableNames);
+
+        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
 
         if ([] === $args && [] === $setupArgBuilders) {
             return new CompiledEntry($objectExpression, $isSingleton, '', $scopeServiceVariableName, $scopeVariableNames, $fullyName);
@@ -71,7 +76,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
         $compiledArgumentsEntry = Helper::compileArguments(
             $this->transformer,
-            $this->container,
+            $this->containerDefinitions,
             $containerVariableName,
             $scopeServiceVariableName,
             $scopeVariableNames,
@@ -111,7 +116,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
             $compiledSetupArgumentsEntry = Helper::compileArguments(
                 $this->transformer,
-                $this->container,
+                $this->containerDefinitions,
                 $containerVariableName,
                 '$argService',
                 $scopeVars,
@@ -119,9 +124,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
                 $context,
             );
 
-            $serviceSetupStatements = '' !== $compiledArgumentsEntry->getStatements()
-                ? $compiledArgumentsEntry->getStatements()
-                : '';
+            $serviceSetupStatements = $compiledArgumentsEntry->getStatements();
 
             $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
             $serviceVar = $objectCompiledEntry->getScopeServiceVariableName();

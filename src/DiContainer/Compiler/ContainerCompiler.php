@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
+use Generator;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerInterface;
@@ -21,10 +23,8 @@ final class ContainerCompiler implements ContainerCompilerInterface
 {
     /**
      * @var non-empty-array<non-empty-string, array{0: non-empty-string, 1:CompiledEntryInterface}>
-     *
-     * @phpstan-ignore property.onlyWritten
      */
-    private array $mapContainerIdToMethod;
+    private array $mapContainerIdToMethod; // @phpstan-ignore property.onlyWritten
 
     private CompiledContainerFQN $compiledContainerFQN;
 
@@ -33,7 +33,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
      * @param class-string     $containerClass  container class as fully qualified name
      */
     public function __construct(
-        private readonly DiContainerInterface $container,
+        private readonly DiContainerDefinitionsInterface $containerDefinitionIterator,
         private readonly string $outputDirectory,
         private readonly string $containerClass,
         private readonly DiDefinitionTransformerInterface $definitionTransform,
@@ -84,11 +84,6 @@ final class ContainerCompiler implements ContainerCompilerInterface
         };
     }
 
-    public function getDefinitionTransformer(): DiDefinitionTransformerInterface
-    {
-        return $this->definitionTransform;
-    }
-
     public function compile(): string
     {
         $containerEntry = new CompiledEntry('$this', null, '', '', [], 'self');
@@ -100,11 +95,12 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         $num = 0;
 
-        foreach ($this->container->getDefinitions() as $id => $definition) {
+        foreach ($this->containerDefinitionIterator->getDefinitions() as $id => $definition) {
             $compiledEntity = $this->definitionTransform
-                ->transform($definition, $this->container)
+                ->transform($definition, $this->containerDefinitionIterator)
                 ->compile('$this', context: $definition)
             ;
+
             // TODO how about name generator for method name in container.
             $serviceMethod = 'getService'.++$num;
 

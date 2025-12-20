@@ -16,8 +16,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
@@ -32,38 +32,38 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 {
     public function __construct(private readonly FinderClosureCodeInterface $closureParser) {}
 
-    public function transform(mixed $definition, DiContainerInterface $container, ?Closure $fallback = null): CompilableDefinitionInterface
+    public function transform(mixed $definition, DiContainerDefinitionsInterface $containerDefinitionIterator, ?Closure $fallback = null): CompilableDefinitionInterface
     {
         if ($definition instanceof DiDefinitionValue) {
             return new ValueEntry($definition->getDefinition());
         }
 
         if ($definition instanceof DiDefinitionLinkInterface) {
-            return new GetEntry($definition);
+            return new GetEntry($definition, $containerDefinitionIterator);
         }
 
         if ($definition instanceof DiDefinitionTaggedAsInterface) {
-            return new TaggedAsEntry($definition, $container);
+            return new TaggedAsEntry($definition, $containerDefinitionIterator);
         }
 
         if ($definition instanceof DiDefinitionProxyClosure) {
-            return new ProxyClosureEntry($definition, $container);
+            return new ProxyClosureEntry($definition, $containerDefinitionIterator);
         }
 
         if ($definition instanceof DiDefinitionCallableInterface) {
-            return new CallableEntry($definition, $container, $this->closureParser, $this);
+            return new CallableEntry($definition, $containerDefinitionIterator, $this);
         }
 
         if ($definition instanceof DiDefinitionAutowireInterface) {
-            return new ObjectEntry($definition, $container, $this);
+            return new ObjectEntry($definition, $containerDefinitionIterator, $this);
         }
 
         if ($definition instanceof DiDefinitionFactoryInterface) {
-            return new FactoryEntry($definition, $container, $this);
+            return new FactoryEntry($definition, $containerDefinitionIterator, $this);
         }
 
         if (null !== $fallback) {
-            return ($fallback)($definition, $container);
+            return ($fallback)($definition, $containerDefinitionIterator);
         }
 
         throw new DefinitionCompileException(sprintf('Unsupported definition type "%s"', get_debug_type($definition)));
