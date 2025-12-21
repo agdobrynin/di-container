@@ -33,7 +33,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
      * @param class-string     $containerClass  container class as fully qualified name
      */
     public function __construct(
-        private readonly DiContainerDefinitionsInterface $containerDefinitionIterator,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly string $outputDirectory,
         private readonly string $containerClass,
         private readonly DiDefinitionTransformerInterface $definitionTransform,
@@ -95,9 +95,9 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         $num = 0;
 
-        foreach ($this->containerDefinitionIterator->getDefinitions() as $id => $definition) {
+        foreach ($this->diContainerDefinitions->getDefinitions() as $id => $definition) {
             $compiledEntity = $this->definitionTransform
-                ->transform($definition, $this->containerDefinitionIterator)
+                ->transform($definition, $this->diContainerDefinitions)
                 ->compile('$this', context: $definition)
             ;
 
