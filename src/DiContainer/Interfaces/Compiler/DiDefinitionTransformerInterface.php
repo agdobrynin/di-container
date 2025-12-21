@@ -13,9 +13,9 @@ interface DiDefinitionTransformerInterface
     public function getClosureParser(): FinderClosureCodeInterface;
 
     /**
-     * @param null|Closure(mixed $definition, DiContainerDefinitionsInterface $containerDefinitionIterator): CompilableDefinitionInterface $fallback
+     * @param null|Closure(mixed $definition, DiContainerDefinitionsInterface $diContainerDefinitions): CompilableDefinitionInterface $fallback
      *
      * @throws DefinitionCompileException
      */
-    public function transform(mixed $definition, DiContainerDefinitionsInterface $containerDefinitionIterator, ?Closure $fallback = null): CompilableDefinitionInterface;
+    public function transform(mixed $definition, DiContainerDefinitionsInterface $diContainerDefinitions, ?Closure $fallback = null): CompilableDefinitionInterface;
 }

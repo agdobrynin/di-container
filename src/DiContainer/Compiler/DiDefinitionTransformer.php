@@ -32,38 +32,38 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 {
     public function __construct(private readonly FinderClosureCodeInterface $closureParser) {}
 
-    public function transform(mixed $definition, DiContainerDefinitionsInterface $containerDefinitionIterator, ?Closure $fallback = null): CompilableDefinitionInterface
+    public function transform(mixed $definition, DiContainerDefinitionsInterface $diContainerDefinitions, ?Closure $fallback = null): CompilableDefinitionInterface
     {
         if ($definition instanceof DiDefinitionValue) {
             return new ValueEntry($definition->getDefinition());
         }
 
         if ($definition instanceof DiDefinitionLinkInterface) {
-            return new GetEntry($definition, $containerDefinitionIterator);
+            return new GetEntry($definition, $diContainerDefinitions);
         }
 
         if ($definition instanceof DiDefinitionTaggedAsInterface) {
-            return new TaggedAsEntry($definition, $containerDefinitionIterator);
+            return new TaggedAsEntry($definition, $diContainerDefinitions);
         }
 
         if ($definition instanceof DiDefinitionProxyClosure) {
-            return new ProxyClosureEntry($definition, $containerDefinitionIterator);
+            return new ProxyClosureEntry($definition, $diContainerDefinitions);
         }
 
         if ($definition instanceof DiDefinitionCallableInterface) {
-            return new CallableEntry($definition, $containerDefinitionIterator, $this);
+            return new CallableEntry($definition, $diContainerDefinitions, $this);
         }
 
         if ($definition instanceof DiDefinitionAutowireInterface) {
-            return new ObjectEntry($definition, $containerDefinitionIterator, $this);
+            return new ObjectEntry($definition, $diContainerDefinitions, $this);
         }
 
         if ($definition instanceof DiDefinitionFactoryInterface) {
-            return new FactoryEntry($definition, $containerDefinitionIterator, $this);
+            return new FactoryEntry($definition, $diContainerDefinitions, $this);
         }
 
         if (null !== $fallback) {
-            return ($fallback)($definition, $containerDefinitionIterator);
+            return ($fallback)($definition, $diContainerDefinitions);
         }
 
         throw new DefinitionCompileException(sprintf('Unsupported definition type "%s"', get_debug_type($definition)));
