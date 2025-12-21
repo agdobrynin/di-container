@@ -32,7 +32,7 @@ final class Helper
      */
     public static function compileArguments(
         DiDefinitionTransformerInterface $transformer,
-        DiContainerDefinitionsInterface $containerDefinitionIterator,
+        DiContainerDefinitionsInterface $diContainerDefinitions,
         string $containerVariableName,
         string $scopeServiceVariableName,
         array $scopeVariableNames,
@@ -45,7 +45,7 @@ final class Helper
         $statements = '';
 
         foreach ($args as $argIndexOrName => $arg) {
-            $compiledEntity = $transformer->transform($arg, $containerDefinitionIterator, static fn (mixed $arg) => new ValueEntry($arg))
+            $compiledEntity = $transformer->transform($arg, $diContainerDefinitions, static fn (mixed $arg) => new ValueEntry($arg))
                 ->compile($containerVariableName, $scopeVariableNames, $context)
             ;
             array_push($scopeVariableNames, ...$compiledEntity->getScopeVariables());
