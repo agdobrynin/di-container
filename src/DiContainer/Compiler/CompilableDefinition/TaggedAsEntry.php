@@ -19,14 +19,14 @@ final class TaggedAsEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionTaggedAsInterface $definition,
-        private readonly DiContainerDefinitionsInterface $containerDefinitions,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
     ) {}
 
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $mapContainerIdentifiers = $this->definition->exposeContainerIdentifiers(
-                $this->containerDefinitions->getContainer(),
+                $this->diContainerDefinitions->getContainer(),
                 $context
             );
         } catch (DiDefinitionExceptionInterface $e) {

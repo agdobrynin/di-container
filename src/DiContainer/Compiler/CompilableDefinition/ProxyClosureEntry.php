@@ -19,7 +19,7 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionProxyClosureInterface $definition,
-        private readonly DiContainerDefinitionsInterface $containerDefinitions,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
     ) {}
 
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
@@ -30,14 +30,14 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
             throw new DefinitionCompileException('Cannot compile definition. Container identifier is invalid.', previous: $e);
         }
 
-        if (!$this->containerDefinitions->getContainer()->has($identifier)) {
+        if (!$this->diContainerDefinitions->getContainer()->has($identifier)) {
             throw new DefinitionCompileException(
                 sprintf('Cannot compile definition. Entry not found via container identifier "%s".', $identifier)
             );
         }
 
         $expression = sprintf('fn () => %s->get(%s)', $containerVariableName, var_export($identifier, true));
-        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
+        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
         return new CompiledEntry($expression, $isSingleton, returnType: '\Closure');
     }

@@ -32,7 +32,7 @@ final class CallableEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionCallableInterface $definition,
-        private readonly DiContainerDefinitionsInterface $containerDefinitions,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
@@ -50,7 +50,7 @@ final class CallableEntry implements CompilableDefinitionInterface
         }
 
         try {
-            $argBuilder = $this->definition->exposeArgumentBuilder($this->containerDefinitions->getContainer());
+            $argBuilder = $this->definition->exposeArgumentBuilder($this->diContainerDefinitions->getContainer());
         } catch (DiDefinitionExceptionInterface $e) {
             $defAsString = isset($class, $method)
                 ? sprintf('["%s", "%s"]', var_export($class, true), var_export($method, true))
@@ -76,7 +76,7 @@ final class CallableEntry implements CompilableDefinitionInterface
         try {
             $compiledArgumentsEntry = Helper::compileArguments(
                 $this->transformer,
-                $this->containerDefinitions,
+                $this->diContainerDefinitions,
                 $containerVariableName,
                 '$closure',
                 $scopeVariableNames,
@@ -90,7 +90,7 @@ final class CallableEntry implements CompilableDefinitionInterface
             );
         }
 
-        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
+        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
         // TODO add check return type, not only `mixed` type.
         return new CompiledEntry(

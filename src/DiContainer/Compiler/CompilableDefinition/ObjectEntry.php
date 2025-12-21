@@ -25,7 +25,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionAutowireInterface $definition,
-        private readonly DiContainerDefinitionsInterface $containerDefinitions,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
@@ -33,7 +33,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
     {
         try {
             $argBuilder = $this->definition->exposeArgumentBuilder(
-                $this->containerDefinitions->getContainer()
+                $this->diContainerDefinitions->getContainer()
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
@@ -44,7 +44,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
         try {
             $setupArgBuilders = $this->definition->exposeSetupArgumentBuilders(
-                $this->containerDefinitions->getContainer()
+                $this->diContainerDefinitions->getContainer()
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
@@ -68,7 +68,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
         $objectExpression = sprintf('new %s', $fullyName);
         $scopeServiceVariableName = Helper::genUniqueVarName('$object', $containerVariableName, $scopeVariableNames);
 
-        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
+        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
         if ([] === $args && [] === $setupArgBuilders) {
             return new CompiledEntry($objectExpression, $isSingleton, '', $scopeServiceVariableName, $scopeVariableNames, $fullyName);
@@ -76,7 +76,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
         $compiledArgumentsEntry = Helper::compileArguments(
             $this->transformer,
-            $this->containerDefinitions,
+            $this->diContainerDefinitions,
             $containerVariableName,
             $scopeServiceVariableName,
             $scopeVariableNames,
@@ -116,7 +116,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
             $compiledSetupArgumentsEntry = Helper::compileArguments(
                 $this->transformer,
-                $this->containerDefinitions,
+                $this->diContainerDefinitions,
                 $containerVariableName,
                 '$argService',
                 $scopeVars,

@@ -19,7 +19,7 @@ final class GetEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionLinkInterface $definition,
-        private readonly DiContainerDefinitionsInterface $containerDefinitions,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
     ) {}
 
     public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
@@ -30,7 +30,7 @@ final class GetEntry implements CompilableDefinitionInterface
             throw new DefinitionCompileException('Cannot compile reference definition.', previous: $e);
         }
 
-        $this->containerDefinitions->pushToDefinitionIterator($containerIdentifier);
+        $this->diContainerDefinitions->pushToDefinitionIterator($containerIdentifier);
 
         $expression = sprintf('%s->get(%s)', $containerVariableName, var_export($containerIdentifier, true));
 

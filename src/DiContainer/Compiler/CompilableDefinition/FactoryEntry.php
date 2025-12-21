@@ -24,7 +24,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionFactoryInterface $definition,
-        private readonly DiContainerDefinitionsInterface $containerDefinitions,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
@@ -32,7 +32,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
     {
         try {
             $bindArgBuilder = $this->definition->exposeFactoryMethodArgumentBuilder(
-                $this->containerDefinitions->getContainer()
+                $this->diContainerDefinitions->getContainer()
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
@@ -50,7 +50,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
             );
         }
 
-        $compiledObjectEntry = (new ObjectEntry($this->definition->getFactoryAutowire(), $this->containerDefinitions, $this->transformer))
+        $compiledObjectEntry = (new ObjectEntry($this->definition->getFactoryAutowire(), $this->diContainerDefinitions, $this->transformer))
             ->compile($containerVariableName, $scopeVariableNames, $context)
         ;
 
@@ -61,7 +61,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
 
         $compiledFactoryMethodArguments = Helper::compileArguments(
             $this->transformer,
-            $this->containerDefinitions,
+            $this->diContainerDefinitions,
             $containerVariableName,
             $scopeObjectVar,
             $compiledObjectEntry->getScopeVariables(),
@@ -76,7 +76,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
             $compiledFactoryMethodArguments->getExpression()
         );
 
-        $isSingleton = $this->definition->isSingleton() ?? $this->containerDefinitions->isSingletonDefinitionDefault();
+        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
         return new CompiledEntry(
             $factoryExpression,
