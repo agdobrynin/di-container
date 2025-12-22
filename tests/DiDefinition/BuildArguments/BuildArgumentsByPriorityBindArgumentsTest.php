@@ -42,12 +42,12 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 {
     use BindArgumentsTrait;
 
-    private DiContainerInterface $container;
+    private DiContainerInterface $mockContainer;
 
     public function setUp(): void
     {
-        $this->container = $this->createMock(DiContainerInterface::class);
-        $this->container->method('getConfig')
+        $this->mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->mockContainer->method('getConfig')
             ->willReturn(
                 new DiContainerConfig(
                     useAttribute: true
@@ -63,7 +63,12 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 
         $this->bindArguments(quux: diGet('services.quux'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(Bar::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
         $args = $ba->buildByPriorityBindArguments();
@@ -82,7 +87,7 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
     {
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux, #[Inject(Baz::class), Inject('service.one')] Foo $foo) => $quux;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         try {
             // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.

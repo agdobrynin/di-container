@@ -63,12 +63,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;
 
-    private DiContainerInterface $container;
+    private DiContainerInterface $mockContainer;
 
     public function setUp(): void
     {
-        $this->container = $this->createMock(DiContainerInterface::class);
-        $this->container->method('getConfig')
+        $this->mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->mockContainer->method('getConfig')
             ->willReturn(
                 new DiContainerConfig(
                     useAttribute: true
@@ -84,7 +84,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(quux: diGet('services.quux'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -107,7 +107,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             other_two: diGet('services.bar'),
             other_three: diGet('services.baz'),
         );
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $ba->build();
     }
@@ -115,7 +115,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
     public function testInjectRegularParameters(): void
     {
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux) => $quux;
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -130,7 +130,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             QuuxInterface ...$quux
         ) => $quux;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(Baz::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -151,7 +156,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             QuuxInterface $quux,
         ) => ($heavyDependency)()->doMake($quux);
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(QuuxInterface::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -178,7 +188,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Closure ...$heavyDependency,
         ): array => [($heavyDependency[0])()->doMake($quux), ($heavyDependency[1])()->doMake($quux)];
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(QuuxInterface::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -200,7 +215,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             callable $doCallable,
         ) => ($doCallable)($quux);
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(QuuxInterface::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -222,7 +242,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             callable ...$doCallable,
         ) => true;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(QuuxInterface::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -244,7 +269,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             iterable $validators,
         ) => true;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(QuuxInterface::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -266,7 +296,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             iterable ...$validator,
         ) => true;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(QuuxInterface::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -292,7 +327,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(bar: diCallable([Baz::class, 'doMake']));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -311,7 +346,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Baz ...$baz,                // parameter #2
         ) => true;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -324,7 +359,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
     {
         $fn = static fn (?Bar $bar = null, #[Inject] ?BazInterface $baz = null, Foo ...$foo) => $baz;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $arg = $ba->build();
 
@@ -341,7 +376,12 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Foo ...$foo
         ) => $baz;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(Bar::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $arg = $ba->build();
 

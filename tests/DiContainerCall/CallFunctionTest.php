@@ -144,7 +144,7 @@ class CallFunctionTest extends TestCase
     public function testUserFunctionUnresolvedArgument(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+funcWithDependencyClass()/');
+        $this->expectExceptionMessageMatches('/Cannot build argument via type hint for Parameter #0.+funcWithDependencyClass()/');
 
         (new DiContainer())->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass');
     }

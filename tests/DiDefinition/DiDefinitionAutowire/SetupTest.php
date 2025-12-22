@@ -135,6 +135,11 @@ class SetupTest extends TestCase
                 ['services.any_string', 'string from container'],
             ])
         ;
+        // Default class SomeClass must exist in container
+        $mockContainer->method('has')
+            ->with(SomeClass::class)
+            ->willReturn(true)
+        ;
 
         $def = (new DiDefinitionAutowire(SetupByAttributeWithArgumentAsReference::class))
             ->setup('setSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
