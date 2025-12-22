@@ -15,18 +15,13 @@ if ('' !== $this->getContainerFQN()->getNamespace()) {
     echo 'namespace '.$this->getContainerFQN()->getNamespace().';'.PHP_EOL;
 }?>
 
-use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Interfaces\{DiContainerInterface, DiContainerConfigInterface};
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Exception\{CallCircularDependencyException, NotFoundException};
+use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerException};
 
 use function array_keys;
 use function array_key_exists;
 
-class <?php echo $this->getContainerFQN()->getClass(); ?> implements DiContainerInterface
+class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
-    private DiContainerConfigInterface $config;
-
     /**
     * When resolving dependency check circular call.
     * @var array<non-empty-string, true>
@@ -39,34 +34,9 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> implements DiContainer
     */
     private array $singletonServices = [];
 
-    public function getDefinitions(): iterable
+    public function set(string $id, mixed $definition): static
     {
-        throw new DiDefinitionException('All container definitions have been compiled.');
-    }
-
-    public function findTaggedDefinitions(string $tag): iterable
-    {
-        throw new DiDefinitionException('All container definitions have been compiled.');
-    }
-
-    public function getDefinition(string $id): DiDefinitionInterface
-    {
-        throw new DiDefinitionException('All container definitions have been compiled.');
-    }
-
-    public function getConfig(): DiContainerConfigInterface
-    {
-        return $this->config ??= new class implements DiContainerConfigInterface {
-            public function isSingletonServiceDefault (): bool {
-                return <?php echo \var_export($this->diContainerDefinitions->getContainer()->getConfig()->isSingletonServiceDefault(), true); ?>;
-            }
-            public function isUseAttribute(): bool {
-                return <?php echo \var_export($this->diContainerDefinitions->getContainer()->getConfig()->isUseAttribute(), true); ?>;
-            }
-            public function isUseZeroConfigurationDefinition (): bool {
-                return <?php echo \var_export($this->diContainerDefinitions->getContainer()->getConfig()->isUseZeroConfigurationDefinition(), true); ?>;
-            }
-        };
+        throw new ContainerException('Cannot add a new definition to a compiled container.');
     }
 
     public function get(string $id): mixed
@@ -75,7 +45,7 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> implements DiContainer
         $containerMap = $this->containerMap($id);
 
         if (false === $containerMap) {
-            throw new NotFoundException(id: $id);
+            return parent::get($id);
         }
 
         [$isSingleton, $method] = $containerMap;
@@ -103,7 +73,7 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> implements DiContainer
 
     public function has(string $id): bool
     {
-        return false !== $this->containerMap($id);
+        return false !== $this->containerMap($id) || parent::has($id);
     }
 
     /**
