@@ -54,13 +54,13 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 {
     use BindArgumentsTrait;
 
-    private DiContainerInterface $container;
+    private DiContainerInterface $mockContainer;
 
     public function setUp(): void
     {
         $this->bindArguments();
-        $this->container = $this->createMock(DiContainerInterface::class);
-        $this->container->method('getConfig')
+        $this->mockContainer = $this->createMock(DiContainerInterface::class);
+        $this->mockContainer->method('getConfig')
             ->willReturn(
                 new DiContainerConfig(
                     useAttribute: false,
@@ -75,7 +75,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $this->bindArguments('one', 'two', diGet('services.logger_file'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         self::assertEquals(
             ['one', 'two', diGet('services.logger_file')],
@@ -92,7 +92,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $this->bindArguments('one', 'two', service: diGet('services.logger_file'));
 
-        (new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container))
+        (new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer))
             ->build()
         ;
     }
@@ -101,7 +101,12 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (ArrayIterator $iterator, $dto = new stdClass()): array => [$iterator, $dto];
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(ArrayIterator::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -112,7 +117,12 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (#[Inject('services.arr_iter')] ArrayIterator $iterator): iterable => $iterator;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(ArrayIterator::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -123,7 +133,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         self::assertEmpty($ba->build());
     }
@@ -132,17 +142,17 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar|Foo $fooBar = new Baz()): Bar|Foo => $fooBar;
 
-        $this->container->method('has')
+        $this->mockContainer->method('has')
             ->willReturnMap([
                 [Bar::class, true],
                 [Foo::class, false],
             ])
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         self::assertEquals(
-            [0 => diGet(Bar::class)],
+            [],
             $ba->build()
         );
     }
@@ -151,7 +161,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar&Foo $fooBar = new Baz()): Bar&Foo => $fooBar;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         self::assertEmpty($ba->build());
     }
@@ -163,7 +173,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
 
         $fn = static fn (Bar&Foo $fooBar): Bar&Foo => $fooBar;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $ba->build();
     }
@@ -172,7 +182,12 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar $bar, Foo ...$foo): array => [$bar, $foo];
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(Bar::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -185,7 +200,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Bar&Foo $bar = new Baz(), Foo ...$foo): array => [$bar, $foo];
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -201,7 +216,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             foo_1: diGet(Baz::class),
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -221,7 +236,12 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             foo_1: diGet(Baz::class),
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(Bar::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -242,7 +262,12 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             foo_baz: diGet(Baz::class),
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $this->mockContainer->method('has')
+            ->with(Bar::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -264,7 +289,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             bar: diGet(Bar::class),
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -286,7 +311,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             diGet(Baz::class),
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -300,14 +325,14 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (Foo $foo, Bar|Foo $bar = new Baz()): array => [$foo, $bar];
 
-        $this->container->method('has')
+        $this->mockContainer->method('has')
             ->willReturnMap([
                 [Foo::class, true],
                 [Bar::class, true],
             ])
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         self::assertEquals(
             [diGet(Foo::class)],
@@ -327,7 +352,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             diValue(new stdClass()),
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -355,7 +380,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             quux: diGet(Quux::class)
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $args = $ba->build();
 
@@ -371,7 +396,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         $ba = new ArgumentBuilder(
             $this->getBindArguments(),
             (new ReflectionClass(Quux::class))->getConstructor(),
-            $this->container,
+            $this->mockContainer,
         );
 
         $args = $ba->build();
@@ -393,7 +418,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
             other_two: diGet('services.bar')
         );
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $ba->build();
     }
@@ -402,7 +427,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = new ReflectionMethod(Baz::class, 'doMake');
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), $fn, $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), $fn, $this->mockContainer);
 
         self::assertInstanceOf(DiContainerInterface::class, $ba->getContainer());
         self::assertSame($fn, $ba->getFunctionOrMethod());
@@ -412,7 +437,7 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn (?BazInterface $baz = null, BazInterface ...$opt) => $baz;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->container);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
 
         $arg = $ba->build();
 

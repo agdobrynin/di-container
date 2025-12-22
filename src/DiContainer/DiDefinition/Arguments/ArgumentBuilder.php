@@ -16,10 +16,12 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 
@@ -177,19 +179,23 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      */
     private function pushFromParameterType(array &$args, ReflectionParameter $param): void
     {
+        if ($param->isDefaultValueAvailable()) {
+            return;
+        }
+
         try {
             $strType = Helper::getParameterTypeHint($param, $this->container);
 
-            if ($this->container->has($strType) || !$param->isDefaultValueAvailable()) {
-                $args[$param->getPosition()] = new DiDefinitionGet($strType); // @phpstan-ignore parameterByRef.type
+            if (!$this->container->has($strType)) {
+                throw new NotFoundException(id: $strType);
             }
-        } catch (AutowireParameterTypeException $e) {
-            if (!$param->isDefaultValueAvailable()) {
-                throw new ArgumentBuilderException(
-                    message: sprintf('Cannot build argument via type hint for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
-                    previous: $e
-                );
-            }
+
+            $args[$param->getPosition()] = new DiDefinitionGet($strType); // @phpstan-ignore parameterByRef.type
+        } catch (AutowireParameterTypeException|NotFoundExceptionInterface $e) {
+            throw new ArgumentBuilderException(
+                message: sprintf('Cannot build argument via type hint for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
+                previous: $e
+            );
         }
     }
 

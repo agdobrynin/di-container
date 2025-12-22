@@ -66,10 +66,15 @@ class SetupImmutableTest extends TestCase
     }
 
     #[DataProvider('dataProviderImmutableSuccess')]
-    public function testImmutableSuccess(string $method): void
+    public function testImmutableSuccess(string $method, string $paramType): void
     {
         $def = (new DiDefinitionAutowire(SetupImmutable::class, isSingleton: true))
             ->setupImmutable($method) // argument $someClass resolve by typehint.
+        ;
+
+        $this->mockContainer->method('has')
+            ->with($paramType)
+            ->willReturn(true)
         ;
 
         /** @var SetupImmutable $setupImmutableClass */
@@ -81,17 +86,17 @@ class SetupImmutableTest extends TestCase
 
     public static function dataProviderImmutableSuccess(): Generator
     {
-        yield 'for method withSomeClassClonedReturnSelf' => ['withSomeClassClonedReturnSelf'];
+        yield 'for method withSomeClassClonedReturnSelf' => ['withSomeClassClonedReturnSelf', SomeClass::class];
 
-        yield 'for method withSomeClassClonedReturnSameClass' => ['withSomeClassClonedReturnSameClass'];
+        yield 'for method withSomeClassClonedReturnSameClass' => ['withSomeClassClonedReturnSameClass', SomeClass::class];
 
-        yield 'for method withSomeClassClonedNotReturnTypehint' => ['withSomeClassClonedNotReturnTypehint'];
+        yield 'for method withSomeClassClonedNotReturnTypehint' => ['withSomeClassClonedNotReturnTypehint', SomeClass::class];
 
-        yield 'for method withSomeClassNotClonedReturnSelf' => ['withSomeClassNotClonedReturnSelf'];
+        yield 'for method withSomeClassNotClonedReturnSelf' => ['withSomeClassNotClonedReturnSelf', SomeClass::class];
     }
 
     #[DataProvider('dataProviderImmutableFail')]
-    public function testImmutableFail(string $method): void
+    public function testImmutableFail(string $method, string $paramType): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessageMatches('/The immutable setter .+SetupImmutable::'.$method.'\(\)" must return same class/');
@@ -100,22 +105,31 @@ class SetupImmutableTest extends TestCase
             ->setupImmutable($method) // argument $someClass resolve by typehint.
         ;
 
+        $this->mockContainer->method('has')
+            ->with($paramType)
+            ->willReturn(true)
+        ;
+
         $def->resolve($this->mockContainer);
     }
 
     public static function dataProviderImmutableFail(): Generator
     {
-        yield 'for method withSomeClassFailReturnType' => ['withSomeClassFailReturnType'];
+        yield 'for method withSomeClassFailReturnType' => ['withSomeClassFailReturnType', SomeClass::class];
 
-        yield 'for method withSomeClassFailReturnObject' => ['withSomeClassFailReturnObject'];
+        yield 'for method withSomeClassFailReturnObject' => ['withSomeClassFailReturnObject', SomeClass::class];
 
-        yield 'for method withSomeClassFailReturnTypehintVoid' => ['withSomeClassFailReturnTypehintVoid'];
+        yield 'for method withSomeClassFailReturnTypehintVoid' => ['withSomeClassFailReturnTypehintVoid', SomeClass::class];
     }
 
     public function testSetupImmutableByAttribute(): void
     {
         $this->mockContainer->method('getConfig')
             ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+        $this->mockContainer->method('has')
+            ->with(SomeClass::class)
+            ->willReturn(true)
         ;
 
         $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class));
@@ -144,8 +158,13 @@ class SetupImmutableTest extends TestCase
             ->willReturn(new DiContainerConfig(useAttribute: true))
         ;
 
+        $this->mockContainer->method('has')
+            ->willReturnMap([
+                [SomeClass::class, true],
+            ])
+        ;
+
         $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
-            ->setupImmutable('withSomeClass', someClass: null)
             ->setupImmutable('withSomeClass', someClass: diAutowire(SomeClass::class)->bindArguments('aaa'))
         ;
 
