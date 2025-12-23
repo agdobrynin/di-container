@@ -15,7 +15,7 @@ if ('' !== $this->getContainerFQN()->getNamespace()) {
     echo 'namespace '.$this->getContainerFQN()->getNamespace().';'.PHP_EOL;
 }?>
 
-use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerException};
+use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerException, NotFoundException};
 
 use function array_keys;
 use function array_key_exists;
@@ -45,7 +45,9 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiConta
         $containerMap = $this->containerMap($id);
 
         if (false === $containerMap) {
-            return parent::get($id);
+            return $this->config->isUseZeroConfigurationDefinition()
+                ? parent::get($id)
+                : throw new NotFoundException(id: $id);
         }
 
         [$isSingleton, $method] = $containerMap;
@@ -73,7 +75,11 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiConta
 
     public function has(string $id): bool
     {
-        return false !== $this->containerMap($id) || parent::has($id);
+        $has = false !== $this->containerMap($id);
+
+        return $this->config->isUseZeroConfigurationDefinition()
+            ? $has || parent::has($id)
+            : $has;
     }
 
     /**
