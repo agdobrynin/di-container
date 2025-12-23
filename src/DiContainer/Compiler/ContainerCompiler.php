@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Compiler;
 
 use Generator;
+use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
@@ -90,7 +91,8 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         $this->mapContainerIdToMethod = [
             ContainerInterface::class => ['getPsrContainer', $containerEntry],
-            DiContainerInterface::class => ['getDiContainer', $containerEntry],
+            DiContainerInterface::class => ['getDiContainerInterface', $containerEntry],
+            DiContainer::class => ['getDiContainer', $containerEntry],
         ];
 
         $num = 0;
