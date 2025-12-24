@@ -8,6 +8,7 @@ use Iterator;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\IdsIteratorInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
 
@@ -15,7 +16,7 @@ use function sprintf;
 
 final class DiContainerDefinitions implements DiContainerDefinitionsInterface
 {
-    public function __construct(private readonly DiContainerInterface $container, private readonly IdsIteratorInterface $idsIterator) {}
+    public function __construct(private readonly DiContainerGetterDefinitionInterface&DiContainerInterface $container, private readonly IdsIteratorInterface $idsIterator) {}
 
     public function getContainer(): DiContainerInterface
     {
