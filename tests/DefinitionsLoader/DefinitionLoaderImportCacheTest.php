@@ -96,7 +96,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
         ;
 
         (new DefinitionsLoader(importCacheFile: $dir->url().'/cache.php'))
-            ->import('App\\', __DIR__)
+            ->import('Tests\\', __DIR__.'/Fixtures/ImportCannotCreateCache')
             ->definitions()
             ->valid()
         ;
@@ -148,6 +148,7 @@ class DefinitionLoaderImportCacheTest extends TestCase
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\One',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo',
+            'services.any',
         ];
 
         sort($getKeys);
@@ -163,6 +164,9 @@ class DefinitionLoaderImportCacheTest extends TestCase
         $srvOI = $arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\Interfaces\OtherInterface'];
         $this->assertInstanceOf(DiDefinitionGet::class, $srvOI);
         $this->assertEquals('services.any', $srvOI->getDefinition());
+
+        // Class Tests\DefinitionsLoader\Fixtures\ImportCreating\Bar autoconfigured via php attribute Autowire with container id = 'services.any'
+        $this->assertEquals('Tests\DefinitionsLoader\Fixtures\ImportCreating\Bar', $arr['services.any']->getIdentifier());
 
         $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
 

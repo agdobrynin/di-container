@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
@@ -31,6 +32,8 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\AppClass;
 use Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\Two;
+use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\Foo;
+use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\FooInterface;
 
 use function array_keys;
 use function iterator_to_array;
@@ -61,6 +64,7 @@ use const T_TRAIT;
 #[CoversClass(FinderFullyQualifiedNameCollection::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(NotFoundException::class)]
+#[CoversClass(DiContainerNullConfig::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void
@@ -296,5 +300,57 @@ class DefinitionsLoaderImportTest extends TestCase
         ;
 
         $loader->definitions()->valid();
+    }
+
+    public function testImportTwoClassesWithSameId(): void
+    {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Container identifier "services.one" already import for class');
+
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportClassesViaSameId')
+        ;
+
+        $loader->definitions()->valid();
+    }
+
+    public function testImportInterfaceViaServiceAttributeAndContainerDefinition(): void
+    {
+        $defs = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportConfigInterface')
+            ->addDefinitions(false, [
+                'services.foo' => diAutowire(Foo::class),
+            ])
+            ->definitions()
+        ;
+
+        $container = (new DiContainerFactory(new DiContainerNullConfig()))->make($defs);
+
+        self::assertInstanceOf(Foo::class, $container->get(FooInterface::class));
+    }
+
+    public function testImportInterfaceViaServiceAttributeOnly(): void
+    {
+        $defs = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportConfigInterfaceViaPhpAttribute')
+            ->definitions()
+        ;
+
+        $container = (new DiContainerFactory(new DiContainerNullConfig()))->make($defs);
+
+        self::assertInstanceOf(Fixtures\ImportConfigInterfaceViaPhpAttribute\Foo::class, $container->get(Fixtures\ImportConfigInterfaceViaPhpAttribute\FooInterface::class));
+        self::assertInstanceOf(Fixtures\ImportConfigInterfaceViaPhpAttribute\Foo::class, $container->get(Fixtures\ImportConfigInterfaceViaPhpAttribute\Foo::class));
+    }
+
+    public function testImportInvalidReferenceForInterface(): void
+    {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Invalid definition reference "services.foo"');
+
+        (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportInvalidReferenceForInterface')
+            ->definitions()
+            ->valid()
+        ;
     }
 }
