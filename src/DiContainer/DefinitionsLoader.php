@@ -32,7 +32,6 @@ use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
 use SplFileInfo;
-use SplFileObject;
 
 use function class_exists;
 use function file_exists;
@@ -43,7 +42,6 @@ use function ob_get_clean;
 use function ob_start;
 use function sprintf;
 use function str_replace;
-use function unlink;
 use function var_export;
 
 use const T_CLASS;
@@ -166,19 +164,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             yield from $this->getIteratorFromFile($importCacheFile->getPathname()); // @phpstan-ignore generator.keyType
         }
 
-        if (isset($this->finderFullyQualifiedNameCollection)) {
-            $cacheFileDelete = static function (?SplFileObject $f) {
-                if (null !== $f) {
-                    @unlink($f->getPathname());
-                }
-            };
-
+        if ($this->importedDefinitions()->valid()) {
             try {
                 $cacheFileOpened = $importCacheFile?->openFile('wb+');
                 $cacheFileOpened?->fwrite(
                     '<?php'.PHP_EOL
                     .'use function Kaspi\DiContainer\{diAutowire, diFactory, diGet};'.PHP_EOL
-                    .'return static function () {'.PHP_EOL
+                    .'return static function (): \Generator {'.PHP_EOL
                 );
             } catch (RuntimeException $e) {
                 throw new DefinitionsLoaderException(
@@ -187,53 +179,90 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
-                $fullQualifiedName = $finderFQN->get();
+            foreach ($this->importedDefinitions() as $identifier => $definition) {
+                $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
 
-                do {
-                    try {
-                        /** @var null|ItemFQN $itemFQN */
-                        $itemFQN = $fullQualifiedName->current();
-
-                        if (null === $itemFQN) {
-                            break;
-                        }
-                    } catch (InvalidArgumentException|RuntimeException $e) {
-                        $cacheFileDelete($cacheFileOpened);
-
-                        throw new DefinitionsLoaderException(
-                            sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
-                            previous: $e
-                        );
-                    }
-
-                    try {
-                        $definition = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$finderFQN->getNamespace()]));
-                    } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
-                        $cacheFileDelete($cacheFileOpened);
-
-                        throw new DefinitionsLoaderException(
-                            sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
-                            previous: $e
-                        );
-                    }
-
-                    if ([] !== $definition) {
-                        foreach ($definition as $identifier => $definitionItem) {
-                            $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definitionItem).PHP_EOL);
-
-                            yield $identifier => $definitionItem;
-                        }
-                    }
-
-                    $fullQualifiedName->next();
-                } while ($fullQualifiedName->valid());
+                yield $identifier => $definition;
             }
 
             $cacheFileOpened?->fwrite('};'.PHP_EOL);
         }
 
         yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
+    }
+
+    /**
+     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
+     *
+     * @throws DefinitionsLoaderException
+     */
+    private function importedDefinitions(): Generator
+    {
+        if (null === $this->finderFullyQualifiedNameCollection) {
+            return;
+        }
+
+        /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> $importedDefinitions */
+        $importedDefinitions = [];
+
+        foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
+            $fullQualifiedName = $finderFQN->get();
+
+            do {
+                try {
+                    /** @var null|ItemFQN $itemFQN */
+                    $itemFQN = $fullQualifiedName->current();
+
+                    if (null === $itemFQN) {
+                        break;
+                    }
+                } catch (InvalidArgumentException|RuntimeException $e) {
+                    throw new DefinitionsLoaderException(
+                        sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
+                        previous: $e
+                    );
+                }
+
+                try {
+                    $definitions = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$finderFQN->getNamespace()]));
+                } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
+                    throw new DefinitionsLoaderException(
+                        sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
+                        previous: $e
+                    );
+                }
+
+                if ([] !== $definitions) {
+                    foreach ($definitions as $identifier => $definition) {
+                        if ($definition instanceof DiDefinitionAutowire && isset($importedDefinitions[$identifier]) && $importedDefinitions[$identifier] instanceof DiDefinitionAutowire) {
+                            throw new DefinitionsLoaderException(
+                                sprintf('Container identifier "%s" already import for class "%s". Please specify container identifier for class "%s".', $identifier, $importedDefinitions[$identifier]->getIdentifier(), $definition->getIdentifier())
+                            );
+                        }
+
+                        $importedDefinitions[$identifier] = $definition;
+                    }
+                }
+
+                $fullQualifiedName->next();
+            } while ($fullQualifiedName->valid());
+        }
+
+        /*
+         * Check valid DiDefinitionGet for imported definitions.
+         * Interface maybe configured via php attribute #[Service('container_id')].
+        */
+
+        foreach ($importedDefinitions as $identifier => $definition) {
+            if ($definition instanceof DiDefinitionGet
+                && !(isset($importedDefinitions[$definition->getDefinition()]) || $this->configDefinitions->offsetExists($definition->getDefinition()))) {
+                throw new DefinitionsLoaderException(
+                    sprintf('Invalid definition reference "%s" for container identifier "%s".', $definition->getDefinition(), $identifier)
+                );
+            }
+        }
+
+        yield from $importedDefinitions;
     }
 
     private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string

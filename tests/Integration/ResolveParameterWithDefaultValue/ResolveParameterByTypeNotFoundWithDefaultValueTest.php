@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\Integration\ResolveParameterWithDefaultValue\Fixtures\Bar;
 use Tests\Integration\ResolveParameterWithDefaultValue\Fixtures\Foo;
+
 use function Kaspi\DiContainer\diAutowire;
 
 /**
