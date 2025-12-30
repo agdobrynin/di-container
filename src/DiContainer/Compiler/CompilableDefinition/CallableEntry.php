@@ -57,7 +57,7 @@ final class CallableEntry implements CompilableDefinitionInterface
                 : sprintf('"%s"', var_export($this->definition->getDefinition(), true));
 
             throw new DefinitionCompileException(
-                sprintf('Expose arguments is invalid for callable definition %s.', $defAsString),
+                sprintf('Cannot provide arguments to a callable definition %s.', $defAsString),
                 previous: $e
             );
         }
@@ -92,7 +92,6 @@ final class CallableEntry implements CompilableDefinitionInterface
 
         $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
-        // TODO add check return type, not only `mixed` type.
         return new CompiledEntry(
             $expression.$compiledArgumentsEntry->getExpression(),
             $isSingleton,

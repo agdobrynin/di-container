@@ -115,9 +115,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
         return $this->compiledContainerFQN = new class($namespace, $class) implements CompiledContainerFQN {
             private string $fqn;
 
-            /**
-             * @param class-string $class
-             */
+            /** @param class-string $class */
             public function __construct(private readonly string $namespace, private readonly string $class) {}
 
             public function getNamespace(): string

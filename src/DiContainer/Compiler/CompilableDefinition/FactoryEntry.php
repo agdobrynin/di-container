@@ -36,7 +36,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot to expose arguments for factory method in definition "%s".', $this->definition->getDefinition()),
+                sprintf('Cannot provide arguments to a factory method in definition "%s".', $this->definition->getDefinition()),
                 previous: $e,
             );
         }

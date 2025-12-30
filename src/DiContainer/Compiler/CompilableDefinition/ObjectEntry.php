@@ -37,7 +37,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot to expose constructor arguments for definition "%s".', $this->definition->getIdentifier()),
+                sprintf('Cannot provide constructor arguments to a object definition "%s".', $this->definition->getIdentifier()),
                 previous: $e,
             );
         }
@@ -48,7 +48,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot to expose setter method arguments in definition "%s".', $this->definition->getIdentifier()),
+                sprintf('Cannot provide setter method arguments to a object definition "%s".', $this->definition->getIdentifier()),
                 previous: $e,
             );
         }

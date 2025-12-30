@@ -31,7 +31,7 @@ final class TaggedAsEntry implements CompilableDefinitionInterface
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot compile tagged services. Tag "%s".', $this->getDiDefinition()->getDefinition()),
+                sprintf('Cannot provide container identifiers for tag "%s".', $this->getDiDefinition()->getDefinition()),
                 previous: $e
             );
         }
