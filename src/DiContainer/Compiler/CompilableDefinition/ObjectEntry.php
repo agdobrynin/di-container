@@ -18,7 +18,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
-use function implode;
 use function sprintf;
 
 final class ObjectEntry implements CompilableDefinitionInterface
@@ -29,7 +28,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $argBuilder = $this->definition->exposeArgumentBuilder(
@@ -66,39 +65,37 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
         $fullyName = '\\'.$this->definition->getDefinition()->getName();
         $objectExpression = sprintf('new %s', $fullyName);
-        $scopeServiceVariableName = Helper::genUniqueVarName('$object', $containerVariableName, $scopeVariableNames);
-
         $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
+        $objectCompiledEntry = new CompiledEntry(
+            isSingleton: $isSingleton,
+            scopeVars: [...$scopeVars, $containerVar],
+            returnType: $fullyName
+        );
+
         if ([] === $args && [] === $setupArgBuilders) {
-            return new CompiledEntry($objectExpression, $isSingleton, '', $scopeServiceVariableName, $scopeVariableNames, $fullyName);
+            return $objectCompiledEntry->setExpression($objectExpression);
         }
 
-        $compiledArgumentsEntry = Helper::compileArguments(
+        $argsConstructorExpression = Helper::compileArguments(
+            $objectCompiledEntry,
+            $containerVar,
+            $args,
             $this->transformer,
             $this->diContainerDefinitions,
-            $containerVariableName,
-            $scopeServiceVariableName,
-            $scopeVariableNames,
-            $args,
             $context,
         );
 
-        $objectCompiledEntry = new CompiledEntry(
-            $objectExpression.$compiledArgumentsEntry->getExpression(),
-            $isSingleton,
-            $compiledArgumentsEntry->getStatements(),
-            $scopeServiceVariableName,
-            $compiledArgumentsEntry->getScopeVariables(),
-            $fullyName,
-        );
+        $compiledObjectConstructor = $objectExpression.$argsConstructorExpression;
 
         if ([] === $setupArgBuilders) {
-            return $objectCompiledEntry;
+            return $objectCompiledEntry
+                ->setExpression($compiledObjectConstructor)
+            ;
         }
 
-        $scopeVars = $objectCompiledEntry->getScopeVariables();
-        $serviceSetupCompiledStatements = [];
+        $objectCreateStatement = sprintf('%s = %s', $objectCompiledEntry->getScopeServiceVar(), $compiledObjectConstructor);
+        $objectCompiledEntry->addToStatements($objectCreateStatement);
 
         /**
          * @var ArgumentBuilderInterface $setupArgBuilder
@@ -114,40 +111,26 @@ final class ObjectEntry implements CompilableDefinitionInterface
                 );
             }
 
-            $compiledSetupArgumentsEntry = Helper::compileArguments(
+            $argsSetupMethodExpression = Helper::compileArguments(
+                $objectCompiledEntry,
+                $containerVar,
+                $setupArgs,
                 $this->transformer,
                 $this->diContainerDefinitions,
-                $containerVariableName,
-                '$argService',
-                $scopeVars,
-                $setupArgs,
                 $context,
             );
 
-            $serviceSetupStatements = $compiledArgumentsEntry->getStatements();
-
             $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
-            $serviceVar = $objectCompiledEntry->getScopeServiceVariableName();
+            $serviceVar = $objectCompiledEntry->getScopeServiceVar();
 
-            $serviceSetupStatements .= SetupConfigureMethod::Mutable === $setupConfigureType
-                ? sprintf('  %s->%s', $serviceVar, $methodName)
-                : sprintf('  %s = %s->%s', $serviceVar, $serviceVar, $methodName);
+            $serviceSetupStatement = SetupConfigureMethod::Mutable === $setupConfigureType
+                ? sprintf('  %s->%s%s', $serviceVar, $methodName, $argsSetupMethodExpression)
+                : sprintf('  %s = %s->%s%s', $serviceVar, $serviceVar, $methodName, $argsSetupMethodExpression);
 
-            $serviceSetupCompiledStatements[] = $serviceSetupStatements.$compiledSetupArgumentsEntry->getExpression().';'.PHP_EOL;
+            $objectCompiledEntry->addToStatements($serviceSetupStatement);
         }
 
-        $statements = '' !== $objectCompiledEntry->getStatements()
-            ? sprintf('%s'.PHP_EOL.'%s;', $objectCompiledEntry->getStatements(), $objectCompiledEntry->getExpression())
-            : sprintf('%s = %s;'.PHP_EOL, $objectCompiledEntry->getScopeServiceVariableName(), $objectCompiledEntry->getExpression());
-
-        return new CompiledEntry(
-            $objectCompiledEntry->getScopeServiceVariableName(),
-            $objectCompiledEntry->isSingleton(),
-            $statements.implode($serviceSetupCompiledStatements),
-            $objectCompiledEntry->getScopeServiceVariableName(),
-            $scopeVars,
-            $objectCompiledEntry->getReturnType(),
-        );
+        return $objectCompiledEntry->setExpression($objectCompiledEntry->getScopeServiceVar());
     }
 
     public function getDiDefinition(): DiDefinitionAutowireInterface

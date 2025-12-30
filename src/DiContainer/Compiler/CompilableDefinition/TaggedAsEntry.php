@@ -15,6 +15,8 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use function sprintf;
 use function var_export;
 
+use const PHP_EOL;
+
 final class TaggedAsEntry implements CompilableDefinitionInterface
 {
     public function __construct(
@@ -22,7 +24,7 @@ final class TaggedAsEntry implements CompilableDefinitionInterface
         private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
     ) {}
 
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $mapContainerIdentifiers = $this->definition->exposeContainerIdentifiers(
@@ -46,23 +48,30 @@ final class TaggedAsEntry implements CompilableDefinitionInterface
 
             $expressionIds .= ']';
 
-            $comment = sprintf('/* Lazy load services for tag %s */', var_export($this->definition->getDefinition(), true));
-            $expression = sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVariableName, $expressionIds);
+            $expression = sprintf('/* Lazy load services for tag %s */'.PHP_EOL, var_export($this->definition->getDefinition(), true));
+            $expression .= sprintf('new \Kaspi\DiContainer\LazyDefinitionIterator(%s, %s)', $containerVar, $expressionIds);
 
-            return new CompiledEntry($expression, false, $comment, returnType: '\Kaspi\DiContainer\LazyDefinitionIterator');
+            return new CompiledEntry(
+                isSingleton: false,
+                expression: $expression,
+                returnType: '\Kaspi\DiContainer\LazyDefinitionIterator',
+            );
         }
 
-        $expression = '['.PHP_EOL;
+        $expression = sprintf('/* Services for tag %s */'.PHP_EOL, var_export($this->definition->getDefinition(), true));
+        $expression .= '['.PHP_EOL;
 
         foreach ($mapContainerIdentifiers as $key => $containerIdentifier) {
-            $expression .= sprintf('  %s => %s->get(%s),'.PHP_EOL, var_export($key, true), $containerVariableName, var_export($containerIdentifier, true));
+            $expression .= sprintf('  %s => %s->get(%s),'.PHP_EOL, var_export($key, true), $containerVar, var_export($containerIdentifier, true));
         }
 
         $expression .= ']';
 
-        $comment = sprintf('/* Services for tag %s */', var_export($this->definition->getDefinition(), true));
-
-        return new CompiledEntry($expression, false, $comment, returnType: 'array');
+        return new CompiledEntry(
+            isSingleton: false,
+            expression: $expression,
+            returnType: 'array',
+        );
     }
 
     public function getDiDefinition(): DiDefinitionTaggedAsInterface

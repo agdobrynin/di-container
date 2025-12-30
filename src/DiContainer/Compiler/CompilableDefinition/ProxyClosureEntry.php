@@ -22,7 +22,7 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
         private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
     ) {}
 
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $identifier = $this->definition->getDefinition();
@@ -36,10 +36,11 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
             );
         }
 
-        $expression = sprintf('fn () => %s->get(%s)', $containerVariableName, var_export($identifier, true));
-        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
-
-        return new CompiledEntry($expression, $isSingleton, returnType: '\Closure');
+        return new CompiledEntry(
+            isSingleton: $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault(),
+            expression: sprintf('fn () => %s->get(%s)', $containerVar, var_export($identifier, true)),
+            returnType: '\Closure',
+        );
     }
 
     public function getDiDefinition(): DiDefinitionProxyClosureInterface

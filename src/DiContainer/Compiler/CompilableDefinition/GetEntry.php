@@ -26,7 +26,7 @@ final class GetEntry implements CompilableDefinitionInterface
         private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
     ) {}
 
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $containerIdentifier = $this->definition->getDefinition();
@@ -34,13 +34,12 @@ final class GetEntry implements CompilableDefinitionInterface
             throw new DefinitionCompileException('Cannot compile reference definition.', previous: $e);
         }
 
-        if (!in_array($containerIdentifier, [ContainerInterface::class, DiContainerInterface::class, DiContainer::class], true)) {
-            $this->diContainerDefinitions->pushToDefinitionIterator($containerIdentifier);
-        }
+        $this->diContainerDefinitions->pushToDefinitionIterator($containerIdentifier);
 
-        $expression = sprintf('%s->get(%s)', $containerVariableName, var_export($containerIdentifier, true));
-
-        return new CompiledEntry($expression, false);
+        return new CompiledEntry(
+            isSingleton: false,
+            expression: sprintf('%s->get(%s)', $containerVar, var_export($containerIdentifier, true)),
+        );
     }
 
     public function getDiDefinition(): DiDefinitionLinkInterface

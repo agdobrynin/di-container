@@ -22,7 +22,7 @@ final class ValueEntry implements CompilableDefinitionInterface
 {
     public function __construct(private readonly mixed $definition) {}
 
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
             if ($this->definition instanceof UnitEnum && PHP_VERSION_ID < 80200) {
@@ -35,7 +35,7 @@ final class ValueEntry implements CompilableDefinitionInterface
                 $expression = var_export($this->definition, true);
             }
 
-            return new CompiledEntry($expression, null, returnType: $returnType);
+            return new CompiledEntry(expression: $expression, returnType: $returnType);
         }
 
         $exceptionMessage = 'Cannot compile definition type "%s". Support only a scalar-type, null value, UnitEnum type or array with that types.';
@@ -69,7 +69,7 @@ final class ValueEntry implements CompilableDefinitionInterface
                         : $output.$tabLevel($level).'],'.PHP_EOL;
                 };
 
-                return new CompiledEntry($array_export($this->definition), null, returnType: 'array');
+                return new CompiledEntry(expression: $array_export($this->definition), returnType: 'array');
             } catch (InvalidArgumentException $e) {
                 throw new DefinitionCompileException(sprintf($exceptionMessage.' %s', get_debug_type($this->definition), $e->getMessage()));
             }

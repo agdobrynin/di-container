@@ -36,7 +36,7 @@ final class CallableEntry implements CompilableDefinitionInterface
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         if (is_array($this->definition->getDefinition())) {
             /** @var non-empty-string $method */
@@ -62,8 +62,6 @@ final class CallableEntry implements CompilableDefinitionInterface
             );
         }
 
-        $expression = $this->getExpression($argBuilder->getFunctionOrMethod());
-
         try {
             $args = $argBuilder->build();
         } catch (ArgumentBuilderExceptionInterface $e) {
@@ -73,14 +71,19 @@ final class CallableEntry implements CompilableDefinitionInterface
             );
         }
 
+        $callableCompiledEntry = new CompiledEntry(
+            scopeServiceVar: '$closure',
+            isSingleton: $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault(),
+            scopeVars: [...$scopeVars, $containerVar],
+        );
+
         try {
-            $compiledArgumentsEntry = Helper::compileArguments(
+            $argsExpression = Helper::compileArguments(
+                $callableCompiledEntry,
+                $containerVar,
+                $args,
                 $this->transformer,
                 $this->diContainerDefinitions,
-                $containerVariableName,
-                '$closure',
-                $scopeVariableNames,
-                $args,
                 $context,
             );
         } catch (DefinitionCompileExceptionInterface $e) {
@@ -90,15 +93,9 @@ final class CallableEntry implements CompilableDefinitionInterface
             );
         }
 
-        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
+        $expression = $this->getExpression($argBuilder->getFunctionOrMethod()).$argsExpression;
 
-        return new CompiledEntry(
-            $expression.$compiledArgumentsEntry->getExpression(),
-            $isSingleton,
-            $compiledArgumentsEntry->getStatements(),
-            $compiledArgumentsEntry->getScopeServiceVariableName(),
-            $compiledArgumentsEntry->getScopeVariables(),
-        );
+        return $callableCompiledEntry->setExpression($expression);
     }
 
     public function getDiDefinition(): DiDefinitionCallableInterface

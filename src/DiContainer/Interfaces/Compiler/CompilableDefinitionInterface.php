@@ -15,13 +15,13 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 interface CompilableDefinitionInterface
 {
     /**
-     * @param non-empty-string       $containerVariableName variable name for access to current di-container instance aka `$this` or `$this->container` and etc
-     * @param list<non-empty-string> $scopeVariableNames    list of variables witch help generate container entity object into parameter `$scopeServiceVariableName`
-     * @param mixed                  $context               some context for compile definition
+     * @param non-empty-string       $containerVar variable name for access to current di-container instance aka `$this` or `$this->container` and etc
+     * @param list<non-empty-string> $scopeVars    list of variables witch help generate container entity object into parameter `$scopeServiceVariableName`
+     * @param mixed                  $context      some context for compile definition
      *
      * @throws DefinitionCompileExceptionInterface
      */
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface;
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface;
 
     /**
      * @return DiDefinitionArgumentsInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface|mixed

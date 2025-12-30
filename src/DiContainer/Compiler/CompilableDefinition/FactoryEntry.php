@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler\CompilableDefinition;
 
-use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Helper as CommonHelper;
@@ -16,9 +15,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
+use function count;
 use function sprintf;
-
-use const PHP_EOL;
 
 final class FactoryEntry implements CompilableDefinitionInterface
 {
@@ -28,7 +26,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
         private readonly DiDefinitionTransformerInterface $transformer,
     ) {}
 
-    public function compile(string $containerVariableName, array $scopeVariableNames = [], mixed $context = null): CompiledEntryInterface
+    public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
             $bindArgBuilder = $this->definition->exposeFactoryMethodArgumentBuilder(
@@ -51,40 +49,31 @@ final class FactoryEntry implements CompilableDefinitionInterface
         }
 
         $compiledObjectEntry = (new ObjectEntry($this->definition->getFactoryAutowire(), $this->diContainerDefinitions, $this->transformer))
-            ->compile($containerVariableName, $scopeVariableNames, $context)
+            ->compile($containerVar, $scopeVars, $context)
         ;
 
-        /** @var non-empty-string $scopeObjectVar */
-        $scopeObjectVar = $compiledObjectEntry->getScopeServiceVariableName();
-        $factoryStatements = $compiledObjectEntry->getStatements();
-        $factoryStatements .= sprintf('%s = %s;'.PHP_EOL, $scopeObjectVar, $compiledObjectEntry->getExpression());
-
-        $compiledFactoryMethodArguments = Helper::compileArguments(
+        $argsFactoryMethodExpression = Helper::compileArguments(
+            $compiledObjectEntry,
+            $containerVar,
+            $bindArgs,
             $this->transformer,
             $this->diContainerDefinitions,
-            $containerVariableName,
-            $scopeObjectVar,
-            $compiledObjectEntry->getScopeVariables(),
-            $bindArgs,
             $context,
-        );
-
-        $factoryExpression = sprintf(
-            '%s->%s%s',
-            $scopeObjectVar,
-            $this->definition->getFactoryMethod(),
-            $compiledFactoryMethodArguments->getExpression()
         );
 
         $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
-        return new CompiledEntry(
-            $factoryExpression,
-            $isSingleton,
-            $factoryStatements,
-            $scopeObjectVar,
-            $compiledFactoryMethodArguments->getScopeVariables(),
-        );
+        if (0 === count($compiledObjectEntry->getStatements())) {
+            $factoryStatements = sprintf('%s = %s', $compiledObjectEntry->getScopeServiceVar(), $compiledObjectEntry->getExpression());
+            $compiledObjectEntry->addToStatements($factoryStatements);
+        }
+
+        $factoryExpression = sprintf('%s->%s%s', $compiledObjectEntry->getScopeServiceVar(), $this->definition->getFactoryMethod(), $argsFactoryMethodExpression);
+
+        return $compiledObjectEntry->setIsSingleton($isSingleton)
+            ->setExpression($factoryExpression)
+            ->setReturnType('mixed')
+        ;
     }
 
     public function getDiDefinition(): DiDefinitionFactoryInterface

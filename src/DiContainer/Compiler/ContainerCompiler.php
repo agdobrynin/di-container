@@ -139,7 +139,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
     public function compile(): string
     {
-        $containerEntry = new CompiledEntry('$this', null, '', '', [], 'self');
+        $containerEntry = new CompiledEntry(expression: '$this', returnType: 'self');
 
         $this->mapServiceMethodToContainerId = [
             'resolve_psr_container' => [ContainerInterface::class, $containerEntry],

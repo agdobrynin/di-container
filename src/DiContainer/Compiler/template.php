@@ -57,7 +57,7 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiConta
 
         try {
             if (isset($this->resolvingContainerIds[$id])) {
-                throw new CallCircularDependencyException(callIds: array_keys($this->resolvingContainerIds)+[$id => true]);
+                throw new CallCircularDependencyException(callIds: [...array_keys($this->resolvingContainerIds), $id]);
             }
 
             $this->resolvingContainerIds[$id] = true;
@@ -96,17 +96,18 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiConta
     private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>
 
     {
-    <?php if ('' !== $compiledEntry->getStatements()) {?>
+<?php foreach ($compiledEntry->getStatements() as $statement) {?>
+        <?php echo $statement; ?>;
 
-        <?php echo $compiledEntry->getStatements(); ?>
-
-    <?php } ?>
-    <?php if ($compiledEntry->isSingleton()) {?>
-// ⚠ resolved singleton services store in parent class
+<?php } ?>
+<?php if ($compiledEntry->isSingleton()) {?>
+        // ⚠ resolved singleton services store in parent class
         return $this->resolved[<?php echo \var_export($id, true); ?>] = <?php echo $compiledEntry->getExpression().';'; ?>
-    <?php } else { ?>
-return <?php echo $compiledEntry->getExpression().';'; ?>
-    <?php } ?>
+
+<?php } else { ?>
+        return <?php echo $compiledEntry->getExpression().';'; ?>
+
+<?php } ?>
 
     }
 <?php } ?>
