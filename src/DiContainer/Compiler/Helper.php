@@ -80,7 +80,6 @@ final class Helper
         }
 
         while (in_array($varName, $varNames, true) && $containerVariableName !== $varName) {
-            // TODO check max trying generate variable name?
             try {
                 $varName = $varName.'_'.bin2hex(random_bytes(5));
             } catch (Exception $e) {
