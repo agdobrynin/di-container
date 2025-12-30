@@ -17,8 +17,15 @@ use function bin2hex;
 use function in_array;
 use function is_string;
 use function preg_match;
+use function preg_replace;
+use function preg_replace_callback;
 use function random_bytes;
 use function sprintf;
+use function str_replace;
+use function strrpos;
+use function strtolower;
+use function substr;
+use function trim;
 
 final class Helper
 {
@@ -90,5 +97,28 @@ final class Helper
         $varNames[] = $varName;
 
         return $varName;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public static function convertContainerIdentifierToMethodName(string $id): string
+    {
+        // Identifier may present as fully qualified class name. Take only class name.
+        if (false !== ($pos = strrpos($id, '\\')) && isset($id[$pos + 1])) {
+            $id = substr($id, $pos + 1);
+        }
+
+        /** @var string $name */
+        $name = preg_replace_callback(
+            '/([a-z])([A-Z])/',
+            static fn (array $a) => $a[1].'_'.strtolower($a[2]),
+            (string) preg_replace('/[^a-zA-Z0-9_\x7f-\xff]/', '.', $id)
+        );
+        $name = strtolower(trim(str_replace('.', '_', $name), '_'));
+
+        return 1 !== preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name)
+            ? 'resolve_service'
+            : 'resolve_'.$name;
     }
 }

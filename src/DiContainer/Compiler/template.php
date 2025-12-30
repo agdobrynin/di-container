@@ -9,16 +9,16 @@ echo '<?php';
 ?>
 
 declare(strict_types=1);
-
 <?php
-if ('' !== $this->getContainerFQN()->getNamespace()) {
-    echo 'namespace '.$this->getContainerFQN()->getNamespace().';'.PHP_EOL;
-}?>
+if ('' !== $this->getContainerFQN()->getNamespace()) { ?>
 
-use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerException, NotFoundException};
+namespace <?php echo $this->getContainerFQN()->getNamespace(); ?>;
 
 use function array_keys;
 use function array_key_exists;
+<?php }?>
+
+use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerException, NotFoundException};
 
 class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
@@ -27,12 +27,6 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiConta
     * @var array<non-empty-string, true>
     */
     private array $resolvingContainerIds = [];
-
-    /**
-    * Resolved services as singleton.
-    * @var array<non-empty-string, mixed>
-    */
-    private array $singletonServices = [];
 
     public function set(string $id, mixed $definition): static
     {
@@ -56,8 +50,9 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiConta
             return $this->$method();
         }
 
-        if (array_key_exists($id, $this->singletonServices)) {
-            return $this->singletonServices[$id];
+        // ⚠ resolved singleton services store in parent class
+        if (array_key_exists($id, $this->resolved)) {
+            return $this->resolved[$id];
         }
 
         try {
@@ -88,23 +83,30 @@ class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiConta
     private function containerMap(string $id): false|array
     {
         return match($id) {
-<?php foreach ($this->mapContainerIdToMethod as $id => [$method, $compiledEntry]) {?>
+<?php foreach ($this->mapServiceMethodToContainerId as $method => [$id, $compiledEntry]) {?>
             <?php echo \var_export($id, true); ?> => [<?php echo \var_export($compiledEntry->isSingleton(), true); ?>, <?php echo \var_export($method, true); ?>],
 <?php } ?>
             default => false,
         };
     }
 
-<?php foreach ($this->mapContainerIdToMethod as $id => [$method, $compiledEntry]) {?>
+<?php foreach ($this->mapServiceMethodToContainerId as $method => [$id, $compiledEntry]) {?>
 
+    // container identifier <?php echo \var_export($id, true).PHP_EOL; ?>
     private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>
 
     {
     <?php if ('' !== $compiledEntry->getStatements()) {?>
+
         <?php echo $compiledEntry->getStatements(); ?>
 
     <?php } ?>
-    return <?php if ($compiledEntry->isSingleton()) {?> $this->singletonServices[<?php echo \var_export($id, true); ?>] ??= <?php } ?><?php echo $compiledEntry->getExpression().';'; ?>
+    <?php if ($compiledEntry->isSingleton()) {?>
+// ⚠ resolved singleton services store in parent class
+        return $this->resolved[<?php echo \var_export($id, true); ?>] = <?php echo $compiledEntry->getExpression().';'; ?>
+    <?php } else { ?>
+return <?php echo $compiledEntry->getExpression().';'; ?>
+    <?php } ?>
 
     }
 <?php } ?>

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
-use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
@@ -38,9 +37,23 @@ use const DIRECTORY_SEPARATOR;
 final class ContainerCompiler implements ContainerCompilerInterface
 {
     /**
+     * Array key internal getter method name.
+     * Each method name is converted to lowercase.
+     *
+     *      [
+     *          'resolve_service_one' => [
+     *              0 => 'App\\Services\\ServiceOne',
+     *              1 => $compiledEntry,
+     *          ],
+     *      ]
+     *
+     * The value of array element has two items:
+     * - index 0 – container identifier.
+     * - index 1 – compiled entry.
+     *
      * @var non-empty-array<non-empty-string, array{0: non-empty-string, 1:CompiledEntryInterface}>
      */
-    private array $mapContainerIdToMethod; // @phpstan-ignore property.onlyWritten
+    private array $mapServiceMethodToContainerId;
 
     private CompiledContainerFQN $compiledContainerFQN;
 
@@ -127,13 +140,16 @@ final class ContainerCompiler implements ContainerCompilerInterface
     {
         $containerEntry = new CompiledEntry('$this', null, '', '', [], 'self');
 
-        $this->mapContainerIdToMethod = [
-            ContainerInterface::class => ['getPsrContainer', $containerEntry],
-            DiContainerInterface::class => ['getDiContainerInterface', $containerEntry],
-            DiContainer::class => ['getDiContainer', $containerEntry],
+        $this->mapServiceMethodToContainerId = [
+            'resolve_psr_container' => [ContainerInterface::class, $containerEntry],
+            'resolve_di_container_interface' => [DiContainerInterface::class, $containerEntry],
+            'resolve_di_container' => [DiContainer::class, $containerEntry],
         ];
 
-        $num = 0;
+        $serviceSuffix = 0;
+
+        /** @var null|non-empty-string $serviceMethodUnique */
+        $serviceMethodUnique = null;
 
         foreach ($this->diContainerDefinitions->getDefinitions() as $id => $definition) {
             $compiledEntity = $this->definitionTransform
@@ -141,10 +157,17 @@ final class ContainerCompiler implements ContainerCompilerInterface
                 ->compile('$this', context: $definition)
             ;
 
-            // TODO how about name generator for method name in container.
-            $serviceMethod = 'getService'.++$num;
+            $serviceMethod = Helper::convertContainerIdentifierToMethodName($id);
 
-            $this->mapContainerIdToMethod[$id] = [$serviceMethod, $compiledEntity];
+            while (isset($this->mapServiceMethodToContainerId[$serviceMethodUnique ?? $serviceMethod])) {
+                ++$serviceSuffix;
+                $serviceMethodUnique = $serviceMethod.$serviceSuffix;
+            }
+
+            $this->mapServiceMethodToContainerId[$serviceMethodUnique ?? $serviceMethod] = [$id, $compiledEntity];
+
+            $serviceSuffix = 0;
+            $serviceMethodUnique = null;
         }
 
         ob_start();
