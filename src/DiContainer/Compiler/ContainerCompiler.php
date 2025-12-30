@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Compiler;
 
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
@@ -18,6 +20,7 @@ use function error_get_last;
 use function fclose;
 use function file_exists;
 use function fwrite;
+use function get_debug_type;
 use function is_dir;
 use function is_readable;
 use function is_writable;
@@ -152,10 +155,17 @@ final class ContainerCompiler implements ContainerCompilerInterface
         $serviceMethodUnique = null;
 
         foreach ($this->diContainerDefinitions->getDefinitions() as $id => $definition) {
-            $compiledEntity = $this->definitionTransform
-                ->transform($definition, $this->diContainerDefinitions)
-                ->compile('$this', context: $definition)
-            ;
+            try {
+                $compiledEntity = $this->definitionTransform
+                    ->transform($definition, $this->diContainerDefinitions)
+                    ->compile('$this', context: $definition)
+                ;
+            } catch (DefinitionCompileExceptionInterface $e) {
+                throw new DefinitionCompileException(
+                    sprintf('Cannot compile definition type "%s" for container identifier "%s".', get_debug_type($definition), $id),
+                    previous: $e
+                );
+            }
 
             $serviceMethod = Helper::convertContainerIdentifierToMethodName($id);
 
