@@ -140,14 +140,25 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
     public function compile(): string
     {
+        $this->diContainerDefinitions->reset();
+
+        $compiledClassFQN = $this->getContainerFQN()->getFQN();
         $containerEntry = new CompiledEntry(expression: '$this', returnType: 'self');
 
         $this->mapServiceMethodToContainerId = [
             'resolve_psr_container' => [ContainerInterface::class, $containerEntry],
             'resolve_di_container_interface' => [DiContainerInterface::class, $containerEntry],
             'resolve_di_container' => [DiContainer::class, $containerEntry],
-            'resolve_compiled_container' => [$this->getContainerFQN()->getFQN(), $containerEntry],
+            'resolve_compiled_container' => [$compiledClassFQN, $containerEntry],
         ];
+
+        // Exclude container identifiers already compiled. See top.
+        $this->diContainerDefinitions->excludeContainerIdentifier(
+            ContainerInterface::class,
+            DiContainerInterface::class,
+            DiContainer::class,
+            $compiledClassFQN,
+        );
 
         $serviceSuffix = 0;
 
