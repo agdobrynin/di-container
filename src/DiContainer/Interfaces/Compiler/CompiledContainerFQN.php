@@ -28,6 +28,8 @@ interface CompiledContainerFQN
      * Example:
      *
      *     Fully qualified class name '\App\Services\CompiledContainer'
+     *
+     * @return non-empty-string
      */
     public function getFQN(): string;
 }

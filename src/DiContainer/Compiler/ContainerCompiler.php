@@ -113,6 +113,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
         $namespace = false === $pos ? '' : ltrim(substr($this->containerClass, 0, $pos), '\\');
 
         return $this->compiledContainerFQN = new class($namespace, $class) implements CompiledContainerFQN {
+            /** @var non-empty-string */
             private string $fqn;
 
             /** @param class-string $class */
