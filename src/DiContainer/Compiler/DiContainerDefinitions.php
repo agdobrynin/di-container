@@ -16,6 +16,13 @@ use function sprintf;
 
 final class DiContainerDefinitions implements DiContainerDefinitionsInterface
 {
+    /**
+     * Excluded container identifiers from definition iterator.
+     *
+     * @var array<non-empty-string, true>
+     */
+    private array $excludeContainerIdentifier = [];
+
     public function __construct(private readonly DiContainerGetterDefinitionInterface&DiContainerInterface $container, private readonly IdsIteratorInterface $idsIterator) {}
 
     public function getContainer(): DiContainerInterface
@@ -57,5 +64,20 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
     public function pushToDefinitionIterator(string $containerIdentifier): void
     {
         $this->idsIterator->add($containerIdentifier);
+    }
+
+    public function excludeContainerIdentifier(string ...$containerIdentifier): void
+    {
+        foreach ($containerIdentifier as $id) {
+            if (!isset($this->excludeContainerIdentifier[$id])) {
+                $this->excludeContainerIdentifier[$id] = true;
+            }
+        }
+    }
+
+    public function reset(): void
+    {
+        $this->excludeContainerIdentifier = [];
+        $this->idsIterator->reset();
     }
 }

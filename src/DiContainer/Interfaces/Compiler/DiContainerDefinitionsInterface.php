@@ -6,8 +6,9 @@ namespace Kaspi\DiContainer\Interfaces\Compiler;
 
 use Iterator;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 
-interface DiContainerDefinitionsInterface
+interface DiContainerDefinitionsInterface extends ResetInterface
 {
     public function getContainer(): DiContainerInterface;
 
@@ -27,4 +28,12 @@ interface DiContainerDefinitionsInterface
      * @param non-empty-string $containerIdentifier
      */
     public function pushToDefinitionIterator(string $containerIdentifier): void;
+
+    /**
+     * Exclude container identifier from definitions iterator.
+     * Definition with container identifier will be excluded in method `static::getDefinitions()`.
+     *
+     * @param non-empty-string ...$containerIdentifier
+     */
+    public function excludeContainerIdentifier(string ...$containerIdentifier): void;
 }
