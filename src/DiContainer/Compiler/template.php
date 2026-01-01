@@ -20,7 +20,7 @@ use function array_key_exists;
 
 use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerException, NotFoundException};
 
-class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
+final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
     /**
     * When resolving dependency check circular call.
