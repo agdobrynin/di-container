@@ -44,7 +44,7 @@ final class CallableEntry implements CompilableDefinitionInterface
 
             if (is_object($class)) {
                 throw new DefinitionCompileException(
-                    sprintf('Cannot compile callable definition with object [%s, "%s"]', get_debug_type($class), $method)
+                    sprintf('Cannot compile callable definition where class present as object. Definition [%s, "%s"].', get_debug_type($class), $method)
                 );
             }
         }
