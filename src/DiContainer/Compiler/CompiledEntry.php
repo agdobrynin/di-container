@@ -127,6 +127,9 @@ final class CompiledEntry implements CompiledEntryInterface
         return $this;
     }
 
+    /**
+     * @throws DefinitionCompileExceptionInterface
+     */
     private function validateVar(string $var, string $messageWhere): void
     {
         if (1 !== preg_match('/^\$[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $var)) {

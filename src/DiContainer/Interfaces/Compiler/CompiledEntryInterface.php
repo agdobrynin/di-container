@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Compiler;
 
+use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
+
 interface CompiledEntryInterface
 {
     /**
@@ -101,6 +103,8 @@ interface CompiledEntryInterface
      * @param non-empty-string $name
      *
      * @return $this
+     *
+     * @throws DefinitionCompileExceptionInterface
      */
     public function addToScopeVars(string ...$name): static;
 
