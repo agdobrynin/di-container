@@ -16,7 +16,7 @@ interface CompilableDefinitionInterface
 {
     /**
      * @param non-empty-string       $containerVar variable name for access to current di-container instance aka `$this` or `$this->container` and etc
-     * @param list<non-empty-string> $scopeVars    list of variables witch help generate container entity object into parameter `$scopeServiceVariableName`
+     * @param list<non-empty-string> $scopeVars    list of variables witch help generate container entity object
      * @param mixed                  $context      some context for compile definition
      *
      * @throws DefinitionCompileExceptionInterface
