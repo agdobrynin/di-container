@@ -71,9 +71,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected array $resolved = [];
 
     /**
-     * @var array<class-string|string, bool>
+     * Watch circular call.
+     *
+     * @var array<class-string|string, true>
      */
-    protected array $resolvingDependencies = [];
+    protected array $circularCallWatcher = [];
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
@@ -241,7 +243,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             $this->checkCyclicalDependencyCall($id);
-            $this->resolvingDependencies[$id] = true;
+            $this->circularCallWatcher[$id] = true;
 
             $diDefinition = $this->resolveDefinition($id);
             $resolvedEntry = $diDefinition->resolve($this, $this);
@@ -253,7 +255,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             return $this->resolved[$id] = $resolvedEntry;
         } finally {
-            unset($this->resolvingDependencies[$id]);
+            unset($this->circularCallWatcher[$id]);
         }
     }
 
@@ -284,7 +286,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 if ($this->config->isUseAttribute()
                     && null !== ($service = AttributeReader::getServiceAttribute($reflectionClass))) {
                     $this->checkCyclicalDependencyCall($service->getIdentifier());
-                    $this->resolvingDependencies[$service->getIdentifier()] = true;
+                    $this->circularCallWatcher[$service->getIdentifier()] = true;
 
                     try {
                         $def = $this->resolveDefinition($service->getIdentifier());
@@ -293,7 +295,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                             return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton());
                         }
                     } finally {
-                        unset($this->resolvingDependencies[$service->getIdentifier()]);
+                        unset($this->circularCallWatcher[$service->getIdentifier()]);
                     }
                 }
 
@@ -324,12 +326,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         if ($definition instanceof DiDefinitionLinkInterface) {
             $this->checkCyclicalDependencyCall($definition->getDefinition());
-            $this->resolvingDependencies[$definition->getDefinition()] = true;
+            $this->circularCallWatcher[$definition->getDefinition()] = true;
 
             try {
                 return $this->diResolvedDefinition[$id] = $this->resolveDefinition($definition->getDefinition());
             } finally {
-                unset($this->resolvingDependencies[$definition->getDefinition()]);
+                unset($this->circularCallWatcher[$definition->getDefinition()]);
             }
         }
 
@@ -365,8 +367,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function checkCyclicalDependencyCall(string $id): void
     {
-        if (array_key_exists($id, $this->resolvingDependencies)) {
-            throw new CallCircularDependencyException(callIds: array_keys($this->resolvingDependencies + [$id => true]));
+        if (array_key_exists($id, $this->circularCallWatcher)) {
+            throw new CallCircularDependencyException(callIds: [...array_keys($this->circularCallWatcher), $id]);
         }
     }
 
