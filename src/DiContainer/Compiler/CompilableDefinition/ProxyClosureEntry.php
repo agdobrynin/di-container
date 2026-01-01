@@ -30,11 +30,7 @@ final class ProxyClosureEntry implements CompilableDefinitionInterface
             throw new DefinitionCompileException('Cannot compile definition. Container identifier is invalid.', previous: $e);
         }
 
-        if (!$this->diContainerDefinitions->getContainer()->has($identifier)) {
-            throw new DefinitionCompileException(
-                sprintf('Cannot compile definition. Entry not found via container identifier "%s".', $identifier)
-            );
-        }
+        $this->diContainerDefinitions->pushToDefinitionIterator($identifier);
 
         return new CompiledEntry(
             isSingleton: $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault(),
