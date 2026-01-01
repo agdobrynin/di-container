@@ -143,7 +143,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
         $this->diContainerDefinitions->reset();
 
         $compiledClassFQN = $this->getContainerFQN()->getFQN();
-        $containerEntry = new CompiledEntry(expression: '$this', returnType: 'self');
+        $containerEntry = new CompiledEntry(expression: '$this', returnType: $compiledClassFQN);
 
         $this->mapServiceMethodToContainerId = [
             'resolve_psr_container' => [ContainerInterface::class, $containerEntry],
