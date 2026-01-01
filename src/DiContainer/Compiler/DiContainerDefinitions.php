@@ -40,13 +40,15 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
         $sentContainerIdentifiers = [];
 
         foreach ($this->container->getDefinitions() as $id => $definition) {
-            $sentContainerIdentifiers[$id] = true;
+            if (!isset($this->excludeContainerIdentifier[$id])) {
+                $sentContainerIdentifiers[$id] = true;
 
-            yield $id => $definition;
+                yield $id => $definition;
+            }
         }
 
         while (false !== ($id = $this->idsIterator->current())) {
-            if (!isset($sentContainerIdentifiers[$id])) {
+            if (!isset($sentContainerIdentifiers[$id]) && !isset($this->excludeContainerIdentifier[$id])) {
                 try {
                     yield $id => $this->container->getDefinition($id);
                 } catch (ContainerExceptionInterface $e) {
