@@ -145,6 +145,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
             'resolve_psr_container' => [ContainerInterface::class, $containerEntry],
             'resolve_di_container_interface' => [DiContainerInterface::class, $containerEntry],
             'resolve_di_container' => [DiContainer::class, $containerEntry],
+            'resolve_compiled_container' => [$this->getContainerFQN()->getFQN(), $containerEntry],
         ];
 
         $serviceSuffix = 0;
