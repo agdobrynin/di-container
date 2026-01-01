@@ -22,12 +22,6 @@ use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerExcep
 
 final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
-    /**
-    * When resolving dependency check circular call.
-    * @var array<non-empty-string, true>
-    */
-    private array $resolvingContainerIds = [];
-
     public function set(string $id, mixed $definition): static
     {
         throw new ContainerException('Cannot add a new definition to a compiled container.');
@@ -56,15 +50,15 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
         }
 
         try {
-            if (isset($this->resolvingContainerIds[$id])) {
-                throw new CallCircularDependencyException(callIds: [...array_keys($this->resolvingContainerIds), $id]);
+            if (isset($this->circularCallWatcher[$id])) {
+                throw new CallCircularDependencyException(callIds: [...array_keys($this->circularCallWatcher), $id]);
             }
 
-            $this->resolvingContainerIds[$id] = true;
+            $this->circularCallWatcher[$id] = true;
 
             return $this->$method();
         } finally {
-            unset($this->resolvingContainerIds[$id]);
+            unset($this->circularCallWatcher[$id]);
         }
     }
 
