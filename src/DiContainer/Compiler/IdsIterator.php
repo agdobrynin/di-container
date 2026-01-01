@@ -45,4 +45,9 @@ final class IdsIterator implements IdsIteratorInterface
     {
         $this->ids[$id] = $id;
     }
+
+    public function reset(): void
+    {
+        $this->ids = [];
+    }
 }
