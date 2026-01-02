@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
@@ -31,7 +32,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
-            $argBuilder = $this->definition->exposeArgumentBuilder(
+            $argBuilderConstructor = $this->definition->exposeArgumentBuilder(
                 $this->diContainerDefinitions->getContainer()
             );
         } catch (DiDefinitionExceptionInterface $e) {
@@ -52,17 +53,6 @@ final class ObjectEntry implements CompilableDefinitionInterface
             );
         }
 
-        try {
-            $args = null === $argBuilder
-                ? []
-                : $argBuilder->build();
-        } catch (ArgumentBuilderExceptionInterface $e) {
-            throw new DefinitionCompileException(
-                sprintf('Cannot build arguments for constructor in definition "%s".', $this->definition->getDefinition()->getName()),
-                previous: $e,
-            );
-        }
-
         $fullyName = '\\'.$this->definition->getDefinition()->getName();
         $objectExpression = sprintf('new %s', $fullyName);
         $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
@@ -73,18 +63,40 @@ final class ObjectEntry implements CompilableDefinitionInterface
             returnType: $fullyName
         );
 
-        if ([] === $args && [] === $setupArgBuilders) {
+        if (null === $argBuilderConstructor && [] === $setupArgBuilders) {
             return $objectCompiledEntry->setExpression($objectExpression);
         }
 
-        $argsConstructorExpression = Helper::compileArguments(
-            $objectCompiledEntry,
-            $containerVar,
-            $args,
-            $this->transformer,
-            $this->diContainerDefinitions,
-            $context,
-        );
+        $argsConstructorExpression = '';
+
+        if (null !== $argBuilderConstructor) {
+            try {
+                $constructorArgs = $argBuilderConstructor->build();
+            } catch (ArgumentBuilderExceptionInterface $e) {
+                throw new DefinitionCompileException(
+                    sprintf('Cannot build arguments for constructor class "%s".', $this->definition->getDefinition()->getName()),
+                    previous: $e,
+                );
+            }
+
+            if ([] !== $constructorArgs) {
+                try {
+                    $argsConstructorExpression = Helper::compileArguments(
+                        $objectCompiledEntry,
+                        $containerVar,
+                        $constructorArgs,
+                        $this->transformer,
+                        $this->diContainerDefinitions,
+                        $context,
+                    );
+                } catch (DefinitionCompileExceptionInterface $e) {
+                    throw new DefinitionCompileException(
+                        sprintf('Cannot compile arguments for %s.', CommonHelper::functionName($argBuilderConstructor->getFunctionOrMethod())),
+                        previous: $e
+                    );
+                }
+            }
+        }
 
         $compiledObjectConstructor = $objectExpression.$argsConstructorExpression;
 
@@ -111,14 +123,21 @@ final class ObjectEntry implements CompilableDefinitionInterface
                 );
             }
 
-            $argsSetupMethodExpression = Helper::compileArguments(
-                $objectCompiledEntry,
-                $containerVar,
-                $setupArgs,
-                $this->transformer,
-                $this->diContainerDefinitions,
-                $context,
-            );
+            try {
+                $argsSetupMethodExpression = Helper::compileArguments(
+                    $objectCompiledEntry,
+                    $containerVar,
+                    $setupArgs,
+                    $this->transformer,
+                    $this->diContainerDefinitions,
+                    $context,
+                );
+            } catch (DefinitionCompileExceptionInterface $e) {
+                throw new DefinitionCompileException(
+                    sprintf('Cannot compile arguments for %s.', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod())),
+                    previous: $e
+                );
+            }
 
             $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
             $serviceVar = $objectCompiledEntry->getScopeServiceVar();
