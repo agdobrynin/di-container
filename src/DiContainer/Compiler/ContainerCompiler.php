@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
+use Kaspi\DiContainer\Exception\CompiledContainerException;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
@@ -15,7 +18,9 @@ use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionIn
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
+use Throwable;
 
+use function array_unshift;
 use function error_get_last;
 use function fclose;
 use function file_exists;
@@ -34,6 +39,7 @@ use function stream_get_meta_data;
 use function strrpos;
 use function substr;
 use function tmpfile;
+use function var_export;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -71,10 +77,11 @@ final class ContainerCompiler implements ContainerCompilerInterface
      * @param class-string     $containerClass  container class as fully qualified name
      */
     public function __construct(
-        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly string $outputDirectory,
         private readonly string $containerClass,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly DiDefinitionTransformerInterface $definitionTransform,
+        private readonly InvalidBehaviorCompileEnum $invalidBehaviorCompile,
     ) {}
 
     public function getOutputDirectory(): string
@@ -172,10 +179,16 @@ final class ContainerCompiler implements ContainerCompilerInterface
                     ->compile('$this', context: $definition)
                 ;
             } catch (DefinitionCompileExceptionInterface $e) {
-                throw new DefinitionCompileException(
+                $exception = new DefinitionCompileException(
                     sprintf('Cannot compile definition type "%s" for container identifier "%s".', get_debug_type($definition), $id),
                     previous: $e
                 );
+
+                if (InvalidBehaviorCompileEnum::ExceptionOnCompile === $this->invalidBehaviorCompile) {
+                    throw $exception;
+                }
+
+                $compiledEntity = $this->compiledExceptionStack($exception, $id);
             }
 
             $serviceMethod = Helper::convertContainerIdentifierToMethodName($id);
@@ -250,5 +263,55 @@ final class ContainerCompiler implements ContainerCompilerInterface
         }
 
         return new RuntimeException($message.$internalMessage);
+    }
+
+    private function compiledExceptionStack(Throwable $e, string $containerIdentifier): CompiledEntryInterface
+    {
+        // Structure related \Kaspi\DiContainer\Exception\ContainerCompileException::$exceptionStack
+        /** @var list<array{
+         *     exceptionType: string,
+         *     message: string,
+         *     file: string,
+         *     line: int,
+         *     code: int,
+         *     trace_as_string: string
+         * }> $exceptionStack
+         */
+        $exceptionStack = [];
+        $prev = $e;
+
+        do {
+            array_unshift(
+                $exceptionStack,
+                [
+                    'exceptionType' => get_debug_type($prev),
+                    'message' => $prev->getMessage(),
+                    'file' => $prev->getFile(),
+                    'line' => $prev->getLine(),
+                    'code' => $prev->getCode(),
+                    'trace_as_string' => $prev->getTraceAsString(),
+                ]
+            );
+        } while (null !== ($prev = $prev->getPrevious()));
+
+        $exceptionStackEntry = (new ValueEntry($exceptionStack))->compile('$this');
+
+        $compiledMainExceptionEntity = (new CompiledEntry(isSingleton: null, returnType: 'never'))
+            ->addToStatements(...$exceptionStackEntry->getStatements())
+        ;
+
+        $compiledMainExceptionEntity->addToStatements(
+            sprintf('%s = %s', $exceptionStackEntry->getScopeServiceVar(), $exceptionStackEntry->getExpression())
+        );
+
+        $message = sprintf('The definition was not compiled for the container identifier %s. Function %s::getExceptionStack() return exception stack.', var_export($containerIdentifier, true), CompiledContainerException::class);
+
+        $expression = sprintf(
+            'throw new \Kaspi\DiContainer\Exception\CompiledContainerException(message: %s, exceptionStack: %s)',
+            var_export($message, true),
+            $exceptionStackEntry->getScopeServiceVar(),
+        );
+
+        return $compiledMainExceptionEntity->setExpression($expression);
     }
 }

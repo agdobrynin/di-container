@@ -18,7 +18,11 @@ use function array_keys;
 use function array_key_exists;
 <?php }?>
 
-use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerAlreadyRegisteredException, ContainerException, NotFoundException};
+use Kaspi\DiContainer\Exception\{
+    CallCircularDependencyException,
+    ContainerAlreadyRegisteredException,
+    NotFoundException,
+};
 
 final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
@@ -100,7 +104,9 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
         <?php echo $statement; ?>;
 
 <?php } ?>
-<?php if ($compiledEntry->isSingleton()) {?>
+<?php if (0 === \strcasecmp($compiledEntry->getReturnType(), 'never')) { ?>
+        <?php echo $compiledEntry->getExpression().';'; ?>
+<?php } elseif ($compiledEntry->isSingleton()) {?>
         // ⚠ resolved singleton services store in parent class
         return $this->resolved[<?php echo \var_export($id, true); ?>] = <?php echo $compiledEntry->getExpression().';'; ?>
 
