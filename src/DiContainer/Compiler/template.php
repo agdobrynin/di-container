@@ -18,13 +18,19 @@ use function array_keys;
 use function array_key_exists;
 <?php }?>
 
-use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerException, NotFoundException};
+use Kaspi\DiContainer\Exception\{CallCircularDependencyException, ContainerAlreadyRegisteredException, ContainerException, NotFoundException};
 
 final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
     public function set(string $id, mixed $definition): static
     {
-        throw new ContainerException('Cannot add a new definition to a compiled container.');
+        if (false === $this->containerMap($id)) {
+            return parent::set($id, $definition);
+        }
+
+        throw new ContainerAlreadyRegisteredException(
+            sprintf('Definition identifier "%s" already registered in container.', $id)
+        );
     }
 
     public function get(string $id): mixed
