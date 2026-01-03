@@ -37,6 +37,7 @@ class TaggedAsTest extends TestCase
         ]);
 
         $this->assertEquals('tags.empty', $taggedAs->getDefinition());
+        $this->assertTrue($taggedAs->isLazy());
         // return generator because definition marked as lazy.
         $this->assertFalse($taggedAs->resolve($container)->valid());
     }
@@ -48,6 +49,8 @@ class TaggedAsTest extends TestCase
             's1' => diValue(['ok']),
             's2' => diValue(['ok-ko']),
         ]);
+
+        $this->assertFalse($taggedAs->isLazy());
 
         $this->assertIsArray($taggedAs->resolve($container));
         $this->assertCount(0, $taggedAs->resolve($container));

@@ -25,5 +25,8 @@
     <include>
       <directory suffix=".php">src</directory>
     </include>
+    <exclude>
+      <file>src/DiContainer/Compiler/template.php</file>
+    </exclude>
   </source>
 </phpunit>
