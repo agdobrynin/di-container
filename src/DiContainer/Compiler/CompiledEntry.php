@@ -16,6 +16,7 @@ use function sprintf;
 final class CompiledEntry implements CompiledEntryInterface
 {
     private readonly string $scopeServiceVar;
+    private array $scopeVars = [];
 
     /**
      * @param non-empty-string       $scopeServiceVar
@@ -30,7 +31,7 @@ final class CompiledEntry implements CompiledEntryInterface
         private ?bool $isSingleton = null,
         private string $expression = '',
         private array $statements = [],
-        private array $scopeVars = [],
+        array $scopeVars = [],
         private string $returnType = 'mixed',
     ) {
         $this->validateVar($scopeServiceVar, 'Invalid scope service variable.');
