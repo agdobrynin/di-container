@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Compiler;
 
+use InvalidArgumentException;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use RuntimeException;
 
@@ -16,6 +17,9 @@ interface ContainerCompilerInterface
      */
     public function getOutputDirectory(): string;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getContainerFQN(): CompiledContainerFQN;
 
     /**

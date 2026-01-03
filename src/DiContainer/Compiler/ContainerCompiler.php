@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
+use InvalidArgumentException;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
@@ -32,6 +33,7 @@ use function is_writable;
 use function ltrim;
 use function ob_get_clean;
 use function ob_start;
+use function preg_match;
 use function realpath;
 use function rename;
 use function sprintf;
@@ -118,6 +120,18 @@ final class ContainerCompiler implements ContainerCompilerInterface
         /** @var class-string $class */
         $class = false === $pos ? $this->containerClass : substr($this->containerClass, $pos + 1);
         $namespace = false === $pos ? '' : ltrim(substr($this->containerClass, 0, $pos), '\\');
+
+        if (1 !== preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $class)) {
+            throw new InvalidArgumentException(
+                sprintf('The container class name "%s" is invalid. Got fully qualified class name: "%s".', $class, $this->containerClass)
+            );
+        }
+
+        if ('' !== $namespace && 1 !== preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $namespace.'\\')) {
+            throw new InvalidArgumentException(
+                sprintf('The namespace "%s" in container class name must be compatible with PSR-4. Got fully qualified class name: "%s".', $namespace, $this->containerClass)
+            );
+        }
 
         return $this->compiledContainerFQN = new class($namespace, $class) implements CompiledContainerFQN {
             /** @var non-empty-string */
