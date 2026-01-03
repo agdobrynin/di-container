@@ -16,6 +16,10 @@ use function sprintf;
 final class CompiledEntry implements CompiledEntryInterface
 {
     private readonly string $scopeServiceVar;
+
+    /**
+     * @var list<non-empty-string>
+     */
     private array $scopeVars = [];
 
     /**
