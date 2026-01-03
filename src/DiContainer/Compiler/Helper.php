@@ -64,9 +64,12 @@ final class Helper
     }
 
     /**
+     * @param non-empty-string $id
+     * @param non-empty-string $prefix
+     *
      * @return non-empty-string
      */
-    public static function convertContainerIdentifierToMethodName(string $id): string
+    public static function convertContainerIdentifierToMethodName(string $id, string $prefix = 'resolve_'): string
     {
         // Identifier may present as fully qualified class name. Take only class name.
         if (false !== ($pos = strrpos($id, '\\')) && isset($id[$pos + 1])) {
@@ -82,7 +85,7 @@ final class Helper
         $name = strtolower(trim(str_replace('.', '_', $name), '_'));
 
         return 1 !== preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name)
-            ? 'resolve_service'
-            : 'resolve_'.$name;
+            ? $prefix.'service'
+            : $prefix.$name;
     }
 }
