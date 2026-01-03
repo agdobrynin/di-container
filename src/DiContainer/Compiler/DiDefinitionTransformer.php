@@ -19,10 +19,10 @@ use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterfaceValueInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionValueInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 
 use function get_debug_type;
@@ -34,7 +34,7 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 
     public function transform(mixed $definition, DiContainerDefinitionsInterface $diContainerDefinitions, ?Closure $fallback = null): CompilableDefinitionInterface
     {
-        if ($definition instanceof DiDefinitionInterfaceValueInterface) {
+        if ($definition instanceof DiDefinitionValueInterface) {
             return new ValueEntry($definition->getDefinition());
         }
 

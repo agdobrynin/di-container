@@ -9,4 +9,4 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
  *
  * Method `self::getDefinition()` return value as-is.
  */
-interface DiDefinitionInterfaceValueInterface extends DiDefinitionInterface {}
+interface DiDefinitionValueInterface extends DiDefinitionInterface {}
