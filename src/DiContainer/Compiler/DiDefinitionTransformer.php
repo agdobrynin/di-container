@@ -12,8 +12,6 @@ use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ProxyClosureEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\TaggedAsEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
@@ -21,7 +19,9 @@ use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterfaceValueInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 
@@ -34,7 +34,7 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
 
     public function transform(mixed $definition, DiContainerDefinitionsInterface $diContainerDefinitions, ?Closure $fallback = null): CompilableDefinitionInterface
     {
-        if ($definition instanceof DiDefinitionValue) {
+        if ($definition instanceof DiDefinitionInterfaceValueInterface) {
             return new ValueEntry($definition->getDefinition());
         }
 
@@ -46,7 +46,7 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
             return new TaggedAsEntry($definition, $diContainerDefinitions);
         }
 
-        if ($definition instanceof DiDefinitionProxyClosure) {
+        if ($definition instanceof DiDefinitionProxyClosureInterface) {
             return new ProxyClosureEntry($definition, $diContainerDefinitions);
         }
 
