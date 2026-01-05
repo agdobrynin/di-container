@@ -69,6 +69,8 @@ final class CallableEntry implements CompilableDefinitionInterface
             );
         }
 
+        $callableExpression = $this->getCallableExpression($argBuilder->getFunctionOrMethod());
+
         try {
             $args = $argBuilder->build();
         } catch (ArgumentBuilderExceptionInterface $e) {
@@ -100,7 +102,7 @@ final class CallableEntry implements CompilableDefinitionInterface
             );
         }
 
-        $expression = $this->getExpression($argBuilder->getFunctionOrMethod()).$argsExpression;
+        $expression = $callableExpression.$argsExpression;
 
         return $callableCompiledEntry->setExpression($expression);
     }
@@ -110,7 +112,7 @@ final class CallableEntry implements CompilableDefinitionInterface
         return $this->definition;
     }
 
-    private function getExpression(ReflectionFunctionAbstract $fn): string
+    private function getCallableExpression(ReflectionFunctionAbstract $fn): string
     {
         if ($fn instanceof ReflectionMethod) {
             return sprintf('[\%s::class, %s]', $fn->getDeclaringClass()->name, var_export($fn->getName(), true));
@@ -126,7 +128,7 @@ final class CallableEntry implements CompilableDefinitionInterface
 
             return '('.$this->transformer->getClosureParser()->getCode($closure).')';
         } catch (LogicException|RuntimeException $e) {
-            throw new DefinitionCompileException('Cannot compile Closure definition.', previous: $e);
+            throw new DefinitionCompileException('The closure definition cannot be compiled because the closure expression cannot be parsed.', previous: $e);
         }
     }
 }
