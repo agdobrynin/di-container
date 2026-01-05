@@ -18,12 +18,14 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use LogicException;
+use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use RuntimeException;
 
 use function get_debug_type;
 use function is_array;
+use function is_callable;
 use function is_object;
 use function sprintf;
 use function var_export;
@@ -39,12 +41,15 @@ final class CallableEntry implements CompilableDefinitionInterface
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         if (is_array($this->definition->getDefinition())) {
-            /** @var non-empty-string $method */
+            /**
+             * @var class-string|object $class
+             * @var non-empty-string    $method
+             */
             [$class, $method] = $this->definition->getDefinition();
 
             if (is_object($class)) {
                 throw new DefinitionCompileException(
-                    sprintf('Cannot compile callable definition where class present as object. Definition [%s, "%s"].', get_debug_type($class), $method)
+                    sprintf('Cannot compile callable definition where class "%s" present as object. Definition [$object, "%s"].', get_debug_type($class), $method)
                 );
             }
         }
@@ -52,9 +57,11 @@ final class CallableEntry implements CompilableDefinitionInterface
         try {
             $argBuilder = $this->definition->exposeArgumentBuilder($this->diContainerDefinitions->getContainer());
         } catch (DiDefinitionExceptionInterface $e) {
-            $defAsString = isset($class, $method)
-                ? sprintf('["%s", "%s"]', var_export($class, true), var_export($method, true))
-                : sprintf('"%s"', var_export($this->definition->getDefinition(), true));
+            if ($this->definition->getDefinition() instanceof Closure) {
+                $defAsString = CommonHelper::functionName(new ReflectionFunction($this->definition->getDefinition()));
+            } else {
+                is_callable($this->definition->getDefinition(), true, $defAsString);
+            }
 
             throw new DefinitionCompileException(
                 sprintf('Cannot provide arguments to a callable definition %s.', $defAsString),
