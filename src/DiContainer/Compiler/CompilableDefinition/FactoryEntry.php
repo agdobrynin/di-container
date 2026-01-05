@@ -30,6 +30,20 @@ final class FactoryEntry implements CompilableDefinitionInterface
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
+            $compiledFactoryClassEntry = $this->transformer->transform(
+                $this->definition->getFactoryAutowire(),
+                $this->diContainerDefinitions,
+            )
+                ->compile($containerVar, $scopeVars, $context)
+            ;
+        } catch (DefinitionCompileExceptionInterface $e) {
+            throw new DefinitionCompileException(
+                sprintf('Cannot compile factory class "%s"', $this->definition->getFactoryAutowire()->getIdentifier()),
+                previous: $e,
+            );
+        }
+
+        try {
             $bindArgBuilderFactoryMethod = $this->definition->exposeFactoryMethodArgumentBuilder(
                 $this->diContainerDefinitions->getContainer()
             );
@@ -50,19 +64,8 @@ final class FactoryEntry implements CompilableDefinitionInterface
         }
 
         try {
-            $compiledObjectEntry = (new ObjectEntry($this->definition->getFactoryAutowire(), $this->diContainerDefinitions, $this->transformer))
-                ->compile($containerVar, $scopeVars, $context)
-            ;
-        } catch (DefinitionCompileExceptionInterface $e) {
-            throw new DefinitionCompileException(
-                sprintf('Cannot compile factory class "%s"', $this->definition->getFactoryAutowire()->getIdentifier()),
-                previous: $e,
-            );
-        }
-
-        try {
             $argsFactoryMethodExpression = Helper::compileArguments(
-                $compiledObjectEntry,
+                $compiledFactoryClassEntry,
                 $containerVar,
                 $bindArgs,
                 $this->transformer,
@@ -78,14 +81,14 @@ final class FactoryEntry implements CompilableDefinitionInterface
 
         $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
-        if (0 === count($compiledObjectEntry->getStatements())) {
-            $factoryStatements = sprintf('%s = %s', $compiledObjectEntry->getScopeServiceVar(), $compiledObjectEntry->getExpression());
-            $compiledObjectEntry->addToStatements($factoryStatements);
+        if (0 === count($compiledFactoryClassEntry->getStatements())) {
+            $factoryStatements = sprintf('%s = %s', $compiledFactoryClassEntry->getScopeServiceVar(), $compiledFactoryClassEntry->getExpression());
+            $compiledFactoryClassEntry->addToStatements($factoryStatements);
         }
 
-        $factoryExpression = sprintf('%s->%s%s', $compiledObjectEntry->getScopeServiceVar(), $this->definition->getFactoryMethod(), $argsFactoryMethodExpression);
+        $factoryExpression = sprintf('%s->%s%s', $compiledFactoryClassEntry->getScopeServiceVar(), $this->definition->getFactoryMethod(), $argsFactoryMethodExpression);
 
-        return $compiledObjectEntry->setIsSingleton($isSingleton)
+        return $compiledFactoryClassEntry->setIsSingleton($isSingleton)
             ->setExpression($factoryExpression)
             ->setReturnType('mixed')
         ;
