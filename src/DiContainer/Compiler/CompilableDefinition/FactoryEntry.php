@@ -38,7 +38,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
             ;
         } catch (DefinitionCompileExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot compile factory class "%s"', $this->definition->getFactoryAutowire()->getIdentifier()),
+                sprintf('Cannot compile factory class "%s"', $this->definition->getDefinition()),
                 previous: $e,
             );
         }
@@ -49,7 +49,7 @@ final class FactoryEntry implements CompilableDefinitionInterface
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot provide arguments to a factory method in definition "%s".', $this->definition->getDefinition()),
+                sprintf('Cannot provide arguments to a factory method in definition %s::%s().', $this->definition->getDefinition(), $this->definition->getFactoryMethod()),
                 previous: $e,
             );
         }
