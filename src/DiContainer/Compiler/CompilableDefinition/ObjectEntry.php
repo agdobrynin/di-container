@@ -143,8 +143,8 @@ final class ObjectEntry implements CompilableDefinitionInterface
             $serviceVar = $objectCompiledEntry->getScopeServiceVar();
 
             $serviceSetupStatement = SetupConfigureMethod::Mutable === $setupConfigureType
-                ? sprintf('  %s->%s%s', $serviceVar, $methodName, $argsSetupMethodExpression)
-                : sprintf('  %s = %s->%s%s', $serviceVar, $serviceVar, $methodName, $argsSetupMethodExpression);
+                ? sprintf('%s->%s%s', $serviceVar, $methodName, $argsSetupMethodExpression)
+                : sprintf('%s = %s->%s%s', $serviceVar, $serviceVar, $methodName, $argsSetupMethodExpression);
 
             $objectCompiledEntry->addToStatements($serviceSetupStatement);
         }
