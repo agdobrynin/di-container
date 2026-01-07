@@ -118,7 +118,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
                 $setupArgs = $setupArgBuilder->buildByPriorityBindArguments();
             } catch (ArgumentBuilderExceptionInterface $e) {
                 throw new DefinitionCompileException(
-                    sprintf('Cannot build arguments for setter method in definition "%s".', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod())),
+                    sprintf('Cannot build arguments for setter method in definition %s.', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod())),
                     previous: $e
                 );
             }
