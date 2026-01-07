@@ -91,15 +91,15 @@ final class ContainerCompiler implements ContainerCompilerInterface
         if (!isset($this->normalizedOutputDirectory)) {
             $fixedDir = realpath($this->outputDirectory);
 
-            if (false === $fixedDir) {
+            if (false === $fixedDir || !is_dir($fixedDir)) {
                 throw new RuntimeException(
-                    sprintf('Compiler output directory "%s" from parameter $outputDirectory is invalid.', $this->outputDirectory)
+                    sprintf('Compiler output directory from parameter $outputDirectory must be exist. Got "%s".', $this->outputDirectory)
                 );
             }
 
-            if (!is_dir($fixedDir) || !is_readable($fixedDir) || !is_writable($fixedDir)) {
+            if (!is_readable($fixedDir) || !is_writable($fixedDir)) {
                 throw new RuntimeException(
-                    sprintf('Compiler output directory "%s" from parameter $outputDirectory must be exist and be readable and writable.', $fixedDir)
+                    sprintf('Compiler output directory must be be readable and writable. Got "%s".', $fixedDir)
                 );
             }
 
