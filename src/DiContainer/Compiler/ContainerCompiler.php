@@ -18,32 +18,18 @@ use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerInterface;
-use RuntimeException;
 use Throwable;
 
 use function array_unshift;
-use function error_get_last;
-use function fclose;
-use function file_exists;
-use function fwrite;
 use function get_debug_type;
-use function is_dir;
-use function is_readable;
-use function is_writable;
 use function ltrim;
 use function ob_get_clean;
 use function ob_start;
 use function preg_match;
-use function realpath;
-use function rename;
 use function sprintf;
-use function stream_get_meta_data;
 use function strrpos;
 use function substr;
-use function tmpfile;
 use function var_export;
-
-use const DIRECTORY_SEPARATOR;
 
 final class ContainerCompiler implements ContainerCompilerInterface
 {
@@ -68,46 +54,15 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
     private CompiledContainerFQN $compiledContainerFQN;
 
-    /** @var non-empty-string */
-    private string $normalizedOutputDirectory;
-
-    /** @var non-empty-string */
-    private string $verifiedCompiledFileName;
-
     /**
-     * @param non-empty-string $outputDirectory
-     * @param class-string     $containerClass  container class as fully qualified name
+     * @param class-string $containerClass container class as fully qualified name
      */
     public function __construct(
-        private readonly string $outputDirectory,
         private readonly string $containerClass,
         private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly DiDefinitionTransformerInterface $definitionTransform,
         private readonly InvalidBehaviorCompileEnum $invalidBehaviorCompile,
     ) {}
-
-    public function getOutputDirectory(): string
-    {
-        if (!isset($this->normalizedOutputDirectory)) {
-            $fixedDir = realpath($this->outputDirectory);
-
-            if (false === $fixedDir || !is_dir($fixedDir)) {
-                throw new RuntimeException(
-                    sprintf('Compiler output directory from parameter $outputDirectory must be is directory and exist. Got argument "%s".', $this->outputDirectory)
-                );
-            }
-
-            if (!is_readable($fixedDir) || !is_writable($fixedDir)) {
-                throw new RuntimeException(
-                    sprintf('Compiler output directory must be be readable and writable. Got argument "%s".', $fixedDir)
-                );
-            }
-
-            $this->normalizedOutputDirectory = $fixedDir;
-        }
-
-        return $this->normalizedOutputDirectory;
-    }
 
     public function getContainerFQN(): CompiledContainerFQN
     {
@@ -223,60 +178,6 @@ final class ContainerCompiler implements ContainerCompilerInterface
         require __DIR__.'/template.php';
 
         return (string) ob_get_clean();
-    }
-
-    public function compileToFile(): string
-    {
-        $file = $this->fileNameForCompiledContainer();
-
-        if (file_exists($file)) {
-            return $file;
-        }
-
-        $content = $this->compile();
-
-        $resource = false !== ($resource = @tmpfile())
-            ? $resource
-            : throw $this->fileOperationException('Cannot create temporary file.');
-
-        $tmpFileName = stream_get_meta_data($resource)['uri'] ?? 'unknown';
-
-        if (false === @fwrite($resource, $content)) {
-            throw $this->fileOperationException(
-                sprintf('Cannot write to temporary file "%s".', $tmpFileName),
-                $resource
-            );
-        }
-
-        if (false === @rename($tmpFileName, $file)) {
-            throw $this->fileOperationException(
-                sprintf('Cannot rename file from "%s" to "%s".', $tmpFileName, $file),
-                $resource
-            );
-        }
-
-        @fclose($resource);
-
-        return $file;
-    }
-
-    public function fileNameForCompiledContainer(): string
-    {
-        return $this->verifiedCompiledFileName ??= $this->getOutputDirectory().DIRECTORY_SEPARATOR.$this->getContainerFQN()->getClass().'.php';
-    }
-
-    /**
-     * @param null|resource $r
-     */
-    private function fileOperationException(string $message, $r = null): RuntimeException
-    {
-        $internalMessage = isset(error_get_last()['message']) ? ' '.error_get_last()['message'] : '';
-
-        if (null !== $r) {
-            @fclose($r);
-        }
-
-        return new RuntimeException($message.$internalMessage);
     }
 
     private function compiledExceptionStack(Throwable $e, string $containerIdentifier): CompiledEntryInterface
