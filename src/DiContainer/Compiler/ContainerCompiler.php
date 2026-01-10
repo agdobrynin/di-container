@@ -140,9 +140,13 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         /** @var null|non-empty-string $serviceMethodUnique */
         $serviceMethodUnique = null;
+        $definitions = $this->diContainerDefinitions->getDefinitions();
 
-        foreach ($this->diContainerDefinitions->getDefinitions() as $id => $definition) {
+        while ($definitions->valid()) {
             try {
+                $definition = $definitions->current();
+                $id = $definitions->key();
+
                 $compiledEntity = $this->definitionTransform
                     ->transform($definition, $this->diContainerDefinitions)
                     ->compile('$this', context: $definition)
@@ -171,6 +175,8 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
             $serviceSuffix = 0;
             $serviceMethodUnique = null;
+
+            $definitions->next();
         }
 
         ob_start();
