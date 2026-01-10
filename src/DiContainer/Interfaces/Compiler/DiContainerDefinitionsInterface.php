@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces\Compiler;
 
 use Iterator;
+use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 
@@ -18,6 +19,8 @@ interface DiContainerDefinitionsInterface extends ResetInterface
      * Get definitions from `\Kaspi\DiContainer\Interfaces\DiContainerInterface::getDefinitions()`.
      *
      * @return Iterator<non-empty-string, mixed>
+     *
+     * @throws DefinitionCompileExceptionInterface
      */
     public function getDefinitions(): Iterator;
 
