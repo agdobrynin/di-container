@@ -19,7 +19,7 @@ interface CompiledContainerFQN
     /**
      * Class name compiled container.
      *
-     * @return class-string
+     * @return non-empty-string
      */
     public function getClass(): string;
 
@@ -29,7 +29,7 @@ interface CompiledContainerFQN
      *
      *     Fully qualified class name '\App\Services\CompiledContainer'
      *
-     * @return non-empty-string
+     * @return class-string
      */
     public function getFQN(): string;
 }
