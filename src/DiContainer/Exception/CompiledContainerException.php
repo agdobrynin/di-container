@@ -33,7 +33,7 @@ final class CompiledContainerException extends RuntimeException implements Strin
     public function __toString(): string
     {
         if ([] === $this->exceptionStack) {
-            return parent::__toString();
+            return parent::__toString(); // @codeCoverageIgnore
         }
 
         $exceptionString = '';
@@ -55,6 +55,6 @@ T;
 
     public function getExceptionStack(): array
     {
-        return $this->exceptionStack;
+        return $this->exceptionStack; // @codeCoverageIgnore
     }
 }
