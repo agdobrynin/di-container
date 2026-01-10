@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
+use Closure;
 use Iterator;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
@@ -35,7 +36,7 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
         return $this->container->getConfig()->isSingletonServiceDefault();
     }
 
-    public function getDefinitions(): Iterator
+    public function getDefinitions(?Closure $fallback = null): Iterator
     {
         $sentContainerIdentifiers = [];
 
@@ -50,13 +51,21 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
         while (false !== ($id = $this->idsIterator->current())) {
             if (!isset($sentContainerIdentifiers[$id]) && !isset($this->excludeContainerIdentifier[$id])) {
                 try {
-                    yield $id => $this->container->getDefinition($id);
+                    $definition = $this->container->getDefinition($id);
                 } catch (ContainerExceptionInterface $e) {
-                    throw new DefinitionCompileException(
+                    $exception = new DefinitionCompileException(
                         sprintf('Cannot get definition via container identifier "%s".', $id),
                         previous: $e
                     );
+
+                    if (null === $fallback) {
+                        throw $exception;
+                    }
+
+                    $definition = $fallback($id, $exception);
                 }
+
+                yield $id => $definition;
             }
 
             $this->idsIterator->next();

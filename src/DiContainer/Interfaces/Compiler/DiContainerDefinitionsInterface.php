@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Compiler;
 
+use Closure;
 use Iterator;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -18,11 +19,13 @@ interface DiContainerDefinitionsInterface extends ResetInterface
     /**
      * Get definitions from `\Kaspi\DiContainer\Interfaces\DiContainerInterface::getDefinitions()`.
      *
+     * @param null|Closure(string $containerIdentifier, DefinitionCompileExceptionInterface $e): mixed $fallback
+     *
      * @return Iterator<non-empty-string, mixed>
      *
      * @throws DefinitionCompileExceptionInterface
      */
-    public function getDefinitions(): Iterator;
+    public function getDefinitions(?Closure $fallback = null): Iterator;
 
     /**
      * Add definition via container identifier into definition iterator even if definition is not configured in container.

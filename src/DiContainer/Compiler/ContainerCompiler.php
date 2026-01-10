@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\CompiledContainerException;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
+use Kaspi\DiContainer\Exception\InvalidDefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
@@ -140,12 +141,24 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         /** @var null|non-empty-string $serviceMethodUnique */
         $serviceMethodUnique = null;
-        $definitions = $this->diContainerDefinitions->getDefinitions();
+
+        $fallbackGetDefinition = static function (string $id, DefinitionCompileExceptionInterface $e) {
+            return new InvalidDefinitionCompileException(
+                sprintf('Invalid definition getting via container identifier "%s".', $id),
+                previous: $e,
+            );
+        };
+
+        $definitions = $this->diContainerDefinitions->getDefinitions($fallbackGetDefinition);
 
         while ($definitions->valid()) {
             try {
                 $definition = $definitions->current();
                 $id = $definitions->key();
+
+                if ($definition instanceof InvalidDefinitionCompileException) {
+                    throw $definition;
+                }
 
                 $compiledEntity = $this->definitionTransform
                     ->transform($definition, $this->diContainerDefinitions)
