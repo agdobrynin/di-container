@@ -191,7 +191,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
             ContainerInterface::class => $containerCompiledEntry,
             DiContainerInterface::class => $containerCompiledEntry,
             DiContainer::class => $containerCompiledEntry,
-            $compiledClassFQN => $containerCompiledEntry,
+            ltrim($compiledClassFQN, '\\') => $containerCompiledEntry,
         ];
 
         // exclude from container already compiled entries
