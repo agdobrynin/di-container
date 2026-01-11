@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler;
 
+use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\DiContainer;
@@ -21,6 +22,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerInterface;
 use Throwable;
 
+use function array_keys;
 use function array_unshift;
 use function get_debug_type;
 use function ltrim;
@@ -117,42 +119,14 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
     public function compile(): string
     {
-        $this->diContainerDefinitions->reset();
-
-        $compiledClassFQN = $this->getContainerFQN()->getFQN();
-        $containerEntry = new CompiledEntry(expression: '$this', returnType: $compiledClassFQN);
-
-        $this->mapServiceMethodToContainerId = [
-            'resolve_psr_container' => [ContainerInterface::class, $containerEntry],
-            'resolve_di_container_interface' => [DiContainerInterface::class, $containerEntry],
-            'resolve_di_container' => [DiContainer::class, $containerEntry],
-            'resolve_compiled_container' => [$compiledClassFQN, $containerEntry],
-        ];
-
-        // Exclude container identifiers already compiled. See top.
-        $this->diContainerDefinitions->excludeContainerIdentifier(
-            ContainerInterface::class,
-            DiContainerInterface::class,
-            DiContainer::class,
-            $compiledClassFQN,
-        );
-
-        $serviceSuffix = 0;
-
         /** @var null|non-empty-string $serviceMethodUnique */
         $serviceMethodUnique = null;
-
-        $fallbackGetDefinition = static function (string $id, DefinitionCompileExceptionInterface $e) {
-            return new InvalidDefinitionCompileException(
-                sprintf('Invalid definition getting via container identifier "%s".', $id),
-                previous: $e,
-            );
-        };
-
-        $definitions = $this->diContainerDefinitions->getDefinitions($fallbackGetDefinition);
+        $serviceSuffix = 0;
+        $definitions = $this->containerDefinitions();
 
         while ($definitions->valid()) {
             try {
+                /** @var CompiledEntryInterface|InvalidDefinitionCompileException|mixed $definition */
                 $definition = $definitions->current();
                 $id = $definitions->key();
 
@@ -160,9 +134,11 @@ final class ContainerCompiler implements ContainerCompilerInterface
                     throw $definition;
                 }
 
-                $compiledEntity = $this->definitionTransform
-                    ->transform($definition, $this->diContainerDefinitions)
-                    ->compile('$this', context: $definition)
+                $compiledEntity = $definition instanceof CompiledEntryInterface
+                    ? $definition
+                    : $this->definitionTransform
+                        ->transform($definition, $this->diContainerDefinitions)
+                        ->compile('$this', context: $definition)
                 ;
             } catch (DefinitionCompileExceptionInterface $e) {
                 $exception = new DefinitionCompileException(
@@ -197,6 +173,36 @@ final class ContainerCompiler implements ContainerCompilerInterface
         require __DIR__.'/template.php';
 
         return (string) ob_get_clean();
+    }
+
+    /**
+     * @return Generator<non-empty-string, CompiledEntryInterface|InvalidDefinitionCompileException|mixed>
+     */
+    private function containerDefinitions(): Generator
+    {
+        $this->diContainerDefinitions->reset();
+
+        $compiledClassFQN = $this->getContainerFQN()->getFQN();
+        $containerCompiledEntry = new CompiledEntry(expression: '$this', returnType: $compiledClassFQN);
+
+        $predefinedCompiledEntry = [
+            ContainerInterface::class => $containerCompiledEntry,
+            DiContainerInterface::class => $containerCompiledEntry,
+            DiContainer::class => $containerCompiledEntry,
+            $compiledClassFQN => $containerCompiledEntry,
+        ];
+
+        // exclude from container already compiled entries
+        $this->diContainerDefinitions->excludeContainerIdentifier(...array_keys($predefinedCompiledEntry));
+
+        yield from $predefinedCompiledEntry;
+
+        yield from $this->diContainerDefinitions->getDefinitions(static function (string $id, DefinitionCompileExceptionInterface $e) {
+            return new InvalidDefinitionCompileException(
+                sprintf('Invalid definition getting via container identifier "%s".', $id),
+                previous: $e,
+            );
+        });
     }
 
     private function compiledExceptionStack(Throwable $e, string $containerIdentifier): CompiledEntryInterface
