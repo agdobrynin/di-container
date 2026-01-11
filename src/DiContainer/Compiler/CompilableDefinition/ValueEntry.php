@@ -25,17 +25,12 @@ final class ValueEntry implements CompilableDefinitionInterface
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         if (null === $this->definition || is_scalar($this->definition) || $this->definition instanceof UnitEnum) {
-            if ($this->definition instanceof UnitEnum) {
-                /** @var non-falsy-string $returnType */
-                $returnType = '\\'.get_debug_type($this->definition);
-                $expression = PHP_VERSION_ID < 80200
-                    ? '\\'.var_export($this->definition, true)
-                    : var_export($this->definition, true);
-            } else {
-                /** @var non-falsy-string $returnType */
-                $returnType = get_debug_type($this->definition);
-                $expression = var_export($this->definition, true);
-            }
+            $expression = PHP_VERSION_ID < 80200 && $this->definition instanceof UnitEnum
+                ? '\\'.var_export($this->definition, true)
+                : var_export($this->definition, true);
+            $returnType = $this->definition instanceof UnitEnum
+                ? '\\'.get_debug_type($this->definition)
+                : get_debug_type($this->definition);
 
             return new CompiledEntry(expression: $expression, returnType: $returnType);
         }
