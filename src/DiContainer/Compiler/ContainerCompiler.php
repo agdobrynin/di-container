@@ -141,10 +141,12 @@ final class ContainerCompiler implements ContainerCompilerInterface
                         ->compile('$this', context: $definition)
                 ;
             } catch (DefinitionCompileExceptionInterface $e) {
-                $exception = new DefinitionCompileException(
-                    sprintf('Cannot compile definition type "%s" for container identifier "%s".', get_debug_type($definition), $id),
-                    previous: $e
-                );
+                $exception = $e instanceof InvalidDefinitionCompileException
+                    ? $e
+                    : new DefinitionCompileException(
+                        sprintf('Cannot compile definition type "%s" for container identifier "%s".', get_debug_type($definition), $id),
+                        previous: $e
+                    );
 
                 if (InvalidBehaviorCompileEnum::ExceptionOnCompile === $this->invalidBehaviorCompile) {
                     throw $exception;
