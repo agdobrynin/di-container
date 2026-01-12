@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
+use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 
 // Template for compiled container.
 /** @var ContainerCompiler $this */
 echo '<?php';
+
+/** @var DiContainerConfigInterface $config */
+$config = $this->diContainerDefinitions->getContainer()->getConfig();
 ?>
 
 declare(strict_types=1);
@@ -26,6 +30,28 @@ use Kaspi\DiContainer\Exception\{
 
 final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
+    public function __construct()
+    {
+        parent::__construct(
+            config: new class implements \Kaspi\DiContainer\Interfaces\DiContainerConfigInterface {
+                public function isSingletonServiceDefault(): bool
+                {
+                    return <?php echo \var_export($config->isSingletonServiceDefault(), true); ?>;
+                }
+
+                public function isUseZeroConfigurationDefinition(): bool
+                {
+                    return <?php echo \var_export($config->isUseZeroConfigurationDefinition(), true); ?>;
+                }
+
+                public function isUseAttribute(): bool
+                {
+                    return <?php echo \var_export($config->isUseAttribute(), true); ?>;
+                }
+            }
+        );
+    }
+
     public function set(string $id, mixed $definition): static
     {
         if (false === $this->containerMap($id)) {
