@@ -62,7 +62,7 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
                         throw $exception;
                     }
 
-                    $definition = $fallback($id, $exception);
+                    $definition = ($fallback)($id, $exception);
                 }
 
                 yield $id => $definition;

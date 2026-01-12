@@ -53,14 +53,14 @@ final class ObjectEntry implements CompilableDefinitionInterface
             );
         }
 
-        $fullyName = '\\'.$this->definition->getDefinition()->getName();
-        $objectExpression = sprintf('new %s', $fullyName);
+        $fullyQualifiedClassName = '\\'.$this->definition->getDefinition()->getName();
+        $objectExpression = sprintf('new %s', $fullyQualifiedClassName);
         $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
 
         $objectCompiledEntry = new CompiledEntry(
             isSingleton: $isSingleton,
             scopeVars: [...$scopeVars, $containerVar],
-            returnType: $fullyName
+            returnType: $fullyQualifiedClassName
         );
 
         if (null === $argBuilderConstructor && [] === $setupArgBuilders) {
