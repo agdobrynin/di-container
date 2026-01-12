@@ -6,7 +6,7 @@ namespace Tests\Compiler\ContainerCompilerToFile;
 
 use Generator;
 use Kaspi\DiContainer\Compiler\ContainerCompilerToFile;
-use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
+use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQNInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -36,7 +36,7 @@ class ContainerCompilerToFileTest extends TestCase
         $this->tmpContainerClassSuffix = substr(str_shuffle(md5(microtime())), 0, 10);
         $this->compiler = $this->createMock(ContainerCompilerInterface::class);
         $this->compiler->method('getContainerFQN')->willReturn(
-            new class($this->tmpContainerClassSuffix) implements CompiledContainerFQN {
+            new class($this->tmpContainerClassSuffix) implements CompiledContainerFQNInterface {
                 public function __construct(private readonly string $containerClassSuffix) {}
 
                 public function getNamespace(): string

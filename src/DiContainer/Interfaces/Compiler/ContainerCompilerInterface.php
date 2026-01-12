@@ -12,7 +12,7 @@ interface ContainerCompilerInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getContainerFQN(): CompiledContainerFQN;
+    public function getContainerFQN(): CompiledContainerFQNInterface;
 
     /**
      * @throws DefinitionCompileExceptionInterface

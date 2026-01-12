@@ -12,7 +12,7 @@ use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\CompiledContainerException;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Exception\InvalidDefinitionCompileException;
-use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQN;
+use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQNInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
@@ -55,7 +55,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
      */
     private array $mapServiceMethodToContainerId;
 
-    private CompiledContainerFQN $compiledContainerFQN;
+    private CompiledContainerFQNInterface $compiledContainerFQN;
 
     /**
      * @param class-string $containerClass container class as fully qualified name
@@ -67,7 +67,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
         private readonly InvalidBehaviorCompileEnum $invalidBehaviorCompile,
     ) {}
 
-    public function getContainerFQN(): CompiledContainerFQN
+    public function getContainerFQN(): CompiledContainerFQNInterface
     {
         if (isset($this->compiledContainerFQN)) {
             return $this->compiledContainerFQN;
@@ -91,7 +91,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
             );
         }
 
-        return $this->compiledContainerFQN = new class($namespace, $class) implements CompiledContainerFQN {
+        return $this->compiledContainerFQN = new class($namespace, $class) implements CompiledContainerFQNInterface {
             private string $fqn;
 
             /** @param non-empty-string $class */

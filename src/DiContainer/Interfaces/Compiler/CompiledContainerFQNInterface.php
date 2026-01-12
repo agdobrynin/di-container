@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Compiler;
 
-interface CompiledContainerFQN
+interface CompiledContainerFQNInterface
 {
     /**
      * Namespace for compiled container class.
