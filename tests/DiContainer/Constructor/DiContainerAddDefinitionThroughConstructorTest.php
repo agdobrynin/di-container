@@ -77,4 +77,11 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
             'identifier' => 'my.identifier',
         ];
     }
+
+    public function testDefinitionsAsSourceDefinitionsMutableInterface(): void
+    {
+        $definitions = new SourceDefinitionsMutable(['service.foo' => null]);
+
+        self::assertTrue((new DiContainer(definitions: $definitions))->has('service.foo'));
+    }
 }
