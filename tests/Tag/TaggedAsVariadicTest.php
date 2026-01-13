@@ -13,6 +13,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +35,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class TaggedAsVariadicTest extends TestCase
 {
     public function testTaggedAsForVariadicByIndex(): void

@@ -13,6 +13,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -37,6 +38,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class ResolveByInterfaceTest extends TestCase
 {
     public function testResolveByClass(): void

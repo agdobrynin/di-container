@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -32,6 +33,7 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class ResolveByArgumentNameTest extends TestCase
 {
     public function testResolveByArgumentNameFail(): void

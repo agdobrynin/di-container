@@ -16,6 +16,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -47,6 +48,7 @@ use function putenv;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class DiReferenceTest extends TestCase
 {
     #[DataProvider('dataProvider')]

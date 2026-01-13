@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceFour;
@@ -34,6 +35,7 @@ use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceTwo;
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class DiDefinitionTest extends TestCase
 {
     public function testGetDefinitionWhenDefinitionIsCallable(): void

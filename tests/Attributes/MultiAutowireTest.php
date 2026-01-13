@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Attributes\Fixtures\MultiAutowire;
@@ -31,6 +32,7 @@ use Tests\Attributes\Fixtures\MultiAutowire;
 #[CoversClass(DefinitionsLoader::class)]
 #[CoversClass(Autowire::class)]
 #[CoversClass(AttributeReader::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class MultiAutowireTest extends TestCase
 {
     public function testMultiAutowireWithoutDefinitionsLoader(): void

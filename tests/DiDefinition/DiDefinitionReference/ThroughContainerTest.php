@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -38,6 +39,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(BindArgumentsTrait::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class ThroughContainerTest extends TestCase
 {
     public function testOverrideDiGetAsPhpAttributeInject(): void

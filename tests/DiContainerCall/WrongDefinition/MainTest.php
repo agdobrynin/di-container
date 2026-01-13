@@ -14,6 +14,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -30,6 +31,7 @@ use stdClass;
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class MainTest extends TestCase
 {
     /**

@@ -17,6 +17,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -49,6 +50,7 @@ use function Kaspi\DiContainer\diFactory;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class ResolveByDiFactoryTest extends TestCase
 {
     public function testResolveByDiFactoryViaAttributeNoneSingleton(): void

@@ -16,6 +16,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\Call\Fixtires\ServiceOne;
@@ -39,6 +40,7 @@ use const ARRAY_FILTER_USE_BOTH;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class CallTest extends TestCase
 {
     public function testController(): void

@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +19,7 @@ use Psr\Container\ContainerInterface;
  */
 #[CoversClass(DiContainer::class)]
 #[CoversClass(DiContainerConfig::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class ResolveSelfContainerTest extends TestCase
 {
     #[DataProvider('dataProvider')]

@@ -11,6 +11,7 @@ use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,7 @@ use function Kaspi\DiContainer\diFactory;
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionFactory::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class DiFactoryTest extends TestCase
 {
     public function testCreateByDiFactory(): void

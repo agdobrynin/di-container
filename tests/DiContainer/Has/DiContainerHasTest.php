@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +28,7 @@ use Tests\DiContainer\Has\Fixtures\MyInterface;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(DiContainerNullConfig::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class DiContainerHasTest extends TestCase
 {
     public function testHasDefinitionWithNull(): void
