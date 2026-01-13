@@ -12,7 +12,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
@@ -30,6 +29,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -56,10 +56,7 @@ use function var_export;
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
-    /**
-     * @var array<class-string|non-empty-string, mixed>
-     */
-    protected array $definitions = [];
+    protected SourceDefinitionsMutableInterface $definitions;
 
     /**
      * @var array<class-string|string, DiDefinitionResolvable>
@@ -83,12 +80,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      * @throws ContainerAlreadyRegisteredExceptionInterface
      */
     public function __construct(
-        iterable $definitions = [],
+        iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
     ) {
-        foreach ($definitions as $identifier => $definition) {
-            $this->set(Helper::getContainerIdentifier($identifier, $definition), $definition);
-        }
+        $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
+            ? new SourceDefinitionsMutable($definitions)
+            : $definitions;
     }
 
     /**
@@ -111,7 +108,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function has(string $id): bool
     {
-        return array_key_exists($id, $this->definitions)
+        return isset($this->definitions[$id])
             || array_key_exists($id, $this->resolved)
             || $this->hasViaZeroConfigurationDefinition($id)
             || $this->isContainer($id);
@@ -119,14 +116,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function set(string $id, mixed $definition): static
     {
-        Helper::getContainerIdentifier($id, $definition);
-
-        if (array_key_exists($id, $this->definitions)) {
-            throw new ContainerAlreadyRegisteredException(
-                sprintf('Definition identifier "%s" already registered in container.', $id)
-            );
-        }
-
         $this->definitions[$id] = $definition;
 
         return $this;
@@ -178,7 +167,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinitions(): iterable
     {
-        foreach ($this->definitions as $id => $definition) {
+        foreach ($this->definitions->getIterator() as $id => $definition) {
             yield $id => $this->clarificationOfDefinition($definition);
         }
     }
@@ -192,7 +181,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         $tagIsInterface = null;
 
-        foreach ($this->definitions as $containerIdentifier => $definition) {
+        foreach ($this->definitions->getIterator() as $containerIdentifier => $definition) {
             if ($definition instanceof DiTaggedDefinitionInterface) {
                 if ($definition instanceof DiDefinitionAutowireInterface) {
                     $tagIsInterface ??= interface_exists($tag);
@@ -258,7 +247,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id];
         }
 
-        $hasDefinition = array_key_exists($id, $this->definitions);
+        $hasDefinition = isset($this->definitions[$id]);
 
         if ($hasDefinition
             && !$this->definitions[$id] instanceof DiDefinitionLinkInterface
