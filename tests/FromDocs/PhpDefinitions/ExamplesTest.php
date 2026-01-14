@@ -12,7 +12,8 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +34,8 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(Helper::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
 class ExamplesTest extends TestCase
 {
     public function testExample1(): void

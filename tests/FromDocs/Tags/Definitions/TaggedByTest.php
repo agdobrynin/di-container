@@ -14,7 +14,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\LazyDefinitionIterator;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +50,8 @@ use function next;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(LazyDefinitionIterator::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class TaggedByTest extends TestCase
 {
     public function testTaggedByInterface(): void

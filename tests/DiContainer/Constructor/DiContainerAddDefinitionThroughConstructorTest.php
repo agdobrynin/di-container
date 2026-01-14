@@ -10,7 +10,9 @@ use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +26,9 @@ use function Kaspi\DiContainer\diCallable;
 #[CoversClass(DiContainer::class)]
 #[CoversClass(ContainerIdentifierException::class)]
 #[CoversClass(Helper::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(DeferredSourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class DiContainerAddDefinitionThroughConstructorTest extends TestCase
 {
     #[DataProvider('dataProviderWrongDefinition')]
@@ -33,10 +37,7 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
         $this->expectException(ContainerIdentifierExceptionInterface::class);
         $this->expectExceptionMessage('Definition identifier must be a non-empty string');
 
-        (new DiContainer($definition))
-            ->getDefinitions()
-            ->valid()
-        ;
+        new DiContainer($definition);
     }
 
     public static function dataProviderWrongDefinition(): Generator
@@ -78,9 +79,16 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
         ];
     }
 
-    public function testDefinitionsAsSourceDefinitionsMutableInterface(): void
+    public function testDefinitionsAsDeferredSourceDefinitionsMutable(): void
     {
-        $definitions = new SourceDefinitionsMutable(['service.foo' => null]);
+        $definitions = new DeferredSourceDefinitionsMutable(['service.foo' => null]);
+
+        self::assertTrue((new DiContainer(definitions: $definitions))->has('service.foo'));
+    }
+
+    public function testDefinitionsAsImmediateSourceDefinitionsMutable(): void
+    {
+        $definitions = new ImmediateSourceDefinitionsMutable(['service.foo' => null]);
 
         self::assertTrue((new DiContainer(definitions: $definitions))->has('service.foo'));
     }

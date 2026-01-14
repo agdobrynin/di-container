@@ -13,7 +13,8 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -40,7 +41,8 @@ use function Kaspi\DiContainer\diProxyClosure;
 #[CoversClass(DiDefinitionProxyClosure::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(BindArgumentsTrait::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class ThroughContainerTest extends TestCase
 {
     public function testOverrideDiProxyClosureAsPhpAttributeProxyClosure(): void

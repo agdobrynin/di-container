@@ -15,7 +15,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -37,7 +38,8 @@ use Tests\FromDocs\PhpAttribute\Fixtures\ClassWithHeavyDependency;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionProxyClosure::class)]
 #[CoversClass(Helper::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class DiProxyClosureTest extends TestCase
 {
     public function testDiProxyClosure(): void

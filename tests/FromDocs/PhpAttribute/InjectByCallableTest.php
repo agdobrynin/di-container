@@ -17,7 +17,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\FooBar;
@@ -38,7 +39,8 @@ use Tests\FromDocs\PhpAttribute\Fixtures\FooBar;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class InjectByCallableTest extends TestCase
 {
     public function testInjectByCallable(): void
