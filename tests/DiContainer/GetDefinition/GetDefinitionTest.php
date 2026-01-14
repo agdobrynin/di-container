@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -44,6 +45,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversFunction('Kaspi\DiContainer\diAutowire')]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Autowire::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class GetDefinitionTest extends TestCase
 {
     #[DataProvider('dataProviderConfig')]

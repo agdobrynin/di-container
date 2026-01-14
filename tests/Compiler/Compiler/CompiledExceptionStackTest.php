@@ -18,6 +18,7 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -33,6 +34,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DiContainer::class)]
 #[CoversClass(CompiledContainerException::class)]
 #[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class CompiledExceptionStackTest extends TestCase
 {
     private DiContainerInterface $container;
