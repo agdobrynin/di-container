@@ -2,51 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer;
+namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Closure;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\SourceDefinitionsMutableException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
-use Traversable;
 
 use function array_key_exists;
 use function get_debug_type;
 use function sprintf;
 
-final class SourceDefinitionsMutable implements SourceDefinitionsMutableInterface
+abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMutableInterface
 {
-    /** @var array<class-string|non-empty-string, mixed> */
-    private array $definitions;
-
-    /** @var Closure(): array<class-string|non-empty-string, mixed> */
-    private Closure $initDefinitions;
-
-    /**
-     * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $sourceDefinitions
-     */
-    public function __construct(private iterable $sourceDefinitions)
-    {
-        $this->initDefinitions = function () {
-            if (isset($this->definitions)) {
-                return $this->definitions;
-            }
-
-            $this->definitions = [];
-            foreach ($this->sourceDefinitions as $identifier => $sourceDefinition) {
-                $this->definitions += $this->validateDefinition($identifier, $sourceDefinition);
-            }
-
-            unset($this->sourceDefinitions);
-
-            return $this->definitions;
-        };
-    }
-
     /**
      * @throws ContainerIdentifierExceptionInterface
      */
@@ -54,7 +26,7 @@ final class SourceDefinitionsMutable implements SourceDefinitionsMutableInterfac
     {
         $identifier = Helper::getContainerIdentifier($offset, null);
 
-        return array_key_exists($identifier, $this->definitions ?? ($this->initDefinitions)());
+        return array_key_exists($identifier, $this->definitions());
     }
 
     /**
@@ -64,8 +36,7 @@ final class SourceDefinitionsMutable implements SourceDefinitionsMutableInterfac
     {
         $identifier = Helper::getContainerIdentifier($offset, null);
 
-        return $this->definitions[$identifier]
-            ?? ($this->initDefinitions)()[$identifier]
+        return $this->definitions()[$identifier]
             ?? throw new SourceDefinitionsMutableException(
                 sprintf('Unregistered the container identifier "%s" in the source.', $identifier)
             );
@@ -77,9 +48,7 @@ final class SourceDefinitionsMutable implements SourceDefinitionsMutableInterfac
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        ($this->initDefinitions)();
-
-        $this->definitions += $this->validateDefinition($offset, $value);
+        $this->pushDefinition(...$this->validateDefinition($offset, $value));
     }
 
     /**
@@ -94,26 +63,28 @@ final class SourceDefinitionsMutable implements SourceDefinitionsMutableInterfac
         );
     }
 
-    public function getIterator(): Traversable
-    {
-        yield from ($this->initDefinitions)();
-    }
-
     /**
-     * @return non-empty-array<non-empty-string, mixed>
+     * @return array{0: non-empty-string, 1: mixed}
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface|ContainerIdentifierExceptionInterface
      */
-    private function validateDefinition(mixed $identifier, mixed $definition): array
+    protected function validateDefinition(mixed $identifier, mixed $definition): array
     {
         $identifier = Helper::getContainerIdentifier($identifier, $definition);
 
-        if (array_key_exists($identifier, $this->definitions ?? ($this->initDefinitions)())) {
+        if (array_key_exists($identifier, $this->definitions())) {
             throw new ContainerAlreadyRegisteredException(
                 sprintf('The container identifier "%s" already registered in the source. Definition type: "%s".', $identifier, get_debug_type($definition))
             );
         }
 
-        return [$identifier => $definition];
+        return [$identifier, $definition];
     }
+
+    /**
+     * @return array<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed>
+     */
+    abstract protected function definitions(): array;
+
+    abstract protected function pushDefinition(mixed $offset, mixed $value): void;
 }

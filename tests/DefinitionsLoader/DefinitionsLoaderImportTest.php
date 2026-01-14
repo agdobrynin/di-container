@@ -26,7 +26,8 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -66,7 +67,8 @@ use const T_TRAIT;
 #[CoversClass(Helper::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(DiContainerNullConfig::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void
@@ -208,10 +210,7 @@ class DefinitionsLoaderImportTest extends TestCase
             'services.two' => static fn () => new ArrayIterator([]),
         ]);
 
-        (new DiContainerFactory())->make($loader->definitions())
-            ->getDefinitions()
-            ->valid()
-        ;
+        (new DiContainerFactory())->make($loader->definitions());
     }
 
     public function testConflictConfigContainerIdentifierByServiceAttributeAndConfig(): void
@@ -228,11 +227,7 @@ class DefinitionsLoaderImportTest extends TestCase
             Fixtures\Import\TokenInterface::class => static fn (Fixtures\Import\One $one) => new Fixtures\Import\Two($one),
         ]);
 
-        (new DiContainerFactory())
-            ->make($loader->definitions())
-            ->getDefinitions()
-            ->valid()
-        ;
+        (new DiContainerFactory())->make($loader->definitions());
     }
 
     public function testCannotReflectClassFromImportedDefinition(): void
@@ -244,10 +239,7 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import('Tests\\', __DIR__.'/Fixtures/ImportReflectionFail')
         ;
 
-        (new DiContainerFactory())->make($loader->definitions())
-            ->getDefinitions()
-            ->valid()
-        ;
+        (new DiContainerFactory())->make($loader->definitions());
     }
 
     public function testShortNamespaceAndClassName(): void

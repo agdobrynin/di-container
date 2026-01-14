@@ -18,7 +18,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -54,7 +55,8 @@ use function Kaspi\DiContainer\diGet;
     CoversClass(DiContainer::class),
     CoversClass(DefinitionDiCall::class),
     CoversClass(InjectByCallable::class),
-    CoversClass(SourceDefinitionsMutable::class),
+    CoversClass(AbstractSourceDefinitionsMutable::class),
+    CoversClass(ImmediateSourceDefinitionsMutable::class),
 ]
 class CallClassDefinitionVariadicArgTest extends TestCase
 {

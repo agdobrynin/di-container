@@ -22,7 +22,8 @@ use Kaspi\DiContainer\Interfaces\Compiler\IdsIteratorInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
-use Kaspi\DiContainer\SourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -45,7 +46,8 @@ use function random_bytes;
 #[CoversClass(DiContainer::class)]
 #[CoversClass(DiContainerNullConfig::class)]
 #[CoversClass(DiDefinitionValue::class)]
-#[CoversClass(SourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class CompileTest extends TestCase
 {
     private DiDefinitionTransformerInterface $mockTransformer;
