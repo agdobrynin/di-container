@@ -32,6 +32,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -88,7 +89,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
-            ? new SourceDefinitionsMutable($definitions)
+            ? new ImmediateSourceDefinitionsMutable($definitions)
             : $definitions;
     }
 
