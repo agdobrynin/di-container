@@ -11,6 +11,7 @@ use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
@@ -336,7 +337,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (AttributeReader::isAutowireExclude($reflectionClass)) {
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('The fully qualified name "%s" mark as excluded via php attribute "%s". This fully qualified name "%s" must be configure via php attribute or via config file.', $reflectionClass->name, AutowireExclude::class, $reflectionClass->name)
+                    sprintf('Cannot automatically configure class "%s". The class mark as excluded via php attribute "%s". This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, AutowireExclude::class, $reflectionClass->name)
                 );
             }
 
@@ -352,7 +353,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This interface "%s" must be configure via php attribute or via config file.', Service::class, $reflectionClass->name, $reflectionClass->name)
+                    sprintf('Cannot automatically configure interface "%s" via php attribute "%s". Container identifier "%s" already registered. This interface "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Service::class, $reflectionClass->name, $reflectionClass->name)
                 );
             }
 
@@ -369,7 +370,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             foreach ($autowireAttrs as $autowireAttr) {
                 if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
                     throw new DefinitionsLoaderInvalidArgumentException(
-                        sprintf('Cannot automatically set definition via php attribute "%s". Container identifier "%s" already registered. This fully qualified name "%s" must be configure via php attribute or via config file.', Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
                     );
                 }
 
@@ -380,6 +381,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if (null !== ($factory = AttributeReader::getDiFactoryAttribute($reflectionClass))) {
+            if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
+                throw new DefinitionsLoaderInvalidArgumentException(
+                    sprintf('Cannot automatically configure class "%s" via php attribute "%s". The class "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, DiFactory::class, $reflectionClass->name, $reflectionClass->name)
+                );
+            }
+
             return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
         }
 
