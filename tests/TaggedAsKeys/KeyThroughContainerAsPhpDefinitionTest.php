@@ -17,6 +17,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\LazyDefinitionIterator;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -44,6 +45,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class KeyThroughContainerAsPhpDefinitionTest extends TestCase
 {
     public function testNotLazyKeyAsString(): void

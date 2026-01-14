@@ -16,6 +16,7 @@ use ReflectionParameter;
 use ReflectionUnionType;
 
 use function count;
+use function get_debug_type;
 use function is_string;
 use function sprintf;
 
@@ -85,6 +86,8 @@ final class Helper
             return $definition->getIdentifier();
         }
 
-        throw new ContainerIdentifierException('Definition identifier must be a non-empty string.');
+        throw new ContainerIdentifierException(
+            sprintf('Definition identifier must be a non-empty string. Definition type "%s".', get_debug_type($definition))
+        );
     }
 }

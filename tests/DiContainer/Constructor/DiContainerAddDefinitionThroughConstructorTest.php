@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -23,6 +24,7 @@ use function Kaspi\DiContainer\diCallable;
 #[CoversClass(DiContainer::class)]
 #[CoversClass(ContainerIdentifierException::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class DiContainerAddDefinitionThroughConstructorTest extends TestCase
 {
     #[DataProvider('dataProviderWrongDefinition')]
@@ -31,7 +33,10 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
         $this->expectException(ContainerIdentifierExceptionInterface::class);
         $this->expectExceptionMessage('Definition identifier must be a non-empty string');
 
-        new DiContainer($definition);
+        (new DiContainer($definition))
+            ->getDefinitions()
+            ->valid()
+        ;
     }
 
     public static function dataProviderWrongDefinition(): Generator
@@ -48,12 +53,9 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
     }
 
     #[DataProvider('dataProviderSuccessIdentifier')]
-    public function testDefinitionSuccessIdentifier(iterable $definitions, string $identifier, mixed $definition): void
+    public function testDefinitionSuccessIdentifier(iterable $definitions, string $identifier): void
     {
-        $mock = $this->createMock(DiContainer::class);
-        $mock->expects($this->once())->method('set')->with($identifier, $definition);
-
-        $mock->__construct($definitions);
+        self::assertTrue((new DiContainer(definitions: $definitions))->has($identifier));
     }
 
     public static function dataProviderSuccessIdentifier(): Generator
@@ -61,7 +63,6 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
         yield 'string with string' => [
             'definitions' => ['string' => 'foo'],
             'identifier' => 'string',
-            'definition' => 'foo',
         ];
 
         $class = new class implements DiDefinitionIdentifierInterface {
@@ -74,7 +75,13 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
         yield 'pass class implement DiDefinitionIdentifierInterface' => [
             'definitions' => [$class],
             'identifier' => 'my.identifier',
-            'definition' => $class,
         ];
+    }
+
+    public function testDefinitionsAsSourceDefinitionsMutableInterface(): void
+    {
+        $definitions = new SourceDefinitionsMutable(['service.foo' => null]);
+
+        self::assertTrue((new DiContainer(definitions: $definitions))->has('service.foo'));
     }
 }

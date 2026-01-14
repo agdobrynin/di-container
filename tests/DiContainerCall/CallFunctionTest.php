@@ -22,6 +22,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -52,6 +53,7 @@ use function round;
 #[CoversClass(ReflectionMethodByDefinition::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(DiContainerNullConfig::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class CallFunctionTest extends TestCase
 {
     public function testBuiltinFunction(): void

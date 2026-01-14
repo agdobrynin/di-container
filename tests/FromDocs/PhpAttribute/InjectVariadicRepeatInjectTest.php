@@ -14,6 +14,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleA;
@@ -33,6 +34,7 @@ use Tests\FromDocs\PhpAttribute\Fixtures\RuleGeneratorInjectRepeat;
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(SourceDefinitionsMutable::class)]
 class InjectVariadicRepeatInjectTest extends TestCase
 {
     public function testInjectVariadicRepeatInject(): void
