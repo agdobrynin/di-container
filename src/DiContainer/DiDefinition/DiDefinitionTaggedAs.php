@@ -67,6 +67,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this->tag;
     }
 
+    public function isLazy(): bool
+    {
+        return $this->isLazy;
+    }
+
     /**
      * @return array<non-empty-string|non-negative-int, non-empty-string>
      *

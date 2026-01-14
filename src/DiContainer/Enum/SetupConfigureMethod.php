@@ -6,9 +6,9 @@ namespace Kaspi\DiContainer\Enum;
 
 use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupConfigureInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\SetupConfigureDiDefinitionInterface;
 
-enum SetupConfigureMethod implements DiDefinitionSetupConfigureInterface
+enum SetupConfigureMethod implements SetupConfigureDiDefinitionInterface
 {
     case Mutable;
     case Immutable;

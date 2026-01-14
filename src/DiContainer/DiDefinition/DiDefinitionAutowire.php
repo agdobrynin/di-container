@@ -18,9 +18,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupConfigureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\SetupConfigureDiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\SetupConfigureTrait;
@@ -65,7 +65,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     private ArgumentBuilderInterface|false $constructArgBuilder;
 
     /**
-     * @var list<array{0: DiDefinitionSetupConfigureInterface, 1: ArgumentBuilderInterface}>
+     * @var list<array{0: SetupConfigureDiDefinitionInterface, 1: ArgumentBuilderInterface}>
      */
     private array $setupArgBuilders;
 

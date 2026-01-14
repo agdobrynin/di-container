@@ -5,6 +5,9 @@ parameters:
 	level: 10
 	paths:
 		- src
+	excludePaths:
+	    analyseAndScan:
+	        - src/DiContainer/Compiler/template.php
 	ignoreErrors:
 		-
 			identifier: missingType.generics

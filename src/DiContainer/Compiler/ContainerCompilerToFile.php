@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kaspi\DiContainer\Compiler;
+
+use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\ContainerCompilerToFileInterface;
+use RuntimeException;
+
+use function chmod;
+use function error_get_last;
+use function file_exists;
+use function file_put_contents;
+use function is_dir;
+use function is_readable;
+use function is_writable;
+use function sprintf;
+
+use const LOCK_EX;
+
+final class ContainerCompilerToFile implements ContainerCompilerToFileInterface
+{
+    /** @var non-empty-string */
+    private string $verifiedCompiledFileName;
+
+    /** @var non-empty-string */
+    private string $verifiedOutputDirectory;
+
+    /**
+     * @param non-empty-string $outputDirectory directory for compiled container
+     */
+    public function __construct(
+        private readonly string $outputDirectory,
+        private readonly ContainerCompilerInterface $compiler,
+        private readonly int $permissionCompiledContainerFile = 0666,
+        private readonly bool $isExclusiveLockCompiledContainerFileWhileCompiling = true,
+    ) {}
+
+    public function getContainerCompiler(): ContainerCompilerInterface
+    {
+        return $this->compiler; // @codeCoverageIgnore
+    }
+
+    public function compileToFile(bool $rebuild = false): string
+    {
+        $file = $this->fileNameForCompiledContainer();
+
+        if (false === $rebuild && file_exists($file)) {
+            return $file;
+        }
+
+        $content = $this->compiler->compile();
+
+        if (false === @file_put_contents($file, $content, $this->isExclusiveLockCompiledContainerFileWhileCompiling ? LOCK_EX : 0)) {
+            throw $this->fileOperationException(sprintf('Failed to write to "%s"', $file));
+        }
+
+        @chmod($file, $this->permissionCompiledContainerFile);
+
+        return $file;
+    }
+
+    public function fileNameForCompiledContainer(): string
+    {
+        return $this->verifiedCompiledFileName ??= $this->getOutputDirectory().DIRECTORY_SEPARATOR.$this->compiler->getContainerFQN()->getClass().'.php';
+    }
+
+    public function getOutputDirectory(): string
+    {
+        if (!isset($this->verifiedOutputDirectory)) {
+            if (!is_dir($this->outputDirectory)) {
+                throw new RuntimeException(
+                    sprintf('Compiler output directory from parameter $outputDirectory must be exist. Got argument "%s".', $this->outputDirectory)
+                );
+            }
+
+            if (!is_readable($this->outputDirectory) || !is_writable($this->outputDirectory)) {
+                throw new RuntimeException(
+                    sprintf('Compiler output directory must be be readable and writable. Got argument "%s".', $this->outputDirectory)
+                );
+            }
+
+            $this->verifiedOutputDirectory = $this->outputDirectory;
+        }
+
+        return $this->verifiedOutputDirectory;
+    }
+
+    private function fileOperationException(string $message): RuntimeException
+    {
+        $internalMessage = isset(error_get_last()['message']) ? ' '.error_get_last()['message'] : '';
+
+        return new RuntimeException($message.$internalMessage);
+    }
+}
