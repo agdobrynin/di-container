@@ -15,6 +15,7 @@ use function file_put_contents;
 use function is_dir;
 use function is_readable;
 use function is_writable;
+use function rtrim;
 use function sprintf;
 
 use const LOCK_EX;
@@ -44,26 +45,27 @@ final class ContainerCompilerToFile implements ContainerCompilerToFileInterface
 
     public function compileToFile(bool $rebuild = false): string
     {
-        $file = $this->fileNameForCompiledContainer();
+        $this->verifiedCompiledFileName ??= rtrim($this->getOutputDirectory(), '/').DIRECTORY_SEPARATOR.$this->compiler->getContainerFQN()->getClass().'.php';
 
-        if (false === $rebuild && file_exists($file)) {
-            return $file;
+        if (false === $rebuild && file_exists($this->verifiedCompiledFileName)) {
+            return $this->verifiedCompiledFileName;
+        }
+
+        if (!is_writable($this->outputDirectory)) {
+            throw new RuntimeException(
+                sprintf('Compiler output directory must be be writable. Got argument "%s".', $this->outputDirectory)
+            );
         }
 
         $content = $this->compiler->compile();
 
-        if (false === @file_put_contents($file, $content, $this->isExclusiveLockFile ? LOCK_EX : 0)) {
-            throw $this->fileOperationException(sprintf('Failed to write to "%s"', $file));
+        if (false === @file_put_contents($this->verifiedCompiledFileName, $content, $this->isExclusiveLockFile ? LOCK_EX : 0)) {
+            throw $this->fileOperationException(sprintf('Failed to write to "%s"', $this->verifiedCompiledFileName));
         }
 
-        @chmod($file, $this->permissionCompiledContainerFile);
+        @chmod($this->verifiedCompiledFileName, $this->permissionCompiledContainerFile);
 
-        return $file;
-    }
-
-    public function fileNameForCompiledContainer(): string
-    {
-        return $this->verifiedCompiledFileName ??= $this->getOutputDirectory().DIRECTORY_SEPARATOR.$this->compiler->getContainerFQN()->getClass().'.php';
+        return $this->verifiedCompiledFileName;
     }
 
     public function getOutputDirectory(): string
@@ -75,9 +77,9 @@ final class ContainerCompilerToFile implements ContainerCompilerToFileInterface
                 );
             }
 
-            if (!is_readable($this->outputDirectory) || !is_writable($this->outputDirectory)) {
+            if (!is_readable($this->outputDirectory)) {
                 throw new RuntimeException(
-                    sprintf('Compiler output directory must be be readable and writable. Got argument "%s".', $this->outputDirectory)
+                    sprintf('Compiler output directory must be be readable. Got argument "%s".', $this->outputDirectory)
                 );
             }
 
