@@ -10,12 +10,14 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Traversable;
 
+use function reset;
+
 final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
     /** @var array<class-string|non-empty-string, mixed> */
     private array $definitions;
 
-    /** @var Closure(): array<class-string|non-empty-string, mixed> */
+    /** @var Closure(bool): array<class-string|non-empty-string, mixed> */
     private Closure $initDefinitions;
 
     /**
@@ -23,18 +25,20 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
      */
     public function __construct(private iterable $sourceDefinitions)
     {
-        $this->initDefinitions = function (): array {
-            if (isset($this->definitions)) {
-                return $this->definitions;
+        $this->initDefinitions = function (bool $reset): array {
+            if (!isset($this->definitions)) {
+                $this->definitions = [];
+
+                foreach ($this->sourceDefinitions as $identifier => $sourceDefinition) {
+                    $this->pushDefinition($identifier, $sourceDefinition);
+                }
+
+                unset($this->sourceDefinitions);
             }
 
-            $this->definitions = [];
-
-            foreach ($this->sourceDefinitions as $identifier => $sourceDefinition) {
-                $this->pushDefinition($identifier, $sourceDefinition);
+            if ($reset) {
+                reset($this->definitions);
             }
-
-            unset($this->sourceDefinitions);
 
             return $this->definitions;
         };
@@ -42,12 +46,12 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
 
     public function getIterator(): Traversable
     {
-        yield from ($this->initDefinitions)();
+        yield from ($this->initDefinitions)(true);
     }
 
     protected function definitions(): array
     {
-        return ($this->initDefinitions)();
+        return ($this->initDefinitions)(false);
     }
 
     /**
