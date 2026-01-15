@@ -65,7 +65,7 @@ class CompiledExceptionStackTest extends TestCase
         $file = (new ContainerCompilerToFile(
             vfsStream::url('root'),
             $compiler,
-            isExclusiveLockCompiledContainerFileWhileCompiling: false,
+            isExclusiveLockFile: false,
         ))
             ->compileToFile()
         ;

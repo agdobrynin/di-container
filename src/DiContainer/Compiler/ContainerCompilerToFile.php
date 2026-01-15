@@ -34,7 +34,7 @@ final class ContainerCompilerToFile implements ContainerCompilerToFileInterface
         private readonly string $outputDirectory,
         private readonly ContainerCompilerInterface $compiler,
         private readonly int $permissionCompiledContainerFile = 0666,
-        private readonly bool $isExclusiveLockCompiledContainerFileWhileCompiling = true,
+        private readonly bool $isExclusiveLockFile = true,
     ) {}
 
     public function getContainerCompiler(): ContainerCompilerInterface
@@ -52,7 +52,7 @@ final class ContainerCompilerToFile implements ContainerCompilerToFileInterface
 
         $content = $this->compiler->compile();
 
-        if (false === @file_put_contents($file, $content, $this->isExclusiveLockCompiledContainerFileWhileCompiling ? LOCK_EX : 0)) {
+        if (false === @file_put_contents($file, $content, $this->isExclusiveLockFile ? LOCK_EX : 0)) {
             throw $this->fileOperationException(sprintf('Failed to write to "%s"', $file));
         }
 

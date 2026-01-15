@@ -161,7 +161,7 @@ class ContainerCompilerToFileTest extends TestCase
             ->willReturn('new long content with length over disk space')
         ;
 
-        (new ContainerCompilerToFile(vfsStream::url('root'), $this->compiler, isExclusiveLockCompiledContainerFileWhileCompiling: false))
+        (new ContainerCompilerToFile(vfsStream::url('root'), $this->compiler, isExclusiveLockFile: false))
             ->compileToFile(true)
         ;
 
@@ -179,7 +179,7 @@ class ContainerCompilerToFileTest extends TestCase
             ->willReturn('some content')
         ;
 
-        $file = (new ContainerCompilerToFile(vfsStream::url('root'), $this->compiler, isExclusiveLockCompiledContainerFileWhileCompiling: false))
+        $file = (new ContainerCompilerToFile(vfsStream::url('root'), $this->compiler, isExclusiveLockFile: false))
             ->compileToFile()
         ;
 
