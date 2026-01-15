@@ -55,7 +55,6 @@ class ContainerCompilerToFileTest extends TestCase
                 }
             }
         );
-        // touch tmp
     }
 
     public function tearDown(): void
@@ -87,25 +86,30 @@ class ContainerCompilerToFileTest extends TestCase
         ];
     }
 
-    #[DataProvider('dataProviderFailPermissionOutputDirectory')]
-    public function testFailPermissionOutputDirectory(int $permission): void
+    public function testFailPermissionOutputDirectory(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Compiler output directory must be be readable and writable.');
+        $this->expectExceptionMessage('Compiler output directory must be be readable.');
 
         $root = vfsStream::setup();
-        $dir = vfsStream::newDirectory('dir', $permission)
+        $dir = vfsStream::newDirectory('dir', 0222)
             ->at($root)
         ;
 
         (new ContainerCompilerToFile($dir->url(), $this->compiler))->getOutputDirectory();
     }
 
-    public static function dataProviderFailPermissionOutputDirectory(): Generator
+    public function testFailPermissionOutputDirectoryWhenCompile(): void
     {
-        yield 'directory is not readable' => [0222];
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Compiler output directory must be be writable.');
 
-        yield 'directory is not writable' => [0111];
+        $root = vfsStream::setup();
+        $dir = vfsStream::newDirectory('dir', 0444)
+            ->at($root)
+        ;
+
+        (new ContainerCompilerToFile($dir->url(), $this->compiler))->compileToFile();
     }
 
     public function testSuccessOutputDirectory(): void
@@ -120,29 +124,18 @@ class ContainerCompilerToFileTest extends TestCase
         self::assertDirectoryExists($dirResult);
     }
 
-    public function testSuccessFileNameCompiledContainer(): void
-    {
-        $root = vfsStream::setup();
-        $dir = vfsStream::newDirectory('dir')
-            ->at($root)
-        ;
-
-        $file = (new ContainerCompilerToFile($dir->url(), $this->compiler))->fileNameForCompiledContainer();
-
-        self::assertStringEndsWith('/Container'.$this->tmpContainerClassSuffix.'.php', $file);
-    }
-
     public function testCompileToFileCompiledFileExists(): void
     {
         vfsStream::setup(structure: [
             'Container'.$this->tmpContainerClassSuffix.'.php' => 'some content',
+            'pass' => 'secure info',
         ]);
 
-        $file = (new ContainerCompilerToFile(vfsStream::url('root'), $this->compiler))
+        $file = (new ContainerCompilerToFile(vfsStream::url('root//'), $this->compiler))
             ->compileToFile()
         ;
 
-        self::assertStringEndsWith('/Container'.$this->tmpContainerClassSuffix.'.php', $file);
+        self::assertStringEndsWith('root/Container'.$this->tmpContainerClassSuffix.'.php', $file);
     }
 
     public function testFailCompileToFileOutOfFreeDiskSpaceAndRestoreExistFile(): void
