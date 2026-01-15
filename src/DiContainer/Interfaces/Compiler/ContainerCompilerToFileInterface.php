@@ -24,12 +24,5 @@ interface ContainerCompilerToFileInterface
      *
      * @throws RuntimeException file operation exception
      */
-    public function fileNameForCompiledContainer(): string;
-
-    /**
-     * @return non-empty-string
-     *
-     * @throws RuntimeException file operation exception
-     */
     public function getOutputDirectory(): string;
 }
