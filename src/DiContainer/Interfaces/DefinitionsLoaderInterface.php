@@ -54,15 +54,15 @@ interface DefinitionsLoaderInterface
     /**
      * Import classes from directories.
      *
-     * @param non-empty-string       $namespace                 PSR-4 namespace prefix
-     * @param non-empty-string       $src                       source directory
-     * @param list<non-empty-string> $excludeFilesRegExpPattern exclude files matching by regexp pattern
-     * @param list<non-empty-string> $availableExtensions       available files extensions, empty list available all files
-     * @param bool                   $useAttribute              using php attributes for configure services from import source directory
+     * @param non-empty-string       $namespace           PSR-4 namespace prefix
+     * @param non-empty-string       $src                 source directory
+     * @param list<non-empty-string> $excludeFiles        exclude files matching by pattern
+     * @param list<non-empty-string> $availableExtensions available files extensions, empty list available all files
+     * @param bool                   $useAttribute        using php attributes for configure services from import source directory
      *
      * @return $this
      *
      * @throws DefinitionsLoaderExceptionInterface
      */
-    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static;
+    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php'], bool $useAttribute = true): static;
 }

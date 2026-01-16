@@ -25,11 +25,11 @@ interface FinderFileInterface
     public function getSrc(): string;
 
     /**
-     * Get exclude matching by regexp pattern files.
+     * Get exclude matching by pattern files.
      *
      * @return list<non-empty-string>
      */
-    public function getExcludeRegExpPattern(): array;
+    public function getExcludeFiles(): array;
 
     /**
      * Get available file extensions.

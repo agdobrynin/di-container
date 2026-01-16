@@ -77,8 +77,8 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import(
                 'Tests\DefinitionsLoader\\',
                 __DIR__.'/Fixtures/Import',
-                excludeFilesRegExpPattern: [
-                    '~Fixtures/Import/SubDirectory2/.+\.php$~',
+                excludeFiles: [
+                    '*Fixtures/Import/SubDirectory2/*.php',
                 ],
             )
             ->import(
@@ -136,9 +136,9 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import(
                 'Tests\DefinitionsLoader\\',
                 __DIR__.'/Fixtures/Import',
-                excludeFilesRegExpPattern: [
-                    '~Fixtures/Import/SubDirectory2/.+\.php$~',
-                    '~Fixtures/Import/SubDirectory/.+\.php$~',
+                excludeFiles: [
+                    '*Fixtures/Import/SubDirectory2/*.php',
+                    '*Fixtures/Import/SubDirectory/*.php',
                 ],
             )
             ->import(
@@ -245,9 +245,9 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testShortNamespaceAndClassName(): void
     {
         $loader = (new DefinitionsLoader())
-            ->import('Tests\\', __DIR__.'/../', excludeFilesRegExpPattern: [
-                '~tests/_var/~',
-                '~tests/([A-Z]+).*/~',
+            ->import('Tests\\', __DIR__.'/../', excludeFiles: [
+                '*tests/_var/*',
+                '*tests/[A-Z]*/*',
             ])
         ;
 
