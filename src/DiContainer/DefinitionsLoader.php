@@ -115,7 +115,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
-    public function import(string $namespace, string $src, array $excludeFilesRegExpPattern = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
+    /**
+     * Note: parameter `$excludeFiles` use php function `\fnmatch()`, detail info about file pattern see in documentation.
+     *
+     * @see https://www.php.net/manual/en/function.fnmatch.php
+     */
+    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
     {
         if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
             return $file->isReadable()
@@ -133,7 +138,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->finderFullyQualifiedNameCollection->add(
                 new FinderFullyQualifiedName(
                     $namespace,
-                    new FinderFile($src, $excludeFilesRegExpPattern, $availableExtensions)
+                    new FinderFile($src, $excludeFiles, $availableExtensions)
                 )
             );
         } catch (InvalidArgumentException $e) {
