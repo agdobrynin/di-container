@@ -11,15 +11,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 interface ContainerBuilderInterface
 {
     /**
-     * Set custom container configuration.
-     *
-     * @return $this
-     */
-    public function setDiContainerConfig(DiContainerConfigInterface $config): static;
-
-    public function getDiContainerConfig(): DiContainerConfigInterface;
-
-    /**
      * Load definitions from configuration files.
      *
      * @param non-empty-string ...$file
@@ -40,11 +31,22 @@ interface ContainerBuilderInterface
     public function loadOverride(string ...$file): static;
 
     /**
+     * Add definitions.
+     *
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      *
      * @return $this
      */
-    public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static;
+    public function addDefinitions(iterable $definitions): static;
+
+    /**
+     * Add definitions, overwriting previously added ones.
+     *
+     * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
+     *
+     * @return $this
+     */
+    public function addDefinitionsOverride(iterable $definitions): static;
 
     /**
      * Import classes from directories.

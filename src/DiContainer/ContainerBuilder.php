@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Compiler\IdsIterator;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\ContainerBuilderException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
+use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ContainerBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
@@ -24,7 +25,6 @@ use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 
 use function class_exists;
@@ -33,8 +33,6 @@ use function sprintf;
 
 final class ContainerBuilder implements ContainerBuilderInterface
 {
-    private DiContainerConfigInterface $diContainerConfig;
-
     /**
      * @var list<array{
      *  override: bool,
@@ -72,29 +70,21 @@ final class ContainerBuilder implements ContainerBuilderInterface
     private string $compilerContainerClass;
     private int $compilerPermissionCompiledContainerFile;
     private bool $compilerIsExclusiveLockFile;
+    private DiDefinitionTransformerInterface $compilerDiDefinitionTransformer;
 
     /**
      * @var array{
      *  invalid_behavior?: InvalidBehaviorCompileEnum,
-     *  finder_closure?: FinderClosureCodeInterface,
+     *  di_definition_transformer?: DiDefinitionTransformerInterface,
      *  force_rebuild?: bool,
      * }
      */
     private array $compilerOptions;
 
-    public function __construct(private readonly DefinitionsLoaderInterface $definitionsLoader = new DefinitionsLoader()) {}
-
-    public function setDiContainerConfig(DiContainerConfigInterface $config): static
-    {
-        $this->diContainerConfig = $config;
-
-        return $this;
-    }
-
-    public function getDiContainerConfig(): DiContainerConfigInterface
-    {
-        return $this->diContainerConfig;
-    }
+    public function __construct(
+        private readonly DiContainerConfigInterface $containerConfig = new DiContainerConfig(),
+        private readonly DefinitionsLoaderInterface $definitionsLoader = new DefinitionsLoader(),
+    ) {}
 
     public function load(string ...$file): static
     {
@@ -120,10 +110,20 @@ final class ContainerBuilder implements ContainerBuilderInterface
         return $this;
     }
 
-    public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static
+    public function addDefinitions(iterable $definitions): static
     {
         $this->definitions[] = [
-            'override' => $overrideDefinitions,
+            'override' => false,
+            'definitions' => $definitions,
+        ];
+
+        return $this;
+    }
+
+    public function addDefinitionsOverride(iterable $definitions): static
+    {
+        $this->definitions[] = [
+            'override' => true,
             'definitions' => $definitions,
         ];
 
@@ -148,15 +148,15 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *      [
      *          // invalid behavior for container compiler
      *          'invalid_behavior' => \Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum::ExceptionOnCompile,
-     *          // closure parser
-     *          'finder_closure' => \Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface,
+     *          // definitions transformer for container compiler
+     *          'di_definition_transformer' => \Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface,
      *          // force rebuild compiled container `true` or `false`
      *          'force_rebuild' => false
      *      ]
      *
      * @param array{
      *  invalid_behavior?: InvalidBehaviorCompileEnum,
-     *  finder_closure?: FinderClosureCodeInterface,
+     *  di_definition_transformer?: DiDefinitionTransformerInterface,
      *  force_rebuild?: bool,
      * } $options
      */
@@ -173,23 +173,22 @@ final class ContainerBuilder implements ContainerBuilderInterface
 
     public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface
     {
-        $this->diContainerConfig ??= new DiContainerConfig();
-
         if (!isset($this->compilerOutputDirectory)) {
-            return new DiContainer($this->definitions(), $this->diContainerConfig);
+            return new DiContainer($this->definitions(), $this->containerConfig);
         }
 
-        $container = new DiContainer(new DeferredSourceDefinitionsMutable($this->definitions()), $this->diContainerConfig);
+        $container = new DiContainer(new DeferredSourceDefinitionsMutable($this->definitions()), $this->containerConfig);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
-        $diDefinitionTransformer = new DiDefinitionTransformer(
-            $this->compilerOptions['finder_closure'] ?? new FinderClosureCode()
-        );
+        if (!isset($this->compilerDiDefinitionTransformer)) {
+            $this->compilerDiDefinitionTransformer = $this->compilerOptions['di_definition_transformer']
+                ?? new DiDefinitionTransformer(new FinderClosureCode());
+        }
 
         $compiler = new ContainerCompiler(
             $this->compilerContainerClass,
             $diContainerDefinitions,
-            $diDefinitionTransformer,
+            $this->compilerDiDefinitionTransformer,
             $this->compilerOptions['invalid_behavior'] ?? InvalidBehaviorCompileEnum::ExceptionOnCompile,
         );
 
@@ -239,7 +238,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
                     $import['src'],
                     $import['exclude_files'],
                     $import['available_extensions'],
-                    $this->diContainerConfig->isUseAttribute(),
+                    $this->containerConfig->isUseAttribute(),
                 );
             } catch (DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
