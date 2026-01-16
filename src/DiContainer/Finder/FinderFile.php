@@ -13,10 +13,10 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 use function array_map;
+use function fnmatch;
 use function in_array;
 use function is_dir;
 use function is_readable;
-use function preg_match;
 use function realpath;
 use function sprintf;
 use function strtolower;
@@ -30,20 +30,24 @@ final class FinderFile implements FinderFileInterface
     private array $normalizedAvailableExtensions;
 
     /**
-     * @param non-empty-string       $src                  source directory
-     * @param list<non-empty-string> $excludeRegExpPattern exclude matching by regexp pattern files
-     * @param list<non-empty-string> $availableExtensions  available file extensions
+     * Note: parameter `$excludeFiles` use php function `\fnmatch()`, detail info about file pattern see in documentation.
+     *
+     * @see https://www.php.net/manual/en/function.fnmatch.php
+     *
+     * @param non-empty-string       $src                 source directory
+     * @param list<non-empty-string> $excludeFiles        exclude matching by pattern files
+     * @param list<non-empty-string> $availableExtensions available file extensions
      */
-    public function __construct(private readonly string $src, private readonly array $excludeRegExpPattern = [], private readonly array $availableExtensions = ['php']) {}
+    public function __construct(private readonly string $src, private readonly array $excludeFiles = [], private readonly array $availableExtensions = ['php']) {}
 
     public function getSrc(): string
     {
         return $this->src;
     }
 
-    public function getExcludeRegExpPattern(): array
+    public function getExcludeFiles(): array
     {
-        return $this->excludeRegExpPattern;
+        return $this->excludeFiles;
     }
 
     public function getAvailableExtensions(): array
@@ -94,12 +98,12 @@ final class FinderFile implements FinderFileInterface
 
     private function isExcluded(string $fileRealPath): bool
     {
-        if ([] === $this->excludeRegExpPattern) {
+        if ([] === $this->excludeFiles) {
             return false;
         }
 
-        foreach ($this->excludeRegExpPattern as $partOfPregPattern) {
-            if (1 === preg_match($partOfPregPattern, $fileRealPath)) {
+        foreach ($this->excludeFiles as $partPattern) {
+            if (fnmatch($partPattern, $fileRealPath)) {
                 return true;
             }
         }
