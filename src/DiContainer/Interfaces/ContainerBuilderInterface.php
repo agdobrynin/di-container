@@ -6,7 +6,6 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 
 interface ContainerBuilderInterface
 {
@@ -16,8 +15,6 @@ interface ContainerBuilderInterface
      * @param non-empty-string ...$file
      *
      * @return $this
-     *
-     * @throws DefinitionsLoaderExceptionInterface
      */
     public function load(string ...$file): static;
 
