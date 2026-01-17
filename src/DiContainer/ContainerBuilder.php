@@ -27,6 +27,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
+use RuntimeException;
 
 use function class_exists;
 use function file_exists;
@@ -218,7 +219,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
 
         try {
             $file = $containerCompilerToFile->compileToFile($this->compilerOptions['force_rebuild'] ?? false);
-        } catch (DefinitionCompileExceptionInterface $e) {
+        } catch (DefinitionCompileExceptionInterface|RuntimeException $e) {
             throw new ContainerBuilderException(
                 sprintf('Cannot compile container. Caused by: %s', $e->getMessage()),
                 previous: $e,
