@@ -26,6 +26,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
+use Psr\Container\ContainerExceptionInterface;
 
 use function class_exists;
 use function file_exists;
@@ -174,7 +175,14 @@ final class ContainerBuilder implements ContainerBuilderInterface
     public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface
     {
         if (!isset($this->compilerOutputDirectory)) {
-            return new DiContainer($this->definitions(), $this->containerConfig);
+            try {
+                return new DiContainer($this->definitions(), $this->containerConfig);
+            } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
+                throw new ContainerBuilderException(
+                    sprintf('Cannot build container. Caused by: %s', $e->getMessage()),
+                    previous: $e,
+                );
+            }
         }
 
         $container = new DiContainer(new DeferredSourceDefinitionsMutable($this->definitions()), $this->containerConfig);
