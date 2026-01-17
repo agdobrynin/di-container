@@ -84,10 +84,11 @@ class  PostController {
 ```php
 use App\Controllers\PostController;
 use App\Models\Post;
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
 
 // Создать контейнер.
-$container = (new DiContainerFactory())->make();
+$container = (new DiContainerBuilder())
+    ->build();
 
 // more code...
 
@@ -145,7 +146,7 @@ $container->call(
 `Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
 
 ```php
-use Kaspi\DiContainer\{DiContainerConfig, DiContainer};
+use Kaspi\DiContainer\{DiContainerConfig, DiContainerBuilder};
 
 $diConfig = new DiContainerConfig(
     // Ненужно объявлять каждую зависимость.
@@ -158,32 +159,12 @@ $diConfig = new DiContainerConfig(
     // Возвращать всегда одни и тот же объект (singleton pattern).
     isSingletonServiceDefault: false,
 );
-// передать настройки в контейнер
-$container = new DiContainer(config: $diConfig);
-```
-#### DiContainerFactory.
-Можно использовать фабрику для создания контейнера
-с настроенными по умолчанию параметрами:
-```php
-use Kaspi\DiContainer\DiContainerFactory;
 
-$container = (new DiContainerFactory())->make();
+// передать настройки в построитель контейнера
+$container = (new DiContainerBuilder(containerConfig: $diConfig))
+    ->build();
 ```
-**Конструктор фабрики**:
-```php
-DiContainerFactory::__construct(
-    ?Kaspi\DiContainer\Interfaces\DiContainerConfigInterface $config = null
-)
-```
-> [!TIP]
-> Можно передать другую конфигурацию контейнера в фабрику.
 
-**Зарегистрировать сконфигурированные определения (_сервисы_) в контейнере**:
-```php
-DiContainerFactory::make(
-    iterable $definitions = []
-): \Kaspi\DiContainer\Interfaces\DiContainerInterface
-```
 ---
 > [!NOTE]
 > Некоторые интерфейсы или классы всегда возвращают текущий контейнер зависимостей.
@@ -195,18 +176,20 @@ DiContainerFactory::make(
 > будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
 >
 > ```php
-> use Kaspi\DiContainer\DiContainerFactory;
+> use Kaspi\DiContainer\DiContainerBuilder;
+> use Psr\Container\ContainerInterface;
 >
-> function testFunc(\Psr\Container\ContainerInterface $c) {
+> function testFunc(ContainerInterface $c) {
 >     return $c;
 > }
 >
-> $container = (new DiContainerFactory())->make();
+> $container = (new DiContainerBuilder())->build();
 >
 > var_dump($container->call('testFunc') instanceof DiContainer); // true
+> var_dump($container->call('testFunc') instanceof ContainerInterface); // true
 > ```
 > ```php
-> use Kaspi\DiContainer\DiContainerFactory;
+> use Kaspi\DiContainer\DiContainerBuilder;
 > use Psr\Container\ContainerInterface;
 >
 > class TestClass {
@@ -215,23 +198,18 @@ DiContainerFactory::make(
 >     ) {}
 > }
 >
-> $container = (new DiContainerFactory())->make();
+> $container = (new DiContainerBuilder())->build();
 >
-> var_dump($container->get(TestClass::class)->container instanceof DiContainer); // true
+> var_dump($container->get(TestClass::class)->container instanceof ContainerInterface); // true
 > ```
 
-### 📁 DefinitionsLoader
-Собирает определения для контейнера зависимостей из разных конфигурационных файлов
-(_dependency definitions_), и выполняет "импорт" классов из директорий.
-
-Подробное описание использования [DefinitionsLoader](docs/04-definitions-loader.md).
-
 ### 🧰 Подробное описание конфигурирования и использования
-
-* 🐘 [DiContainer с конфигурированием в стиле php определений](docs/01-php-definition.md).
-* #️⃣ [DiContainer c конфигурированием через PHP атрибуты](docs/02-attribute-definition.md).
+* 👷‍♂️ [Инструмент для сборки контейнера зависимостей **DiContainerBuilder**](docs/06-container-builder.md).
+* 🐘 [DiContainer с конфигурированием **в стиле php определений**](docs/01-php-definition.md).
+* #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](docs/02-attribute-definition.md).
 * 📦 [DiContainer::call()](docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
 * 🔖 [Тэгирование определений и сервисов](docs/05-tags.md).
+* 👷‍♂️ [Инструмент для сборки коннтейнера зависимостей **DiContainerBuilder**](docs/06-container-builder.md).
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода
