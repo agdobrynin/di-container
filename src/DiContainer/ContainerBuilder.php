@@ -179,7 +179,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
                 return new DiContainer($this->definitions(), $this->containerConfig);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
-                    sprintf('Cannot build container. Caused by: %s', $e->getMessage()),
+                    sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
                     previous: $e,
                 );
             }
