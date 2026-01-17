@@ -20,10 +20,8 @@
 
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
-> класс был зарегистрирован в контейнере.
-> Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
+> класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
 
 Для получения тегированных сервисов для параметров определений (_параметры – конструктора, метода или функции_) нужно использовать:
 - `diTaggedAs` – [хэлпер функцию](01-php-definition.md#ditaggedas) в стиле php определений 
@@ -152,15 +150,12 @@ return static function (): \Generator {
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $class = $container->get(App\Services\TaggedServices::class);
 ```
@@ -181,8 +176,8 @@ $class = $container->get(App\Services\TaggedServices::class);
 #### Получение тегированных сервисов можно применять так же **параметрам переменной длинны**:
 
 > [!WARNING]
-> Параметр переменной длинны является опциональным и если у него не задан
-> аргумент указывающий как разрешать зависимость, то он будет пропущен.
+> Параметр переменной длины является опциональным и если у него не задан
+> аргумент указывающий как разрешать зависимость, то параметр будет пропущен.
 
 ```php
 // src/Services/TaggedServices.php
@@ -224,15 +219,12 @@ return static function (): \Generator {
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $class = $container->get(App\Services\TaggedServices::class);
 ```
@@ -306,22 +298,16 @@ class TaggedServices {
 ```
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
-> класс был зарегистрирован в контейнере.
-> Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
+> класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
 
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-// загрузка из файлов исходников.
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(App\Services\TaggedServices::class);
 ```
@@ -330,10 +316,10 @@ $class = $container->get(App\Services\TaggedServices::class);
 > в свойстве `TaggedServices::$services` содержится итерируемая «ленивая» коллекция
 > из классов `Two`, `One` (_такой порядок обусловлен значением 'priority' у тегов_).
 
-#### Получение тегированных сервисов можно применять так же **параметрам переменной длинны**:
+#### Получение тегированных сервисов можно применять так же **параметрам переменной длины**:
 
 > [!WARNING]
-> Параметр переменной длинны является опциональным и если у него не задан
+> Параметр переменной длины является опциональным и если у него не задан
 > PHP атрибут указывающий какой аргумент использовать
 > для разрешения зависимости, то он будет пропущен.
 
@@ -383,16 +369,13 @@ namespace App\Classes;
 class Four {}
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(TaggedServices::class);
 ```
@@ -407,11 +390,10 @@ $class = $container->get(TaggedServices::class);
 чтобы класс реализующий запрашиваемый интерфейс был объявлен
 в контейнере.
 
-> [!NOTE]
-> Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
-
+> [!IMPORTANT]
+> #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
+> класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
 
 ### 🐘 Использование в стиле php определений
 
@@ -475,17 +457,13 @@ return static function (): \Generator {
 
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-// Загрузить определения. 
-$loader = (new DefinitionsLoader())
+$container = (new DiContainerBuilder())
     ->load(__DIR__.'/config/services.php')
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(SrvRules::class);
 ```
@@ -559,15 +537,12 @@ class SrvRules {
 ```
 
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(App\Services\SrvRules::class);
 ```
@@ -679,15 +654,12 @@ return static function (): \Generator {
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $class = $container->get(App\Rules\Rules::class);
 ```
@@ -753,13 +725,12 @@ class Rules {
 }
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/');
-
-$container = (new DiContainerFactory())
-    ->make($loader->definitions());
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/')
+    ->build()
+;
 
 $container->get(App\Rules\Rules::class);
 ```
@@ -885,15 +856,12 @@ return static function (): \Generator {
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $container->get(App\Rules\Rules::class);
 ```
@@ -982,15 +950,12 @@ class Rules {
 ```
 ```php
 use App\Rules\Rules;
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/')
+    ->build()
+;
 
 $container->get(Rules::class);
 ```
