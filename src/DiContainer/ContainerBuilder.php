@@ -280,10 +280,12 @@ final class ContainerBuilder implements ContainerBuilderInterface
                     $definitions['definitions'],
                 );
             } catch (ContainerAlreadyRegisteredExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
-                $with = $definitions['override'] ? 'with override' : 'without override';
+                $useMethod = $definitions['override']
+                    ? 'ContainerBuilder::addDefinitionsOverride()'
+                    : 'ContainerBuilder::addDefinitions()';
 
                 throw new ContainerBuilderException(
-                    sprintf('Cannot build container while add definition %s using method ContainerBuilder::addDefinitions().', $with),
+                    sprintf('Cannot build container while add definition using method %s.', $useMethod),
                     previous: $e,
                 );
             }
