@@ -40,7 +40,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *  file: non-empty-string
      * }>
      */
-    private array $loadFiles;
+    private array $loadFiles = [];
 
     /**
      * @var list<array{
@@ -50,7 +50,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *  available_extensions: list<non-empty-string>,
      * }>
      */
-    private array $imports;
+    private array $imports = [];
 
     /**
      * @var list<array{
@@ -58,7 +58,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *  definitions: iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed>
      * }>
      */
-    private array $definitions;
+    private array $definitions = [];
 
     /**
      * @var non-empty-string
