@@ -257,24 +257,19 @@ final class ContainerBuilder implements ContainerBuilderInterface
         }
 
         foreach ($this->loadFiles as $definitionsFromFile) {
-            if ($definitionsFromFile['override']) {
-                try {
+            try {
+                if ($definitionsFromFile['override']) {
                     $this->definitionsLoader->loadOverride($definitionsFromFile['file']);
-                } catch (DefinitionsLoaderExceptionInterface $e) {
-                    throw new ContainerBuilderException(
-                        sprintf('Cannot build container while load configuration with override from file "%s" using method ContainerBuilder::loadOverride().', $definitionsFromFile['file']),
-                        previous: $e,
-                    );
-                }
-            } else {
-                try {
+                } else {
                     $this->definitionsLoader->load($definitionsFromFile['file']);
-                } catch (DefinitionsLoaderExceptionInterface $e) {
-                    throw new ContainerBuilderException(
-                        sprintf('Cannot build container while load configuration from file "%s" using method ContainerBuilder::load().', $definitionsFromFile['file']),
-                        previous: $e,
-                    );
                 }
+            } catch (DefinitionsLoaderExceptionInterface $e) {
+                $useMethod = $definitionsFromFile['override'] ? 'ContainerBuilder::loadOverride()' : 'ContainerBuilder::load()';
+
+                throw new ContainerBuilderException(
+                    sprintf('Cannot build container while load configuration from file "%s" using method %s.', $definitionsFromFile['file'], $useMethod),
+                    previous: $e,
+                );
             }
         }
 
