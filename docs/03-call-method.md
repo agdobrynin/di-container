@@ -78,9 +78,9 @@ class  PostController {
 
 ```php
 // определение контейнера
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$container = (new DiContainerFactory())->make();
+$container = (new DiContainerBuilder())->build();
 
 // вызов контроллера с автоматическим разрешением зависимостей и передачей аргументов
 print $container->call(
@@ -106,9 +106,9 @@ print $container->call(
 и подстановкой дополнительных параметров при вызове функции:
 
 ```php
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
 // определение контейнера
-$container = (new DiContainerFactory())->make();
+$container = (new DiContainerBuilder())->build();
 
 // ... more code ...
 
