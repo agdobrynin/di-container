@@ -16,8 +16,8 @@ use Kaspi\DiContainer\Exception\ContainerBuilderException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
-use Kaspi\DiContainer\Interfaces\ContainerBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -33,7 +33,7 @@ use function class_exists;
 use function file_exists;
 use function sprintf;
 
-final class ContainerBuilder implements ContainerBuilderInterface
+final class DiContainerBuilder implements DiContainerBuilderInterface
 {
     /**
      * @var list<array{
@@ -205,7 +205,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
             $compiledContainerFQN = $compiler->getContainerFQN();
         } catch (InvalidArgumentException $e) {
             throw new ContainerBuilderException(
-                sprintf('Invalid class name for compiled container. Parameter $containerClass from method ContainerBuilder::enableCompilation() provide value "%s"', $this->compilerContainerClass),
+                sprintf('Invalid class name for compiled container. Parameter $containerClass from method %s::enableCompilation() provide value "%s"', self::class, $this->compilerContainerClass),
                 previous: $e,
             );
         }
@@ -251,7 +251,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
                 );
             } catch (DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
-                    sprintf('Cannot build container while import files from directory "%s" with namespace "%s" using method ContainerBuilder::import().', $import['src'], $import['namespace']),
+                    sprintf('Cannot build container while import files from directory "%s" with namespace "%s" using method %s::import().', $import['src'], $import['namespace'], self::class),
                     previous: $e,
                 );
             }
@@ -265,10 +265,10 @@ final class ContainerBuilder implements ContainerBuilderInterface
                     $this->definitionsLoader->load($definitionsFromFile['file']);
                 }
             } catch (DefinitionsLoaderExceptionInterface $e) {
-                $useMethod = $definitionsFromFile['override'] ? 'ContainerBuilder::loadOverride()' : 'ContainerBuilder::load()';
+                $useMethod = $definitionsFromFile['override'] ? 'loadOverride()' : 'load()';
 
                 throw new ContainerBuilderException(
-                    sprintf('Cannot build container while load configuration from file "%s" using method %s.', $definitionsFromFile['file'], $useMethod),
+                    sprintf('Cannot build container while load configuration from file "%s" using method %s::%s.', $definitionsFromFile['file'], self::class, $useMethod),
                     previous: $e,
                 );
             }
@@ -282,11 +282,11 @@ final class ContainerBuilder implements ContainerBuilderInterface
                 );
             } catch (ContainerAlreadyRegisteredExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 $useMethod = $definitions['override']
-                    ? 'ContainerBuilder::addDefinitionsOverride()'
-                    : 'ContainerBuilder::addDefinitions()';
+                    ? 'addDefinitionsOverride()'
+                    : 'addDefinitions()';
 
                 throw new ContainerBuilderException(
-                    sprintf('Cannot build container while add definition using method %s.', $useMethod),
+                    sprintf('Cannot build container while add definition using method %s::%s.', self::class, $useMethod),
                     previous: $e,
                 );
             }

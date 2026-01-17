@@ -7,7 +7,7 @@ namespace Kaspi\DiContainer\Interfaces;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
 
-interface ContainerBuilderInterface
+interface DiContainerBuilderInterface
 {
     /**
      * Load definitions from configuration files.
