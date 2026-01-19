@@ -12,13 +12,13 @@ use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use function is_a;
 use function sprintf;
 
-#[Attribute(Attribute::TARGET_CLASS)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class DiFactory implements DiAttributeServiceInterface
 {
     /**
      * @param class-string<DiFactoryInterface> $id
      */
-    public function __construct(private string $id, private ?bool $isSingleton = null)
+    public function __construct(private readonly string $id, private readonly ?bool $isSingleton = null)
     {
         if (!is_a($id, DiFactoryInterface::class, true)) { // @phpstan-ignore function.alreadyNarrowedType
             throw new AutowireAttributeException(
