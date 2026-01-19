@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
 
 require_once \dirname(__DIR__).'/vendor/autoload.php';
 
@@ -81,7 +81,7 @@ class PostController
     }
 }
 
-$container = (new DiContainerFactory())->make();
+$container = (new DiContainerBuilder())->build();
 
 // Заполняем модель данными.
 $post = new Post();

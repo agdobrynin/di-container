@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerConfig;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -47,23 +47,24 @@ class User
     }
 }
 
-$definitions = [
-    // класс PDO создать единожды и всегда возвращать тот же объект
-    diAutowire(PDO::class, isSingleton: true)
-        // с аргументом $dsn в конструкторе.
-        ->bindArguments(dsn: 'sqlite::memory:'),
-    // класс с определением обязательного параметра. $pdo будет получен по типу параметра.
-    diAutowire(MyUsers::class)
-        ->bindArguments(usersClass: User::class),
-];
-
 $config = new DiContainerConfig(
     useZeroConfigurationDefinition: true,
     useAttribute: false,
     isSingletonServiceDefault: false,
 );
 
-$container = new DiContainer(definitions: $definitions, config: $config);
+$container = (new DiContainerBuilder(containerConfig: $config))
+    ->addDefinitions([
+        // класс PDO создать единожды и всегда возвращать тот же объект
+        diAutowire(PDO::class, isSingleton: true)
+            // с аргументом $dsn в конструкторе.
+            ->bindArguments(dsn: 'sqlite::memory:'),
+        // класс с определением обязательного параметра. $pdo будет получен по типу параметра.
+        diAutowire(MyUsers::class)
+            ->bindArguments(usersClass: User::class),
+    ])
+    ->build()
+;
 
 // Получение данных из контейнера с автоматическим связыванием зависимостей
 $users = $container->get(MyUsers::class); // $pdo->dsn === 'sqlite::memory:'

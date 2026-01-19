@@ -9,11 +9,12 @@ composer require kaspi/di-container
 ```
 ### Особенности
 
-- **Autowire** - контейнер автоматически создаёт и внедряет зависимости.
-- Поддержка "**zero configuration for dependency injection**" - когда ненужно объявлять зависимость в определениях контейнера.
+- **Autowire** – контейнер автоматически создаёт и внедряет зависимости.
+- Поддержка "**zero configuration for dependency injection**" – когда ненужно объявлять зависимость в определениях контейнера.
 Если класс не имеет зависимостей или зависит только от других конкретных классов, контейнеру не нужно указывать, как разрешить этот класс.
 - Поддержка **Php-атрибутов** для конфигурирования сервисов в контейнере.
 - **Поддержка тегов** (_tags_) для определений и сервисов в контейнере.
+- **Компиляция контейнера** – генерация настроенного контейнера в PHP-код оптимизированный специально для вашей конфигурации и ваших классов.
 ## Быстрый старт
 Определения классов:
 ```php
@@ -84,10 +85,11 @@ class  PostController {
 ```php
 use App\Controllers\PostController;
 use App\Models\Post;
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
 
 // Создать контейнер.
-$container = (new DiContainerFactory())->make();
+$container = (new DiContainerBuilder())
+    ->build();
 
 // more code...
 
@@ -140,96 +142,91 @@ $container->call(
 ### Конфигурирование DiContainer
 
 Для конфигурирования контейнера используется класс
-`Kaspi\DiContainer\DiContainerConfig::class`
+`\Kaspi\DiContainer\DiContainerConfig`
 который реализует интерфейс
-`Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`
+`\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`.
 
+#### Нулевая конфигурация для внедрения зависимостей:
 ```php
-use Kaspi\DiContainer\{DiContainerConfig, DiContainer};
+\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface::isUseZeroConfigurationDefinition(): bool;
+```
+**Не нужно указывать контейнеру, как разрешить конкретный PHP-класс**
+если класс не имеет зависимостей, или зависит только от других конкретных классов,
+или зависит от ранее сконфигурированных классов (интерфейсов).
+
+#### Использовать Php-атрибуты для конфигурирования:
+```php
+\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface::isUseAttribute(): bool;
+```
+Предоставляет возможность [конфигурирования определений на базе PHP атрибутов](docs/02-attribute-definition.md).
+
+#### Создать сервис как синглтон:
+```php
+\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface::isSingletonServiceDefault(): bool;
+```
+Для определений в контейнере можно указать как разрешать сервис – возвращать всегда одни и тот же объект
+или создавать объект сервиса каждый раз при получении через метод контейнера `get()`.
+Для определений контейнера у которых неуказан способ получения через метод контейнера `get()`
+применяется значение по умолчанию из конфигурации.
+
+**Пример конфигурации:**
+```php
+use Kaspi\DiContainer\{DiContainerConfig, DiContainerBuilder};
 
 $diConfig = new DiContainerConfig(
-    // Ненужно объявлять каждую зависимость.
-    // Если класс, функция или интерфейс существуют
-    // и может быть запрошен через автозагрузку (например через composer),
-    // то объявлять каждое определение необязательно.
-    useZeroConfigurationDefinition: true,
-    // Использовать Php-атрибуты для конфигурирования зависимостей контейнера.
-    useAttribute: true,
-    // Возвращать всегда одни и тот же объект (singleton pattern).
-    isSingletonServiceDefault: false,
+    useZeroConfigurationDefinition: false,
+    useAttribute: false,
+    isSingletonServiceDefault: true,
 );
-// передать настройки в контейнер
-$container = new DiContainer(config: $diConfig);
+
+// передать настройки в построитель контейнера
+$container = (new DiContainerBuilder(containerConfig: $diConfig))
+    ->build();
 ```
-#### DiContainerFactory.
-Можно использовать фабрику для создания контейнера
-с настроенными по умолчанию параметрами:
+
+### Особенности получения некоторых классов и интерфейсов.
+
+Некоторые интерфейсы или классы всегда возвращают текущий контейнер зависимостей.
+При разрешении зависимости для интерфейсов и классов:
+- `Psr\Container\ContainerInterface::class`
+- `Kaspi\DiContainer\Interfaces\DiContainerInterface::class`
+- `Kaspi\DiContainer\DiContainer::class`
+
+будет получен текущий контейнер зависимостей.
+
 ```php
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use Psr\Container\ContainerInterface;
 
-$container = (new DiContainerFactory())->make();
+function testFunc(ContainerInterface $c) {
+    return $c;
+}
+
+$container = (new DiContainerBuilder())->build();
+
+var_dump($container->call('testFunc') instanceof DiContainer); // true
+var_dump($container->call('testFunc') instanceof ContainerInterface); // true
 ```
-**Конструктор фабрики**:
+
 ```php
-DiContainerFactory::__construct(
-    ?Kaspi\DiContainer\Interfaces\DiContainerConfigInterface $config = null
-)
+use Kaspi\DiContainer\DiContainerBuilder;
+use Psr\Container\ContainerInterface;
+
+class TestClass {
+    public function __construct(
+        public ContainerInterface $container
+    ) {}
+}
+
+$container = (new DiContainerBuilder())->build();
+
+var_dump($container->get(TestClass::class)->container instanceof ContainerInterface); // true
 ```
-> [!TIP]
-> Можно передать другую конфигурацию контейнера в фабрику.
-
-**Зарегистрировать сконфигурированные определения (_сервисы_) в контейнере**:
-```php
-DiContainerFactory::make(
-    iterable $definitions = []
-): \Kaspi\DiContainer\Interfaces\DiContainerInterface
-```
----
-> [!NOTE]
-> Некоторые интерфейсы или классы всегда возвращают текущий контейнер зависимостей.
-> При разрешении зависимости для интерфейсов и классов:
-> - `Psr\Container\ContainerInterface::class`
-> - `Kaspi\DiContainer\Interfaces\DiContainerInterface::class`
-> - `Kaspi\DiContainer\DiContainer::class`
-> 
-> будет получен текущий class `Kaspi\DiContainer\DiContainer::class`
->
-> ```php
-> use Kaspi\DiContainer\DiContainerFactory;
->
-> function testFunc(\Psr\Container\ContainerInterface $c) {
->     return $c;
-> }
->
-> $container = (new DiContainerFactory())->make();
->
-> var_dump($container->call('testFunc') instanceof DiContainer); // true
-> ```
-> ```php
-> use Kaspi\DiContainer\DiContainerFactory;
-> use Psr\Container\ContainerInterface;
->
-> class TestClass {
->     public function __construct(
->         public ContainerInterface $container
->     ) {}
-> }
->
-> $container = (new DiContainerFactory())->make();
->
-> var_dump($container->get(TestClass::class)->container instanceof DiContainer); // true
-> ```
-
-### 📁 DefinitionsLoader
-Собирает определения для контейнера зависимостей из разных конфигурационных файлов
-(_dependency definitions_), и выполняет "импорт" классов из директорий.
-
-Подробное описание использования [DefinitionsLoader](docs/04-definitions-loader.md).
 
 ### 🧰 Подробное описание конфигурирования и использования
-
-* 🐘 [DiContainer с конфигурированием в стиле php определений](docs/01-php-definition.md).
-* #️⃣ [DiContainer c конфигурированием через PHP атрибуты](docs/02-attribute-definition.md).
+* 👷‍♂️ [Инструмент для сборки контейнера зависимостей **DiContainerBuilder**](docs/06-container-builder.md).
+* 🐘 [DiContainer с конфигурированием **в стиле php определений**](docs/01-php-definition.md).
+* #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](docs/02-attribute-definition.md).
 * 📦 [DiContainer::call()](docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
 * 🔖 [Тэгирование определений и сервисов](docs/05-tags.md).
 
