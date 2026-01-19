@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -15,12 +16,12 @@ use Psr\Container\NotFoundExceptionInterface;
 interface DiContainerCallInterface
 {
     /**
-     * @param NotParsedCallable|ParsedCallable                $definition
-     * @param array<non-empty-string|non-negative-int, mixed> $arguments
+     * @param NotParsedCallable|ParsedCallable $definition
+     * @param DiDefinitionInterface|mixed      ...$argument
      *
      * @throws ContainerExceptionInterface
      * @throws DiDefinitionExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function call(array|callable|string $definition, array $arguments = []): mixed;
+    public function call(array|callable|string $definition, mixed ...$argument): mixed;
 }

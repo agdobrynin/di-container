@@ -70,7 +70,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
-            [
+            ...[
                 'word' => diGet(WordSuffix::class),
                 'word_2' => diGet(WordHello::class),
             ]
@@ -89,7 +89,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
-            [
+            ...[
                 'word' => diAutowire(WordSuffix::class),
                 'word1' => diAutowire(WordHello::class),
             ]
@@ -108,7 +108,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
-            [
+            ...[
                 'word' => $container->get(WordSuffix::class),
                 'word2' => $container->get(WordHello::class),
             ]

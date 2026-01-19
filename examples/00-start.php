@@ -93,5 +93,5 @@ echo '🕸  DiContainer::get ✉  send bytes: '.$container->get(PostController::
 // Использование call
 echo '🖥  DiContainer::call ✉  send bytes: '.$container->call(
     definition: [PostController::class, 'send'],
-    arguments: ['post' => $post]
+    post: $post
 ).PHP_EOL;

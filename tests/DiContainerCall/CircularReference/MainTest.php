@@ -88,7 +88,7 @@ class MainTest extends TestCase
 
         $container = new DiContainer($definitions, new DiContainerConfig(useZeroConfigurationDefinition: false));
 
-        $container->call([ClassWithMethod::class, 'method'], ['service' => diGet('services.second')]);
+        $container->call([ClassWithMethod::class, 'method'], ...['service' => diGet('services.second')]);
     }
 
     public function testCircularWithoutAttribute(): void
@@ -123,7 +123,7 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $container->call([ClassWithMethod::class, 'method'], ['service' => diAutowire(ThirdClass::class)]);
+        $container->call([ClassWithMethod::class, 'method'], ...['service' => diAutowire(ThirdClass::class)]);
     }
 
     public function testCircularInMethodByTaggedAsWithoutAttribute(): void
@@ -142,6 +142,6 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $container->call([ClassWithMethod::class, 'method'], ['service' => diTaggedAs('tag-one', false)]);
+        $container->call([ClassWithMethod::class, 'method'], ...['service' => diTaggedAs('tag-one', false)]);
     }
 }

@@ -126,15 +126,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this;
     }
 
-    public function call(array|callable|string $definition, array $arguments = []): mixed
+    public function call(array|callable|string $definition, mixed ...$argument): mixed
     {
         $reflectionDefinition = DefinitionDiCall::getReflection($definition);
 
+        /**
+         * @phpstan-var array<non-empty-string|non-negative-int, mixed> $argument
+         */
         if ($reflectionDefinition instanceof ReflectionMethod) {
             if ($reflectionDefinition->isStatic()) {
                 return call_user_func_array(
                     [$reflectionDefinition->class, $reflectionDefinition->name], // @phpstan-ignore argument.type
-                    ArgumentResolver::resolve(new ArgumentBuilder($arguments, $reflectionDefinition, $this), $this)
+                    ArgumentResolver::resolve(new ArgumentBuilder($argument, $reflectionDefinition, $this), $this)
                 );
             }
 
@@ -157,13 +160,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             return call_user_func_array(
                 $callable,
-                ArgumentResolver::resolve(new ArgumentBuilder($arguments, $reflectionDefinition, $this), $this)
+                ArgumentResolver::resolve(new ArgumentBuilder($argument, $reflectionDefinition, $this), $this)
             );
         }
 
         return call_user_func_array(
             $definition, // @phpstan-ignore argument.type
-            ArgumentResolver::resolve(new ArgumentBuilder($arguments, $reflectionDefinition, $this), $this)
+            ArgumentResolver::resolve(new ArgumentBuilder($argument, $reflectionDefinition, $this), $this)
         );
     }
 

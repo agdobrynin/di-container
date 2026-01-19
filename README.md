@@ -127,9 +127,10 @@ $post->title = 'Publication about DiContainer';
 // ...
 
 // получить класс PostController с внедренным сервисом Mail и выполнить метод "send"
+// с передачей именованного аргумента
 $container->call(
     definition: [PostController::class, 'send'],
-    arguments: ['post' => $post]
+    post: $post
 );
 
 ```

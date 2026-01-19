@@ -54,7 +54,7 @@ class CallClassDefinitionTest extends TestCase
                 ->bindArguments(publicProperty: 'Ready'),
         ], $config);
 
-        $res = $container->call(ClassWithSimplePublicProperty::class, ['append' => '🚀']);
+        $res = $container->call(ClassWithSimplePublicProperty::class, ...['append' => '🚀']);
 
         $this->assertEquals('Ready invoke 🚀', $res);
     }
@@ -81,7 +81,7 @@ class CallClassDefinitionTest extends TestCase
                 ->bindArguments(publicProperty: 'Start'),
         ], $config);
 
-        $res = $container->call(ClassWithSimplePublicProperty::class.'::method', ['append' => '🚩']);
+        $res = $container->call(ClassWithSimplePublicProperty::class.'::method', ...['append' => '🚩']);
 
         $this->assertEquals('Start method 🚩', $res);
     }
@@ -89,7 +89,7 @@ class CallClassDefinitionTest extends TestCase
     public function testCallWithArgumentsFromStaticMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make();
-        $res = $container->call(ClassWithSimplePublicProperty::class.'::staticMethod', ['append' => '🗿']);
+        $res = $container->call(ClassWithSimplePublicProperty::class.'::staticMethod', ...['append' => '🗿']);
 
         $this->assertEquals('static method 🗿', $res);
     }
