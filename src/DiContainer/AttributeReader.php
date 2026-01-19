@@ -44,7 +44,7 @@ final class AttributeReader
     /**
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
-    public static function getDiFactoryAttribute(ReflectionClass $class): ?DiFactory
+    public static function getDiFactoryAttributeOnClass(ReflectionClass $class): ?DiFactory
     {
         $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
 

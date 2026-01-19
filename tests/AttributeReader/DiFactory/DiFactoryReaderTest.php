@@ -29,7 +29,7 @@ class DiFactoryReaderTest extends TestCase
 {
     public function testHasOneAttribute(): void
     {
-        $attribute = AttributeReader::getDiFactoryAttribute(new ReflectionClass(Main::class));
+        $attribute = AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(Main::class));
 
         $this->assertInstanceOf(DiFactory::class, $attribute);
         $this->assertEquals(MainFirstDiFactory::class, $attribute->getIdentifier());
@@ -37,7 +37,7 @@ class DiFactoryReaderTest extends TestCase
 
     public function testNoneAttribute(): void
     {
-        $attribute = AttributeReader::getDiFactoryAttribute(new ReflectionClass(NoDiFactories::class));
+        $attribute = AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(NoDiFactories::class));
 
         $this->assertNull($attribute);
     }
@@ -47,7 +47,7 @@ class DiFactoryReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/Only one of the php attributes.+DiFactory::class.+Autowire::class/');
 
-        AttributeReader::getDiFactoryAttribute(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
+        AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
     }
 
     #[DataProvider('dataProviderReturnTypeFromFactory')]
@@ -55,7 +55,7 @@ class DiFactoryReaderTest extends TestCase
     {
         $this->expectException(AutowireParameterTypeException::class);
 
-        AttributeReader::getDiFactoryAttribute(new ReflectionClass($class));
+        AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass($class));
     }
 
     public static function dataProviderReturnTypeFromFactory(): Generator
