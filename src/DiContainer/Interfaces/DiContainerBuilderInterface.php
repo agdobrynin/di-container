@@ -65,7 +65,7 @@ interface DiContainerBuilderInterface
      *
      * @return $this
      */
-    public function enableCompilation(string $outputDirectory, string $containerClass, int $permissionCompiledContainerFile = 0666, bool $isExclusiveLockFile = true, array $options = []): static;
+    public function compileToFile(string $outputDirectory, string $containerClass, int $permissionCompiledContainerFile = 0666, bool $isExclusiveLockFile = true, array $options = []): static;
 
     /**
      * Build dependency injection container.

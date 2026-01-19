@@ -162,7 +162,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      *  force_rebuild?: bool,
      * } $options
      */
-    public function enableCompilation(string $outputDirectory, string $containerClass, int $permissionCompiledContainerFile = 0666, bool $isExclusiveLockFile = true, array $options = ['invalid_behavior' => InvalidBehaviorCompileEnum::ExceptionOnCompile]): static
+    public function compileToFile(string $outputDirectory, string $containerClass, int $permissionCompiledContainerFile = 0666, bool $isExclusiveLockFile = true, array $options = ['invalid_behavior' => InvalidBehaviorCompileEnum::ExceptionOnCompile]): static
     {
         $this->compilerOutputDirectory = $outputDirectory;
         $this->compilerContainerClass = $containerClass;
