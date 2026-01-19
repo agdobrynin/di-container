@@ -4,18 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\AttributeReader;
-use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
-use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Sum;
 use Tests\FromDocs\PhpDefinitions\Fixtures\SumInterface;
@@ -25,17 +16,7 @@ use function Kaspi\DiContainer\diAutowire;
 /**
  * @internal
  */
-#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
-#[CoversClass(AttributeReader::class)]
-#[CoversClass(DiContainer::class)]
-#[CoversClass(DiContainerConfig::class)]
-#[CoversClass(DiContainerFactory::class)]
-#[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
-#[CoversClass(DiDefinitionAutowire::class)]
-#[CoversClass(Helper::class)]
-#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
-#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversNothing]
 class ExamplesTest extends TestCase
 {
     public function testExample1(): void
@@ -47,15 +28,18 @@ class ExamplesTest extends TestCase
                 ->bindArguments(init: 10),
         ];
 
-        $c = (new DiContainerFactory())->make($definition);
+        $c = (new DiContainerBuilder())
+            ->addDefinitions($definition)
+            ->build()
+        ;
 
-        $this->assertEquals(50, $c->get(SumInterface::class)->getInit());
-        $this->assertEquals(10, $c->get(Sum::class)->getInit());
+        self::assertEquals(50, $c->get(SumInterface::class)->getInit());
+        self::assertEquals(10, $c->get(Sum::class)->getInit());
     }
 
     public function testExample2(): void
     {
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerBuilder())->build();
 
         $sum1 = (new DiDefinitionAutowire(Sum::class))
             ->bindArguments(init: 50)
@@ -69,8 +53,8 @@ class ExamplesTest extends TestCase
             ->resolve($container)
         ;
 
-        $this->assertNotSame($sum1, $sum2);
-        $this->assertEquals(50, $sum1->getInit());
-        $this->assertEquals(20, $sum2->getInit());
+        self::assertNotSame($sum1, $sum2);
+        self::assertEquals(50, $sum1->getInit());
+        self::assertEquals(20, $sum2->getInit());
     }
 }

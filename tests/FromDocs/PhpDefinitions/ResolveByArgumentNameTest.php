@@ -4,20 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\AttributeReader;
-use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
-use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
-use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
@@ -25,26 +15,17 @@ use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceLocation;
 /**
  * @internal
  */
-#[CoversClass(AttributeReader::class)]
-#[CoversClass(DiContainer::class)]
-#[CoversClass(DiContainerConfig::class)]
-#[CoversClass(DiContainerFactory::class)]
-#[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
-#[CoversClass(DiDefinitionAutowire::class)]
-#[CoversClass(DiDefinitionValue::class)]
-#[CoversClass(Helper::class)]
-#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
-#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversNothing]
 class ResolveByArgumentNameTest extends TestCase
 {
     public function testResolveByArgumentNameFail(): void
     {
-        $definitions = [
-            'locationCity' => 'Vice city',
-        ];
-
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions([
+                'locationCity' => 'Vice city',
+            ])
+            ->build()
+        ;
 
         try {
             $container->get(ServiceLocation::class);

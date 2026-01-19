@@ -4,26 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
-use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
-use PHPUnit\Framework\Attributes\CoversClass;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(DiContainer::class)]
-#[CoversClass(DiContainerConfig::class)]
-#[CoversClass(DiContainerFactory::class)]
-#[CoversClass(DiDefinitionValue::class)]
-#[CoversClass(Helper::class)]
-#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
-#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversNothing]
 class SimpleDefinitionTest extends TestCase
 {
     public function testSimpleDefinition(): void
@@ -38,11 +26,14 @@ class SimpleDefinitionTest extends TestCase
             ],
         ];
 
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definitions)
+            ->build()
+        ;
 
-        $this->assertEquals('payment', $container->get('logger.name'));
-        $this->assertEquals('/var/log/payment.log', $container->get('logger.file'));
-        $this->assertFalse($container->get('feedback.show-recipient'));
-        $this->assertEquals(['help@my-company.inc', 'boss@my-company.inc'], $container->get('feedback.email'));
+        self::assertEquals('payment', $container->get('logger.name'));
+        self::assertEquals('/var/log/payment.log', $container->get('logger.file'));
+        self::assertFalse($container->get('feedback.show-recipient'));
+        self::assertEquals(['help@my-company.inc', 'boss@my-company.inc'], $container->get('feedback.email'));
     }
 }
