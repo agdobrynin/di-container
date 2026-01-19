@@ -4,18 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
-use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\IterableArg;
 use Tests\FromDocs\PhpDefinitions\Fixtures\Variadic\RuleA;
@@ -31,50 +22,42 @@ use function Kaspi\DiContainer\diGet;
 /**
  * @internal
  */
-#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
-#[CoversFunction('\Kaspi\DiContainer\diCallable')]
-#[CoversFunction('\Kaspi\DiContainer\diGet')]
-#[CoversClass(DiContainer::class)]
-#[CoversClass(DiContainerConfig::class)]
-#[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
-#[CoversClass(DiDefinitionAutowire::class)]
-#[CoversClass(DiDefinitionCallable::class)]
-#[CoversClass(DiDefinitionGet::class)]
-#[CoversClass(Helper::class)]
-#[CoversClass(AbstractSourceDefinitionsMutable::class)]
-#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversNothing]
 class CollectionTest extends TestCase
 {
     public function testCollection(): void
     {
-        $definitions = [
-            diAutowire(IterableArg::class, true)
+        $definitions = static function () {
+            yield diAutowire(IterableArg::class, true)
                 ->bindArguments(
                     rules: diGet('services.rule-list')
-                ),
-            'services.rule-list' => diCallable(
+                )
+            ;
+
+            yield 'services.rule-list' => diCallable(
                 definition: static fn (RuleA $a, RuleB $b, RuleC $c) => func_get_args(),
                 isSingleton: true
-            ),
-        ];
+            );
+        };
 
-        $container = new DiContainer(
-            $definitions,
-            new DiContainerConfig(
+        $container = (new DiContainerBuilder(
+            containerConfig: new DiContainerConfig(
                 useAttribute: false // Not use attributes
             )
-        );
+        ))
+            ->addDefinitions($definitions())
+            ->build()
+        ;
 
         $class = $container->get(IterableArg::class);
 
-        $this->assertSame($class, $container->get(IterableArg::class));
+        self::assertSame($class, $container->get(IterableArg::class));
 
         foreach ($class->getValues() as $item) {
-            $this->assertInstanceOf(RuleInterface::class, $item);
-            $this->assertContains($item::class, [RuleA::class, RuleB::class, RuleC::class]);
+            self::assertInstanceOf(RuleInterface::class, $item);
+            self::assertContains($item::class, [RuleA::class, RuleB::class, RuleC::class]);
         }
 
-        $this->assertSame($container->get('services.rule-list'), $container->get('services.rule-list'));
+        self::assertSame($container->get('services.rule-list'), $container->get('services.rule-list'));
     }
 }

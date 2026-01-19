@@ -4,21 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\Call;
 
-use Kaspi\DiContainer\AttributeReader;
-use Kaspi\DiContainer\DefinitionDiCall;
-use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
-use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
-use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
-use PHPUnit\Framework\Attributes\CoversClass;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\Call\Fixtires\ServiceOne;
 
@@ -29,28 +16,14 @@ use const ARRAY_FILTER_USE_BOTH;
 /**
  * @internal
  */
-#[CoversClass(AttributeReader::class)]
-#[CoversClass(DefinitionDiCall::class)]
-#[CoversClass(DiContainer::class)]
-#[CoversClass(DiContainerConfig::class)]
-#[CoversClass(DiContainerFactory::class)]
-#[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
-#[CoversClass(DiDefinitionAutowire::class)]
-#[CoversClass(DiDefinitionCallable::class)]
-#[CoversClass(DiDefinitionGet::class)]
-#[CoversClass(Helper::class)]
-#[CoversClass(ReflectionMethodByDefinition::class)]
-#[CoversClass(AbstractSourceDefinitionsMutable::class)]
-#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversNothing]
 class CallTest extends TestCase
 {
     public function testController(): void
     {
         $_POST = ['name' => 'Ivan'];
 
-        // try call
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerBuilder())->build();
 
         $res = $container->call(
             ['\Tests\FromDocs\Call\Fixtires\PostController', 'store'],
@@ -58,12 +31,12 @@ class CallTest extends TestCase
             ...array_filter($_POST, static fn ($v, $k) => 'name' === $k, ARRAY_FILTER_USE_BOTH)
         );
 
-        $this->assertEquals('The name Ivan saved!', $res);
+        self::assertEquals('The name Ivan saved!', $res);
     }
 
     public function testCallbackFunction(): void
     {
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerBuilder())->build();
 
         // определение callback с типизированным параметром
         $helperOne = static function (ServiceOne $service, string $name): string {
@@ -72,6 +45,6 @@ class CallTest extends TestCase
             return 'The name '.$name.' saved!';
         };
 
-        $this->assertEquals('The name Vasiliy saved!', $container->call($helperOne, ...['name' => 'Vasiliy']));
+        self::assertEquals('The name Vasiliy saved!', $container->call($helperOne, ...['name' => 'Vasiliy']));
     }
 }

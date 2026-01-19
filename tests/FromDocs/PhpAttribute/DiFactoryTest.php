@@ -4,43 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
-use Kaspi\DiContainer\AttributeReader;
-use Kaspi\DiContainer\Attributes\DiFactory;
-use Kaspi\DiContainer\DiContainer;
-use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
-use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
-use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
-use PHPUnit\Framework\Attributes\CoversClass;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\ClassOne;
 
 /**
  * @internal
  */
-#[CoversClass(AttributeReader::class)]
-#[CoversClass(DiFactory::class)]
-#[CoversClass(DiContainer::class)]
-#[CoversClass(DiContainerConfig::class)]
-#[CoversClass(DiContainerFactory::class)]
-#[CoversClass(DiDefinitionAutowire::class)]
-#[CoversClass(DiDefinitionFactory::class)]
-#[CoversClass(Helper::class)]
-#[CoversClass(AbstractSourceDefinitionsMutable::class)]
-#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversNothing]
 class DiFactoryTest extends TestCase
 {
     public function testDiFactory(): void
     {
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerBuilder())->build();
 
         $myClass = $container->get(ClassOne::class);
 
-        $this->assertEquals('Piter', $myClass->name);
-        $this->assertEquals(22, $myClass->age);
-        $this->assertSame($myClass, $container->get(ClassOne::class));
+        self::assertEquals('Piter', $myClass->name);
+        self::assertEquals(22, $myClass->age);
+        self::assertSame($myClass, $container->get(ClassOne::class));
     }
 }
