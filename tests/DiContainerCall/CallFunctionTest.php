@@ -61,7 +61,7 @@ class CallFunctionTest extends TestCase
     public function testBuiltinFunction(): void
     {
         $container = new DiContainer();
-        $res = round($container->call('log', ['num' => 10]));
+        $res = round($container->call('log', 10));
 
         $this->assertEquals(2.0, $res);
     }
@@ -76,7 +76,7 @@ class CallFunctionTest extends TestCase
 
         $container = new DiContainer($definitions);
 
-        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass', ['append' => '🚀']);
+        $res = $container->call('\Tests\DiContainerCall\Fixtures\funcWithDependencyClass', ...['append' => '🚀']);
 
         $this->assertEquals('Ready + 🚀', $res);
     }
@@ -180,7 +180,7 @@ class CallFunctionTest extends TestCase
             )
         );
 
-        self::assertEquals('secure_string_one method foo', $container->call([$object, 'method'], ['foo']));
+        self::assertEquals('secure_string_one method foo', $container->call([$object, 'method'], 'foo'));
     }
 
     public function testCallableWithClassAsObjectAndInvokeMethod(): void
@@ -193,7 +193,7 @@ class CallFunctionTest extends TestCase
             )
         );
 
-        self::assertEquals('secure_string_one invoke foo', $container->call($object, ['foo']));
+        self::assertEquals('secure_string_one invoke foo', $container->call($object, 'foo'));
     }
 
     public function testClosureFail(): void

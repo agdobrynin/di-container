@@ -55,7 +55,7 @@ class CallTest extends TestCase
         $res = $container->call(
             ['\Tests\FromDocs\Call\Fixtires\PostController', 'store'],
             // $_POST содержит ['name' => 'Ivan']
-            array_filter($_POST, static fn ($v, $k) => 'name' === $k, ARRAY_FILTER_USE_BOTH)
+            ...array_filter($_POST, static fn ($v, $k) => 'name' === $k, ARRAY_FILTER_USE_BOTH)
         );
 
         $this->assertEquals('The name Ivan saved!', $res);
@@ -72,6 +72,6 @@ class CallTest extends TestCase
             return 'The name '.$name.' saved!';
         };
 
-        $this->assertEquals('The name Vasiliy saved!', $container->call($helperOne, ['name' => 'Vasiliy']));
+        $this->assertEquals('The name Vasiliy saved!', $container->call($helperOne, ...['name' => 'Vasiliy']));
     }
 }

@@ -1,7 +1,19 @@
-# 📦 DiContainer::call()
+# 📦 Метод `call()`.
 
-Контейнер предоставляет `DiContainer::call()`, который может вызывать любой PHP **callable** тип
-или [преобразуемый в callable тип](#класс-с-нестатическим-методом-).
+Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface`
+предоставляющий метод `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface::call()`.
+
+Получение результата `callable` типа или [преобразуеемого в callable тип](#класс-с-нестатическим-методом) выражения, с разрешением зависимостей через контейнер:
+```php
+call(array|callable|string $definition, mixed ...$argument)
+```
+Параметры:
+- `$definition` - `callable` тип или значение преобразуемое к `callable`;
+- `$argument` - аргументы для подстановки в `callable` тип;
+
+> [!TIP]
+> Если часть параметров функции или метода может быть разрешена контейнером автоматически,
+> то для указания конкретного параметра можно использовать именованные аргументы в `$argument`.
 
 #### Поддерживаемые типы:
 - Функция
@@ -16,49 +28,80 @@
     ```
 - Статические методы класса
   ```php
-  $container->call('App\MyClass::someStaticMethod');
-  $container->call(App\MyClass::class.'::someStaticMethod');
-  $container->call([App\MyClass::class, 'someStaticMethod']);
+  namespace App\Services;
+  
+  class Foo {
+    public static function bar() {}
+  }
   ```
-- Нестатический метод PHP класса [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
   ```php
-  $container->call([App\MyClass::class, 'someMethod']);
+  $container->call('\\App\\Services\\Foo::bar');
+  
+  $container->call(\App\Services\Foo::class.'::bar');
+  
+  $container->call([\App\Services\Foo::class, 'bar']);
   ```
-- Нестатический метод `__invoke()` PHP класса [*](#класс-с-нестатическим-методом-) (_преобразование контейнером к callable типу_)
+- Созданный объект PHP класса и метод класса
   ```php
-  $container->call(App\MyClass::class);
+  namespace App\Services;
+  
+  class Foo {
+    public function __construct() {}
+    public function qux() {}
+  }
   ```
-#### Класс с нестатическим методом (*)
+  ```php
+  $object = new \App\Services\Foo();
+  
+  $container->call([$object, 'qux']);
+  ```
 
-- поддерживаемые преобразования в `callable` тип, через создание нового объекта PHP класса с разрешением зависимостей в конструкторе и вызовом метода:
- ```php
-  $container->call(App\MyClass::class);
-  // будет преобразовано
-  $callable = [new App\MyClass(), '__invoke'];
- ```  
- ```php
-  $container->call([App\MyClass::class, 'someMethod']); 
-  $container->call(App\MyClass::class.'::someMethod');
-  $container->call('App\MyClass::someMethod');
-  // будет преобразовано
-  $callable = [new App\MyClass(), 'someMethod'];
- ```
-## Метод контейнера `DiContainer::call()`
-Получение результата `callable` типа или преобразуемого в `callable` выражения, с разрешением зависимостей через контейнер.
-```php
-call(array|callable|string $definition, array $arguments = [])
-```
-Аргументы:
-- `$definition` - `callable` тип или значение преобразуемое к `callable`.
-- `$arguments` - аргументы для подстановки в `callable` тип.
+#### Класс с нестатическим методом.
 
-> [!TIP]
-> Можно использовать именованные аргументы в `$arguments` для подстановки.
+Поддерживаемые преобразования в `callable` тип, через получение контейнером PHP класса
+с разрешением зависимостей в конструкторе и вызовом указанного метода:
 
-> [!TIP]
-> Для аргументов не объявленных в `$arguments` контейнер попытается разрешить зависимости самостоятельно.
+- PHP класс реализующий метод `__invoke()`:
+  ```php
+  namespace App\Services;
+  
+  class Foo {
+    public function __construct() {}
+    public function __invoke() {}
+  }
+  ```
+  ```php
+  $container->call(\App\Services\Foo::class);
+  ```
+  метод `call()` выполнит следующие действия:
+  ```php
+    $object = new \App\Services\Foo();
+    $object->__invoke();
+  ```
 
-Абстрактный пример с контроллером:
+- PHP класс представленный через полное имя (fully qualified class name) и вызываемый метод:
+  ```php
+  namespace App\Services;
+  
+  class Foo {
+    public function __construct() {}
+    public function qux() {}
+  }
+  ``` 
+  ```php
+  $container->call([\App\Services\Foo::class, 'qux']);
+  
+  $container->call(\App\Services\Foo::class.'::qux');
+  
+  $container->call('\\App\\Services\\Foo::qux');
+  ```
+  метод `call()` выполнит следующие действия:
+  ```php
+    $object = new \App\Services\Foo();
+    $object->qux();
+  ```
+
+### Абстрактный пример с контроллером:
 ```php
 // src/Controllers/PostController.php
 namespace App\Controllers;
@@ -78,57 +121,55 @@ class  PostController {
 
 ```php
 // определение контейнера
+use App\Controllers\PostController;
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())->build();
 
 // вызов контроллера с автоматическим разрешением зависимостей и передачей аргументов
 print $container->call(
-    ['App\Controllers\PostController', 'store'],
+    [PostController::class, 'store'],
     // $_POST содержит ['name' => 'Ivan']
     // 'name' соответствует имени аргумента в методе store
-    \array_filter($_POST,  static fn ($v, $k) => 'name' === $k, \ARRAY_FILTER_USE_BOTH)
+    ...\array_filter($_POST,  static fn ($v, $k) => 'name' === $k, \ARRAY_FILTER_USE_BOTH)
 );
 ```
 результат
 `The name Ivan saved!`
 
 > [!NOTE]
-> Фактически `DiContainer::call()` выполнит создание экземпляра класс `App\Controllers\PostController` с внедрением зависимостей в конструктор
-> и вызовет метод `App\Controllers\PostController::store`
+> Фактически метод `call()` выполнит создание экземпляра класс `\App\Controllers\PostController` с внедрением зависимостей в конструктор
+> и вызовет метод `\App\Controllers\PostController::store()`
 > ```php
 > // будет выполнено
-> (new App\Controllers\PostController(serviceOne: new ServiceOne()))
+> (new \App\Controllers\PostController(serviceOne: new ServiceOne()))
 >    ->post(name: 'Ivan')
 > ```
 
-Абстрактный пример с автоматическим разрешением зависимостей
-и подстановкой дополнительных параметров при вызове функции:
-
+### Абстрактный пример с функцией:
 ```php
-use Kaspi\DiContainer\DiContainerBuilder;
-// определение контейнера
-$container = (new DiContainerBuilder())->build();
+namespace App\Functions;
 
-// ... more code ...
-
-// определение callback с типизированным параметром
-$helperOne = static function(App\Service\ServiceOne $service, string $name) {
+function one_service(App\Service\ServiceOne $service, string $name) {
         $service->save($name);
         
         return 'The name '.$name.' saved!';
 };
+```
+```php
+// определение контейнера
+$container = (new \Kaspi\DiContainer\DiContainerBuilder())
+    ->build()
+;
 
-// ... more code ...
-
-// вызов callback с autowiring
-print $container->call($helperOne, ['name' => 'Vasiliy']); // The name Vasiliy saved! 
+// вызов callback с autowiring и подстановкой именованного аргумента
+print $container->call('\App\Functions\one_service', name: 'Vasiliy'); 
 ```
 > [!NOTE]
 > будет выполнено
 > ```php
-> $helperOne(
+> \App\Functions\one_service(
 >     new App\Service\ServiceOne(),
->     'Vasiliy'
+>     name: 'Vasiliy',
 > );
 > ```
