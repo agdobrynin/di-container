@@ -7,6 +7,7 @@ namespace Tests\AttributeReader\DiFactory;
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -14,6 +15,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
+use Tests\AttributeReader\DiFactory\Fixtures\FooFail;
 use Tests\AttributeReader\DiFactory\Fixtures\Main;
 use Tests\AttributeReader\DiFactory\Fixtures\MainFail;
 use Tests\AttributeReader\DiFactory\Fixtures\MainFailTwo;
@@ -63,5 +65,13 @@ class DiFactoryReaderTest extends TestCase
         yield 'For class '.MainFail::class => [MainFail::class];
 
         yield 'For class '.MainFailTwo::class => [MainFailTwo::class];
+    }
+
+    public function testManyFactoryOnClass(): void
+    {
+        $this->expectException(AutowireAttributeException::class);
+        $this->expectExceptionMessage('can be applied once for');
+
+        AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(FooFail::class));
     }
 }
