@@ -52,6 +52,12 @@ final class AttributeReader
             return null;
         }
 
+        if (isset($groupAttrs[DiFactory::class][1])) {
+            throw new AutowireAttributeException(
+                sprintf('The attribute %s::class can be applied once for %s class.', DiFactory::class, $class->name)
+            );
+        }
+
         /** @var DiFactory $attrFactory */
         $attrFactory = $groupAttrs[DiFactory::class][0]->newInstance();
         $returnTypeDiFactoryInvoke = (string) (new ReflectionMethod($attrFactory->getIdentifier(), '__invoke'))->getReturnType();
