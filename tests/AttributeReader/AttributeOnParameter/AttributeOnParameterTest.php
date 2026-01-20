@@ -6,6 +6,7 @@ namespace Tests\AttributeReader\AttributeOnParameter;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
@@ -18,12 +19,16 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use ReflectionParameter;
+use Tests\AttributeReader\AttributeOnParameter\Fixtures\Foo;
+use Tests\AttributeReader\AttributeOnParameter\Fixtures\FooAttr;
+use Tests\AttributeReader\AttributeOnParameter\Fixtures\FooFactory;
 
 /**
  * @internal
  */
 #[CoversClass(Helper::class)]
 #[CoversClass(AttributeReader::class)]
+#[CoversClass(DiFactory::class)]
 class AttributeOnParameterTest extends TestCase
 {
     #[DataProvider('dataProviderParam')]
@@ -51,5 +56,23 @@ class AttributeOnParameterTest extends TestCase
         yield 'InjectByCallable and TaggedAs' => [
             (new ReflectionFunction(static fn (#[TaggedAs('tags.one'), InjectByCallable('func2')] $param) => true))->getParameters()[0],
         ];
+
+        yield 'Inject and DiFactory' => [
+            (new ReflectionFunction(static fn (#[Inject('service.one'), DiFactory(FooFactory::class)] $param) => true))->getParameters()[0],
+        ];
+    }
+
+    public function testMixedAttributes(): void
+    {
+        $f = static fn (
+            #[DiFactory(FooFactory::class)]
+            #[FooAttr(Foo::class)]
+            mixed ...$a
+        ) => '';
+        $param = new ReflectionParameter($f, 0);
+
+        $res = [...AttributeReader::getAttributeOnParameter($param, $this->createMock(DiContainerInterface::class))];
+
+        self::assertCount(1, $res);
     }
 }
