@@ -53,7 +53,7 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    private ArrayIterator $configDefinitions;
+    private readonly ArrayIterator $configDefinitions;
 
     /**
      * @var array<non-empty-string, bool>
@@ -194,7 +194,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $cacheFileOpened?->fwrite('};'.PHP_EOL);
         }
 
-        yield from $this->configDefinitions; // @phpstan-ignore generator.keyType
+        yield from $this->configDefinitions;
     }
 
     /**

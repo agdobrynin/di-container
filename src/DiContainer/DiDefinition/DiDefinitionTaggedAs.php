@@ -30,7 +30,7 @@ use function var_export;
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
     private bool $keyChecked;
-    private bool $isUseKeysComputed;
+    private readonly bool $isUseKeysComputed;
 
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
@@ -59,7 +59,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     {
         return $this->isLazy
             ? new LazyDefinitionIterator($container, $this->exposeContainerIdentifiers($container, $context))
-            : array_map(static fn (string $id) => $container->get($id), $this->exposeContainerIdentifiers($container, $context));
+            : array_map($container->get(...), $this->exposeContainerIdentifiers($container, $context));
     }
 
     public function getDefinition(): string

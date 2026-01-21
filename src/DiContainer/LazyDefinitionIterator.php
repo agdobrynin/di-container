@@ -29,7 +29,7 @@ final class LazyDefinitionIterator implements Iterator, ContainerInterface, Arra
      * @param array<non-empty-string|non-negative-int, non-empty-string> $mapKeyToContainerIdentifier key to container identifier
      */
     public function __construct(
-        private ContainerInterface $container,
+        private readonly ContainerInterface $container,
         private array $mapKeyToContainerIdentifier,
     ) {}
 

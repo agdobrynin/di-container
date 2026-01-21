@@ -13,7 +13,7 @@ final class Inject implements DiAttributeInterface
     /**
      * @param class-string|string $id class name or container identifier
      */
-    public function __construct(private string $id = '') {}
+    public function __construct(private readonly string $id = '') {}
 
     public function getIdentifier(): string
     {

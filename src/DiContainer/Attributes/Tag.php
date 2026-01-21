@@ -21,7 +21,7 @@ final class Tag implements DiAttributeInterface
      * @param non-empty-string $name    tag name
      * @param TagOptions       $options tag's meta-data
      */
-    public function __construct(private string $name, private array $options = [], private int|string|null $priority = null, private ?string $priorityMethod = null)
+    public function __construct(private readonly string $name, private readonly array $options = [], private readonly int|string|null $priority = null, private readonly ?string $priorityMethod = null)
     {
         if ('' === trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');
