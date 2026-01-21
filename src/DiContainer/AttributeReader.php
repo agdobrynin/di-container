@@ -46,7 +46,7 @@ final class AttributeReader
      */
     public static function getDiFactoryAttributeOnClass(ReflectionClass $class): ?DiFactory
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
 
         if (!isset($groupAttrs[DiFactory::class])) {
             return null;
@@ -78,7 +78,7 @@ final class AttributeReader
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
 
         if (!isset($groupAttrs[Autowire::class])) {
             return;
@@ -195,14 +195,14 @@ final class AttributeReader
 
     /**
      * @param list<ReflectionAttribute> $attrs
-     * @param list<class-string>        $availableAttrs
      *
      * @return array<class-string, list<ReflectionAttribute>>
      *
      * @throws AutowireAttributeException
      */
-    private static function getNotIntersectGroupAttrs(array $attrs, array $availableAttrs, ReflectionClass|ReflectionParameter $whereUseAttribute): array
+    private static function getNotIntersectGroupAttrs(array $attrs, ReflectionClass $whereUseAttribute): array
     {
+        $availableAttrs = [Autowire::class, DiFactory::class];
         $groupAttrs = [];
 
         foreach ($attrs as $attr) {
@@ -219,12 +219,9 @@ final class AttributeReader
 
         if (isset($intersectAttrs[1])) {
             $strIntersect = implode('::class, ', $intersectAttrs).'::class';
-            $messageWhereUseAttribute = $whereUseAttribute instanceof ReflectionParameter
-                ? $whereUseAttribute.' in '.Helper::functionName($whereUseAttribute->getDeclaringFunction())
-                : $whereUseAttribute->name.'::class';
 
             throw new AutowireAttributeException(
-                sprintf('Only one of the php attributes %s may be declared at %s.', $strIntersect, $messageWhereUseAttribute)
+                sprintf('Only one of the php attributes %s may be declared at %s::class.', $strIntersect, $whereUseAttribute->name)
             );
         }
 
