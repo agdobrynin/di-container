@@ -48,9 +48,8 @@ T;
         }
 
         $exceptionString .= PHP_EOL.PHP_EOL.'Next '.get_debug_type($this).': '.$this->getMessage().' in '.$this->getFile().':'.$this->getLine();
-        $exceptionString .= PHP_EOL.'Stack trace:'.PHP_EOL.$this->getTraceAsString();
 
-        return $exceptionString;
+        return $exceptionString.(PHP_EOL.'Stack trace:'.PHP_EOL.$this->getTraceAsString());
     }
 
     public function getExceptionStack(): array

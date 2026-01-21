@@ -53,7 +53,7 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    private ArrayIterator $configDefinitions;
+    private readonly ArrayIterator $configDefinitions;
 
     /**
      * @var array<non-empty-string, bool>

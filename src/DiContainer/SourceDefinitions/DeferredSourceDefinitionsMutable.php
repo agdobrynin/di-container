@@ -18,7 +18,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
     private array $definitions;
 
     /** @var Closure(bool): array<class-string|non-empty-string, mixed> */
-    private Closure $initDefinitions;
+    private readonly Closure $initDefinitions;
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $sourceDefinitions
