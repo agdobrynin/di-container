@@ -50,7 +50,7 @@ class InjectReaderTest extends TestCase
         $p = new ReflectionParameter($f, 0);
 
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('can only be applied once per non-variadic Parameter #0 [ <required> string $a ] in');
+        $this->expectExceptionMessage('can be applied once per non-variadic Parameter #0 [ <required> string $a ] in');
 
         AttributeReader::getAttributeOnParameter($p, $this->container)->valid();
     }

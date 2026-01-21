@@ -35,7 +35,7 @@ class AttributeOnParameterTest extends TestCase
     public function testAttributeOnParameterIntersect(ReflectionParameter $param): void
     {
         $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessageMatches('/Only one of the php attributes.+at Parameter #0.+[ <required> \$param ].+AttributeOnParameterTest::.+()/');
+        $this->expectExceptionMessage('The php attribute can be applied once per non-variadic Parameter');
 
         AttributeReader::getAttributeOnParameter(
             $param,
