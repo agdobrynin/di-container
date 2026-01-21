@@ -30,7 +30,7 @@ class ServiceReaderTest extends TestCase
 
     public function testNoneAttribute(): void
     {
-        $attribute = AttributeReader::getDiFactoryAttribute(new ReflectionClass(NoServiceInterface::class));
+        $attribute = AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(NoServiceInterface::class));
 
         $this->assertNull($attribute);
     }

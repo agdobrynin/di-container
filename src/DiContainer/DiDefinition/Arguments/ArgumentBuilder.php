@@ -6,10 +6,12 @@ namespace Kaspi\DiContainer\DiDefinition\Arguments;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
@@ -290,7 +292,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionCallable|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
@@ -318,6 +320,8 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     $attr->getContainerIdExclude(),
                     $attr->isSelfExclude(),
                 );
+            } elseif ($attr instanceof DiFactory) {
+                $definition = new DiDefinitionFactory($attr->getIdentifier());
             } else {
                 $definition = new DiDefinitionCallable($attr->getCallable());
             }

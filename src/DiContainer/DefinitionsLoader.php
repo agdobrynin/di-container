@@ -385,7 +385,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return $services; // @phpstan-ignore return.type
         }
 
-        if (null !== ($factory = AttributeReader::getDiFactoryAttribute($reflectionClass))) {
+        if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
             if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf('Cannot automatically configure class "%s" via php attribute "%s". The class "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, DiFactory::class, $reflectionClass->name, $reflectionClass->name)

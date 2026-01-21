@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
@@ -25,6 +26,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use stdClass;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
+use Tests\DiDefinition\BuildArguments\Fixtures\BatFactory;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
 use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
 use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
@@ -33,6 +35,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 use function array_keys;
 use function func_get_args;
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diFactory;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diValue;
 
@@ -40,6 +43,7 @@ use function Kaspi\DiContainer\diValue;
  * @internal
  */
 #[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diFactory')]
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
 #[CoversFunction('\Kaspi\DiContainer\diGet')]
 #[CoversClass(BindArgumentsTrait::class)]
@@ -50,6 +54,7 @@ use function Kaspi\DiContainer\diValue;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(DiDefinitionFactory::class)]
 class BuildArgumentsByPhpDefinitionTest extends TestCase
 {
     use BindArgumentsTrait;
@@ -442,5 +447,19 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         $arg = $ba->build();
 
         self::assertEmpty($arg);
+    }
+
+    public function testParameterResolvedByDiFactory(): void
+    {
+        $fn = static fn (
+            mixed $bat,
+        ) => $bat;
+
+        $this->bindArguments(bat: diFactory(BatFactory::class));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $arg = $ba->build();
+
+        self::assertInstanceOf(DiDefinitionFactory::class, $arg[0]);
     }
 }

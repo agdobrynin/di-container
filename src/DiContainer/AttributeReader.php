@@ -28,7 +28,6 @@ use TypeError;
 
 use function array_intersect;
 use function array_keys;
-use function count;
 use function implode;
 use function in_array;
 use function is_a;
@@ -44,12 +43,18 @@ final class AttributeReader
     /**
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
-    public static function getDiFactoryAttribute(ReflectionClass $class): ?DiFactory
+    public static function getDiFactoryAttributeOnClass(ReflectionClass $class): ?DiFactory
     {
         $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
 
         if (!isset($groupAttrs[DiFactory::class])) {
             return null;
+        }
+
+        if (isset($groupAttrs[DiFactory::class][1])) {
+            throw new AutowireAttributeException(
+                sprintf('The attribute %s::class can be applied once for %s class.', DiFactory::class, $class->name)
+            );
         }
 
         /** @var DiFactory $attrFactory */
@@ -139,13 +144,13 @@ final class AttributeReader
     }
 
     /**
-     * @return Generator<Inject>|Generator<InjectByCallable>|Generator<ProxyClosure>|Generator<TaggedAs>
+     * @return Generator<DiFactory>|Generator<Inject>|Generator<InjectByCallable>|Generator<ProxyClosure>|Generator<TaggedAs>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
     public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($param->getAttributes(), [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class], $param);
+        $groupAttrs = self::getNotIntersectGroupAttrs($param->getAttributes(), [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class, DiFactory::class], $param);
 
         if ([] === $groupAttrs) {
             return;
@@ -153,7 +158,7 @@ final class AttributeReader
 
         if (!$param->isVariadic()) {
             foreach ($groupAttrs as $attrClassName => $attrs) {
-                if (1 < count($attrs)) {
+                if (isset($attrs[1])) {
                     throw new AutowireAttributeException(
                         sprintf('The php attribute %s::class can only be applied once per non-variadic %s in %s.', $attrClassName, $param, Helper::functionName($param->getDeclaringFunction()))
                     );
@@ -189,6 +194,15 @@ final class AttributeReader
         if (isset($groupAttrs[TaggedAs::class])) {
             /** @var ReflectionAttribute<TaggedAs> $attr */
             foreach ($groupAttrs[TaggedAs::class] as $attr) {
+                yield $attr->newInstance();
+            }
+
+            return;
+        }
+
+        if (isset($groupAttrs[DiFactory::class])) {
+            /** @var ReflectionAttribute<DiFactory> $attr */
+            foreach ($groupAttrs[DiFactory::class] as $attr) {
                 yield $attr->newInstance();
             }
 
@@ -232,7 +246,7 @@ final class AttributeReader
 
         $intersectAttrs = array_intersect(array_keys($groupAttrs), $availableAttrs);
 
-        if (count($intersectAttrs) > 1) {
+        if (isset($intersectAttrs[1])) {
             $strIntersect = implode('::class, ', $intersectAttrs).'::class';
             $messageWhereUseAttribute = $whereUseAttribute instanceof ReflectionParameter
                 ? $whereUseAttribute.' in '.Helper::functionName($whereUseAttribute->getDeclaringFunction())
