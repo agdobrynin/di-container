@@ -21,7 +21,7 @@
 - **[Inject](#inject)** – внедрение зависимости в параметры конструктора PHP класса, метода.
 - **[InjectByCallable](#injectbycallable)** – внедрение зависимости в параметры конструктора PHP класса, метода через `callable` тип.
 - **[Service](#service)** – определение для интерфейса какой PHP класс будет вызван и разрешен в контейнере.
-- **[DiFactory](#difactory)** – фабрика c помощью которой разрешается зависимость класса. Класс должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`
+- **[DiFactory](#difactory)** – разрешение зависимости с помощью класса-фабрики.
 - **[ProxyClosure](#proxyclosure)** – внедрение зависимости в параметры конструктора PHP класса, метода или аргументов функции с отложенной инициализацией через класс `\Closure`, анонимную функцию.
 - **[Tag](#tag)** – определение тегов для класса.
 - **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода PHP класса.
@@ -768,28 +768,40 @@ return static function (): \Generator {
 ```
 
 ## DiFactory
-Применятся к классу для разрешения зависимости через вызов класса реализующего `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
+Класс-фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
+
+Атрибут может применяться к классу или к параметру функции, метода.
 
 ```php
 #[DiFactory(string $id, ?bool $isSingleton = null)]
 ```
-Аргументы:
+Параметры:
 - `$id` - класс (_FQCN_) реализующий интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
-- `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#конфигурирование-dicontainer).
 
 > [!WARNING]
-> Метод `Kaspi\DiContainer\Interfaces\DiFactoryInterface::__invoke()` обязательно
-> должен иметь возвращаемый тип (_type hint_) совпадающий с классом к которому
-> применяется атрибут.
+> При применении атрибута к PHP классу метод `Kaspi\DiContainer\Interfaces\DiFactoryInterface::__invoke()`
+> обязательно должен иметь возвращаемый тип (_type hint_) совпадающий с классом, к которому применяется атрибут.
+>
 
+> [!NOTE]
+> Параметр атрибута `$isSingleton` при применении к параметрам функции, метода игнорируется
+> и не используется при разрешении зависимостей.
+> 
+> При разрешении параметра функции или метода возвращаемый тип (_type hint_)
+> `Kaspi\DiContainer\Interfaces\DiFactoryInterface::__invoke()` игнорируется.
+>
+
+Разрешение класса с помощью атрибута:
 ```php
 // src/Classes/SuperClass.php
 namespace App\Classes;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
+use App\Factory\FactorySuperClass;
 
 // Разрешить зависимость через фабрику и указать контейнеру что это будет Singleton.
-#[DiFactory(App\Factory\FactorySuperClass::class, isSingleton: true)]
+#[DiFactory(FactorySuperClass::class, isSingleton: true)]
 class SuperClass
 {
     public function __construct(public string $name, public int $age) {}
@@ -802,15 +814,33 @@ namespace App\Factory;
 
 use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 use Psr\Container\ContainerInterface;
+use App\Classes\SuperClass;
 
 class FactorySuperClass implements DiFactoryInterface
 {
 
-    public function __invoke(ContainerInterface $container): App\SuperClass
+    public function __invoke(ContainerInterface $container): SuperClass
     {
-        return new App\Classes\SuperClass('Piter', 22);
+        return new SuperClass('Piter', 22);
     }
 
+}
+```
+Разрешение параметра метода с помощью атрибута:
+```php
+// src/Classes/OtherClass.php
+namespace App\Classes;
+
+use Kaspi\DiContainer\Attributes\DiFactory;
+use App\Factory\FactorySuperClass;
+use App\Classes\SuperClass;
+
+class OtherClass
+{
+    public function __construct(
+        #[DiFactory(FactorySuperClass::class)]
+        public SuperClass $super
+    ) {}
 }
 ```
 
@@ -820,10 +850,15 @@ use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())->build();
 
-$myClass = $container->get(App\Classes\SuperClass::class);
+$superClass = $container->get(\App\Classes\SuperClass::class);
 
-print $myClass->name; // Piter
-print $myClass->age; // 22
+print $superClass->name; // Piter
+print $superClass->age; // 22
+
+$otherClass = $container->get(\App\Classes\OtherClass::class);
+
+print $otherClass->super->name; // Piter
+print $otherClass->super->age; // 22
 ```
 
 ## ProxyClosure
