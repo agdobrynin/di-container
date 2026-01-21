@@ -1,7 +1,7 @@
 {
     "name": "kaspi/di-container",
     "description": "Dependency injection container with autowired",
-    "keywords": ["container","di","autowire", "autowiring", "psr-11"],
+    "keywords": ["container", "dependency injection", "di", "autowire", "autowiring", "psr-11"],
     "type": "library",
     "support": {
         "issues": "https://github.com/agdobrynin/di-container/issues",
@@ -45,6 +45,9 @@
             "homepage": "https://github.com/agdobrynin"
         }
     ],
+    "provide": {
+        "psr/container-implementation": "^2.0"
+    },
     "minimum-stability": "stable",
     "scripts": {
         "fixer" : "./vendor/bin/php-cs-fixer fix",
