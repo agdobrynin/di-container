@@ -53,7 +53,8 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    private readonly ArrayIterator $configDefinitions;
+    /** @var ArrayIterator<non-empty-string, mixed> */
+    private ArrayIterator $configDefinitions;
 
     /**
      * @var array<non-empty-string, bool>
@@ -195,6 +196,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         yield from $this->configDefinitions;
+    }
+
+    public function reset(): void
+    {
+        $this->configDefinitions = new ArrayIterator();
+        $this->mapNamespaceUseAttribute = [];
+        $this->finderFullyQualifiedNameCollection?->reset();
     }
 
     /**
@@ -373,7 +381,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
-                if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) {
+                if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) { // @phpstan-ignore argument.type
                     throw new DefinitionsLoaderInvalidArgumentException(
                         sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
                     );
