@@ -29,6 +29,10 @@ use Tests\AttributeReader\AttributeOnParameter\Fixtures\FooFactory;
 #[CoversClass(Helper::class)]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(DiFactory::class)]
+#[CoversClass(Inject::class)]
+#[CoversClass(InjectByCallable::class)]
+#[CoversClass(ProxyClosure::class)]
+#[CoversClass(TaggedAs::class)]
 class AttributeOnParameterTest extends TestCase
 {
     #[DataProvider('dataProviderParam')]
@@ -74,5 +78,35 @@ class AttributeOnParameterTest extends TestCase
         $res = [...AttributeReader::getAttributeOnParameter($param, $this->createMock(DiContainerInterface::class))];
 
         self::assertCount(1, $res);
+    }
+
+    public function testAttributesOnVariadic(): void
+    {
+        $f = static fn (
+            #[DiFactory(FooFactory::class)]
+            #[Inject('service.one')]
+            #[InjectByCallable('\uniqid')]
+            #[ProxyClosure('service.heavy')]
+            #[TaggedAs('tags.one')]
+            mixed ...$a
+        ) => '';
+        $param = new ReflectionParameter($f, 0);
+
+        $res = [...AttributeReader::getAttributeOnParameter($param, $this->createMock(DiContainerInterface::class))];
+
+        self::assertCount(5, $res);
+
+        self::assertEquals(FooFactory::class, $res[0]->getIdentifier());
+        self::assertNull($res[0]->isSingleton());
+
+        self::assertEquals('service.one', $res[1]->getIdentifier());
+
+        self::assertEquals('\uniqid', $res[2]->getCallable());
+        self::assertIsCallable($res[2]->getCallable());
+
+        self::assertEquals('service.heavy', $res[3]->getIdentifier());
+
+        self::assertEquals('tags.one', $res[4]->getIdentifier());
+        self::assertTrue($res[4]->isLazy());
     }
 }
