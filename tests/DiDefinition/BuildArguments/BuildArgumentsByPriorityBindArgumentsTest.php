@@ -97,7 +97,7 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
             self::assertStringContainsString('Cannot build argument via php attribute for Parameter #1', $e->getMessage());
 
             self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
-            self::assertStringContainsString('can only be applied once per non-variadic Parameter #1', $e->getPrevious()->getMessage());
+            self::assertStringContainsString('can be applied once per non-variadic Parameter #1', $e->getPrevious()->getMessage());
         }
     }
 }

@@ -25,6 +25,7 @@
 - **[ProxyClosure](#proxyclosure)** – внедрение зависимости в параметры конструктора PHP класса, метода или аргументов функции с отложенной инициализацией через класс `\Closure`, анонимную функцию.
 - **[Tag](#tag)** – определение тегов для класса.
 - **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода PHP класса.
+- **[Параметр переменной длины](#параметр-переменной-длины)** – особенности применения атрибутов.
 
 ## Autowire
 Применятся к классу для конфигурирования сервиса в контейнере.
@@ -1105,6 +1106,45 @@ class AnyService {
 
 > [!TIP]
 > Более подробное [описание работы с тегами](05-tags.md).
+
+## Параметр переменной длины.
+При разрешении зависимостей параметра переменной длины у метода или функции можно использовать
+комбинации PHP атрибутов.
+
+Проверка типа (_type hint_) разрешаемой зависимости производится на уровне вызова метода или функции – в момент выполнения.
+
+Пример:
+
+```php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
+use App\Factories\ServiceOneFactory;
+
+final class Foo {
+    public function __construct(
+        #[Inject('service.foo_bar')]
+        #[DiFactory(ServiceOneFactory::class)]
+        #[InjectByCallable('\uniqid')]
+        mixed ...$args
+    ) {}
+}
+```
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$container = (new DiContainerBuilder())->build();
+
+$foo = $container->get(\App\Services\Foo::class);
+```
+> [!NOTE]
+> При разрешении параметров конструктора `App\Services\Foo::class` в свойстве `App\Services\Foo::$args`
+> будут разрешены следующие зависимости:
+> - `App\Services\Foo::$args[0]` – получен сервис через метод контейнера `get('service.foo_bar')`;
+> - `App\Services\Foo::$args[1]` – получен результат выполнения класса-фабрики `\App\Factories\ServiceOneFactory`;
+> - `App\Services\Foo::$args[2]` – получен результат вызова `callable` типа: выполнение функции `\uniqid()`;
 
 ## Разрешение зависимости объединенного типа через #[Inject].
 

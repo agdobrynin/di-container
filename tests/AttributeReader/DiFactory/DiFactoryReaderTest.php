@@ -86,7 +86,7 @@ class DiFactoryReaderTest extends TestCase
     public function testFailManyAttributeNonVariadicParam(): void
     {
         $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessage('can only be applied once per non-variadic Parameter #0');
+        $this->expectExceptionMessage('can be applied once per non-variadic Parameter #0');
 
         $f = static fn (
             #[DiFactory(FooFactoryOne::class)]

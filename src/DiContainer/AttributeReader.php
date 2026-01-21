@@ -26,6 +26,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 use TypeError;
 
+use function array_filter;
 use function array_intersect;
 use function array_keys;
 use function implode;
@@ -45,7 +46,7 @@ final class AttributeReader
      */
     public static function getDiFactoryAttributeOnClass(ReflectionClass $class): ?DiFactory
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
 
         if (!isset($groupAttrs[DiFactory::class])) {
             return null;
@@ -77,7 +78,7 @@ final class AttributeReader
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), [Autowire::class, DiFactory::class], $class);
+        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
 
         if (!isset($groupAttrs[Autowire::class])) {
             return;
@@ -144,94 +145,64 @@ final class AttributeReader
     }
 
     /**
-     * @return Generator<DiFactory>|Generator<Inject>|Generator<InjectByCallable>|Generator<ProxyClosure>|Generator<TaggedAs>
+     * @return Generator<DiFactory|Inject|InjectByCallable|ProxyClosure|TaggedAs>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
     public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($param->getAttributes(), [Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class, DiFactory::class], $param);
+        $supportAttrs = [DiFactory::class, Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class];
 
-        if ([] === $groupAttrs) {
+        $attrs = array_filter($param->getAttributes(), static fn (ReflectionAttribute $attr) => in_array($attr->getName(), $supportAttrs, true));
+
+        if ([] === $attrs) {
             return;
         }
 
-        if (!$param->isVariadic()) {
-            foreach ($groupAttrs as $attrClassName => $attrs) {
-                if (isset($attrs[1])) {
+        if (!$param->isVariadic() && isset($attrs[1])) {
+            throw new AutowireAttributeException(
+                sprintf('The php attribute can be applied once per non-variadic %s in %s.', $param, Helper::functionName($param->getDeclaringFunction()))
+            );
+        }
+
+        foreach ($attrs as $attr) {
+            if (Inject::class === $attr->getName()) {
+                /** @var ReflectionAttribute<Inject> $attr */
+                $attrInit = $attr->newInstance();
+
+                if ('' === $attrInit->getIdentifier()) {
+                    $paramType ??= Helper::getParameterTypeHint($param, $container);
+                    $attrInit = new Inject($paramType);
+                }
+            } elseif (InjectByCallable::class === $attr->getName()) {
+                try {
+                    /** @var ReflectionAttribute<InjectByCallable> $attr */
+                    $attrInit = $attr->newInstance();
+                } catch (TypeError $e) {
                     throw new AutowireAttributeException(
-                        sprintf('The php attribute %s::class can only be applied once per non-variadic %s in %s.', $attrClassName, $param, Helper::functionName($param->getDeclaringFunction()))
+                        message: sprintf('Unable to create an instance of PHP attribute "%s". Parameter $callable must be of type callable.', InjectByCallable::class),
+                        previous: $e
                     );
                 }
-            }
-        }
-
-        if (isset($groupAttrs[Inject::class])) {
-            $paramTypeHint = null;
-
-            /** @var ReflectionAttribute<Inject> $attr */
-            foreach ($groupAttrs[Inject::class] as $attr) {
-                if ('' === ($inject = $attr->newInstance())->getIdentifier()) {
-                    $paramTypeHint ??= Helper::getParameterTypeHint($param, $container);
-                    $inject = new Inject($paramTypeHint);
-                }
-
-                yield $inject;
+            } else {
+                /** @var ReflectionAttribute<DiFactory|ProxyClosure|TaggedAs> $attr */
+                $attrInit = $attr->newInstance();
             }
 
-            return;
-        }
-
-        if (isset($groupAttrs[ProxyClosure::class])) {
-            /** @var ReflectionAttribute<ProxyClosure> $attr */
-            foreach ($groupAttrs[ProxyClosure::class] as $attr) {
-                yield $attr->newInstance();
-            }
-
-            return;
-        }
-
-        if (isset($groupAttrs[TaggedAs::class])) {
-            /** @var ReflectionAttribute<TaggedAs> $attr */
-            foreach ($groupAttrs[TaggedAs::class] as $attr) {
-                yield $attr->newInstance();
-            }
-
-            return;
-        }
-
-        if (isset($groupAttrs[DiFactory::class])) {
-            /** @var ReflectionAttribute<DiFactory> $attr */
-            foreach ($groupAttrs[DiFactory::class] as $attr) {
-                yield $attr->newInstance();
-            }
-
-            return;
-        }
-
-        /** @var ReflectionAttribute<InjectByCallable> $attr */
-        foreach ($groupAttrs[InjectByCallable::class] as $attr) {
-            try {
-                yield $attr->newInstance();
-            } catch (TypeError $e) {
-                throw new AutowireAttributeException(
-                    message: sprintf('Unable to create an instance of PHP attribute "%s". Parameter $callable must be of type callable.', InjectByCallable::class),
-                    previous: $e
-                );
-            }
+            yield $attrInit;
         }
     }
 
     /**
      * @param list<ReflectionAttribute> $attrs
-     * @param list<class-string>        $availableAttrs
      *
      * @return array<class-string, list<ReflectionAttribute>>
      *
      * @throws AutowireAttributeException
      */
-    private static function getNotIntersectGroupAttrs(array $attrs, array $availableAttrs, ReflectionClass|ReflectionParameter $whereUseAttribute): array
+    private static function getNotIntersectGroupAttrs(array $attrs, ReflectionClass $whereUseAttribute): array
     {
+        $availableAttrs = [Autowire::class, DiFactory::class];
         $groupAttrs = [];
 
         foreach ($attrs as $attr) {
@@ -248,12 +219,9 @@ final class AttributeReader
 
         if (isset($intersectAttrs[1])) {
             $strIntersect = implode('::class, ', $intersectAttrs).'::class';
-            $messageWhereUseAttribute = $whereUseAttribute instanceof ReflectionParameter
-                ? $whereUseAttribute.' in '.Helper::functionName($whereUseAttribute->getDeclaringFunction())
-                : $whereUseAttribute->name.'::class';
 
             throw new AutowireAttributeException(
-                sprintf('Only one of the php attributes %s may be declared at %s.', $strIntersect, $messageWhereUseAttribute)
+                sprintf('Only one of the php attributes %s may be declared at %s::class.', $strIntersect, $whereUseAttribute->name)
             );
         }
 
