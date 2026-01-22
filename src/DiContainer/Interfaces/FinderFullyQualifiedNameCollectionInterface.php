@@ -13,7 +13,7 @@ use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
  *
  * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
  */
-interface FinderFullyQualifiedNameCollectionInterface
+interface FinderFullyQualifiedNameCollectionInterface extends ResetInterface
 {
     /**
      * @throws InvalidArgumentException

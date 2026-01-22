@@ -37,4 +37,9 @@ final class FinderFullyQualifiedNameCollection implements FinderFullyQualifiedNa
     {
         yield from $this->import;
     }
+
+    public function reset(): void
+    {
+        $this->import = [];
+    }
 }

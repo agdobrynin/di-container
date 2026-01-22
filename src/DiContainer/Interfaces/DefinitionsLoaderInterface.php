@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 
-interface DefinitionsLoaderInterface
+interface DefinitionsLoaderInterface extends ResetInterface
 {
     /**
      * Load definitions from configuration files.
