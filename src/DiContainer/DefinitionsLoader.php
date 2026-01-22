@@ -246,16 +246,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                if ([] !== $definitions) {
-                    foreach ($definitions as $identifier => $definition) {
-                        if ($definition instanceof DiDefinitionAutowire && isset($importedDefinitions[$identifier]) && $importedDefinitions[$identifier] instanceof DiDefinitionAutowire) {
-                            throw new DefinitionsLoaderException(
-                                sprintf('Container identifier "%s" already import for class "%s". Please specify container identifier for class "%s".', $identifier, $importedDefinitions[$identifier]->getIdentifier(), $definition->getIdentifier())
-                            );
-                        }
-
-                        $importedDefinitions[$identifier] = $definition;
+                foreach ($definitions as $identifier => $definition) {
+                    if ($definition instanceof DiDefinitionAutowire && isset($importedDefinitions[$identifier]) && $importedDefinitions[$identifier] instanceof DiDefinitionAutowire) {
+                        throw new DefinitionsLoaderException(
+                            sprintf('Container identifier "%s" already import for class "%s". Please specify container identifier for class "%s".', $identifier, $importedDefinitions[$identifier]->getIdentifier(), $definition->getIdentifier())
+                        );
                     }
+
+                    $importedDefinitions[$identifier] = $definition;
                 }
 
                 $fullQualifiedName->next();
