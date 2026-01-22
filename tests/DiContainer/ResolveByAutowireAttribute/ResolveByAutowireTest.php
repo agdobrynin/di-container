@@ -4,20 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\DiContainer\ResolveByAutowireAttribute;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\One;
 use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Two;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Autowire::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class ResolveByAutowireTest extends TestCase
 {
     public function testAutowireAttributeWithSingletonTrueButContainerSetDefaultSingletonFalse(): void

@@ -7,27 +7,19 @@ namespace Tests\Attributes\Raw;
 use Generator;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
- *
  * @internal
  */
+#[CoversClass(ProxyClosure::class)]
+#[CoversClass(Helper::class)]
 class ProxyClosureTest extends TestCase
 {
-    public function successIdsDataProvider(): Generator
-    {
-        yield 'string' => ['ok', 'ok'];
-
-        yield 'has start space' => [' ok', ' ok'];
-
-        yield 'has start spaces' => [' ok ', ' ok '];
-    }
-
-    /**
-     * @dataProvider successIdsDataProvider
-     */
+    #[DataProvider('successIdsDataProvider')]
     public function testSuccess(string $id, string $expect): void
     {
         $asClosureAttr = new ProxyClosure($id);
@@ -35,21 +27,22 @@ class ProxyClosureTest extends TestCase
         $this->assertEquals($expect, $asClosureAttr->getIdentifier());
     }
 
-    public function failIdsDataProvider(): Generator
+    public static function successIdsDataProvider(): Generator
     {
-        yield 'empty string' => [''];
+        yield 'string' => ['ok', 'ok'];
 
-        yield 'empty spaces' => ['  '];
+        yield 'has start space' => [' ok', ' ok'];
+
+        yield 'has start spaces' => [' ok ', ' ok '];
+
+        yield 'one spaces' => [' ', ' '];
     }
 
-    /**
-     * @dataProvider failIdsDataProvider
-     */
-    public function testFailure(string $id): void
+    public function testFailure(): void
     {
         $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessage('The $id parameter must be a non-empty string');
+        $this->expectExceptionMessage('The $id parameter must be a non-empty string.');
 
-        new ProxyClosure($id);
+        new ProxyClosure('');
     }
 }

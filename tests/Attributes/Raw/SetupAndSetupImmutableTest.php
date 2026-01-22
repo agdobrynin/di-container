@@ -7,20 +7,26 @@ namespace Tests\Attributes\Raw;
 use Generator;
 use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Setup
- * @covers \Kaspi\DiContainer\Attributes\SetupImmutable
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\diGet
- *
  * @internal
  */
+#[
+    CoversClass(DiDefinitionAutowire::class),
+    CoversClass(SetupImmutable::class),
+    CoversClass(Setup::class),
+    CoversClass(DiDefinitionGet::class),
+    CoversFunction('Kaspi\DiContainer\diGet')
+]
 class SetupAndSetupImmutableTest extends TestCase
 {
     public function testFailSetupNotSetMethod(): void
@@ -37,7 +43,25 @@ class SetupAndSetupImmutableTest extends TestCase
         (new SetupImmutable())->getIdentifier();
     }
 
-    public function dataProviderMethod(): Generator
+    #[DataProvider('dataProviderMethod')]
+    public function testFailSetupSetMethod(string $method): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+
+        $s = new Setup();
+        $s->setMethod($method);
+    }
+
+    #[DataProvider('dataProviderMethod')]
+    public function testFailSetupImmutableSetMethod(string $method): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+
+        $s = new SetupImmutable();
+        $s->setMethod($method);
+    }
+
+    public static function dataProviderMethod(): Generator
     {
         yield 'empty string' => [''];
 
@@ -52,29 +76,27 @@ class SetupAndSetupImmutableTest extends TestCase
         yield 'not valid string " method"' => [' method'];
     }
 
-    /**
-     * @dataProvider dataProviderMethod
-     */
-    public function testFailSetupSetMethod(string $method): void
+    #[DataProvider('dataProviderSuccessMethod')]
+    public function testSuccessSetupSetMethod(string $method): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
-
         $s = new Setup();
         $s->setMethod($method);
+
+        self::assertEquals($method, $s->getIdentifier());
+        self::assertEquals([], $s->getArguments());
     }
 
-    /**
-     * @dataProvider dataProviderMethod
-     */
-    public function testFailSetupImmutableSetMethod(string $method): void
+    #[DataProvider('dataProviderSuccessMethod')]
+    public function testSuccessSetupImmutableSetMethod(string $method): void
     {
-        $this->expectException(AutowireExceptionInterface::class);
-
         $s = new SetupImmutable();
         $s->setMethod($method);
+
+        self::assertEquals($method, $s->getIdentifier());
+        self::assertEquals([], $s->getArguments());
     }
 
-    public function dataProviderSuccessMethod(): Generator
+    public static function dataProviderSuccessMethod(): Generator
     {
         yield 'success name #1' => ['withLogger'];
 
@@ -85,32 +107,6 @@ class SetupAndSetupImmutableTest extends TestCase
         yield 'success name #4' => ['with1'];
 
         yield 'success name #5' => ['a'];
-    }
-
-    /**
-     * @dataProvider dataProviderSuccessMethod
-     */
-    public function testSuccessSetupSetMethod(string $method): void
-    {
-        $s = new Setup();
-        $s->setMethod($method);
-
-        self::assertEquals($method, $s->getIdentifier());
-        self::assertEquals([], $s->getArguments());
-        self::assertFalse($s->isImmutable());
-    }
-
-    /**
-     * @dataProvider dataProviderSuccessMethod
-     */
-    public function testSuccessSetupImmutableSetMethod(string $method): void
-    {
-        $s = new SetupImmutable();
-        $s->setMethod($method);
-
-        self::assertEquals($method, $s->getIdentifier());
-        self::assertEquals([], $s->getArguments());
-        self::assertTrue($s->isImmutable());
     }
 
     public function testSetupNamedArgument(): void
@@ -132,7 +128,6 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new Setup('first', two: 'second');
 
         self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
-        self::assertFalse($s->isImmutable());
     }
 
     public function testSetupImmutableMixedNamedArgument(): void
@@ -140,7 +135,6 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new SetupImmutable('first', two: 'second');
 
         self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
-        self::assertTrue($s->isImmutable());
     }
 
     public function testSetupMixedNamedArgumentWithValueAsObject(): void
@@ -148,7 +142,6 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new Setup('first', two: diGet('service.one'));
 
         self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
-        self::assertFalse($s->isImmutable());
     }
 
     public function testSetupImmutableMixedNamedArgumentWithValueAsObject(): void
@@ -156,6 +149,5 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new SetupImmutable('first', two: diGet('service.one'));
 
         self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
-        self::assertTrue($s->isImmutable());
     }
 }

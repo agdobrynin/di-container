@@ -6,20 +6,22 @@ namespace Kaspi\DiContainer\Attributes;
 
 use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
-
-use function trim;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class ProxyClosure implements DiAttributeInterface
 {
     /**
-     * @param class-string|non-empty-string $id class name or container identifier
+     * @param class-string|non-empty-string $containerIdentifier class name or container identifier
      */
-    public function __construct(private string $id)
+    public function __construct(private readonly string $containerIdentifier)
     {
-        if ('' === trim($id)) {
-            throw new AutowireAttributeException('The $id parameter must be a non-empty string.');
+        try {
+            Helper::getContainerIdentifier($containerIdentifier, null);
+        } catch (ContainerIdentifierExceptionInterface $e) {
+            throw new AutowireAttributeException('The $id parameter must be a non-empty string.', previous: $e);
         }
     }
 
@@ -28,6 +30,6 @@ final class ProxyClosure implements DiAttributeInterface
      */
     public function getIdentifier(): string
     {
-        return $this->id;
+        return $this->containerIdentifier;
     }
 }

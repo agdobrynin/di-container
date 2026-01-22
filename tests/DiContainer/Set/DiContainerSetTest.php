@@ -6,50 +6,56 @@ namespace Tests\DiContainer\Set;
 
 use Generator;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\ContainerIdentifierException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer
- *
  * @internal
  */
+#[CoversClass(DiContainer::class)]
+#[CoversClass(ContainerIdentifierException::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class DiContainerSetTest extends TestCase
 {
-    public function dataProviderWrongIdentifier(): Generator
+    #[DataProvider('dataProviderWrongIdentifier')]
+    public function testWrongIdentifier(string $identifier, mixed $definition): void
     {
-        yield 'empty string' => [''];
+        $this->expectException(ContainerIdentifierExceptionInterface::class);
 
-        yield 'spaces' => ['   '];
+        (new DiContainer())->set($identifier, $definition);
     }
 
-    /**
-     * @dataProvider dataProviderWrongIdentifier
-     */
-    public function testWrongIdentifier(string $id): void
+    public static function dataProviderWrongIdentifier(): Generator
     {
-        $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('must be a non-empty string');
+        yield 'empty string' => ['', new stdClass()];
 
-        (new DiContainer())->set($id, 'foo');
+        yield 'empty definition and definition without identifier' => ['', new DiDefinitionValue('oooo')];
     }
 
-    public function dataProviderSuccessIdentifier(): Generator
-    {
-        yield 'with spaces' => [' foo ', 'definition'];
-
-        yield 'with string as "null" and definition NULL' => ['null', null];
-    }
-
-    /**
-     * @dataProvider dataProviderSuccessIdentifier
-     */
+    #[DataProvider('dataProviderSuccessIdentifier')]
     public function testSuccessIdentifier(string $id, mixed $definition): void
     {
         $container = (new DiContainer())->set($id, $definition);
 
         $this->assertTrue($container->has($id));
+    }
+
+    public static function dataProviderSuccessIdentifier(): Generator
+    {
+        yield 'with spaces' => [' foo ', 'definition'];
+
+        yield 'with string as "null" and definition NULL' => ['null', null];
     }
 
     public function testIdentifierNotUnique(): void

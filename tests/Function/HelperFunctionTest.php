@@ -4,35 +4,44 @@ declare(strict_types=1);
 
 namespace Tests\Function;
 
+use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use Tests\Function\Fixtures\AnyClass;
 
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diProxyClosure;
-use function Kaspi\DiContainer\diReference;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diProxyClosure
- * @covers \Kaspi\DiContainer\diReference
- * @covers \Kaspi\DiContainer\diTaggedAs
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diProxyClosure')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionProxyClosure::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
 class HelperFunctionTest extends TestCase
 {
     public function testFunctiondiGet(): void
@@ -80,11 +89,37 @@ class HelperFunctionTest extends TestCase
         $this->assertInstanceOf(DiDefinitionTaggedAs::class, $def);
     }
 
-    public function testDeprecatedFunctionDiReference(): void
+    #[DataProvider('dataProviderReflectionFn')]
+    public function testFunctionName(ReflectionFunctionAbstract $fn, string $expectRegExp): void
     {
-        $def = diReference('ok');
+        self::assertMatchesRegularExpression($expectRegExp, Helper::functionName($fn));
+    }
 
-        $this->assertInstanceOf(DiDefinitionGet::class, $def);
-        $this->assertEquals('ok', $def->getDefinition());
+    public static function dataProviderReflectionFn(): Generator
+    {
+        yield 'in class method' => [
+            (new ReflectionClass(AnyClass::class))->getMethod('foo'),
+            '/^Tests\\\Function\\\Fixtures\\\AnyClass::foo\(\)$/',
+        ];
+
+        yield 'in class constructor' => [
+            (new ReflectionClass(AnyClass::class))->getConstructor(),
+            '/^Tests\\\Function\\\Fixtures\\\AnyClass::__construct\(\)$/',
+        ];
+
+        yield 'in user defined function' => [
+            new ReflectionFunction('Tests\Function\Fixtures\bar'),
+            '/^Tests\\\Function\\\Fixtures\\\bar\(\)$/',
+        ];
+
+        yield 'in build-in function' => [
+            new ReflectionFunction('\log'),
+            '/^log\(\)$/',
+        ];
+
+        yield 'closure function' => [
+            new ReflectionFunction(require __DIR__.'/Fixtures/closure.php'),
+            '/{closure.+tests\/Function\/Fixtures\/closure.php:7}\(\)/',
+        ];
     }
 }

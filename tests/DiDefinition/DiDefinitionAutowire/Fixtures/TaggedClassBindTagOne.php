@@ -8,14 +8,18 @@ use ReflectionClass;
 
 class TaggedClassBindTagOne
 {
-    public static function getTaggedPriority(): int
+    public static function getTaggedPriority(): ?int
     {
         return 1000;
     }
 
-    public static function getTaggedPriorityReturnEmpty() {}
+    public static function getTaggedPriorityReturnArray(): array
+    {
+        return ['priority' => 100];
+    }
 
-    public static function getTaggedPriorityReturnArray(): array {}
-
-    public static function getTaggedPriorityReturnUnionWrong(): null|array|ReflectionClass|string {}
+    public static function getTaggedPriorityReturnUnionWrong(): array|ReflectionClass|string|null
+    {
+        return new ReflectionClass(static::class);
+    }
 }

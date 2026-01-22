@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
-use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerConfig;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\IterableArg;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleA;
@@ -16,39 +17,32 @@ use function func_get_args;
 use function Kaspi\DiContainer\diCallable;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- *
  * @internal
  */
+#[CoversNothing]
 class CollectionTest extends TestCase
 {
     public function testCollection(): void
     {
-        $definitions = [
-            'services.rule-list' => diCallable(
+        $definitions = static function () {
+            yield 'services.rule-list' => diCallable(
                 definition: static fn (RuleA $a, RuleB $b) => func_get_args(),
                 isSingleton: true
-            ),
-        ];
+            );
+        };
 
-        $container = new DiContainer(
-            $definitions,
-            new DiContainerConfig(
-                useAttribute: true // use attributes
-            )
-        );
+        $container = (new DiContainerBuilder(
+            containerConfig: new DiContainerConfig(useAttribute: true)
+        ))
+            ->addDefinitions($definitions())
+            ->build()
+        ;
 
         $class = $container->get(IterableArg::class);
 
         foreach ($class->getValues() as $item) {
-            $this->assertInstanceOf(RuleInterface::class, $item);
-            $this->assertContains($item::class, [RuleA::class, RuleB::class]);
+            self::assertInstanceOf(RuleInterface::class, $item);
+            self::assertContains($item::class, [RuleA::class, RuleB::class]);
         }
     }
 }

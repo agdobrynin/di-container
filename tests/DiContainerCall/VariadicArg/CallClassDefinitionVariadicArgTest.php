@@ -4,8 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall\VariadicArg;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainerCall\VariadicArg\Fixtures\Talk;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordHello;
@@ -13,21 +29,35 @@ use Tests\DiContainerCall\VariadicArg\Fixtures\WordSuffix;
 use Tests\DiContainerCall\VariadicArg\Fixtures\WordVariadicDiFactory;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diFactory;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Inject::getIdentifier
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
+ * @covers
  *
  * @internal
  */
+#[
+    CoversFunction('\Kaspi\DiContainer\diAutowire'),
+    CoversFunction('\Kaspi\DiContainer\diGet'),
+    CoversFunction('\Kaspi\DiContainer\diFactory'),
+    CoversClass(AttributeReader::class),
+    CoversClass(Inject::class),
+    CoversClass(ReflectionMethodByDefinition::class),
+    CoversClass(Helper::class),
+    CoversClass(DiDefinitionGet::class),
+    CoversClass(DiDefinitionFactory::class),
+    CoversClass(DiDefinitionCallable::class),
+    CoversClass(DiDefinitionAutowire::class),
+    CoversClass(ArgumentResolver::class),
+    CoversClass(ArgumentBuilder::class),
+    CoversClass(DiContainerConfig::class),
+    CoversClass(DiContainer::class),
+    CoversClass(DefinitionDiCall::class),
+    CoversClass(InjectByCallable::class),
+    CoversClass(AbstractSourceDefinitionsMutable::class),
+    CoversClass(ImmediateSourceDefinitionsMutable::class),
+]
 class CallClassDefinitionVariadicArgTest extends TestCase
 {
     public function testCallStaticMethodWithoutAttributePassArgumentBydiGet(): void
@@ -40,7 +70,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
-            [
+            ...[
                 'word' => diGet(WordSuffix::class),
                 'word_2' => diGet(WordHello::class),
             ]
@@ -59,7 +89,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
-            [
+            ...[
                 'word' => diAutowire(WordSuffix::class),
                 'word1' => diAutowire(WordHello::class),
             ]
@@ -78,7 +108,7 @@ class CallClassDefinitionVariadicArgTest extends TestCase
 
         $res = $container->call(
             [Talk::class, 'staticMethodByReference'],
-            [
+            ...[
                 'word' => $container->get(WordSuffix::class),
                 'word2' => $container->get(WordHello::class),
             ]
@@ -110,25 +140,12 @@ class CallClassDefinitionVariadicArgTest extends TestCase
             useAttribute: true, // inject by attribute
         );
         $definitions = [
-            'services.words' => diAutowire(WordVariadicDiFactory::class),
+            'services.words' => diFactory(WordVariadicDiFactory::class),
         ];
         $container = new DiContainer(definitions: $definitions, config: $config);
 
         $res = $container->call([Talk::class, 'staticMethodByReferenceOneToMany']);
 
-        $this->assertInstanceOf(WordSuffix::class, $res[0]);
-    }
-
-    public function testCallStaticMethodWitAttributeInjectByDiFactoryInInject(): void
-    {
-        $config = new DiContainerConfig(
-            useAttribute: true, // inject by attribute
-        );
-        $container = new DiContainer(config: $config);
-
-        $res = $container->call([Talk::class, 'staticMethodByDiFactoryOneToMany']);
-
-        $this->assertCount(1, $res);
         $this->assertInstanceOf(WordSuffix::class, $res[0]);
     }
 

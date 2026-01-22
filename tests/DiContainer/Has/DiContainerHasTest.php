@@ -5,8 +5,15 @@ declare(strict_types=1);
 namespace Tests\DiContainer\Has;
 
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiContainerNullConfig;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Tests\DiContainer\Has\Fixtures\ClassWithSimpleDependency;
@@ -15,11 +22,15 @@ use Tests\DiContainer\Has\Fixtures\ExcludeInterface;
 use Tests\DiContainer\Has\Fixtures\MyInterface;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(DiContainerNullConfig::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class DiContainerHasTest extends TestCase
 {
     public function testHasDefinitionWithNull(): void
@@ -29,16 +40,7 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has('null'));
     }
 
-    public function dataProvideWithZeroConfig(): Generator
-    {
-        yield 'class' => [ClassWithSimpleDependency::class];
-
-        yield 'interface' => [MyInterface::class];
-    }
-
-    /**
-     * @dataProvider dataProvideWithZeroConfig
-     */
+    #[DataProvider('dataProvideWithZeroConfig')]
     public function testHasWithZeroConfig(string $id): void
     {
         $config = new DiContainerConfig(
@@ -49,16 +51,14 @@ class DiContainerHasTest extends TestCase
         $this->assertTrue($container->has($id));
     }
 
-    public function dataProvideWithoutZeroConfig(): Generator
+    public static function dataProvideWithZeroConfig(): Generator
     {
         yield 'class' => [ClassWithSimpleDependency::class];
 
         yield 'interface' => [MyInterface::class];
     }
 
-    /**
-     * @dataProvider dataProvideWithoutZeroConfig
-     */
+    #[DataProvider('dataProvideWithoutZeroConfig')]
     public function testHasWithoutZeroConfig(string $id): void
     {
         $config = new DiContainerConfig(
@@ -67,6 +67,13 @@ class DiContainerHasTest extends TestCase
         $container = new DiContainer(config: $config);
 
         $this->assertFalse($container->has($id));
+    }
+
+    public static function dataProvideWithoutZeroConfig(): Generator
+    {
+        yield 'class' => [ClassWithSimpleDependency::class];
+
+        yield 'interface' => [MyInterface::class];
     }
 
     public function testHasContainerInterfaceWithZeroConfig(): void

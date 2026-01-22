@@ -5,9 +5,12 @@ parameters:
 	level: 10
 	paths:
 		- src
+	excludePaths:
+	    analyseAndScan:
+	        - src/DiContainer/Compiler/template.php
 	ignoreErrors:
 		-
 			identifier: missingType.generics
 	phpVersion:
-		min: 80000
+		min: 80100
 		max: 80400

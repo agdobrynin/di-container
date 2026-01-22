@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\CustomLogger;
 use Tests\FromDocs\PhpAttribute\Fixtures\MyLogger;
@@ -12,31 +13,26 @@ use Tests\FromDocs\PhpAttribute\Fixtures\MyLogger;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Service
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionInvokableWrapper
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- *
  * @internal
  */
+#[CoversNothing]
 class ServiceAttributeByClassTest extends TestCase
 {
     public function testResolveByServiceWithClass(): void
     {
-        $definitions = [
-            diAutowire(CustomLogger::class)
-                ->bindArguments(file: '/var/log/app.log'),
-        ];
+        $definitions = static function () {
+            yield diAutowire(CustomLogger::class)
+                ->bindArguments(file: '/var/log/app.log')
+            ;
+        };
 
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definitions())
+            ->build()
+        ;
 
         $myClass = $container->get(MyLogger::class);
 
-        $this->assertEquals('/var/log/app.log', $myClass->customLogger->loggerFile());
+        self::assertEquals('/var/log/app.log', $myClass->customLogger->loggerFile());
     }
 }

@@ -5,19 +5,37 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use ArrayIterator;
-use InvalidArgumentException;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
-use Kaspi\DiContainer\ImportLoader;
-use Kaspi\DiContainer\ImportLoaderCollection;
+use Kaspi\DiContainer\DiContainerNullConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\ImportLoaderCollectionInterface;
+use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
+use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
-use RuntimeException;
 use Tests\AppClass;
 use Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\Two;
+use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\Foo;
+use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\FooInterface;
 
 use function array_keys;
 use function iterator_to_array;
@@ -27,24 +45,30 @@ use function sort;
 use const T_TRAIT;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- * @covers \Kaspi\DiContainer\Attributes\Service
- * @covers \Kaspi\DiContainer\DefinitionsLoader
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\ImportLoader
- * @covers \Kaspi\DiContainer\ImportLoaderCollection
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Autowire::class)]
+#[CoversClass(Service::class)]
+#[CoversClass(DefinitionsLoader::class)]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(DefinitionsLoaderException::class)]
+#[CoversClass(FinderFile::class)]
+#[CoversClass(FinderFullyQualifiedName::class)]
+#[CoversClass(FinderFullyQualifiedNameCollection::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(NotFoundException::class)]
+#[CoversClass(DiContainerNullConfig::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void
@@ -53,8 +77,8 @@ class DefinitionsLoaderImportTest extends TestCase
             ->import(
                 'Tests\DefinitionsLoader\\',
                 __DIR__.'/Fixtures/Import',
-                excludeFilesRegExpPattern: [
-                    '~Fixtures/Import/SubDirectory2/.+\.php$~',
+                excludeFiles: [
+                    '*Fixtures/Import/SubDirectory2/*.php',
                 ],
             )
             ->import(
@@ -107,20 +131,14 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithPreconfiguredImportLoader(): void
     {
         $loader = (new DefinitionsLoader(
-            importLoaderCollection: new ImportLoaderCollection(
-                /*
-                 * Use preconfigured argument.
-                 * Test clone this argument when "import()" use more than once.
-                 */
-                new ImportLoader()
-            )
+            finderFullyQualifiedNameCollection: new FinderFullyQualifiedNameCollection()
         ))
             ->import(
                 'Tests\DefinitionsLoader\\',
                 __DIR__.'/Fixtures/Import',
-                excludeFilesRegExpPattern: [
-                    '~Fixtures/Import/SubDirectory2/.+\.php$~',
-                    '~Fixtures/Import/SubDirectory/.+\.php$~',
+                excludeFiles: [
+                    '*Fixtures/Import/SubDirectory2/*.php',
+                    '*Fixtures/Import/SubDirectory/*.php',
                 ],
             )
             ->import(
@@ -162,25 +180,29 @@ class DefinitionsLoaderImportTest extends TestCase
         $this->assertTrue($container->has(Fixtures\Import\TokenInterface::class));
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition not found for interface');
+        $this->expectExceptionMessage('Attempting to resolve interface');
+
         // import skip attribute Service on interface
         $container->get(Fixtures\Import\TokenInterface::class);
     }
 
     public function testImportAlreadyExists(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('The namespace "Tests\DefinitionsLoader\" has already been added to the import collection for source');
+
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('is already imported');
 
         $loader->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import');
     }
 
     public function testConflictConfigContainerIdentifierByAutowireAttributeAndConfig(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Container identifier "services.two" already registered');
+
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
@@ -188,14 +210,14 @@ class DefinitionsLoaderImportTest extends TestCase
             'services.two' => static fn () => new ArrayIterator([]),
         ]);
 
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Autowire\].+"services\.two".+/');
-
         (new DiContainerFactory())->make($loader->definitions());
     }
 
     public function testConflictConfigContainerIdentifierByServiceAttributeAndConfig(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Container identifier "Tests\DefinitionsLoader\Fixtures\Import\TokenInterface" already registered');
+
         $loader = (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/Import')
         ;
@@ -205,20 +227,17 @@ class DefinitionsLoaderImportTest extends TestCase
             Fixtures\Import\TokenInterface::class => static fn (Fixtures\Import\One $one) => new Fixtures\Import\Two($one),
         ]);
 
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Cannot automatically set definition via #\[.+Service\].+".+\\\TokenInterface".+/');
-
         (new DiContainerFactory())->make($loader->definitions());
     }
 
     public function testCannotReflectClassFromImportedDefinition(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Reason: Interface "Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\ContainerInterface" not found');
+
         $loader = (new DefinitionsLoader())
             ->import('Tests\\', __DIR__.'/Fixtures/ImportReflectionFail')
         ;
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Reason: Interface "Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\ContainerInterface" not found');
 
         (new DiContainerFactory())->make($loader->definitions());
     }
@@ -226,13 +245,9 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testShortNamespaceAndClassName(): void
     {
         $loader = (new DefinitionsLoader())
-            ->import('Tests\\', __DIR__.'/../', excludeFilesRegExpPattern: [
-                '~tests/_var/~',
-                '~tests/Attributes~',
-                '~tests/D.+~',
-                '~tests/F.+~',
-                '~tests/L.+~',
-                '~tests/T.+~',
+            ->import('Tests\\', __DIR__.'/../', excludeFiles: [
+                '*tests/_var/*',
+                '*tests/[A-Z]*/*',
             ])
         ;
 
@@ -248,27 +263,98 @@ class DefinitionsLoaderImportTest extends TestCase
 
     public function testImportWhenFinderFullyQualifiedNameReturnNotValidToken(): void
     {
-        $importLoaderCollection = $this->createMock(ImportLoaderCollectionInterface::class);
-        $importLoaderCollection->method('getFullyQualifiedName')
-            // iterable<non-negative-int, array{namespace: non-empty-string, itemFQN: ItemFQN}>
-            ->willReturn([
-                0 => [
-                    'namespace' => 'Tests\\',
-                    'itemFQN' => [
-                        'fqn' => 'Tests\SomeTrait',
-                        'tokenId' => T_TRAIT,
-                    ],
-                ],
-            ])
-        ;
-
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessage('Unsupported token id');
 
-        (new DefinitionsLoader(importLoaderCollection: $importLoaderCollection))
-            ->import('Tests\\', __DIR__.'/../')
+        $importLoaderMock = $this->createMock(FinderFullyQualifiedNameInterface::class);
+
+        $importLoaderMock->method('get')
+            ->willReturnCallback(
+                function () {
+                    yield 0 => [
+                        'fqn' => 'Tests\SomeTrait',
+                        'tokenId' => T_TRAIT,
+                        'file' => 'tests/SomeTrait.php',
+                        'line' => 3,
+                    ];
+                }
+            )
+        ;
+
+        $importLoaderCollection = $this->createMock(FinderFullyQualifiedNameCollectionInterface::class);
+        $importLoaderCollection->method('get')
+            ->willReturnCallback(function () use ($importLoaderMock) {
+                yield 'Tests\\' => $importLoaderMock;
+            })
+        ;
+
+        (new DefinitionsLoader(finderFullyQualifiedNameCollection: $importLoaderCollection))
+            ->import('Tests\\', __DIR__)
             ->definitions()
             ->current()
+        ;
+    }
+
+    public function testFailParsePhpFile(): void
+    {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/PhpFileCannotParse')
+        ;
+
+        $loader->definitions()->valid();
+    }
+
+    public function testImportTwoClassesWithSameId(): void
+    {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Container identifier "services.one" already import for class');
+
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportClassesViaSameId')
+        ;
+
+        $loader->definitions()->valid();
+    }
+
+    public function testImportInterfaceViaServiceAttributeAndContainerDefinition(): void
+    {
+        $defs = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportConfigInterface')
+            ->addDefinitions(false, [
+                'services.foo' => diAutowire(Foo::class),
+            ])
+            ->definitions()
+        ;
+
+        $container = (new DiContainerFactory(new DiContainerNullConfig()))->make($defs);
+
+        self::assertInstanceOf(Foo::class, $container->get(FooInterface::class));
+    }
+
+    public function testImportInterfaceViaServiceAttributeOnly(): void
+    {
+        $defs = (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportConfigInterfaceViaPhpAttribute')
+            ->definitions()
+        ;
+
+        $container = (new DiContainerFactory(new DiContainerNullConfig()))->make($defs);
+
+        self::assertInstanceOf(Fixtures\ImportConfigInterfaceViaPhpAttribute\Foo::class, $container->get(Fixtures\ImportConfigInterfaceViaPhpAttribute\FooInterface::class));
+        self::assertInstanceOf(Fixtures\ImportConfigInterfaceViaPhpAttribute\Foo::class, $container->get(Fixtures\ImportConfigInterfaceViaPhpAttribute\Foo::class));
+    }
+
+    public function testImportInvalidReferenceForInterface(): void
+    {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('Invalid definition reference "services.foo"');
+
+        (new DefinitionsLoader())
+            ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportInvalidReferenceForInterface')
+            ->definitions()
+            ->valid()
         ;
     }
 }

@@ -7,62 +7,43 @@ namespace Tests\DiDefinition\DiDefinitionProxyClosure;
 use Closure;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
-use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Exception\ContainerNeedSetException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
- *
  * @internal
  */
+#[CoversClass(DiDefinitionProxyClosure::class)]
+#[CoversClass(Helper::class)]
 class MainTest extends TestCase
 {
-    public function successDefinitionDataProvider(): Generator
+    #[DataProvider('successDefinitionDataProvider')]
+    public function testDefinitionSuccess(string $id, string $expect): void
+    {
+        $this->assertEquals($expect, (new DiDefinitionProxyClosure($id))->getDefinition());
+    }
+
+    public static function successDefinitionDataProvider(): Generator
     {
         yield 'string' => ['ok', 'ok'];
 
         yield 'string with space' => [' ok', ' ok'];
 
         yield 'string with spaces' => [' ok ', ' ok '];
+
+        yield 'one space' => [' ', ' '];
     }
 
-    /**
-     * @dataProvider successDefinitionDataProvider
-     */
-    public function testDefinitionSuccess(string $id, string $expect): void
+    public function testDefinitionFail(): void
     {
-        $this->assertEquals($expect, (new DiDefinitionProxyClosure($id))->getDefinition());
-    }
-
-    public function failDefinitionDataProvider(): Generator
-    {
-        yield 'empty string' => [''];
-
-        yield 'string with space' => [' '];
-
-        yield 'string with spaces' => ['   '];
-    }
-
-    /**
-     * @dataProvider failDefinitionDataProvider
-     */
-    public function testDefinitionFail(string $id): void
-    {
-        $this->expectException(AutowireException::class);
+        $this->expectException(DiDefinitionExceptionInterface::class);
         $this->expectExceptionMessage('must be non-empty string');
 
-        (new DiDefinitionProxyClosure($id))->getDefinition();
-    }
-
-    public function testContainerNeedSet(): void
-    {
-        $this->expectException(ContainerNeedSetException::class);
-        $this->expectExceptionMessage('Use method setContainer() in "Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure" class.');
-
-        (new DiDefinitionProxyClosure('ok'))->invoke();
+        (new DiDefinitionProxyClosure(''))->getDefinition();
     }
 
     public function testContainerDefinitionHasNot(): void
@@ -73,12 +54,11 @@ class MainTest extends TestCase
             ->willReturn(false)
         ;
 
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Definition "ok" does not exist');
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get entry by container identifier "ok"');
 
         (new DiDefinitionProxyClosure('ok'))
-            ->setContainer($mockContainer)
-            ->invoke()
+            ->resolve($mockContainer)
         ;
     }
 
@@ -91,8 +71,7 @@ class MainTest extends TestCase
         ;
 
         $res = (new DiDefinitionProxyClosure('ok'))
-            ->setContainer($mockContainer)
-            ->invoke()
+            ->resolve($mockContainer)
         ;
 
         $this->assertInstanceOf(Closure::class, $res);
@@ -111,8 +90,7 @@ class MainTest extends TestCase
         ;
 
         $res = (new DiDefinitionProxyClosure('ok'))
-            ->setContainer($mockContainer)
-            ->invoke()
+            ->resolve($mockContainer)
         ;
 
         $this->assertEquals('result of get', $res());

@@ -4,62 +4,59 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassFirst;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassInterface;
 
-use function array_merge;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\diGet
- *
  * @internal
  */
+#[CoversNothing]
 class ResolveByInterfaceTest extends TestCase
 {
     public function testResolveByClass(): void
     {
-        $definition = [
-            ClassInterface::class => diAutowire(ClassFirst::class)
+        $definition = static function () {
+            yield ClassInterface::class => diAutowire(ClassFirst::class)
                 // bind by name
-                ->bindArguments(file: '/var/log/app.log'),
-        ];
+                ->bindArguments(file: '/var/log/app.log')
+            ;
+        };
 
-        $container = (new DiContainerFactory())->make($definition);
-        $myClass = $container->get(ClassInterface::class);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definition())
+            ->build()
+        ;
 
-        $this->assertEquals('/var/log/app.log', $myClass->file);
+        self::assertEquals('/var/log/app.log', $container->get(ClassInterface::class)->file);
     }
 
     public function testResolveByByReference(): void
     {
-        $classesDefinitions = [
-            diAutowire(ClassFirst::class)
+        $classesDefinitions = static function () {
+            yield diAutowire(ClassFirst::class)
                 // bind by index
-                ->bindArguments('/var/log/app.log'),
-        ];
+                ->bindArguments('/var/log/app.log')
+            ;
+        };
 
         // ... many definitions ...
 
-        $interfacesDefinitions = [
-            ClassInterface::class => diGet(ClassFirst::class),
-        ];
+        $interfacesDefinitions = static function () {
+            yield ClassInterface::class => diGet(ClassFirst::class);
+        };
 
-        $container = (new DiContainerFactory())->make(
-            array_merge($classesDefinitions, $interfacesDefinitions)
-        );
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($classesDefinitions())
+            ->addDefinitions($interfacesDefinitions())
+            ->build()
+        ;
 
-        $myClass = $container->get(ClassInterface::class);
-
-        $this->assertEquals('/var/log/app.log', $myClass->file);
+        self::assertEquals('/var/log/app.log', $container->get(ClassInterface::class)->file);
     }
 }

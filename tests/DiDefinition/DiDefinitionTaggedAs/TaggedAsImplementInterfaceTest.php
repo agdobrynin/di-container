@@ -4,7 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionTaggedAs;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\LazyDefinitionIterator;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\AnyClass;
@@ -20,19 +34,23 @@ use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\TaggedAs
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(TaggedAs::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class TaggedAsImplementInterfaceTest extends TestCase
 {
     public function testTaggedAsByAttributeImplementInterface(): void
@@ -93,7 +111,7 @@ class TaggedAsImplementInterfaceTest extends TestCase
         $this->assertInstanceOf(HeavyDepOne::class, $res->current());
 
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Unresolvable dependency');
+        $this->expectExceptionMessageMatches('/Cannot build argument via type hint for Parameter #0 \[ <required> \$someDep ] in .+HeaveDepWithDependency::__construct\(\)\./');
 
         $res->next();
         $res->current();
@@ -101,20 +119,22 @@ class TaggedAsImplementInterfaceTest extends TestCase
 
     public function testTaggedAsByArgumentWithExceptionWhenGetDefinition(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter at position #0.+ClassWithHeavyDep::__construct()/');
+
         $container = (new DiContainerFactory())
             ->make([
                 diAutowire(HeavyDepOne::class), // implement HeavyDepInterface::class
                 diAutowire(ClassWithHeavyDepAsArray::class),
                 diAutowire(HeavyDepTwo::class), // implement HeavyDepInterface::class,
                 diAutowire(ClassWithHeavyDep::class)
-                    ->bindArguments(diTaggedAs(HeavyDepInterface::class, false)),
+                    ->bindArguments(
+                        diTaggedAs(HeavyDepInterface::class, false)
+                    ),
                 diAutowire('nonExistClass')
                     ->bindTag(HeavyDepInterface::class), // Cannot resolve class
             ])
         ;
-
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Class "nonExistClass" does not exist');
 
         $container->get(ClassWithHeavyDep::class)->getDep();
     }

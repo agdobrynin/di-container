@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 
-use function trim;
+use function sprintf;
 
-final class DiDefinitionGet implements DiDefinitionLinkInterface
+final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNoArgumentsInterface
 {
     /**
      * @var non-empty-string
@@ -19,7 +23,7 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface
     /**
      * @param non-empty-string $containerIdentifier
      */
-    public function __construct(private string $containerIdentifier) {}
+    public function __construct(private readonly string $containerIdentifier) {}
 
     /**
      * @return non-empty-string
@@ -28,8 +32,22 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface
      */
     public function getDefinition(): string
     {
-        return $this->validContainerIdentifier ??= '' === trim($this->containerIdentifier)
-            ? throw new DiDefinitionException('Definition identifier must be a non-empty string.')
-            : $this->containerIdentifier;
+        if (isset($this->validContainerIdentifier)) {
+            return $this->validContainerIdentifier;
+        }
+
+        try {
+            return $this->validContainerIdentifier = Helper::getContainerIdentifier($this->containerIdentifier, null);
+        } catch (ContainerIdentifierExceptionInterface $e) {
+            throw new DiDefinitionException(
+                sprintf('Parameter $containerIdentifier for %s::__construct() must be non-empty string.', self::class),
+                previous: $e
+            );
+        }
+    }
+
+    public function resolve(DiContainerInterface $container, mixed $context = null): mixed
+    {
+        return $container->get($this->getDefinition());
     }
 }

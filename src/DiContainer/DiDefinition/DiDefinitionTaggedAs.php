@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use ArrayAccess;
-use Countable;
 use Generator;
-use Iterator;
+use InvalidArgumentException;
 use Kaspi\DiContainer\Exception\AutowireException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
-use Kaspi\DiContainer\Traits\DiAutowireTrait;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use SplPriorityQueue;
 
+use function array_map;
 use function explode;
-use function get_debug_type;
 use function in_array;
-use function interface_exists;
+use function is_callable;
 use function is_string;
 use function sprintf;
 use function str_starts_with;
@@ -34,11 +29,8 @@ use function var_export;
 
 final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
 {
-    use DiContainerTrait;
-    use DiAutowireTrait;
-
-    private bool $tagIsInterface;
-    private string $keyOptimized;
+    private bool $keyChecked;
+    private readonly bool $isUseKeysComputed;
 
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
@@ -51,78 +43,23 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     public function __construct(
-        private string $tag,
-        private bool $isLazy = true,
-        private ?string $priorityDefaultMethod = null,
-        private bool $useKeys = true,
-        private ?string $key = null,
-        private ?string $keyDefaultMethod = null,
-        private array $containerIdExclude = [],
-        private bool $selfExclude = true,
-    ) {}
+        private readonly string $tag,
+        private readonly bool $isLazy = true,
+        private readonly ?string $priorityDefaultMethod = null,
+        bool $useKeys = true,
+        private readonly ?string $key = null,
+        private readonly ?string $keyDefaultMethod = null,
+        private readonly array $containerIdExclude = [],
+        private readonly bool $selfExclude = true,
+    ) {
+        $this->isUseKeysComputed = $useKeys || null !== $key || null !== $keyDefaultMethod;
+    }
 
-    /**
-     * @return ArrayAccess&Countable&Iterator&\Psr\Container\ContainerInterface
-     *
-     * @throws ContainerExceptionInterface
-     * @throws ContainerNeedSetExceptionInterface
-     * @throws NotFoundExceptionInterface
-     *
-     * @phpstan-ignore method.childReturnType
-     */
-    public function getServicesTaggedAs(): iterable
+    public function resolve(DiContainerInterface $container, mixed $context = null): iterable
     {
-        /**
-         * Key as container identifier, value as container definition.
-         *
-         * @var Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}> $items
-         */
-        $items = $this->getContainerIdentifiersOfTaggedServiceByTag();
-
-        if (!$items->valid()) {
-            // @phpstan-ignore return.type
-            return $this->isLazy
-                ? new LazyDefinitionIterator($this->getContainer(), [])
-                : [];
-        }
-
-        $isUseKeys = $this->useKeys || null !== $this->key || null !== $this->keyDefaultMethod;
-
-        if (!$this->isLazy) {
-            // @phpstan-var array<non-empty-string|non-negative-int, mixed> $services
-            $services = [];
-
-            foreach ($items as [$containerIdentifier, $item]) {
-                if ($isUseKeys) {
-                    $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-
-                    if (!isset($services[$keyCollection])) {
-                        $services[$keyCollection] = $this->getContainer()->get($containerIdentifier);
-                    }
-                } else {
-                    $services[] = $this->getContainer()->get($containerIdentifier);
-                }
-            }
-
-            return $services; // @phpstan-ignore return.type
-        }
-
-        // @phpstan-var array<non-empty-string, none-empty-string> $services
-        $mapKeyCollectionToContainerIdentifier = [];
-
-        foreach ($items as [$containerIdentifier, $item]) {
-            if ($isUseKeys) {
-                $keyCollection = $this->getKeyFromTagOptionsOrFromKeyDefaultMethod($containerIdentifier, $item);
-
-                if (!isset($mapKeyCollectionToContainerIdentifier[$keyCollection])) {
-                    $mapKeyCollectionToContainerIdentifier[$keyCollection] = $containerIdentifier;
-                }
-            } else {
-                $mapKeyCollectionToContainerIdentifier[] = $containerIdentifier;
-            }
-        }
-
-        return new LazyDefinitionIterator($this->getContainer(), $mapKeyCollectionToContainerIdentifier);
+        return $this->isLazy
+            ? new LazyDefinitionIterator($container, $this->exposeContainerIdentifiers($container, $context))
+            : array_map($container->get(...), $this->exposeContainerIdentifiers($container, $context));
     }
 
     public function getDefinition(): string
@@ -130,105 +67,124 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         return $this->tag;
     }
 
-    public function setCallingByService(?DiDefinitionAutowireInterface $definitionAutowire = null): static
+    public function isLazy(): bool
     {
-        $this->callingByDefinitionAutowire = $definitionAutowire;
-
-        return $this;
-    }
-
-    public function getCallingByService(): ?DiDefinitionAutowireInterface
-    {
-        return $this->callingByDefinitionAutowire;
+        return $this->isLazy;
     }
 
     /**
-     * @return Generator<array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface}>
+     * @return array<non-empty-string|non-negative-int, non-empty-string>
      *
-     * @throws ContainerNeedSetExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
-    private function getContainerIdentifiersOfTaggedServiceByTag(): Generator
+    public function exposeContainerIdentifiers(DiContainerInterface $container, mixed $context = null): iterable
     {
-        $this->tagIsInterface ??= interface_exists($this->tag);
-        $taggedServices = new SplPriorityQueue();
-        $taggedServices->setExtractFlags(SplPriorityQueue::EXTR_DATA);
+        if ($context instanceof DiDefinitionAutowireInterface) {
+            $this->callingByDefinitionAutowire = $context;
+        }
 
-        /** @var non-empty-string $containerIdentifier */
-        foreach ($this->getContainer()->getDefinitions() as $containerIdentifier => $definition) {
-            if (false === ($definition instanceof DiTaggedDefinitionInterface)
-                || in_array($containerIdentifier, $this->containerIdExclude, true)
-                || ($this->selfExclude && $containerIdentifier === $this->getCallingByService()?->getDefinition()->getName())) {
-                continue;
-            }
+        $mapKeyToContainerIdentifier = [];
 
-            if ($definition instanceof DiDefinitionInvokableInterface) {
-                $definition->setContainer($this->getContainer());
-            }
-
-            if (
-                (
-                    !$this->tagIsInterface && $definition->hasTag($this->tag)
-                )
-                || (
-                    $this->tagIsInterface
-                        && $definition instanceof DiDefinitionAutowireInterface
-                        && $definition->getDefinition()->implementsInterface($this->tag)
-                )
-            ) {
-                $operationOptions = [];
-
-                if ($definition instanceof DiDefinitionAutowireInterface) {
-                    $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
+        foreach ($this->filterByExcludeSortDefinitionByPriority($container->findTaggedDefinitions($this->tag)) as [$containerIdentifier, $definition]) {
+            if ($this->isUseKeysComputed) {
+                $keyCollection = $this->getTagKeyFromTagOptionsOrFromClassMethod($containerIdentifier, $definition);
+                if (!isset($mapKeyToContainerIdentifier[$keyCollection])) {
+                    $mapKeyToContainerIdentifier[$keyCollection] = $containerIdentifier;
                 }
-
-                // 🚩 Tag with higher priority early in list.
-                $taggedServices->insert([$containerIdentifier, $definition], $definition->geTagPriority($this->tag, $operationOptions));
+            } else {
+                $mapKeyToContainerIdentifier[] = $containerIdentifier;
             }
         }
 
-        /** @var array{0: non-empty-string, 1: DiDefinitionAutowireInterface|DiTaggedDefinitionInterface} $item */
+        return $mapKeyToContainerIdentifier;
+    }
+
+    /**
+     * @param iterable<non-empty-string, (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface> $definitions
+     *
+     * @return Generator<array{0: non-empty-string, 1: (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface}>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    private function filterByExcludeSortDefinitionByPriority(iterable $definitions): Generator
+    {
+        if ($definitions instanceof Generator && !$definitions->valid()) {
+            return;
+        }
+
+        $taggedServices = new SplPriorityQueue();
+        $taggedServices->setExtractFlags(SplPriorityQueue::EXTR_DATA);
+
+        foreach ($definitions as $containerIdentifier => $definition) {
+            if (in_array($containerIdentifier, $this->containerIdExclude, true)
+                || ($this->selfExclude && $containerIdentifier === $this->callingByDefinitionAutowire?->getDefinition()->getName())) {
+                continue;
+            }
+
+            $operationOptions = [];
+
+            if ($definition instanceof DiDefinitionAutowireInterface) {
+                $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
+            }
+
+            // 🚩 Tag with higher priority early in list.
+            $taggedServices->insert([$containerIdentifier, $definition], $definition->geTagPriority($this->tag, $operationOptions));
+        }
+
+        /** @var array{0: non-empty-string, 1: (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface} $item */
         foreach ($taggedServices as $item) {
             yield $item;
         }
     }
 
     /**
-     * @param non-empty-string $identifier
+     * @param non-empty-string                                                                        $identifier
+     * @param (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface $taggedAs
      *
      * @return non-empty-string
+     *
+     * @throws DiDefinitionExceptionInterface
      */
-    private function getKeyFromTagOptionsOrFromKeyDefaultMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
+    private function getTagKeyFromTagOptionsOrFromClassMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
     {
         if (null !== $this->key) {
-            $this->keyOptimized ??= '' !== trim($this->key)
-                ? $this->key
-                : throw new AutowireException('Argument $key must be non-empty string.');
-
-            $optionKey = $taggedAs->getTag($this->tag)[$this->keyOptimized] ?? null;
-
-            if (null !== $optionKey) {
-                if (!is_string($optionKey) || '' === trim($optionKey)) {
-                    throw new AutowireException(
-                        sprintf(
-                            'Tag option "%s" for container identifier "%s" with tag "%s" has an error: the value must be non-empty string. Got: type "%s", value: %s.',
-                            $this->keyOptimized,
-                            $identifier,
-                            $this->tag,
-                            get_debug_type($optionKey),
-                            var_export($optionKey, true)
-                        )
+            if (!isset($this->keyChecked)) {
+                if ('' === trim($this->key)) {
+                    throw new DiDefinitionException(
+                        sprintf('Parameter $key for %s::__construct() must be non-empty string. Tag is "%s".', self::class, $this->tag)
                     );
                 }
 
-                if ($taggedAs instanceof DiDefinitionAutowireInterface && str_starts_with($optionKey, 'self::')) {
-                    $method = explode('::', $optionKey)[1];
-                    $howGetOptions = sprintf('Get key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $method, $this->tag);
+                $this->keyChecked = true;
+            }
 
-                    // @phpstan-ignore return.type
-                    return self::callStaticMethod($taggedAs, $method, true, $howGetOptions, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+            $optionKey = $taggedAs->getTag($this->tag)[$this->key] ?? null;
+
+            if (null !== $optionKey) {
+                if (!is_string($optionKey) || '' === trim($optionKey)) {
+                    throw new DiDefinitionException(
+                        sprintf('Cannot get key for tag "%s" via tag options. The value of option name "%s" must be non-empty string. Got value: %s', $this->tag, $this->key, var_export($optionKey, true))
+                    );
                 }
 
-                return $optionKey; // @phpstan-ignore return.type
+                if (!$taggedAs instanceof DiDefinitionAutowireInterface) {
+                    return $optionKey;
+                }
+
+                if (!str_starts_with($optionKey, 'self::')) {
+                    return $optionKey;
+                }
+
+                try {
+                    $method = explode('::', $optionKey)[1];
+
+                    return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $method, $taggedAs);
+                } catch (AutowireException|InvalidArgumentException $e) {
+                    throw new DiDefinitionException(
+                        message: sprintf('Cannot get key for tag "%s" via method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getIdentifier(), $method, $e->getMessage()),
+                        previous: $e
+                    );
+                }
             }
         }
 
@@ -236,12 +192,35 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             return $identifier;
         }
 
-        $howGetKeyOption = sprintf('Get default key by "%s::%s()" for tag "%s" has an error:', $taggedAs->getDefinition()->name, $this->keyDefaultMethod, $this->tag);
-        $key = self::callStaticMethod($taggedAs, $this->keyDefaultMethod, false, $howGetKeyOption, ['string'], $this->tag, $taggedAs->getTag($this->tag) ?? []);
+        try {
+            return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $this->keyDefaultMethod, $taggedAs);
+        } catch (InvalidArgumentException) {
+            return $identifier;
+        } catch (AutowireException $e) {
+            throw new DiDefinitionException(
+                message: sprintf('Cannot get key for tag "%s" via default method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod, $e->getMessage()),
+                previous: $e
+            );
+        }
+    }
 
-        // @phpstan-ignore return.type
-        return null === $key || '' === $key
-            ? $identifier
-            : $key;
+    /**
+     * @return non-empty-string
+     *
+     * @throws AutowireException|InvalidArgumentException
+     */
+    private function getTagKeyFromClassMethod(string $class, string $method, DiTaggedDefinitionInterface $taggedAs): string
+    {
+        $callable = [$class, $method];
+
+        if (!is_callable($callable)) {
+            throw new InvalidArgumentException('Method must be exist and declared with public and static modifiers.');
+        }
+
+        $key = $callable($this->tag, $taggedAs->getTag($this->tag) ?? []);
+
+        return is_string($key) && '' !== $key
+            ? $key
+            : throw new AutowireException(sprintf('Method must return non-empty string but return "%s"', var_export($key, true)));
     }
 }

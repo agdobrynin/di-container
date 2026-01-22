@@ -5,20 +5,30 @@ declare(strict_types=1);
 namespace Tests\TaggedAsKeys;
 
 use Generator;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\TaggedAsKeys\Fixtures\Failed\Foo;
+use Tests\TaggedAsKeys\Fixtures\OptionKeyReturnEmptyString;
 
 use function Kaspi\DiContainer\diValue;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Traits\TagsTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(TagsTrait::class)]
 class KeyExceptionTest extends TestCase
 {
     private ?object $container;
@@ -33,6 +43,25 @@ class KeyExceptionTest extends TestCase
         $this->container = null;
     }
 
+    #[DataProvider('dataProviderEmptyString')]
+    public function testKeyIsEmptyString(string $key): void
+    {
+        $this->expectException(DiDefinitionException::class);
+        $this->expectExceptionMessage('must be non-empty string');
+
+        $this->container->expects(self::once())
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
+            ->willReturn([
+                'service.oka' => diValue('oka')->bindTag('tags.one', options: ['key' => 'aaa']),
+            ])
+        ;
+
+        (new DiDefinitionTaggedAs('tags.one', key: $key))
+            ->resolve($this->container)
+        ;
+    }
+
     public static function dataProviderEmptyString(): Generator
     {
         yield 'empty string' => [''];
@@ -40,25 +69,19 @@ class KeyExceptionTest extends TestCase
         yield 'string with spaces' => ['  '];
     }
 
-    /**
-     * @dataProvider dataProviderEmptyString
-     */
-    public function testKeyIsEmptyString(string $key): void
+    #[DataProvider('dataProviderInvalidDefinitions')]
+    public function testKeyOptionIsNonEmptyString(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('The value of option name "key_srv" must be non-empty string.');
+
         $this->container->expects(self::once())
-            ->method('getDefinitions')
-            ->willReturn([
-                'service.oka' => diValue('oka')->bindTag('tags.one', options: ['key' => 'aaa']),
-            ])
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
+            ->willReturn($getDefinitions)
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', key: $key);
-        $taggedAs->setContainer($this->container);
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('Argument $key must be non-empty string');
-
-        $taggedAs->getServicesTaggedAs();
+        $taggedAs->resolve($this->container);
     }
 
     public static function dataProviderInvalidDefinitions(): Generator
@@ -85,20 +108,86 @@ class KeyExceptionTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider dataProviderInvalidDefinitions
-     */
-    public function testKeyOptionIsNonEmptyString(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
+    public function testKeyOptionFromMethod(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get key for tag "tags.one"');
+
         $this->container->expects(self::once())
-            ->method('getDefinitions')
-            ->willReturn($getDefinitions)
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
+            ->willReturn([
+                OptionKeyReturnEmptyString::class => (new DiDefinitionAutowire(OptionKeyReturnEmptyString::class))
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeyEmpty'])
+                    ->setContainer($this->container),
+            ])
         ;
-        $taggedAs->setContainer($this->container);
 
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('the value must be non-empty string');
+        (new DiDefinitionTaggedAs('tags.one', key: 'key'))->resolve($this->container);
+    }
 
-        $taggedAs->getServicesTaggedAs();
+    /**
+     * @param DiDefinitionAutowire[] $getDefinitions
+     */
+    #[DataProvider('dataProviderKeyFromMethodFailed')]
+    public function testKeyFromMethodFailed(DiDefinitionTaggedAs $taggedAs, array $getDefinitions): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get key for tag "tags.one" via method');
+
+        $this->container->expects(self::once())
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
+            ->willReturnCallback(function () use ($getDefinitions) {
+                foreach ($getDefinitions as $getDefinition) {
+                    yield $getDefinition->getIdentifier() => $getDefinition->setContainer($this->container);
+                }
+            })
+        ;
+
+        $taggedAs->resolve($this->container);
+    }
+
+    public static function dataProviderKeyFromMethodFailed(): Generator
+    {
+        yield 'private static method' => [
+            new DiDefinitionTaggedAs('tags.one', key: 'key'),
+            [
+                'service_one' => (new DiDefinitionAutowire(Foo::class))
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeyStaticPrivate']),
+            ],
+        ];
+
+        yield 'protected static method' => [
+            new DiDefinitionTaggedAs('tags.one', key: 'key'),
+            [
+                'service_one' => (new DiDefinitionAutowire(Foo::class))
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeyStaticProtected']),
+            ],
+        ];
+
+        yield 'public none-static method' => [
+            new DiDefinitionTaggedAs('tags.one', key: 'key'),
+            [
+                'service_one' => (new DiDefinitionAutowire(Foo::class))
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeyNoneStatic']),
+            ],
+        ];
+
+        yield 'protected none-static method' => [
+            new DiDefinitionTaggedAs('tags.one', key: 'key'),
+            [
+                'service_one' => (new DiDefinitionAutowire(Foo::class))
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeyNoneStaticProtected']),
+            ],
+        ];
+
+        yield 'private none-static method' => [
+            new DiDefinitionTaggedAs('tags.one', key: 'key'),
+            [
+                'service_one' => (new DiDefinitionAutowire(Foo::class))
+                    ->bindTag('tags.one', options: ['key' => 'self::getKeyNoneStaticPrivate']),
+            ],
+        ];
     }
 }

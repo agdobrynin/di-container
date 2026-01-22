@@ -4,9 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionProxyClosure;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionProxyClosure\Fixtures\AnyClass;
 use Tests\DiDefinition\DiDefinitionProxyClosure\Fixtures\One;
@@ -17,16 +28,21 @@ use function Kaspi\DiContainer\diProxyClosure;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\Attributes\ProxyClosure
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure
- * @covers \Kaspi\DiContainer\diProxyClosure
- * @covers \Kaspi\DiContainer\Traits\BindArgumentsTrait
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diProxyClosure')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(ProxyClosure::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionProxyClosure::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(BindArgumentsTrait::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class ThroughContainerTest extends TestCase
 {
     public function testOverrideDiProxyClosureAsPhpAttributeProxyClosure(): void

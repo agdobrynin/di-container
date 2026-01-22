@@ -4,28 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\ClassOne;
+use Tests\FromDocs\PhpAttribute\Fixtures\OtherClass;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- *
  * @internal
  */
+#[CoversNothing]
 class DiFactoryTest extends TestCase
 {
-    public function testDiFactory(): void
+    public function testClassResolveViaDiFactory(): void
     {
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerBuilder())->build();
 
         $myClass = $container->get(ClassOne::class);
 
-        $this->assertEquals('Piter', $myClass->name);
-        $this->assertEquals(22, $myClass->age);
+        self::assertEquals('Piter', $myClass->name);
+        self::assertEquals(22, $myClass->age);
+        self::assertSame($myClass, $container->get(ClassOne::class));
+    }
+
+    public function testParameterResolveViaDiFactory(): void
+    {
+        $container = (new DiContainerBuilder())->build();
+
+        $otherClass = $container->get(OtherClass::class);
+
+        self::assertEquals('Piter', $otherClass->classOne->name);
+        self::assertEquals(22, $otherClass->classOne->age);
     }
 }

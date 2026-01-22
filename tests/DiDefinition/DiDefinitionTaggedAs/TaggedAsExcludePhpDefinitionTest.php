@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionTaggedAs;
 
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\LazyDefinitionIterator;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\One;
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\TaggedAsCollection;
@@ -16,14 +20,13 @@ use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\Exclude\Definition\Two;
 use function Kaspi\DiContainer\diAutowire;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(LazyDefinitionIterator::class)]
 class TaggedAsExcludePhpDefinitionTest extends TestCase
 {
     private ?DiContainerInterface $container = null;
@@ -31,15 +34,20 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
     public function setUp(): void
     {
         $this->container = $this->createMock(DiContainerInterface::class);
-        $this->container->method('getDefinitions')
+        $this->container->method('findTaggedDefinitions')
+            ->with('tags.aaa')
             ->willReturn([
-                One::class => diAutowire(One::class)
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
-                Two::class => diAutowire(Two::class)
+                Two::class => (new DiDefinitionAutowire(Two::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
-                Three::class => diAutowire(Three::class)
+                Three::class => (new DiDefinitionAutowire(Three::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
-                TaggedAsCollection::class => diAutowire(TaggedAsCollection::class)
+                TaggedAsCollection::class => (new DiDefinitionAutowire(TaggedAsCollection::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.aaa'),
             ])
         ;
@@ -55,12 +63,9 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
 
     public function testTaggedAsExcludeSelfTrue(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa'))
-            ->setCallingByService(diAutowire(TaggedAsCollection::class))
-        ;
-        $taggedAs->setContainer($this->container);
+        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa'));
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container, diAutowire(TaggedAsCollection::class));
 
         $this->assertCount(3, $collection);
         $this->assertTrue($collection->has(One::class));
@@ -71,12 +76,9 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
 
     public function testTaggedAsExcludeSelfFalse(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', selfExclude: false))
-            ->setCallingByService(diAutowire(TaggedAsCollection::class))
-        ;
-        $taggedAs->setContainer($this->container);
+        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', selfExclude: false));
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container, diAutowire(TaggedAsCollection::class));
 
         $this->assertCount(4, $collection);
         $this->assertTrue($collection->has(One::class));
@@ -87,12 +89,9 @@ class TaggedAsExcludePhpDefinitionTest extends TestCase
 
     public function testTaggedAsExcludeSelfTrueAndExcludeIds(): void
     {
-        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', containerIdExclude: [One::class, Three::class]))
-            ->setCallingByService(diAutowire(TaggedAsCollection::class))
-        ;
-        $taggedAs->setContainer($this->container);
+        $taggedAs = (new DiDefinitionTaggedAs('tags.aaa', containerIdExclude: [One::class, Three::class]));
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container, diAutowire(TaggedAsCollection::class));
 
         $this->assertCount(1, $collection);
         $this->assertFalse($collection->has(One::class));

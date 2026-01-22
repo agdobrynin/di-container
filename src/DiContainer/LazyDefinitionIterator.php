@@ -19,7 +19,6 @@ use function is_string;
 use function key;
 use function next;
 use function reset;
-use function sprintf;
 
 /**
  * @template-covariant TValue
@@ -30,7 +29,7 @@ final class LazyDefinitionIterator implements Iterator, ContainerInterface, Arra
      * @param array<non-empty-string|non-negative-int, non-empty-string> $mapKeyToContainerIdentifier key to container identifier
      */
     public function __construct(
-        private ContainerInterface $container,
+        private readonly ContainerInterface $container,
         private array $mapKeyToContainerIdentifier,
     ) {}
 
@@ -55,7 +54,7 @@ final class LazyDefinitionIterator implements Iterator, ContainerInterface, Arra
     /**
      * @return null|non-empty-string|non-negative-int
      */
-    public function key(): null|int|string
+    public function key(): int|string|null
     {
         return key($this->mapKeyToContainerIdentifier);
     }
@@ -82,7 +81,7 @@ final class LazyDefinitionIterator implements Iterator, ContainerInterface, Arra
             return $this->container->get($this->mapKeyToContainerIdentifier[$id]);
         }
 
-        throw new NotFoundException(sprintf('Definition "%s" not found.', $id));
+        throw new NotFoundException(id: $id);
     }
 
     public function has(string $id): bool

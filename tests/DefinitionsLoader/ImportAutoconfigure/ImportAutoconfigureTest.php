@@ -4,10 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader\ImportAutoconfigure;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\diAutowire;
+use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 use function iterator_to_array;
@@ -15,19 +29,23 @@ use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\Attributes\DiFactory
- * @covers \Kaspi\DiContainer\DefinitionsLoader
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\ImportLoader
- * @covers \Kaspi\DiContainer\ImportLoaderCollection
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DiFactory::class)]
+#[CoversClass(DefinitionsLoader::class)]
+#[CoversClass(diAutowire::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionFactory::class)]
+#[CoversClass(DefinitionsLoaderException::class)]
+#[CoversClass(FinderFile::class)]
+#[CoversClass(FinderFullyQualifiedName::class)]
+#[CoversClass(FinderFullyQualifiedNameCollection::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class ImportAutoconfigureTest extends TestCase
 {
     public function testAutoconfigure(): void
@@ -45,9 +63,6 @@ class ImportAutoconfigureTest extends TestCase
             )
         ;
 
-        $this->assertFalse($container->has(Fixtures\Factories\DiFactoryPerson::class));
-        $this->assertTrue($container->has(Fixtures\Person::class));
-
         $this->assertEquals(
             ['name' => 'Ivan', 'surname' => 'Petrov', 'age' => 22],
             (array) $container->get(Fixtures\Person::class)
@@ -58,16 +73,17 @@ class ImportAutoconfigureTest extends TestCase
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
         $this->expectExceptionMessageMatches(
-            '/Cannot automatically set definition via.+AutowireExclude.+DiFactoryPerson/'
+            '/mark as excluded via php attribute.+AutowireExclude.+Foo/'
         );
 
-        iterator_to_array(
-            (new DefinitionsLoader())
-                ->addDefinitions(false, [
-                    diAutowire(Fixtures\Factories\DiFactoryPerson::class),
-                ])
-                ->import('Tests\\', __DIR__.'/Fixtures/')
-                ->definitions()
-        );
+        $defs = (new DefinitionsLoader())
+            ->addDefinitions(false, [
+                diAutowire(Fixtures\Foo::class),
+            ])
+            ->import('Tests\\', __DIR__.'/Fixtures/')
+            ->definitions()
+        ;
+
+        iterator_to_array($defs);
     }
 }

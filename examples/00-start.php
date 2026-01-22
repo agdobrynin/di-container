@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
 
-require_once './vendor/autoload.php';
+require_once \dirname(__DIR__).'/vendor/autoload.php';
 
 class Envelope implements Stringable
 {
@@ -81,7 +81,7 @@ class PostController
     }
 }
 
-$container = (new DiContainerFactory())->make();
+$container = (new DiContainerBuilder())->build();
 
 // Заполняем модель данными.
 $post = new Post();
@@ -93,5 +93,5 @@ echo '🕸  DiContainer::get ✉  send bytes: '.$container->get(PostController::
 // Использование call
 echo '🖥  DiContainer::call ✉  send bytes: '.$container->call(
     definition: [PostController::class, 'send'],
-    arguments: ['post' => $post]
+    post: $post
 ).PHP_EOL;

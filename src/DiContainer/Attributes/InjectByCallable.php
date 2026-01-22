@@ -5,31 +5,21 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Attributes;
 
 use Attribute;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
-
-use function sprintf;
-use function str_contains;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
-final class InjectByCallable implements DiAttributeInterface
+final class InjectByCallable
 {
     /**
-     * @param non-empty-string $callable
+     * @var callable
      */
-    public function __construct(private string $callable)
+    private $callable;
+
+    public function __construct(callable $callable)
     {
-        if ('' === $callable || str_contains($callable, ' ')) { // @phpstan-ignore identical.alwaysFalse
-            throw new AutowireAttributeException(
-                sprintf('The $callable parameter must be a non-empty string and must not contain spaces. Got: "%s".', $callable)
-            );
-        }
+        $this->callable = $callable;
     }
 
-    /**
-     * @return non-empty-string
-     */
-    public function getIdentifier(): string
+    public function getCallable(): callable
     {
         return $this->callable;
     }

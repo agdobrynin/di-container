@@ -4,8 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\DiContainer\ResolveByInterface;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainer\ResolveByInterface\Fixtures\FreeInterface;
@@ -21,21 +35,25 @@ use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Service
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionInvokableWrapper
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\Traits\CallableParserTrait
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diCallable')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Service::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(NotFoundException::class)]
+#[CoversClass(CallCircularDependencyException::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class ResolveByInterfaceTest extends TestCase
 {
     public function testResolveByInterfaceViaAttributeWithZeroConfig(): void
@@ -157,10 +175,10 @@ class ResolveByInterfaceTest extends TestCase
 
     public function testResolveByInterfaceWithZeroConfigWithoutAttribute(): void
     {
-        $container = new DiContainer(config: new DiContainerConfig());
-
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Definition not found for');
+        $this->expectExceptionMessage('Attempting to resolve interface');
+
+        $container = new DiContainer(config: new DiContainerConfig());
 
         $container->get(FreeInterface::class);
     }

@@ -7,31 +7,30 @@ namespace Tests\Attributes\Raw;
 use Generator;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Tag
- *
  * @internal
  */
+#[CoversClass(Tag::class)]
 class TagTest extends TestCase
 {
+    #[DataProvider('dataProviderFail')]
+    public function testTagFail(string $name): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('The $name parameter must be a non-empty string.');
+
+        new Tag($name);
+    }
+
     public static function dataProviderFail(): Generator
     {
         yield 'empty string' => [''];
 
         yield 'string with spaces' => ['   '];
-    }
-
-    /**
-     * @dataProvider dataProviderFail
-     */
-    public function testTagFail(string $name): void
-    {
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('parameter must be a non-empty string');
-
-        new Tag($name);
     }
 
     public function testTagDefault(): void

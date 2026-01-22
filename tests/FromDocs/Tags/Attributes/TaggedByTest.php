@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\Tags\Attributes;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\Tags\Attributes\Fixtures\GroupOne;
 use Tests\FromDocs\Tags\Attributes\Fixtures\GroupTwo;
@@ -22,110 +23,119 @@ use function Kaspi\DiContainer\diAutowire;
 
 /**
  * @internal
- *
- * @covers \Kaspi\DiContainer\Attributes\Tag
- * @covers \Kaspi\DiContainer\Attributes\TaggedAs
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
  */
+#[CoversNothing]
 class TaggedByTest extends TestCase
 {
     public function testTaggedByInterface(): void
     {
         // Объявить классы
-        $definitions = [
-            diAutowire(RuleA::class),
-            diAutowire(RuleC::class),
-            diAutowire(RuleB::class),
-        ];
+        $definitions = static function () {
+            yield diAutowire(RuleA::class);
 
-        $container = (new DiContainerFactory())->make($definitions);
+            yield diAutowire(RuleC::class);
+
+            yield diAutowire(RuleB::class);
+        };
+
+        $container = (new DiContainerBuilder())->addDefinitions($definitions())->build();
         $class = $container->get(SrvRules::class);
         // теперь в свойстве `rules` содержится итерируемая коллекция (\Generator)
         // из классов RuleA, RuleB - так как они имплементируют RuleInterface
 
-        $this->assertIsIterable($class->rules);
-        $this->assertInstanceOf(RuleA::class, $class->rules->current());
+        self::assertIsIterable($class->rules);
+        self::assertInstanceOf(RuleA::class, $class->rules->current());
+
         $class->rules->next();
-        $this->assertInstanceOf(RuleB::class, $class->rules->current());
+
+        self::assertInstanceOf(RuleB::class, $class->rules->current());
+
         $class->rules->next();
-        $this->assertFalse($class->rules->valid());
+
+        self::assertFalse($class->rules->valid());
     }
 
     public function testTaggedPriority(): void
     {
-        $definitions = [
-            diAutowire(RuleA::class),
-            diAutowire(RuleB::class),
-            diAutowire(RuleC::class),
-        ];
+        $definitions = static function () {
+            yield diAutowire(RuleA::class);
 
-        $container = (new DiContainerFactory())->make($definitions);
+            yield diAutowire(RuleB::class);
+
+            yield diAutowire(RuleC::class);
+        };
+
+        $container = (new DiContainerBuilder())->addDefinitions($definitions())->build();
         $class = $container->get(SrvPriorityTagRules::class);
         // при получении коллекции отсортированные по приоритету
         // 1 - RuleC
         // 2 - RuleA
-        $this->assertIsIterable($class->rules);
-        $this->assertInstanceOf(RuleC::class, $class->rules->current());
-        $this->assertEquals(RuleC::class, $class->rules->key()); // check key of tagged service
+        self::assertIsIterable($class->rules);
+        self::assertInstanceOf(RuleC::class, $class->rules->current());
+        self::assertEquals(RuleC::class, $class->rules->key()); // check key of tagged service
 
         $class->rules->next();
 
-        $this->assertInstanceOf(RuleA::class, $class->rules->current());
-        $this->assertEquals(RuleA::class, $class->rules->key());
+        self::assertInstanceOf(RuleA::class, $class->rules->current());
+        self::assertEquals(RuleA::class, $class->rules->key());
 
         $class->rules->next();
 
-        $this->assertFalse($class->rules->valid());
+        self::assertFalse($class->rules->valid());
     }
 
     public function testTaggedByTagNameLazy(): void
     {
-        $definitions = [
-            diAutowire(One::class),
-            diAutowire(Three::class),
-            diAutowire(Two::class),
-        ];
+        $definitions = static function () {
+            yield diAutowire(One::class);
 
-        $container = (new DiContainerFactory())->make($definitions);
+            yield diAutowire(Three::class);
+
+            yield diAutowire(Two::class);
+        };
+
+        $container = (new DiContainerBuilder())->addDefinitions($definitions())->build();
         $classGroupTwo = $container->get(GroupTwo::class);
         // теперь в свойстве `services` содержится итерируемая коллекция
         // из классов Two, One - такой порядок обусловлен значением 'priority'
-        $this->assertTrue($classGroupTwo->services->valid());
-        $this->assertInstanceOf(Two::class, $classGroupTwo->services->current()); // priority = 1000
+        self::assertTrue($classGroupTwo->services->valid());
+        self::assertInstanceOf(Two::class, $classGroupTwo->services->current()); // priority = 1000
+
         $classGroupTwo->services->next();
-        $this->assertInstanceOf(One::class, $classGroupTwo->services->current()); // default priority = 0
+
+        self::assertInstanceOf(One::class, $classGroupTwo->services->current()); // default priority = 0
 
         $classGroupOne = $container->get(GroupOne::class);
-        $this->assertCount(2, $classGroupOne->services);
-        $this->assertInstanceOf(Three::class, $classGroupOne->services[Three::class]); // priority = 10
-        $this->assertInstanceOf(One::class, $classGroupOne->services[One::class]); // default priority = 0
+
+        self::assertCount(2, $classGroupOne->services);
+        self::assertInstanceOf(Three::class, $classGroupOne->services[Three::class]); // priority = 10
+        self::assertInstanceOf(One::class, $classGroupOne->services[One::class]); // default priority = 0
     }
 
     public function testTaggedByTagNameWithPriorityByMethod(): void
     {
-        $definitions = [
-            diAutowire(One::class),
-            diAutowire(RuleA::class),
-            diAutowire(RuleB::class),
-            diAutowire(RuleC::class),
-            diAutowire(Two::class),
-            diAutowire(Three::class),
-        ];
+        $definitions = static function () {
+            yield diAutowire(One::class);
 
-        $container = (new DiContainerFactory())->make($definitions);
+            yield diAutowire(RuleA::class);
+
+            yield diAutowire(RuleB::class);
+
+            yield diAutowire(RuleC::class);
+
+            yield diAutowire(Two::class);
+
+            yield diAutowire(Three::class);
+        };
+
+        $container = (new DiContainerBuilder())->addDefinitions($definitions())->build();
         $srv = $container->get(SrvPriorityTagByMethodRules::class);
 
-        $this->assertCount(3, $srv->rules);
+        self::assertCount(3, $srv->rules);
 
         // access by key of tagged service
-        $this->assertInstanceOf(RuleB::class, $srv->rules[RuleB::class]);
-        $this->assertInstanceOf(RuleC::class, $srv->rules[RuleC::class]);
-        $this->assertInstanceOf(RuleA::class, $srv->rules[RuleA::class]);
+        self::assertInstanceOf(RuleB::class, $srv->rules[RuleB::class]);
+        self::assertInstanceOf(RuleC::class, $srv->rules[RuleC::class]);
+        self::assertInstanceOf(RuleA::class, $srv->rules[RuleA::class]);
     }
 }

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\Call;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\Call\Fixtires\ServiceOne;
 
@@ -13,36 +14,29 @@ use function array_filter;
 use const ARRAY_FILTER_USE_BOTH;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- *
  * @internal
  */
+#[CoversNothing]
 class CallTest extends TestCase
 {
     public function testController(): void
     {
         $_POST = ['name' => 'Ivan'];
 
-        // try call
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerBuilder())->build();
 
         $res = $container->call(
             ['\Tests\FromDocs\Call\Fixtires\PostController', 'store'],
             // $_POST содержит ['name' => 'Ivan']
-            array_filter($_POST, static fn ($v, $k) => 'name' === $k, ARRAY_FILTER_USE_BOTH)
+            ...array_filter($_POST, static fn ($v, $k) => 'name' === $k, ARRAY_FILTER_USE_BOTH)
         );
 
-        $this->assertEquals('The name Ivan saved!', $res);
+        self::assertEquals('The name Ivan saved!', $res);
     }
 
     public function testCallbackFunction(): void
     {
-        $container = (new DiContainerFactory())->make();
+        $container = (new DiContainerBuilder())->build();
 
         // определение callback с типизированным параметром
         $helperOne = static function (ServiceOne $service, string $name): string {
@@ -51,6 +45,6 @@ class CallTest extends TestCase
             return 'The name '.$name.' saved!';
         };
 
-        $this->assertEquals('The name Vasiliy saved!', $container->call($helperOne, ['name' => 'Vasiliy']));
+        self::assertEquals('The name Vasiliy saved!', $container->call($helperOne, ...['name' => 'Vasiliy']));
     }
 }

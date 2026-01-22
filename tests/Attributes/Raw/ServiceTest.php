@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Attributes\Raw;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Service
- *
  * @internal
  */
+#[CoversClass(Service::class)]
 class ServiceTest extends TestCase
 {
     public function testServiceWithDefaultValue(): void
@@ -31,19 +33,19 @@ class ServiceTest extends TestCase
         $this->assertTrue($service->isSingleton());
     }
 
-    public function testServiceWithEmptyId(): void
+    #[DataProvider('dataProviderServiceIdFail')]
+    public function testServiceWithEmptyId(string $id): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('The $id parameter must be a non-empty string');
+        $this->expectExceptionMessage('The $id parameter must be a non-empty string.');
 
-        new Service('');
+        new Service($id);
     }
 
-    public function testServiceWithSpacesId(): void
+    public static function dataProviderServiceIdFail(): Generator
     {
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessage('The $id parameter must be a non-empty string');
+        yield 'empty id' => [''];
 
-        new Service('      ');
+        yield 'spaces id' => ['    '];
     }
 }

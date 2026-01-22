@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpAttribute;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleB;
 use Tests\FromDocs\PhpAttribute\Fixtures\RuleGeneratorInjectByContainerIdentifier;
@@ -12,17 +13,9 @@ use Tests\FromDocs\PhpAttribute\Fixtures\RuleGeneratorInjectByContainerIdentifie
 use function Kaspi\DiContainer\diCallable;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Traits\ParameterTypeByReflectionTrait
- *
  * @internal
  */
+#[CoversNothing]
 class InjectVariadicInjectByContainerIdentifierTest extends TestCase
 {
     public function testInjectVariadicRepeatInject(): void
@@ -36,10 +29,13 @@ class InjectVariadicInjectByContainerIdentifierTest extends TestCase
             ),
         ];
 
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definitions)
+            ->build()
+        ;
 
         $ruleGenerator = $container->get(RuleGeneratorInjectByContainerIdentifier::class);
 
-        $this->assertInstanceOf(RuleB::class, $ruleGenerator->getRules()[0]);
+        self::assertInstanceOf(RuleB::class, $ruleGenerator->getRules()[0]);
     }
 }

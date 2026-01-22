@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperClass;
 
 /**
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- *
  * @internal
  */
+#[CoversClass(DiDefinitionAutowire::class)]
 class GetDefinitionTest extends TestCase
 {
     public function testGetDefinitionFromString(): void

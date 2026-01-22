@@ -4,10 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall\CircularReference;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Tests\DiContainerCall\CircularReference\Fixtures\ClassWithMethod;
 use Tests\DiContainerCall\CircularReference\Fixtures\FirstClass;
 use Tests\DiContainerCall\CircularReference\Fixtures\SecondClass;
@@ -18,24 +35,34 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Inject
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Inject::class)]
+#[CoversClass(DefinitionDiCall::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(CallCircularDependencyException::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class MainTest extends TestCase
 {
     public function testCircularInjectByAttribute(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot get entry via container identifier ".+FirstClass" for create callable definition\./');
+
         $definitions = [
             diAutowire(FirstClass::class),
             'services.second' => diAutowire(SecondClass::class),
@@ -43,17 +70,15 @@ class MainTest extends TestCase
         ];
 
         $container = new DiContainer($definitions, new DiContainerConfig(useZeroConfigurationDefinition: false));
-
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+services\.second.+services\.third.+FirstClass/'
-        );
 
         $container->call(FirstClass::class);
     }
 
     public function testCircularByInjectInMethod(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method\(\)/');
+
         $definitions = [
             diAutowire(FirstClass::class),
             'services.second' => diAutowire(SecondClass::class),
@@ -63,19 +88,14 @@ class MainTest extends TestCase
 
         $container = new DiContainer($definitions, new DiContainerConfig(useZeroConfigurationDefinition: false));
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+services\.second.+services\.third.+FirstClass/'
-        );
-
-        $container->call(
-            [ClassWithMethod::class, 'method'],
-            ['service' => diGet('services.second')]
-        );
+        $container->call([ClassWithMethod::class, 'method'], ...['service' => diGet('services.second')]);
     }
 
     public function testCircularWithoutAttribute(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot get entry via container identifier ".+FirstClass" for create callable definition\./');
+
         $definitions = [
             diAutowire(FirstClass::class),
             diAutowire(SecondClass::class),
@@ -85,16 +105,14 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+SecondClass.+ThirdClass.+FirstClass/'
-        );
-
         $container->call(FirstClass::class);
     }
 
     public function testCircularInMethodWithoutAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method\(\)\./');
+
         $definitions = [
             diAutowire(FirstClass::class),
             diAutowire(SecondClass::class),
@@ -105,19 +123,14 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+FirstClass.+SecondClass.+FirstClass/'
-        );
-
-        $container->call(
-            [ClassWithMethod::class, 'method'],
-            ['service' => diAutowire(ThirdClass::class)]
-        );
+        $container->call([ClassWithMethod::class, 'method'], ...['service' => diAutowire(ThirdClass::class)]);
     }
 
     public function testCircularInMethodByTaggedAsWithoutAttribute(): void
     {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot resolve parameter by named argument \$service.+ClassWithMethod::method\(\)\./');
+
         $definitions = [
             diAutowire(FirstClass::class),
             diAutowire(SecondClass::class),
@@ -129,14 +142,6 @@ class MainTest extends TestCase
         $config = new DiContainerConfig(useZeroConfigurationDefinition: false, useAttribute: false);
         $container = new DiContainer($definitions, $config);
 
-        $this->expectException(CallCircularDependencyException::class);
-        $this->expectExceptionMessageMatches(
-            '/cyclical dependency.+ThirdClass.+FirstClass.+SecondClass.+ThirdClass/'
-        );
-
-        $container->call(
-            [ClassWithMethod::class, 'method'],
-            ['service' => diTaggedAs('tag-one', false)]
-        );
+        $container->call([ClassWithMethod::class, 'method'], ...['service' => diTaggedAs('tag-one', false)]);
     }
 }

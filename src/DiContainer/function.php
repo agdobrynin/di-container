@@ -4,44 +4,43 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionReference;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
-use function class_alias;
 use function function_exists;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
-
-// @todo Remove alias when remove function diReference.
-class_alias(DiDefinitionGet::class, 'Kaspi\DiContainer\DiDefinition\DiDefinitionReference'); // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
      * @param class-string $definition Fully Qualified Class Name
      */
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionConfigAutowireInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface&DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
     }
 } // @codeCoverageIgnore
 
-if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
+if (!function_exists('Kaspi\DiContainer\diFactory')) { // @codeCoverageIgnore
     /**
-     * @param array{0: non-empty-string|object, 1?:non-empty-string}|callable|callable-string|Closure|non-empty-string $definition
+     * @param class-string<DiFactoryInterface> $definition Fully Qualified Class Name
      */
-    function diCallable(array|callable|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
+    function diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
+    {
+        return new DiDefinitionFactory($definition, $isSingleton);
+    }
+} // @codeCoverageIgnore
+
+if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
+    function diCallable(callable $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface&DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionCallable($definition, $isSingleton);
     }
@@ -49,25 +48,11 @@ if (!function_exists('Kaspi\DiContainer\diCallable')) { // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diProxyClosure')) { // @codeCoverageIgnore
     /**
-     * @param class-string $definition Fully Qualified Class Name
+     * @param class-string $containerIdentifier Fully Qualified Class Name
      */
-    function diProxyClosure(string $definition, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
+    function diProxyClosure(string $containerIdentifier, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
     {
-        return new DiDefinitionProxyClosure($definition, $isSingleton);
-    }
-} // @codeCoverageIgnore
-
-if (!function_exists('Kaspi\DiContainer\diReference')) { // @codeCoverageIgnore
-    /**
-     * @deprecated Function diReference() was deprecated, used diGet()
-     *
-     * @param non-empty-string $containerIdentifier
-     */
-    function diReference(string $containerIdentifier): DiDefinitionReference
-    {
-        @trigger_error('Function diReference() was deprecated, used diGet(). This function will remove next major release.', E_USER_DEPRECATED);
-
-        return new DiDefinitionReference($containerIdentifier);
+        return new DiDefinitionProxyClosure($containerIdentifier, $isSingleton);
     }
 } // @codeCoverageIgnore
 
@@ -75,7 +60,7 @@ if (!function_exists('Kaspi\DiContainer\diGet')) { // @codeCoverageIgnore
     /**
      * @param non-empty-string $containerIdentifier
      */
-    function diGet(string $containerIdentifier): DiDefinitionInterface
+    function diGet(string $containerIdentifier): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionGet($containerIdentifier);
     }

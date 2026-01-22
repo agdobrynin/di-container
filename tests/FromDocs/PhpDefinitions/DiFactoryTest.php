@@ -4,38 +4,51 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependency;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ClassWithDependencyDiFactory;
 
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diFactory;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- *
  * @internal
  */
+#[CoversNothing]
 class DiFactoryTest extends TestCase
 {
     public function testCreateByDiFactory(): void
     {
-        $definitions = [
-            ClassWithDependency::class => diAutowire(ClassWithDependencyDiFactory::class, isSingleton: true),
-        ];
+        $definitions = static function () {
+            yield ClassWithDependency::class => diFactory(ClassWithDependencyDiFactory::class, isSingleton: true);
+        };
 
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definitions())
+            ->build()
+        ;
 
         $class = $container->get(ClassWithDependency::class);
 
-        $this->assertInstanceOf(ClassWithDependency::class, $class);
-        $this->assertInstanceOf(SplFileInfo::class, $class->splFileInfo);
-        $this->assertEquals('file1.txt', $class->splFileInfo->getFilename());
-        $this->assertSame($class, $container->get(ClassWithDependency::class));
+        self::assertInstanceOf(ClassWithDependency::class, $class);
+        self::assertInstanceOf(SplFileInfo::class, $class->splFileInfo);
+        self::assertEquals('file1.txt', $class->splFileInfo->getFilename());
+        self::assertSame($class, $container->get(ClassWithDependency::class));
+    }
+
+    public function testDiFactoryIdentifier(): void
+    {
+        $container = (new DiContainerBuilder())
+            ->addDefinitions(
+                (static function () {
+                    yield diFactory(ClassWithDependencyDiFactory::class, isSingleton: true);
+                })()
+            )
+            ->build()
+        ;
+
+        self::assertInstanceOf(ClassWithDependency::class, $container->get(ClassWithDependencyDiFactory::class));
     }
 }

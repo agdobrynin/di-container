@@ -9,9 +9,9 @@ use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 final class DiContainerConfig implements DiContainerConfigInterface
 {
     public function __construct(
-        private bool $useZeroConfigurationDefinition = true,
-        private bool $useAttribute = true,
-        private bool $isSingletonServiceDefault = false,
+        private readonly bool $useZeroConfigurationDefinition = true,
+        private readonly bool $useAttribute = true,
+        private readonly bool $isSingletonServiceDefault = false,
     ) {}
 
     public function isSingletonServiceDefault(): bool

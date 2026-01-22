@@ -5,76 +5,105 @@ declare(strict_types=1);
 namespace Tests\DiContainerCall\WrongDefinition;
 
 use Generator;
+use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use stdClass;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
- *
  * @internal
  */
+#[CoversClass(DefinitionDiCall::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class MainTest extends TestCase
 {
-    public function dataProviderWrongDefinition(): Generator
+    /**
+     * @param mixed $definition
+     */
+    #[DataProvider('dataProviderWrongDefinition')]
+    public function testWrongDefinitionAsString(array|callable|string $definition): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/(Cannot create callable from)|(When the definition present is an array)/');
+
+        (new DiContainer(config: new DiContainerConfig()))->call($definition);
+    }
+
+    public static function dataProviderWrongDefinition(): Generator
     {
         yield 'empty string' => [
             '',
-            'Definition is not callable',
         ];
 
         yield 'some random string' => [
             'service.ooo',
-            'Definition is not callable. Got: type "string", value: \'service.ooo\'',
         ];
 
         yield 'empty array' => [
             [],
-            'two array elements must be provided',
+        ];
+
+        yield 'one element provided in array' => [
+            ['one'],
         ];
 
         yield 'empty array of array' => [
             [[], []],
-            'Definition is not callable',
         ];
 
         yield 'no exist class with method as string' => [
             'SomeClass::method',
-            'Definition is not callable. Got: type "string", value: \'SomeClass::method\'',
         ];
 
         yield 'no exist class with method as array' => [
             ['SomeClass', 'method'],
-            'Definition is not callable. Got: type "array", value: array (',
         ];
 
         yield 'is not callable because method not exist' => [
             [self::class, 'method'],
-            'Definition is not callable',
         ];
 
         yield 'instance of object without method' => [
             [new stdClass(), 'method'],
-            'Definition is not callable',
         ];
-    }
 
-    /**
-     * @dataProvider dataProviderWrongDefinition
-     *
-     * @param mixed $definition
-     */
-    public function testWrongDefinitionAsString($definition, string $expectMessage): void
-    {
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage($expectMessage);
+        yield 'class and method is empty' => [
+            '::',
+        ];
 
-        (new DiContainer(config: new DiContainerConfig()))->call($definition);
+        yield 'class is empty' => [
+            '::method',
+        ];
+
+        yield 'method is empty' => [
+            'class::',
+        ];
+
+        yield 'spaces with semicolon' => [
+            '  ::  ',
+        ];
+
+        yield 'method with semicolon' => [
+            'class::  ',
+        ];
     }
 }

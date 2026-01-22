@@ -4,26 +4,29 @@ declare(strict_types=1);
 
 namespace Tests\TaggedAsKeys;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\LazyDefinitionIterator;
+use Kaspi\DiContainer\Traits\TagsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Tests\TaggedAsKeys\Fixures\Attributes\One;
-use Tests\TaggedAsKeys\Fixures\Attributes\Two;
-
-use function Kaspi\DiContainer\diAutowire;
+use Tests\TaggedAsKeys\Fixtures\Attributes\One;
+use Tests\TaggedAsKeys\Fixtures\Attributes\Two;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Tag
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- * @covers \Kaspi\DiContainer\Traits\TagsTrait
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Tag::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(TagsTrait::class)]
 class KeyOverrideTest extends TestCase
 {
     private ?object $container;
@@ -41,10 +44,13 @@ class KeyOverrideTest extends TestCase
     public function testKeyOverrideLazyPhpAttribute(): void
     {
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                One::class => diAutowire(One::class), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 100)]
-                Two::class => diAutowire(Two::class), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 0)]
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->setContainer($this->container), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 100)]
+                Two::class => (new DiDefinitionAutowire(Two::class))
+                    ->setContainer($this->container), // #[Tag('tags.one', options: ['key.override' => 'key-service'], priority: 0)]
             ])
         ;
 
@@ -59,8 +65,8 @@ class KeyOverrideTest extends TestCase
 
         // get item with highest priority - One::class with priority 100, Two::class with priority 0
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.override');
-        $taggedAs->setContainer($this->container);
-        $items = $taggedAs->getServicesTaggedAs();
+
+        $items = $taggedAs->resolve($this->container);
 
         $this->assertCount(1, $items);
         $this->assertInstanceOf(One::class, $items['key-service']);
@@ -69,26 +75,28 @@ class KeyOverrideTest extends TestCase
     public function testKeyOverrideLazyPhpDefinition(): void
     {
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                Fixures\One::class => diAutowire(Fixures\One::class)
+                Fixtures\One::class => (new DiDefinitionAutowire(Fixtures\One::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.one', options: ['key.override' => 'key-service'], priority: 100),
-                Fixures\Two::class => diAutowire(Fixures\Two::class)
+                Fixtures\Two::class => (new DiDefinitionAutowire(Fixtures\Two::class))
+                    ->setContainer($this->container)
                     ->bindTag('tags.one', options: ['key.override' => 'key-service'], priority: 0),
             ])
         ;
 
         $this->container->method('get')
-            ->with(Fixures\One::class)
-            ->willReturn(new Fixures\One())
+            ->with(Fixtures\One::class)
+            ->willReturn(new Fixtures\One())
         ;
 
         // get item with highest priority - One::class with priority 100, Two::class with priority 0
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.override');
-        $taggedAs->setContainer($this->container);
-        $items = $taggedAs->getServicesTaggedAs();
+        $items = $taggedAs->resolve($this->container);
 
         $this->assertCount(1, $items);
-        $this->assertInstanceOf(Fixures\One::class, $items->get('key-service'));
+        $this->assertInstanceOf(Fixtures\One::class, $items->get('key-service'));
     }
 }

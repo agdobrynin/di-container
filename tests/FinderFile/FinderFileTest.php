@@ -7,6 +7,8 @@ namespace Tests\FinderFile;
 use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 
@@ -15,47 +17,36 @@ use function count;
 use function iterator_to_array;
 
 /**
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- *
  * @internal
  */
+#[CoversClass(FinderFile::class)]
 class FinderFileTest extends TestCase
 {
+    #[DataProvider('dataProviderConstructor')]
+    public function testFinderFileConstructorFail(string $src, string $expectMessage): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($expectMessage);
+
+        (new FinderFile($src))->getFiles()->current();
+    }
+
     public static function dataProviderConstructor(): Generator
     {
         yield 'none exist directory' => [
             __DIR__.'/no-dir',
-            '/Cannot resolve source directory by "\\\realpath\(\)".+\/no-dir/',
+            'from parameter $src is invalid',
         ];
 
         yield 'none-directory' => [
             __FILE__,
-            '/Source directory from argument \$src must be readable/',
+            'from parameter $src must be readable',
         ];
-    }
-
-    /**
-     * @dataProvider dataProviderConstructor
-     */
-    public function testFinderFileConstructorFail(string $src, string $expectMessage): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches($expectMessage);
-
-        (new FinderFile())->setSrc($src)->getFiles();
-    }
-
-    public function testFinderFileWithoutSrc(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Need set source directory');
-
-        (new FinderFile())->getFiles()->valid();
     }
 
     public function testFilesWithPhpExtension(): void
     {
-        $files = (new FinderFile())->setSrc(__DIR__.'/Fixtures')->getFiles();
+        $files = (new FinderFile(__DIR__.'/Fixtures'))->getFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current()->getRealPath());
@@ -71,10 +62,7 @@ class FinderFileTest extends TestCase
 
     public function testFilesWithTxtExtension(): void
     {
-        $files = (new FinderFile())
-            ->setSrc(__DIR__.'/Fixtures')
-            ->setAvailableExtensions(['txt'])->getFiles()
-        ;
+        $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: ['txt']))->getFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current()->getRealPath());
@@ -90,9 +78,7 @@ class FinderFileTest extends TestCase
 
     public function testFilesWithTxtAndDocExtension(): void
     {
-        $files = (new FinderFile())
-            ->setSrc(__DIR__.'/Fixtures')
-            ->setAvailableExtensions(['txt', 'doc'])
+        $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: ['txt', 'doc']))
             ->getFiles()
         ;
 
@@ -110,11 +96,7 @@ class FinderFileTest extends TestCase
 
     public function testFilesWithIgnoreExtension(): void
     {
-        $files = (new FinderFile())
-            ->setSrc(__DIR__.'/Fixtures')
-            ->setAvailableExtensions([])
-            ->getFiles()
-        ;
+        $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: []))->getFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current()->getRealPath());
@@ -146,10 +128,11 @@ class FinderFileTest extends TestCase
 
     public function testExcludeDirectoryAndFile(): void
     {
-        $files = (new FinderFile())
-            ->setSrc(__DIR__.'/Fixtures')
-            ->setExcludeRegExpPattern(['~/Fixtures.+SubSubDirectory/~', '~/FileOne\.php$~', '~\.doc$~'])
-            ->setAvailableExtensions([])
+        $files = (new FinderFile(
+            src: __DIR__.'/Fixtures',
+            excludeFiles: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
+            availableExtensions: []
+        ))
             ->getFiles()
         ;
 
@@ -162,5 +145,14 @@ class FinderFileTest extends TestCase
         $files->next();
 
         $this->assertFalse($files->valid());
+    }
+
+    public function testAsIsParameter(): void
+    {
+        $ff = new FinderFile('foo_baz', ['Kernel/*.php'], ['php', 'incl']);
+
+        self::assertEquals('foo_baz', $ff->getSrc());
+        self::assertEquals(['Kernel/*.php'], $ff->getExcludeFiles());
+        self::assertEquals(['php', 'incl'], $ff->getAvailableExtensions());
     }
 }

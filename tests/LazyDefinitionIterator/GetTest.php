@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\LazyDefinitionIterator;
 
+use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\LazyDefinitionIterator;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- *
  * @internal
  */
+#[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(CallCircularDependencyException::class)]
+#[CoversClass(NotFoundException::class)]
 class GetTest extends TestCase
 {
     private ?object $container;
@@ -43,14 +47,14 @@ class GetTest extends TestCase
 
     public function testGetFail(): void
     {
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('No entry was found for "foo" identifier.');
+
         $this->container->expects(self::never())
             ->method('get')
         ;
 
         $li = new LazyDefinitionIterator($this->container, []);
-
-        $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition "foo" not found');
 
         $li->get('foo');
     }
@@ -70,16 +74,14 @@ class GetTest extends TestCase
 
     public function testArrayAccessFail(): void
     {
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('No entry was found for "foo" identifier.');
+
         $this->container->expects(self::never())
             ->method('get')
         ;
 
-        $li = new LazyDefinitionIterator($this->container, []);
-
-        $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition "foo" not found');
-
-        $li['foo'];
+        (new LazyDefinitionIterator($this->container, []))['foo'];
     }
 
     public function testByOffsetGetSuccess(): void
@@ -97,15 +99,13 @@ class GetTest extends TestCase
 
     public function testByOffsetGetFail(): void
     {
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('No entry was found for "foo" identifier.');
+
         $this->container->expects(self::never())
             ->method('get')
         ;
 
-        $li = new LazyDefinitionIterator($this->container, []);
-
-        $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Definition "foo" not found');
-
-        $li->offsetGet('foo');
+        (new LazyDefinitionIterator($this->container, []))->offsetGet('foo');
     }
 }

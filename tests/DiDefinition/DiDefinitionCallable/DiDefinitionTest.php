@@ -4,34 +4,40 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionCallable;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerNeedSetExceptionInterface;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
-use Tests\DiDefinition\DiDefinitionCallable\Fixtures\CallableArgument;
-use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MainClass;
-use Tests\DiDefinition\DiDefinitionCallable\Fixtures\MakeServiceTwo;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceFour;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceOne;
-use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceThree;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceTwo;
 
-use function Kaspi\DiContainer\diAutowire;
-use function Kaspi\DiContainer\diCallable;
-
 /**
- * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(InjectByCallable::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class DiDefinitionTest extends TestCase
 {
     public function testGetDefinitionWhenDefinitionIsCallable(): void
@@ -39,58 +45,12 @@ class DiDefinitionTest extends TestCase
         $this->assertEquals('log', (new DiDefinitionCallable('log'))->getDefinition());
     }
 
-    public function testGetDefinitionAndParseDefinitionWithoutContainerFail(): void
-    {
-        $this->expectException(ContainerNeedSetExceptionInterface::class);
-
-        (new DiDefinitionCallable(MainClass::class.'::getServiceName'))->getDefinition();
-    }
-
-    public function testGetDefinitionAndParseDefinitionSuccess(): void
-    {
-        $container = new DiContainer([
-            diAutowire(MainClass::class)
-                ->bindArguments(serviceName: 'someServiceName'),
-        ]);
-
-        $definition = (new DiDefinitionCallable([MainClass::class, 'getServiceName']))
-            ->setContainer($container)
-            ->getDefinition()
-        ;
-
-        $this->assertIsCallable($definition);
-        $this->assertInstanceOf(MainClass::class, $definition[0]);
-        $this->assertEquals('getServiceName', $definition[1]);
-    }
-
-    public function testCallableMethodArgument(): void
-    {
-        $def = (new DiDefinitionCallable(CallableArgument::class))
-            ->bindArguments('ok')
-        ;
-        $def->setContainer(new DiContainer(config: new DiContainerConfig()));
-
-        $this->assertEquals('ok 😀', $def->invoke());
-    }
-
-    public function testCallableByContainer(): void
-    {
-        $container = new DiContainer([
-            'say.hu' => diCallable(CallableArgument::class)
-                ->bindArguments('ok'),
-        ], new DiContainerConfig());
-
-        $this->assertEquals('ok 😀', $container->get('say.hu'));
-    }
-
     public function testInjectNonCallable(): void
     {
-        $container = new DiContainer(config: new DiContainerConfig());
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Cannot build argument via php attribute for Parameter.+Two \$two.+ServiceFour::__construct()/');
 
-        $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Definition is not callable. Got: type "string", value: \'noneCallableString\'.');
-
-        $container->get(ServiceFour::class);
+        (new DiContainer(config: new DiContainerConfig()))->get(ServiceFour::class);
     }
 
     public function testInjectCallableFromStaticMethod(): void
@@ -109,17 +69,5 @@ class DiDefinitionTest extends TestCase
         $srv = $container->get(ServiceTwo::class);
 
         $this->assertEquals('fromFunction', $srv->two->param);
-    }
-
-    public function testInjectCallableFromClassWithInvokeMethod(): void
-    {
-        $container = new DiContainer([
-            diAutowire(MakeServiceTwo::class)
-                ->bindArguments(def: 'fromInvokeMethod'),
-        ], new DiContainerConfig());
-
-        $srv = $container->get(ServiceThree::class);
-
-        $this->assertEquals('fromInvokeMethod', $srv->two->param);
     }
 }

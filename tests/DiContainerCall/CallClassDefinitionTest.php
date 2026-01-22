@@ -4,26 +4,45 @@ declare(strict_types=1);
 
 namespace Tests\DiContainerCall;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainerCall\Fixtures\ClassWithSimplePublicProperty;
 
 use function Kaspi\DiContainer\diAutowire;
 
 /**
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue::getDefinition
- * @covers \Kaspi\DiContainer\Traits\ParametersResolverTrait::getParameterType
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(DefinitionDiCall::class)]
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiContainerFactory::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
+#[CoversClass(ReflectionMethodByDefinition::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class CallClassDefinitionTest extends TestCase
 {
     public function testCallWithArgumentsInvokeClassWithoutPhpAttribute(): void
@@ -35,7 +54,7 @@ class CallClassDefinitionTest extends TestCase
                 ->bindArguments(publicProperty: 'Ready'),
         ], $config);
 
-        $res = $container->call(ClassWithSimplePublicProperty::class, ['append' => '🚀']);
+        $res = $container->call(ClassWithSimplePublicProperty::class, ...['append' => '🚀']);
 
         $this->assertEquals('Ready invoke 🚀', $res);
     }
@@ -62,28 +81,15 @@ class CallClassDefinitionTest extends TestCase
                 ->bindArguments(publicProperty: 'Start'),
         ], $config);
 
-        $res = $container->call(ClassWithSimplePublicProperty::class.'::method', ['append' => '🚩']);
+        $res = $container->call(ClassWithSimplePublicProperty::class.'::method', ...['append' => '🚩']);
 
         $this->assertEquals('Start method 🚩', $res);
-    }
-
-    public function testCallWithArgumentsClassWithNoneStaticMethodAsArrayWithoutPhpAttribute(): void
-    {
-        $container = new DiContainer([
-            // global definition when resolve class container will get dependency by argument name.
-            'publicProperty' => 'Try call as array from',
-            diAutowire(ClassWithSimplePublicProperty::class),
-        ]);
-
-        $res = $container->call([ClassWithSimplePublicProperty::class, 'method'], ['append' => '🌞']);
-
-        $this->assertEquals('Try call as array from method 🌞', $res);
     }
 
     public function testCallWithArgumentsFromStaticMethodAsString(): void
     {
         $container = (new DiContainerFactory())->make();
-        $res = $container->call(ClassWithSimplePublicProperty::class.'::staticMethod', ['append' => '🗿']);
+        $res = $container->call(ClassWithSimplePublicProperty::class.'::staticMethod', ...['append' => '🗿']);
 
         $this->assertEquals('static method 🗿', $res);
     }

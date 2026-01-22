@@ -4,51 +4,33 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
-use function trigger_error;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
-use const E_USER_DEPRECATED;
-
+/**
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type BindArgumentsType from DiDefinitionArgumentsInterface
+ */
 trait BindArgumentsTrait
 {
     /**
      * User defined parameters by parameter name.
      *
-     * @var array<non-empty-string|non-negative-int, mixed>
+     * @var BindArgumentsType
      */
     private array $bindArguments = [];
 
-    /**
-     * @deprecated Use method bindArguments(). This method will remove next major release.
-     */
-    public function addArgument(int|string $name, mixed $value): static
-    {
-        @trigger_error('Use method bindArguments(). This method will remove next major release.', E_USER_DEPRECATED);
-
-        $this->bindArguments[$name] = $value;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated Use method bindArguments(). This method will remove next major release.
-     */
-    public function addArguments(array $arguments): static
-    {
-        @trigger_error('Use method bindArguments(). This method will remove next major release.', E_USER_DEPRECATED);
-        $this->bindArguments = $arguments;
-
-        return $this;
-    }
-
     public function bindArguments(mixed ...$argument): static
     {
-        $this->bindArguments = $argument; // @phpstan-ignore assign.propertyType
+        /**
+         * @phpstan-var BindArgumentsType $argument
+         */
+        $this->bindArguments = $argument;
 
         return $this;
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, mixed>
+     * @return BindArgumentsType
      */
     private function getBindArguments(): array
     {

@@ -4,31 +4,38 @@ declare(strict_types=1);
 
 namespace Tests\TaggedAsKeys;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\LazyDefinitionIterator;
+use Kaspi\DiContainer\Traits\TagsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
-use Tests\TaggedAsKeys\Fixures\One;
-use Tests\TaggedAsKeys\Fixures\Two;
+use Tests\TaggedAsKeys\Fixtures\One;
+use Tests\TaggedAsKeys\Fixtures\Two;
 
-use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;
 use function Kaspi\DiContainer\diValue;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Tag
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs
- * @covers \Kaspi\DiContainer\diTaggedAs
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\LazyDefinitionIterator
- * @covers \Kaspi\DiContainer\Traits\TagsTrait
- *
  * @internal
  */
+#[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Tag::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(TagsTrait::class)]
 class KeyTest extends TestCase
 {
     private ?object $container;
@@ -46,9 +53,11 @@ class KeyTest extends TestCase
     public function testGetKeyAsString(): void
     {
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                'service.oka' => diValue('oka')->bindTag('tags.one', options: ['key.my_key' => 'aaa']),
+                'service.oka' => diValue('oka')
+                    ->bindTag('tags.one', options: ['key.my_key' => 'aaa']),
             ])
         ;
         $this->container->method('get')
@@ -57,9 +66,8 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertIsIterable($collection);
         $this->assertEquals('aaa', $collection->key());
@@ -70,12 +78,15 @@ class KeyTest extends TestCase
     public function testGetKeyByMethod(): void
     {
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                One::class => diAutowire(One::class)->bindTag(
-                    'tags.one',
-                    options: ['key.my_key' => 'self::getKey']
-                ),
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->setContainer($this->container)
+                    ->bindTag(
+                        'tags.one',
+                        options: ['key.my_key' => 'self::getKey']
+                    ),
             ])
         ;
 
@@ -85,9 +96,8 @@ class KeyTest extends TestCase
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertIsIterable($collection);
         $this->assertInstanceOf(One::class, $collection['service.one']);
@@ -96,60 +106,63 @@ class KeyTest extends TestCase
 
     public function testGetKeyByMethodFailReturn(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get key for tag "tags.one" via method');
+
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                One::class => diAutowire(One::class)->bindTag(
-                    'tags.one',
-                    options: ['key.my_key' => 'self::getKeyFail']
-                ),
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->bindTag(
+                        'tags.one',
+                        options: ['key.my_key' => 'self::getKeyFail']
+                    )->setContainer($this->container),
             ])
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Get key by.+One::getKeyFail().+Return type must be "string"\. Got return type: "stdClass", "array"/');
-
-        $taggedAs->getServicesTaggedAs();
+        (new DiDefinitionTaggedAs('tags.one', key: 'key.my_key'))->resolve($this->container);
     }
 
     public function testGetKeyByMethodFailMethodNotExist(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get key for tag "tags.one" via method');
+
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                One::class => diAutowire(One::class)->bindTag(
-                    'tags.one',
-                    options: ['key.my_key' => 'self::nonExistMethod']
-                ),
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->bindTag(
+                        'tags.one',
+                        options: ['key.my_key' => 'self::nonExistMethod']
+                    )
+                    ->setContainer($this->container),
             ])
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', key: 'key.my_key');
-        $taggedAs->setContainer($this->container);
-
-        $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/One::nonExistMethod().+method must be exist.+Return type must be "string"/');
-
-        $taggedAs->getServicesTaggedAs();
+        (new DiDefinitionTaggedAs('tags.one', key: 'key.my_key'))->resolve($this->container);
     }
 
     public function testGetKeyByDefaultMethodSuccess(): void
     {
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                One::class => diAutowire(One::class)->bindTag('tags.one'),
-                Two::class => diAutowire(Two::class)->bindTag('tags.one'),
+                One::class => (new DiDefinitionAutowire(One::class))
+                    ->setContainer($this->container)
+                    ->bindTag('tags.one'),
+                Two::class => (new DiDefinitionAutowire(Two::class))
+                    ->setContainer($this->container)
+                    ->bindTag('tags.one'),
             ])
         ;
 
         $taggedAs = new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKey');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertIsIterable($collection);
         $this->assertEquals(One::class, $collection->key());
@@ -159,20 +172,21 @@ class KeyTest extends TestCase
 
     public function testGetKeyByDefaultMethodWrongReturnType(): void
     {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.one')
             ->willReturn([
-                Two::class => diAutowire(Two::class)->bindTag('tags.one'),
+                Two::class => (new DiDefinitionAutowire(Two::class))
+                    ->setContainer($this->container)
+                    ->bindTag('tags.one'),
             ])
         ;
 
-        $taggedAs = new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKeyWrongReturnType');
-        $taggedAs->setContainer($this->container);
-
-        $collection = $taggedAs->getServicesTaggedAs();
-
-        $this->assertIsIterable($collection);
-        $this->assertEquals(Two::class, $collection->key());
+        (new DiDefinitionTaggedAs('tags.one', keyDefaultMethod: 'getDefaultKeyWrongReturnType'))
+            ->resolve($this->container)
+        ;
     }
 
     public function testGetKeyCollectionWithPhpAttribute(): void
@@ -182,19 +196,20 @@ class KeyTest extends TestCase
         ;
 
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.some-service')
             ->willReturn([
-                Fixures\Attributes\One::class => diAutowire(Fixures\Attributes\One::class),
-                Fixures\Attributes\Three::class => diAutowire(Fixures\Attributes\Three::class),
-                Fixures\Attributes\Two::class => diAutowire(Fixures\Attributes\Two::class),
+                Fixtures\Attributes\One::class => (new DiDefinitionAutowire(Fixtures\Attributes\One::class))
+                    ->setContainer($this->container),
+                Fixtures\Attributes\Two::class => (new DiDefinitionAutowire(Fixtures\Attributes\Two::class))
+                    ->setContainer($this->container),
             ])
         ;
 
         // $useKeys=false override by $key, collection has keys.
         $taggedAs = diTaggedAs(tag: 'tags.some-service', useKeys: false, key: 'key');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertCount(2, $collection);
         // test use DiContainer mock and not resolve real class. Test keys.
@@ -211,19 +226,20 @@ class KeyTest extends TestCase
         ;
 
         $this->container->expects(self::once())
-            ->method('getDefinitions')
+            ->method('findTaggedDefinitions')
+            ->with('tags.some-service')
             ->willReturn([
-                Fixures\Attributes\One::class => diAutowire(Fixures\Attributes\One::class),
-                Fixures\Attributes\Three::class => diAutowire(Fixures\Attributes\Three::class),
-                Fixures\Attributes\Two::class => diAutowire(Fixures\Attributes\Two::class),
+                Fixtures\Attributes\One::class => (new DiDefinitionAutowire(Fixtures\Attributes\One::class))
+                    ->setContainer($this->container),
+                Fixtures\Attributes\Two::class => (new DiDefinitionAutowire(Fixtures\Attributes\Two::class))
+                    ->setContainer($this->container),
             ])
         ;
 
         // $useKeys=false override by $key, collection has keys.
         $taggedAs = diTaggedAs(tag: 'tags.some-service', useKeys: false, key: 'key.method');
-        $taggedAs->setContainer($this->container);
 
-        $collection = $taggedAs->getServicesTaggedAs();
+        $collection = $taggedAs->resolve($this->container);
 
         $this->assertCount(2, $collection);
         // test use DiContainer mock and not resolve real class. Test keys.

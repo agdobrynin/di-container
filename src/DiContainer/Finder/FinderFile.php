@@ -13,77 +13,73 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 use function array_map;
+use function fnmatch;
 use function in_array;
 use function is_dir;
 use function is_readable;
-use function preg_match;
 use function realpath;
 use function sprintf;
 use function strtolower;
 
 final class FinderFile implements FinderFileInterface
 {
-    /**
-     * @var non-empty-string
-     */
-    private string $src;
+    /** @var non-empty-string */
+    private string $normalizedSrc;
+
+    /** @var list<non-empty-string> */
+    private array $normalizedAvailableExtensions;
 
     /**
-     * @var list<non-empty-string>
+     * Note: parameter `$excludeFiles` use php function `\fnmatch()`, detail info about file pattern see in documentation.
+     *
+     * @see https://www.php.net/manual/en/function.fnmatch.php
+     *
+     * @param non-empty-string       $src                 source directory
+     * @param list<non-empty-string> $excludeFiles        exclude matching by pattern files
+     * @param list<non-empty-string> $availableExtensions available file extensions
      */
-    private array $excludeRegExpPattern = [];
+    public function __construct(private readonly string $src, private readonly array $excludeFiles = [], private readonly array $availableExtensions = ['php']) {}
 
-    /**
-     * @var list<non-empty-string>
-     */
-    private array $extensions = ['php'];
-
-    public function __construct() {}
-
-    public function setSrc(string $src): static
+    public function getSrc(): string
     {
-        $fixedSrc = realpath($src);
-
-        if (false === $fixedSrc) {
-            throw new InvalidArgumentException(
-                sprintf('Cannot resolve source directory by "\realpath()" from argument $src. Got: "%s".', $src)
-            );
-        }
-
-        if (!is_dir($fixedSrc) || !is_readable($fixedSrc)) {
-            throw new InvalidArgumentException(
-                sprintf('Source directory from argument $src must be readable. Got: "%s".', $fixedSrc)
-            );
-        }
-
-        $this->src = $fixedSrc;
-
-        return $this;
+        return $this->src;
     }
 
-    public function setExcludeRegExpPattern(array $excludeRegExpPattern): static
+    public function getExcludeFiles(): array
     {
-        $this->excludeRegExpPattern = $excludeRegExpPattern;
-
-        return $this;
+        return $this->excludeFiles;
     }
 
-    public function setAvailableExtensions(array $extensions): static
+    public function getAvailableExtensions(): array
     {
-        $this->extensions = array_map('\strtolower', $extensions); // @phpstan-ignore assign.propertyType
-
-        return $this;
+        return $this->availableExtensions;
     }
 
     public function getFiles(): Iterator
     {
-        if (!isset($this->src)) {
-            throw new InvalidArgumentException('Need set source directory. Use method FinderFile::setSrc().');
+        if (!isset($this->normalizedSrc)) {
+            $fixedSrc = realpath($this->src);
+
+            if (false === $fixedSrc) {
+                throw new InvalidArgumentException(
+                    sprintf('Source directory "%s" from parameter $src is invalid.', $this->src)
+                );
+            }
+
+            if (!is_dir($fixedSrc) || !is_readable($fixedSrc)) {
+                throw new InvalidArgumentException(
+                    sprintf('Source directory "%s" from parameter $src must be readable.', $fixedSrc)
+                );
+            }
+
+            $this->normalizedSrc = $fixedSrc;
         }
+
+        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
-                $this->src,
+                $this->normalizedSrc,
                 FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
             )
         );
@@ -93,7 +89,7 @@ final class FinderFile implements FinderFileInterface
             if (($realPath = $entry->getRealPath())
                 && !$this->isExcluded($realPath)
                 && $entry->isFile()
-                && ([] === $this->extensions || in_array(strtolower($entry->getExtension()), $this->extensions, true))
+                && ([] === $this->normalizedAvailableExtensions || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true))
             ) {
                 yield $entry; // @phpstan-ignore generator.keyType
             }
@@ -102,12 +98,12 @@ final class FinderFile implements FinderFileInterface
 
     private function isExcluded(string $fileRealPath): bool
     {
-        if ([] === $this->excludeRegExpPattern) {
+        if ([] === $this->excludeFiles) {
             return false;
         }
 
-        foreach ($this->excludeRegExpPattern as $partOfPregPattern) {
-            if (1 === preg_match($partOfPregPattern, $fileRealPath)) {
+        foreach ($this->excludeFiles as $partPattern) {
+            if (fnmatch($partPattern, $fileRealPath)) {
                 return true;
             }
         }

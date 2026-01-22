@@ -8,26 +8,24 @@
 - `\ArrayAccess`
 - `\Psr\Container\ContainerInterface`
 - `array` требуется использовать параметр `$isLazy = false`.
-- Составной тип (_intersection types PHP 8.1 и выше_) для ленивых коллекций (`$isLazy = true`)
+- Составной тип (_intersection types_) для ленивых коллекций (`$isLazy = true`)
     - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`.
 
 Любое определение в контейнере может быть отмечено
 одним или несколькими тегами.
 Каждый тег может содержать мета-данные переданные в виде массива.
 
-Тегирование сервисов можно произвести при объявлении в стиле [php определений](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md)
-или используя [PHP атрибуты](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
+Тегирование сервисов можно произвести при объявлении в стиле [php определений](01-php-definition.md)
+или используя [PHP атрибуты](02-attribute-definition.md).
 
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
-> класс был зарегистрирован в контейнере.
-> Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
+> класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
 
-Для получения тегированных сервисов на аргументы (_параметры – конструктора, метода или аргументы функции_) нужно использовать:
-- `diTaggedAs` – [хэлпер функцию](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas) в стиле php определений 
-- `#[TaggedAs]` – [php атрибут](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas) 
+Для получения тегированных сервисов для параметров определений (_параметры – конструктора, метода или функции_) нужно использовать:
+- `diTaggedAs` – [хэлпер функцию](01-php-definition.md#ditaggedas) в стиле php определений 
+- `#[TaggedAs]` – [php атрибут](02-attribute-definition.md#taggedas) 
 
 ### Ленивая коллекция
 Особенности получения коллекции в том что по умолчанию
@@ -37,8 +35,8 @@
 ### Ключ элемента в коллекции.
 По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
 определений в контейнере (_container identifier – не пустая строка_). Это поведение можно изменить
-через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хэлпер функции diTaggedAs](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
+через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хэлпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
 от идентификаторов определений (_container identifier_) представленные не пустыми строками
 или целыми числами (_последовательные значения от нуля и больше_).
 
@@ -47,11 +45,8 @@
 ## 🐘 Объявление тега в стиле php определений.
 
 Для указания тегов используется метод `bindTag`
-который доступен через [хэлпер функции](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
-реализующие интерфейсы:
-- `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`
-- `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`
-- `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionConfigAutowireInterface`
+который доступен через [хэлпер функции](01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
+реализующие интерфейс `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`
 
 ```php
 bindTag(string $name, array $options = [], null|int|string $priority = null)
@@ -155,15 +150,12 @@ return static function (): \Generator {
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $class = $container->get(App\Services\TaggedServices::class);
 ```
@@ -184,8 +176,8 @@ $class = $container->get(App\Services\TaggedServices::class);
 #### Получение тегированных сервисов можно применять так же **параметрам переменной длинны**:
 
 > [!WARNING]
-> Параметр переменной длинны является опциональным и если у него не задан
-> аргумент указывающий как разрешать зависимость, то он будет пропущен.
+> Параметр переменной длины является опциональным и если у него не задан
+> аргумент указывающий как разрешать зависимость, то параметр будет пропущен.
 
 ```php
 // src/Services/TaggedServices.php
@@ -219,35 +211,55 @@ return static function (): \Generator {
 
     yield diAutowire(App\Services\TaggedServices::class)
         ->bindArguments(
-            srvGroup: [
-                // аргумент имеет тип array то $isLazy=false
-                diTaggedAs('tags.group_1', false),
-                diTaggedAs('tags.group_2', false),
-            ]
+            // аргумент имеет тип array то $isLazy=false
+            diTaggedAs('tags.group_1', false),
+            diTaggedAs('tags.group_2', false),
         );
 
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $class = $container->get(App\Services\TaggedServices::class);
 ```
 > [!NOTE]
-> При разрешении аргументов конструктора класса `App\Services\TaggedServices::class`
+> При разрешении параметров конструктора класса `App\Services\TaggedServices::class`
 > в свойстве `App\Services\TaggedServices::$srvGroup[0]` содержится массив из классов `App\Classes\One`, `App\Classes\Two`,
 > а в свойстве `App\Services\TaggedServices::$srvGroup[1]` массив из классов `App\Classes\Three`, `App\Classes\Four`.
 
+> [!TIP]
+> Для использования [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)
+> и [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list)
+> действуют правила описанные в документации php.
+
+Передать именованные аргументы для сервиса к параметру переменной длины:
+```php
+use function Kaspi\DiContainer\diTaggedAs;
+
+return static function (): \Generator
+    //...
+    yield diAutowire(App\Services\TaggedServices::class)
+        ->bindArguments(
+            // аргумент имеет тип array то $isLazy=false
+            srvGroup: diTaggedAs('tags.group_1', false),
+            srvGroup_2: diTaggedAs('tags.group_2', false),
+        );
+};
+```
+> [!NOTE]
+> При разрешении параметров конструктора класса `App\Services\TaggedServices::class`
+> в `App\Services\TaggedServices::$srvGroup` содержится массив
+> со строковыми ключами `srvGroup` и `srvGroup_2` – как переданные именование аргументы.
+
+
 ## #️⃣ Объявление тега через php атрибут.
-Для указания тегов для класса необходимо использовать php атрибут `#[Tag]` ([описание атрибута](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#tag)):
+Для указания тегов для класса необходимо использовать php атрибут `#[Tag]` ([описание атрибута](02-attribute-definition.md#tag)):
 
 ```php
 // src/Any/One.php
@@ -268,7 +280,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 #[Tag('tags.services.group_two', priority: 10)]
 class Two {}
 ```
-Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]` ([описание атрибута](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas)):
+Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]` ([описание атрибута](02-attribute-definition.md#taggedas)):
 ```php
 // src/Services/TaggedServices.php
 namespace App\Services;
@@ -286,22 +298,16 @@ class TaggedServices {
 ```
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
-> класс был зарегистрирован в контейнере.
-> Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
+> класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
 
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-// загрузка из файлов исходников.
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(App\Services\TaggedServices::class);
 ```
@@ -310,10 +316,10 @@ $class = $container->get(App\Services\TaggedServices::class);
 > в свойстве `TaggedServices::$services` содержится итерируемая «ленивая» коллекция
 > из классов `Two`, `One` (_такой порядок обусловлен значением 'priority' у тегов_).
 
-#### Получение тегированных сервисов можно применять так же **параметрам переменной длинны**:
+#### Получение тегированных сервисов можно применять так же **параметрам переменной длины**:
 
 > [!WARNING]
-> Параметр переменной длинны является опциональным и если у него не задан
+> Параметр переменной длины является опциональным и если у него не задан
 > PHP атрибут указывающий какой аргумент использовать
 > для разрешения зависимости, то он будет пропущен.
 
@@ -363,16 +369,13 @@ namespace App\Classes;
 class Four {}
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(TaggedServices::class);
 ```
@@ -387,11 +390,10 @@ $class = $container->get(TaggedServices::class);
 чтобы класс реализующий запрашиваемый интерфейс был объявлен
 в контейнере.
 
-> [!NOTE]
-> Добавить в контейнер определения возможно через `DefinitionsLoader`
-> используя [конфигурационные файлы](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B0-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%84%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2)
-> или [импорт и настройку сервисов из директорий](https://github.com/agdobrynin/di-container/blob/main/docs/04-definitions-loader.md#%D0%B8%D0%BC%D0%BF%D0%BE%D1%80%D1%82-%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2-%D0%B8%D0%B7-%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D0%B9).
-
+> [!IMPORTANT]
+> #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
+> класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
 
 ### 🐘 Использование в стиле php определений
 
@@ -455,17 +457,13 @@ return static function (): \Generator {
 
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-// Загрузить определения. 
-$loader = (new DefinitionsLoader())
+$container = (new DiContainerBuilder())
     ->load(__DIR__.'/config/services.php')
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(SrvRules::class);
 ```
@@ -539,15 +537,12 @@ class SrvRules {
 ```
 
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\\', src: __DIR__.'/src/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: __DIR__.'/src/')
+    ->build()
+;
 
 $class = $container->get(App\Services\SrvRules::class);
 ```
@@ -659,15 +654,12 @@ return static function (): \Generator {
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $class = $container->get(App\Rules\Rules::class);
 ```
@@ -733,13 +725,12 @@ class Rules {
 }
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/');
-
-$container = (new DiContainerFactory())
-    ->make($loader->definitions());
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/')
+    ->build()
+;
 
 $container->get(App\Rules\Rules::class);
 ```
@@ -756,8 +747,8 @@ $container->get(App\Rules\Rules::class);
 
 - `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
 - `priorityDefaultMethod` – метод указанный через
-[хэлпер функцию `diTaggedAs`](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
-или через [php атрибут #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas)
+[хэлпер функцию `diTaggedAs`](01-php-definition.md#ditaggedas)
+или через [php атрибут #[TaggedAs]](02-attribute-definition.md#taggedas)
 который **может быть реализован** в тегированном php классе возвращающий `priority`.
  
 #### 🐘 В стиле php определений
@@ -865,15 +856,12 @@ return static function (): \Generator {
 };
 ```
 ```php
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->load(__DIR__.'/config/services.php');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
 
 $container->get(App\Rules\Rules::class);
 ```
@@ -962,15 +950,12 @@ class Rules {
 ```
 ```php
 use App\Rules\Rules;
-use Kaspi\DiContainer\{DefinitionsLoader, DiContainerFactory};
+use Kaspi\DiContainer\DiContainerBuilder;
 
-$loader = (new DefinitionsLoader())
-    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/');
-
-$container = (new DiContainerFactory())
-    ->make(
-        $loader->definitions()
-    );
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/')
+    ->build()
+;
 
 $container->get(Rules::class);
 ```
@@ -1312,8 +1297,8 @@ class ClassTaggedAs {
 если у тегированного определения не указан ключ для коллекции в метаданных (_в `$options`_).
 
 Указать метод получения ключа по умолчанию можно через аргумент
-`$keyDefaultMethod` [в хэлпер функции diTaggedAs](https://github.com/agdobrynin/di-container/blob/main/docs/01-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md#taggedas).
+`$keyDefaultMethod` [в хэлпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas).
 
 > [!IMPORTANT]
 > Метод реализующий получение ключа должен быть объявлен как `public static function` и возвращать тип `string`.

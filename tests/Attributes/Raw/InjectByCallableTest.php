@@ -6,55 +6,38 @@ namespace Tests\Attributes\Raw;
 
 use Generator;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Tests\Attributes\Raw\Fixtures\MyDiFactory;
+use Tests\Attributes\Raw\Fixtures\Bar;
+use Tests\Attributes\Raw\Fixtures\Foo;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\InjectByCallable
- *
  * @internal
  */
+#[CoversClass(InjectByCallable::class)]
 class InjectByCallableTest extends TestCase
 {
-    public function successIdsDataProvider(): Generator
+    #[DataProvider('successIdsDataProvider')]
+    public function testSuccess(callable $def): void
     {
-        yield 'string' => ['ok', 'ok'];
-
-        yield 'string invoke method' => [MyDiFactory::class, 'Tests\Attributes\Raw\Fixtures\MyDiFactory'];
+        $this->assertEquals($def, (new InjectByCallable($def))->getCallable());
     }
 
-    /**
-     * @dataProvider successIdsDataProvider
-     */
-    public function testSuccess(string $id, string $expectIdentifier): void
+    public static function successIdsDataProvider(): Generator
     {
-        $attr = new InjectByCallable($id);
+        yield 'function' => ['log'];
 
-        $this->assertEquals($expectIdentifier, $attr->getIdentifier());
-    }
+        yield 'static method as string with full namespace' => ['Tests\Attributes\Raw\Fixtures\Foo::bar'];
 
-    public function failIdsDataProvider(): Generator
-    {
-        yield 'empty string' => [''];
+        yield 'static method as string with safe declaration class' => [Foo::class.'::bar'];
 
-        yield 'empty spaces' => ['  '];
+        yield 'static method as array' => [[Foo::class, 'bar']];
 
-        yield 'string with spaces in middle' => ['ok  yes'];
+        yield 'with class as objet and method' => [[new Bar('secure_string'), 'baz']];
 
-        yield 'string with space trailing' => [' yes'];
+        yield 'as closure' => [static function () { return new Bar('secure_string'); }];
 
-        yield 'string with space ending' => ['yes '];
-    }
-
-    /**
-     * @dataProvider failIdsDataProvider
-     */
-    public function testFailure(string $id): void
-    {
-        $this->expectException(AutowireAttributeException::class);
-        $this->expectExceptionMessage('The $callable parameter must be a non-empty string and must not contain spaces');
-
-        new InjectByCallable($id);
+        yield 'as first callable class' => [log(...)];
     }
 }

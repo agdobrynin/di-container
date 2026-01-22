@@ -4,37 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Tests\FromDocs\PhpDefinitions\Fixtures\ServiceOne;
 
 use function Kaspi\DiContainer\diCallable;
 
 /**
- * @covers \Kaspi\DiContainer\diCallable
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable
- *
  * @internal
  */
+#[CoversNothing]
 class DiCallableDefinitionTest extends TestCase
 {
     public function testDiCallableDefinition(): void
     {
-        $definitions = [
-            'services.one' => diCallable(
+        $definitions = static function () {
+            yield 'services.one' => diCallable(
                 definition: static fn () => new ServiceOne(apiKey: 'my-api-key'),
                 isSingleton: true,
-            ),
-        ];
+            );
+        };
 
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definitions())
+            ->build()
+        ;
 
-        $this->assertInstanceOf(ServiceOne::class, $container->get('services.one'));
-        $this->assertEquals('my-api-key', $container->get('services.one')->getApiKey());
-        $this->assertSame($container->get('services.one'), $container->get('services.one'));
+        self::assertInstanceOf(ServiceOne::class, $container->get('services.one'));
+        self::assertEquals('my-api-key', $container->get('services.one')->getApiKey());
+        self::assertSame($container->get('services.one'), $container->get('services.one'));
     }
 
     public function testCallbackDefinition(): void
@@ -43,10 +42,13 @@ class DiCallableDefinitionTest extends TestCase
             'services.one' => static fn () => new ServiceOne(apiKey: 'my-api-key'),
         ];
 
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definitions)
+            ->build()
+        ;
 
-        $this->assertInstanceOf(ServiceOne::class, $container->get('services.one'));
-        $this->assertEquals('my-api-key', $container->get('services.one')->getApiKey());
-        $this->assertNotSame($container->get('services.one'), $container->get('services.one'));
+        self::assertInstanceOf(ServiceOne::class, $container->get('services.one'));
+        self::assertEquals('my-api-key', $container->get('services.one')->getApiKey());
+        self::assertNotSame($container->get('services.one'), $container->get('services.one'));
     }
 }

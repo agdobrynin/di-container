@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\FromDocs\PhpDefinitions;
 
-use Kaspi\DiContainer\DiContainerFactory;
+use Kaspi\DiContainer\DiContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- * @covers \Kaspi\DiContainer\DiContainerFactory
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- *
  * @internal
  */
+#[CoversNothing]
 class SimpleDefinitionTest extends TestCase
 {
     public function testSimpleDefinition(): void
@@ -29,11 +26,14 @@ class SimpleDefinitionTest extends TestCase
             ],
         ];
 
-        $container = (new DiContainerFactory())->make($definitions);
+        $container = (new DiContainerBuilder())
+            ->addDefinitions($definitions)
+            ->build()
+        ;
 
-        $this->assertEquals('payment', $container->get('logger.name'));
-        $this->assertEquals('/var/log/payment.log', $container->get('logger.file'));
-        $this->assertFalse($container->get('feedback.show-recipient'));
-        $this->assertEquals(['help@my-company.inc', 'boss@my-company.inc'], $container->get('feedback.email'));
+        self::assertEquals('payment', $container->get('logger.name'));
+        self::assertEquals('/var/log/payment.log', $container->get('logger.file'));
+        self::assertFalse($container->get('feedback.show-recipient'));
+        self::assertEquals(['help@my-company.inc', 'boss@my-company.inc'], $container->get('feedback.email'));
     }
 }

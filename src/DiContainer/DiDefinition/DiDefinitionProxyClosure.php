@@ -5,54 +5,60 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Closure;
-use Kaspi\DiContainer\Exception\AutowireException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInvokableInterface;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Traits\DiContainerTrait;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 use function sprintf;
-use function trim;
 
-final class DiDefinitionProxyClosure implements DiDefinitionInvokableInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
+final class DiDefinitionProxyClosure implements DiDefinitionProxyClosureInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
 {
-    use DiContainerTrait;
     use TagsTrait;
 
     /**
      * @var non-empty-string
      */
-    private string $verifyDefinition;
+    private string $validContainerIdentifier;
 
     /**
-     * @param non-empty-string $definition
+     * @param non-empty-string $containerIdentifier
      */
-    public function __construct(private string $definition, private ?bool $isSingleton = null) {}
+    public function __construct(private readonly string $containerIdentifier, private readonly ?bool $isSingleton = null) {}
 
     public function isSingleton(): ?bool
     {
         return $this->isSingleton;
     }
 
-    public function invoke(): Closure
+    public function resolve(DiContainerInterface $container, mixed $context = null): Closure
     {
-        if (!$this->getContainer()->has($this->getDefinition())) {
-            throw new AutowireException(sprintf('Definition "%s" does not exist.', $this->getDefinition()));
+        if (!$container->has($this->getDefinition())) {
+            throw new DiDefinitionException(sprintf('Cannot get entry by container identifier "%s"', $this->getDefinition()));
         }
 
-        return function () {
-            return $this->container->get($this->getDefinition());
-        };
+        $identifier = $this->getDefinition();
+
+        return static fn () => $container->get($identifier);
     }
 
-    /**
-     * @return non-empty-string
-     */
     public function getDefinition(): string
     {
-        return $this->verifyDefinition ??= '' === trim($this->definition)
-            ? throw new AutowireException(sprintf('Definition for "%s" must be non-empty string.', __CLASS__))
-            : $this->definition;
+        if (isset($this->validContainerIdentifier)) {
+            return $this->validContainerIdentifier;
+        }
+
+        try {
+            return $this->validContainerIdentifier = Helper::getContainerIdentifier($this->containerIdentifier, null);
+        } catch (ContainerIdentifierExceptionInterface $e) {
+            throw new DiDefinitionException(
+                sprintf('Parameter $containerIdentifier for %s::__construct() must be non-empty string.', self::class),
+                previous: $e
+            );
+        }
     }
 }

@@ -8,39 +8,40 @@ use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 /**
- * @covers \Kaspi\DiContainer\DiContainer
- * @covers \Kaspi\DiContainer\DiContainerConfig
- *
  * @internal
  */
+#[CoversClass(DiContainer::class)]
+#[CoversClass(DiContainerConfig::class)]
+#[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 class ResolveSelfContainerTest extends TestCase
 {
-    public function dataProvider(): Generator
+    #[DataProvider('dataProvider')]
+    public function testResolveWithoutConfig(string $id): void
+    {
+        $this->assertInstanceOf(DiContainer::class, (new DiContainer())->get($id));
+    }
+
+    #[DataProvider('dataProvider')]
+    public function testResolveWithConfig(string $id): void
+    {
+        $this->assertInstanceOf(DiContainer::class, (new DiContainer(config: new DiContainerConfig()))->get($id));
+    }
+
+    public static function dataProvider(): Generator
     {
         yield 'ContainerInterface' => [ContainerInterface::class];
 
         yield 'DiContainerInterface' => [DiContainerInterface::class];
 
         yield 'DiContainer' => [DiContainer::class];
-    }
-
-    /**
-     * @dataProvider dataProvider
-     */
-    public function testResolveWithoutConfig(string $id): void
-    {
-        $this->assertInstanceOf(DiContainer::class, (new DiContainer())->get($id));
-    }
-
-    /**
-     * @dataProvider dataProvider
-     */
-    public function testResolveWithConfig(string $id): void
-    {
-        $this->assertInstanceOf(DiContainer::class, (new DiContainer(config: new DiContainerConfig()))->get($id));
     }
 }

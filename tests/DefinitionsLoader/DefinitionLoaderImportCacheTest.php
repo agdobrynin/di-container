@@ -4,13 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader;
 
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Finder\FinderFile;
+use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
+use Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo;
 use Throwable;
 
 use function array_keys;
@@ -20,33 +34,36 @@ use function sort;
 use function unlink;
 
 /**
- * @covers \Kaspi\DiContainer\Attributes\Autowire
- * @covers \Kaspi\DiContainer\Attributes\Service
- * @covers \Kaspi\DiContainer\DefinitionsLoader
- * @covers \Kaspi\DiContainer\diAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionGet
- * @covers \Kaspi\DiContainer\DiDefinition\DiDefinitionValue
- * @covers \Kaspi\DiContainer\diGet
- * @covers \Kaspi\DiContainer\diValue
- * @covers \Kaspi\DiContainer\Finder\FinderFile
- * @covers \Kaspi\DiContainer\Finder\FinderFullyQualifiedName
- * @covers \Kaspi\DiContainer\ImportLoader
- * @covers \Kaspi\DiContainer\ImportLoaderCollection
- *
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
+#[CoversClass(Autowire::class)]
+#[CoversClass(DiFactory::class)]
+#[CoversClass(Service::class)]
+#[CoversClass(DefinitionsLoader::class)]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionFactory::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversClass(DefinitionsLoaderException::class)]
+#[CoversClass(FinderFile::class)]
+#[CoversClass(FinderFullyQualifiedName::class)]
+#[CoversClass(FinderFullyQualifiedNameCollection::class)]
+#[CoversClass(Helper::class)]
 class DefinitionLoaderImportCacheTest extends TestCase
 {
     public function testImportCacheFileInNotReadableByDefinitions(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('isn\'t readable.');
+
         $f = vfsStream::newFile('i')
             ->chmod(0222)
             ->withContent('')->at(vfsStream::setup())
         ;
-
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
             ->definitions()
@@ -56,13 +73,13 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
     public function testImportCacheFileInNotReadableByImport(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('isn\'t readable.');
+
         $f = vfsStream::newFile('i')
             ->chmod(0222)
             ->withContent('')->at(vfsStream::setup())
         ;
-
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cache file for imported definitions via DefinitionsLoader::import() is not readable');
 
         (new DefinitionsLoader(importCacheFile: $f->url()))
             ->import('App\\', __DIR__)
@@ -71,15 +88,15 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
     public function testImportCacheFileCannotCreated(): void
     {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessage('isn\'t writable.');
+
         $dir = vfsStream::newDirectory('var', 0444)
             ->at(vfsStream::setup())
         ;
 
-        $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot create cache file');
-
         (new DefinitionsLoader(importCacheFile: $dir->url().'/cache.php'))
-            ->import('App\\', __DIR__)
+            ->import('Tests\\', __DIR__.'/Fixtures/ImportCannotCreateCache')
             ->definitions()
             ->valid()
         ;
@@ -129,6 +146,9 @@ class DefinitionLoaderImportCacheTest extends TestCase
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\SubOne\Two',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\SubTwo\Three',
             'Tests\DefinitionsLoader\Fixtures\ImportCreating\One',
+            'Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo',
+            'Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo',
+            'services.any',
         ];
 
         sort($getKeys);
@@ -145,7 +165,20 @@ class DefinitionLoaderImportCacheTest extends TestCase
         $this->assertInstanceOf(DiDefinitionGet::class, $srvOI);
         $this->assertEquals('services.any', $srvOI->getDefinition());
 
+        // Class Tests\DefinitionsLoader\Fixtures\ImportCreating\Bar autoconfigured via php attribute Autowire with container id = 'services.any'
+        $this->assertEquals('Tests\DefinitionsLoader\Fixtures\ImportCreating\Bar', $arr['services.any']->getIdentifier());
+
         $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
+
+        // test Factory on class
+        /** @var DiDefinitionFactory $factory */
+        $factory = $arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo'];
+        $this->assertInstanceOf(DiDefinitionFactory::class, $factory);
+        $this->assertEquals('Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo', $factory->getDefinition());
+
+        /** @var Foo $resolveFactory */
+        $resolveFactory = $factory->resolve($this->createMock(DiContainerInterface::class));
+        $this->assertEquals('secure_string', $resolveFactory->secure);
 
         @unlink($fileName);
     }
@@ -194,9 +227,10 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
     public function testImportCacheFileUnlinkWhenHasThrow(): void
     {
-        $fileName = __DIR__.'/../_var/cache/'.__FUNCTION__.'_cache.php';
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/Interface ".+ContainerInterface" not found/');
 
-        $this->expectException(RuntimeException::class);
+        $fileName = __DIR__.'/../_var/cache/'.__FUNCTION__.'_cache.php';
 
         (new DefinitionsLoader(importCacheFile: $fileName))
             ->import('Tests\DefinitionsLoader\Fixtures\ImportReflectionFail\\', __DIR__.'/Fixtures/ImportReflectionFail')

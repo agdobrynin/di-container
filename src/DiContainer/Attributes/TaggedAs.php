@@ -22,14 +22,14 @@ final class TaggedAs implements DiAttributeInterface
      * @param bool                   $selfExclude           exclude the php calling class from the collection
      */
     public function __construct(
-        private string $name,
-        private bool $isLazy = true,
-        private ?string $priorityDefaultMethod = null,
-        private bool $useKeys = true,
-        private ?string $key = null,
-        private ?string $keyDefaultMethod = null,
-        private array $containerIdExclude = [],
-        private bool $selfExclude = true,
+        private readonly string $name,
+        private readonly bool $isLazy = true,
+        private readonly ?string $priorityDefaultMethod = null,
+        private readonly bool $useKeys = true,
+        private readonly ?string $key = null,
+        private readonly ?string $keyDefaultMethod = null,
+        private readonly array $containerIdExclude = [],
+        private readonly bool $selfExclude = true,
     ) {
         if ('' === trim($name)) {
             throw new AutowireAttributeException('The $name parameter must be a non-empty string.');

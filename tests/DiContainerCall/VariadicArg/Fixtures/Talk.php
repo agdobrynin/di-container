@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiContainerCall\VariadicArg\Fixtures;
 
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
 
 class Talk
 {
@@ -32,7 +33,7 @@ class Talk
     }
 
     public static function staticMethodByDiFactoryOneToMany(
-        #[Inject(WordVariadicDiFactory::class)]
+        #[InjectByCallable(WordVariadicDiFactory::class)]
         WordInterface ...$word
     ): array {
         return $word;
