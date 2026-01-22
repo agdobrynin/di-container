@@ -175,6 +175,8 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
     public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface
     {
+        $this->definitionsLoader->reset();
+
         if (!isset($this->compilerOutputDirectory)) {
             try {
                 return new DiContainer($this->definitions(), $this->containerConfig);
