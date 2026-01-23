@@ -100,11 +100,24 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 
     public function has(string $id): bool
     {
-        $has = false !== $this->containerMap($id);
+<?php
+$expressionHasDefault = $config->isUseZeroConfigurationDefinition() ? 'parent::has($id)' : 'false';
 
-        return $this->config->isUseZeroConfigurationDefinition()
-            ? $has || parent::has($id)
-            : $has;
+if ([] === $this->mapServiceMethodToContainerId) {?>
+        return <?php echo $expressionHasDefault; ?>;
+<?php } else { ?>
+        return match($id) {
+<?php
+    $lastKey = \array_key_last($this->mapServiceMethodToContainerId);
+    $lastId = $this->mapServiceMethodToContainerId[$lastKey][0];
+    foreach ($this->mapServiceMethodToContainerId as [$id]) { ?>
+            <?php echo \var_export($id, true).($id !== $lastId ? ',' : ' => true,'); ?>
+
+<?php } ?>
+            default => <?php echo $expressionHasDefault; ?>
+
+        };
+<?php } ?>
     }
 
     /**
