@@ -54,7 +54,7 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 
     public function set(string $id, mixed $definition): static
     {
-        if (false === $this->containerMap($id)) {
+        if (false === $this->containerIdMapMethod($id)) {
             return parent::set($id, $definition);
         }
 
@@ -65,24 +65,13 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 
     public function get(string $id): mixed
     {
-        /** @var false|array{0: bool|null, 1: non-empty-string} $containerMap */
-        $containerMap = $this->containerMap($id);
+        /** @var false|non-empty-string $method */
+        $method = $this->containerIdMapMethod($id);
 
-        if (false === $containerMap) {
+        if (false === $method) {
             return $this->config->isUseZeroConfigurationDefinition()
                 ? parent::get($id)
                 : throw new NotFoundException(id: $id);
-        }
-
-        [$isSingleton, $method] = $containerMap;
-
-        if (null === $isSingleton) {
-            return $this->$method();
-        }
-
-        // ⚠ resolved singleton services store in parent class
-        if (array_key_exists($id, $this->resolved)) {
-            return $this->resolved[$id];
         }
 
         try {
@@ -100,21 +89,36 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 
     public function has(string $id): bool
     {
-        $has = false !== $this->containerMap($id);
+<?php
+$expressionHasDefault = $config->isUseZeroConfigurationDefinition() ? 'parent::has($id)' : 'false';
 
-        return $this->config->isUseZeroConfigurationDefinition()
-            ? $has || parent::has($id)
-            : $has;
+if ([] === $this->mapServiceMethodToContainerId) {?>
+        return <?php echo $expressionHasDefault; ?>;
+<?php } else { ?>
+        return match($id) {
+<?php
+    $lastKey = \array_key_last($this->mapServiceMethodToContainerId);
+    $lastId = $this->mapServiceMethodToContainerId[$lastKey][0];
+    foreach ($this->mapServiceMethodToContainerId as [$id]) { ?>
+            <?php echo \var_export($id, true).($id !== $lastId ? ',' : ' => true,'); ?>
+
+<?php } ?>
+            default => <?php echo $expressionHasDefault; ?>
+
+        };
+<?php } ?>
     }
 
     /**
-    * @return false|array{0: bool|null, 1: non-empty-string}
-    */
-    private function containerMap(string $id): false|array
+     * Mapping container identifier to internal method for resolving container entry.
+     *
+     * @return false|non-empty-string
+     */
+    private function containerIdMapMethod(string $id): false|string
     {
         return match($id) {
 <?php foreach ($this->mapServiceMethodToContainerId as $method => [$id, $compiledEntry]) {?>
-            <?php echo \var_export($id, true); ?> => [<?php echo \var_export($compiledEntry->isSingleton(), true); ?>, <?php echo \var_export($method, true); ?>],
+            <?php echo \var_export($id, true); ?> => <?php echo \var_export($method, true); ?>,
 <?php } ?>
             default => false,
         };
@@ -126,19 +130,32 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
     private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>
 
     {
-<?php foreach ($compiledEntry->getStatements() as $statement) {?>
-        <?php echo $statement; ?>;
+<?php
+    // build statements
+    $statements = '';
 
-<?php } ?>
-<?php if (0 === \strcasecmp($compiledEntry->getReturnType(), 'never')) { ?>
+    foreach ($compiledEntry->getStatements() as $statement) {
+        $statements .= '        '.$statement.';'.PHP_EOL;
+    }
+
+    if (null !== \array_key_last($compiledEntry->getStatements())) {
+        $statements .= PHP_EOL;
+    }
+
+    if (0 === \strcasecmp($compiledEntry->getReturnType(), 'never')) { ?>
+<?php echo $statements; ?>
         <?php echo $compiledEntry->getExpression().';'; ?>
 <?php } elseif ($compiledEntry->isSingleton()) {?>
-        // ⚠ resolved singleton services store in parent class
+        // ⚠ resolved singleton services are stored in parent class
+        if (array_key_exists(<?php echo \var_export($id, true); ?>, $this->resolved)) {
+            return $this->resolved[<?php echo \var_export($id, true); ?>];
+        }
+
+<?php echo $statements; ?>
         return $this->resolved[<?php echo \var_export($id, true); ?>] = <?php echo $compiledEntry->getExpression().';'; ?>
-
 <?php } else { ?>
+<?php echo $statements; ?>
         return <?php echo $compiledEntry->getExpression().';'; ?>
-
 <?php } ?>
 
     }
