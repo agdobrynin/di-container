@@ -13,6 +13,9 @@ $finder = (new PhpCsFixer\Finder())
         'tests/FinderClosureCode/Fixture/',
         'tests/DefinitionsLoader/Fixtures/PhpFileCannotParse/',
     ])
+    ->notPath([
+        'src/DiContainer/Compiler/template.php'
+    ])
 ;
 
 return (new PhpCsFixer\Config())
