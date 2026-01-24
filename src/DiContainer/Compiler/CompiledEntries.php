@@ -5,67 +5,79 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Compiler;
 
 use Iterator;
+use Kaspi\DiContainer\Exception\ContainerIdentifierExistException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
+
+use function array_column;
+use function in_array;
+use function preg_match;
+use function preg_replace;
+use function preg_replace_callback;
+use function sprintf;
+use function str_replace;
+use function strrpos;
+use function strtolower;
+use function substr;
+use function trim;
 
 final class CompiledEntries implements CompiledEntriesInterface
 {
     /**
-     * Array key internal getter method name.
-     * Each method name is converted to lowercase.
+     * Array key is container identifier.
      *
-     *      [
-     *          'resolve_service_one' => [
-     *              0 => 'App\\Services\\ServiceOne',
-     *              1 => $compiledEntry,
-     *          ],
-     *      ]
-     *
-     * The value of array element has two items:
-     * - index 0 – container identifier.
-     * - index 1 – compiled entry.
-     *
-     * @var array<non-empty-string, array{0: non-empty-string, 1:CompiledEntryInterface}>
+     * @var array<non-empty-string, array{serviceMethod: non-empty-string, entry: CompiledEntryInterface}>
      */
-    private array $mapServiceMethodToContainerId = [];
+    private array $entries = [];
 
     /**
      * @var array<non-empty-string, true>
      */
     private array $notFoundContainerIdentifiers = [];
 
+    public function __construct(
+        private readonly string $methodPrefix = 'resolve_',
+        private readonly string $methodDefaultName = 'service',
+    ) {}
+
     public function addNotFoudContainerId(string $id): void
     {
         $this->notFoundContainerIdentifiers[$id] = true;
     }
 
-    public function hasServiceMethod(string $serviceMethod): bool
+    public function setServiceMethod(string $containerIdentifier, CompiledEntryInterface $compiledEntry): void
     {
-        return isset($this->mapServiceMethodToContainerId[$serviceMethod]);
-    }
+        if (isset($this->entries[$containerIdentifier])) {
+            throw new ContainerIdentifierExistException(
+                sprintf('Container identifier "%s" is already registered.', $containerIdentifier)
+            );
+        }
 
-    public function setServiceMethod(string $serviceMethod, string $containerIdentifier, CompiledEntryInterface $compiledEntry): void
-    {
         $serviceSuffix = 0;
         $serviceMethodUnique = null;
+        $serviceMethod = $this->convertContainerIdentifierToMethodName($containerIdentifier);
+        $existServiceMethods = array_column($this->entries, 'serviceMethod');
 
-        while ($this->hasServiceMethod($serviceMethodUnique ?? $serviceMethod)) {
+        while (in_array($serviceMethodUnique ?? $serviceMethod, $existServiceMethods, true)) {
             ++$serviceSuffix;
             $serviceMethodUnique = $serviceMethod.$serviceSuffix;
         }
 
-        $this->mapServiceMethodToContainerId[$serviceMethodUnique ?? $serviceMethod] = [$containerIdentifier, $compiledEntry];
+        $this->entries[$containerIdentifier] = [
+            'serviceMethod' => $serviceMethodUnique ?? $serviceMethod,
+            'entry' => $compiledEntry,
+        ];
     }
 
     public function reset(): void
     {
-        $this->mapServiceMethodToContainerId = [];
+        $this->entries = [];
         $this->notFoundContainerIdentifiers = [];
     }
 
     public function getHasIdentifiers(): Iterator
     {
-        foreach ($this->mapServiceMethodToContainerId as [$id]) {
+        foreach ($this->entries as $id => $entry) {
             if (!isset($this->notFoundContainerIdentifiers[$id])) {
                 yield $id;
             }
@@ -74,15 +86,40 @@ final class CompiledEntries implements CompiledEntriesInterface
 
     public function getContainerIdentifierMappedMethodResolve(): Iterator
     {
-        foreach ($this->mapServiceMethodToContainerId as $method => [$id]) {
-            yield ['id' => $id, 'serviceMethod' => $method];
+        foreach ($this->entries as $id => ['serviceMethod' => $serviceMethod]) {
+            yield ['id' => $id, 'serviceMethod' => $serviceMethod];
         }
     }
 
     public function getCompiledEntries(): Iterator
     {
-        foreach ($this->mapServiceMethodToContainerId as $method => [$id, $entry]) {
-            yield ['id' => $id, 'serviceMethod' => $method, 'entry' => $entry];
+        foreach ($this->entries as $id => ['serviceMethod' => $serviceMethod, 'entry' => $entry]) {
+            yield ['id' => $id, 'serviceMethod' => $serviceMethod, 'entry' => $entry];
         }
+    }
+
+    /**
+     * @param non-empty-string $id
+     *
+     * @return non-empty-string
+     */
+    private function convertContainerIdentifierToMethodName(string $id): string
+    {
+        // Identifier may present as fully qualified class name. Take only class name.
+        if (false !== ($pos = strrpos($id, '\\')) && isset($id[$pos + 1])) {
+            $id = substr($id, $pos + 1);
+        }
+
+        /** @var string $name */
+        $name = preg_replace_callback(
+            '/([a-z])([A-Z])/',
+            static fn (array $a) => $a[1].'_'.strtolower($a[2]),
+            (string) preg_replace('/[^a-zA-Z0-9_\x7f-\xff]/', '.', $id)
+        );
+        $name = strtolower(trim(str_replace('.', '_', $name), '_'));
+
+        return 1 !== preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name)
+            ? $this->methodPrefix.$this->methodDefaultName
+            : $this->methodPrefix.$name;
     }
 }

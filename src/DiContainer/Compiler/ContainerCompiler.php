@@ -141,8 +141,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
                 $compiledEntry = $this->compiledExceptionStack($exception, $id);
             }
 
-            $serviceMethod = Helper::convertContainerIdentifierToMethodName($id);
-            $this->compiledEntries->setServiceMethod($serviceMethod, $id, $compiledEntry);
+            $this->compiledEntries->setServiceMethod($id, $compiledEntry);
 
             $definitions->next();
         }
