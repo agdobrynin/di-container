@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\Compiler\IdsIteratorInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 use function sprintf;
 
@@ -62,7 +63,11 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
                         throw $exception;
                     }
 
-                    $definition = ($fallback)($id, $exception);
+                    $fallbackException = $e instanceof NotFoundExceptionInterface
+                        ? $e
+                        : $exception;
+
+                    $definition = ($fallback)($id, $fallbackException);
                 }
 
                 yield $id => $definition;
