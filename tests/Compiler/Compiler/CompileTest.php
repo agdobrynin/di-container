@@ -6,6 +6,7 @@ namespace Tests\Compiler\Compiler;
 
 use Generator;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
+use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
 use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
@@ -48,6 +49,7 @@ use function random_bytes;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(CompiledEntries::class)]
 class CompileTest extends TestCase
 {
     private DiDefinitionTransformerInterface $mockTransformer;
@@ -65,7 +67,7 @@ class CompileTest extends TestCase
     public function testInvalidDefinitionCompile(): void
     {
         $this->expectException(DefinitionCompileExceptionInterface::class);
-        $this->expectExceptionMessage('Invalid definition getting via container identifier "foo"');
+        $this->expectExceptionMessage('The definition was not found via container identifier "foo"');
 
         $container = $this->createMockForIntersectionOfInterfaces([
             DiContainerGetterDefinitionInterface::class,
@@ -80,12 +82,14 @@ class CompileTest extends TestCase
         $idsIter->method('current')->willReturn('foo');
 
         $containerDefinitions = new DiContainerDefinitions($container, $idsIter);
+        $compiledEntries = new CompiledEntries();
 
         $compiler = new ContainerCompiler(
             'App\Container',
             $containerDefinitions,
             $this->mockTransformer,
             InvalidBehaviorCompileEnum::ExceptionOnCompile,
+            $compiledEntries,
         );
 
         $compiler->compile();
@@ -107,6 +111,7 @@ class CompileTest extends TestCase
 
         $containerDefinitions = new DiContainerDefinitions($container, $idsIter);
         $transformer = new DiDefinitionTransformer($this->createMock(FinderClosureCodeInterface::class));
+        $compiledEntries = new CompiledEntries();
 
         /*
          * Compiler generate private method `resolve_container()` for class `__NAMESPACE__.'\Container'` as predefined.
@@ -121,6 +126,7 @@ class CompileTest extends TestCase
             $containerDefinitions,
             $transformer,
             InvalidBehaviorCompileEnum::ExceptionOnCompile,
+            $compiledEntries,
         );
 
         $containerFile = 'Container'.bin2hex(random_bytes(8)).'.php';
