@@ -30,6 +30,7 @@ use Tests\DiContainer\Exceptions\Fixtures\SuperClass;
 use Tests\DiContainer\Exceptions\Fixtures\ThirdClass;
 
 use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\diGet;
 
 /**
  * @internal
@@ -37,6 +38,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Inject::class)]
 #[CoversFunction('\Kaspi\DiContainer\diAutowire')]
+#[CoversFunction('\Kaspi\DiContainer\diGet')]
 #[CoversClass(DiContainer::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiContainerFactory::class)]
@@ -129,5 +131,24 @@ class ExceptionsTest extends TestCase
             self::assertInstanceOf(AutowireExceptionInterface::class, $exception->getPrevious());
             self::assertMatchesRegularExpression('/Cannot automatically resolve dependency.+Please specify the Parameter #0 \[ <required> string \$value ]/', $exception->getPrevious()->getMessage());
         }
+    }
+
+    public function testRecursiveResolveViaDiDefinitionGet(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot resolve definition "foobar" via container identifier "baz".');
+
+        $def1 = ['foo' => diGet('bar')];
+        // ...
+        $def2 = ['bar' => diGet('baz')];
+        // ...
+        $def3 = ['baz' => diGet('foobar')];
+
+        (new DiContainer(
+            $def1 + $def2 + $def3,
+            new DiContainerConfig(),
+        ))
+            ->get('foo')
+        ;
     }
 }

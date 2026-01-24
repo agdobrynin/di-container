@@ -23,6 +23,7 @@ use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
@@ -31,7 +32,6 @@ use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\NotFoundExceptionInterface;
 use Tests\AppClass;
 use Tests\DefinitionsLoader\Fixtures\Import\SubDirectory\Two;
 use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\Foo;
@@ -179,8 +179,8 @@ class DefinitionsLoaderImportTest extends TestCase
         // resolve by useZeroConfigurationDefinition=true
         $this->assertTrue($container->has(Fixtures\Import\TokenInterface::class));
 
-        $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Attempting to resolve interface');
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessage('An interface that is not bound to a definition');
 
         // import skip attribute Service on interface
         $container->get(Fixtures\Import\TokenInterface::class);
