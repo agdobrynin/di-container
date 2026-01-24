@@ -9,8 +9,6 @@ use Kaspi\DiContainer\Exception\ContainerIdentifierExistException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 
-use function array_column;
-use function in_array;
 use function preg_match;
 use function preg_replace;
 use function preg_replace_callback;
@@ -35,6 +33,15 @@ final class CompiledEntries implements CompiledEntriesInterface
      */
     private array $notFoundContainerIdentifiers = [];
 
+    /**
+     * @var array<non-empty-string, true>
+     */
+    private array $existServiceMethods = [];
+
+    /**
+     * @param non-empty-string $methodPrefix
+     * @param non-empty-string $methodDefaultName
+     */
     public function __construct(
         private readonly string $methodPrefix = 'resolve_',
         private readonly string $methodDefaultName = 'service',
@@ -56,9 +63,8 @@ final class CompiledEntries implements CompiledEntriesInterface
         $serviceSuffix = 0;
         $serviceMethodUnique = null;
         $serviceMethod = $this->convertContainerIdentifierToMethodName($containerIdentifier);
-        $existServiceMethods = array_column($this->entries, 'serviceMethod');
 
-        while (in_array($serviceMethodUnique ?? $serviceMethod, $existServiceMethods, true)) {
+        while (isset($this->existServiceMethods[$serviceMethodUnique ?? $serviceMethod])) {
             ++$serviceSuffix;
             $serviceMethodUnique = $serviceMethod.$serviceSuffix;
         }
@@ -67,11 +73,14 @@ final class CompiledEntries implements CompiledEntriesInterface
             'serviceMethod' => $serviceMethodUnique ?? $serviceMethod,
             'entry' => $compiledEntry,
         ];
+
+        $this->existServiceMethods[$this->entries[$containerIdentifier]['serviceMethod']] = true;
     }
 
     public function reset(): void
     {
         $this->entries = [];
+        $this->existServiceMethods = [];
         $this->notFoundContainerIdentifiers = [];
     }
 
