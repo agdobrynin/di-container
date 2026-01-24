@@ -212,8 +212,8 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             $this->compilerContainerClass,
             $diContainerDefinitions,
             $this->compilerDiDefinitionTransformer,
-            $this->compilerOptions['invalid_behavior'] ?? InvalidBehaviorCompileEnum::ExceptionOnCompile,
             $this->compiledEntries,
+            $this->compilerOptions['invalid_behavior'] ?? InvalidBehaviorCompileEnum::ExceptionOnCompile,
         );
 
         try {

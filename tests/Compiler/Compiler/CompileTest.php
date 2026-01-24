@@ -88,8 +88,8 @@ class CompileTest extends TestCase
             'App\Container',
             $containerDefinitions,
             $this->mockTransformer,
-            InvalidBehaviorCompileEnum::ExceptionOnCompile,
             $compiledEntries,
+            InvalidBehaviorCompileEnum::ExceptionOnCompile,
         );
 
         $compiler->compile();
@@ -125,8 +125,8 @@ class CompileTest extends TestCase
             $containerClass,
             $containerDefinitions,
             $transformer,
-            InvalidBehaviorCompileEnum::ExceptionOnCompile,
             $compiledEntries,
+            InvalidBehaviorCompileEnum::ExceptionOnCompile,
         );
 
         $containerFile = 'Container'.bin2hex(random_bytes(8)).'.php';

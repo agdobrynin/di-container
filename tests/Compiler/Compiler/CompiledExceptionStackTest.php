@@ -63,7 +63,7 @@ class CompiledExceptionStackTest extends TestCase
         ;
         $compiledEntries = new CompiledEntries();
 
-        $compiler = new ContainerCompiler('Container', $mockDiContainerDefinitions, $mockTransformer, InvalidBehaviorCompileEnum::RuntimeContainerException, $compiledEntries);
+        $compiler = new ContainerCompiler('Container', $mockDiContainerDefinitions, $mockTransformer, $compiledEntries, InvalidBehaviorCompileEnum::RuntimeContainerException);
 
         $file = (new ContainerCompilerToFile(
             vfsStream::url('root'),

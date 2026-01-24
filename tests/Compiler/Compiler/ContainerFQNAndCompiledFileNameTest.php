@@ -47,8 +47,8 @@ class ContainerFQNAndCompiledFileNameTest extends TestCase
             $containerClass,
             $this->mockContainerDefinitions,
             $this->mockTransformer,
-            InvalidBehaviorCompileEnum::ExceptionOnCompile,
             $this->compiledEntries,
+            InvalidBehaviorCompileEnum::ExceptionOnCompile,
         ))
             ->getContainerFQN()
         ;
@@ -84,8 +84,8 @@ class ContainerFQNAndCompiledFileNameTest extends TestCase
             $containerClass,
             $this->mockContainerDefinitions,
             $this->mockTransformer,
-            InvalidBehaviorCompileEnum::ExceptionOnCompile,
             $this->compiledEntries,
+            InvalidBehaviorCompileEnum::ExceptionOnCompile,
         ))
             ->getContainerFQN()
         ;

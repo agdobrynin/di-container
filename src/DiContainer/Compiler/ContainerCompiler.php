@@ -47,8 +47,8 @@ final class ContainerCompiler implements ContainerCompilerInterface
         private readonly string $containerClass,
         private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
         private readonly DiDefinitionTransformerInterface $definitionTransform,
-        private readonly InvalidBehaviorCompileEnum $invalidBehaviorCompile,
         private readonly CompiledEntriesInterface $compiledEntries,
+        private readonly InvalidBehaviorCompileEnum $invalidBehaviorCompile,
     ) {}
 
     public function getContainerFQN(): CompiledContainerFQNInterface
