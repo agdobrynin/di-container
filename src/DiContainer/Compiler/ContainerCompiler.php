@@ -127,12 +127,12 @@ final class ContainerCompiler implements ContainerCompilerInterface
                     $this->compiledEntries->addNotFoudContainerId($id);
                 }
 
-                $exception = $e instanceof InvalidDefinitionCompileException
-                    ? $e
-                    : new DefinitionCompileException(
-                        sprintf('Cannot compile definition type "%s" for container identifier "%s".', get_debug_type($definition), $id),
+                $exception = $e instanceof NotFoundExceptionInterface
+                    ? new DefinitionCompileException(
+                        sprintf('The definition was not found via container identifier "%s".', $id),
                         previous: $e
-                    );
+                    )
+                    : $e;
 
                 if (InvalidBehaviorCompileEnum::ExceptionOnCompile === $this->invalidBehaviorCompile) {
                     throw $exception;
