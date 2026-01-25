@@ -225,7 +225,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
             sprintf('%s = %s', $exceptionStackEntry->getScopeServiceVar(), $exceptionStackEntry->getExpression())
         );
 
-        $message = sprintf('The definition was not compiled for the container identifier %s. Function %s::getExceptionStack() return exception stack.', var_export($containerIdentifier, true), CompiledContainerException::class);
+        $message = sprintf('The definition was not compiled for the container identifier %s.', var_export($containerIdentifier, true));
 
         $expression = sprintf(
             'throw new \Kaspi\DiContainer\Exception\CompiledContainerException(message: %s, exceptionStack: %s)',
