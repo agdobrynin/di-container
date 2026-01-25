@@ -52,29 +52,29 @@ final class CompiledEntries implements CompiledEntriesInterface
         $this->notFoundContainerIdentifiers[$id] = true;
     }
 
-    public function setServiceMethod(string $containerIdentifier, CompiledEntryInterface $compiledEntry): void
+    public function setServiceMethod(string $id, CompiledEntryInterface $compiledEntry): void
     {
-        if (isset($this->entries[$containerIdentifier])) {
+        if (isset($this->entries[$id])) {
             throw new ContainerIdentifierExistException(
-                sprintf('Container identifier "%s" is already registered.', $containerIdentifier)
+                sprintf('Container identifier "%s" is already registered.', $id)
             );
         }
 
         $serviceSuffix = 0;
         $serviceMethodUnique = null;
-        $serviceMethod = $this->convertContainerIdentifierToMethodName($containerIdentifier);
+        $serviceMethod = $this->convertContainerIdentifierToMethodName($id);
 
         while (isset($this->existServiceMethods[$serviceMethodUnique ?? $serviceMethod])) {
             ++$serviceSuffix;
             $serviceMethodUnique = $serviceMethod.$serviceSuffix;
         }
 
-        $this->entries[$containerIdentifier] = [
+        $this->entries[$id] = [
             'serviceMethod' => $serviceMethodUnique ?? $serviceMethod,
             'entry' => $compiledEntry,
         ];
 
-        $this->existServiceMethods[$this->entries[$containerIdentifier]['serviceMethod']] = true;
+        $this->existServiceMethods[$this->entries[$id]['serviceMethod']] = true;
     }
 
     public function reset(): void

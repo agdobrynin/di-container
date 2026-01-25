@@ -18,11 +18,11 @@ interface CompiledEntriesInterface extends ResetInterface
     public function addNotFoudContainerId(string $id): void;
 
     /**
-     * @param non-empty-string $containerIdentifier
+     * @param non-empty-string $id
      *
      * @throws ContainerIdentifierExistExceptionInterface container identifier already exist
      */
-    public function setServiceMethod(string $containerIdentifier, CompiledEntryInterface $compiledEntry): void;
+    public function setServiceMethod(string $id, CompiledEntryInterface $compiledEntry): void;
 
     /**
      * Return container identifiers for container method `has()`.
