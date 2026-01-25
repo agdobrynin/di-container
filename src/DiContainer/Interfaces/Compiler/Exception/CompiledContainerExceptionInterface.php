@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\Compiler\Exception;
 
-use Psr\Container\ContainerExceptionInterface;
-
-interface CompiledContainerExceptionInterface extends ContainerExceptionInterface
+interface CompiledContainerExceptionInterface
 {
     /**
      * @return list<array{
