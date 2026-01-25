@@ -8,6 +8,7 @@ use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
+use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -22,16 +23,18 @@ class ContainerFQNAndCompiledFileNameTest extends TestCase
 {
     private DiContainerDefinitionsInterface $mockContainerDefinitions;
     private DiDefinitionTransformerInterface $mockTransformer;
+    private CompiledEntriesInterface $compiledEntries;
 
     public function setUp(): void
     {
         $this->mockContainerDefinitions = $this->createMock(DiContainerDefinitionsInterface::class);
         $this->mockTransformer = $this->createMock(DiDefinitionTransformerInterface::class);
+        $this->compiledEntries = $this->createMock(CompiledEntriesInterface::class);
     }
 
     public function tearDown(): void
     {
-        unset($this->mockContainerDefinitions, $this->mockTransformer);
+        unset($this->mockContainerDefinitions, $this->mockTransformer, $this->compiledEntries);
     }
 
     #[DataProvider('dataProviderContainerClassInvalid')]
@@ -40,7 +43,13 @@ class ContainerFQNAndCompiledFileNameTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($exceptionMessage);
 
-        (new ContainerCompiler($containerClass, $this->mockContainerDefinitions, $this->mockTransformer, InvalidBehaviorCompileEnum::ExceptionOnCompile))
+        (new ContainerCompiler(
+            $containerClass,
+            $this->mockContainerDefinitions,
+            $this->mockTransformer,
+            $this->compiledEntries,
+            InvalidBehaviorCompileEnum::ExceptionOnCompile,
+        ))
             ->getContainerFQN()
         ;
     }
@@ -71,7 +80,13 @@ class ContainerFQNAndCompiledFileNameTest extends TestCase
     #[DataProvider('dataProviderContainerClassSuccess')]
     public function testSuccess(string $containerClass, string $fullyQualifiedClassName, string $className, string $namespace): void
     {
-        $fqcn = ($compiledContainer = new ContainerCompiler($containerClass, $this->mockContainerDefinitions, $this->mockTransformer, InvalidBehaviorCompileEnum::ExceptionOnCompile))
+        $fqcn = ($compiledContainer = new ContainerCompiler(
+            $containerClass,
+            $this->mockContainerDefinitions,
+            $this->mockTransformer,
+            $this->compiledEntries,
+            InvalidBehaviorCompileEnum::ExceptionOnCompile,
+        ))
             ->getContainerFQN()
         ;
 

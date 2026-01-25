@@ -74,12 +74,15 @@ class GetDefinitionTest extends TestCase
             ],
             new DiContainerConfig(useZeroConfigurationDefinition: false),
         ];
+    }
 
-        yield 'interface not bind to any entry. config use zero config like true' => [
-            BazInterface::class,
-            [],
-            new DiContainerConfig(true, false),
-        ];
+    public function testNotBoundInterface(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot create definition via container identifier "'.BazInterface::class.'"');
+
+        $container = new DiContainer(config: new DiContainerConfig(true, false));
+        $container->getDefinition(BazInterface::class);
     }
 
     public function testCircular(): void

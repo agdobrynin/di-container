@@ -6,6 +6,7 @@ namespace Tests\Compiler\Compiler;
 
 use ArrayIterator;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
+use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
 use Kaspi\DiContainer\Compiler\ContainerCompilerToFile;
@@ -37,6 +38,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(CompiledEntries::class)]
 class CompiledExceptionStackTest extends TestCase
 {
     private DiContainerInterface $container;
@@ -59,8 +61,9 @@ class CompiledExceptionStackTest extends TestCase
                 new DefinitionCompileException()
             )
         ;
+        $compiledEntries = new CompiledEntries();
 
-        $compiler = new ContainerCompiler('Container', $mockDiContainerDefinitions, $mockTransformer, InvalidBehaviorCompileEnum::RuntimeContainerException);
+        $compiler = new ContainerCompiler('Container', $mockDiContainerDefinitions, $mockTransformer, $compiledEntries, InvalidBehaviorCompileEnum::RuntimeContainerException);
 
         $file = (new ContainerCompilerToFile(
             vfsStream::url('root'),

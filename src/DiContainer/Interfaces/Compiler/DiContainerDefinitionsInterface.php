@@ -9,6 +9,7 @@ use Iterator;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 interface DiContainerDefinitionsInterface extends ResetInterface
 {
@@ -19,7 +20,7 @@ interface DiContainerDefinitionsInterface extends ResetInterface
     /**
      * Get definitions from `\Kaspi\DiContainer\Interfaces\DiContainerInterface::getDefinitions()`.
      *
-     * @param null|Closure(string $containerIdentifier, DefinitionCompileExceptionInterface $e): mixed $fallback
+     * @param null|Closure(string $containerIdentifier, DefinitionCompileExceptionInterface|NotFoundExceptionInterface $e): mixed $fallback
      *
      * @return Iterator<non-empty-string, mixed>
      *

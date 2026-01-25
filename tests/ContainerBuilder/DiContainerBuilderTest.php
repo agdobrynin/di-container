@@ -7,6 +7,7 @@ namespace Tests\ContainerBuilder;
 use Generator;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
+use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
 use Kaspi\DiContainer\Compiler\ContainerCompilerToFile;
@@ -62,6 +63,7 @@ use function random_bytes;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ObjectEntry::class)]
 #[CoversClass(ValueEntry::class)]
+#[CoversClass(CompiledEntries::class)]
 #[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 class DiContainerBuilderTest extends TestCase
 {
