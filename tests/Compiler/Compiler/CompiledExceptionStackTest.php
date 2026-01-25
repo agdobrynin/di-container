@@ -15,7 +15,10 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\CompiledContainerException;
+use Kaspi\DiContainer\Exception\CompiledContainerExceptionAbstract;
+use Kaspi\DiContainer\Exception\CompiledContainerNotFoundException;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -24,6 +27,10 @@ use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\NotFoundExceptionInterface;
+
+use function bin2hex;
+use function random_bytes;
 
 /**
  * @internal
@@ -39,17 +46,21 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(CompiledEntries::class)]
+#[CoversClass(CompiledContainerExceptionAbstract::class)]
+#[CoversClass(NotFoundException::class)]
+#[CoversClass(CompiledContainerNotFoundException::class)]
 class CompiledExceptionStackTest extends TestCase
 {
     private DiContainerInterface $container;
+    private DiContainerDefinitionsInterface $mockDiContainerDefinitions;
 
     public function setUp(): void
     {
         vfsStream::setup();
 
-        $mockDiContainerDefinitions = $this->createMock(DiContainerDefinitionsInterface::class);
+        $this->mockDiContainerDefinitions = $this->createMock(DiContainerDefinitionsInterface::class);
 
-        $mockDiContainerDefinitions->method('getDefinitions')->willReturn(
+        $this->mockDiContainerDefinitions->method('getDefinitions')->willReturn(
             new ArrayIterator([
                 'services.foo' => new DiDefinitionValue([]),
             ]),
@@ -62,8 +73,9 @@ class CompiledExceptionStackTest extends TestCase
             )
         ;
         $compiledEntries = new CompiledEntries();
+        $containerClass = 'Container'.bin2hex(random_bytes(5));
 
-        $compiler = new ContainerCompiler('Container', $mockDiContainerDefinitions, $mockTransformer, $compiledEntries, InvalidBehaviorCompileEnum::RuntimeContainerException);
+        $compiler = new ContainerCompiler($containerClass, $this->mockDiContainerDefinitions, $mockTransformer, $compiledEntries, InvalidBehaviorCompileEnum::RuntimeContainerException);
 
         $file = (new ContainerCompilerToFile(
             vfsStream::url('root'),
@@ -98,5 +110,40 @@ class CompiledExceptionStackTest extends TestCase
         } catch (CompiledContainerException $e) {
             self::assertStringContainsString('Stack trace:'.PHP_EOL, (string) $e);
         }
+    }
+
+    public function testNotFoundExceptionStack(): void
+    {
+        vfsStream::setup();
+
+        $mockDiContainerDefinitions = $this->createMock(DiContainerDefinitionsInterface::class);
+        $mockDiContainerDefinitions->method('getDefinitions')->willReturn(
+            new ArrayIterator([
+                'services.foo' => new NotFoundException('Uups'),
+            ]),
+        );
+
+        $mockTransformer = $this->createMock(DiDefinitionTransformerInterface::class);
+        $compiledEntries = new CompiledEntries();
+        $containerClass = 'Container'.bin2hex(random_bytes(5));
+
+        $compiler = new ContainerCompiler($containerClass, $mockDiContainerDefinitions, $mockTransformer, $compiledEntries, InvalidBehaviorCompileEnum::RuntimeContainerException);
+
+        $file = (new ContainerCompilerToFile(
+            vfsStream::url('root'),
+            $compiler,
+            isExclusiveLockFile: false,
+        ))
+            ->compileToFile()
+        ;
+
+        require_once $file;
+
+        $container = new ($compiler->getContainerFQN()->getFQN())();
+
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('The definition was not compiled. No entry was found for "services.foo" identifier.');
+
+        $container->get('services.foo');
     }
 }

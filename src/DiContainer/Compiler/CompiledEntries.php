@@ -52,6 +52,11 @@ final class CompiledEntries implements CompiledEntriesInterface
         $this->notFoundContainerIdentifiers[$id] = true;
     }
 
+    public function hasNotFoudContainerId(string $id): bool
+    {
+        return isset($this->notFoundContainerIdentifiers[$id]);
+    }
+
     public function setServiceMethod(string $id, CompiledEntryInterface $compiledEntry): void
     {
         if (isset($this->entries[$id])) {

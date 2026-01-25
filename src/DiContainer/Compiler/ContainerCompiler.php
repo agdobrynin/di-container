@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\CompiledContainerException;
+use Kaspi\DiContainer\Exception\CompiledContainerNotFoundException;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Exception\InvalidDefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledContainerFQNInterface;
@@ -225,13 +226,12 @@ final class ContainerCompiler implements ContainerCompilerInterface
             sprintf('%s = %s', $exceptionStackEntry->getScopeServiceVar(), $exceptionStackEntry->getExpression())
         );
 
-        $message = sprintf('The definition was not compiled for the container identifier %s. Function %s::getExceptionStack() return exception stack.', var_export($containerIdentifier, true), CompiledContainerException::class);
-
-        $expression = sprintf(
-            'throw new \Kaspi\DiContainer\Exception\CompiledContainerException(message: %s, exceptionStack: %s)',
-            var_export($message, true),
-            $exceptionStackEntry->getScopeServiceVar(),
-        );
+        if ($this->compiledEntries->hasNotFoudContainerId($containerIdentifier)) {
+            $expression = sprintf('throw new \%s(message: \'The definition was not compiled.\', exceptionStack: %s, id: %s)', CompiledContainerNotFoundException::class, $exceptionStackEntry->getScopeServiceVar(), var_export($containerIdentifier, true));
+        } else {
+            $message = sprintf('The definition was not compiled for the container identifier %s.', var_export($containerIdentifier, true));
+            $expression = sprintf('throw new \%s(message: %s, exceptionStack: %s)', CompiledContainerException::class, var_export($message, true), $exceptionStackEntry->getScopeServiceVar());
+        }
 
         return $compiledMainExceptionEntity->setExpression($expression);
     }

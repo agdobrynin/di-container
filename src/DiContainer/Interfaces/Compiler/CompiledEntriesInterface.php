@@ -17,6 +17,8 @@ interface CompiledEntriesInterface extends ResetInterface
      */
     public function addNotFoudContainerId(string $id): void;
 
+    public function hasNotFoudContainerId(string $id): bool;
+
     /**
      * @param non-empty-string $id
      *
