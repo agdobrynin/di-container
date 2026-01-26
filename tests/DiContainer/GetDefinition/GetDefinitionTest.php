@@ -7,6 +7,7 @@ namespace Tests\DiContainer\GetDefinition;
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerNullConfig;
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\DiContainer\GetDefinition\Fixtures\Bar;
+use Tests\DiContainer\GetDefinition\Fixtures\BatInterface;
 use Tests\DiContainer\GetDefinition\Fixtures\BazInterface;
 use Tests\DiContainer\GetDefinition\Fixtures\Foo;
 use Tests\DiContainer\GetDefinition\Fixtures\Qux;
@@ -49,6 +51,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(Autowire::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(Service::class)]
 class GetDefinitionTest extends TestCase
 {
     #[DataProvider('dataProviderConfig')]
@@ -124,5 +127,30 @@ class GetDefinitionTest extends TestCase
         $container = new DiContainer(config: new DiContainerConfig(useZeroConfigurationDefinition: true));
 
         self::assertInstanceOf(DiDefinitionAutowire::class, $container->getDefinition(Bar::class));
+    }
+
+    public function testCircularResolveInterface(): void
+    {
+        $this->expectException(CallCircularDependencyException::class);
+        $this->expectExceptionMessage('"foo" -> "bar" -> "foo".');
+
+        $container = new DiContainer(
+            [
+                'foo' => diGet('bar'),
+                'bar' => diGet('foo'),
+            ],
+            config: new DiContainerConfig(useZeroConfigurationDefinition: true, useAttribute: true)
+        );
+
+        $container->get(BatInterface::class);
+    }
+
+    public function testResolveInterfaceViaStringIdentifier(): void
+    {
+        $this->expectException(ContainerExceptionInterface::class);
+
+        $container = new DiContainer(config: new DiContainerConfig(useZeroConfigurationDefinition: true, useAttribute: true));
+
+        $container->getDefinition(BatInterface::class);
     }
 }

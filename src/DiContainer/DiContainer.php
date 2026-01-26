@@ -272,7 +272,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      *
      * @throws AutowireExceptionInterface
      */
-    protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
+    protected function resolveDefinition(string $id, ?string $previousId = null): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
         if (isset($this->diResolvedDefinition[$id])) {
             return $this->diResolvedDefinition[$id];
@@ -284,11 +284,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         try {
             $reflectionClass = new ReflectionClass($id); // @phpstan-ignore argument.type
-        } catch (ReflectionException $e) { // @codeCoverageIgnoreStart
+        } catch (ReflectionException $e) {
             throw new AutowireException(
-                sprintf('Cannot resolve definition via container identifier "%s".', $id),
+                sprintf('Cannot resolve definition "%s" via container identifier "%s".', $id, $previousId),
                 previous: $e,
-            ); // @codeCoverageIgnoreEnd
+            );
         }
 
         if ($reflectionClass->isInterface()) {
@@ -299,7 +299,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 try {
                     do {
                         $this->circularCallWatcher[$findId] = true;
-                        $def = $this->resolveDefinition($findId);
+                        $def = $this->resolveDefinition($findId, $reflectionClass->name);
 
                         if ($def instanceof DiDefinitionLinkInterface) {
                             $findId = $def->getDefinition();
@@ -307,7 +307,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                         }
                     } while ($def instanceof DiDefinitionLinkInterface);
                 } finally {
-                    $this->circularCallWatcher = [];
+                    unset($this->circularCallWatcher[$findId]);
                 }
 
                 return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton());
