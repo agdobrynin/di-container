@@ -177,7 +177,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         yield from $predefinedCompiledEntry;
 
-        yield from $this->diContainerDefinitions->getDefinitions(static function (string $id, DefinitionCompileExceptionInterface|NotFoundExceptionInterface $e) {
+        yield from $this->diContainerDefinitions->getDefinitions(static function (string $id, Throwable $e) {
             return $e instanceof NotFoundExceptionInterface
                 ? $e
                 : new InvalidDefinitionCompileException(
