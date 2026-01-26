@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -85,16 +86,17 @@ class GetDefinitionTest extends TestCase
         $container->getDefinition(BazInterface::class);
     }
 
-    public function testCircular(): void
+    public function testGetLink(): void
     {
-        $this->expectException(CallCircularDependencyException::class);
-
         $container = new DiContainer([
             'service.one' => diGet('service.two'),
             'service.two' => diGet('service.one'),
         ], new DiContainerConfig());
 
-        $container->getDefinition('service.one');
+        $def = $container->getDefinition('service.one');
+
+        self::assertInstanceOf(DiDefinitionLinkInterface::class, $def);
+        self::assertEquals('service.two', $def->getDefinition());
     }
 
     public function testAutowireAttributeException(): void
