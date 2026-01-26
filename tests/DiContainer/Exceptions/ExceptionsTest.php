@@ -14,6 +14,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -50,6 +51,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(CallCircularDependencyException::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(NotFoundException::class)]
 class ExceptionsTest extends TestCase
 {
     public function testAutowireDefinitionIsNotClass(): void
