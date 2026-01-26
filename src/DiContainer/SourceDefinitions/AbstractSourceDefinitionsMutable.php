@@ -34,6 +34,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 
     /**
      * @throws ContainerIdentifierExceptionInterface
+     * @throws SourceDefinitionsMutableExceptionInterface
      */
     public function offsetGet(mixed $offset): DiDefinitionInterface
     {
@@ -55,7 +56,8 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
     }
 
     /**
-     * @throws ContainerIdentifierExceptionInterface|SourceDefinitionsMutableExceptionInterface
+     * @throws ContainerIdentifierExceptionInterface
+     * @throws SourceDefinitionsMutableExceptionInterface
      */
     public function offsetUnset(mixed $offset): void
     {
