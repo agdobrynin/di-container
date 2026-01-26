@@ -7,7 +7,6 @@ namespace Tests\Compiler;
 use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
 use Kaspi\DiContainer\Compiler\IdsIterator;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
@@ -16,6 +15,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
@@ -161,7 +161,7 @@ class DiContainerDefinitionsTest extends TestCase
     {
         $this->containerMock->method('getDefinition')
             ->with('foo')
-            ->willThrowException(new AutowireException()) // some exception in DiContainer::resolveDefinition()
+            ->willThrowException(new ContainerException())
         ;
 
         $this->idsIterator->method('current')
@@ -173,6 +173,6 @@ class DiContainerDefinitionsTest extends TestCase
             ->current()
         ;
         self::assertEquals('foo', $fallbackEntry->id);
-        self::assertInstanceOf(DefinitionCompileExceptionInterface::class, $fallbackEntry->e);
+        self::assertInstanceOf(ContainerExceptionInterface::class, $fallbackEntry->e);
     }
 }
