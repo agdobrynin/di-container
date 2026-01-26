@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Traversable;
@@ -13,11 +13,11 @@ use function reset;
 
 final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
-    /** @var array<class-string|non-empty-string, mixed> */
+    /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
     private array $definitions;
 
     /**
-     * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $sourceDefinitions
+     * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface|ContainerIdentifierExceptionInterface
      */

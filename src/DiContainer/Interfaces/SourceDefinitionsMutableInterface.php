@@ -6,13 +6,13 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use ArrayAccess;
 use IteratorAggregate;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Traversable;
 
 interface SourceDefinitionsMutableInterface extends ArrayAccess, IteratorAggregate
 {
     /**
-     * @return Traversable<non-empty-string, DiDefinitionIdentifierInterface|mixed>
+     * @return Traversable<non-empty-string, DiDefinitionInterface>
      */
     public function getIterator(): Traversable;
 }

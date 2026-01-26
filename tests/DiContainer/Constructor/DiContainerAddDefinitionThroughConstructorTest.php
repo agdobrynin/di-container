@@ -6,6 +6,7 @@ namespace Tests\DiContainer\Constructor;
 
 use Generator;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
@@ -29,6 +30,7 @@ use function Kaspi\DiContainer\diCallable;
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(DiDefinitionValue::class)]
 class DiContainerAddDefinitionThroughConstructorTest extends TestCase
 {
     #[DataProvider('dataProviderWrongDefinition')]

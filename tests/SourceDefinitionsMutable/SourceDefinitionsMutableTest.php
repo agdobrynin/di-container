@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
@@ -22,6 +23,7 @@ use stdClass;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(DiDefinitionValue::class)]
 class SourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -81,7 +83,13 @@ class SourceDefinitionsMutableTest extends TestCase
         $s = new DeferredSourceDefinitionsMutable(['service.bar' => 'Service bar']);
         $s['service.baz'] = 'Service baz';
 
-        self::assertEquals(['service.bar' => 'Service bar', 'service.baz' => 'Service baz'], [...$s->getIterator()]);
+        self::assertEquals(
+            [
+                'service.bar' => new DiDefinitionValue('Service bar'),
+                'service.baz' => new DiDefinitionValue('Service baz'),
+            ],
+            [...$s->getIterator()]
+        );
     }
 
     public function testSetFail(): void
