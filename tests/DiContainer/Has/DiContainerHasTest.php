@@ -9,6 +9,7 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerNullConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
@@ -31,6 +32,7 @@ use Tests\DiContainer\Has\Fixtures\MyInterface;
 #[CoversClass(DiContainerNullConfig::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(DiDefinitionValue::class)]
 class DiContainerHasTest extends TestCase
 {
     public function testHasDefinitionWithNull(): void

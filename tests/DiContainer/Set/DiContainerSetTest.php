@@ -26,6 +26,7 @@ use stdClass;
 #[CoversClass(Helper::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(DiDefinitionValue::class)]
 class DiContainerSetTest extends TestCase
 {
     #[DataProvider('dataProviderWrongIdentifier')]

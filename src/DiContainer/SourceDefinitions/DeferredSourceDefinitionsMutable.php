@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\SourceDefinitions;
 
 use Closure;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Traversable;
@@ -14,14 +14,14 @@ use function reset;
 
 final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
-    /** @var array<class-string|non-empty-string, mixed> */
+    /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
     private array $definitions;
 
-    /** @var Closure(bool): array<class-string|non-empty-string, mixed> */
+    /** @var Closure(bool): array<class-string|non-empty-string, DiDefinitionInterface> */
     private readonly Closure $initDefinitions;
 
     /**
-     * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $sourceDefinitions
+     * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
      */
     public function __construct(private iterable $sourceDefinitions)
     {

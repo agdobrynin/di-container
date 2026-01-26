@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
+use Closure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\SourceDefinitionsMutableException;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
@@ -32,7 +35,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
     /**
      * @throws ContainerIdentifierExceptionInterface
      */
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset): DiDefinitionInterface
     {
         $identifier = Helper::getContainerIdentifier($offset, null);
 
@@ -64,7 +67,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
     }
 
     /**
-     * @return array{0: non-empty-string, 1: mixed}
+     * @return array{0: non-empty-string, 1: DiDefinitionInterface}
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface|ContainerIdentifierExceptionInterface
      */
@@ -78,11 +81,18 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
             );
         }
 
-        return [$identifier, $definition];
+        return [
+            $identifier,
+            match (true) {
+                $definition instanceof DiDefinitionInterface => $definition,
+                $definition instanceof Closure => new DiDefinitionCallable($definition),
+                default => new DiDefinitionValue($definition)
+            },
+        ];
     }
 
     /**
-     * @return array<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed>
+     * @return array<non-empty-string|non-negative-int, DiDefinitionInterface>
      */
     abstract protected function definitions(): array;
 
