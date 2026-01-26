@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -23,6 +24,7 @@ use stdClass;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionValue::class)]
 class SourceDefinitionsMutableTest extends TestCase
 {
@@ -47,6 +49,11 @@ class SourceDefinitionsMutableTest extends TestCase
         yield 'Other SourceDefinitionsMutable class' => [
             'src' => new DeferredSourceDefinitionsMutable(['service.foo' => 'foo value']),
             'id' => 'service.foo',
+        ];
+
+        yield 'Object implement DiDefinitionIdentifierInterface' => [
+            'src' => new DeferredSourceDefinitionsMutable([new DiDefinitionAutowire(self::class)]),
+            'id' => self::class,
         ];
     }
 
@@ -82,11 +89,13 @@ class SourceDefinitionsMutableTest extends TestCase
     {
         $s = new DeferredSourceDefinitionsMutable(['service.bar' => 'Service bar']);
         $s['service.baz'] = 'Service baz';
+        $s[] = new DiDefinitionAutowire(self::class);
 
         self::assertEquals(
             [
                 'service.bar' => new DiDefinitionValue('Service bar'),
                 'service.baz' => new DiDefinitionValue('Service baz'),
+                self::class => new DiDefinitionAutowire(self::class),
             ],
             [...$s->getIterator()]
         );
