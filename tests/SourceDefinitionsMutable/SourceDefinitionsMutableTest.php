@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
-use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
@@ -21,7 +22,8 @@ use stdClass;
  */
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
-#[CoversClass(Helper::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionValue::class)]
 class SourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -46,6 +48,11 @@ class SourceDefinitionsMutableTest extends TestCase
             'src' => new DeferredSourceDefinitionsMutable(['service.foo' => 'foo value']),
             'id' => 'service.foo',
         ];
+
+        yield 'Object implement DiDefinitionIdentifierInterface' => [
+            'src' => new DeferredSourceDefinitionsMutable([new DiDefinitionAutowire(self::class)]),
+            'id' => self::class,
+        ];
     }
 
     public function testUseIssetFnOnNullValue(): void
@@ -56,6 +63,15 @@ class SourceDefinitionsMutableTest extends TestCase
 
         self::assertTrue(isset($s['service.null']));
         self::assertFalse(isset($s['service.not_exist']));
+    }
+
+    public function testNoneValidKeyInDefinitionsThroughConstructor(): void
+    {
+        $this->expectException(ContainerIdentifierExceptionInterface::class);
+        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+
+        $s = new DeferredSourceDefinitionsMutable(['' => new DiDefinitionValue('ooo')]);
+        $s->getIterator()->valid();
     }
 
     public function testGetUndefinedKey(): void
@@ -80,8 +96,16 @@ class SourceDefinitionsMutableTest extends TestCase
     {
         $s = new DeferredSourceDefinitionsMutable(['service.bar' => 'Service bar']);
         $s['service.baz'] = 'Service baz';
+        $s[] = new DiDefinitionAutowire(self::class);
 
-        self::assertEquals(['service.bar' => 'Service bar', 'service.baz' => 'Service baz'], [...$s->getIterator()]);
+        self::assertEquals(
+            [
+                'service.bar' => new DiDefinitionValue('Service bar'),
+                'service.baz' => new DiDefinitionValue('Service baz'),
+                self::class => new DiDefinitionAutowire(self::class),
+            ],
+            [...$s->getIterator()]
+        );
     }
 
     public function testSetFail(): void
@@ -93,43 +117,57 @@ class SourceDefinitionsMutableTest extends TestCase
         $s['service.bar'] = 'Other value';
     }
 
-    public function testNoneValidKeyInDefinitions(): void
+    #[DataProvider('dataProviderWrongKeyForSetter')]
+    public function testNoneStringKeyForSetter(mixed $offset): void
     {
         $this->expectException(ContainerIdentifierExceptionInterface::class);
         $this->expectExceptionMessage('Definition identifier must be a non-empty string');
 
-        (new DeferredSourceDefinitionsMutable(['' => 'Service bar']))->getIterator()->valid();
+        $s = new DeferredSourceDefinitionsMutable([]);
+        $s[$offset] = 'Service value';
     }
 
-    public function testNoneStringKeyForSetter(): void
+    public static function dataProviderWrongKeyForSetter(): Generator
     {
-        $this->expectException(ContainerIdentifierExceptionInterface::class);
-        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+        yield 'object' => [new stdClass()];
 
-        (new DeferredSourceDefinitionsMutable([]))->offsetSet(new stdClass(), 'Service bar');
+        yield 'array' => [[]];
+
+        yield 'bool' => [true];
+
+        yield 'empty string' => [''];
     }
 
     public function testNoneStringKeyForGetter(): void
     {
-        $this->expectException(ContainerIdentifierExceptionInterface::class);
-        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
+        $this->expectExceptionMessage('Unsupported identifier type "stdClass"');
 
         (new DeferredSourceDefinitionsMutable([]))[new stdClass()];
     }
 
     public function testNoneStringKeyForExister(): void
     {
-        $this->expectException(ContainerIdentifierExceptionInterface::class);
-        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+        $s = new DeferredSourceDefinitionsMutable([]);
 
-        isset((new DeferredSourceDefinitionsMutable([]))[new stdClass()]);
+        self::assertFalse(isset($s[new stdClass()]));
     }
 
     public function testNoneStringKeyForUnset(): void
     {
-        $this->expectException(ContainerIdentifierExceptionInterface::class);
-        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
+        $this->expectExceptionMessage('Definitions in the source are non-removable');
 
-        (new DeferredSourceDefinitionsMutable([]))->offsetUnset(new stdClass());
+        $s = new DeferredSourceDefinitionsMutable([]);
+        unset($s[new stdClass()]);
+    }
+
+    public function testUnset(): void
+    {
+        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
+        $this->expectExceptionMessage('Definitions in the source are non-removable');
+
+        $s = new DeferredSourceDefinitionsMutable(['service.bar' => 'Service bar']);
+        unset($s['service.bar']);
     }
 }

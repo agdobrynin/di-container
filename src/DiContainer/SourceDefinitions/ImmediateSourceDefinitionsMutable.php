@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
-use Traversable;
-
-use function reset;
 
 final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
-    /** @var array<class-string|non-empty-string, mixed> */
+    /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
     private array $definitions;
 
     /**
-     * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $sourceDefinitions
+     * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface|ContainerIdentifierExceptionInterface
      */
@@ -26,31 +23,14 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         $this->definitions = [];
 
         foreach ($this->sourceDefinitions as $identifier => $sourceDefinition) {
-            $this->pushDefinition($identifier, $sourceDefinition);
+            $this->offsetSet($identifier, $sourceDefinition);
         }
 
         unset($this->sourceDefinitions);
     }
 
-    public function getIterator(): Traversable
-    {
-        reset($this->definitions);
-
-        yield from $this->definitions;
-    }
-
-    protected function definitions(): array
+    protected function &definitions(): array
     {
         return $this->definitions;
-    }
-
-    /**
-     * @throws ContainerIdentifierExceptionInterface
-     * @throws ContainerAlreadyRegisteredExceptionInterface
-     */
-    protected function pushDefinition(mixed $offset, mixed $value): void
-    {
-        [$identifier, $definition] = $this->validateDefinition($offset, $value);
-        $this->definitions[$identifier] = $definition;
     }
 }

@@ -92,17 +92,20 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 <?php
 $expressionHasDefault = $config->isUseZeroConfigurationDefinition() ? 'parent::has($id)' : 'false';
 
-if ([] === $this->mapServiceMethodToContainerId) {?>
+if (!$this->compiledEntries->getHasIdentifiers()->valid()) {?>
         return <?php echo $expressionHasDefault; ?>;
 <?php } else { ?>
-        return match($id) {
-<?php
-    $lastKey = \array_key_last($this->mapServiceMethodToContainerId);
-    $lastId = $this->mapServiceMethodToContainerId[$lastKey][0];
-    foreach ($this->mapServiceMethodToContainerId as [$id]) { ?>
-            <?php echo \var_export($id, true).($id !== $lastId ? ',' : ' => true,'); ?>
+        return match($id) {<?php
+    $hasIds = $this->compiledEntries->getHasIdentifiers();
+    do {
+        $id = $hasIds->current();
+        $hasIds->next();
+        $isLast = !$hasIds->valid();
+        ?>
 
-<?php } ?>
+            <?php echo \var_export($id, true).($isLast ? '=> true,' : ',');
+    } while ($hasIds->valid()); ?>
+
             default => <?php echo $expressionHasDefault; ?>
 
         };
@@ -117,14 +120,14 @@ if ([] === $this->mapServiceMethodToContainerId) {?>
     private function containerIdMapMethod(string $id): false|string
     {
         return match($id) {
-<?php foreach ($this->mapServiceMethodToContainerId as $method => [$id, $compiledEntry]) {?>
-            <?php echo \var_export($id, true); ?> => <?php echo \var_export($method, true); ?>,
+<?php foreach ($this->compiledEntries->getContainerIdentifierMappedMethodResolve() as ['id' => $id, 'serviceMethod' => $serviceMethod]) {?>
+            <?php echo \var_export($id, true); ?> => <?php echo \var_export($serviceMethod, true); ?>,
 <?php } ?>
             default => false,
         };
     }
 
-<?php foreach ($this->mapServiceMethodToContainerId as $method => [$id, $compiledEntry]) {?>
+<?php foreach ($this->compiledEntries->getCompiledEntries() as ['id' => $id, 'serviceMethod' => $method , 'entry' => $compiledEntry]) {?>
 
     // container identifier <?php echo \var_export($id, true).PHP_EOL; ?>
     private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>

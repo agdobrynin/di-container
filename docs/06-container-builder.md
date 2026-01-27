@@ -396,11 +396,13 @@ $container = $builder->build();
 
 ### Дополнительные настройки компилятора.
 Настройки передаются в виде ассоциативного массива со значениями:
-1. `invalid_behavior` – принимает тип `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum`, значение по умолчанию
+1. `'invalid_behavior'` – принимает тип `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum`, значение по умолчанию
    `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum::ExceptionOnCompile`;
-2. `di_definition_transformer` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`,
+2. `'di_definition_transformer'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`,
 значение по умолчанию `\Kaspi\DiContainer\Compiler\DiDefinitionTransformer`;
-3. `force_rebuild` – принимает тип `bool`, значение по умолчанию `false`;
+3. `'compiled_entries'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface`,
+значение по умолчанию `\Kaspi\DiContainer\Compiler\CompiledEntries`;
+4. `'force_rebuild'` – принимает тип `bool`, значение по умолчанию `false`;
 
 ## Использование контейнера в разных окружениях приложения.
 Окружения для приложений называются в зависимости от их назначения:

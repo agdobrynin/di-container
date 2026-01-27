@@ -50,25 +50,26 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
 
         while (false !== ($id = $this->idsIterator->current())) {
             if (!isset($sentContainerIdentifiers[$id]) && !isset($this->excludeContainerIdentifier[$id])) {
-                try {
-                    $definition = $this->container->getDefinition($id);
-                } catch (ContainerExceptionInterface $e) {
-                    $exception = new DefinitionCompileException(
-                        sprintf('Cannot get definition via container identifier "%s".', $id),
-                        previous: $e
-                    );
-
-                    if (null === $fallback) {
-                        throw $exception;
-                    }
-
-                    $definition = ($fallback)($id, $exception);
-                }
-
-                yield $id => $definition;
+                yield $id => $this->getDefinition($id, $fallback);
             }
 
             $this->idsIterator->next();
+        }
+    }
+
+    public function getDefinition(string $containerIdentifier, ?Closure $fallback = null): mixed
+    {
+        try {
+            return $this->container->getDefinition($containerIdentifier);
+        } catch (ContainerExceptionInterface $e) {
+            if (null === $fallback) {
+                throw new DefinitionCompileException(
+                    sprintf('Cannot get definition via container identifier "%s".', $containerIdentifier),
+                    previous: $e
+                );
+            }
+
+            return ($fallback)($containerIdentifier, $e);
         }
     }
 

@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer;
 
 use Generator;
 use InvalidArgumentException;
+use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
 use Kaspi\DiContainer\Compiler\ContainerCompilerToFile;
 use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
@@ -14,6 +15,7 @@ use Kaspi\DiContainer\Compiler\IdsIterator;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\ContainerBuilderException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
+use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
@@ -73,11 +75,13 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     private int $compilerPermissionCompiledContainerFile;
     private bool $compilerIsExclusiveLockFile;
     private DiDefinitionTransformerInterface $compilerDiDefinitionTransformer;
+    private CompiledEntriesInterface $compiledEntries;
 
     /**
      * @var array{
      *  invalid_behavior?: InvalidBehaviorCompileEnum,
      *  di_definition_transformer?: DiDefinitionTransformerInterface,
+     *  compiled_entries?: CompiledEntriesInterface,
      *  force_rebuild?: bool,
      * }
      */
@@ -152,6 +156,8 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      *          'invalid_behavior' => \Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum::ExceptionOnCompile,
      *          // definitions transformer for container compiler
      *          'di_definition_transformer' => \Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface,
+     *          // compiled entries storage
+     *          'compiled_entries': \Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface,
      *          // force rebuild compiled container `true` or `false`
      *          'force_rebuild' => false
      *      ]
@@ -159,6 +165,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      * @param array{
      *  invalid_behavior?: InvalidBehaviorCompileEnum,
      *  di_definition_transformer?: DiDefinitionTransformerInterface,
+     *  compiled_entries?: CompiledEntriesInterface,
      *  force_rebuild?: bool,
      * } $options
      */
@@ -196,10 +203,16 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                 ?? new DiDefinitionTransformer(new FinderClosureCode());
         }
 
+        if (!isset($this->compiledEntries)) {
+            $this->compiledEntries = $this->compilerOptions['compiled_entries']
+                ?? new CompiledEntries();
+        }
+
         $compiler = new ContainerCompiler(
             $this->compilerContainerClass,
             $diContainerDefinitions,
             $this->compilerDiDefinitionTransformer,
+            $this->compiledEntries,
             $this->compilerOptions['invalid_behavior'] ?? InvalidBehaviorCompileEnum::ExceptionOnCompile,
         );
 

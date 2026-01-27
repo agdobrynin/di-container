@@ -4,42 +4,55 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
+use Closure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Exception\SourceDefinitionsMutableException;
-use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
+use Traversable;
 
-use function array_key_exists;
 use function get_debug_type;
+use function is_string;
 use function sprintf;
+use function var_export;
 
 abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMutableInterface
 {
-    /**
-     * @throws ContainerIdentifierExceptionInterface
-     */
+    public function getIterator(): Traversable
+    {
+        yield from $this->definitions();
+    }
+
     public function offsetExists(mixed $offset): bool
     {
-        $identifier = Helper::getContainerIdentifier($offset, null);
+        if (is_string($offset) && '' !== $offset) {
+            return isset($this->definitions()[$offset]);
+        }
 
-        return array_key_exists($identifier, $this->definitions());
+        return false;
     }
 
     /**
-     * @throws ContainerIdentifierExceptionInterface
+     * @throws SourceDefinitionsMutableExceptionInterface
      */
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset): DiDefinitionInterface
     {
-        $identifier = Helper::getContainerIdentifier($offset, null);
+        if (!$this->offsetExists($offset)) {
+            $message = is_string($offset)
+                ? sprintf('Unregistered the container identifier "%s" in the source.', $offset)
+                : sprintf('Unsupported identifier type "%s"', get_debug_type($offset));
 
-        return $this->definitions()[$identifier]
-            ?? throw new SourceDefinitionsMutableException(
-                sprintf('Unregistered the container identifier "%s" in the source.', $identifier)
-            );
+            throw new SourceDefinitionsMutableException($message);
+        }
+
+        return $this->definitions()[$offset]; // @phpstan-ignore offsetAccess.invalidOffset
     }
 
     /**
@@ -48,15 +61,38 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        $this->pushDefinition(...$this->validateDefinition($offset, $value));
+        $identifier = match (true) {
+            is_string($offset) && '' !== $offset => $offset,
+            $value instanceof DiDefinitionIdentifierInterface => $value->getIdentifier(),
+            default => throw new ContainerIdentifierException(
+                sprintf('Definition identifier must be a non-empty string. Definition type "%s".', get_debug_type($value))
+            )
+        };
+
+        if ($this->offsetExists($identifier)) {
+            throw new ContainerAlreadyRegisteredException(
+                sprintf('The container identifier "%s" already registered in the source. Definition type: "%s".', $identifier, get_debug_type($value))
+            );
+        }
+
+        $definition = match (true) {
+            $value instanceof DiDefinitionInterface => $value,
+            $value instanceof Closure => new DiDefinitionCallable($value),
+            default => new DiDefinitionValue($value)
+        };
+
+        $this->definitions()[$identifier] = $definition;
     }
 
     /**
-     * @throws ContainerIdentifierExceptionInterface|SourceDefinitionsMutableExceptionInterface
+     * @throws ContainerIdentifierExceptionInterface
+     * @throws SourceDefinitionsMutableExceptionInterface
      */
     public function offsetUnset(mixed $offset): void
     {
-        $identifier = Helper::getContainerIdentifier($offset, null);
+        $identifier = is_string($offset)
+            ? $offset
+            : var_export($offset, true);
 
         throw new SourceDefinitionsMutableException(
             sprintf('Definitions in the source are non-removable. Operation using the container identifier "%s".', $identifier)
@@ -64,27 +100,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
     }
 
     /**
-     * @return array{0: non-empty-string, 1: mixed}
-     *
-     * @throws ContainerAlreadyRegisteredExceptionInterface|ContainerIdentifierExceptionInterface
+     * @return array<non-empty-string, DiDefinitionInterface>
      */
-    protected function validateDefinition(mixed $identifier, mixed $definition): array
-    {
-        $identifier = Helper::getContainerIdentifier($identifier, $definition);
-
-        if (array_key_exists($identifier, $this->definitions())) {
-            throw new ContainerAlreadyRegisteredException(
-                sprintf('The container identifier "%s" already registered in the source. Definition type: "%s".', $identifier, get_debug_type($definition))
-            );
-        }
-
-        return [$identifier, $definition];
-    }
-
-    /**
-     * @return array<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed>
-     */
-    abstract protected function definitions(): array;
-
-    abstract protected function pushDefinition(mixed $offset, mixed $value): void;
+    abstract protected function &definitions(): array;
 }

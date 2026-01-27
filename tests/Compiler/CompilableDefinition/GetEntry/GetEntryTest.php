@@ -6,7 +6,10 @@ namespace Tests\Compiler\CompilableDefinition\GetEntry;
 
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
@@ -19,6 +22,9 @@ use Tests\Compiler\CompilableDefinition\GetEntry\Fixtures\Foo;
  */
 #[CoversClass(CompiledEntry::class)]
 #[CoversClass(GetEntry::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
 class GetEntryTest extends TestCase
 {
     private DiContainerDefinitionsInterface $mockContainerDefinitions;
@@ -82,5 +88,63 @@ class GetEntryTest extends TestCase
         // GetEntry always isSingleton = false!
         self::assertEquals(false, $ce->isSingleton());
         self::assertEquals('$this->get(\'Tests\\\Compiler\\\CompilableDefinition\\\GetEntry\\\Fixtures\\\Foo\')', $ce->getExpression());
+    }
+
+    public function testReferenceToReferenceWithException(): void
+    {
+        $this->expectException(DefinitionCompileExceptionInterface::class);
+        $this->expectExceptionMessage('Get reference from "foo"');
+
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn('foo')
+        ;
+        $this->mockContainerDefinitions->method('getDefinition')
+            ->with('foo')
+            ->willReturn(new DiDefinitionGet(''))
+        ;
+
+        (new GetEntry($this->mockDefinition, $this->mockContainerDefinitions))
+            ->compile('$this')
+        ;
+    }
+
+    public function testReferenceToReferenceCircular(): void
+    {
+        $this->expectException(DefinitionCompileExceptionInterface::class);
+        $this->expectExceptionMessage('Detected circular call reference for container identifiers "foo" -> "baz" -> "foo"');
+
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn('foo')
+        ;
+        $this->mockContainerDefinitions->method('getDefinition')
+            ->willReturnMap([
+                ['foo', null, new DiDefinitionGet('baz')],
+                ['baz', null, new DiDefinitionGet('foo')],
+            ])
+        ;
+
+        (new GetEntry($this->mockDefinition, $this->mockContainerDefinitions))
+            ->compile('$this')
+        ;
+    }
+
+    public function testReferenceToReferenceSuccess(): void
+    {
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn('foo')
+        ;
+        $this->mockContainerDefinitions->method('getDefinition')
+            ->willReturnMap([
+                ['foo', null, new DiDefinitionGet('baz')],
+                ['baz', null, new DiDefinitionGet('qux')],
+                ['qux', null, new DiDefinitionValue('success')],
+            ])
+        ;
+
+        $ce = (new GetEntry($this->mockDefinition, $this->mockContainerDefinitions))
+            ->compile('$this')
+        ;
+
+        self::assertEquals('$this->get(\'qux\')', $ce->getExpression());
     }
 }
