@@ -53,7 +53,7 @@ final class GetEntry implements CompilableDefinitionInterface
                     $ids = [...array_keys($circularChecker), $containerIdentifier];
 
                     throw new DefinitionCompileException(
-                        sprintf('Detected circular call reference for "%s"', implode('" -> "', $ids))
+                        sprintf('Detected circular call reference for container identifiers "%s"', implode('" -> "', $ids))
                     );
                 }
 
