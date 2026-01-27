@@ -130,12 +130,25 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         new ImmediateSourceDefinitionsMutable($defs());
     }
 
-    public function testNoneStringKeyForSetter(): void
+    #[DataProvider('dataProviderWrongKeyForSetter')]
+    public function testNoneStringKeyForSetter(mixed $offset): void
     {
         $this->expectException(ContainerIdentifierExceptionInterface::class);
         $this->expectExceptionMessage('Definition identifier must be a non-empty string');
 
-        (new ImmediateSourceDefinitionsMutable([]))->offsetSet(new stdClass(), 'Service bar');
+        $s = new ImmediateSourceDefinitionsMutable([]);
+        $s[$offset] = 'service value';
+    }
+
+    public static function dataProviderWrongKeyForSetter(): Generator
+    {
+        yield 'object' => [new stdClass()];
+
+        yield 'array' => [[]];
+
+        yield 'bool' => [true];
+
+        yield 'empty string' => [''];
     }
 
     public function testNoneStringKeyForGetter(): void
