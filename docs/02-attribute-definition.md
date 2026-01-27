@@ -33,7 +33,7 @@
 ```php
 #[Autowire(string $id = '', ?bool $isSingleton = null)]
 ```
-Аргументы:
+Параметры:
 - `$id` – идентификатор контейнера для класса (_container identifier_).
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
@@ -140,7 +140,7 @@ var_dump($container->has(SomeService::class)); // false
 #[Setup(mixed ...$argument)]
 ```
 
-Аргументы:
+Параметры:
 - `$argument` - аргументы для передачи в вызываемый метод.
 
 Значениями для `$argument` разрешается указывать скалярные типы данных,
@@ -231,7 +231,7 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 #[SetupImmutable(mixed ...$argument)]
 ```
 
-Аргументы:
+Параметры:
 - `$argument` - аргументы для передачи в вызываемый метод.
 
 Значениями для `$argument` разрешается указывать скалярные типы данных,
@@ -574,7 +574,7 @@ var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 ```php
 #[InjectByCallable(callable $callable)]
 ```
-Аргументы:
+Параметры:
 - `$callable` - выполнение `callable` типа для получения результата внедрения.
 
 > [!TIP]
@@ -669,7 +669,7 @@ $service = $container->get(App\Services\ServiceOne::class);
 ```php
 #[Service(string $id, ?bool $isSingleton = null)]
 ```
-Аргументы:
+Параметры:
 - `$id` - класс реализующий интерфейс (FQCN) или идентификатор контейнера.
 - `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
@@ -870,7 +870,7 @@ print $otherClass->super->age; // 22
 ```php
 #[ProxyClosure(string $containerIdentifier)]
 ```
-Аргументы:
+Параметры:
 - `$containerIdentifier` - идентификатора контейнера (php класс, интерфейс) реализующий сервис который необходимо разрешить отложено.
 
 Такое объявление сервиса пригодится для «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмких вычислений.
@@ -948,7 +948,7 @@ $classWithHeavyDependency->doHeavyDependency();
 ```php
 #[Tag(string $name, array $options = [], int|null|string $priority = null, ?string $priorityMethod = null)]
 ```
-Аргументы:
+Параметры:
 - `$name` - имя тега.
 - `$options` - метаданные для тега.
 - `$priority` - приоритет для сортировки в коллекции тегов.
@@ -1006,7 +1006,7 @@ class SomeClass {}
     bool $selfExclude = true
 )]
 ```
-Аргументы:
+Параметры:
 - `$name` – имя тега на сервисах которые нужно собрать из контейнера.
 - `$isLazy` – получать сервисы только во время обращения или сразу всё.
 - `$priorityDefaultMethod` – если получаемый сервис является php классом

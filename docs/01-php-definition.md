@@ -137,7 +137,7 @@ use function \Kaspi\DiContainer\diAutowire;
 
 diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface & DiDefinitionTagArgumentInterface
 ```
-Аргументы:
+Параметры:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
@@ -156,7 +156,7 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAuto
 ```php
 bindArguments(mixed ...$argument)
 ```
-Аргументы:
+Параметры:
 - `$argument` – аргументы к параметрам конструктора класса
 
 > [!WARNING]
@@ -182,7 +182,7 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 ```php 
 setup(string $method, mixed ...$argument)
 ``` 
-Аргументы:
+Параметры:
 - `$method` – имя вызываемого метода в классе
 - `$argument` – аргументы к параметрам метода класса
 
@@ -223,7 +223,7 @@ diAutowire(...)
 ```php 
 setupImmutable(string $method, mixed ...$argument)
 ``` 
-Аргументы:
+Параметры:
 - `$method` – имя вызываемого метода в классе
 - `$argument` – аргументы к параметрам метода класса
 
@@ -305,7 +305,7 @@ use function \Kaspi\DiContainer\diCallable;
 
 diCallable(callable $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
-Аргументы:
+Параметры:
 - `$definition` – определение.
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
@@ -319,7 +319,7 @@ diCallable(callable $definition, ?bool $isSingleton = null): DiDefinitionArgumen
 ```php
 bindArguments(mixed ...$argument)
 ```
-Аргументы:
+Параметры:
 - `$argument` – аргументы к параметрам метода класса
 
 Можно использовать именованные аргументы параметров
@@ -577,7 +577,7 @@ use function Kaspi\DiContainer\diProxyClosure;
 
 diProxyClosure(string $containerIdentifier, ?bool $isSingleton = null): DiDefinitionTagArgumentInterface
 ```
-Аргументы:
+Параметры:
 
 - `$containerIdentifier` - идентификатора контейнера (php класс, интерфейс) реализующий сервис который необходимо разрешить отложено.
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
@@ -725,7 +725,7 @@ diTaggedAs(
 ```
 > У хэлпер функции нет дополнительных методов.
 
-Аргументы:
+Параметры:
 - `$tag` – имя тега на сервисах которые нужно собрать из контейнера.
 - `$isLazy` – получать сервисы только во время обращения или сразу всё.
 - `$priorityDefaultMethod` – если получаемый сервис является php классом
