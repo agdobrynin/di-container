@@ -25,11 +25,6 @@ final class DiDefinitionGet implements DiDefinitionLinkInterface, DiDefinitionNo
      */
     public function __construct(private readonly string $containerIdentifier) {}
 
-    /**
-     * @return non-empty-string
-     *
-     * @throws DiDefinitionException
-     */
     public function getDefinition(): string
     {
         if (isset($this->validContainerIdentifier)) {
