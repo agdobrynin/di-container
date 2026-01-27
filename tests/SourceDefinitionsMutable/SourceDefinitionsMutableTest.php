@@ -7,7 +7,6 @@ namespace Tests\SourceDefinitionsMutable;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
@@ -23,7 +22,6 @@ use stdClass;
  */
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
-#[CoversClass(Helper::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionValue::class)]
 class SourceDefinitionsMutableTest extends TestCase
@@ -128,25 +126,34 @@ class SourceDefinitionsMutableTest extends TestCase
 
     public function testNoneStringKeyForGetter(): void
     {
-        $this->expectException(ContainerIdentifierExceptionInterface::class);
-        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
+        $this->expectExceptionMessage('Unsupported identifier type "stdClass"');
 
         (new DeferredSourceDefinitionsMutable([]))[new stdClass()];
     }
 
     public function testNoneStringKeyForExister(): void
     {
-        $this->expectException(ContainerIdentifierExceptionInterface::class);
-        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+        $s = new DeferredSourceDefinitionsMutable([]);
 
-        isset((new DeferredSourceDefinitionsMutable([]))[new stdClass()]);
+        self::assertFalse(isset($s[new stdClass()]));
     }
 
     public function testNoneStringKeyForUnset(): void
     {
-        $this->expectException(ContainerIdentifierExceptionInterface::class);
-        $this->expectExceptionMessage('Definition identifier must be a non-empty string');
+        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
+        $this->expectExceptionMessage('Definitions in the source are non-removable');
 
-        (new DeferredSourceDefinitionsMutable([]))->offsetUnset(new stdClass());
+        $s = new DeferredSourceDefinitionsMutable([]);
+        unset($s[new stdClass()]);
+    }
+
+    public function testUnset(): void
+    {
+        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
+        $this->expectExceptionMessage('Definitions in the source are non-removable');
+
+        $s = new DeferredSourceDefinitionsMutable(['service.bar' => 'Service bar']);
+        unset($s['service.bar']);
     }
 }
