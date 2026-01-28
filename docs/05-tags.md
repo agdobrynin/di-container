@@ -52,7 +52,7 @@
 bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 
-Аргументы:
+Параметры:
 - `$name` – имя тега
 - `$options` – метаданные для тега
 - `$priority` – [приоритет в коллекции](#приоритет-в-коллекции) тегов
