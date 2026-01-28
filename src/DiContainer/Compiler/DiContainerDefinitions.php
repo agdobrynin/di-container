@@ -87,6 +87,11 @@ final class DiContainerDefinitions implements DiContainerDefinitionsInterface
         }
     }
 
+    public function isContainerIdentifierExcluded(string $containerIdentifier): bool
+    {
+        return isset($this->excludeContainerIdentifier[$containerIdentifier]);
+    }
+
     public function reset(): void
     {
         $this->excludeContainerIdentifier = [];

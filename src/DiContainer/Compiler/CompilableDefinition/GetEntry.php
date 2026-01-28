@@ -34,6 +34,13 @@ final class GetEntry implements CompilableDefinitionInterface
             throw $this->exceptionCompile(previous: $e);
         }
 
+        if ($this->diContainerDefinitions->isContainerIdentifierExcluded($containerIdentifier)) {
+            return new CompiledEntry(
+                isSingleton: false,
+                expression: sprintf('%s->get(%s)', $containerVar, var_export($containerIdentifier, true)),
+            );
+        }
+
         $this->diContainerDefinitions->pushToDefinitionIterator($containerIdentifier);
         $circularChecker = [];
         $circularChecker[$containerIdentifier] = true;

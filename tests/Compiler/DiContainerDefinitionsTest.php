@@ -77,6 +77,14 @@ class DiContainerDefinitionsTest extends TestCase
         self::assertEquals(['bar' => 'ok bar'], [...$d->getDefinitions()]);
     }
 
+    public function testIsExcludedContainerIdentifier(): void
+    {
+        $d = new DiContainerDefinitions($this->containerMock, $this->idsIterator);
+        $d->excludeContainerIdentifier('foo');
+
+        self::assertTrue($d->isContainerIdentifierExcluded('foo'));
+    }
+
     public function testExcludeContainerIdentifierFromIdsIterator(): void
     {
         $d = new DiContainerDefinitions($this->containerMock, new IdsIterator());

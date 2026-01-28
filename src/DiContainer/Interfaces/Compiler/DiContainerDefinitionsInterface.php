@@ -53,4 +53,11 @@ interface DiContainerDefinitionsInterface extends ResetInterface
      * @param non-empty-string ...$containerIdentifier
      */
     public function excludeContainerIdentifier(string ...$containerIdentifier): void;
+
+    /**
+     * Is the container identifier is excluded?
+     *
+     * @param non-empty-string $containerIdentifier
+     */
+    public function isContainerIdentifierExcluded(string $containerIdentifier): bool;
 }
