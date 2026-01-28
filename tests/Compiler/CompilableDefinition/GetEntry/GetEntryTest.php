@@ -6,6 +6,7 @@ namespace Tests\Compiler\CompilableDefinition\GetEntry;
 
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
+use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
@@ -146,5 +147,22 @@ class GetEntryTest extends TestCase
         ;
 
         self::assertEquals('$this->get(\'qux\')', $ce->getExpression());
+    }
+
+    public function testSkipCompileExcludedIds(): void
+    {
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn('foo')
+        ;
+        $this->mockContainerDefinitions->method('isContainerIdentifierExcluded')
+            ->with('foo')
+            ->willReturn(true)
+        ;
+
+        $ce = (new GetEntry($this->mockDefinition, $this->mockContainerDefinitions))
+            ->compile('$this')
+        ;
+
+        self::assertEquals('$this->get(\'foo\')', $ce->getExpression());
     }
 }
