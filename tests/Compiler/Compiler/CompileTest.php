@@ -20,7 +20,6 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\IdsIteratorInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -69,10 +68,7 @@ class CompileTest extends TestCase
         $this->expectException(DefinitionCompileExceptionInterface::class);
         $this->expectExceptionMessage('The definition was not found via container identifier "foo"');
 
-        $container = $this->createMockForIntersectionOfInterfaces([
-            DiContainerGetterDefinitionInterface::class,
-            DiContainerInterface::class,
-        ]);
+        $container = $this->createMock(DiContainerInterface::class);
         $container->method('getDefinition')
             ->with('foo')
             ->willThrowException(new NotFoundException(id: 'foo'))
@@ -97,10 +93,7 @@ class CompileTest extends TestCase
 
     public function testUniqueMethodNameForEntryCompile(): void
     {
-        $container = $this->createMockForIntersectionOfInterfaces([
-            DiContainerGetterDefinitionInterface::class,
-            DiContainerInterface::class,
-        ]);
+        $container = $this->createMock(DiContainerInterface::class);
         $container->method('getDefinitions')
             ->willReturnCallback(static function (): Generator {
                 yield 'Container' => new DiDefinitionValue('Lorem ipsum');
