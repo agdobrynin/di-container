@@ -6,7 +6,6 @@ namespace Tests\Compiler\CompilableDefinition\GetEntry;
 
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
-use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
