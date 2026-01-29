@@ -15,7 +15,6 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -54,7 +53,7 @@ use function var_export;
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
-class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface, DiContainerGetterDefinitionInterface
+class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     protected SourceDefinitionsMutableInterface $definitions;
 
