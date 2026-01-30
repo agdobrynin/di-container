@@ -15,7 +15,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
 use function function_exists;
 
@@ -31,9 +30,9 @@ if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diFactory')) { // @codeCoverageIgnore
     /**
-     * @param class-string<DiFactoryInterface> $definition Fully Qualified Class Name
+     * @param array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string $definition
      */
-    function diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
+    function diFactory(array|string $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
     {
         return new DiDefinitionFactory($definition, $isSingleton);
     }
