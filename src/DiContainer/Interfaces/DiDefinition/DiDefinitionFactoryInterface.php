@@ -11,11 +11,11 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 interface DiDefinitionFactoryInterface extends DiDefinitionSingletonInterface
 {
     /**
-     * @return class-string
+     * @return array{0: class-string|non-empty-string, 1: non-empty-string}
      *
      * @throws DiDefinitionExceptionInterface
      */
-    public function getDefinition(): string;
+    public function getDefinition(): array;
 
     /**
      * @return non-empty-string
@@ -28,6 +28,4 @@ interface DiDefinitionFactoryInterface extends DiDefinitionSingletonInterface
      * @throws DiDefinitionExceptionInterface
      */
     public function exposeFactoryMethodArgumentBuilder(DiContainerInterface $container): ArgumentBuilderInterface;
-
-    public function getFactoryAutowire(): DiDefinitionAutowireInterface;
 }

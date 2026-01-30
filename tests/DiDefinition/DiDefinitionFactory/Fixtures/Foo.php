@@ -9,10 +9,5 @@ use Psr\Container\ContainerInterface;
 
 final class Foo implements DiFactoryInterface
 {
-    public function __construct(public readonly string $fooStr, public readonly Bar $bar) {}
-
-    public function __invoke(ContainerInterface $container): mixed
-    {
-        return 'ok '.$this->fooStr.' '.$this->bar::class;
-    }
+    public function __invoke(ContainerInterface $container): mixed {}
 }
