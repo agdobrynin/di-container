@@ -6,33 +6,46 @@ namespace Kaspi\DiContainer\Attributes;
 
 use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeServiceInterface;
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
 
-use function is_a;
+use function is_array;
+use function is_string;
 use function sprintf;
+use function var_export;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
-final class DiFactory implements DiAttributeServiceInterface
+final class DiFactory
 {
     /**
-     * @param class-string<DiFactoryInterface> $id
+     * @param array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string $definition
      */
-    public function __construct(private readonly string $id, private readonly ?bool $isSingleton = null)
+    public function __construct(private readonly array|string $definition, private readonly ?bool $isSingleton = null)
     {
-        if (!is_a($id, DiFactoryInterface::class, true)) { // @phpstan-ignore function.alreadyNarrowedType
+        if (is_array($this->definition)
+            && (
+                !isset($this->definition[0], $this->definition[1])
+                || !(is_string($this->definition[0]) && is_string($this->definition[1]))
+                || '' === $this->definition[0] || '' === $this->definition[1]
+            )
+        ) {
             throw new AutowireAttributeException(
-                sprintf('The attribute #[%s] must have an $id parameter as class-string. Class must have implement "%s" interface. Got: "%s".', self::class, DiFactoryInterface::class, $id)
+                sprintf('Invalid parameter for attribute #[%s]. The array values must be provided as none empty string and numeric index. Got: "%s".', self::class, var_export($this->definition, true))
+            );
+        }
+        if ('' === $this->definition) { // @phpstan-ignore identical.alwaysFalse
+            throw new AutowireAttributeException(
+                sprintf('Invalid parameter for attribute #[%s]. The definition must be provided as none empty string.', self::class)
             );
         }
     }
 
     /**
-     * @return class-string<DiFactoryInterface>
+     * @return array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string
      */
-    public function getIdentifier(): string
+    public function getDefinition(): array|string
     {
-        return $this->id;
+        return is_array($this->definition)
+            ? [$this->definition[0], $this->definition[1]]
+            : $this->definition;
     }
 
     public function isSingleton(): ?bool

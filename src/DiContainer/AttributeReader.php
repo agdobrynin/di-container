@@ -31,7 +31,6 @@ use function array_intersect;
 use function array_keys;
 use function implode;
 use function in_array;
-use function is_a;
 use function sprintf;
 
 final class AttributeReader
@@ -58,17 +57,7 @@ final class AttributeReader
             );
         }
 
-        /** @var DiFactory $attrFactory */
-        $attrFactory = $groupAttrs[DiFactory::class][0]->newInstance();
-        $returnTypeDiFactoryInvoke = (string) (new ReflectionMethod($attrFactory->getIdentifier(), '__invoke'))->getReturnType();
-
-        if (is_a($class->getName(), $returnTypeDiFactoryInvoke, true)) {
-            return $attrFactory;
-        }
-
-        throw new AutowireParameterTypeException(
-            sprintf('Definition factory %s::__invoke() must have return type hint as %s. Got return type: "%s"', $attrFactory->getIdentifier(), $class->getName(), $returnTypeDiFactoryInvoke)
-        );
+        return $groupAttrs[DiFactory::class][0]->newInstance();
     }
 
     /**
@@ -196,7 +185,7 @@ final class AttributeReader
     /**
      * @param list<ReflectionAttribute> $attrs
      *
-     * @return array<class-string, list<ReflectionAttribute>>
+     * @return array<class-string, list<ReflectionAttribute<Autowire|DiFactory>>>
      *
      * @throws AutowireAttributeException
      */
