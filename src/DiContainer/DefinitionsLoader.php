@@ -26,7 +26,6 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
 use ParseError;
@@ -37,7 +36,6 @@ use SplFileInfo;
 
 use function class_exists;
 use function file_exists;
-use function get_debug_type;
 use function in_array;
 use function is_iterable;
 use function is_readable;
@@ -173,6 +171,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if ($this->importedDefinitions()->valid()) {
+            $importedDefinitions = $this->importedDefinitions();
+            $importedDefinitions->rewind();
+
             try {
                 $cacheFileOpened = $importCacheFile?->openFile('wb+');
                 $cacheFileOpened?->fwrite(
@@ -187,18 +188,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            foreach ($this->importedDefinitions() as $identifier => $definition) {
-                try {
-                    $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
-                } catch (DiDefinitionExceptionInterface $e) {
-                    throw new DefinitionsLoaderException(
-                        sprintf('Cannot import container identifier "%s" with definition "%s".', $identifier, get_debug_type($definition)),
-                        previous: $e
-                    );
-                }
+            do {
+                $identifier = $importedDefinitions->key();
+                $definition = $importedDefinitions->current();
+                $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
 
                 yield $identifier => $definition;
-            }
+
+                $importedDefinitions->next();
+            } while ($importedDefinitions->valid());
 
             $cacheFileOpened?->fwrite('};'.PHP_EOL);
         }
@@ -272,12 +270,17 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
          * Check valid DiDefinitionGet for imported definitions.
          * Interface maybe configured via php attribute #[Service('container_id')].
         */
-
         foreach ($importedDefinitions as $identifier => $definition) {
-            if ($definition instanceof DiDefinitionGet
-                && !(isset($importedDefinitions[$definition->getDefinition()]) || $this->configDefinitions->offsetExists($definition->getDefinition()))) {
+            if (!$definition instanceof DiDefinitionGet) {
+                continue;
+            }
+
+            $containerIdentifier = $definition->getDefinition();
+
+            if (!isset($importedDefinitions[$containerIdentifier])
+                && !$this->configDefinitions->offsetExists($containerIdentifier)) {
                 throw new DefinitionsLoaderException(
-                    sprintf('Invalid definition reference "%s" for container identifier "%s".', $definition->getDefinition(), $identifier)
+                    sprintf('The container identifier "%s" is not registered. The reference from the definition with the id "%s".', $containerIdentifier, $identifier)
                 );
             }
         }
@@ -285,9 +288,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $importedDefinitions;
     }
 
-    /**
-     * @throws DiDefinitionExceptionInterface
-     */
     private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
     {
         if ($definition instanceof DiDefinitionAutowire) {
