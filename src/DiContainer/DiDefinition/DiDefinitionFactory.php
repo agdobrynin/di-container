@@ -106,7 +106,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         }
 
         if (is_string($this->definition) && strpos($this->definition, '::') > 0) {
-            return $this->verifiedDefinition = explode('::', $this->definition, 2); // @phpstan-ignore assign.propertyType
+            return $this->verifiedDefinition = explode('::', $this->definition, 2); // @phpstan-ignore assign.propertyType, return.type
         }
 
         if (is_string($this->definition) && '' !== $this->definition) {
