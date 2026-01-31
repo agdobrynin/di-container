@@ -60,54 +60,21 @@ class FactoryEntryTest extends TestCase
     public function testGetDefinition(): void
     {
         $this->mockDefinition->method('getDefinition')
-            ->willReturn(FooFactory::class)
+            ->willReturn([FooFactory::class, '__invoke'])
         ;
 
         $ce = new FactoryEntry($this->mockDefinition, $this->mockDiContainerDefinitions, $this->mockTransformer);
 
-        self::assertEquals(FooFactory::class, $ce->getDiDefinition()->getDefinition());
-    }
-
-    public function testCannotTransformFactoryClass(): void
-    {
-        $this->expectException(DefinitionCompileExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot compile factory class');
-
-        $this->mockTransformer->method('transform')
-            ->willThrowException(new DefinitionCompileException())
-        ;
-
-        (new FactoryEntry($this->mockDefinition, $this->mockDiContainerDefinitions, $this->mockTransformer))
-            ->compile('$this')
-        ;
-    }
-
-    public function testCannotCompileFactoryClass(): void
-    {
-        $this->expectException(DefinitionCompileExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot compile factory class');
-
-        $mockObjectEntry = $this->createMock(CompilableDefinitionInterface::class);
-        $mockObjectEntry->method('compile')
-            ->willThrowException(new DefinitionCompileException())
-        ;
-
-        $this->mockTransformer->method('transform')
-            ->willReturn($mockObjectEntry)
-        ;
-
-        (new FactoryEntry($this->mockDefinition, $this->mockDiContainerDefinitions, $this->mockTransformer))
-            ->compile('$this')
-        ;
+        self::assertEquals([FooFactory::class, '__invoke'], $ce->getDiDefinition()->getDefinition());
     }
 
     public function testCannotExposeFactoryMethod(): void
     {
         $this->expectException(DefinitionCompileExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot provide arguments to a factory method in definition Tests\Compiler\CompilableDefinition\FactoryEntry\Fixtures\FooFactory::__invoke()');
+        $this->expectExceptionMessage('Cannot provide arguments to a factory method Tests\Compiler\CompilableDefinition\FactoryEntry\Fixtures\FooFactory::__invoke()');
 
         $this->mockDefinition->method('getDefinition')
-            ->willReturn(FooFactory::class)
+            ->willReturn([FooFactory::class, '__invoke'])
         ;
         $this->mockDefinition->method('getFactoryMethod')
             ->willReturn('__invoke')
@@ -136,6 +103,9 @@ class FactoryEntryTest extends TestCase
             ->willThrowException(new ArgumentBuilderException())
         ;
 
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn([FooFactory::class, '__invoke'])
+        ;
         $this->mockDefinition->method('exposeFactoryMethodArgumentBuilder')
             ->willReturn($mockArgBuilder)
         ;
@@ -165,9 +135,12 @@ class FactoryEntryTest extends TestCase
         $this->mockDefinition->method('exposeFactoryMethodArgumentBuilder')
             ->willReturn($mockArgBuilder)
         ;
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn([FooFactory::class, '__invoke'])
+        ;
 
         $this->mockTransformer
-            ->expects(self::exactly(2))
+            ->expects(self::exactly(1))
             ->method('transform')
             ->willReturnOnConsecutiveCalls(
                 $this->createMock(CompilableDefinitionInterface::class),
@@ -198,6 +171,9 @@ class FactoryEntryTest extends TestCase
             ])
         ;
 
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn([FooFactory::class, '__invoke'])
+        ;
         $this->mockDefinition->method('exposeFactoryMethodArgumentBuilder')
             ->willReturn($mockArgBuilder)
         ;
@@ -213,14 +189,8 @@ class FactoryEntryTest extends TestCase
         ;
 
         $this->mockTransformer
-            ->expects(self::exactly(2))
             ->method('transform')
-            ->willReturnOnConsecutiveCalls(
-                new ObjectEntry(
-                    $mockAutowire,
-                    $this->mockDiContainerDefinitions,
-                    $this->mockTransformer
-                ),
+            ->willReturn(
                 new GetEntry(
                     $mockLink,
                     $this->mockDiContainerDefinitions,
@@ -233,16 +203,9 @@ class FactoryEntryTest extends TestCase
         ;
 
         self::assertEquals('mixed', $compiledFactory->getReturnType());
-
+        self::assertEmpty($compiledFactory->getStatements());
         self::assertEquals(
-            [
-                0 => '$object = new \Tests\Compiler\CompilableDefinition\FactoryEntry\Fixtures\FooFactory',
-            ],
-            $compiledFactory->getStatements()
-        );
-
-        self::assertEquals(
-            '$object->(
+            '$this->get(\'Tests\\\Compiler\\\CompilableDefinition\\\FactoryEntry\\\Fixtures\\\FooFactory\')->__invoke(
   $this->get(\'Psr\\\Container\\\ContainerInterface\'),
 )',
             $compiledFactory->getExpression()
