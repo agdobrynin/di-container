@@ -26,6 +26,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
 use ParseError;
@@ -36,13 +37,13 @@ use SplFileInfo;
 
 use function class_exists;
 use function file_exists;
+use function get_debug_type;
 use function in_array;
 use function is_iterable;
 use function is_readable;
 use function ob_get_clean;
 use function ob_start;
 use function sprintf;
-use function str_replace;
 use function var_export;
 
 use const T_CLASS;
@@ -187,7 +188,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             foreach ($this->importedDefinitions() as $identifier => $definition) {
-                $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
+                try {
+                    $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
+                } catch (DiDefinitionExceptionInterface $e) {
+                    throw new DefinitionsLoaderException(
+                        sprintf('Cannot import container identifier "%s" with definition "%s".', $identifier, get_debug_type($definition)),
+                        previous: $e
+                    );
+                }
 
                 yield $identifier => $definition;
             }
@@ -206,7 +214,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     }
 
     /**
-     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
+     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionGet>
      *
      * @throws DefinitionsLoaderException
      */
@@ -216,7 +224,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return;
         }
 
-        /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> $importedDefinitions */
+        /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionGet> $importedDefinitions */
         $importedDefinitions = [];
 
         foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
@@ -277,32 +285,33 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $importedDefinitions;
     }
 
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
     private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
     {
-        $identifier = str_replace('"', '\"', $identifier);
-
         if ($definition instanceof DiDefinitionAutowire) {
             return sprintf(
-                '    yield "%s" => diAutowire("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
+                '    yield %s => diAutowire(%s, %s);',
+                var_export($identifier, true),
+                var_export($definition->getIdentifier(), true),
+                var_export($definition->isSingleton(), true),
             );
         }
 
         if ($definition instanceof DiDefinitionFactory) {
             return sprintf(
-                '    yield "%s" => diFactory("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
+                '    yield %s => diFactory(%s, %s);',
+                var_export($identifier, true),
+                var_export($definition->getDefinition(), true),
+                var_export($definition->isSingleton(), true),
             );
         }
 
         return sprintf(
-            '    yield "%s" => diGet("%s");',
-            $identifier,
-            str_replace('"', '\"', $definition->getDefinition())
+            '    yield %s => diGet("%s");',
+            var_export($identifier, true),
+            var_export($definition->getDefinition(), true),
         );
     }
 
