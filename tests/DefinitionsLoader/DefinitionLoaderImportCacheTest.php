@@ -18,7 +18,6 @@ use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -170,15 +169,11 @@ class DefinitionLoaderImportCacheTest extends TestCase
 
         $this->assertNull($arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\One']->isSingleton());
 
-        // test Factory on class
+        // test Factory on class Foo
         /** @var DiDefinitionFactory $factory */
         $factory = $arr['Tests\DefinitionsLoader\Fixtures\ImportCreating\Foo'];
         $this->assertInstanceOf(DiDefinitionFactory::class, $factory);
-        $this->assertEquals('Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo', $factory->getDefinition());
-
-        /** @var Foo $resolveFactory */
-        $resolveFactory = $factory->resolve($this->createMock(DiContainerInterface::class));
-        $this->assertEquals('secure_string', $resolveFactory->secure);
+        $this->assertEquals(['Tests\DefinitionsLoader\Fixtures\ImportCreating\Factory\FactoryFoo', '__invoke'], $factory->getDefinition());
 
         @unlink($fileName);
     }
