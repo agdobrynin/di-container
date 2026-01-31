@@ -318,8 +318,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if ($this->config->isUseAttribute()
             && null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
             return $this->diResolvedDefinition[$id] = new DiDefinitionFactory(
-                $factory->getDefinition(),
-                $factory->isSingleton()
+                $factory->definition,
+                $factory->isSingleton
             );
         }
 
