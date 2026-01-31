@@ -6,20 +6,28 @@ namespace Kaspi\DiContainer\Attributes;
 
 use Attribute;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 use function is_array;
 use function is_string;
 use function sprintf;
 use function var_export;
 
+/**
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class DiFactory
 {
     /**
      * @param array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string $definition
+     * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed>                           $arguments
      */
-    public function __construct(private readonly array|string $definition, private readonly ?bool $isSingleton = null)
-    {
+    public function __construct(
+        public readonly array|string $definition,
+        public readonly ?bool $isSingleton = null,
+        public readonly array $arguments = [],
+    ) {
         if (is_array($this->definition)
             && (
                 !isset($this->definition[0], $this->definition[1])
@@ -36,20 +44,5 @@ final class DiFactory
                 sprintf('Invalid parameter for attribute #[%s]. The definition must be provided as none empty string.', self::class)
             );
         }
-    }
-
-    /**
-     * @return array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string
-     */
-    public function getDefinition(): array|string
-    {
-        return is_array($this->definition)
-            ? [$this->definition[0], $this->definition[1]]
-            : $this->definition;
-    }
-
-    public function isSingleton(): ?bool
-    {
-        return $this->isSingleton;
     }
 }
