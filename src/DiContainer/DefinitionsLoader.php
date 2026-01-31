@@ -214,7 +214,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     }
 
     /**
-     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionGet>
+     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
      *
      * @throws DefinitionsLoaderException
      */
@@ -224,7 +224,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return;
         }
 
-        /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionGet> $importedDefinitions */
+        /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> $importedDefinitions */
         $importedDefinitions = [];
 
         foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
