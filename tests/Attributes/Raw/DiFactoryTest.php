@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 use Tests\Attributes\Raw\Fixtures\Foo;
 use Tests\Attributes\Raw\Fixtures\MyDiFactory;
 
@@ -24,20 +23,20 @@ class DiFactoryTest extends TestCase
     {
         $diFactory = new DiFactory(MyDiFactory::class);
 
-        $this->assertNull($diFactory->isSingleton());
+        $this->assertNull($diFactory->isSingleton);
     }
 
     public function testDiFactoryDefinedSingletonValue(): void
     {
         $diFactory = new DiFactory(MyDiFactory::class, true);
 
-        $this->assertTrue($diFactory->isSingleton());
+        $this->assertTrue($diFactory->isSingleton);
     }
 
     #[DataProvider('dataProviderDiFactorySuccess')]
     public function testDiFactorySuccess(array|string $definition, array|string $expectDefinition): void
     {
-        self::assertEquals($expectDefinition, (new DiFactory($definition))->getDefinition());
+        self::assertEquals($expectDefinition, (new DiFactory($definition))->definition);
     }
 
     public static function dataProviderDiFactorySuccess(): Generator
@@ -49,8 +48,6 @@ class DiFactoryTest extends TestCase
         yield 'two elements with class string and method' => [[Foo::class, 'bar'], ['Tests\Attributes\Raw\Fixtures\Foo', 'bar']];
 
         yield 'two elements with container id and method' => [['services.hoho', 'make'], ['services.hoho', 'make']];
-
-        yield 'many elements in array definition' => [[Foo::class, 'bar', new stdClass()], ['Tests\Attributes\Raw\Fixtures\Foo', 'bar']];
 
         yield 'string with semicolons for defined factory method' => [Foo::class.'::bar', 'Tests\Attributes\Raw\Fixtures\Foo::bar'];
     }

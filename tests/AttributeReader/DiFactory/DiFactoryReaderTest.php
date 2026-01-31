@@ -37,7 +37,7 @@ class DiFactoryReaderTest extends TestCase
         $attribute = AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(Main::class));
 
         $this->assertInstanceOf(DiFactory::class, $attribute);
-        $this->assertEquals(MainFirstDiFactory::class, $attribute->getDefinition());
+        $this->assertEquals(MainFirstDiFactory::class, $attribute->definition);
     }
 
     public function testNoneAttribute(): void
@@ -95,12 +95,12 @@ class DiFactoryReaderTest extends TestCase
         self::assertTrue($res->valid());
 
         self::assertInstanceOf(DiFactory::class, $res->current());
-        self::assertEquals(StrFactory::class, $res->current()->getDefinition());
+        self::assertEquals(StrFactory::class, $res->current()->definition);
 
         $res->next();
 
         self::assertInstanceOf(DiFactory::class, $res->current());
-        self::assertEquals(IntFactory::class, $res->current()->getDefinition());
+        self::assertEquals(IntFactory::class, $res->current()->definition);
 
         $res->next();
 
