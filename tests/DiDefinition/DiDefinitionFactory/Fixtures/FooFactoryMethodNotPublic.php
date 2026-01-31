@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionFactory\Fixtures;
 
-final class Bar
+final class FooFactoryMethodNotPublic
 {
-    public function __construct(public readonly string $str) {}
+    private function make(): mixed {}
 }

@@ -37,18 +37,4 @@ class DiFactoryTest extends TestCase
         self::assertEquals('file1.txt', $class->splFileInfo->getFilename());
         self::assertSame($class, $container->get(ClassWithDependency::class));
     }
-
-    public function testDiFactoryIdentifier(): void
-    {
-        $container = (new DiContainerBuilder())
-            ->addDefinitions(
-                (static function () {
-                    yield diFactory(ClassWithDependencyDiFactory::class, isSingleton: true);
-                })()
-            )
-            ->build()
-        ;
-
-        self::assertInstanceOf(ClassWithDependency::class, $container->get(ClassWithDependencyDiFactory::class));
-    }
 }

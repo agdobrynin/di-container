@@ -31,7 +31,6 @@ use function array_intersect;
 use function array_keys;
 use function implode;
 use function in_array;
-use function is_a;
 use function sprintf;
 
 final class AttributeReader
@@ -48,27 +47,20 @@ final class AttributeReader
     {
         $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
 
-        if (!isset($groupAttrs[DiFactory::class])) {
+        /** @var null|list<ReflectionAttribute<DiFactory>> $groupDiFactory */
+        $groupDiFactory = $groupAttrs[DiFactory::class] ?? null;
+
+        if (null === $groupDiFactory) {
             return null;
         }
 
-        if (isset($groupAttrs[DiFactory::class][1])) {
+        if (isset($groupDiFactory[1])) {
             throw new AutowireAttributeException(
                 sprintf('The attribute %s::class can be applied once for %s class.', DiFactory::class, $class->name)
             );
         }
 
-        /** @var DiFactory $attrFactory */
-        $attrFactory = $groupAttrs[DiFactory::class][0]->newInstance();
-        $returnTypeDiFactoryInvoke = (string) (new ReflectionMethod($attrFactory->getIdentifier(), '__invoke'))->getReturnType();
-
-        if (is_a($class->getName(), $returnTypeDiFactoryInvoke, true)) {
-            return $attrFactory;
-        }
-
-        throw new AutowireParameterTypeException(
-            sprintf('Definition factory %s::__invoke() must have return type hint as %s. Got return type: "%s"', $attrFactory->getIdentifier(), $class->getName(), $returnTypeDiFactoryInvoke)
-        );
+        return $groupDiFactory[0]->newInstance();
     }
 
     /**
@@ -196,7 +188,7 @@ final class AttributeReader
     /**
      * @param list<ReflectionAttribute> $attrs
      *
-     * @return array<class-string, list<ReflectionAttribute>>
+     * @return array<class-string, list<ReflectionAttribute<Autowire|DiFactory>>>
      *
      * @throws AutowireAttributeException
      */

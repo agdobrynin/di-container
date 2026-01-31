@@ -349,7 +349,7 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportInvalidReferenceForInterface(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Invalid definition reference "services.foo"');
+        $this->expectExceptionMessage('The container identifier "services.foo" is not registered');
 
         (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportInvalidReferenceForInterface')

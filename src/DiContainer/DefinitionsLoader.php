@@ -42,7 +42,6 @@ use function is_readable;
 use function ob_get_clean;
 use function ob_start;
 use function sprintf;
-use function str_replace;
 use function var_export;
 
 use const T_CLASS;
@@ -172,6 +171,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if ($this->importedDefinitions()->valid()) {
+            $importedDefinitions = $this->importedDefinitions();
+            $importedDefinitions->rewind();
+
             try {
                 $cacheFileOpened = $importCacheFile?->openFile('wb+');
                 $cacheFileOpened?->fwrite(
@@ -186,11 +188,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            foreach ($this->importedDefinitions() as $identifier => $definition) {
+            do {
+                $identifier = $importedDefinitions->key();
+                $definition = $importedDefinitions->current();
                 $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
 
                 yield $identifier => $definition;
-            }
+
+                $importedDefinitions->next();
+            } while ($importedDefinitions->valid());
 
             $cacheFileOpened?->fwrite('};'.PHP_EOL);
         }
@@ -264,12 +270,17 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
          * Check valid DiDefinitionGet for imported definitions.
          * Interface maybe configured via php attribute #[Service('container_id')].
         */
-
         foreach ($importedDefinitions as $identifier => $definition) {
-            if ($definition instanceof DiDefinitionGet
-                && !(isset($importedDefinitions[$definition->getDefinition()]) || $this->configDefinitions->offsetExists($definition->getDefinition()))) {
+            if (!$definition instanceof DiDefinitionGet) {
+                continue;
+            }
+
+            $containerIdentifier = $definition->getDefinition();
+
+            if (!isset($importedDefinitions[$containerIdentifier])
+                && !$this->configDefinitions->offsetExists($containerIdentifier)) {
                 throw new DefinitionsLoaderException(
-                    sprintf('Invalid definition reference "%s" for container identifier "%s".', $definition->getDefinition(), $identifier)
+                    sprintf('The container identifier "%s" is not registered. The reference from the definition with the id "%s".', $containerIdentifier, $identifier)
                 );
             }
         }
@@ -279,30 +290,28 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
     {
-        $identifier = str_replace('"', '\"', $identifier);
-
         if ($definition instanceof DiDefinitionAutowire) {
             return sprintf(
-                '    yield "%s" => diAutowire("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
+                '    yield %s => diAutowire(%s, %s);',
+                var_export($identifier, true),
+                var_export($definition->getIdentifier(), true),
+                var_export($definition->isSingleton(), true),
             );
         }
 
         if ($definition instanceof DiDefinitionFactory) {
             return sprintf(
-                '    yield "%s" => diFactory("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
+                '    yield %s => diFactory(%s, %s);',
+                var_export($identifier, true),
+                var_export($definition->getDefinition(), true),
+                var_export($definition->isSingleton(), true),
             );
         }
 
         return sprintf(
-            '    yield "%s" => diGet("%s");',
-            $identifier,
-            str_replace('"', '\"', $definition->getDefinition())
+            '    yield %s => diGet("%s");',
+            var_export($identifier, true),
+            var_export($definition->getDefinition(), true),
         );
     }
 
@@ -398,7 +407,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
+            return [$reflectionClass->name => new DiDefinitionFactory($factory->definition, $factory->isSingleton)];
         }
 
         return $this->configDefinitions->offsetExists($reflectionClass->name)

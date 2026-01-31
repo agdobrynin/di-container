@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\DiDefinition\DiDefinitionFactory\Fixtures;
+namespace Tests\Compiler\CompilableDefinition\FactoryEntry\Fixtures;
 
 final class Bar
 {
