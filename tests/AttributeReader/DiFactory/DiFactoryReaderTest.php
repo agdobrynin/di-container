@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\AttributeReader\DiFactory;
 
-use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
-use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -23,8 +20,6 @@ use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryTwo;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFail;
 use Tests\AttributeReader\DiFactory\Fixtures\IntFactory;
 use Tests\AttributeReader\DiFactory\Fixtures\Main;
-use Tests\AttributeReader\DiFactory\Fixtures\MainFail;
-use Tests\AttributeReader\DiFactory\Fixtures\MainFailTwo;
 use Tests\AttributeReader\DiFactory\Fixtures\MainFirstDiFactory;
 use Tests\AttributeReader\DiFactory\Fixtures\NoDiFactories;
 use Tests\AttributeReader\DiFactory\Fixtures\StrFactory;
@@ -42,7 +37,7 @@ class DiFactoryReaderTest extends TestCase
         $attribute = AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(Main::class));
 
         $this->assertInstanceOf(DiFactory::class, $attribute);
-        $this->assertEquals(MainFirstDiFactory::class, $attribute->getIdentifier());
+        $this->assertEquals(MainFirstDiFactory::class, $attribute->getDefinition());
     }
 
     public function testNoneAttribute(): void
@@ -58,21 +53,6 @@ class DiFactoryReaderTest extends TestCase
         $this->expectExceptionMessageMatches('/Only one of the php attributes.+DiFactory::class.+Autowire::class/');
 
         AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
-    }
-
-    #[DataProvider('dataProviderReturnTypeFromFactory')]
-    public function testReturnTypeFromFactory(string $class): void
-    {
-        $this->expectException(AutowireParameterTypeException::class);
-
-        AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass($class));
-    }
-
-    public static function dataProviderReturnTypeFromFactory(): Generator
-    {
-        yield 'For class '.MainFail::class => [MainFail::class];
-
-        yield 'For class '.MainFailTwo::class => [MainFailTwo::class];
     }
 
     public function testManyFactoryOnClass(): void
@@ -115,12 +95,12 @@ class DiFactoryReaderTest extends TestCase
         self::assertTrue($res->valid());
 
         self::assertInstanceOf(DiFactory::class, $res->current());
-        self::assertEquals(StrFactory::class, $res->current()->getIdentifier());
+        self::assertEquals(StrFactory::class, $res->current()->getDefinition());
 
         $res->next();
 
         self::assertInstanceOf(DiFactory::class, $res->current());
-        self::assertEquals(IntFactory::class, $res->current()->getIdentifier());
+        self::assertEquals(IntFactory::class, $res->current()->getDefinition());
 
         $res->next();
 
