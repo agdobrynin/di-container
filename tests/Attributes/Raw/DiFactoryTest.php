@@ -51,6 +51,8 @@ class DiFactoryTest extends TestCase
         yield 'two elements with container id and method' => [['services.hoho', 'make'], ['services.hoho', 'make']];
 
         yield 'many elements in array definition' => [[Foo::class, 'bar', new stdClass()], ['Tests\Attributes\Raw\Fixtures\Foo', 'bar']];
+
+        yield 'string with semicolons for defined factory method' => [Foo::class.'::bar', 'Tests\Attributes\Raw\Fixtures\Foo::bar'];
     }
 
     #[DataProvider('dataProviderDiFactoryIsFail')]
