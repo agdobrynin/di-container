@@ -47,17 +47,20 @@ final class AttributeReader
     {
         $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
 
-        if (!isset($groupAttrs[DiFactory::class])) {
+        /** @var null|list<ReflectionAttribute<DiFactory>> $groupDiFactory */
+        $groupDiFactory = $groupAttrs[DiFactory::class] ?? null;
+
+        if (null === $groupDiFactory) {
             return null;
         }
 
-        if (isset($groupAttrs[DiFactory::class][1])) {
+        if (isset($groupDiFactory[1])) {
             throw new AutowireAttributeException(
                 sprintf('The attribute %s::class can be applied once for %s class.', DiFactory::class, $class->name)
             );
         }
 
-        return $groupAttrs[DiFactory::class][0]->newInstance();
+        return $groupDiFactory[0]->newInstance();
     }
 
     /**
