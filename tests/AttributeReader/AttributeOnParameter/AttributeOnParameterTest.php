@@ -96,7 +96,7 @@ class AttributeOnParameterTest extends TestCase
 
         self::assertCount(5, $res);
 
-        self::assertEquals(FooFactory::class, $res[0]->getIdentifier());
+        self::assertEquals(FooFactory::class, $res[0]->getDefinition());
         self::assertNull($res[0]->isSingleton());
 
         self::assertEquals('service.one', $res[1]->getIdentifier());
