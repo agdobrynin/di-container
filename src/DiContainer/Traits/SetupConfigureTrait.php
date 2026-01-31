@@ -8,7 +8,6 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use ReflectionClass;
 
 /**
@@ -75,18 +74,5 @@ trait SetupConfigureTrait
         }
 
         return $this->setupByAttributes + $this->setup;
-    }
-
-    private function copySetupToDefinition(DiDefinitionSetupAutowireInterface $definition): void
-    {
-        foreach ($this->setup as $method => $setups) {
-            foreach ($setups as $setup) {
-                if (SetupConfigureMethod::Mutable === $setup[0]) {
-                    $definition->setup($method, $setup[1]);
-                } else {
-                    $definition->setupImmutable($method, $setup[1]);
-                }
-            }
-        }
     }
 }
