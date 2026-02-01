@@ -407,7 +407,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            return [$reflectionClass->name => new DiDefinitionFactory($factory->definition, $factory->isSingleton)];
+            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+
+            return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
         }
 
         return $this->configDefinitions->offsetExists($reflectionClass->name)
