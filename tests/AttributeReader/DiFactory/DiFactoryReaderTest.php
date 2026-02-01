@@ -6,6 +6,7 @@ namespace Tests\AttributeReader\DiFactory;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -17,6 +18,7 @@ use ReflectionParameter;
 use Tests\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryOne;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryTwo;
+use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryWithArgs;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFail;
 use Tests\AttributeReader\DiFactory\Fixtures\IntFactory;
 use Tests\AttributeReader\DiFactory\Fixtures\Main;
@@ -30,6 +32,7 @@ use Tests\AttributeReader\DiFactory\Fixtures\StrFactory;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(DiFactory::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(DiDefinitionGet::class)]
 class DiFactoryReaderTest extends TestCase
 {
     public function testHasOneAttribute(): void
@@ -105,5 +108,28 @@ class DiFactoryReaderTest extends TestCase
         $res->next();
 
         self::assertFalse($res->valid());
+    }
+
+    public function testFactoryOnParamWithArgs(): void
+    {
+        $f = static fn (
+            #[DiFactory(
+                [FooFactoryWithArgs::class, 'create'],
+                arguments: [
+                    'apiKey' => new DiDefinitionGet('keys.api_key'),
+                ]
+            )]
+            mixed $a
+        ) => '';
+        $p = new ReflectionParameter($f, 0);
+
+        $res = AttributeReader::getAttributeOnParameter($p, $this->createMock(ContainerInterface::class));
+
+        $factory = $res->current();
+
+        self::assertInstanceOf(DiFactory::class, $factory);
+        self::assertEquals([
+            'apiKey' => new DiDefinitionGet('keys.api_key'),
+        ], $factory->arguments);
     }
 }

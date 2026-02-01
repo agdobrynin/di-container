@@ -8,8 +8,8 @@ final class FooFactory
 {
     public function __construct(private Bar $bar) {}
 
-    public function make(): mixed
+    public function make(string $info = ''): mixed
     {
-        return $this->bar->str;
+        return $info ?: $this->bar->str;
     }
 }

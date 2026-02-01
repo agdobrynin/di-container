@@ -6,8 +6,8 @@ namespace Tests\Integration\FactoryCompile\Fixtures;
 
 final class FooFactoryStatic
 {
-    public static function create(): Foo
+    public static function create(string $newStr): Foo
     {
-        return new Foo('Lorem ipsum');
+        return new Foo($newStr);
     }
 }

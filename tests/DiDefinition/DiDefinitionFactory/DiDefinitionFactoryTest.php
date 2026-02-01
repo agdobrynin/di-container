@@ -222,9 +222,10 @@ class DiDefinitionFactoryTest extends TestCase
             )
         ;
 
-        $factory = new DiDefinitionFactory(FooFactory::class.'::make');
+        $factory = new DiDefinitionFactory([FooFactory::class, 'make']);
+        $factory->bindArguments(info: 'Ho-ho-ho');
 
-        self::assertEquals('Lorem ipsum', $factory->resolve($containerMock));
+        self::assertEquals('Ho-ho-ho', $factory->resolve($containerMock));
     }
 
     public function testResolveConstructorNoneStaticFactoryWithException(): void

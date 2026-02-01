@@ -52,6 +52,6 @@ class FactoryTest extends TestCase
         $container = $builder->build();
 
         self::assertEquals('Ho-ho-ho', $container->get(Bar::class)->baz->str);
-        self::assertEquals('Lorem ipsum', $container->get(Foo::class)->strFoo);
+        self::assertEquals('Lorem ipsum dolor sit amet', $container->get(Foo::class)->strFoo);
     }
 }
