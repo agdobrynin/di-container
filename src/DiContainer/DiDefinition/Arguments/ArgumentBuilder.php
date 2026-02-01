@@ -321,7 +321,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     $attr->isSelfExclude(),
                 );
             } elseif ($attr instanceof DiFactory) {
-                $definition = new DiDefinitionFactory($attr->definition);
+                $definition = (new DiDefinitionFactory($attr->definition))
+                    ->bindArguments(...$attr->arguments)
+                ;
             } else {
                 $definition = new DiDefinitionCallable($attr->getCallable());
             }
