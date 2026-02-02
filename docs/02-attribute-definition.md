@@ -722,7 +722,7 @@ use function Kaspi\DiContainer\diAutowire;
 
 return static function (): \Generator {
     yield diAutowire(App\Loggers\CustomLogger::class)
-        // 🌞 подставить в параметр $file в конструкторе.
+        // подставить в параметр $file в конструкторе.
         ->bindArguments(file: '/var/log/app.log');
 };
 ```
@@ -769,98 +769,24 @@ return static function (): \Generator {
 ```
 
 ## DiFactory
-Класс-фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
-
 Атрибут может применяться к классу или к параметру функции, метода.
 
+Сигнатура php атрибута:
 ```php
-#[DiFactory(string $id, ?bool $isSingleton = null)]
+#[DiFactory(string|array $definition, ?bool $isSingleton = null, array $arguments = [])]
 ```
 Параметры:
-- `$id` - класс (_FQCN_) реализующий интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
-- `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#конфигурирование-dicontainer).
-
-> [!WARNING]
-> При применении атрибута к PHP классу метод `Kaspi\DiContainer\Interfaces\DiFactoryInterface::__invoke()`
-> обязательно должен иметь возвращаемый тип (_type hint_) совпадающий с классом, к которому применяется атрибут.
->
+- `$definition` – представление php класса и метода фабрики.
+- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#конфигурирование-dicontainer).
+- `$arguments` – предать аргументы для метода фабрики.
 
 > [!NOTE]
 > Параметр атрибута `$isSingleton` при применении к параметрам функции, метода игнорируется
 > и не используется при разрешении зависимостей.
-> 
-> При разрешении параметра функции или метода возвращаемый тип (_type hint_)
-> `Kaspi\DiContainer\Interfaces\DiFactoryInterface::__invoke()` игнорируется.
 >
 
-Разрешение класса с помощью атрибута:
-```php
-// src/Classes/SuperClass.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\DiFactory;
-use App\Factory\FactorySuperClass;
-
-// Разрешить зависимость через фабрику и указать контейнеру что это будет Singleton.
-#[DiFactory(FactorySuperClass::class, isSingleton: true)]
-class SuperClass
-{
-    public function __construct(public string $name, public int $age) {}
-}
-```
-
-```php
-// src/Factory/FactorySuperClass.php
-namespace App\Factory;
-
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-use Psr\Container\ContainerInterface;
-use App\Classes\SuperClass;
-
-class FactorySuperClass implements DiFactoryInterface
-{
-
-    public function __invoke(ContainerInterface $container): SuperClass
-    {
-        return new SuperClass('Piter', 22);
-    }
-
-}
-```
-Разрешение параметра метода с помощью атрибута:
-```php
-// src/Classes/OtherClass.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\DiFactory;
-use App\Factory\FactorySuperClass;
-use App\Classes\SuperClass;
-
-class OtherClass
-{
-    public function __construct(
-        #[DiFactory(FactorySuperClass::class)]
-        public SuperClass $super
-    ) {}
-}
-```
-
-```php
-// Получение данных из контейнера с автоматическим связыванием зависимостей
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())->build();
-
-$superClass = $container->get(\App\Classes\SuperClass::class);
-
-print $superClass->name; // Piter
-print $superClass->age; // 22
-
-$otherClass = $container->get(\App\Classes\OtherClass::class);
-
-print $otherClass->super->name; // Piter
-print $otherClass->super->age; // 22
-```
+> [!NOTE]
+> Подробное [описание работы с фабриками](07-factory.md) для разрешения зависимостей в контейнере.
 
 ## ProxyClosure
 
