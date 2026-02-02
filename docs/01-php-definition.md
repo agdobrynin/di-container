@@ -814,7 +814,7 @@ $ruleCollection = $container->get(App\Services\RuleCollection::class);
 
 #### diFactory
 
-Разрешение зависимости через фабрику.
+Разрешение зависимости через фабрику для классов или параметров метода (функции).
 
 Сигнатура функции:
 ```php
@@ -829,18 +829,15 @@ diFactory(string|array $definition, ?bool $isSingleton = null): DiDefinitionArgu
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!NOTE]
-> Параметр атрибута `$isSingleton` при применении к параметрам функции, метода игнорируется
+> Параметр функции `$isSingleton` при применении к параметрам метода (функции) будет проигнорирован
 > и не используется при разрешении зависимостей.
 >
 
-> [!IMPORTANT]
-> Функция `diFactory` возвращает объект реализующий интерфейс
-> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`.
->
-> Интерфейс представляет методы:
->   - `bindArguments` - аргументы для метода фабрики
-> 
-> Подробное описание метода `bindArguments` в [хэлпер функции diAutowire](#diautowire)
+Функция `diFactory` возвращает объект реализующий интерфейс
+`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`.
+
+Интерфейс представляет методы:
+- `bindArguments` - аргументы для метода фабрики.
 
 > [!NOTE]
 > Подробное [описание работы с фабриками](07-factory.md) для разрешения зависимостей в контейнере.
