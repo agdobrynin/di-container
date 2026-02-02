@@ -30,7 +30,7 @@ return static function (): \Generator {
                 dsn: 'sqlite:/tmp/my.db'
             )
             // Вызвать метод "setAttribute" и предать параметры в него
-            ->setup('setAttribute', \PDO::ATTR_CASE, \PDO::CASE_UPPER),
+            ->setup('setAttribute', [\PDO::ATTR_CASE, \PDO::CASE_UPPER]),
 
 };
 ```
@@ -180,7 +180,7 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 
 **Дополнительная настройка сервиса через методы класса (mutable setters):**
 ```php 
-setup(string $method, mixed ...$argument)
+setup(string $method, array $arguments = [])
 ``` 
 Параметры:
 - `$method` – имя вызываемого метода в классе
@@ -197,7 +197,7 @@ setup(string $method, mixed ...$argument)
 
 Можно использовать именованные аргументы параметров:
 ```php
-diAutowire(...)->setup('classMethod', var1: 'value 1', var2: 'value 2')
+diAutowire(...)->setup('classMethod', ['var1' => 'value 1', 'var2' => 'value 2'])
 // $object->classMethod(string $var1, string $var2)
 ```
 Если в методе нет параметров или они могут быть разрешены автоматически, то аргументы указывать не нужно:
@@ -210,10 +210,10 @@ diAutowire(...)->setup('classMethod', var1: 'value 1', var2: 'value 2')
 При указании нескольких вызовов метода он будет вызван указанное количество раз и возможно с разными аргументами:
 ```php
 diAutowire(...)
-  ->setup('classMethod', var1: 'value 1', var2: 'value 2')
-  ->setup('classMethod', var1: 'value 3', var2: 'value 4')
-  // $object->classMethod('value 1', 'value 2');
-  // $object->classMethod('value 3', 'value 4');
+  ->setup('classMethod', ['var1' => 'value 1', 'var2' => 'value 2'])
+  ->setup('classMethod', ['var1' => 'value 3', 'var2' => 'value 4')]
+  // $object->classMethod(var1: 'value 1', var2: 'value 2');
+  // $object->classMethod(var1: 'value 3', var2: 'value 4');
 ```
  
 > [!NOTE]
@@ -221,11 +221,11 @@ diAutowire(...)
 
 **Дополнительная настройка сервиса через методы класса возвращающие значение (immutable setters):**
 ```php 
-setupImmutable(string $method, mixed ...$argument)
+setupImmutable(string $method, array $arguments = [])
 ``` 
 Параметры:
 - `$method` – имя вызываемого метода в классе
-- `$argument` – аргументы к параметрам метода класса
+- `$arguments` – аргументы к параметрам метода класса
 
 Возвращаемое значение метода должно быть `self`, `static`
 или того же класса, что и сам php класс.
@@ -1480,7 +1480,7 @@ use function Kaspi\DiContainer\diAutowire;
 return static function(): \Generator {
 
     yield 'priority_queue.get_data' => diAutowire(\SplPriorityQueue::class)
-        ->setup('setExtractFlags', \SplPriorityQueue::EXTR_DATA);
+        ->setup('setExtractFlags', [\SplPriorityQueue::EXTR_DATA]);
 
 };
 ```
@@ -1544,7 +1544,7 @@ return static function(): \Generator {
 
     yield diAutowire(App\SomeClass::class)
         // Будет возвращён объект из метода `withLogger`
-        ->setupImmutable('withLogger', diGet(App\Servces\FileLogger::class));
+        ->setupImmutable('withLogger', [diGet(App\Servces\FileLogger::class)]);
 };
 ```
 
