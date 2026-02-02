@@ -165,7 +165,7 @@ class SetupImmutableTest extends TestCase
         ;
 
         $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
-            ->setupImmutable('withSomeClass', someClass: diAutowire(SomeClass::class)->bindArguments('aaa'))
+            ->setupImmutable('withSomeClass', ['someClass' => diAutowire(SomeClass::class)->bindArguments('aaa')])
         ;
 
         $setupImmutableClass = $def->resolve($this->mockContainer);
@@ -188,7 +188,7 @@ class SetupImmutableTest extends TestCase
         ;
 
         $def = (new DiDefinitionAutowire(SetupImmutableByAttributeWithArgumentAsDefinition::class))
-            ->setupImmutable('withSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
+            ->setupImmutable('withSomeClassAsContainerIdentifier', ['someClass' => null]) // overrode by php attribute on method
         ;
 
         /** @var SetupImmutableByAttributeWithArgumentAsDefinition $class */
@@ -246,8 +246,10 @@ class SetupImmutableTest extends TestCase
         $def = (new DiDefinitionAutowire(Foo::class))
             ->setupImmutable(
                 'method',
-                diGet('services.secure_string'),
-                rule: diGet('services.rule_a')
+                [
+                    diGet('services.secure_string'),
+                    'rule' => diGet('services.rule_a'),
+                ]
             )
         ;
 

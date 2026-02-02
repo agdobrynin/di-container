@@ -49,10 +49,10 @@ class SetupTest extends TestCase
         $mockContainer = $this->createMock(DiContainerInterface::class);
 
         $def = (new DiDefinitionAutowire(SetupClass::class))
-            ->setup('setName', newName: diValue('Vasiliy')) // first set name
-            ->setup('setName', diValue('Piter')) // override set name
-            ->setup('setParameters', paramName: diValue('key1'), parameters: ['One', 'Two', 'Three'])
-            ->setup('setParameters', 'key2', ['Four', 'Five', 'Six'])
+            ->setup('setName', ['newName' => diValue('Vasiliy')]) // first set name
+            ->setup('setName', [diValue('Piter')]) // override set name
+            ->setup('setParameters', ['paramName' => diValue('key1'), 'parameters' => ['One', 'Two', 'Three']])
+            ->setup('setParameters', ['key2', ['Four', 'Five', 'Six']])
         ;
 
         /**
@@ -105,8 +105,8 @@ class SetupTest extends TestCase
             ->setup('incInc')// override by php attribute #[Setup]
             ->setup('incInc') // override by php attribute #[Setup]
             ->setup('incInc') // override by php attribute #[Setup]
-            ->setup('setParameters', 'key1', ['One', 'Two', 'Three']) // override by php attribute #[Setup]
-            ->setup('setParameters', 'key2', ['X', 'Y', 'Z']) // override by php attribute #[Setup]
+            ->setup('setParameters', ['key1', ['One', 'Two', 'Three']]) // override by php attribute #[Setup]
+            ->setup('setParameters', ['key2', ['X', 'Y', 'Z']]) // override by php attribute #[Setup]
         ;
 
         /** @var SetupClassByAttribute $class */
@@ -142,7 +142,7 @@ class SetupTest extends TestCase
         ;
 
         $def = (new DiDefinitionAutowire(SetupByAttributeWithArgumentAsReference::class))
-            ->setup('setSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
+            ->setup('setSomeClassAsContainerIdentifier', ['someClass' => null]) // overrode by php attribute on method
         ;
 
         /** @var SetupByAttributeWithArgumentAsReference $class */

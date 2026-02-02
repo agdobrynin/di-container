@@ -34,27 +34,23 @@ trait SetupConfigureTrait
     private array $setupByAttributes;
 
     /**
-     * @param non-empty-string $method
+     * @param non-empty-string            $method
+     * @param SetupConfigureArgumentsType $arguments
      */
-    public function setup(string $method, mixed ...$argument): static
+    public function setup(string $method, array $arguments = []): static
     {
-        /**
-         * @phpstan-var SetupConfigureArgumentsType $argument
-         */
-        $this->setup[$method][] = [SetupConfigureMethod::Mutable, $argument];
+        $this->setup[$method][] = [SetupConfigureMethod::Mutable, $arguments];
 
         return $this;
     }
 
     /**
-     * @param non-empty-string $method
+     * @param non-empty-string            $method
+     * @param SetupConfigureArgumentsType $arguments
      */
-    public function setupImmutable(string $method, mixed ...$argument): static
+    public function setupImmutable(string $method, array $arguments): static
     {
-        /**
-         * @phpstan-var SetupConfigureArgumentsType $argument
-         */
-        $this->setup[$method][] = [SetupConfigureMethod::Immutable, $argument];
+        $this->setup[$method][] = [SetupConfigureMethod::Immutable, $arguments];
 
         return $this;
     }
@@ -86,9 +82,9 @@ trait SetupConfigureTrait
         foreach ($this->setup as $method => $setups) {
             foreach ($setups as $setup) {
                 if (SetupConfigureMethod::Mutable === $setup[0]) {
-                    $definition->setup($method, ...$setup[1]);
+                    $definition->setup($method, $setup[1]);
                 } else {
-                    $definition->setupImmutable($method, ...$setup[1]);
+                    $definition->setupImmutable($method, $setup[1]);
                 }
             }
         }
