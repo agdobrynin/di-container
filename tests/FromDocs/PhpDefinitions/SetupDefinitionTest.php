@@ -35,9 +35,9 @@ class SetupDefinitionTest extends TestCase
         $definitions = [
             'services.lite' => diAutowire(LiteDependency::class),
             diAutowire(RulesWithSetter::class, true)
-                ->setup('addRule', rule: diGet(RuleB::class))
-                ->setup('addRule', rule: diGet(RuleC::class))
-                ->setup('addRule', diGet('services.lite'), diGet(RuleA::class)),
+                ->setup('addRule', ['rule' => diGet(RuleB::class)])
+                ->setup('addRule', ['rule' => diGet(RuleC::class)])
+                ->setup('addRule', [diGet('services.lite'), diGet(RuleA::class)]),
         ];
 
         $container = (new DiContainerFactory())->make($definitions);
