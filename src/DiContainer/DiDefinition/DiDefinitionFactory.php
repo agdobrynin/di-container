@@ -45,10 +45,10 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
      */
     public function __construct(private readonly string $definition, private readonly ?bool $isSingleton = null) {}
 
-    public function setup(string $method, mixed ...$argument): static
+    public function setup(string $method, array $arguments = []): static
     {
         unset($this->autowire);
-        $this->setupInternal($method, ...$argument);
+        $this->setupInternal($method, $arguments);
 
         return $this;
     }
@@ -61,10 +61,10 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         return $this;
     }
 
-    public function setupImmutable(string $method, mixed ...$argument): static
+    public function setupImmutable(string $method, array $arguments = []): static
     {
         unset($this->autowire);
-        $this->setupImmutableInternal($method, ...$argument);
+        $this->setupImmutableInternal($method, $arguments);
 
         return $this;
     }

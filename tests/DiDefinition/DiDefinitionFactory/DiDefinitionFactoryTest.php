@@ -112,7 +112,7 @@ class DiDefinitionFactoryTest extends TestCase
         );
 
         $factory = new DiDefinitionFactory(Baz::class);
-        $factory->setupImmutable('withBar', diGet(Bar::class));
+        $factory->setupImmutable('withBar', [diGet(Bar::class)]);
 
         self::assertEquals(
             'ok Tests\DiDefinition\DiDefinitionFactory\Fixtures\Bar',
@@ -131,7 +131,7 @@ class DiDefinitionFactoryTest extends TestCase
         );
 
         $factory = new DiDefinitionFactory(Baz::class);
-        $factory->setup('setBar', diGet(Bar::class));
+        $factory->setup('setBar', [diGet(Bar::class)]);
 
         self::assertEquals(
             'ok Tests\DiDefinition\DiDefinitionFactory\Fixtures\Bar',

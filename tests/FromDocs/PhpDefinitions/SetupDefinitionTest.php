@@ -28,12 +28,14 @@ class SetupDefinitionTest extends TestCase
             yield 'services.lite' => diAutowire(LiteDependency::class);
 
             yield diAutowire(RulesWithSetter::class, true)
-                ->setup('addRule', rule: diGet(RuleB::class))
-                ->setup('addRule', rule: diGet(RuleC::class))
+                ->setup('addRule', ['rule' => diGet(RuleB::class)])
+                ->setup('addRule', ['rule' => diGet(RuleC::class)])
                 ->setup(
                     'addRule',
-                    diGet('services.lite'),
-                    diGet(RuleA::class)
+                    [
+                        diGet('services.lite'),
+                        diGet(RuleA::class),
+                    ]
                 )
             ;
         };
