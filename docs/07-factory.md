@@ -7,10 +7,10 @@
 > [!TIP]
 > Параметры конструктора и метода фабрики могут быть разрешены автоматически или на основе конфигурации контейнера.
 > Для особых сценариев настройки фабрики можно [установить
-> аргументы для параметров метода-фабрики](#аргументы-для-метода-фабрики).
+> аргументы для метода-фабрики](#аргументы-для-метода-фабрики).
 
 При использовании фабрики для разрешения зависимостей контейнера
-выбранное значение для класса не влияет на результирующий сервис.
+выбранное значение для класса не влияет на получаемый результат выполнения фабричного метода.
 Фактическое имя класса зависит только от объекта (определения), возвращаемого фабрикой.
 Однако сконфигурированное имя класса может использоваться для более сложной настройки
 класса фабрики, поэтому его следует установить на разумное значение.
@@ -26,10 +26,15 @@
 // Фабрика
 namespace App\Factories;
 
+use App\Classes\Foo;
+
 class ClassFactory
 {
-    public static function  create() 
+    public static function  create(): Foo
     {
+        $createdObject = new Foo();
+        // дополнительные настройки объекта
+
         return $createdObject;
     }
 }
@@ -78,17 +83,18 @@ $container->get(\App\Classes\Foo::class);
 ```php
 namespace App\Factories;
 
+use App\Classes\Foo;
+
 class ClassFactory
 {
     public function __construct(private Bar $bar) {}
 
-    public function create() 
+    public function create(): Foo
     {
-        $createdObject = $this->bar;
-        // дополнительное конфигурирование
-        $createdObject->internalVal = '...';
+        $foo = new Foo($this->bar);
+        // дополнительное конфигурирование `$foo`
         
-        return $createdObject;
+        return $foo;
     }
 }
 ```
@@ -99,6 +105,7 @@ use App\Factories\ClassFactory;
 use function Kaspi\DiContainer\diAutowire;
 
 return function () {
+    // доступен через метод контейнера `get(\App\Factories\ClassFactory::class)`
     yield diAutowire(ClassFactory::class)
 };
 ``` 
@@ -148,13 +155,49 @@ $container->get(\App\Classes\Foo::class);
 реализует указанный фабричный метод.
 
 ```php
+namespace App\Factories;
+
+use App\Classes\Foo;
+use Psr\Log\LoggerInterface;
+
+class ClassFactory
+{
+    private LoggerInterface $logger;
+
+    public function __construct(private Bar $bar) {}
+    
+    public function withLogger(LoggerInterface $logger): self
+    {
+        $new = clone $this;
+        $new->logger = $logger;
+        
+        return $new;
+    }
+
+    public function create(): Foo
+    {
+        $foo = new Foo($this->bar);
+        // дополнительное конфигурирование `$foo`
+        if (isset($this->logger)) {
+            $this->logger->info('Configured class via factory', $foo);
+        }
+        
+        return $foo;
+    }
+}
+```
+
+```php
 // config/services.php
 use App\Factories\ClassFactory;
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\{diAutowire, diGet};
 
 return function () {
+    
+    // доступен через метод контейнера `get('factories.class_factory.config_one')`
     yield 'factories.class_factory.config_one' => diAutowire(ClassFactory::class)
-        ->setupImmutable('withLogger');
+        ->setupImmutable('withLogger', diGet('services.app_logger'));
+
 };
 ```
 Объявление определения фабрики через хэлпер функцию:
@@ -200,11 +243,16 @@ $container->get(\App\Classes\Foo::class);
 ```php
 namespace App\Factories;
 
+use App\Classes\Foo;
+
 class ClassFactoryInvokable
 {
-    public function  __invoke() 
+    public function  __invoke(): Foo
     {
-        return $createdObject;
+        $foo = new Foo();
+        // дополнительное конфигурирование `$foo`
+        
+        return $foo;
     }
 }
 ```
@@ -263,7 +311,7 @@ $container->get(\App\Classes\Foo::class);
 > контейнер попытается разрешить зависимости самостоятельно на основе конфигурации контейнера.
 
 > [!TIP]
-> Для установки аргументов можно использовать хэлпер функции такие как:
+> Для передачи аргументов можно использовать хэлпер функции такие как:
 > - `\Kaspi\DiContainer\diGet`
 > - `\Kaspi\DiContainer\diValue`
 > - `\Kaspi\DiContainer\diAutowire`
@@ -295,7 +343,7 @@ final class ClassFactory {
 
 }
 ```
-#### В хелпер-функции:
+#### В хелпер функцию:
 ```php
 use App\Services\Foo;
 use App\Factories\ClassFactory;
@@ -310,7 +358,7 @@ return static function () {
 
 }
 ```
-#### В php атрибуте:
+#### В php атрибут:
 ```php
 namespace App\Services;
 
@@ -341,7 +389,7 @@ final class ClassFactory {
 
 }
 ```
-У хэлпер функции:
+В хэлпер функции:
 ```php
 use App\Services\Foo;
 use App\Factories\ClassFactory;
@@ -354,7 +402,7 @@ return static function () {
 
 }
 ```
-У php атрибута:
+В php атрибут:
 ```php
 namespace App\Services;
 
@@ -373,13 +421,26 @@ final class Foo {}
 
 ## Фабрики для параметров метода.
 С помощью фабрики также доступно разрешение зависимостей для параметров метода (функции).
+```php
+namespace App\Factories;
 
-В хелпер-функции:
+use use App\Interfaces\ApiClientInterface;
+
+final class ApiClientFactory
+{
+    public static function createApiV2(): ApiClientInterface
+    {
+        //..
+        return $object;
+    }
+}
+```
+В хелпер функции:
 ```php
 // src/config/services.php
 
 use App\Classes\Baz;
-use App\Factories\ApiClinentFactory;
+use App\Factories\ApiClientFactory;
 use function Kaspi\DiContainer\{diAutowire, diFactory};
 
 return static function (): \Generator {
@@ -387,26 +448,27 @@ return static function (): \Generator {
     yield diAutowire(Baz::class)
         ->bindArguments(
             apiClient: diFactory(
-                [ApiClinentFactory::class, 'createApiV2']
+                [ApiClientFactory::class, 'createApiV2']
             )
         );
 
 };
 ```
+
 В php атрибуте:
 ```php
 namespace App\Classes;
 
 use App\Interfaces\ApiClientInterface;
-use App\Factories\ApiClinentFactory;
+use App\Factories\ApiClientFactory;
 use Kaspi\DiContainer\Attributes\DiFactory;
 
 
 class Baz {
 
     public function __construct(
-        #[DiFactory([ApiClinentFactory::class, 'createApiV2'])]
-        private readonly ApiClientInterface $apiClient;
+        #[DiFactory([ApiClientFactory::class, 'createApiV2'])]
+        private readonly ApiClientInterface $apiClient
     ) {}
 
 }
