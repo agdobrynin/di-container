@@ -82,16 +82,16 @@ final class DiDefinitionAutowire implements DiDefinitionConfigAutowireInterface,
     /**
      * @return $this
      */
-    public function setup(string $method, mixed ...$argument): static
+    public function setup(string $method, array $arguments = []): static
     {
-        $this->setup[$method][] = [false, $argument];
+        $this->setup[$method][] = [false, $arguments];
 
         return $this;
     }
 
-    public function setupImmutable(string $method, mixed ...$argument): static
+    public function setupImmutable(string $method, array $arguments = []): static
     {
-        $this->setup[$method][] = [true, $argument];
+        $this->setup[$method][] = [true, $arguments];
 
         return $this;
     }

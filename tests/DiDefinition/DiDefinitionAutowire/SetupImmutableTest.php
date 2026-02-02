@@ -134,8 +134,8 @@ class SetupImmutableTest extends TestCase
         ;
 
         $def = (new DiDefinitionAutowire(SetupImmutableByAttribute::class))
-            ->setupImmutable('withSomeClass', someClass: null)
-            ->setupImmutable('withSomeClass', someClass: diAutowire(SomeClass::class)->bindArguments('aaa'))
+            ->setupImmutable('withSomeClass', ['someClass' => null])
+            ->setupImmutable('withSomeClass', ['someClass' => diAutowire(SomeClass::class)->bindArguments('aaa')])
 
             ->setContainer($this->mockContainer)
         ;
@@ -160,7 +160,7 @@ class SetupImmutableTest extends TestCase
         ;
 
         $def = (new DiDefinitionAutowire(SetupImmutableByAttributeWithArgumentAsReference::class))
-            ->setupImmutable('withSomeClassAsContainerIdentifier', someClass: null) // overrode by php attribute on method
+            ->setupImmutable('withSomeClassAsContainerIdentifier', ['someClass' => null]) // overrode by php attribute on method
             ->setContainer($mockContainer)
         ;
 
