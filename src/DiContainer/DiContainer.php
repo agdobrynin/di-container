@@ -293,7 +293,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if ($reflectionClass->isInterface()) {
             if ($this->config->isUseAttribute()
                 && null !== ($service = AttributeReader::getServiceAttribute($reflectionClass))) {
-                $findId = $service->getIdentifier();
+                $findId = $service->id;
 
                 try {
                     do {
@@ -309,7 +309,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     unset($this->circularCallWatcher[$findId]);
                 }
 
-                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton());
+                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton);
             }
 
             throw new AutowireException(sprintf('Attempting to resolve interface "%s". An interface that is not bound to a definition.', $id));

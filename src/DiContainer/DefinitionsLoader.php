@@ -311,9 +311,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             return [
-                $reflectionClass->name => class_exists($service->getIdentifier())
-                    ? new DiDefinitionAutowire($service->getIdentifier(), $service->isSingleton())
-                    : new DiDefinitionGet($service->getIdentifier()),
+                $reflectionClass->name => class_exists($service->id)
+                    ? new DiDefinitionAutowire($service->id, $service->isSingleton)
+                    : new DiDefinitionGet($service->id),
             ];
         }
 
