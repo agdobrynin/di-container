@@ -394,7 +394,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $services[$autowireAttr->id] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton);
+                $services[$autowireAttr->id] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
+                    ->bindArguments(...$autowireAttr->arguments)
+                ;
             }
 
             return $services; // @phpstan-ignore return.type
