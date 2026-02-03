@@ -325,8 +325,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if ($this->config->isUseAttribute()
             && ($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
             foreach ($autowires as $autowire) {
-                if ($autowire->getIdentifier() === $reflectionClass->name) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton());
+                if ($autowire->id === $reflectionClass->name) {
+                    return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
+                        ->bindArguments(...$autowire->arguments)
+                    ;
                 }
             }
         }
