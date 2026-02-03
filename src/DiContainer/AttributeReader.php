@@ -81,7 +81,7 @@ final class AttributeReader
         /** @var ReflectionAttribute<Autowire> $attr */
         foreach ($groupAttrs[Autowire::class] as $attr) {
             if ('' === ($autowire = $attr->newInstance())->id) {
-                $autowire = new Autowire($class->name, $autowire->isSingleton);
+                $autowire = new Autowire($class->name, $autowire->isSingleton, $autowire->arguments);
             }
 
             if ($containerIdentifier === $autowire->id) {
