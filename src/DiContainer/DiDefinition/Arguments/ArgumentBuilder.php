@@ -308,7 +308,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             if ($attr instanceof Inject) {
                 $definition = new DiDefinitionGet($attr->id); // @phpstan-ignore argument.type
             } elseif ($attr instanceof ProxyClosure) {
-                $definition = new DiDefinitionProxyClosure($attr->getIdentifier());
+                $definition = new DiDefinitionProxyClosure($attr->id);
             } elseif ($attr instanceof TaggedAs) {
                 $definition = new DiDefinitionTaggedAs(
                     $attr->getIdentifier(),
