@@ -162,7 +162,7 @@ final class AttributeReader
                 /** @var ReflectionAttribute<Inject> $attr */
                 $attrInit = $attr->newInstance();
 
-                if ('' === $attrInit->getIdentifier()) {
+                if ('' === $attrInit->id) {
                     $paramType ??= Helper::getParameterTypeHint($param, $container);
                     $attrInit = new Inject($paramType);
                 }
