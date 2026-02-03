@@ -388,13 +388,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
-                if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) { // @phpstan-ignore argument.type
+                if ($this->configDefinitions->offsetExists($autowireAttr->id)) { // @phpstan-ignore argument.type
                     throw new DefinitionsLoaderInvalidArgumentException(
-                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->id, $reflectionClass->name)
                     );
                 }
 
-                $services[$autowireAttr->getIdentifier()] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton());
+                $services[$autowireAttr->id] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton);
             }
 
             return $services; // @phpstan-ignore return.type
