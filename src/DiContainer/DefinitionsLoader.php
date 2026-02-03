@@ -31,7 +31,6 @@ use ParseError;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
-use SplFileInfo;
 
 use function class_exists;
 use function file_exists;
@@ -60,10 +59,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      */
     private array $mapNamespaceUseAttribute = [];
 
-    private SplFileInfo $splFileInfoImportCacheFile;
-
     public function __construct(
-        private readonly ?string $importCacheFile = null,
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
         $this->configDefinitions = new ArrayIterator();
@@ -122,14 +118,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      */
     public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
     {
-        if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
-            return $file->isReadable()
-                ? $this
-                : throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $file->getPathname())
-                );
-        }
-
         if (null === $this->finderFullyQualifiedNameCollection) {
             $this->finderFullyQualifiedNameCollection = new FinderFullyQualifiedNameCollection();
         }
@@ -158,47 +146,19 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
-        $importCacheFile = $this->getImportCacheFile();
-
-        if (null !== $importCacheFile && $importCacheFile->isFile()) {
-            if (!$importCacheFile->isReadable()) {
-                throw new DefinitionsLoaderException(
-                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $importCacheFile->getPathname()),
-                );
-            }
-
-            yield from $this->getIteratorFromFile($importCacheFile->getPathname()); // @phpstan-ignore generator.keyType
-        }
 
         if ($this->importedDefinitions()->valid()) {
             $importedDefinitions = $this->importedDefinitions();
             $importedDefinitions->rewind();
 
-            try {
-                $cacheFileOpened = $importCacheFile?->openFile('wb+');
-                $cacheFileOpened?->fwrite(
-                    '<?php'.PHP_EOL
-                    .'use function Kaspi\DiContainer\{diAutowire, diFactory, diGet};'.PHP_EOL
-                    .'return static function (): \Generator {'.PHP_EOL
-                );
-            } catch (RuntimeException $e) {
-                throw new DefinitionsLoaderException(
-                    sprintf('The cache file for importing definitions isn\'t writable. File: "%s".', $importCacheFile->getPathname()),
-                    previous: $e
-                );
-            }
-
             do {
                 $identifier = $importedDefinitions->key();
                 $definition = $importedDefinitions->current();
-                $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
 
                 yield $identifier => $definition;
 
                 $importedDefinitions->next();
             } while ($importedDefinitions->valid());
-
-            $cacheFileOpened?->fwrite('};'.PHP_EOL);
         }
 
         yield from $this->configDefinitions;
@@ -286,33 +246,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         yield from $importedDefinitions;
-    }
-
-    private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
-    {
-        if ($definition instanceof DiDefinitionAutowire) {
-            return sprintf(
-                '    yield %s => diAutowire(%s, %s);',
-                var_export($identifier, true),
-                var_export($definition->getIdentifier(), true),
-                var_export($definition->isSingleton(), true),
-            );
-        }
-
-        if ($definition instanceof DiDefinitionFactory) {
-            return sprintf(
-                '    yield %s => diFactory(%s, %s);',
-                var_export($identifier, true),
-                var_export($definition->getDefinition(), true),
-                var_export($definition->isSingleton(), true),
-            );
-        }
-
-        return sprintf(
-            '    yield %s => diGet("%s");',
-            var_export($identifier, true),
-            var_export($definition->getDefinition(), true),
-        );
     }
 
     /**
@@ -467,12 +400,5 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
         }
-    }
-
-    private function getImportCacheFile(): ?SplFileInfo
-    {
-        return null !== $this->importCacheFile
-            ? $this->splFileInfoImportCacheFile ??= new SplFileInfo($this->importCacheFile)
-            : null;
     }
 }
