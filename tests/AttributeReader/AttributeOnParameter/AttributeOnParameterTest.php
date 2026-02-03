@@ -104,7 +104,7 @@ class AttributeOnParameterTest extends TestCase
         self::assertEquals('\uniqid', $res[2]->getCallable());
         self::assertIsCallable($res[2]->getCallable());
 
-        self::assertEquals('service.heavy', $res[3]->getIdentifier());
+        self::assertEquals('service.heavy', $res[3]->id);
 
         self::assertEquals('tags.one', $res[4]->getIdentifier());
         self::assertTrue($res[4]->isLazy());
