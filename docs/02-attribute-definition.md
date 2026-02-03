@@ -31,71 +31,75 @@
 Применятся к классу для конфигурирования сервиса в контейнере.
 
 ```php
-#[Autowire(string $id = '', ?bool $isSingleton = null)]
+#[Autowire(string $id = '', ?bool $isSingleton = null, array $arguments = [])]
 ```
 Параметры:
 - `$id` – идентификатор контейнера для класса (_container identifier_).
-- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$isSingleton` – зарегистрировать как singleton сервис. Если `null`, то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$arguments` – предать аргументы для конструктора php класса.
 
 > [!NOTE]
-> Пустая строка в аргументе `$id` будет представлена как полное имя класса
-> с учётом пространства имён – **fully qualified class name** и будет являться идентификатором контейнера для этого класса.
+> Пустая строка в аргументе `$id` будет представлена как полное имя класса – **fully qualified class name** которая является идентификатором контейнера для этого php класса.
 
 > [!TIP]
-> Атрибут `#[Autowire]` имеет признак `repetable` и может быть
-> применен несколько раз для класса. Аргумент `$id`
-> у каждого атрибута должен быть уникальным, иначе будет выброшено
-> исключение при разрешении класса контейнером.
+> - Для передачи неполного списка аргументов используйте в качестве ключа в массиве `$arguments` имя параметра в конструкторе php класса.
+> - Для параметров не переданных через `$arguments` в php атрибуте, контейнер попытается разрешить зависимости самостоятельно на основе конфигурации.
+> - Атрибут `#[Autowire]` имеет признак `repetable` и может быть применен несколько раз для одного и того же класса. 
+> - При применении нескольких атрибутов `#[Autowire]` к php классу параметр `$id` у каждого атрибута должен быть уникальным, иначе выбрасывается исключение при разрешении класса контейнером.
+> 
 
 ```php
-// src/Services/SomeService.php
+// src/Services/FooService.php
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire as DiAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
+use App\Interfaces\QuxInterface;
+use App\Classes\{Foo, Bar};
 
-#[Autowire(isSingleton: true)] // $id будет присвоен 'App\Services\SomeService'
-#[Autowire(id: 'services.some_service')]
-class SomeService {}
+#[
+    Autowire(arguments: [
+        'qux' => new DiGet(Foo::class),
+    ]),
+    Autowire(id: 'services.foo_baz', arguments: [
+        'qux' => new DiAutowire(Bar::class),
+    ]),
+]
+class FooService
+{
+    public function __construct(
+        public readonly QuxInterface $qux
+    ) {}
+}
 ```
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\SomeService;
+use App\Services\FooService;
 
 $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: __DIR__.'/src/')
     ->build()
 ;
 
-var_dump($container->has(SomeService::class)); // true
+var_dump($container->has(FooService::class)); // true
+var_dump($container->has('services.foo_baz')); // true
 
-// получить сервис по идентификатору контейнера `App\Services\SomeService`
-// сконфигурированным через атрибут #[Autowire]
-$service = $container->get(SomeService::class);
-
-// Так как в атрибуте указан `$isSingleton= true` сервис будет создан единожды
 var_dump(
-    \spl_object_id($service) === \spl_object_id($container->get(SomeService::class))
+    $container->get(FooService::class)->qux instanceof App\Classes\Foo
 ); // true
 
-var_dump($container->has('services.some_service')); // true
-
-// получить сервис по идентификатору контейнера `services.some_service`
-// сконфигурированным через атрибут #[Autowire]
-$serviceSome = $container->get('services.some_service');
-
 var_dump(
-    \spl_object_id($serviceSome) === \spl_object_id($container->get('services.some_service')))
-); // false
+    $container->get(FooService::class)->qux instanceof App\Classes\Bar
+); // true
 ```
 > [!NOTE]
-> При получении сервиса через идентификатор `App\Services\SomeService::class` PHP-класс
-> создаётся единожды так как у атрибута указан аргумент `isSingleton` как `true`.
-> 
-> При получении сервиса через идентификатор `services.some_service` PHP-класс
-> создаётся каждый раз заново так как у атрибута не указан аргумент `isSingleton`, то по умолчанию имеет значение `null`. 
-> Если у сервиса не указан признак `isSingleton` контейнер использует значение из конфигурации.
-> В данном случае используется конфигурация по умолчанию, где значение `$isSingleton = false`.
-
+> При получении из контейнера по идентификатору `'App\Services\FooService'`
+> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Foo`.
+>
+> При получении из контейнера по идентификатору `'services.foo_baz'`
+> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Bar`.
+>
 
 ## AutowireExclude
 Применятся к классу или интерфейсу для исключения разрешения зависимости контейнером.
