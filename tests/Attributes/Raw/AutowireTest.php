@@ -20,13 +20,15 @@ class AutowireTest extends TestCase
 
         $this->assertEquals('', $a->id);
         $this->assertNull($a->isSingleton);
+        $this->assertEmpty($a->arguments);
     }
 
     public function testAutowireDefinedArgs(): void
     {
-        $a = new Autowire('service.a', true);
+        $a = new Autowire('service.a', true, ['foo' => 'bar', 'bar' => 'baz']);
 
         $this->assertEquals('service.a', $a->id);
         $this->assertTrue($a->isSingleton);
+        $this->assertEquals(['foo' => 'bar', 'bar' => 'baz'], $a->arguments);
     }
 }
