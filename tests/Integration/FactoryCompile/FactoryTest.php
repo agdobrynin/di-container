@@ -43,7 +43,7 @@ class FactoryTest extends TestCase
                 Bar::class => diFactory([BarFactoryStatic::class, 'create'])
                     ->bindArguments(
                         diAutowire(Baz::class)
-                            ->setupImmutable('withStr', 'Ho-ho-ho'),
+                            ->setupImmutable('withStr', ['Ho-ho-ho']),
                     ),
             ])
             ->compileToFile(vfsStream::url('root/'), '\App\\'.$containerClass, isExclusiveLockFile: false)
