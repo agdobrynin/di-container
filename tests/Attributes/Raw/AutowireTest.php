@@ -18,15 +18,15 @@ class AutowireTest extends TestCase
     {
         $a = new Autowire();
 
-        $this->assertEquals('', $a->getIdentifier());
-        $this->assertNull($a->isSingleton());
+        $this->assertEquals('', $a->id);
+        $this->assertNull($a->isSingleton);
     }
 
     public function testAutowireDefinedArgs(): void
     {
         $a = new Autowire('service.a', true);
 
-        $this->assertEquals('service.a', $a->getIdentifier());
-        $this->assertTrue($a->isSingleton());
+        $this->assertEquals('service.a', $a->id);
+        $this->assertTrue($a->isSingleton);
     }
 }

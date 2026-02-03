@@ -37,18 +37,18 @@ class AutowireTest extends TestCase
 
         $this->assertTrue($attrs->valid());
 
-        $this->assertEquals(MultipleAutowire::class, $attrs->current()->getIdentifier());
-        $this->assertNull($attrs->current()->isSingleton());
+        $this->assertEquals(MultipleAutowire::class, $attrs->current()->id);
+        $this->assertNull($attrs->current()->isSingleton);
 
         $attrs->next();
 
-        $this->assertEquals('service.singleton', $attrs->current()->getIdentifier());
-        $this->assertTrue($attrs->current()->isSingleton());
+        $this->assertEquals('service.singleton', $attrs->current()->id);
+        $this->assertTrue($attrs->current()->isSingleton);
 
         $attrs->next();
 
-        $this->assertEquals('service.none_singleton', $attrs->current()->getIdentifier());
-        $this->assertFalse($attrs->current()->isSingleton());
+        $this->assertEquals('service.none_singleton', $attrs->current()->id);
+        $this->assertFalse($attrs->current()->isSingleton);
 
         $attrs->next();
 

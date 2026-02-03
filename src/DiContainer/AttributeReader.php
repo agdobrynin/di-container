@@ -80,17 +80,17 @@ final class AttributeReader
 
         /** @var ReflectionAttribute<Autowire> $attr */
         foreach ($groupAttrs[Autowire::class] as $attr) {
-            if ('' === ($autowire = $attr->newInstance())->getIdentifier()) {
-                $autowire = new Autowire($class->name, $autowire->isSingleton());
+            if ('' === ($autowire = $attr->newInstance())->id) {
+                $autowire = new Autowire($class->name, $autowire->isSingleton);
             }
 
-            if ($containerIdentifier === $autowire->getIdentifier()) {
+            if ($containerIdentifier === $autowire->id) {
                 throw new AutowireAttributeException(
                     sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $containerIdentifier, Autowire::class, $containerIdentifier, $class->name),
                 );
             }
 
-            $containerIdentifier = $autowire->getIdentifier();
+            $containerIdentifier = $autowire->id;
 
             yield $autowire;
         }
