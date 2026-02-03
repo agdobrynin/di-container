@@ -197,34 +197,3 @@ $container = (new DiContainerFactory())->make(
     $loader->definitions()
 );
 ```
-
-### Кэширование импортируемых классов.
-Для увеличения производительности добавлена возможность кэширования определений
-импортируемых через `DefinitionsLoader::import()`.
-Для включения кэширования необходимо указать файл в аргументе `$importCacheFile`:
-```php
-DefinitionsLoader::__construct(
-    ?string $importCacheFile = null,
-    ?ImportLoaderCollectionInterface $importLoaderCollection = null
-)
-```
-Аргумент:
-- `$importCacheFile` – имя кэш-файла.
-- `$importLoaderCollection` – класс собирающий fully qualified names для php классов и интерфейса из директорий.
-
-> [!WARNING]
-> Не используйте кэширования импортируемых файлов в "development"
-> окружении (_при разработке_) так как файл кэша создается единожды и любые изменения
-> в ранее импортированных файлах не отслеживаются.
-
-Пример настройки кэш-файла для разных окружений:
-```php
-use Kaspi\DiContainer\DefinitionsLoader;
-
-$loader = 'prod' === \getenv('APP_ENV'))
-    ? new DefinitionsLoader(importCacheFile: __DIR__.'/../var/cache/def_import.php')
-    : new DefinitionsLoader();
-```
-> [!TIP]
-> Что бы заново создать кэш-файл импортируемых файлов необходимо
-> вручную удалить ранее созданный файл указанный в аргументе `$importCacheFile` в конструкторе класса `DefinitionsLoader`.
