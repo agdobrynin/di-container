@@ -99,14 +99,14 @@ class AttributeOnParameterTest extends TestCase
         self::assertEquals(FooFactory::class, $res[0]->definition);
         self::assertNull($res[0]->isSingleton);
 
-        self::assertEquals('service.one', $res[1]->getIdentifier());
+        self::assertEquals('service.one', $res[1]->id);
 
         self::assertEquals('\uniqid', $res[2]->getCallable());
         self::assertIsCallable($res[2]->getCallable());
 
-        self::assertEquals('service.heavy', $res[3]->getIdentifier());
+        self::assertEquals('service.heavy', $res[3]->id);
 
-        self::assertEquals('tags.one', $res[4]->getIdentifier());
-        self::assertTrue($res[4]->isLazy());
+        self::assertEquals('tags.one', $res[4]->name);
+        self::assertTrue($res[4]->isLazy);
     }
 }
