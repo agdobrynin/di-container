@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -67,9 +68,11 @@ trait SetupConfigureTrait
             $this->setupByAttributes = [];
 
             foreach (AttributeReader::getSetupAttribute($class) as $setupAttr) {
-                $this->setupByAttributes[$setupAttr->getIdentifier()][] = [
-                    SetupConfigureMethod::fromAttribute($setupAttr), $setupAttr->getArguments(),
-                ];
+                $setupType = $setupAttr instanceof Setup
+                    ? SetupConfigureMethod::Mutable
+                    : SetupConfigureMethod::Immutable;
+
+                $this->setupByAttributes[$setupAttr->getMethod()][] = [$setupType, $setupAttr->arguments];
             }
         }
 
