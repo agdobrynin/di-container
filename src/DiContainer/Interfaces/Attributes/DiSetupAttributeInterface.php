@@ -11,13 +11,8 @@ use Kaspi\DiContainer\Traits\SetupConfigureTrait;
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  * @phpstan-import-type SetupConfigureArgumentsType from SetupConfigureTrait
  */
-interface DiSetupAttributeInterface extends DiAttributeInterface
+interface DiSetupAttributeInterface
 {
-    /**
-     * @return SetupConfigureArgumentsType
-     */
-    public function getArguments(): array;
-
     /**
      * @param non-empty-string $method
      */

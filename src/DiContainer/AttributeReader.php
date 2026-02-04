@@ -18,7 +18,6 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
-use Kaspi\DiContainer\Interfaces\Attributes\DiSetupAttributeInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
@@ -117,7 +116,7 @@ final class AttributeReader
     }
 
     /**
-     * @return Generator<DiSetupAttributeInterface>
+     * @return Generator<int, Setup|SetupImmutable>
      */
     public static function getSetupAttribute(ReflectionClass $class): Generator
     {
