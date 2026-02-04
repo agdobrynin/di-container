@@ -311,14 +311,14 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 $definition = new DiDefinitionProxyClosure($attr->id);
             } elseif ($attr instanceof TaggedAs) {
                 $definition = new DiDefinitionTaggedAs(
-                    $attr->getIdentifier(),
-                    $attr->isLazy(),
-                    $attr->getPriorityDefaultMethod(),
-                    $attr->isUseKeys(),
-                    $attr->getKey(),
-                    $attr->getKeyDefaultMethod(),
-                    $attr->getContainerIdExclude(),
-                    $attr->isSelfExclude(),
+                    $attr->name,
+                    $attr->isLazy,
+                    $attr->priorityDefaultMethod,
+                    $attr->useKeys,
+                    $attr->key,
+                    $attr->keyDefaultMethod,
+                    $attr->containerIdExclude,
+                    $attr->selfExclude,
                 );
             } elseif ($attr instanceof DiFactory) {
                 $definition = (new DiDefinitionFactory($attr->definition))
