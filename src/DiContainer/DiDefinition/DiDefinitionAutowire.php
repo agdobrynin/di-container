@@ -372,12 +372,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
 
         foreach ($tagAttributes as $tagAttribute) {
-            $priorityMethod = null !== $tagAttribute->getPriorityMethod()
-                ? ['priority.method' => $tagAttribute->getPriorityMethod()]
+            $priorityMethod = null !== $tagAttribute->priorityMethod
+                ? ['priority.method' => $tagAttribute->priorityMethod]
                 : [];
-            $this->tagsByAttribute[$tagAttribute->getIdentifier()] = self::transformTagOptions(
-                $priorityMethod + $tagAttribute->getOptions(),
-                $tagAttribute->getPriority()
+            $this->tagsByAttribute[$tagAttribute->name] = self::transformTagOptions(
+                $priorityMethod + $tagAttribute->options,
+                $tagAttribute->priority
             );
         }
 
