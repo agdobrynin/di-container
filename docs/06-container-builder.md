@@ -107,7 +107,7 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 > [!TIP]
 > Для некоторых определений идентификатор контейнера может быть сформирован автоматически.
 > - [хэлпер функция `diAutowire()`](01-php-definition.md#diautowire)
-> - [PHP атрибут `#[Autowire()`](02-attribute-definition.md#autowire)
+> - [PHP атрибут `#[Autowire()]`](02-attribute-definition.md#autowire)
 >
 
 В рамках создаваемого контейнера отслеживается уникальность идентификаторов определений.
@@ -196,7 +196,7 @@ $builder->load(
 
     '/app/config/base_services.php',
 
-    '/app/config/prod_services.php'
+    '/app/config/prod_services.php',
 
 );
 
@@ -247,13 +247,15 @@ $builder = new \Kaspi\DiContainer\DiContainerBuilder()
 
 // ...
 
-    $builder->addDefinitions(static function () {
+    // использование callback функции в качестве коллекции определений
+    $builder->addDefinitions((static function () {
         yield 'app.access_key' => \Kaspi\DiContainer\diCallable([Foo::class, 'accessKey']);  
-    })
+    })())
 ;
 
 // ...
 
+    // использование php массива в качестве коллекции определений
     $builder->addDefinitions([
         'params.foo' => ['bar', 'baz'],
     ])
@@ -263,9 +265,9 @@ $builder = new \Kaspi\DiContainer\DiContainerBuilder()
 
 if ('test' === \getenv('APP_ENV')) {
     // 🚩 Перезаписать ранее загруженные определения
-    $builder->addDefinitionsOverride(static function () {
-        yield 'app.access_key' => 'foo-bar-baz-qux';  
-    })
+    $builder->addDefinitionsOverride([
+        'app.access_key' => 'foo-bar-baz-qux';  
+    ])
 }
    
 $container = $builder->build();
@@ -334,7 +336,10 @@ $builder = (new DiContainerBuilder())
         ]
     )
     // 🚩 Отслеживать уникальность определений
-    ->load('/app/config/base_services.php', '/app/config/prod_services.php')
+    ->load(
+        '/app/config/base_services.php',
+        '/app/config/prod_services.php',
+    )
 ;
 
 if ('dev' === \getenv('APP_ENV')) {
