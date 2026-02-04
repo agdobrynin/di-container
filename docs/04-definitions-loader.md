@@ -7,6 +7,17 @@
 > Для создания контейнера зависимостей лучше использовать готовый [инструмент DiContainerBuilder](06-container-builder.md).
 > 
 
+## Использование атрибутов для конфигурирования определений.
+
+```php
+Kaspi\DiContainer\DefinitionsLoader::useAttribute(
+    bool $useAttribute
+)
+```
+Параметр:
+- `$useAttribute` – использовать PHP атрибуты для конфигурирования импортированных классов и интерфейсов в сервисы контейнера.
+
+
 ## Загрузка из конфигурационных файлов.
 
 Предусмотрены режимы загрузки:
@@ -141,7 +152,6 @@ Kaspi\DiContainer\DefinitionsLoader::import(
     string $src,
     array $excludeFiles = [],
     array $availableExtensions = ['php'],
-    bool $useAttribute = true 
 )
 ```
 Параметры:
@@ -150,7 +160,6 @@ Kaspi\DiContainer\DefinitionsLoader::import(
 - `$src` – директория из которой загружать классы;
 - `$excludeFiles` – исключить из загрузки файлы по шаблону;
 - `$availableExtensions` – указать расширения у файлов которые будут обработаны;
-- `$useAttribute` – использовать PHP атрибуты для конфигурирования импортированных классов и интерфейсов в сервисы контейнера.
 
 > [!NOTE]
 > Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).

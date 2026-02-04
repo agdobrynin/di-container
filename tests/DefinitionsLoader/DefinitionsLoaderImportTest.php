@@ -165,10 +165,10 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithoutUseAttributeForConfigureServices(): void
     {
         $loader = (new DefinitionsLoader())
+            ->useAttribute(false)
             ->import(
                 'Tests\DefinitionsLoader\\',
                 __DIR__.'/Fixtures/Import',
-                useAttribute: false
             )
         ;
 
