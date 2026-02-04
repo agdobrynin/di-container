@@ -32,14 +32,14 @@ class TagReaderTest extends TestCase
 
         $this->assertTrue($result->valid());
         $this->assertInstanceOf(Tag::class, $result->current());
-        $this->assertEquals('tags.handler-one', $result->current()->getIdentifier());
-        $this->assertEquals([], $result->current()->getOptions());
+        $this->assertEquals('tags.handler-one', $result->current()->name);
+        $this->assertEquals([], $result->current()->options);
 
         $result->next();
         $this->assertInstanceOf(Tag::class, $result->current());
-        $this->assertEquals('tags.handler-two', $result->current()->getIdentifier());
-        $this->assertEquals(['priority' => 100], $result->current()->getOptions());
-        $this->assertEquals(150, $result->current()->getPriority());
+        $this->assertEquals('tags.handler-two', $result->current()->name);
+        $this->assertEquals(['priority' => 100], $result->current()->options);
+        $this->assertEquals(150, $result->current()->priority);
 
         $result->next();
         $this->assertFalse($result->valid());
