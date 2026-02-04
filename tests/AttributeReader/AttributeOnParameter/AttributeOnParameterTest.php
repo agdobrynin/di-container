@@ -106,7 +106,7 @@ class AttributeOnParameterTest extends TestCase
 
         self::assertEquals('service.heavy', $res[3]->id);
 
-        self::assertEquals('tags.one', $res[4]->getIdentifier());
-        self::assertTrue($res[4]->isLazy());
+        self::assertEquals('tags.one', $res[4]->name);
+        self::assertTrue($res[4]->isLazy);
     }
 }
