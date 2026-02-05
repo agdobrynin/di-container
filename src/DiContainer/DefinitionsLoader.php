@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use ArrayIterator;
-use Closure;
 use Error;
 use Generator;
 use InvalidArgumentException;
@@ -36,6 +35,7 @@ use SplFileInfo;
 use function class_exists;
 use function file_exists;
 use function in_array;
+use function is_callable;
 use function is_iterable;
 use function is_readable;
 use function ob_get_clean;
@@ -367,9 +367,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         return match (true) {
             is_iterable($content) => yield from $content,
-            $content instanceof Closure && is_iterable($content()) => yield from $content(),
+            is_callable($content) && is_iterable($content()) => yield from $content(),
             default => throw new DefinitionsLoaderInvalidArgumentException(
-                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function using "yield" keyword.', $srcFile)
+                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function return iterable type.', $srcFile)
             )
         };
     }
