@@ -22,11 +22,13 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
+use LogicException;
 use ParseError;
 use ReflectionClass;
 use ReflectionException;
@@ -143,6 +145,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->useAttribute = $useAttribute;
 
         return $this;
+    }
+
+    public function definitionsConfiguratorExpose(): DefinitionsConfiguratorInterface
+    {
+        throw new LogicException('Not implemented yet.');
     }
 
     public function definitions(): iterable
