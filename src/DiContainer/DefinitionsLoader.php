@@ -56,10 +56,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<non-empty-string, mixed> */
     private ArrayIterator $configDefinitions;
 
-    /**
-     * @var array<non-empty-string, bool>
-     */
-    private array $mapNamespaceUseAttribute = [];
+    private bool $useAttribute = true;
 
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
@@ -118,7 +115,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @see https://www.php.net/manual/en/function.fnmatch.php
      */
-    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
+    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php']): static
     {
         if (null === $this->finderFullyQualifiedNameCollection) {
             $this->finderFullyQualifiedNameCollection = new FinderFullyQualifiedNameCollection();
@@ -138,9 +135,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        if ($useAttribute) {
-            $this->mapNamespaceUseAttribute[$namespace] = true;
-        }
+        return $this;
+    }
+
+    public function useAttribute(bool $useAttribute): static
+    {
+        $this->useAttribute = $useAttribute;
 
         return $this;
     }
@@ -169,7 +169,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function reset(): void
     {
         $this->configDefinitions = new ArrayIterator();
-        $this->mapNamespaceUseAttribute = [];
+        $this->useAttribute = true;
         $this->finderFullyQualifiedNameCollection?->reset();
     }
 
@@ -206,7 +206,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 }
 
                 try {
-                    $definitions = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$finderFQN->getNamespace()]));
+                    $definitions = $this->makeDefinitionFromItemFQN($itemFQN);
                 } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
                     throw new DefinitionsLoaderException(
                         sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
@@ -257,7 +257,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException
      */
-    private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
+    private function makeDefinitionFromItemFQN(array $itemFQN): array
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
@@ -267,7 +267,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        if (!$useAttribute) {
+        if (!$this->useAttribute) {
             return $this->configDefinitions->offsetExists($fqn) || T_INTERFACE === $tokenId
                 ? []
                 : [$fqn => new DiDefinitionAutowire($fqn)];

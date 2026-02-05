@@ -90,7 +90,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     public function __construct(
         private readonly DiContainerConfigInterface $containerConfig = new DiContainerConfig(),
         private readonly DefinitionsLoaderInterface $definitionsLoader = new DefinitionsLoader(),
-    ) {}
+    ) {
+        $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
+    }
 
     public function load(string ...$file): static
     {
@@ -262,7 +264,6 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                     $import['src'],
                     $import['exclude_files'],
                     $import['available_extensions'],
-                    $this->containerConfig->isUseAttribute(),
                 );
             } catch (DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
