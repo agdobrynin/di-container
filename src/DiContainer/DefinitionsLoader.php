@@ -47,6 +47,8 @@ use const T_CLASS;
 use const T_INTERFACE;
 
 /**
+ * @internal
+ *
  * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface

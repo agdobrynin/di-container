@@ -9,6 +9,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 
+/**
+ * @internal
+ */
 interface DefinitionsLoaderInterface extends ResetInterface
 {
     /**
