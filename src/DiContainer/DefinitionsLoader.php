@@ -373,7 +373,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             is_iterable($content) => yield from $content,
             is_callable($content) && is_iterable($content()) => yield from $content(),
             default => throw new DefinitionsLoaderException(
-                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function return iterable type.', $srcFile),
+                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callable expression that returns a iterable type.', $srcFile),
             )
         };
     }
