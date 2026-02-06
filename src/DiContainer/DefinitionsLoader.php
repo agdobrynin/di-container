@@ -58,6 +58,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     private bool $useAttribute = true;
 
+    /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
+    private array $importedDefinitions;
+
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
@@ -135,6 +138,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
+        unset($this->importedDefinitions);
+
         return $this;
     }
 
@@ -149,10 +154,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         $this->configDefinitions->rewind();
 
-        if ($this->importedDefinitions()->valid()) {
-            $importedDefinitions = $this->importedDefinitions();
-            $importedDefinitions->rewind();
+        $importedDefinitions = $this->importedDefinitions();
 
+        if ($importedDefinitions->valid()) {
             do {
                 $identifier = $importedDefinitions->key();
                 $definition = $importedDefinitions->current();
@@ -171,6 +175,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configDefinitions = new ArrayIterator();
         $this->useAttribute = true;
         $this->finderFullyQualifiedNameCollection?->reset();
+        unset($this->importedDefinitions);
     }
 
     /**
@@ -184,8 +189,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return;
         }
 
-        /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> $importedDefinitions */
-        $importedDefinitions = [];
+        if (isset($this->importedDefinitions)) {
+            yield from $this->importedDefinitions;
+        }
+
+        $this->importedDefinitions = [];
 
         foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
             $fullQualifiedName = $finderFQN->get();
@@ -215,13 +223,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 }
 
                 foreach ($definitions as $identifier => $definition) {
-                    if ($definition instanceof DiDefinitionAutowire && isset($importedDefinitions[$identifier]) && $importedDefinitions[$identifier] instanceof DiDefinitionAutowire) {
+                    if ($definition instanceof DiDefinitionAutowire
+                        && isset($this->importedDefinitions[$identifier])
+                        && $this->importedDefinitions[$identifier] instanceof DiDefinitionAutowire) {
                         throw new DefinitionsLoaderException(
-                            sprintf('Container identifier "%s" already import for class "%s". Please specify container identifier for class "%s".', $identifier, $importedDefinitions[$identifier]->getIdentifier(), $definition->getIdentifier())
+                            sprintf('Container identifier "%s" already import for class "%s". Please specify container identifier for class "%s".', $identifier, $this->importedDefinitions[$identifier]->getIdentifier(), $definition->getIdentifier())
                         );
                     }
 
-                    $importedDefinitions[$identifier] = $definition;
+                    $this->importedDefinitions[$identifier] = $definition;
                 }
 
                 $fullQualifiedName->next();
@@ -232,14 +242,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
          * Check valid DiDefinitionGet for imported definitions.
          * Interface maybe configured via php attribute #[Service('container_id')].
         */
-        foreach ($importedDefinitions as $identifier => $definition) {
+        foreach ($this->importedDefinitions as $identifier => $definition) {
             if (!$definition instanceof DiDefinitionGet) {
                 continue;
             }
 
             $containerIdentifier = $definition->getDefinition();
 
-            if (!isset($importedDefinitions[$containerIdentifier])
+            if (!isset($this->importedDefinitions[$containerIdentifier])
                 && !$this->configDefinitions->offsetExists($containerIdentifier)) {
                 throw new DefinitionsLoaderException(
                     sprintf('The container identifier "%s" is not registered. The reference from the definition with the id "%s".', $containerIdentifier, $identifier)
@@ -247,7 +257,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
         }
 
-        yield from $importedDefinitions;
+        yield from $this->importedDefinitions;
     }
 
     /**
