@@ -22,6 +22,7 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
@@ -60,6 +61,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
     private array $importedDefinitions;
+
+    private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
@@ -150,11 +153,76 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
+    public function definitionsConfigurator(): DefinitionsConfiguratorInterface
+    {
+        return $this->definitionsConfigurator ??= new class($this) implements DefinitionsConfiguratorInterface {
+            /**
+             * @var array<non-empty-string, non-empty-string>
+             */
+            private array $removedDefinitionIds = [];
+
+            /**
+             * @var array<non-empty-string, non-empty-string>
+             */
+            private array $setDefinitionIds = [];
+
+            public function __construct(private readonly DefinitionsLoaderInterface $definitionsLoader) {}
+
+            public function removeDefinition(string $id): void
+            {
+                $this->removedDefinitionIds[$id] = $id;
+            }
+
+            public function getRemovedDefinitionIds(): array
+            {
+                return $this->removedDefinitionIds;
+            }
+
+            public function setDefinition(string $id, mixed $definition): void
+            {
+                $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
+                $this->setDefinitionIds[$id] = $id;
+            }
+
+            public function getSetDefinitionIds(): array
+            {
+                return $this->setDefinitionIds;
+            }
+
+            public function getDefinition(string $id): mixed
+            {
+                foreach ($this->definitionsLoader->definitions() as $identifier => $definition) {
+                    if ($id === $identifier) {
+                        return $definition;
+                    }
+                }
+
+                throw new DefinitionsLoaderException(
+                    sprintf('Definition with identifier "%s" not found.', $id),
+                );
+            }
+
+            public function load(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->load($file, ...$_);
+            }
+
+            public function loadOverride(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->loadOverride($file, ...$_);
+            }
+        };
+    }
+
     public function definitions(): iterable
     {
         yield from $this->importedDefinitions();
 
-        yield from $this->configuredDefinitions;
+        foreach ($this->configuredDefinitions as $identifier => $definition) {
+            if (!isset($this->definitionsConfigurator()->getRemovedDefinitionIds()[$identifier])) {
+                yield $identifier => $definition;
+            }
+        }
     }
 
     public function reset(): void
@@ -201,6 +269,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
                         previous: $e
                     );
+                }
+
+                if (isset($this->definitionsConfigurator()->getSetDefinitionIds()[$itemFQN['fqn']])
+                    || isset($this->definitionsConfigurator()->getRemovedDefinitionIds()[$itemFQN['fqn']])) {
+                    $fullQualifiedName->next();
+
+                    continue;
                 }
 
                 try {
@@ -373,7 +448,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         return match (true) {
             is_iterable($content) => yield from $content,
-            is_callable($content) && is_iterable($content()) => yield from $content(),
+            is_callable($content) && is_iterable($content($this->definitionsConfigurator())) => yield from $content($this->definitionsConfigurator()),
             default => throw new DefinitionsLoaderException(
                 sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function return iterable type.', $srcFile),
             )
