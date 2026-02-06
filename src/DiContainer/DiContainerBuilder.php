@@ -249,7 +249,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             require_once $file;
         }
 
-        return new ($compiledContainerFQN->getFQN())(); // @phpstan-ignore return.type
+        return new ($compiledContainerFQN->getFQN())(dataFromDefinitionsConfigurator: $dataFromConfigurator); // @phpstan-ignore return.type
     }
 
     /**
