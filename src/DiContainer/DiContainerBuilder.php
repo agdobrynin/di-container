@@ -186,10 +186,11 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         $this->definitionsLoader->reset();
 
         $loader = $this->definitionsLoader();
+        $dataFromConfigurator = new DataFromDefinitionsConfigurator($loader->definitionsConfigurator());
 
         if (!isset($this->compilerOutputDirectory)) {
             try {
-                return new DiContainer($loader->definitions(), $this->containerConfig);
+                return new DiContainer($loader->definitions(), $this->containerConfig, $dataFromConfigurator);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
                     sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
@@ -198,7 +199,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $loader->definitions()), $this->containerConfig);
+        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $loader->definitions()), $this->containerConfig, $dataFromConfigurator);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {

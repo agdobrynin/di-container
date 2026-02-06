@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\DataFromDefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -83,6 +84,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function __construct(
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
+        protected ?DataFromDefinitionsConfiguratorInterface $dataFromDefinitionsConfigurator = null,
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
             ? new ImmediateSourceDefinitionsMutable($definitions)
@@ -344,6 +346,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
         if (!$this->config->isUseZeroConfigurationDefinition()) {
+            return false;
+        }
+
+        if (isset($this->dataFromDefinitionsConfigurator?->getRemovedDefinitionIds()[$id])) {
             return false;
         }
 
