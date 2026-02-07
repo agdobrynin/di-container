@@ -210,19 +210,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitions(): iterable
     {
-        $this->configDefinitions->rewind();
-
-        $importedDefinitions = $this->importedDefinitions();
-
-        if ($importedDefinitions->valid()) {
-            do {
-                $identifier = $importedDefinitions->key();
-                $definition = $importedDefinitions->current();
-
-                yield $identifier => $definition;
-
-                $importedDefinitions->next();
-            } while ($importedDefinitions->valid());
+        foreach ($this->importedDefinitions() as $identifier => $definition) {
+            yield $identifier => $definition;
         }
 
         foreach ($this->configDefinitions as $identifier => $definition) {
