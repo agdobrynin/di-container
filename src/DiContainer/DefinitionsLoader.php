@@ -182,6 +182,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             {
                 $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
                 $this->setDefinitionIds[$id] = $id;
+                unset($this->removedDefinitionIds[$id]);
             }
 
             public function getSetDefinitionIds(): array
