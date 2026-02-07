@@ -83,7 +83,7 @@ class DiContainerAddDefinitionThroughConstructorTest extends TestCase
 
     public function testDefinitionsAsDeferredSourceDefinitionsMutable(): void
     {
-        $definitions = new DeferredSourceDefinitionsMutable(['service.foo' => null]);
+        $definitions = new DeferredSourceDefinitionsMutable(static fn (): iterable => ['service.foo' => null]);
 
         self::assertTrue((new DiContainer(definitions: $definitions))->has('service.foo'));
     }
