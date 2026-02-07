@@ -30,13 +30,6 @@ interface DefinitionsConfiguratorInterface
     public function setDefinition(string $id, mixed $definition): void;
 
     /**
-     * Get container identifiers for definitions set via `self::forceSetDefinition()`.
-     *
-     * @return array<non-empty-string, non-empty-string>
-     */
-    public function getSetDefinitionIds(): array;
-
-    /**
      * Find a definition via container identifier.
      *
      * @param non-empty-string $id

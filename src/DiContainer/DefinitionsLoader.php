@@ -55,7 +55,7 @@ use const T_INTERFACE;
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
     /** @var ArrayIterator<non-empty-string, mixed> */
-    private ArrayIterator $configDefinitions;
+    private readonly ArrayIterator $configDefinitions;
 
     private bool $useAttribute = true;
 
@@ -155,22 +155,21 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->configDefinitions) implements DefinitionsConfiguratorInterface {
             /**
              * @var array<non-empty-string, non-empty-string>
              */
             private array $removedDefinitionIds = [];
 
-            /**
-             * @var array<non-empty-string, non-empty-string>
-             */
-            private array $setDefinitionIds = [];
-
-            public function __construct(private readonly DefinitionsLoaderInterface $definitionsLoader) {}
+            public function __construct(
+                private readonly DefinitionsLoaderInterface $definitionsLoader,
+                private readonly ArrayIterator $configDefinitions,
+            ) {}
 
             public function removeDefinition(string $id): void
             {
                 $this->removedDefinitionIds[$id] = $id;
+                $this->configDefinitions->offsetUnset($id);
             }
 
             public function getRemovedDefinitionIds(): array
@@ -181,13 +180,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             public function setDefinition(string $id, mixed $definition): void
             {
                 $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
-                $this->setDefinitionIds[$id] = $id;
                 unset($this->removedDefinitionIds[$id]);
-            }
-
-            public function getSetDefinitionIds(): array
-            {
-                return $this->setDefinitionIds;
             }
 
             public function getDefinition(string $id): mixed
@@ -241,7 +234,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function reset(): void
     {
-        $this->configDefinitions = new ArrayIterator();
+        if ($this->configDefinitions->valid()) {
+            while ($this->configDefinitions->valid()) {
+                $this->configDefinitions->offsetUnset($this->configDefinitions->key());
+            }
+        }
+
         $this->useAttribute = true;
         $this->finderFullyQualifiedNameCollection?->reset();
         unset($this->importedDefinitions);
@@ -282,8 +280,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                if (isset($this->definitionsConfigurator()->getSetDefinitionIds()[$itemFQN['fqn']])
-                    || isset($this->definitionsConfigurator()->getRemovedDefinitionIds()[$itemFQN['fqn']])) {
+                if (isset($this->definitionsConfigurator()->getRemovedDefinitionIds()[$itemFQN['fqn']])) {
                     $fullQualifiedName->next();
 
                     continue;
@@ -409,7 +406,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
-                if ($this->configDefinitions->offsetExists($autowireAttr->id)) { // @phpstan-ignore argument.type
+                if ($this->configDefinitions->offsetExists($autowireAttr->id)) {
                     throw new DefinitionsLoaderInvalidArgumentException(
                         sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->id, $reflectionClass->name)
                     );
