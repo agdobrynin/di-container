@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Kaspi\DiContainer\Interfaces\RemovedDefinitionIdsInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use Kaspi\DiContainer\Interfaces\RemovedDefinitionIdsInterface;
 
 final class RemovedDefinitionIds implements RemovedDefinitionIdsInterface
 {

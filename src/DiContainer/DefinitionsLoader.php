@@ -155,22 +155,21 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->configuredDefinitions) implements DefinitionsConfiguratorInterface {
             /**
              * @var array<non-empty-string, non-empty-string>
              */
             private array $removedDefinitionIds = [];
 
-            /**
-             * @var array<non-empty-string, non-empty-string>
-             */
-            private array $setDefinitionIds = [];
-
-            public function __construct(private readonly DefinitionsLoaderInterface $definitionsLoader) {}
+            public function __construct(
+                private readonly DefinitionsLoaderInterface $definitionsLoader,
+                private readonly ArrayIterator $configDefinitions,
+            ) {}
 
             public function removeDefinition(string $id): void
             {
                 $this->removedDefinitionIds[$id] = $id;
+                $this->configDefinitions->offsetUnset($id);
             }
 
             public function getRemovedDefinitionIds(): array
@@ -181,13 +180,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             public function setDefinition(string $id, mixed $definition): void
             {
                 $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
-                $this->setDefinitionIds[$id] = $id;
                 unset($this->removedDefinitionIds[$id]);
-            }
-
-            public function getSetDefinitionIds(): array
-            {
-                return $this->setDefinitionIds;
             }
 
             public function getDefinition(string $id): mixed
@@ -272,8 +265,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                if (isset($this->definitionsConfigurator()->getSetDefinitionIds()[$itemFQN['fqn']])
-                    || isset($this->definitionsConfigurator()->getRemovedDefinitionIds()[$itemFQN['fqn']])) {
+                if (isset($this->definitionsConfigurator()->getRemovedDefinitionIds()[$itemFQN['fqn']])) {
                     $fullQualifiedName->next();
 
                     continue;
