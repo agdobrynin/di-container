@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
+use Closure;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
 final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
@@ -12,16 +13,16 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
     private array $definitions;
 
     /**
-     * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
+     * @param Closure(): iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
      */
-    public function __construct(private iterable $sourceDefinitions) {}
+    public function __construct(private Closure $sourceDefinitions) {}
 
     protected function &definitions(): array
     {
         if (!isset($this->definitions)) {
             $this->definitions = [];
 
-            foreach ($this->sourceDefinitions as $identifier => $sourceDefinition) {
+            foreach (($this->sourceDefinitions)() as $identifier => $sourceDefinition) {
                 $this->offsetSet($identifier, $sourceDefinition);
             }
 
