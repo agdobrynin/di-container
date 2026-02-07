@@ -27,16 +27,16 @@ use Kaspi\DiContainer\Exception\{
     ContainerAlreadyRegisteredException,
     NotFoundException,
 };
-use Kaspi\DiContainer\Interfaces\DataFromDefinitionsConfiguratorInterface;
+use Kaspi\DiContainer\Interfaces\RemovedDefinitionIdsInterface;
 
 final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
     public function __construct(
-        ?DataFromDefinitionsConfiguratorInterface $dataFromDefinitionsConfigurator = null
+        ?RemovedDefinitionIdsInterface $removedDefinitionIds = null
     )
     {
         parent::__construct(
-            dataFromDefinitionsConfigurator: $dataFromDefinitionsConfigurator,
+            removedDefinitionIds: $removedDefinitionIds,
             config: new class implements \Kaspi\DiContainer\Interfaces\DiContainerConfigInterface {
                 public function isSingletonServiceDefault(): bool
                 {

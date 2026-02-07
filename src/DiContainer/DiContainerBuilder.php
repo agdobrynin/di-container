@@ -186,11 +186,11 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         $this->definitionsLoader->reset();
 
         $loader = $this->definitionsLoader();
-        $dataFromConfigurator = new DataFromDefinitionsConfigurator($loader->definitionsConfigurator());
+        $removedDefinitionIds = new RemovedDefinitionIds($loader->definitionsConfigurator());
 
         if (!isset($this->compilerOutputDirectory)) {
             try {
-                return new DiContainer($loader->definitions(), $this->containerConfig, $dataFromConfigurator);
+                return new DiContainer($loader->definitions(), $this->containerConfig, $removedDefinitionIds);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
                     sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
@@ -199,7 +199,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $loader->definitions()), $this->containerConfig, $dataFromConfigurator);
+        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $loader->definitions()), $this->containerConfig, $removedDefinitionIds);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {
@@ -249,7 +249,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             require_once $file;
         }
 
-        return new ($compiledContainerFQN->getFQN())(dataFromDefinitionsConfigurator: $dataFromConfigurator); // @phpstan-ignore return.type
+        return new ($compiledContainerFQN->getFQN())(removedDefinitionIds: $removedDefinitionIds); // @phpstan-ignore return.type
     }
 
     /**
