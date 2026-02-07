@@ -306,22 +306,24 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
         foreach ($attrs as $attr) {
             if ($attr instanceof Inject) {
-                $definition = new DiDefinitionGet($attr->getIdentifier()); // @phpstan-ignore argument.type
+                $definition = new DiDefinitionGet($attr->id); // @phpstan-ignore argument.type
             } elseif ($attr instanceof ProxyClosure) {
-                $definition = new DiDefinitionProxyClosure($attr->getIdentifier());
+                $definition = new DiDefinitionProxyClosure($attr->id);
             } elseif ($attr instanceof TaggedAs) {
                 $definition = new DiDefinitionTaggedAs(
-                    $attr->getIdentifier(),
-                    $attr->isLazy(),
-                    $attr->getPriorityDefaultMethod(),
-                    $attr->isUseKeys(),
-                    $attr->getKey(),
-                    $attr->getKeyDefaultMethod(),
-                    $attr->getContainerIdExclude(),
-                    $attr->isSelfExclude(),
+                    $attr->name,
+                    $attr->isLazy,
+                    $attr->priorityDefaultMethod,
+                    $attr->useKeys,
+                    $attr->key,
+                    $attr->keyDefaultMethod,
+                    $attr->containerIdExclude,
+                    $attr->selfExclude,
                 );
             } elseif ($attr instanceof DiFactory) {
-                $definition = new DiDefinitionFactory($attr->getIdentifier());
+                $definition = (new DiDefinitionFactory($attr->definition))
+                    ->bindArguments(...$attr->arguments)
+                ;
             } else {
                 $definition = new DiDefinitionCallable($attr->getCallable());
             }

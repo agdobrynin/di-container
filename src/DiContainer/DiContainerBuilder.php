@@ -195,7 +195,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        $container = new DiContainer(new DeferredSourceDefinitionsMutable($this->definitions()), $this->containerConfig);
+        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $this->definitions()), $this->containerConfig);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {

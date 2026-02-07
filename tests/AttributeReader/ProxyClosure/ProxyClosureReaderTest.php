@@ -72,7 +72,7 @@ class ProxyClosureReaderTest extends TestCase
         $attrs->rewind();
 
         $this->assertInstanceOf(ProxyClosure::class, $attrs->current());
-        $this->assertEquals('ok', $attrs->current()->getIdentifier());
+        $this->assertEquals('ok', $attrs->current()->id);
 
         $attrs->next(); // One element Inject for argument $a in function $f.
 
@@ -93,8 +93,9 @@ class ProxyClosureReaderTest extends TestCase
 
         $this->assertTrue($attrs->valid());
 
-        foreach ($attrs as $inject) {
-            $this->assertContains($inject->getIdentifier(), ['one', 'two', 'three']);
+        /** @var ProxyClosure $attr */
+        foreach ($attrs as $attr) {
+            $this->assertContains($attr->id, ['one', 'two', 'three']);
         }
 
         $this->assertFalse($attrs->valid()); // All Inject fetched, generator empty.

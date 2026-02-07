@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler\CompilableDefinition;
 
+use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Helper as CommonHelper;
@@ -15,9 +16,10 @@ use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionIn
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use ReflectionMethod;
 
-use function count;
 use function sprintf;
+use function var_export;
 
 final class FactoryEntry implements CompilableDefinitionInterface
 {
@@ -30,15 +32,10 @@ final class FactoryEntry implements CompilableDefinitionInterface
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         try {
-            $compiledFactoryClassEntry = $this->transformer->transform(
-                $this->definition->getFactoryAutowire(),
-                $this->diContainerDefinitions,
-            )
-                ->compile($containerVar, $scopeVars, $context)
-            ;
-        } catch (DefinitionCompileExceptionInterface $e) {
+            [$factoryConstructor, $factoryMethod] = $this->definition->getDefinition();
+        } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot compile factory class "%s"', $this->definition->getDefinition()),
+                'Cannot get factory definition. Reason: '.$e->getMessage(),
                 previous: $e,
             );
         }
@@ -49,23 +46,29 @@ final class FactoryEntry implements CompilableDefinitionInterface
             );
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot provide arguments to a factory method in definition %s::%s().', $this->definition->getDefinition(), $this->definition->getFactoryMethod()),
+                sprintf('Cannot provide arguments to a factory method %s::%s().', $factoryConstructor, $factoryMethod),
                 previous: $e,
             );
         }
+
+        /** @var ReflectionMethod $factoryReflectionMethod */
+        $factoryReflectionMethod = $bindArgBuilderFactoryMethod->getFunctionOrMethod();
 
         try {
             $bindArgs = $bindArgBuilderFactoryMethod->build();
         } catch (ArgumentBuilderExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot build arguments for factory method %s.', CommonHelper::functionName($bindArgBuilderFactoryMethod->getFunctionOrMethod())),
+                sprintf('Cannot build arguments for factory method %s.', CommonHelper::functionName($factoryReflectionMethod)),
                 previous: $e,
             );
         }
 
+        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
+        $compiledFactory = new CompiledEntry(isSingleton: $isSingleton, scopeVars: [...$scopeVars, $containerVar]);
+
         try {
             $argsFactoryMethodExpression = Helper::compileArguments(
-                $compiledFactoryClassEntry,
+                $compiledFactory,
                 $containerVar,
                 $bindArgs,
                 $this->transformer,
@@ -74,24 +77,18 @@ final class FactoryEntry implements CompilableDefinitionInterface
             );
         } catch (DefinitionCompileExceptionInterface $e) {
             throw new DefinitionCompileException(
-                sprintf('Cannot compile arguments for factory method %s.', CommonHelper::functionName($bindArgBuilderFactoryMethod->getFunctionOrMethod())),
+                sprintf('Cannot compile arguments for factory method %s.', CommonHelper::functionName($factoryReflectionMethod)),
                 previous: $e
             );
         }
 
-        $isSingleton = $this->definition->isSingleton() ?? $this->diContainerDefinitions->isSingletonDefinitionDefault();
+        $factoryExpression = $factoryReflectionMethod->isStatic()
+            ? sprintf('\%s::%s', $factoryReflectionMethod->getDeclaringClass()->getName(), $factoryMethod)
+            : sprintf('%s->get(%s)->%s', $containerVar, var_export($factoryConstructor, true), $factoryMethod);
 
-        if (0 === count($compiledFactoryClassEntry->getStatements())) {
-            $factoryStatements = sprintf('%s = %s', $compiledFactoryClassEntry->getScopeServiceVar(), $compiledFactoryClassEntry->getExpression());
-            $compiledFactoryClassEntry->addToStatements($factoryStatements);
-        }
+        $compiledFactory->setExpression($factoryExpression.$argsFactoryMethodExpression);
 
-        $factoryExpression = sprintf('%s->%s%s', $compiledFactoryClassEntry->getScopeServiceVar(), $this->definition->getFactoryMethod(), $argsFactoryMethodExpression);
-
-        return $compiledFactoryClassEntry->setIsSingleton($isSingleton)
-            ->setExpression($factoryExpression)
-            ->setReturnType('mixed')
-        ;
+        return $compiledFactory;
     }
 
     public function getDiDefinition(): DiDefinitionFactoryInterface

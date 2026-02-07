@@ -18,13 +18,13 @@ class InjectTest extends TestCase
     {
         $inject = new Inject(self::class);
 
-        $this->assertStringEndsWith('InjectTest', $inject->getIdentifier());
+        $this->assertStringEndsWith('InjectTest', $inject->id);
     }
 
     public function testInjectDefaultIdentifier(): void
     {
         $inject = new Inject();
 
-        $this->assertEquals('', $inject->getIdentifier());
+        $this->assertEquals('', $inject->id);
     }
 }

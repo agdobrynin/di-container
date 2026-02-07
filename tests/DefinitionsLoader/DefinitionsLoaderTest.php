@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -103,5 +104,20 @@ class DefinitionsLoaderTest extends TestCase
 
         $def = (new DefinitionsLoader())->addDefinitions(false, $config());
         $def->addDefinitions(false, $config2());
+    }
+
+    public function testCannotParseConfigFile(): void
+    {
+        $this->expectException(DefinitionsLoaderExceptionInterface::class);
+
+        vfsStream::setup(structure: [
+            'config1.php' => '<?php return [ "foo" => $ ];',
+        ]);
+
+        (new DefinitionsLoader())
+            ->load(vfsStream::url('root/config1.php'))
+            ->definitions()
+            ->valid()
+        ;
     }
 }

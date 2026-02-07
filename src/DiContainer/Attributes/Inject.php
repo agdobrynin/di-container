@@ -5,18 +5,12 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Attributes;
 
 use Attribute;
-use Kaspi\DiContainer\Interfaces\Attributes\DiAttributeInterface;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
-final class Inject implements DiAttributeInterface
+final class Inject
 {
     /**
      * @param class-string|string $id class name or container identifier
      */
-    public function __construct(private readonly string $id = '') {}
-
-    public function getIdentifier(): string
-    {
-        return $this->id;
-    }
+    public function __construct(public readonly string $id = '') {}
 }

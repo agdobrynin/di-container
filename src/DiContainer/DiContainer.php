@@ -15,7 +15,6 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -54,7 +53,7 @@ use function var_export;
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
-class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface, DiContainerGetterDefinitionInterface
+class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     protected SourceDefinitionsMutableInterface $definitions;
 
@@ -294,7 +293,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if ($reflectionClass->isInterface()) {
             if ($this->config->isUseAttribute()
                 && null !== ($service = AttributeReader::getServiceAttribute($reflectionClass))) {
-                $findId = $service->getIdentifier();
+                $findId = $service->id;
 
                 try {
                     do {
@@ -310,7 +309,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     unset($this->circularCallWatcher[$findId]);
                 }
 
-                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton());
+                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton);
             }
 
             throw new AutowireException(sprintf('Attempting to resolve interface "%s". An interface that is not bound to a definition.', $id));
@@ -318,17 +317,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         if ($this->config->isUseAttribute()
             && null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
-            return $this->diResolvedDefinition[$id] = new DiDefinitionFactory(
-                $factory->getIdentifier(),
-                $factory->isSingleton()
-            );
+            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+
+            return $this->diResolvedDefinition[$id] = $diFactory->bindArguments(...$factory->arguments);
         }
 
         if ($this->config->isUseAttribute()
             && ($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
             foreach ($autowires as $autowire) {
-                if ($autowire->getIdentifier() === $reflectionClass->name) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton());
+                if ($autowire->id === $reflectionClass->name) {
+                    return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
+                        ->bindArguments(...$autowire->arguments)
+                    ;
                 }
             }
         }

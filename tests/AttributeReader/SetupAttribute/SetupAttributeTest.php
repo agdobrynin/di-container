@@ -34,14 +34,14 @@ class SetupAttributeTest extends TestCase
 
         self::assertCount(3, $res);
 
-        self::assertEquals('__construct', $res[0]->getIdentifier());
-        self::assertEquals(['x'], $res[0]->getArguments());
+        self::assertEquals('__construct', $res[0]->getMethod());
+        self::assertEquals(['x'], $res[0]->arguments);
 
-        self::assertEquals('__destruct', $res[1]->getIdentifier());
-        self::assertEmpty($res[1]->getArguments());
+        self::assertEquals('__destruct', $res[1]->getMethod());
+        self::assertEmpty($res[1]->arguments);
 
-        self::assertEquals('demo2', $res[2]->getIdentifier());
-        self::assertEquals([new DiGet('services.foo')], $res[2]->getArguments());
+        self::assertEquals('demo2', $res[2]->getMethod());
+        self::assertEquals([new DiGet('services.foo')], $res[2]->arguments);
     }
 
     public function testReadSetupImmutableAttribute(): void
@@ -51,13 +51,13 @@ class SetupAttributeTest extends TestCase
 
         self::assertCount(3, $res);
 
-        self::assertEquals('__construct', $res[0]->getIdentifier());
-        self::assertEquals(['bar'], $res[0]->getArguments());
+        self::assertEquals('__construct', $res[0]->getMethod());
+        self::assertEquals(['bar'], $res[0]->arguments);
 
-        self::assertEquals('__destruct', $res[1]->getIdentifier());
-        self::assertEmpty($res[1]->getArguments());
+        self::assertEquals('__destruct', $res[1]->getMethod());
+        self::assertEmpty($res[1]->arguments);
 
-        self::assertEquals('demo2', $res[2]->getIdentifier());
-        self::assertEquals([new DiGet('services.foo')], $res[2]->getArguments());
+        self::assertEquals('demo2', $res[2]->getMethod());
+        self::assertEquals([new DiGet('services.foo')], $res[2]->arguments);
     }
 }

@@ -24,7 +24,7 @@ class ProxyClosureTest extends TestCase
     {
         $asClosureAttr = new ProxyClosure($id);
 
-        $this->assertEquals($expect, $asClosureAttr->getIdentifier());
+        $this->assertEquals($expect, $asClosureAttr->id);
     }
 
     public static function successIdsDataProvider(): Generator

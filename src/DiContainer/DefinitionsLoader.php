@@ -31,7 +31,6 @@ use ParseError;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
-use SplFileInfo;
 
 use function class_exists;
 use function file_exists;
@@ -42,7 +41,6 @@ use function is_readable;
 use function ob_get_clean;
 use function ob_start;
 use function sprintf;
-use function str_replace;
 use function var_export;
 
 use const T_CLASS;
@@ -61,10 +59,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      */
     private array $mapNamespaceUseAttribute = [];
 
-    private SplFileInfo $splFileInfoImportCacheFile;
-
     public function __construct(
-        private readonly ?string $importCacheFile = null,
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
         $this->configDefinitions = new ArrayIterator();
@@ -123,14 +118,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      */
     public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
     {
-        if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
-            return $file->isReadable()
-                ? $this
-                : throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $file->getPathname())
-                );
-        }
-
         if (null === $this->finderFullyQualifiedNameCollection) {
             $this->finderFullyQualifiedNameCollection = new FinderFullyQualifiedNameCollection();
         }
@@ -159,40 +146,19 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function definitions(): iterable
     {
         $this->configDefinitions->rewind();
-        $importCacheFile = $this->getImportCacheFile();
-
-        if (null !== $importCacheFile && $importCacheFile->isFile()) {
-            if (!$importCacheFile->isReadable()) {
-                throw new DefinitionsLoaderException(
-                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $importCacheFile->getPathname()),
-                );
-            }
-
-            yield from $this->getIteratorFromFile($importCacheFile->getPathname()); // @phpstan-ignore generator.keyType
-        }
 
         if ($this->importedDefinitions()->valid()) {
-            try {
-                $cacheFileOpened = $importCacheFile?->openFile('wb+');
-                $cacheFileOpened?->fwrite(
-                    '<?php'.PHP_EOL
-                    .'use function Kaspi\DiContainer\{diAutowire, diFactory, diGet};'.PHP_EOL
-                    .'return static function (): \Generator {'.PHP_EOL
-                );
-            } catch (RuntimeException $e) {
-                throw new DefinitionsLoaderException(
-                    sprintf('The cache file for importing definitions isn\'t writable. File: "%s".', $importCacheFile->getPathname()),
-                    previous: $e
-                );
-            }
+            $importedDefinitions = $this->importedDefinitions();
+            $importedDefinitions->rewind();
 
-            foreach ($this->importedDefinitions() as $identifier => $definition) {
-                $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
+            do {
+                $identifier = $importedDefinitions->key();
+                $definition = $importedDefinitions->current();
 
                 yield $identifier => $definition;
-            }
 
-            $cacheFileOpened?->fwrite('};'.PHP_EOL);
+                $importedDefinitions->next();
+            } while ($importedDefinitions->valid());
         }
 
         yield from $this->configDefinitions;
@@ -264,46 +230,22 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
          * Check valid DiDefinitionGet for imported definitions.
          * Interface maybe configured via php attribute #[Service('container_id')].
         */
-
         foreach ($importedDefinitions as $identifier => $definition) {
-            if ($definition instanceof DiDefinitionGet
-                && !(isset($importedDefinitions[$definition->getDefinition()]) || $this->configDefinitions->offsetExists($definition->getDefinition()))) {
+            if (!$definition instanceof DiDefinitionGet) {
+                continue;
+            }
+
+            $containerIdentifier = $definition->getDefinition();
+
+            if (!isset($importedDefinitions[$containerIdentifier])
+                && !$this->configDefinitions->offsetExists($containerIdentifier)) {
                 throw new DefinitionsLoaderException(
-                    sprintf('Invalid definition reference "%s" for container identifier "%s".', $definition->getDefinition(), $identifier)
+                    sprintf('The container identifier "%s" is not registered. The reference from the definition with the id "%s".', $containerIdentifier, $identifier)
                 );
             }
         }
 
         yield from $importedDefinitions;
-    }
-
-    private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
-    {
-        $identifier = str_replace('"', '\"', $identifier);
-
-        if ($definition instanceof DiDefinitionAutowire) {
-            return sprintf(
-                '    yield "%s" => diAutowire("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
-            );
-        }
-
-        if ($definition instanceof DiDefinitionFactory) {
-            return sprintf(
-                '    yield "%s" => diFactory("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
-            );
-        }
-
-        return sprintf(
-            '    yield "%s" => diGet("%s");',
-            $identifier,
-            str_replace('"', '\"', $definition->getDefinition())
-        );
     }
 
     /**
@@ -369,9 +311,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             return [
-                $reflectionClass->name => class_exists($service->getIdentifier())
-                    ? new DiDefinitionAutowire($service->getIdentifier(), $service->isSingleton())
-                    : new DiDefinitionGet($service->getIdentifier()),
+                $reflectionClass->name => class_exists($service->id)
+                    ? new DiDefinitionAutowire($service->id, $service->isSingleton)
+                    : new DiDefinitionGet($service->id),
             ];
         }
 
@@ -379,13 +321,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
-                if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) { // @phpstan-ignore argument.type
+                if ($this->configDefinitions->offsetExists($autowireAttr->id)) { // @phpstan-ignore argument.type
                     throw new DefinitionsLoaderInvalidArgumentException(
-                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->id, $reflectionClass->name)
                     );
                 }
 
-                $services[$autowireAttr->getIdentifier()] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton());
+                $services[$autowireAttr->id] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
+                    ->bindArguments(...$autowireAttr->arguments)
+                ;
             }
 
             return $services; // @phpstan-ignore return.type
@@ -398,7 +342,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
+            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+
+            return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
         }
 
         return $this->configDefinitions->offsetExists($reflectionClass->name)
@@ -454,12 +400,5 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
         }
-    }
-
-    private function getImportCacheFile(): ?SplFileInfo
-    {
-        return null !== $this->importCacheFile
-            ? $this->splFileInfoImportCacheFile ??= new SplFileInfo($this->importCacheFile)
-            : null;
     }
 }

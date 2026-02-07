@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use ReflectionClass;
 
 /**
@@ -68,25 +68,14 @@ trait SetupConfigureTrait
             $this->setupByAttributes = [];
 
             foreach (AttributeReader::getSetupAttribute($class) as $setupAttr) {
-                $this->setupByAttributes[$setupAttr->getIdentifier()][] = [
-                    SetupConfigureMethod::fromAttribute($setupAttr), $setupAttr->getArguments(),
-                ];
+                $setupType = $setupAttr instanceof Setup
+                    ? SetupConfigureMethod::Mutable
+                    : SetupConfigureMethod::Immutable;
+
+                $this->setupByAttributes[$setupAttr->getMethod()][] = [$setupType, $setupAttr->arguments];
             }
         }
 
         return $this->setupByAttributes + $this->setup;
-    }
-
-    private function copySetupToDefinition(DiDefinitionSetupAutowireInterface $definition): void
-    {
-        foreach ($this->setup as $method => $setups) {
-            foreach ($setups as $setup) {
-                if (SetupConfigureMethod::Mutable === $setup[0]) {
-                    $definition->setup($method, $setup[1]);
-                } else {
-                    $definition->setupImmutable($method, $setup[1]);
-                }
-            }
-        }
     }
 }

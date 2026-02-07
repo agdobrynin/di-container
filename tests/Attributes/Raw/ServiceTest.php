@@ -21,16 +21,16 @@ class ServiceTest extends TestCase
     {
         $service = new Service('id');
 
-        $this->assertEquals('id', $service->getIdentifier());
-        $this->assertNull($service->isSingleton());
+        $this->assertEquals('id', $service->id);
+        $this->assertNull($service->isSingleton);
     }
 
     public function testServiceWithUserValue(): void
     {
         $service = new Service('id', true);
 
-        $this->assertEquals('id', $service->getIdentifier());
-        $this->assertTrue($service->isSingleton());
+        $this->assertEquals('id', $service->id);
+        $this->assertTrue($service->isSingleton);
     }
 
     #[DataProvider('dataProviderServiceIdFail')]

@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Traits;
 
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 
 use function preg_match;
 use function sprintf;
@@ -16,11 +17,11 @@ use function sprintf;
  */
 trait SetupAttributeTrait
 {
+    /** @var SetupConfigureArgumentsType */
+    public readonly array $arguments;
+
     /** @var non-empty-string */
     private string $method;
-
-    /** @var SetupConfigureArgumentsType */
-    private array $arguments = [];
 
     public function __construct(mixed ...$argument)
     {
@@ -31,17 +32,11 @@ trait SetupAttributeTrait
     }
 
     /**
-     * @return SetupConfigureArgumentsType
-     */
-    public function getArguments(): array
-    {
-        return $this->arguments;
-    }
-
-    /**
      * @return non-empty-string
+     *
+     * @throws AutowireExceptionInterface
      */
-    public function getIdentifier(): string
+    public function getMethod(): string
     {
         return $this->method ?? throw new AutowireAttributeException('The private value $method is not defined.');
     }
