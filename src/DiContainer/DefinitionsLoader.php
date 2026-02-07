@@ -234,10 +234,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function reset(): void
     {
-        if ($this->configDefinitions->valid()) {
-            while ($this->configDefinitions->valid()) {
-                $this->configDefinitions->offsetUnset($this->configDefinitions->key());
-            }
+        while ($this->configDefinitions->valid()) {
+            $this->configDefinitions->offsetUnset($this->configDefinitions->key());
         }
 
         $this->useAttribute = true;
