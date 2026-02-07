@@ -165,10 +165,10 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithoutUseAttributeForConfigureServices(): void
     {
         $loader = (new DefinitionsLoader())
+            ->useAttribute(false)
             ->import(
                 'Tests\DefinitionsLoader\\',
                 __DIR__.'/Fixtures/Import',
-                useAttribute: false
             )
         ;
 
@@ -356,5 +356,24 @@ class DefinitionsLoaderImportTest extends TestCase
             ->definitions()
             ->valid()
         ;
+    }
+
+    public function testImportCache(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\\', __DIR__.'/Fixtures/CacheImport')
+        ;
+
+        // first call DefinitionsLoader::importedDefinitions()
+        // init collect class from file system and fill DefinitionsLoader::$importedDefinitions
+        self::assertTrue($loader->definitions()->valid());
+
+        // second call DefinitionsLoader::importedDefinitions()
+        // check exist DefinitionsLoader::$importedDefinitions
+        // and return data from DefinitionsLoader::$importedDefinitions
+        self::assertArrayHasKey(
+            'Tests\DefinitionsLoader\Fixtures\CacheImport\Foo',
+            [...$loader->definitions()]
+        );
     }
 }

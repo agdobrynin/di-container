@@ -28,6 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\RemovedDefinitionIdsInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
@@ -83,6 +84,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function __construct(
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
+        protected ?RemovedDefinitionIdsInterface $removedDefinitionIds = null,
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
             ? new ImmediateSourceDefinitionsMutable($definitions)
@@ -344,6 +346,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
         if (!$this->config->isUseZeroConfigurationDefinition()) {
+            return false;
+        }
+
+        if (isset($this->removedDefinitionIds?->getRemovedDefinitionIds()[$id])) {
             return false;
         }
 

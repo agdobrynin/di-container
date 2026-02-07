@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
-use Generator;
 use InvalidArgumentException;
 use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
@@ -90,7 +89,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     public function __construct(
         private readonly DiContainerConfigInterface $containerConfig = new DiContainerConfig(),
         private readonly DefinitionsLoaderInterface $definitionsLoader = new DefinitionsLoader(),
-    ) {}
+    ) {
+        $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
+    }
 
     public function load(string ...$file): static
     {
@@ -184,9 +185,12 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     {
         $this->definitionsLoader->reset();
 
+        $loader = $this->definitionsLoader();
+        $removedDefinitionIds = new RemovedDefinitionIds($loader->definitionsConfigurator());
+
         if (!isset($this->compilerOutputDirectory)) {
             try {
-                return new DiContainer($this->definitions(), $this->containerConfig);
+                return new DiContainer($loader->definitions(), $this->containerConfig, $removedDefinitionIds);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
                     sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
@@ -195,7 +199,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $this->definitions()), $this->containerConfig);
+        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $loader->definitions()), $this->containerConfig, $removedDefinitionIds);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {
@@ -245,15 +249,13 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             require_once $file;
         }
 
-        return new ($compiledContainerFQN->getFQN())(); // @phpstan-ignore return.type
+        return new ($compiledContainerFQN->getFQN())(removedDefinitionIds: $removedDefinitionIds); // @phpstan-ignore return.type
     }
 
     /**
-     * @return Generator<non-empty-string, mixed>
-     *
-     * @throws ContainerBuilderException|DefinitionsLoaderExceptionInterface
+     * @throws ContainerBuilderException
      */
-    private function definitions(): Generator
+    private function definitionsLoader(): DefinitionsLoaderInterface
     {
         foreach ($this->imports as $import) {
             try {
@@ -262,7 +264,6 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                     $import['src'],
                     $import['exclude_files'],
                     $import['available_extensions'],
-                    $this->containerConfig->isUseAttribute(),
                 );
             } catch (DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
@@ -307,6 +308,6 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        yield from $this->definitionsLoader->definitions();
+        return $this->definitionsLoader;
     }
 }
