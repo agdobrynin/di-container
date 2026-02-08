@@ -9,6 +9,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 
+/**
+ * @internal
+ */
 interface DefinitionsLoaderInterface extends ResetInterface
 {
     /**
@@ -58,11 +61,15 @@ interface DefinitionsLoaderInterface extends ResetInterface
      * @param non-empty-string       $src                 source directory
      * @param list<non-empty-string> $excludeFiles        exclude files matching by pattern
      * @param list<non-empty-string> $availableExtensions available files extensions, empty list available all files
-     * @param bool                   $useAttribute        using php attributes for configure services from import source directory
      *
      * @return $this
      *
      * @throws DefinitionsLoaderExceptionInterface
      */
-    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php'], bool $useAttribute = true): static;
+    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php']): static;
+
+    /**
+     * Using php attributes for configure services.
+     */
+    public function useAttribute(bool $useAttribute): static;
 }
