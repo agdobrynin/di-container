@@ -130,7 +130,7 @@ class FinderFileTest extends TestCase
     {
         $files = (new FinderFile(
             src: __DIR__.'/Fixtures',
-            excludeFiles: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
+            exclude: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
             availableExtensions: []
         ))
             ->getFiles()
@@ -152,7 +152,7 @@ class FinderFileTest extends TestCase
         $ff = new FinderFile('foo_baz', ['Kernel/*.php'], ['php', 'incl']);
 
         self::assertEquals('foo_baz', $ff->getSrc());
-        self::assertEquals(['Kernel/*.php'], $ff->getExcludeFiles());
+        self::assertEquals(['Kernel/*.php'], $ff->getExclude());
         self::assertEquals(['php', 'incl'], $ff->getAvailableExtensions());
     }
 }
