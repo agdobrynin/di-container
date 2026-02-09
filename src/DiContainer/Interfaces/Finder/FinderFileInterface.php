@@ -18,6 +18,13 @@ interface FinderFileInterface
     public function getFiles(): Iterator;
 
     /**
+     * @return Iterator<SplFileInfo>
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getExcludedFiles(): Iterator;
+
+    /**
      * Get source directory.
      *
      * @return non-empty-string

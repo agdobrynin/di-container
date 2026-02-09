@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Finder;
 
 use DirectoryIterator;
 use FilesystemIterator;
+use Generator;
 use InvalidArgumentException;
 use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
@@ -59,6 +60,27 @@ final class FinderFile implements FinderFileInterface
 
     public function getFiles(): Iterator
     {
+        foreach ($this->fetchFiles() as $realPath => $entry) {
+            if (!$this->isExcluded($realPath)) {
+                yield $entry;
+            }
+        }
+    }
+
+    public function getExcludedFiles(): Iterator
+    {
+        foreach ($this->fetchFiles() as $realPath => $entry) {
+            if ($this->isExcluded($realPath)) {
+                yield $entry;
+            }
+        }
+    }
+
+    /**
+     * @return Generator<non-empty-string, DirectoryIterator>
+     */
+    private function fetchFiles(): Generator
+    {
         if (!isset($this->normalizedSrc)) {
             $fixedSrc = realpath($this->src);
 
@@ -77,8 +99,6 @@ final class FinderFile implements FinderFileInterface
             $this->normalizedSrc = $fixedSrc;
         }
 
-        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
-
         $this->recursiveDirectoryIterator ??= new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
                 $this->normalizedSrc,
@@ -86,14 +106,18 @@ final class FinderFile implements FinderFileInterface
             )
         );
 
+        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
+
         foreach ($this->recursiveDirectoryIterator as $entry) {
             /** @var DirectoryIterator $entry */
             if (($realPath = $entry->getRealPath())
-                && !$this->isExcluded($realPath)
                 && $entry->isFile()
-                && ([] === $this->normalizedAvailableExtensions || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true))
+                && (
+                    [] === $this->normalizedAvailableExtensions
+                    || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true)
+                )
             ) {
-                yield $entry;
+                yield $realPath => $entry;
             }
         }
     }
