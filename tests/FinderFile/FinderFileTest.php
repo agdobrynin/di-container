@@ -12,6 +12,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 
+use function array_intersect;
 use function array_map;
 use function count;
 use function iterator_to_array;
@@ -145,6 +146,25 @@ class FinderFileTest extends TestCase
         $files->next();
 
         $this->assertFalse($files->valid());
+    }
+
+    public function testExcludeFiles(): void
+    {
+        $finder = new FinderFile(
+            src: __DIR__.'/Fixtures',
+            exclude: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
+            availableExtensions: []
+        );
+
+        $files = $finder->getFiles();
+        $excludedFiles = $finder->getExcludedFiles();
+
+        $intersectFiles = array_intersect(
+            array_map(static fn ($file) => $file->getRealPath(), [...$files]),
+            array_map(static fn ($file) => $file->getRealPath(), [...$excludedFiles]),
+        );
+
+        self::assertEmpty($intersectFiles);
     }
 
     public function testAsIsParameter(): void
