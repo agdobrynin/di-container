@@ -188,12 +188,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->importedDefinitions = [];
 
         foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
-            $fullQualifiedName = $finderFQN->getMatched();
+            $fQCNMatched = $finderFQN->getMatched();
 
             do {
                 try {
                     /** @var null|ItemFQN $itemFQN */
-                    $itemFQN = $fullQualifiedName->current();
+                    $itemFQN = $fQCNMatched->current();
 
                     if (null === $itemFQN) {
                         break;
@@ -226,8 +226,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     $this->importedDefinitions[$identifier] = $definition;
                 }
 
-                $fullQualifiedName->next();
-            } while ($fullQualifiedName->valid());
+                $fQCNMatched->next();
+            } while ($fQCNMatched->valid());
         }
 
         /*
