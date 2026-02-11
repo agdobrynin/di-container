@@ -181,6 +181,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         if (isset($this->importedDefinitions)) {
             yield from $this->importedDefinitions;
+
+            return;
         }
 
         $this->importedDefinitions = [];
