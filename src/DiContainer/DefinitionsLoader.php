@@ -188,7 +188,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->importedDefinitions = [];
 
         foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
-            $fullQualifiedName = $finderFQN->get();
+            $fullQualifiedName = $finderFQN->getMatched();
 
             do {
                 try {
@@ -200,7 +200,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     }
                 } catch (InvalidArgumentException|RuntimeException $e) {
                     throw new DefinitionsLoaderException(
-                        sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
+                        sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getFinderFile()->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
                         previous: $e
                     );
                 }
@@ -209,7 +209,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     $definitions = $this->makeDefinitionFromItemFQN($itemFQN);
                 } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
                     throw new DefinitionsLoaderException(
-                        sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
+                        sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getFinderFile()->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
                         previous: $e
                     );
                 }

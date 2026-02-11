@@ -16,26 +16,38 @@ use RuntimeException;
 interface FinderFullyQualifiedNameInterface
 {
     /**
-     * Get PSR-4 namespace.
+     * PSR-4 namespace prefix for class search.
      *
      * @return non-empty-string
      */
     public function getNamespace(): string;
 
     /**
-     * Get source directory.
-     *
-     * @return non-empty-string
+     * Get configured file finder.
      */
-    public function getSrc(): string;
+    public function getFinderFile(): FinderFileInterface;
 
     /**
-     * Find all fully qualified names for classes and interfaces.
+     * Find fully qualified class names not excluded via file finder.
      *
-     * @return Iterator<non-negative-int, ItemFQN>
+     * Search using the `\Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface::getFiles()` method.
+     *
+     * @return Iterator<ItemFQN>
      *
      * @throws RuntimeException
      * @throws InvalidArgumentException
      */
-    public function get(): Iterator;
+    public function getMatched(): Iterator;
+
+    /**
+     * Find fully qualified class names excluded via file finder.
+     *
+     * Search using the `\Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface::getExcludedFiles()` method.
+     *
+     * @return Iterator<ItemFQN>
+     *
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     */
+    public function getExcluded(): Iterator;
 }

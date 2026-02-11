@@ -50,46 +50,62 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
         return $this->namespace;
     }
 
-    public function getSrc(): string
+    public function getFinderFile(): FinderFileInterface
     {
-        return $this->finderFile->getSrc();
+        return $this->finderFile;
     }
 
-    public function get(): Iterator
+    public function getMatched(): Iterator
     {
-        if (!isset($this->verifiedNamespace)) {
-            if (!str_ends_with($this->namespace, '\\')) {
-                throw new InvalidArgumentException(
-                    sprintf('Argument "%s" from parameter $namespace must be end with symbol "\".', $this->namespace)
-                );
-            }
-
-            // @see https://www.php.net/manual/en/language.variables.basics.php
-            if (1 !== preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $this->namespace)) {
-                throw new InvalidArgumentException(
-                    sprintf('Argument "%s" from parameter $namespace must be compatible with PSR-4.', $this->namespace)
-                );
-            }
-
-            $this->verifiedNamespace = $this->namespace;
-        }
-
-        $key = 0;
+        $namespace = $this->verifiedNamespace();
 
         foreach ($this->finderFile->getFiles() as $file) {
-            yield from $this->findInFile($file, $this->verifiedNamespace, $key);
+            yield from $this->findInFile($file, $namespace);
+        }
+    }
+
+    public function getExcluded(): Iterator
+    {
+        $namespace = $this->verifiedNamespace();
+
+        foreach ($this->finderFile->getExcludedFiles() as $file) {
+            yield from $this->findInFile($file, $namespace);
         }
     }
 
     /**
+     * @return non-empty-string
+     */
+    private function verifiedNamespace(): string
+    {
+        if (isset($this->verifiedNamespace)) {
+            return $this->verifiedNamespace;
+        }
+
+        if (!str_ends_with($this->namespace, '\\')) {
+            throw new InvalidArgumentException(
+                sprintf('Argument "%s" from parameter $namespace must be end with symbol "\".', $this->namespace)
+            );
+        }
+
+        // @see https://www.php.net/manual/en/language.variables.basics.php
+        if (1 !== preg_match('/^(?:[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\\\)++$/', $this->namespace)) {
+            throw new InvalidArgumentException(
+                sprintf('Argument "%s" from parameter $namespace must be compatible with PSR-4.', $this->namespace)
+            );
+        }
+
+        return $this->verifiedNamespace = $this->namespace;
+    }
+
+    /**
      * @param non-empty-string $requiredNamespace
-     * @param non-negative-int $key
      *
-     * @return Generator<non-negative-int, ItemFQN>
+     * @return Generator<ItemFQN>
      *
      * @throws RuntimeException
      */
-    private function findInFile(SplFileInfo $file, string $requiredNamespace, int &$key): Generator
+    private function findInFile(SplFileInfo $file, string $requiredNamespace): Generator
     {
         $f = $file->openFile('rb');
         $code = '';
@@ -181,7 +197,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                         $fqnLevel = $level;
                         ++$level;
 
-                        yield $key++ => $fqnItem;
+                        yield $fqnItem;
 
                         break;
                     }

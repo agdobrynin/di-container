@@ -268,7 +268,7 @@ class DefinitionsLoaderImportTest extends TestCase
 
         $importLoaderMock = $this->createMock(FinderFullyQualifiedNameInterface::class);
 
-        $importLoaderMock->method('get')
+        $importLoaderMock->method('getMatched')
             ->willReturnCallback(
                 function () {
                     yield 0 => [
