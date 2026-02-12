@@ -56,6 +56,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<non-empty-string, mixed> */
     private readonly ArrayIterator $configuredDefinitions;
 
+    /** @var ArrayIterator<class-string|non-empty-string, true> */
+    private readonly ArrayIterator $removedDefinitionIds;
+
+    /**
+     * Have the excluded definition been imported using the `import()` method.
+     */
+    private bool $isRemovedDefinitionImport = false;
+
     private bool $useAttribute = true;
 
     /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
@@ -65,6 +73,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
         $this->configuredDefinitions = new ArrayIterator();
+        $this->removedDefinitionIds = new ArrayIterator();
     }
 
     public function load(string ...$file): static
@@ -107,6 +116,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             $this->configuredDefinitions->offsetSet($identifier, $definition);
+            $this->removedDefinitionIds->offsetUnset($identifier);
             ++$itemCount;
         }
 
@@ -139,6 +149,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         unset($this->importedDefinitions);
+        $this->isRemovedDefinitionImport = false;
 
         return $this;
     }
@@ -157,15 +168,75 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         yield from $this->configuredDefinitions;
     }
 
+    public function removedDefinitionIds(): iterable
+    {
+        if ($this->isRemovedDefinitionImport) {
+            yield from $this->removedDefinitionIds;
+
+            return;
+        }
+
+        if (null === $this->finderFullyQualifiedNameCollection) {
+            $this->isRemovedDefinitionImport = true;
+
+            yield from $this->removedDefinitionIds;
+
+            return;
+        }
+
+        foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
+            $fQCNExcluded = $finderFQN->getExcluded();
+
+            do {
+                try {
+                    /** @var ItemFQN $itemFQN */
+                    $itemFQN = $fQCNExcluded->current();
+
+                    if (null === $itemFQN) {
+                        break;
+                    }
+
+                    ['fqn' => $fqn] = $itemFQN;
+
+                    $this->removedDefinitionIds->offsetSet($fqn, true);
+                } catch (InvalidArgumentException|RuntimeException $e) {
+                    throw new DefinitionsLoaderException(
+                        sprintf('Cannot get fully qualified name for excluded php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getFinderFile()->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
+                        previous: $e
+                    );
+                }
+
+                $fQCNExcluded->next();
+            } while ($fQCNExcluded->valid());
+        }
+
+        while (null !== ($identifier = $this->removedDefinitionIds->key())) {
+            if (isset($this->configuredDefinitions[$identifier])) {
+                unset($this->removedDefinitionIds[$identifier]);
+            }
+
+            $this->removedDefinitionIds->next();
+        }
+
+        $this->isRemovedDefinitionImport = true;
+
+        yield from $this->removedDefinitionIds;
+    }
+
     public function reset(): void
     {
         while ($this->configuredDefinitions->valid()) {
             $this->configuredDefinitions->offsetUnset($this->configuredDefinitions->key());
         }
 
+        while ($this->removedDefinitionIds->valid()) {
+            $this->removedDefinitionIds->offsetUnset($this->removedDefinitionIds->key());
+        }
+
         $this->useAttribute = true;
         $this->finderFullyQualifiedNameCollection?->reset();
         unset($this->importedDefinitions);
+        $this->isRemovedDefinitionImport = false;
     }
 
     /**

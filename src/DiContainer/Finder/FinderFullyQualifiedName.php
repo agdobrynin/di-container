@@ -75,6 +75,8 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
 
     /**
      * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
      */
     private function verifiedNamespace(): string
     {
