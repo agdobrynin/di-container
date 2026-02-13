@@ -33,19 +33,20 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
     protected function &definitions(): array
     {
         if (!isset($this->definitions)) {
+            $this->definitions = [];
             $this->removedDefinitionIds = [];
+
+            foreach (($this->sourceDefinitions)() as $identifier => $sourceDefinition) {
+                $this->offsetSet($identifier, $sourceDefinition);
+            }
 
             if (null !== $this->sourceRemovedDefinitionIds) {
                 foreach (($this->sourceRemovedDefinitionIds)() as $identifier => $v) {
                     $this->removedDefinitionIds[$identifier] = true;
-                }
-            }
 
-            $this->definitions = [];
-
-            foreach (($this->sourceDefinitions)() as $identifier => $sourceDefinition) {
-                if (!isset($this->removedDefinitionIds[$identifier])) {
-                    $this->offsetSet($identifier, $sourceDefinition);
+                    if (isset($this->definitions[$identifier])) {
+                        unset($this->definitions[$identifier]);
+                    }
                 }
             }
 
