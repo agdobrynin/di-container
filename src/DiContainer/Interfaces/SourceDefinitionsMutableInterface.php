@@ -15,4 +15,9 @@ interface SourceDefinitionsMutableInterface extends ArrayAccess, IteratorAggrega
      * @return Traversable<non-empty-string, DiDefinitionInterface>
      */
     public function getIterator(): Traversable;
+
+    /**
+     * @param non-empty-string $id
+     */
+    public function isRemovedDefinitionId(string $id): bool;
 }

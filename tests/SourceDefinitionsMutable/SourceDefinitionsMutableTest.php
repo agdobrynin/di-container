@@ -17,6 +17,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+use function array_keys;
+
 /**
  * @internal
  */
@@ -171,5 +173,43 @@ class SourceDefinitionsMutableTest extends TestCase
 
         $s = new DeferredSourceDefinitionsMutable($src);
         unset($s['service.bar']);
+    }
+
+    public function testRemovedDefinitionIds(): void
+    {
+        $s = new DeferredSourceDefinitionsMutable(
+            static fn () => [
+                'service.bar' => 'Service bar',
+                'service.baz' => 'Service baz',
+                'service.foo' => 'Service foo',
+            ],
+            static fn () => [
+                'service.foo' => true,
+            ]
+        );
+
+        self::assertTrue($s->isRemovedDefinitionId('service.foo'));
+        self::assertFalse($s->isRemovedDefinitionId('service.bar'));
+
+        // exclude id 'service.foo'
+        self::assertSame(['service.bar', 'service.baz'], array_keys([...$s->getIterator()]));
+
+        // set service id and remove if exist in `removedDefinitionIds`
+        $s['service.foo'] = 'Service foo';
+        self::assertFalse($s->isRemovedDefinitionId('service.foo'));
+    }
+
+    public function testInitRemovedDefinitionIdsAfterInitDefinitions(): void
+    {
+        $s = new DeferredSourceDefinitionsMutable(
+            static fn () => [
+                'service.bar' => 'Service bar',
+            ],
+            static fn () => [
+                'service.foo' => true,
+            ]
+        );
+
+        self::assertTrue($s->isRemovedDefinitionId('service.foo'));
     }
 }
