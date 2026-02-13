@@ -27,13 +27,15 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         $this->definitions = [];
         $this->removedDefinitionIds = [];
 
-        foreach ($sourceRemovedDefinitionIds as $identifier => $v) {
-            $this->removedDefinitionIds[$identifier] = true;
+        foreach ($sourceDefinitions as $identifier => $sourceDefinition) {
+            $this->offsetSet($identifier, $sourceDefinition);
         }
 
-        foreach ($sourceDefinitions as $identifier => $sourceDefinition) {
-            if (!isset($this->removedDefinitionIds[$identifier])) {
-                $this->offsetSet($identifier, $sourceDefinition);
+        foreach ($sourceRemovedDefinitionIds as $identifier => $v) {
+            $this->removedDefinitionIds[$identifier] = true;
+
+            if (isset($this->definitions[$identifier])) {
+                unset($this->definitions[$identifier]);
             }
         }
     }
