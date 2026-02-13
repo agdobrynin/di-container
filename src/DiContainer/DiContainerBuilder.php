@@ -28,6 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
 use RuntimeException;
 
@@ -188,7 +189,12 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
         if (!isset($this->compilerOutputDirectory)) {
             try {
-                return new DiContainer($this->definitions(), $this->containerConfig);
+                $definitions = new ImmediateSourceDefinitionsMutable(
+                    $this->configuredDefinitions(),
+                    $this->definitionsLoader->removedDefinitionIds(),
+                );
+
+                return new DiContainer($definitions, $this->containerConfig);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
                     sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
@@ -197,7 +203,12 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        $container = new DiContainer(new DeferredSourceDefinitionsMutable(fn () => $this->definitions()), $this->containerConfig);
+        $definitions = new DeferredSourceDefinitionsMutable(
+            fn () => $this->configuredDefinitions(),
+            fn () => $this->definitionsLoader->removedDefinitionIds(),
+        );
+
+        $container = new DiContainer($definitions, $this->containerConfig);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {
@@ -255,7 +266,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      *
      * @throws ContainerBuilderException|DefinitionsLoaderExceptionInterface
      */
-    private function definitions(): Generator
+    private function configuredDefinitions(): Generator
     {
         foreach ($this->imports as $import) {
             try {
