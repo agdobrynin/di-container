@@ -79,4 +79,6 @@ interface DefinitionsLoaderInterface extends ResetInterface
      * Using php attributes for configure services.
      */
     public function useAttribute(bool $useAttribute): static;
+
+    public function definitionsConfigurator(): DefinitionsConfiguratorInterface;
 }

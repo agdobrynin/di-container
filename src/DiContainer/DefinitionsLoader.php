@@ -22,6 +22,7 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
@@ -58,6 +59,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     /** @var ArrayIterator<class-string|non-empty-string, true> */
     private readonly ArrayIterator $removedDefinitionIds;
+
+    private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
     /**
      * Have the excluded definition been imported using the `import()` method.
@@ -159,6 +162,50 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->useAttribute = $useAttribute;
 
         return $this;
+    }
+
+    public function definitionsConfigurator(): DefinitionsConfiguratorInterface
+    {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds) implements DefinitionsConfiguratorInterface {
+            public function __construct(
+                private readonly DefinitionsLoaderInterface $definitionsLoader,
+                private readonly ArrayIterator $removedDefinitionIds,
+            ) {}
+
+            public function removeDefinition(string $id): void
+            {
+                $this->removedDefinitionIds->offsetSet($id, true);
+            }
+
+            public function setDefinition(string $id, mixed $definition): void
+            {
+                $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
+                $this->removedDefinitionIds->offsetUnset($id);
+            }
+
+            public function getDefinition(string $id): mixed
+            {
+                foreach ($this->definitionsLoader->definitions() as $identifier => $definition) {
+                    if ($id === $identifier) {
+                        return $definition;
+                    }
+                }
+
+                throw new DefinitionsLoaderException(
+                    sprintf('Definition with identifier "%s" not found.', $id),
+                );
+            }
+
+            public function load(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->load($file, ...$_);
+            }
+
+            public function loadOverride(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->loadOverride($file, ...$_);
+            }
+        };
     }
 
     public function definitions(): iterable
@@ -340,6 +387,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
+        if ($this->removedDefinitionIds->offsetExists($fqn)) {
+            return [];
+        }
+
         if (!$this->useAttribute) {
             return $this->configuredDefinitions->offsetExists($fqn) || T_INTERFACE === $tokenId
                 ? []
@@ -446,7 +497,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         return match (true) {
             is_iterable($content) => yield from $content,
-            is_callable($content) && is_iterable($content()) => yield from $content(),
+            is_callable($content) && is_iterable($content($this->definitionsConfigurator())) => yield from $content($this->definitionsConfigurator()),
             default => throw new DefinitionsLoaderException(
                 sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function return iterable type.', $srcFile),
             )
