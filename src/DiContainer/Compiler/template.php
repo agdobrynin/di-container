@@ -48,7 +48,15 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
                 {
                     return <?php echo \var_export($config->isUseAttribute(), true); ?>;
                 }
-            }
+            },
+<?php
+if ($config->isUseZeroConfigurationDefinition()) {?>
+            removedDefinitionIds: [
+<?php foreach ($this->diContainerDefinitions->getContainer()->getRemovedDefinitionIds() as $id => $v) {?>
+                <?php echo var_export($id, true); ?> => true,
+<?php } ?>
+            ]
+<?php } ?>
         );
     }
 
