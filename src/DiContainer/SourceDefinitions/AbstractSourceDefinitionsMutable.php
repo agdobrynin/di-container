@@ -100,6 +100,11 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         );
     }
 
+    public function getRemovedDefinitionIds(): iterable
+    {
+        return $this->removedDefinitionIds();
+    }
+
     /**
      * @return array<non-empty-string, DiDefinitionInterface>
      */

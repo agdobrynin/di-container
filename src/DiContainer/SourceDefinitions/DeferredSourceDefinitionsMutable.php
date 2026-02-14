@@ -58,6 +58,10 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
 
     protected function &removedDefinitionIds(): array
     {
+        if (!isset($this->definitions)) {
+            $this->definitions();
+        }
+
         return $this->removedDefinitionIds;
     }
 }
