@@ -247,7 +247,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
         try {
             $file = $containerCompilerToFile->compileToFile($this->compilerOptions['force_rebuild'] ?? false);
-        } catch (DefinitionCompileExceptionInterface|RuntimeException $e) {
+        } catch (ContainerExceptionInterface|DefinitionCompileExceptionInterface|RuntimeException $e) {
             throw new ContainerBuilderException(
                 sprintf('Cannot compile container. Caused by: %s', $e->getMessage()),
                 previous: $e,
