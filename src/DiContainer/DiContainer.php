@@ -84,7 +84,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function __construct(
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
-        protected iterable $removedDefinitionIds = [],
+        iterable $removedDefinitionIds = [],
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
             ? new ImmediateSourceDefinitionsMutable($definitions, $removedDefinitionIds)
@@ -222,6 +222,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         throw new NotFoundException(id: $id);
+    }
+
+    public function getRemovedDefinitionIds(): iterable
+    {
+        yield from $this->definitions->getRemovedDefinitionIds();
     }
 
     /**

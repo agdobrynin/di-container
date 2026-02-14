@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -23,6 +24,7 @@ use Tests\DiContainer\RemovedDefinitionIds\Fixtures\Foo;
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(DeferredSourceDefinitionsMutable::class)]
 class RemovedDefinitionIdsTest extends TestCase
 {
     public function testRemovedDefinitionIds(): void
@@ -37,6 +39,29 @@ class RemovedDefinitionIdsTest extends TestCase
 
         self::assertTrue($container->has(Bar::class));
         self::assertFalse($container->has(Foo::class));
+        self::assertSame(
+            [Foo::class => true],
+            [...$container->getRemovedDefinitionIds()]
+        );
+    }
+
+    public function testDeferredRemovedDefinitionIds(): void
+    {
+        $container = new DiContainer(
+            new DeferredSourceDefinitionsMutable(
+                static fn () => [],
+                static fn () => [Foo::class => true]
+            ),
+            config: new DiContainerConfig(
+                useZeroConfigurationDefinition: true,
+                useAttribute: false,
+            ),
+        );
+
+        self::assertSame(
+            [Foo::class => true],
+            [...$container->getRemovedDefinitionIds()]
+        );
     }
 
     public function testResolveRemovedDefinition(): void
