@@ -55,6 +55,13 @@ interface DefinitionsLoaderInterface extends ResetInterface
     public function definitions(): iterable;
 
     /**
+     * @return iterable<class-string|non-empty-string, true>
+     *
+     * @throws DefinitionsLoaderExceptionInterface
+     */
+    public function removedDefinitionIds(): iterable;
+
+    /**
      * Import classes from directories.
      *
      * @param non-empty-string       $namespace           PSR-4 namespace prefix

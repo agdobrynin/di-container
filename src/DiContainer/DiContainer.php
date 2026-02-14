@@ -76,6 +76,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
+     * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
      *
      * @throws ContainerIdentifierExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
@@ -83,9 +84,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function __construct(
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
+        iterable $removedDefinitionIds = [],
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
-            ? new ImmediateSourceDefinitionsMutable($definitions)
+            ? new ImmediateSourceDefinitionsMutable($definitions, $removedDefinitionIds)
             : $definitions;
     }
 
@@ -222,6 +224,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         throw new NotFoundException(id: $id);
     }
 
+    public function getRemovedDefinitionIds(): iterable
+    {
+        yield from $this->definitions->getRemovedDefinitionIds();
+    }
+
     /**
      * Resolve dependencies.
      *
@@ -344,6 +351,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
         if (!$this->config->isUseZeroConfigurationDefinition()) {
+            return false;
+        }
+
+        if ($this->definitions->isRemovedDefinitionId($id)) { // @phpstan-ignore argument.type
             return false;
         }
 

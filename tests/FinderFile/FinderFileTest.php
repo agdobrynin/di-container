@@ -12,6 +12,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 
+use function array_intersect;
 use function array_map;
 use function count;
 use function iterator_to_array;
@@ -130,7 +131,7 @@ class FinderFileTest extends TestCase
     {
         $files = (new FinderFile(
             src: __DIR__.'/Fixtures',
-            excludeFiles: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
+            exclude: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
             availableExtensions: []
         ))
             ->getFiles()
@@ -147,12 +148,31 @@ class FinderFileTest extends TestCase
         $this->assertFalse($files->valid());
     }
 
+    public function testExcludeFiles(): void
+    {
+        $finder = new FinderFile(
+            src: __DIR__.'/Fixtures',
+            exclude: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
+            availableExtensions: []
+        );
+
+        $files = $finder->getFiles();
+        $excludedFiles = $finder->getExcludedFiles();
+
+        $intersectFiles = array_intersect(
+            array_map(static fn ($file) => $file->getRealPath(), [...$files]),
+            array_map(static fn ($file) => $file->getRealPath(), [...$excludedFiles]),
+        );
+
+        self::assertEmpty($intersectFiles);
+    }
+
     public function testAsIsParameter(): void
     {
         $ff = new FinderFile('foo_baz', ['Kernel/*.php'], ['php', 'incl']);
 
         self::assertEquals('foo_baz', $ff->getSrc());
-        self::assertEquals(['Kernel/*.php'], $ff->getExcludeFiles());
+        self::assertEquals(['Kernel/*.php'], $ff->getExclude());
         self::assertEquals(['php', 'incl'], $ff->getAvailableExtensions());
     }
 }

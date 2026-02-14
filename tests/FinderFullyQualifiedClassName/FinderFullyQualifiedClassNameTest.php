@@ -39,7 +39,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             namespace: $namespace,
             finderFile: $this->createMock(FinderFileInterface::class)
         ))
-            ->get()
+            ->getMatched()
             ->current()
         ;
     }
@@ -75,7 +75,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $fqn = new FinderFullyQualifiedName('aa aaa', $finderFileMock);
 
         self::assertEquals('aa aaa', $fqn->getNamespace());
-        self::assertEquals('foo', $fqn->getSrc());
+        self::assertEquals('foo', $fqn->getFinderFile()->getSrc());
     }
 
     public function testCannotOpenFile(): void
@@ -89,7 +89,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         });
 
         (new FinderFullyQualifiedName('App\\', $finderFileMock))
-            ->get()
+            ->getMatched()
             ->valid()
         ;
     }
@@ -105,7 +105,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         });
 
         (new FinderFullyQualifiedName('App\\', $finderFileMock))
-            ->get()
+            ->getMatched()
             ->valid()
         ;
     }
@@ -117,7 +117,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             ->willReturn(new FilesystemIterator(__DIR__.'/Fixtures/Success/'))
         ;
 
-        $fqNames = (new FinderFullyQualifiedName('Tests\\', $finderFileMock))->get();
+        $fqNames = (new FinderFullyQualifiedName('Tests\\', $finderFileMock))->getMatched();
 
         $this->assertTrue($fqNames->valid());
 

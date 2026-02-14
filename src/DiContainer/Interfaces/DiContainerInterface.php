@@ -64,4 +64,11 @@ interface DiContainerInterface extends ContainerInterface
      * @throws ContainerExceptionInterface|NotFoundExceptionInterface
      */
     public function getDefinition(string $id): DiDefinitionInterface;
+
+    /**
+     * Returns container identifiers mark as deleted from  resolving.
+     *
+     * @return iterable<class-string|non-empty-string, true>
+     */
+    public function getRemovedDefinitionIds(): iterable;
 }

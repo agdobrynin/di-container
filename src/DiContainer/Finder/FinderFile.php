@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Finder;
 
 use DirectoryIterator;
 use FilesystemIterator;
+use Generator;
 use InvalidArgumentException;
 use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
@@ -29,25 +30,27 @@ final class FinderFile implements FinderFileInterface
     /** @var list<non-empty-string> */
     private array $normalizedAvailableExtensions;
 
+    private RecursiveIteratorIterator $recursiveDirectoryIterator;
+
     /**
-     * Note: parameter `$excludeFiles` use php function `\fnmatch()`, detail info about file pattern see in documentation.
+     * Note: parameter `$exclude` use php function `\fnmatch()`, detail info about file pattern see in documentation.
      *
      * @see https://www.php.net/manual/en/function.fnmatch.php
      *
      * @param non-empty-string       $src                 source directory
-     * @param list<non-empty-string> $excludeFiles        exclude matching by pattern files
+     * @param list<non-empty-string> $exclude             patterns that exclude files
      * @param list<non-empty-string> $availableExtensions available file extensions
      */
-    public function __construct(private readonly string $src, private readonly array $excludeFiles = [], private readonly array $availableExtensions = ['php']) {}
+    public function __construct(private readonly string $src, private readonly array $exclude = [], private readonly array $availableExtensions = ['php']) {}
 
     public function getSrc(): string
     {
         return $this->src;
     }
 
-    public function getExcludeFiles(): array
+    public function getExclude(): array
     {
-        return $this->excludeFiles;
+        return $this->exclude;
     }
 
     public function getAvailableExtensions(): array
@@ -56,6 +59,27 @@ final class FinderFile implements FinderFileInterface
     }
 
     public function getFiles(): Iterator
+    {
+        foreach ($this->fetchFiles() as $realPath => $entry) {
+            if (!$this->isExcluded($realPath)) {
+                yield $entry;
+            }
+        }
+    }
+
+    public function getExcludedFiles(): Iterator
+    {
+        foreach ($this->fetchFiles() as $realPath => $entry) {
+            if ($this->isExcluded($realPath)) {
+                yield $entry;
+            }
+        }
+    }
+
+    /**
+     * @return Generator<non-empty-string, DirectoryIterator>
+     */
+    private function fetchFiles(): Generator
     {
         if (!isset($this->normalizedSrc)) {
             $fixedSrc = realpath($this->src);
@@ -75,34 +99,36 @@ final class FinderFile implements FinderFileInterface
             $this->normalizedSrc = $fixedSrc;
         }
 
-        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
-
-        $iterator = new RecursiveIteratorIterator(
+        $this->recursiveDirectoryIterator ??= new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
                 $this->normalizedSrc,
                 FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
             )
         );
 
-        foreach ($iterator as $entry) {
+        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
+
+        foreach ($this->recursiveDirectoryIterator as $entry) {
             /** @var DirectoryIterator $entry */
             if (($realPath = $entry->getRealPath())
-                && !$this->isExcluded($realPath)
                 && $entry->isFile()
-                && ([] === $this->normalizedAvailableExtensions || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true))
+                && (
+                    [] === $this->normalizedAvailableExtensions
+                    || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true)
+                )
             ) {
-                yield $entry; // @phpstan-ignore generator.keyType
+                yield $realPath => $entry;
             }
         }
     }
 
     private function isExcluded(string $fileRealPath): bool
     {
-        if ([] === $this->excludeFiles) {
+        if ([] === $this->exclude) {
             return false;
         }
 
-        foreach ($this->excludeFiles as $partPattern) {
+        foreach ($this->exclude as $partPattern) {
             if (fnmatch($partPattern, $fileRealPath)) {
                 return true;
             }
