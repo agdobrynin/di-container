@@ -305,6 +305,8 @@ $container = $builder->build();
 > [!NOTE]
 > Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
 >
+> Классы и интерфейсы (_fully qualified class name_) которые будут найдены в исключенных файлах
+> для контейнера недоступны для разрешения.
 
 > [!TIP]
 > Импорт может быть выполнен из нескольких директорий если это необходимо.
@@ -330,7 +332,6 @@ $builder = (new DiContainerBuilder())
         src: '/app/src/',
         excludeFiles: [
             '/app/src/Events/*',
-            '/app/src/config/*.php',
             '/app/src/*Kernel.php',
             '/app/src/Container.php',
         ]
@@ -538,6 +539,7 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
 > Установка в контейнер нового определения должно быть до вызова метода контейнера `get()`
 > который может разрешить зависимость `'App\\Services\\Others'`.
 
+Вариант установки объекта в контейнер:
 ```php
 use App\Services\Others;
 
@@ -547,6 +549,21 @@ $others = new Others(
 
 // идентификатор будет указан как 'App\\Services\\Others'
 $container->set($others::class, $others);
+```
+Вариант конфигурирования класса через хелпер-функцию:
+```php
+use App\Services\Others;
+use function Kaspi\DiContainer\diAutowire;
+
+// идентификатор будет указан как 'App\\Services\\Others'
+$container->set(
+    Others::class,
+    diAutowire(Others::class)
+        ->bindTag('tags.other')
+        ->bindArguments(
+            // передача аргументов конструктору класса.
+        )
+);
 ```
 ```php
 use App\Services\Foo;
