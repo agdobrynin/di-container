@@ -509,13 +509,29 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ob_get_clean();
         }
 
-        return match (true) {
-            is_iterable($content) => yield from $content,
-            is_callable($content) && is_iterable($content($this->definitionsConfigurator())) => yield from $content($this->definitionsConfigurator()),
-            default => throw new DefinitionsLoaderException(
-                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function return iterable type.', $srcFile),
-            )
-        };
+        if (is_iterable($content)) {
+            yield from $content;
+
+            return;
+        }
+
+        if (is_callable($content) && is_iterable($content($this->definitionsConfigurator()))) {
+            yield from $content($this->definitionsConfigurator());
+
+            return;
+        }
+
+        if (is_callable($content)) {
+            $content($this->definitionsConfigurator());
+
+            yield from [];
+
+            return;
+        }
+
+        throw new DefinitionsLoaderException(
+            sprintf('File "%s" return not valid format. File must be use "return" keyword and return any iterable type or callable type.', $srcFile),
+        );
     }
 
     /**
