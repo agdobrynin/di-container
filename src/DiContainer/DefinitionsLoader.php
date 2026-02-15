@@ -73,6 +73,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
     private array $importedDefinitions;
 
+    /**
+     * Circular watcher for load definitions from files.
+     *
+     * @var array<string, true>
+     */
+    private array $loadedFiles = [];
+
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
@@ -283,6 +290,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->finderFullyQualifiedNameCollection?->reset();
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionImport = false;
+        $this->loadedFiles = [];
     }
 
     /**
@@ -482,9 +490,16 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      */
     private function getDefinitionsFromFile(string $srcFile): Generator
     {
+        if (isset($this->loadedFiles[$srcFile])) {
+            throw new DefinitionsLoaderException(
+                sprintf('Detected circular load from the file "%s".', $srcFile)
+            );
+        }
+
         try {
             ob_start();
             $content = require $srcFile;
+            $this->loadedFiles[$srcFile] = true;
         } catch (Error|ParseError $e) {
             throw new DefinitionsLoaderException(
                 sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $srcFile),
@@ -517,7 +532,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             try {
                 $this->addDefinitions($overrideDefinitions, $this->getDefinitionsFromFile($srcFile));
-                unset($srcFile);
             } catch (ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('Invalid definition in file "%s".', $srcFile),
