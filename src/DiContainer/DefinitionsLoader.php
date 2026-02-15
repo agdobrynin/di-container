@@ -185,6 +185,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 $this->removedDefinitionIds->offsetSet($id, true);
             }
 
+            public function getDefinitions(): iterable
+            {
+                yield from $this->definitionsLoader->definitions();
+            }
+
             public function setDefinition(string $id, mixed $definition): void
             {
                 $this->definitionsLoader->addDefinitions(true, [$id => $definition]);

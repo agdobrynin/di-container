@@ -16,6 +16,11 @@ interface DefinitionsConfiguratorInterface
     public function removeDefinition(string $id): void;
 
     /**
+     * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
+     */
+    public function getDefinitions(): iterable;
+
+    /**
      * Overwrites any definitions from configuration files or from importing classes.
      *
      * @param non-empty-string $id
