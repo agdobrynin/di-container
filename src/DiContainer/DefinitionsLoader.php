@@ -480,7 +480,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @throws DefinitionsLoaderException
      */
-    private function getIteratorFromFile(string $srcFile): Generator
+    private function getDefinitionsFromFile(string $srcFile): Generator
     {
         try {
             ob_start();
@@ -516,7 +516,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             try {
-                $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
+                $this->addDefinitions($overrideDefinitions, $this->getDefinitionsFromFile($srcFile));
                 unset($srcFile);
             } catch (ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
