@@ -24,6 +24,7 @@ use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -183,17 +184,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 $this->removedDefinitionIds->offsetUnset($id);
             }
 
-            public function getDefinition(string $id): mixed
+            public function getDefinition(string $id): ?DiDefinitionInterface
             {
                 foreach ($this->definitionsLoader->definitions() as $identifier => $definition) {
-                    if ($id === $identifier) {
+                    if ($definition instanceof DiDefinitionInterface && $id === $identifier) {
                         return $definition;
                     }
                 }
 
-                throw new DefinitionsLoaderException(
-                    sprintf('Definition with identifier "%s" not found.', $id),
-                );
+                return null;
             }
 
             public function load(string $file, string ...$_): void

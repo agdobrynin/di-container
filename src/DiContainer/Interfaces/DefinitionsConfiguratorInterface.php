@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
 interface DefinitionsConfiguratorInterface
 {
@@ -23,13 +23,14 @@ interface DefinitionsConfiguratorInterface
     public function setDefinition(string $id, mixed $definition): void;
 
     /**
-     * Find a definition via container identifier.
+     * Find a container definition via container identifier.
+     *
+     * Returns an object implementing `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface`,
+     * if no definition is found will be returns null.
      *
      * @param non-empty-string $id
-     *
-     * @throws DefinitionsLoaderExceptionInterface
      */
-    public function getDefinition(string $id): mixed;
+    public function getDefinition(string $id): ?DiDefinitionInterface;
 
     /**
      * Load definitions from configuration files.
