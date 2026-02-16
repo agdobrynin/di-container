@@ -172,6 +172,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
+    public function isUseAttribute(): bool
+    {
+        return $this->useAttribute;
+    }
+
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
         return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds) implements DefinitionsConfiguratorInterface {

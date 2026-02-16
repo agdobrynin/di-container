@@ -80,5 +80,7 @@ interface DefinitionsLoaderInterface extends ResetInterface
      */
     public function useAttribute(bool $useAttribute): static;
 
+    public function isUseAttribute(): bool;
+
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface;
 }
