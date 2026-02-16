@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 
 interface DefinitionsConfiguratorInterface
 {
@@ -36,6 +37,13 @@ interface DefinitionsConfiguratorInterface
      * @param non-empty-string $id
      */
     public function getDefinition(string $id): ?DiDefinitionInterface;
+
+    /**
+     * @param non-empty-string $tag
+     *
+     * @return iterable<non-empty-string, DiTaggedDefinitionInterface>
+     */
+    public function findTaggedDefinition(string $tag): iterable;
 
     /**
      * Load definitions from configuration files.

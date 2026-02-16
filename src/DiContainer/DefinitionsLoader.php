@@ -25,6 +25,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -210,6 +211,35 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 }
 
                 return null;
+            }
+
+            public function findTaggedDefinition(string $tag): iterable
+            {
+                foreach ($this->getDefinitions() as $identifier => $definition) {
+                    if (!$definition instanceof DiTaggedDefinitionInterface) {
+                        continue;
+                    }
+
+                    $hasTag = $definition->hasTag($tag);
+
+                    if (!$hasTag && $definition instanceof DiDefinitionAutowire) {
+                        $hasTag = $definition->getDefinition()->implementsInterface($tag);
+
+                        if ($this->definitionsLoader->isUseAttribute() && !$hasTag) {
+                            foreach (AttributeReader::getTagAttribute($definition->getDefinition()) as $attribute) {
+                                if ($tag === $attribute->name) {
+                                    $hasTag = true;
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($hasTag) {
+                        yield $identifier => $definition;
+                    }
+                }
             }
 
             public function load(string $file, string ...$_): void
