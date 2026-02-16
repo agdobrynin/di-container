@@ -198,7 +198,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function getDefinition(string $id): ?DiDefinitionInterface
             {
-                foreach ($this->definitionsLoader->definitions() as $identifier => $definition) {
+                foreach ($this->getDefinitions() as $identifier => $definition) {
                     if ($definition instanceof DiDefinitionInterface && $id === $identifier) {
                         return $definition;
                     }
