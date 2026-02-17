@@ -50,7 +50,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         bindArguments as private bindArgumentsInternal;
     }
     use TagsTrait {
-        getTags as private getTagsInternal;
+        getTags as public getBindingTags;
         hasTag as private hasTagInternal;
         geTagPriority as private geTagPriorityInternal;
     }
@@ -228,12 +228,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function getTags(): array
     {
         if (!$this->getContainer()->getConfig()->isUseAttribute()) {
-            return $this->getTagsInternal();
+            return $this->getBindingTags();
         }
 
         try {
             // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
-            return $this->getTagsByAttribute() + $this->getTagsInternal();
+            return $this->getTagsByAttribute() + $this->getBindingTags();
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot get tags on class "%s".', $this->getIdentifier()),
@@ -290,7 +290,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             $method = $tagOptions['priority.method'];
 
             if (!is_string($method) || '' === trim($method)) {
-                $wherePriorityMethod = isset($this->getTagsInternal()[$name]['priority.method'])
+                $wherePriorityMethod = isset($this->getBindingTags()[$name]['priority.method'])
                     ? 'value with key "priority.method" in the $options parameter in '.DiDefinitionTagArgumentInterface::class.'::bindTag()'
                     : 'the $priorityMethod parameter or the value with key "priority.method" in the $options parameter in the php attribute #[Tag]';
 
@@ -328,33 +328,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
     }
 
-    private function getContainer(): DiContainerInterface
-    {
-        if (!isset($this->container)) {
-            throw new DiDefinitionException(
-                sprintf('Need set container implementation. Use method %s::setContainer(). Definition identifier "%s".', __CLASS__, $this->getIdentifier())
-            );
-        }
-
-        return $this->container;
-    }
-
-    /**
-     * @throws DiDefinitionExceptionInterface
-     */
-    private function checkIsInstantiable(): void
-    {
-        if (!$this->getDefinition()->isInstantiable()) {
-            throw new DiDefinitionException(sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName()));
-        }
-    }
-
     /**
      * @return array<non-empty-string, TagOptions>
      *
      * @throws DiDefinitionExceptionInterface
      */
-    private function getTagsByAttribute(): array
+    public function getTagsByAttribute(): array
     {
         if (isset($this->tagsByAttribute)) {
             return $this->tagsByAttribute;
@@ -382,6 +361,27 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
 
         return $this->tagsByAttribute;
+    }
+
+    private function getContainer(): DiContainerInterface
+    {
+        if (!isset($this->container)) {
+            throw new DiDefinitionException(
+                sprintf('Need set container implementation. Use method %s::setContainer(). Definition identifier "%s".', __CLASS__, $this->getIdentifier())
+            );
+        }
+
+        return $this->container;
+    }
+
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
+    private function checkIsInstantiable(): void
+    {
+        if (!$this->getDefinition()->isInstantiable()) {
+            throw new DiDefinitionException(sprintf('The "%s" class is not instantiable.', $this->getDefinition()->getName()));
+        }
     }
 
     /**
