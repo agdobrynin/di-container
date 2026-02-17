@@ -50,7 +50,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         bindArguments as private bindArgumentsInternal;
     }
     use TagsTrait {
-        getTags as public getBindingTags;
+        getTags as public getBoundTags;
         hasTag as private hasTagInternal;
         geTagPriority as private geTagPriorityInternal;
     }
@@ -228,12 +228,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function getTags(): array
     {
         if (!$this->getContainer()->getConfig()->isUseAttribute()) {
-            return $this->getBindingTags();
+            return $this->getBoundTags();
         }
 
         try {
             // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
-            return $this->getTagsByAttribute() + $this->getBindingTags();
+            return $this->getTagsByAttribute() + $this->getBoundTags();
         } catch (DiDefinitionExceptionInterface $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot get tags on class "%s".', $this->getIdentifier()),
@@ -290,7 +290,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             $method = $tagOptions['priority.method'];
 
             if (!is_string($method) || '' === trim($method)) {
-                $wherePriorityMethod = isset($this->getBindingTags()[$name]['priority.method'])
+                $wherePriorityMethod = isset($this->getBoundTags()[$name]['priority.method'])
                     ? 'value with key "priority.method" in the $options parameter in '.DiDefinitionTagArgumentInterface::class.'::bindTag()'
                     : 'the $priorityMethod parameter or the value with key "priority.method" in the $options parameter in the php attribute #[Tag]';
 

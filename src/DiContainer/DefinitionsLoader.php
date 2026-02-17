@@ -231,7 +231,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
                         if (!$hasTagOnAutowire) {
                             $hasTagOnAutowire = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
-                                || isset($definition->getBindingTags()[$tag]);
+                                || isset($definition->getBoundTags()[$tag]);
                         }
 
                         if (!$hasTagOnAutowire) {
