@@ -6,11 +6,12 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 
 interface DefinitionsConfiguratorInterface
 {
     /**
-     * Remove any definitions from configuration files or from importing classes.
+     * Remove a definition from configuration files or from importing classes via container identifier.
      *
      * @param non-empty-string $id
      */
@@ -22,14 +23,14 @@ interface DefinitionsConfiguratorInterface
     public function getDefinitions(): iterable;
 
     /**
-     * Overwrites any definitions from configuration files or from importing classes.
+     * Sets new definition for container identifier.
      *
      * @param non-empty-string $id
      */
     public function setDefinition(string $id, mixed $definition): void;
 
     /**
-     * Find a container definition via container identifier.
+     * Finds the container definition via container identifier.
      *
      * Returns an object implementing `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface`,
      * if no definition is found will be returns null.
@@ -46,18 +47,22 @@ interface DefinitionsConfiguratorInterface
     public function findTaggedDefinition(string $tag): iterable;
 
     /**
-     * Load definitions from configuration files.
+     * Loads definitions from configuration files.
      *
      * @param non-empty-string $file
      * @param non-empty-string ...$_
+     *
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function load(string $file, string ...$_): void;
 
     /**
-     * Load definitions from configuration files with override previous definition.
+     * Loads definitions from configuration files and override exist definitions with same container identifiers.
      *
      * @param non-empty-string $file
      * @param non-empty-string ...$_
+     *
+     * @throws DefinitionsLoaderExceptionInterface
      */
     public function loadOverride(string $file, string ...$_): void;
 }
