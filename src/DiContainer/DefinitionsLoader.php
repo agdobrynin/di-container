@@ -38,6 +38,7 @@ use RuntimeException;
 use function class_exists;
 use function file_exists;
 use function in_array;
+use function interface_exists;
 use function is_callable;
 use function is_iterable;
 use function is_readable;
@@ -215,28 +216,30 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function findTaggedDefinition(string $tag): iterable
             {
+                $tagIsInterface = null;
+
                 foreach ($this->getDefinitions() as $identifier => $definition) {
                     if (!$definition instanceof DiTaggedDefinitionInterface) {
                         continue;
                     }
 
-                    $hasTag = $definition->hasTag($tag);
+                    $hasTagOnAutowire = false;
 
-                    if (!$hasTag && $definition instanceof DiDefinitionAutowire) {
-                        $hasTag = $definition->getDefinition()->implementsInterface($tag);
+                    if ($definition instanceof DiDefinitionAutowire) {
+                        $tagIsInterface ??= interface_exists($tag);
+                        $hasTagOnAutowire = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
 
-                        if ($this->definitionsLoader->isUseAttribute() && !$hasTag) {
-                            foreach (AttributeReader::getTagAttribute($definition->getDefinition()) as $attribute) {
-                                if ($tag === $attribute->name) {
-                                    $hasTag = true;
+                        if (!$hasTagOnAutowire) {
+                            $hasTagOnAutowire = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
+                                || isset($definition->getBindingTags()[$tag]);
+                        }
 
-                                    break;
-                                }
-                            }
+                        if (!$hasTagOnAutowire) {
+                            continue;
                         }
                     }
 
-                    if ($hasTag) {
+                    if ($hasTagOnAutowire || $definition->hasTag($tag)) {
                         yield $identifier => $definition;
                     }
                 }
