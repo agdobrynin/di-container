@@ -227,6 +227,10 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     public function getTags(): array
     {
+        if (!$this->getContainer()->getConfig()->isUseAttribute()) {
+            return $this->getTagsInternal();
+        }
+
         try {
             // 🚩 PHP attributes have higher priority than PHP definitions (see documentation.)
             return $this->getTagsByAttribute() + $this->getTagsInternal();
@@ -352,10 +356,6 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     private function getTagsByAttribute(): array
     {
-        if (!$this->getContainer()->getConfig()->isUseAttribute()) {
-            return [];
-        }
-
         if (isset($this->tagsByAttribute)) {
             return $this->tagsByAttribute;
         }
