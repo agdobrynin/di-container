@@ -229,7 +229,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         $tagIsInterface ??= interface_exists($tag);
                         $hasTagOnAutowire = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
 
-                        if (!$hasTagOnAutowire) {
+                        if (!$tagIsInterface && !$hasTagOnAutowire) {
                             $hasTagOnAutowire = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
                                 || isset($definition->getBoundTags()[$tag]);
                         }
