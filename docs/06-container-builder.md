@@ -89,14 +89,62 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 ## Загрузка из файлов конфигураций.
 Загрузка из отдельных файлов конфигураций для конфигурирования определений контейнера.
 
+Конфигурационный файл может возвращать настроенные определения для контейнера либо использовать
+вызов callback функции для конфигурирования через параметр [конфигуратор определений контейнера](08-definitions-configurator.md).
+
+Файл конфигурации с возвращаемыми определениями:
+```php
+// /app/config/services.php
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): \Generator {
+
+    yield diAutowire(Foo::class)
+        ->bindArguments('baz val');
+
+};
+```
+Комбинирование возвращаемых определений и [конфигуратора](08-definitions-configurator.md):
+```php
+// /app/config/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+    $configurator->removeDefinition(Baz::class);
+
+    yield diAutowire(Foo::class)
+        ->bindArguments('baz val');
+
+};
+```
+Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](08-definitions-configurator.md):
+```php
+// /app/config/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    $configurator->removeDefinition(Baz::class);
+    
+    $configurator->setDefinition(
+        Foo::class,
+        diAutowire(Foo::class)
+            ->bindTag('tags.foo_app');
+    );
+};
+```
+
 Предусмотрены режимы загрузки:
 - отслеживать уникальные идентификаторы у добавляемых определений.
 - перезапись ранее добавленных определения с совпадающими идентификаторов контейнера.
 
 > [!IMPORTANT]
-> Файл конфигурации должен использовать ключевое слово `return`
-> и возвращать любой итерируемый тип. Например:
-> - Функцию обратного вызова (`\Closure`), с возвращаемым значением `\Generator` через ключевое слово `yield`.
+> Файл конфигурации должен использовать ключевое слово `return`.
+ 
+> [!NOTE]
+> Файл конфигурации может возвращать любой итерируемый тип. Например:
+> - Callback функцию с возвращаемым типом `\Generator` через ключевое слово `yield`.
 > - простой php массив `[]`.
 > - любое `callable` выражение с возвращаемым типом `iterable`.
 
@@ -305,8 +353,13 @@ $container = $builder->build();
 > [!NOTE]
 > Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
 >
-> Классы и интерфейсы (_fully qualified class name_) которые будут найдены в исключенных файлах
+> Классы и интерфейсы (_fully qualified class name_) которые будут найдены в исключённых файлах
 > для контейнера недоступны для разрешения.
+
+> [!TIP]
+> **Удаляемы определения**. При необходимости можно удалить
+> из контейнера определение [через конфигуратор](08-definitions-configurator.md). Это полезно, например, для того, чтобы сделать сервис недоступным при определенных сценариях использования контейнера.
+>
 
 > [!TIP]
 > Импорт может быть выполнен из нескольких директорий если это необходимо.
