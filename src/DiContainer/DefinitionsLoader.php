@@ -80,7 +80,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @var array<string, true>
      */
-    private array $loadedFiles = [];
+    private array $circularLoadFromFileWatcher = [];
 
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
@@ -333,7 +333,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->finderFullyQualifiedNameCollection?->reset();
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionImport = false;
-        $this->loadedFiles = [];
+        $this->circularLoadFromFileWatcher = [];
     }
 
     /**
@@ -533,7 +533,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      */
     private function getDefinitionsFromFile(string $srcFile): Generator
     {
-        if (isset($this->loadedFiles[$srcFile])) {
+        if (isset($this->circularLoadFromFileWatcher[$srcFile])) {
             throw new DefinitionsLoaderException(
                 sprintf('Detected circular load from the file "%s".', $srcFile)
             );
@@ -542,7 +542,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         try {
             ob_start();
             $content = require $srcFile;
-            $this->loadedFiles[$srcFile] = true;
+            $this->circularLoadFromFileWatcher[$srcFile] = true;
         } catch (Error|ParseError $e) {
             throw new DefinitionsLoaderException(
                 sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $srcFile),
@@ -555,11 +555,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (is_iterable($content)) {
             yield from $content;
 
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
+
             return;
         }
 
         if (is_callable($content) && is_iterable($content($this->definitionsConfigurator()))) {
             yield from $content($this->definitionsConfigurator());
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
 
             return;
         }
@@ -568,6 +572,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $content($this->definitionsConfigurator());
 
             yield from [];
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
 
             return;
         }
