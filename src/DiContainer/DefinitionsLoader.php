@@ -62,7 +62,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * Have the excluded definition been imported using the `import()` method.
      */
-    private bool $isRemovedDefinitionImport = false;
+    private bool $isRemovedDefinitionsImported = false;
 
     private bool $useAttribute = true;
 
@@ -149,7 +149,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         unset($this->importedDefinitions);
-        $this->isRemovedDefinitionImport = false;
+        $this->isRemovedDefinitionsImported = false;
 
         return $this;
     }
@@ -170,14 +170,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function removedDefinitionIds(): iterable
     {
-        if ($this->isRemovedDefinitionImport) {
+        if ($this->isRemovedDefinitionsImported) {
             yield from $this->removedDefinitionIds;
 
             return;
         }
 
         if (null === $this->finderFullyQualifiedNameCollection) {
-            $this->isRemovedDefinitionImport = true;
+            $this->isRemovedDefinitionsImported = true;
 
             yield from $this->removedDefinitionIds;
 
@@ -218,7 +218,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->removedDefinitionIds->next();
         }
 
-        $this->isRemovedDefinitionImport = true;
+        $this->isRemovedDefinitionsImported = true;
 
         yield from $this->removedDefinitionIds;
     }
@@ -236,7 +236,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->useAttribute = true;
         $this->finderFullyQualifiedNameCollection?->reset();
         unset($this->importedDefinitions);
-        $this->isRemovedDefinitionImport = false;
+        $this->isRemovedDefinitionsImported = false;
     }
 
     /**
