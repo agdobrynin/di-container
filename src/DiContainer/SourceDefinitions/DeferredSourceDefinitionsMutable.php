@@ -21,7 +21,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
      */
     public function __construct(private Closure $sourceDefinitions, private ?Closure $sourceRemovedDefinitionIds = null) {}
 
-    public function isRemovedDefinitionId(string $id): bool
+    public function isRemovedDefinition(string $id): bool
     {
         if (!isset($this->removedDefinitionIds)) {
             $this->definitions();

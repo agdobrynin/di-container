@@ -354,7 +354,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return false;
         }
 
-        if ($this->definitions->isRemovedDefinitionId($id)) { // @phpstan-ignore argument.type
+        if ($this->definitions->isRemovedDefinition($id)) { // @phpstan-ignore argument.type
             return false;
         }
 

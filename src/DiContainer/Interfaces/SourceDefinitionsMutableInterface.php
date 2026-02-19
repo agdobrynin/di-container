@@ -19,7 +19,7 @@ interface SourceDefinitionsMutableInterface extends ArrayAccess, IteratorAggrega
     /**
      * @param non-empty-string $id
      */
-    public function isRemovedDefinitionId(string $id): bool;
+    public function isRemovedDefinition(string $id): bool;
 
     /**
      * @return iterable<class-string|non-empty-string, true>

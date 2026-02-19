@@ -203,11 +203,11 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         // exclude id 'service.foo'
         self::assertSame(['service.bar', 'service.baz'], array_keys([...$s->getIterator()]));
 
-        self::assertTrue($s->isRemovedDefinitionId('service.foo'));
-        self::assertFalse($s->isRemovedDefinitionId('service.bar'));
+        self::assertTrue($s->isRemovedDefinition('service.foo'));
+        self::assertFalse($s->isRemovedDefinition('service.bar'));
 
         // set service id and remove if exist in `removedDefinitionIds`
         $s['service.foo'] = 'Service foo';
-        self::assertFalse($s->isRemovedDefinitionId('service.foo'));
+        self::assertFalse($s->isRemovedDefinition('service.foo'));
     }
 }

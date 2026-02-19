@@ -188,15 +188,15 @@ class SourceDefinitionsMutableTest extends TestCase
             ]
         );
 
-        self::assertTrue($s->isRemovedDefinitionId('service.foo'));
-        self::assertFalse($s->isRemovedDefinitionId('service.bar'));
+        self::assertTrue($s->isRemovedDefinition('service.foo'));
+        self::assertFalse($s->isRemovedDefinition('service.bar'));
 
         // exclude id 'service.foo'
         self::assertSame(['service.bar', 'service.baz'], array_keys([...$s->getIterator()]));
 
         // set service id and remove if exist in `removedDefinitionIds`
         $s['service.foo'] = 'Service foo';
-        self::assertFalse($s->isRemovedDefinitionId('service.foo'));
+        self::assertFalse($s->isRemovedDefinition('service.foo'));
     }
 
     public function testInitRemovedDefinitionIdsAfterInitDefinitions(): void
@@ -210,6 +210,6 @@ class SourceDefinitionsMutableTest extends TestCase
             ]
         );
 
-        self::assertTrue($s->isRemovedDefinitionId('service.foo'));
+        self::assertTrue($s->isRemovedDefinition('service.foo'));
     }
 }
