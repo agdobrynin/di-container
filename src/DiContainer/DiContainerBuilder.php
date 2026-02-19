@@ -95,9 +95,14 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
     }
 
-    public function load(string ...$file): static
+    public function load(string $file, string ...$_): static
     {
-        foreach ($file as $loadConfigFile) {
+        $this->loadFiles[] = [
+            'override' => false,
+            'file' => $file,
+        ];
+
+        foreach ($_ as $loadConfigFile) {
             $this->loadFiles[] = [
                 'override' => false,
                 'file' => $loadConfigFile,
@@ -107,9 +112,14 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         return $this;
     }
 
-    public function loadOverride(string ...$file): static
+    public function loadOverride(string $file, string ...$_): static
     {
-        foreach ($file as $loadConfigFile) {
+        $this->loadFiles[] = [
+            'override' => true,
+            'file' => $file,
+        ];
+
+        foreach ($_ as $loadConfigFile) {
             $this->loadFiles[] = [
                 'override' => true,
                 'file' => $loadConfigFile,
