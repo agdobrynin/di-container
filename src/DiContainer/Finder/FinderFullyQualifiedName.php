@@ -59,7 +59,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     {
         $namespace = $this->verifiedNamespace();
 
-        foreach ($this->finderFile->getFiles() as $file) {
+        foreach ($this->finderFile->getMatchedFiles() as $file) {
             yield from $this->findInFile($file, $namespace);
         }
     }

@@ -29,7 +29,7 @@ class FinderFileTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectMessage);
 
-        (new FinderFile($src))->getFiles()->current();
+        (new FinderFile($src))->getMatchedFiles()->current();
     }
 
     public static function dataProviderConstructor(): Generator
@@ -47,7 +47,7 @@ class FinderFileTest extends TestCase
 
     public function testFilesWithPhpExtension(): void
     {
-        $files = (new FinderFile(__DIR__.'/Fixtures'))->getFiles();
+        $files = (new FinderFile(__DIR__.'/Fixtures'))->getMatchedFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current()->getRealPath());
@@ -63,7 +63,7 @@ class FinderFileTest extends TestCase
 
     public function testFilesWithTxtExtension(): void
     {
-        $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: ['txt']))->getFiles();
+        $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: ['txt']))->getMatchedFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/SomeFile.txt', $files->current()->getRealPath());
@@ -80,7 +80,7 @@ class FinderFileTest extends TestCase
     public function testFilesWithTxtAndDocExtension(): void
     {
         $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: ['txt', 'doc']))
-            ->getFiles()
+            ->getMatchedFiles()
         ;
 
         $expect = [
@@ -97,7 +97,7 @@ class FinderFileTest extends TestCase
 
     public function testFilesWithIgnoreExtension(): void
     {
-        $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: []))->getFiles();
+        $files = (new FinderFile(__DIR__.'/Fixtures', availableExtensions: []))->getMatchedFiles();
 
         $this->assertTrue($files->valid());
         $this->assertStringContainsString('tests/FinderFile/Fixtures/FileOne.php', $files->current()->getRealPath());
@@ -134,7 +134,7 @@ class FinderFileTest extends TestCase
             exclude: ['*Fixtures/*/SubSubDirectory/*', '*/FileOne.php', '*.doc'],
             availableExtensions: []
         ))
-            ->getFiles()
+            ->getMatchedFiles()
         ;
 
         $this->assertStringContainsString('tests/FinderFile/Fixtures/SubDirectory/FileTwo.php', $files->current()->getRealPath());
@@ -156,7 +156,7 @@ class FinderFileTest extends TestCase
             availableExtensions: []
         );
 
-        $files = $finder->getFiles();
+        $files = $finder->getMatchedFiles();
         $excludedFiles = $finder->getExcludedFiles();
 
         $intersectFiles = array_intersect(

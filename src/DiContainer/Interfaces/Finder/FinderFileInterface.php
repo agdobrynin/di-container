@@ -15,7 +15,7 @@ interface FinderFileInterface
      *
      * @throws InvalidArgumentException
      */
-    public function getFiles(): Iterator;
+    public function getMatchedFiles(): Iterator;
 
     /**
      * @return Iterator<SplFileInfo>

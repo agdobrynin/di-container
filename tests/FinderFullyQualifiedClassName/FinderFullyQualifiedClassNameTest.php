@@ -84,7 +84,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectExceptionMessage('Failed to open stream');
 
         $finderFileMock = $this->createMock(FinderFileInterface::class);
-        $finderFileMock->method('getFiles')->willReturnCallback(static function (): Generator {
+        $finderFileMock->method('getMatchedFiles')->willReturnCallback(static function (): Generator {
             yield new SplFileInfo('file-not-found.php');
         });
 
@@ -100,7 +100,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectExceptionMessage('Cannot parse code');
 
         $finderFileMock = $this->createMock(FinderFileInterface::class);
-        $finderFileMock->method('getFiles')->willReturnCallback(static function (): Generator {
+        $finderFileMock->method('getMatchedFiles')->willReturnCallback(static function (): Generator {
             yield new SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php');
         });
 
@@ -113,7 +113,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
     public function testGetClasses(): void
     {
         $finderFileMock = $this->createMock(FinderFileInterface::class);
-        $finderFileMock->method('getFiles')
+        $finderFileMock->method('getMatchedFiles')
             ->willReturn(new FilesystemIterator(__DIR__.'/Fixtures/Success/'))
         ;
 

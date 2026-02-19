@@ -58,7 +58,7 @@ final class FinderFile implements FinderFileInterface
         return $this->availableExtensions;
     }
 
-    public function getFiles(): Iterator
+    public function getMatchedFiles(): Iterator
     {
         foreach ($this->fetchFiles() as $realPath => $entry) {
             if (!$this->isExcluded($realPath)) {
