@@ -161,10 +161,11 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 #### Метод загрузки из файлов конфигураций с отслеживанием уникальности идентификаторов контейнера:
 ```php
-\Kaspi\DiContainer\DiContainerBuilder::load(string ...$file): static;
+\Kaspi\DiContainer\DiContainerBuilder::load(string $file, string ...$_): static;
 ```
 Параметры:
 - `$file` – полный путь к файлу конфигурации определений;
+- `$_` – полный путь к файлу конфигурации определений;
 
 > [!IMPORTANT]
 > При сборке контейнера методом `DiContainerBuilder::build()` при совпадении идентификаторов контейнера будет выброшено исключение.
@@ -174,10 +175,11 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 #### Метод загрузки из файлов конфигураций с перезаписью:
 ```php
-\Kaspi\DiContainer\DiContainerBuilder::loadOverride(string ...$file): static;
+\Kaspi\DiContainer\DiContainerBuilder::loadOverride(string $file, string ...$_): static;
 ```
 Параметры:
 - `$file` – полный путь к файлу конфигурации определений;
+- `$_` – полный путь к файлу конфигурации определений;
 
 #### Пример использования.
 
