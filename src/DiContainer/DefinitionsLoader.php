@@ -22,7 +22,10 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -35,6 +38,7 @@ use RuntimeException;
 use function class_exists;
 use function file_exists;
 use function in_array;
+use function interface_exists;
 use function is_callable;
 use function is_iterable;
 use function is_readable;
@@ -59,6 +63,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<class-string|non-empty-string, true> */
     private readonly ArrayIterator $removedDefinitionIds;
 
+    private DefinitionsConfiguratorInterface $definitionsConfigurator;
+
     /**
      * Have the excluded definition been imported using the `import()` method.
      */
@@ -68,6 +74,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
     private array $importedDefinitions;
+
+    /**
+     * Circular watcher for load definitions from files.
+     *
+     * @var array<string, true>
+     */
+    private array $circularLoadFromFileWatcher = [];
 
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
@@ -161,6 +174,89 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
+    public function isUseAttribute(): bool
+    {
+        return $this->useAttribute;
+    }
+
+    public function definitionsConfigurator(): DefinitionsConfiguratorInterface
+    {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds) implements DefinitionsConfiguratorInterface {
+            public function __construct(
+                private readonly DefinitionsLoaderInterface $definitionsLoader,
+                private readonly ArrayIterator $removedDefinitionIds,
+            ) {}
+
+            public function removeDefinition(string $id): void
+            {
+                $this->removedDefinitionIds->offsetSet($id, true);
+            }
+
+            public function getDefinitions(): iterable
+            {
+                yield from $this->definitionsLoader->definitions();
+            }
+
+            public function setDefinition(string $id, mixed $definition): void
+            {
+                $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
+                $this->removedDefinitionIds->offsetUnset($id);
+            }
+
+            public function getDefinition(string $id): ?DiDefinitionInterface
+            {
+                foreach ($this->getDefinitions() as $identifier => $definition) {
+                    if ($definition instanceof DiDefinitionInterface && $id === $identifier) {
+                        return $definition;
+                    }
+                }
+
+                return null;
+            }
+
+            public function findTaggedDefinition(string $tag): iterable
+            {
+                $tagIsInterface = null;
+
+                foreach ($this->getDefinitions() as $identifier => $definition) {
+                    if (!$definition instanceof DiTaggedDefinitionInterface) {
+                        continue;
+                    }
+
+                    $hasTagOnAutowire = false;
+
+                    if ($definition instanceof DiDefinitionAutowire) {
+                        $tagIsInterface ??= interface_exists($tag);
+                        $hasTagOnAutowire = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
+
+                        if (!$tagIsInterface && !$hasTagOnAutowire) {
+                            $hasTagOnAutowire = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
+                                || isset($definition->getBoundTags()[$tag]);
+                        }
+
+                        if (!$hasTagOnAutowire) {
+                            continue;
+                        }
+                    }
+
+                    if ($hasTagOnAutowire || $definition->hasTag($tag)) {
+                        yield $identifier => $definition;
+                    }
+                }
+            }
+
+            public function load(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->load($file, ...$_);
+            }
+
+            public function loadOverride(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->loadOverride($file, ...$_);
+            }
+        };
+    }
+
     public function definitions(): iterable
     {
         yield from $this->importedDefinitions();
@@ -237,6 +333,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->finderFullyQualifiedNameCollection?->reset();
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionsImported = false;
+        $this->circularLoadFromFileWatcher = [];
     }
 
     /**
@@ -340,6 +437,10 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
+        if ($this->removedDefinitionIds->offsetExists($fqn)) {
+            return [];
+        }
+
         if (!$this->useAttribute) {
             return $this->configuredDefinitions->offsetExists($fqn) || T_INTERFACE === $tokenId
                 ? []
@@ -430,11 +531,18 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @throws DefinitionsLoaderException
      */
-    private function getIteratorFromFile(string $srcFile): Generator
+    private function getDefinitionsFromFile(string $srcFile): Generator
     {
+        if (isset($this->circularLoadFromFileWatcher[$srcFile])) {
+            throw new DefinitionsLoaderException(
+                sprintf('Detected circular load from the file "%s".', $srcFile)
+            );
+        }
+
         try {
             ob_start();
             $content = require $srcFile;
+            $this->circularLoadFromFileWatcher[$srcFile] = true;
         } catch (Error|ParseError $e) {
             throw new DefinitionsLoaderException(
                 sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $srcFile),
@@ -444,13 +552,35 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ob_get_clean();
         }
 
-        return match (true) {
-            is_iterable($content) => yield from $content,
-            is_callable($content) && is_iterable($content()) => yield from $content(),
-            default => throw new DefinitionsLoaderException(
-                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function return iterable type.', $srcFile),
-            )
-        };
+        if (is_iterable($content)) {
+            yield from $content;
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
+
+            return;
+        }
+
+        if (is_callable($content) && is_iterable($content($this->definitionsConfigurator()))) {
+            yield from $content($this->definitionsConfigurator());
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
+
+            return;
+        }
+
+        if (is_callable($content)) {
+            $content($this->definitionsConfigurator());
+
+            yield from [];
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
+
+            return;
+        }
+
+        throw new DefinitionsLoaderException(
+            sprintf('File "%s" return not valid format. File must be use "return" keyword and return any iterable type or callable type.', $srcFile),
+        );
     }
 
     /**
@@ -466,8 +596,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             try {
-                $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
-                unset($srcFile);
+                $this->addDefinitions($overrideDefinitions, $this->getDefinitionsFromFile($srcFile));
             } catch (ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('Invalid definition in file "%s".', $srcFile),
