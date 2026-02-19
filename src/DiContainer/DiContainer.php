@@ -186,21 +186,21 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $tagIsInterface = null;
 
         foreach ($this->definitions->getIterator() as $containerIdentifier => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface) {
-                if ($definition instanceof DiDefinitionAutowireInterface) {
-                    $tagIsInterface ??= interface_exists($tag);
-                    // Pass container with configuration for determinate using php attribute or not.
-                    $definition->setContainer($this);
-                    $hasTag = true === $tagIsInterface
-                        ? $definition->getDefinition()->implementsInterface($tag)
-                        : $definition->hasTag($tag);
-                } else {
-                    $hasTag = $definition->hasTag($tag);
-                }
+            if (!$definition instanceof DiTaggedDefinitionInterface) {
+                continue;
+            }
 
-                if ($hasTag) {
-                    yield $containerIdentifier => $definition;
-                }
+            $hasTagAsInterface = false;
+
+            if ($definition instanceof DiDefinitionAutowireInterface) {
+                $tagIsInterface ??= interface_exists($tag);
+                // Pass container with configuration for determinate using php attribute or not.
+                $definition->setContainer($this);
+                $hasTagAsInterface = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
+            }
+
+            if ($hasTagAsInterface || (true !== $tagIsInterface && $definition->hasTag($tag))) {
+                yield $containerIdentifier => $definition;
             }
         }
     }
