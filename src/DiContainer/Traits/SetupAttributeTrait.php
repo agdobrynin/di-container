@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
@@ -13,7 +14,7 @@ use function sprintf;
 
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
- * @phpstan-import-type SetupConfigureArgumentsType from SetupConfigureTrait
+ * @phpstan-import-type SetupConfigureArgumentsType from DiDefinitionAutowire
  */
 trait SetupAttributeTrait
 {

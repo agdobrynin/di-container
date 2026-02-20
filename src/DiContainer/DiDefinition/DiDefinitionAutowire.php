@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use InvalidArgumentException;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
@@ -15,6 +16,7 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
@@ -22,7 +24,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
-use Kaspi\DiContainer\Traits\SetupConfigureTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionClass;
 use ReflectionException;
@@ -40,9 +41,12 @@ use function trim;
 use function var_export;
 
 /**
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  * @phpstan-import-type Tags from DiTaggedDefinitionInterface
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
- * @phpstan-import-type SetupConfigureItem from SetupConfigureTrait
+ *
+ * @phpstan-type SetupConfigureArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
+ * @phpstan-type SetupConfigureItem array{0: SetupConfigureMethod, 1: SetupConfigureArgumentsType}
  */
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
 {
@@ -53,10 +57,6 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         getTags as public getBoundTags;
         hasTag as private hasTagInternal;
         geTagPriority as private geTagPriorityInternal;
-    }
-    use SetupConfigureTrait {
-        setup as private setupInternal;
-        setupImmutable as private setupImmutableInternal;
     }
 
     private ReflectionClass $reflectionClass;
@@ -74,6 +74,20 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      * @var array<non-empty-string, TagOptions>
      */
     private array $tagsByAttribute;
+
+    /**
+     * Methods for setup service by PHP definition via setters (mutable or immutable).
+     *
+     * @var array<non-empty-string, list<SetupConfigureItem>>
+     */
+    private array $setup = [];
+
+    /**
+     * Methods for setup service by PHP attribute via setters (mutable or immutable).
+     *
+     * @var array<non-empty-string, list<SetupConfigureItem>>
+     */
+    private array $setupByAttributes;
 
     private DiContainerInterface $container;
 
@@ -93,7 +107,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function setup(string $method, array $arguments = []): static
     {
         unset($this->setupArgBuilders);
-        $this->setupInternal($method, $arguments);
+        $this->setup[$method][] = [SetupConfigureMethod::Mutable, $arguments];
 
         return $this;
     }
@@ -101,7 +115,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function setupImmutable(string $method, array $arguments = []): static
     {
         unset($this->setupArgBuilders);
-        $this->setupImmutableInternal($method, $arguments);
+        $this->setup[$method][] = [SetupConfigureMethod::Immutable, $arguments];
 
         return $this;
     }
@@ -361,6 +375,30 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
 
         return $this->tagsByAttribute;
+    }
+
+    /**
+     * @return array<non-empty-string, list<SetupConfigureItem>>
+     */
+    private function getSetups(ReflectionClass $class, DiContainerInterface $container): array
+    {
+        if (!$container->getConfig()->isUseAttribute()) {
+            return $this->setup;
+        }
+
+        if (!isset($this->setupByAttributes)) {
+            $this->setupByAttributes = [];
+
+            foreach (AttributeReader::getSetupAttribute($class) as $setupAttr) {
+                $setupType = $setupAttr instanceof Setup
+                    ? SetupConfigureMethod::Mutable
+                    : SetupConfigureMethod::Immutable;
+
+                $this->setupByAttributes[$setupAttr->getMethod()][] = [$setupType, $setupAttr->arguments];
+            }
+        }
+
+        return $this->setupByAttributes + $this->setup;
     }
 
     private function getContainer(): DiContainerInterface
