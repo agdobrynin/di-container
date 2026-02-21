@@ -167,6 +167,11 @@ var_dump($container->has(SomeService::class)); // false
 > Сеттер метод через PHP атрибут `#[Setup]` можно применять несколько раз, контейнер
 > вызовет сеттер метод указанное количество раз.
 
+> [!TIP]
+> При необходимости можно изменить порядок вызова методов настройки класса
+> [через атрибут `Kaspi\DiContainer\Attributes\SetupPriority`](#приоритет-вызова-методов-настройки-класса-через-setuppriority).
+>
+
 Пример добавления зависимостей через сеттер метод: 
 ```php
 // src/Rules/RuleInterface.php
@@ -258,6 +263,11 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 > Сеттер метод через PHP атрибут `#[SetupImmutable]` можно применять несколько раз, контейнер
 > вызовет сеттер метод указанное количество раз.
 
+> [!TIP]
+> При необходимости можно изменить порядок вызова методов настройки класса
+> [через атрибут `Kaspi\DiContainer\Attributes\SetupPriority`](#приоритет-вызова-методов-настройки-класса-через-setuppriority).
+> 
+
 Пример добавления зависимостей через сеттер метод который возвращает новый объект:
 ```php
 // src/App/Loggers/MyLogger.php
@@ -312,6 +322,36 @@ $myService = $container->get(App\Services\MyService::class);
 var_dump($myService->getLogger() instanceof Psr\Log\LoggerInterface); // true
 ```
 
+## Приоритет вызова методов настройки класса через SetupPriority.
+
+При необходимости изменить порядок вызова методов настройки класса указанных атрибутами `Setup` и `SetupImmutabel` можно применить атрибут `\Kaspi\DiContainer\Attributes\SetupPriority`
+с указанием приоритета – чем выше значение параметра `\Kaspi\DiContainer\Attributes\SetupPriority::$priority` тем выше приоритет вызова метода.
+
+```php
+#[SetupPriority(int $priority = 0)]
+```
+Параметры:
+- `$priority` - приоритет вызова.
+
+Атрибут применяется только один раз к методу класса и будет работать только в паре с одним из атрибутов
+`\Kaspi\DiContainer\Attributes\Setup` или `\Kaspi\DiContainer\Attributes\SetupImmutable`.
+
+```php
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupPriority;
+
+class Foo {
+    //...
+
+   #[Setup]
+   public function bar() {}
+
+   #[Setup]
+   #[SetupPriority(10)]
+   public function baz() {}
+}
+```
+для настройки класса `Foo` сначала будет вызван метод `Foo::baz()` и потом `Foo::bar()`.
 ## Inject
 
 Применяется к аргументам конструктора класса, метода или функции.
