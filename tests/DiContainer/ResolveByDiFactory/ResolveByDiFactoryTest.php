@@ -15,7 +15,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
@@ -81,20 +80,6 @@ class ResolveByDiFactoryTest extends TestCase
         $res = $container->get(MyClassSingleton::class);
 
         $this->assertSame($res, $container->get(MyClassSingleton::class));
-    }
-
-    public function testResolveByDiFactoryViaAttributeFailDiFactory(): void
-    {
-        $config = new DiContainerConfig(
-            useZeroConfigurationDefinition: true,
-            useAttribute: true
-        );
-        $container = new DiContainer(config: $config);
-
-        $this->expectException(ContainerException::class);
-        $this->expectExceptionMessageMatches('/The attribute .+DiFactory.+ must have an \$id parameter as class-string.+DiFactoryInterface" interface\. Got\: "service\.one"/');
-
-        $container->get(MyClassFailDiFactory::class);
     }
 
     public function testResolveByDiFactoryWithoutAttribute(): void

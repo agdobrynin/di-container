@@ -165,10 +165,10 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportWithoutUseAttributeForConfigureServices(): void
     {
         $loader = (new DefinitionsLoader())
+            ->useAttribute(false)
             ->import(
                 'Tests\DefinitionsLoader\\',
                 __DIR__.'/Fixtures/Import',
-                useAttribute: false
             )
         ;
 
@@ -268,7 +268,7 @@ class DefinitionsLoaderImportTest extends TestCase
 
         $importLoaderMock = $this->createMock(FinderFullyQualifiedNameInterface::class);
 
-        $importLoaderMock->method('get')
+        $importLoaderMock->method('getMatched')
             ->willReturnCallback(
                 function () {
                     yield 0 => [
@@ -349,12 +349,31 @@ class DefinitionsLoaderImportTest extends TestCase
     public function testImportInvalidReferenceForInterface(): void
     {
         $this->expectException(DefinitionsLoaderExceptionInterface::class);
-        $this->expectExceptionMessage('Invalid definition reference "services.foo"');
+        $this->expectExceptionMessage('The container identifier "services.foo" is not registered');
 
         (new DefinitionsLoader())
             ->import('Tests\DefinitionsLoader\\', __DIR__.'/Fixtures/ImportInvalidReferenceForInterface')
             ->definitions()
             ->valid()
         ;
+    }
+
+    public function testImportCache(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\\', __DIR__.'/Fixtures/CacheImport')
+        ;
+
+        // first call DefinitionsLoader::importedDefinitions()
+        // init collect class from file system and fill DefinitionsLoader::$importedDefinitions
+        self::assertTrue($loader->definitions()->valid());
+
+        // second call DefinitionsLoader::importedDefinitions()
+        // check exist DefinitionsLoader::$importedDefinitions
+        // and return data from DefinitionsLoader::$importedDefinitions
+        self::assertArrayHasKey(
+            'Tests\DefinitionsLoader\Fixtures\CacheImport\Foo',
+            [...$loader->definitions()]
+        );
     }
 }

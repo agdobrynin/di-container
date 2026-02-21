@@ -11,6 +11,7 @@ parameters:
 	ignoreErrors:
 		-
 			identifier: missingType.generics
+	treatPhpDocTypesAsCertain: false
 	phpVersion:
 		min: 80100
 		max: 80400

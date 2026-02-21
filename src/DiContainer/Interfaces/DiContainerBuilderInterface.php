@@ -12,20 +12,22 @@ interface DiContainerBuilderInterface
     /**
      * Load definitions from configuration files.
      *
-     * @param non-empty-string ...$file
+     * @param non-empty-string $file
+     * @param non-empty-string ...$_
      *
      * @return $this
      */
-    public function load(string ...$file): static;
+    public function load(string $file, string ...$_): static;
 
     /**
      * Load definitions from configuration files and override exist definitions.
      *
-     * @param non-empty-string ...$file
+     * @param non-empty-string $file
+     * @param non-empty-string ...$_
      *
      * @return $this
      */
-    public function loadOverride(string ...$file): static;
+    public function loadOverride(string $file, string ...$_): static;
 
     /**
      * Add definitions.

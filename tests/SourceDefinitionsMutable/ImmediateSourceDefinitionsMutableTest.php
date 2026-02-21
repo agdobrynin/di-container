@@ -17,6 +17,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+use function array_keys;
+
 /**
  * @internal
  */
@@ -183,5 +185,29 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
 
         $s = new ImmediateSourceDefinitionsMutable(['service.bar' => 'Service bar']);
         unset($s['service.bar']);
+    }
+
+    public function testRemovedDefinitionIds(): void
+    {
+        $s = new ImmediateSourceDefinitionsMutable(
+            [
+                'service.bar' => 'Service bar',
+                'service.baz' => 'Service baz',
+                'service.foo' => 'Service foo',
+            ],
+            [
+                'service.foo' => true,
+            ]
+        );
+
+        // exclude id 'service.foo'
+        self::assertSame(['service.bar', 'service.baz'], array_keys([...$s->getIterator()]));
+
+        self::assertTrue($s->isRemovedDefinition('service.foo'));
+        self::assertFalse($s->isRemovedDefinition('service.bar'));
+
+        // set service id and remove if exist in `removedDefinitionIds`
+        $s['service.foo'] = 'Service foo';
+        self::assertFalse($s->isRemovedDefinition('service.foo'));
     }
 }

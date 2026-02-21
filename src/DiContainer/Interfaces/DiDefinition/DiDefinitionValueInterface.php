@@ -7,6 +7,6 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 /**
  * Store definition as-is.
  *
- * Method `self::getDefinition()` return value as-is.
+ * Method `DiContainerInterface::getDefinition()` return value as-is.
  */
 interface DiDefinitionValueInterface extends DiDefinitionInterface {}

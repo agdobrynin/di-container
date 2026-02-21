@@ -11,7 +11,6 @@ use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\IdsIteratorInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -27,15 +26,12 @@ use Psr\Container\NotFoundExceptionInterface;
 #[CoversClass(NotFoundException::class)]
 class DiContainerDefinitionsTest extends TestCase
 {
-    private DiContainerGetterDefinitionInterface&DiContainerInterface $containerMock;
+    private DiContainerInterface $containerMock;
     private IdsIteratorInterface $idsIterator;
 
     public function setUp(): void
     {
-        $this->containerMock = $this->createMockForIntersectionOfInterfaces([
-            DiContainerGetterDefinitionInterface::class,
-            DiContainerInterface::class,
-        ]);
+        $this->containerMock = $this->createMock(DiContainerInterface::class);
         $this->idsIterator = $this->createMock(IdsIteratorInterface::class);
     }
 
@@ -44,7 +40,7 @@ class DiContainerDefinitionsTest extends TestCase
         unset($this->containerMock, $this->idsIterator);
     }
 
-    public function testGetContainerAndDefaultSingleton(): void
+    public function testDefaultSingleton(): void
     {
         $this->containerMock->method('getConfig')
             ->willReturn(
@@ -54,8 +50,6 @@ class DiContainerDefinitionsTest extends TestCase
 
         $d = new DiContainerDefinitions($this->containerMock, $this->idsIterator);
 
-        self::assertInstanceOf(DiContainerInterface::class, $d->getContainer());
-        self::assertInstanceOf(DiContainerGetterDefinitionInterface::class, $d->getContainer());
         self::assertTrue($d->isSingletonDefinitionDefault());
     }
 

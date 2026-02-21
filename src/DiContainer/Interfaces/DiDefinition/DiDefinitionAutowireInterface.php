@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
@@ -40,7 +41,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface
     public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface;
 
     /**
-     * @return list<array{0: SetupConfigureDiDefinitionInterface, 1: ArgumentBuilderInterface}>
+     * @return list<array{0: SetupConfigureMethod, 1: ArgumentBuilderInterface}>
      *
      * @throws DiDefinitionExceptionInterface
      */

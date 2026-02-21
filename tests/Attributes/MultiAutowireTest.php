@@ -8,8 +8,12 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
+use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -18,6 +22,8 @@ use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Tests\Attributes\Fixtures\Bar;
+use Tests\Attributes\Fixtures\Foo;
 use Tests\Attributes\Fixtures\MultiAutowire;
 
 /**
@@ -35,9 +41,13 @@ use Tests\Attributes\Fixtures\MultiAutowire;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(ArgumentResolver::class)]
+#[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiContainerBuilder::class)]
 class MultiAutowireTest extends TestCase
 {
-    public function testMultiAutowireWithoutDefinitionsLoader(): void
+    public function testMultiAutowireContainer(): void
     {
         $container = new DiContainer(
             definitions: [],
@@ -48,37 +58,27 @@ class MultiAutowireTest extends TestCase
             )
         );
 
-        $m = $container->get(MultiAutowire::class);
-
-        self::assertSame($m, $container->get(MultiAutowire::class));
+        self::assertInstanceOf(Foo::class, $container->get(MultiAutowire::class)->qux);
         // definition key not defined.
-        self::assertFalse($container->has('service.singleton'));
+        self::assertFalse($container->has('service.multi_bar'));
     }
 
     public function testMultiAutowireAndDefinitionsLoader(): void
     {
-        $loader = (new DefinitionsLoader())
+        $config = new DiContainerConfig(
+            useZeroConfigurationDefinition: true,
+            useAttribute: true,
+            isSingletonServiceDefault: false,
+        );
+        $container = (new DiContainerBuilder(containerConfig: $config))
             ->import(
                 namespace: 'Tests\Attributes\Fixtures\\',
                 src: __DIR__.'/Fixtures',
-                useAttribute: true,
             )
+            ->build()
         ;
 
-        $container = new DiContainer(
-            definitions: $loader->definitions(),
-            config: new DiContainerConfig(
-                useZeroConfigurationDefinition: true,
-                useAttribute: true,
-                isSingletonServiceDefault: false,
-            )
-        );
-
-        $m = $container->get(MultiAutowire::class);
-        // definition key load from DefinitionsLoader::import()
-        $m1 = $container->get('service.singleton');
-
-        self::assertSame($m, $container->get(MultiAutowire::class));
-        self::assertSame($m1, $container->get('service.singleton'));
+        self::assertInstanceOf(Foo::class, $container->get(MultiAutowire::class)->qux);
+        self::assertInstanceOf(Bar::class, $container->get('service.multi_bar')->qux);
     }
 }

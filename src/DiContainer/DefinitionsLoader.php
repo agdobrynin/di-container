@@ -22,7 +22,10 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -31,43 +34,59 @@ use ParseError;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
-use SplFileInfo;
 
 use function class_exists;
 use function file_exists;
 use function in_array;
+use function interface_exists;
 use function is_callable;
 use function is_iterable;
 use function is_readable;
 use function ob_get_clean;
 use function ob_start;
 use function sprintf;
-use function str_replace;
 use function var_export;
 
 use const T_CLASS;
 use const T_INTERFACE;
 
 /**
+ * @internal
+ *
  * @phpstan-import-type ItemFQN from FinderFullyQualifiedNameInterface
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
     /** @var ArrayIterator<non-empty-string, mixed> */
-    private ArrayIterator $configDefinitions;
+    private readonly ArrayIterator $configuredDefinitions;
+
+    /** @var ArrayIterator<class-string|non-empty-string, true> */
+    private readonly ArrayIterator $removedDefinitionIds;
+
+    private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
     /**
-     * @var array<non-empty-string, bool>
+     * Have the excluded definition been imported using the `import()` method.
      */
-    private array $mapNamespaceUseAttribute = [];
+    private bool $isRemovedDefinitionsImported = false;
 
-    private SplFileInfo $splFileInfoImportCacheFile;
+    private bool $useAttribute = true;
+
+    /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
+    private array $importedDefinitions;
+
+    /**
+     * Circular watcher for load definitions from files.
+     *
+     * @var array<string, true>
+     */
+    private array $circularLoadFromFileWatcher = [];
 
     public function __construct(
-        private readonly ?string $importCacheFile = null,
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
-        $this->configDefinitions = new ArrayIterator();
+        $this->configuredDefinitions = new ArrayIterator();
+        $this->removedDefinitionIds = new ArrayIterator();
     }
 
     public function load(string ...$file): static
@@ -99,7 +118,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            if (!$overrideDefinitions && $this->configDefinitions->offsetExists($identifier)) {
+            if (!$overrideDefinitions && $this->configuredDefinitions->offsetExists($identifier)) {
                 throw new ContainerAlreadyRegisteredException(
                     sprintf(
                         'Definition with identifier "%s" is already registered in container. Item position #%d.',
@@ -109,7 +128,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            $this->configDefinitions->offsetSet($identifier, $definition);
+            $this->configuredDefinitions->offsetSet($identifier, $definition);
+            $this->removedDefinitionIds->offsetUnset($identifier);
             ++$itemCount;
         }
 
@@ -121,16 +141,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @see https://www.php.net/manual/en/function.fnmatch.php
      */
-    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php'], bool $useAttribute = true): static
+    public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php']): static
     {
-        if (null !== ($file = $this->getImportCacheFile()) && $file->isFile()) {
-            return $file->isReadable()
-                ? $this
-                : throw new DefinitionsLoaderInvalidArgumentException(
-                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $file->getPathname())
-                );
-        }
-
         if (null === $this->finderFullyQualifiedNameCollection) {
             $this->finderFullyQualifiedNameCollection = new FinderFullyQualifiedNameCollection();
         }
@@ -149,60 +161,179 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        if ($useAttribute) {
-            $this->mapNamespaceUseAttribute[$namespace] = true;
-        }
+        unset($this->importedDefinitions);
+        $this->isRemovedDefinitionsImported = false;
 
         return $this;
     }
 
+    public function useAttribute(bool $useAttribute): static
+    {
+        $this->useAttribute = $useAttribute;
+
+        return $this;
+    }
+
+    public function isUseAttribute(): bool
+    {
+        return $this->useAttribute;
+    }
+
+    public function definitionsConfigurator(): DefinitionsConfiguratorInterface
+    {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds) implements DefinitionsConfiguratorInterface {
+            public function __construct(
+                private readonly DefinitionsLoaderInterface $definitionsLoader,
+                private readonly ArrayIterator $removedDefinitionIds,
+            ) {}
+
+            public function removeDefinition(string $id): void
+            {
+                $this->removedDefinitionIds->offsetSet($id, true);
+            }
+
+            public function getDefinitions(): iterable
+            {
+                yield from $this->definitionsLoader->definitions();
+            }
+
+            public function setDefinition(string $id, mixed $definition): void
+            {
+                $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
+                $this->removedDefinitionIds->offsetUnset($id);
+            }
+
+            public function getDefinition(string $id): ?DiDefinitionInterface
+            {
+                foreach ($this->getDefinitions() as $identifier => $definition) {
+                    if ($definition instanceof DiDefinitionInterface && $id === $identifier) {
+                        return $definition;
+                    }
+                }
+
+                return null;
+            }
+
+            public function findTaggedDefinition(string $tag): iterable
+            {
+                $tagIsInterface = null;
+
+                foreach ($this->getDefinitions() as $identifier => $definition) {
+                    if (!$definition instanceof DiTaggedDefinitionInterface) {
+                        continue;
+                    }
+
+                    $hasTagOnAutowire = false;
+
+                    if ($definition instanceof DiDefinitionAutowire) {
+                        $tagIsInterface ??= interface_exists($tag);
+                        $hasTagOnAutowire = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
+
+                        if (!$tagIsInterface && !$hasTagOnAutowire) {
+                            $hasTagOnAutowire = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
+                                || isset($definition->getBoundTags()[$tag]);
+                        }
+
+                        if (!$hasTagOnAutowire) {
+                            continue;
+                        }
+                    }
+
+                    if ($hasTagOnAutowire || $definition->hasTag($tag)) {
+                        yield $identifier => $definition;
+                    }
+                }
+            }
+
+            public function load(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->load($file, ...$_);
+            }
+
+            public function loadOverride(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->loadOverride($file, ...$_);
+            }
+        };
+    }
+
     public function definitions(): iterable
     {
-        $this->configDefinitions->rewind();
-        $importCacheFile = $this->getImportCacheFile();
+        yield from $this->importedDefinitions();
 
-        if (null !== $importCacheFile && $importCacheFile->isFile()) {
-            if (!$importCacheFile->isReadable()) {
-                throw new DefinitionsLoaderException(
-                    sprintf('The cache file for importing definitions isn\'t readable. File: "%s".', $importCacheFile->getPathname()),
-                );
-            }
+        yield from $this->configuredDefinitions;
+    }
 
-            yield from $this->getIteratorFromFile($importCacheFile->getPathname()); // @phpstan-ignore generator.keyType
+    public function removedDefinitionIds(): iterable
+    {
+        if ($this->isRemovedDefinitionsImported) {
+            yield from $this->removedDefinitionIds;
+
+            return;
         }
 
-        if ($this->importedDefinitions()->valid()) {
-            try {
-                $cacheFileOpened = $importCacheFile?->openFile('wb+');
-                $cacheFileOpened?->fwrite(
-                    '<?php'.PHP_EOL
-                    .'use function Kaspi\DiContainer\{diAutowire, diFactory, diGet};'.PHP_EOL
-                    .'return static function (): \Generator {'.PHP_EOL
-                );
-            } catch (RuntimeException $e) {
-                throw new DefinitionsLoaderException(
-                    sprintf('The cache file for importing definitions isn\'t writable. File: "%s".', $importCacheFile->getPathname()),
-                    previous: $e
-                );
-            }
+        if (null === $this->finderFullyQualifiedNameCollection) {
+            $this->isRemovedDefinitionsImported = true;
 
-            foreach ($this->importedDefinitions() as $identifier => $definition) {
-                $cacheFileOpened?->fwrite($this->generateYieldStringDefinition($identifier, $definition).PHP_EOL);
+            yield from $this->removedDefinitionIds;
 
-                yield $identifier => $definition;
-            }
-
-            $cacheFileOpened?->fwrite('};'.PHP_EOL);
+            return;
         }
 
-        yield from $this->configDefinitions;
+        foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
+            $fQCNExcluded = $finderFQN->getExcluded();
+
+            do {
+                try {
+                    /** @var ItemFQN $itemFQN */
+                    $itemFQN = $fQCNExcluded->current();
+
+                    if (null === $itemFQN) {
+                        break;
+                    }
+
+                    ['fqn' => $fqn] = $itemFQN;
+
+                    $this->removedDefinitionIds->offsetSet($fqn, true);
+                } catch (InvalidArgumentException|RuntimeException $e) {
+                    throw new DefinitionsLoaderException(
+                        sprintf('Cannot get fully qualified name for excluded php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getFinderFile()->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
+                        previous: $e
+                    );
+                }
+
+                $fQCNExcluded->next();
+            } while ($fQCNExcluded->valid());
+        }
+
+        while (null !== ($identifier = $this->removedDefinitionIds->key())) {
+            if (isset($this->configuredDefinitions[$identifier])) {
+                unset($this->removedDefinitionIds[$identifier]);
+            }
+
+            $this->removedDefinitionIds->next();
+        }
+
+        $this->isRemovedDefinitionsImported = true;
+
+        yield from $this->removedDefinitionIds;
     }
 
     public function reset(): void
     {
-        $this->configDefinitions = new ArrayIterator();
-        $this->mapNamespaceUseAttribute = [];
+        while ($this->configuredDefinitions->valid()) {
+            $this->configuredDefinitions->offsetUnset($this->configuredDefinitions->key());
+        }
+
+        while ($this->removedDefinitionIds->valid()) {
+            $this->removedDefinitionIds->offsetUnset($this->removedDefinitionIds->key());
+        }
+
+        $this->useAttribute = true;
         $this->finderFullyQualifiedNameCollection?->reset();
+        unset($this->importedDefinitions);
+        $this->isRemovedDefinitionsImported = false;
+        $this->circularLoadFromFileWatcher = [];
     }
 
     /**
@@ -216,94 +347,77 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return;
         }
 
-        /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> $importedDefinitions */
-        $importedDefinitions = [];
+        if (isset($this->importedDefinitions)) {
+            yield from $this->importedDefinitions;
+
+            return;
+        }
+
+        $this->importedDefinitions = [];
 
         foreach ($this->finderFullyQualifiedNameCollection->get() as $finderFQN) {
-            $fullQualifiedName = $finderFQN->get();
+            $fQCNMatched = $finderFQN->getMatched();
 
             do {
                 try {
                     /** @var null|ItemFQN $itemFQN */
-                    $itemFQN = $fullQualifiedName->current();
+                    $itemFQN = $fQCNMatched->current();
 
                     if (null === $itemFQN) {
                         break;
                     }
                 } catch (InvalidArgumentException|RuntimeException $e) {
                     throw new DefinitionsLoaderException(
-                        sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
+                        sprintf('Cannot get fully qualified name for php class or interface from source directory "%s" with namespace "%s". Reason: %s', $finderFQN->getFinderFile()->getSrc(), $finderFQN->getNamespace(), $e->getMessage()),
                         previous: $e
                     );
                 }
 
                 try {
-                    $definitions = $this->makeDefinitionFromItemFQN($itemFQN, isset($this->mapNamespaceUseAttribute[$finderFQN->getNamespace()]));
+                    $definitions = $this->makeDefinitionFromItemFQN($itemFQN);
                 } catch (AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException $e) {
                     throw new DefinitionsLoaderException(
-                        sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
+                        sprintf('Cannot make container definition from source directory "%s" with namespace "%s". The fully qualified name "%s" in file %s:%d. Reason: %s', $finderFQN->getFinderFile()->getSrc(), $finderFQN->getNamespace(), $itemFQN['fqn'], $itemFQN['file'], $itemFQN['line'] ?? 0, $e->getMessage()),
                         previous: $e
                     );
                 }
 
                 foreach ($definitions as $identifier => $definition) {
-                    if ($definition instanceof DiDefinitionAutowire && isset($importedDefinitions[$identifier]) && $importedDefinitions[$identifier] instanceof DiDefinitionAutowire) {
+                    if ($definition instanceof DiDefinitionAutowire
+                        && isset($this->importedDefinitions[$identifier])
+                        && $this->importedDefinitions[$identifier] instanceof DiDefinitionAutowire) {
                         throw new DefinitionsLoaderException(
-                            sprintf('Container identifier "%s" already import for class "%s". Please specify container identifier for class "%s".', $identifier, $importedDefinitions[$identifier]->getIdentifier(), $definition->getIdentifier())
+                            sprintf('Container identifier "%s" already import for class "%s". Please specify container identifier for class "%s".', $identifier, $this->importedDefinitions[$identifier]->getIdentifier(), $definition->getIdentifier())
                         );
                     }
 
-                    $importedDefinitions[$identifier] = $definition;
+                    $this->importedDefinitions[$identifier] = $definition;
                 }
 
-                $fullQualifiedName->next();
-            } while ($fullQualifiedName->valid());
+                $fQCNMatched->next();
+            } while ($fQCNMatched->valid());
         }
 
         /*
          * Check valid DiDefinitionGet for imported definitions.
          * Interface maybe configured via php attribute #[Service('container_id')].
         */
+        foreach ($this->importedDefinitions as $identifier => $definition) {
+            if (!$definition instanceof DiDefinitionGet) {
+                continue;
+            }
 
-        foreach ($importedDefinitions as $identifier => $definition) {
-            if ($definition instanceof DiDefinitionGet
-                && !(isset($importedDefinitions[$definition->getDefinition()]) || $this->configDefinitions->offsetExists($definition->getDefinition()))) {
+            $containerIdentifier = $definition->getDefinition();
+
+            if (!isset($this->importedDefinitions[$containerIdentifier])
+                && !$this->configuredDefinitions->offsetExists($containerIdentifier)) {
                 throw new DefinitionsLoaderException(
-                    sprintf('Invalid definition reference "%s" for container identifier "%s".', $definition->getDefinition(), $identifier)
+                    sprintf('The container identifier "%s" is not registered. The reference from the definition with the id "%s".', $containerIdentifier, $identifier)
                 );
             }
         }
 
-        yield from $importedDefinitions;
-    }
-
-    private function generateYieldStringDefinition(string $identifier, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet $definition): string
-    {
-        $identifier = str_replace('"', '\"', $identifier);
-
-        if ($definition instanceof DiDefinitionAutowire) {
-            return sprintf(
-                '    yield "%s" => diAutowire("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
-            );
-        }
-
-        if ($definition instanceof DiDefinitionFactory) {
-            return sprintf(
-                '    yield "%s" => diFactory("%s", %s);',
-                $identifier,
-                str_replace('"', '\"', $definition->getIdentifier()),
-                var_export($definition->isSingleton(), true)
-            );
-        }
-
-        return sprintf(
-            '    yield "%s" => diGet("%s");',
-            $identifier,
-            str_replace('"', '\"', $definition->getDefinition())
-        );
+        yield from $this->importedDefinitions;
     }
 
     /**
@@ -313,7 +427,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException
      */
-    private function makeDefinitionFromItemFQN(array $itemFQN, bool $useAttribute): array
+    private function makeDefinitionFromItemFQN(array $itemFQN): array
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
@@ -323,8 +437,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        if (!$useAttribute) {
-            return $this->configDefinitions->offsetExists($fqn) || T_INTERFACE === $tokenId
+        if ($this->removedDefinitionIds->offsetExists($fqn)) {
+            return [];
+        }
+
+        if (!$this->useAttribute) {
+            return $this->configuredDefinitions->offsetExists($fqn) || T_INTERFACE === $tokenId
                 ? []
                 : [$fqn => new DiDefinitionAutowire($fqn)];
         }
@@ -346,7 +464,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if (AttributeReader::isAutowireExclude($reflectionClass)) {
-            if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
+            if ($this->configuredDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf('Cannot automatically configure class "%s". The class mark as excluded via php attribute "%s". This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, AutowireExclude::class, $reflectionClass->name)
                 );
@@ -362,16 +480,16 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 return [];
             }
 
-            if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
+            if ($this->configuredDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf('Cannot automatically configure interface "%s" via php attribute "%s". Container identifier "%s" already registered. This interface "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Service::class, $reflectionClass->name, $reflectionClass->name)
                 );
             }
 
             return [
-                $reflectionClass->name => class_exists($service->getIdentifier())
-                    ? new DiDefinitionAutowire($service->getIdentifier(), $service->isSingleton())
-                    : new DiDefinitionGet($service->getIdentifier()),
+                $reflectionClass->name => class_exists($service->id)
+                    ? new DiDefinitionAutowire($service->id, $service->isSingleton)
+                    : new DiDefinitionGet($service->id),
             ];
         }
 
@@ -379,29 +497,33 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $services = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
-                if ($this->configDefinitions->offsetExists($autowireAttr->getIdentifier())) { // @phpstan-ignore argument.type
+                if ($this->configuredDefinitions->offsetExists($autowireAttr->id)) {
                     throw new DefinitionsLoaderInvalidArgumentException(
-                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->getIdentifier(), $reflectionClass->name)
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->id, $reflectionClass->name)
                     );
                 }
 
-                $services[$autowireAttr->getIdentifier()] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton());
+                $services[$autowireAttr->id] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
+                    ->bindArguments(...$autowireAttr->arguments)
+                ;
             }
 
             return $services; // @phpstan-ignore return.type
         }
 
         if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
-            if ($this->configDefinitions->offsetExists($reflectionClass->name)) {
+            if ($this->configuredDefinitions->offsetExists($reflectionClass->name)) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     sprintf('Cannot automatically configure class "%s" via php attribute "%s". The class "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, DiFactory::class, $reflectionClass->name, $reflectionClass->name)
                 );
             }
 
-            return [$reflectionClass->name => new DiDefinitionFactory($factory->getIdentifier(), $factory->isSingleton())];
+            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+
+            return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
         }
 
-        return $this->configDefinitions->offsetExists($reflectionClass->name)
+        return $this->configuredDefinitions->offsetExists($reflectionClass->name)
             ? []
             : [$reflectionClass->name => new DiDefinitionAutowire($reflectionClass->name)];
     }
@@ -409,11 +531,18 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @throws DefinitionsLoaderException
      */
-    private function getIteratorFromFile(string $srcFile): Generator
+    private function getDefinitionsFromFile(string $srcFile): Generator
     {
+        if (isset($this->circularLoadFromFileWatcher[$srcFile])) {
+            throw new DefinitionsLoaderException(
+                sprintf('Detected circular load from the file "%s".', $srcFile)
+            );
+        }
+
         try {
             ob_start();
             $content = require $srcFile;
+            $this->circularLoadFromFileWatcher[$srcFile] = true;
         } catch (Error|ParseError $e) {
             throw new DefinitionsLoaderException(
                 sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $srcFile),
@@ -423,13 +552,35 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ob_get_clean();
         }
 
-        return match (true) {
-            is_iterable($content) => yield from $content,
-            is_callable($content) && is_iterable($content()) => yield from $content(),
-            default => throw new DefinitionsLoaderException(
-                sprintf('File "%s" return not valid format. File must be use "return" keyword, and return any iterable type or callback function return iterable type.', $srcFile),
-            )
-        };
+        if (is_iterable($content)) {
+            yield from $content;
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
+
+            return;
+        }
+
+        if (is_callable($content) && is_iterable($content($this->definitionsConfigurator()))) {
+            yield from $content($this->definitionsConfigurator());
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
+
+            return;
+        }
+
+        if (is_callable($content)) {
+            $content($this->definitionsConfigurator());
+
+            yield from [];
+
+            unset($this->circularLoadFromFileWatcher[$srcFile]);
+
+            return;
+        }
+
+        throw new DefinitionsLoaderException(
+            sprintf('File "%s" return not valid format. File must be use "return" keyword and return any iterable type or callable type.', $srcFile),
+        );
     }
 
     /**
@@ -445,8 +596,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             try {
-                $this->addDefinitions($overrideDefinitions, $this->getIteratorFromFile($srcFile));
-                unset($srcFile);
+                $this->addDefinitions($overrideDefinitions, $this->getDefinitionsFromFile($srcFile));
             } catch (ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('Invalid definition in file "%s".', $srcFile),
@@ -454,12 +604,5 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
         }
-    }
-
-    private function getImportCacheFile(): ?SplFileInfo
-    {
-        return null !== $this->importCacheFile
-            ? $this->splFileInfoImportCacheFile ??= new SplFileInfo($this->importCacheFile)
-            : null;
     }
 }

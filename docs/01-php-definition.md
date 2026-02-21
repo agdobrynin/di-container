@@ -184,21 +184,21 @@ setup(string $method, array $arguments = [])
 ``` 
 Параметры:
 - `$method` – имя вызываемого метода в классе
-- `$argument` – аргументы к параметрам метода класса
+- `$arguments` – аргументы к параметрам метода класса
 
 Возвращаемое значение из вызываемого метода не учитывается при настройке сервиса,
 контейнер вернет экземпляр класса созданного через конструктор класса.
 
 > [!TIP]
-> Для аргументов в методе `$method` не объявленных через `setup` контейнер по попытается разрешить зависимости автоматически.
+> Для аргументов не объявленных через `setup` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
 
 > [!TIP]
-> Аргументы `$argument` в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргументы метода в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
 Можно использовать именованные аргументы параметров:
 ```php
 diAutowire(...)->setup('classMethod', ['var1' => 'value 1', 'var2' => 'value 2'])
-// $object->classMethod(string $var1, string $var2)
+// $object->classMethod(var1: 'value 1', var2: 'value 2')
 ```
 Если в методе нет параметров или они могут быть разрешены автоматически, то аргументы указывать не нужно:
 ```php
@@ -232,10 +232,10 @@ setupImmutable(string $method, array $arguments = [])
 Контейнер вернет экземпляр класса созданного через вызываемый метод.
 
 > [!TIP]
-> Для аргументов в методе `$method` не объявленных через `setupImmutable` контейнер по попытается разрешить зависимости автоматически.
+> Для аргументов не объявленных через `setupImmutable` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
 
 > [!TIP]
-> Аргументы `$argument` в `setupImmutable` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргументы в `setupImmutable` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
 > [!NOTE]
 > [пример использования метода `diAutowire(...)->setupImmutable`](#пример-5)
@@ -814,122 +814,42 @@ $ruleCollection = $container->get(App\Services\RuleCollection::class);
 
 #### diFactory
 
-Разрешение зависимости через фабрику – php класс реализующий интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
+Разрешение зависимости через фабрику для классов или параметров метода (функции).
 
+Сигнатура функции:
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use function \Kaspi\DiContainer\diFactory;
 
-diFactory(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface
+diFactory(string|array $definition, ?bool $isSingleton = null): DiDefinitionArgumentsInterface
 ```
 
 Параметры:
-- `$definition` – имя класса с пространством имён представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
+- `$definition` – представление php класса и метода фабрики.
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
-> [!IMPORTANT]
-> Функция `diFactory` возвращает объект реализующий интерфейс
-> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
->
-> Интерфейс представляет методы:
->   - `bindArguments` - аргументы для конструктора класса
->   - `setup` - вызов метода класса с параметрами (_mutable setter method_) для настройки класса
->   - `setupImmutable` - вызов метода класса с параметрами (_immutable setter method_) и возвращаемым значением
->
-> Подробное описание использования этих методов в [хэлпер функции diAutowire](#diautowire)
-
-> [!WARNING]
-> Класс фабрика должен реализовывать интерфейс `Kaspi\DiContainer\Interfaces\DiFactoryInterface`.
-
-> [!TIP]
-> Для класса реализующего интерфейс `DiFactoryInterface` так же могут быть
-> разрешены зависимости в конструкторе автоматически или на основе конфигурации.
-
-🧙‍♂️ Разрешение зависимости в контейнере с помощью фабрики:
-
-```php
-// src/Classes/MyClass.php
-namespace App\Classes;
-
-class  MyClass {
-
-    public function __construct(private App\Databases\Db $db) {}
-    // ...
-}
-```
-```php
-// src/Factories/FactoryMyClass.php
-namespace App\Factories;
-
-use Kaspi\DiContainer\Interfaces\DiFactoryInterface;
-use Psr\Container\ContainerInterface;
-use App\Classes\MyClass;
-
-class FactoryMyClass implements DiFactoryInterface {
-
-    public function __invoke(ContainerInterface $container): MyClass {
-
-        return new MyClass(
-            new App\Databases\Db(
-                params: ['table' => 'test', 'transaction' => true]
-            )
-        );
-
-    }    
-}
-```
-```php
-// src/config/services.php
-use function Kaspi\DiContainer\diFactory;
-
-return static function (): \Generator {
-
-    yield \App\Classes\MyClass::class => diFactory(\App\Factories\FactoryMyClass::class);
-
-};
-```
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
-
-$container->get(\App\Classes\MyClass::class);
-```
 > [!NOTE]
-> Класс `\App\Classes\MyClass` будет создан через вызов `\App\Factories\FactoryMyClass::__invoke()`
+> Параметр функции `$isSingleton` при применении к параметрам метода (функции) будет проигнорирован
+> и не используется при разрешении зависимостей.
+>
 
-🧙‍♂️ Разрешение параметров для определений с помощью фабрики:
+Функция `diFactory` возвращает объект реализующий интерфейс
+`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`.
 
-```php
-// src/config/services.php
+Интерфейс представляет методы:
+- `bindArguments` - аргументы для метода фабрики.
 
-use function Kaspi\DiContainer\{diAutowire, diFactory};
-
-return static function (): \Generator {
-
-    yield diAutowire(\App\Classes\Foo::class)
-        ->bindArguments(
-            apiClient: diFactory(\App\Factories\ApiClinentFactory::class)
-        );
-
-};
-```
+> [!NOTE]
+> Подробное [описание работы с фабриками](07-factory.md) для разрешения зависимостей в контейнере.
 
 ##### Идентификатор контейнера для diFactory.
-При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**)
+При регистрации фабрики как самостоятельного определения необходимо указывать идентификатор контейнера.
 
 ```php
 // src/config/services.php
 use function Kaspi\DiContainer\diFactory;
 
 return static function (): \Generator {
-    // $container->get(\App\Factories\FactoryMyClass::class)
-    yield diFactory(\App\Factories\FactoryMyClass::class);
-
     // $container->get('factories.my_factory')
     yield 'factories.my_factory' => diFactory(\App\Factories\FactoryMyClass::class);
 };

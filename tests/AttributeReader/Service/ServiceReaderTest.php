@@ -25,7 +25,7 @@ class ServiceReaderTest extends TestCase
         $attribute = AttributeReader::getServiceAttribute(new ReflectionClass(MainInterface::class));
 
         $this->assertInstanceOf(Service::class, $attribute);
-        $this->assertEquals(Main::class, $attribute->getIdentifier());
+        $this->assertEquals(Main::class, $attribute->id);
     }
 
     public function testNoneAttribute(): void

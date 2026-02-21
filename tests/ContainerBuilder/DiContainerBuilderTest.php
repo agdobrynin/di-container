@@ -23,6 +23,7 @@ use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
@@ -64,6 +65,7 @@ use function random_bytes;
 #[CoversClass(ObjectEntry::class)]
 #[CoversClass(ValueEntry::class)]
 #[CoversClass(CompiledEntries::class)]
+#[CoversClass(DiDefinitionValue::class)]
 #[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 class DiContainerBuilderTest extends TestCase
 {
@@ -228,5 +230,42 @@ class DiContainerBuilderTest extends TestCase
 
         self::assertEquals('baz', $container->get(Foo::class)->bar);
         self::assertInstanceOf('\App\Core\Container'.$containerSuffix, $container);
+    }
+
+    public function testVariadicParamOnLoad(): void
+    {
+        vfsStream::setup(structure: [
+            'config1.php' => '<?php return ["foo" => "bar"];',
+            'config2.php' => '<?php return ["baz" => "qux"];',
+        ]);
+
+        $container = (new DiContainerBuilder(containerConfig: new DiContainerNullConfig()))
+            ->load(
+                vfsStream::url('root/config1.php'),
+                vfsStream::url('root/config2.php'),
+            )
+            ->build()
+        ;
+
+        self::assertEquals('bar', $container->get('foo'));
+        self::assertEquals('qux', $container->get('baz'));
+    }
+
+    public function testVariadicParamOnLoadOverride(): void
+    {
+        vfsStream::setup(structure: [
+            'config1.php' => '<?php return ["foo" => "bar"];',
+            'config2.php' => '<?php return ["foo" => "qux"];',
+        ]);
+
+        $container = (new DiContainerBuilder(containerConfig: new DiContainerNullConfig()))
+            ->loadOverride(
+                vfsStream::url('root/config1.php'),
+                vfsStream::url('root/config2.php'),
+            )
+            ->build()
+        ;
+
+        self::assertEquals('qux', $container->get('foo'));
     }
 }

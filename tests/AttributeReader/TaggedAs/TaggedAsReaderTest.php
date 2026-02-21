@@ -73,13 +73,13 @@ class TaggedAsReaderTest extends TestCase
         $res = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertTrue($res->valid());
-        $this->assertEquals('tags.handlers-opa', $res->current()->getIdentifier());
-        $this->assertTrue($res->current()->isLazy());
+        $this->assertEquals('tags.handlers-opa', $res->current()->name);
+        $this->assertTrue($res->current()->isLazy);
 
         $res->next();
 
-        $this->assertEquals('tags.voters-security', $res->current()->getIdentifier());
-        $this->assertFalse($res->current()->isLazy());
-        $this->assertEquals('getCollectionPriority', $res->current()->getPriorityDefaultMethod());
+        $this->assertEquals('tags.voters-security', $res->current()->name);
+        $this->assertFalse($res->current()->isLazy);
+        $this->assertEquals('getCollectionPriority', $res->current()->priorityDefaultMethod);
     }
 }

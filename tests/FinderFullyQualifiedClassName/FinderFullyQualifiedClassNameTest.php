@@ -39,7 +39,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
             namespace: $namespace,
             finderFile: $this->createMock(FinderFileInterface::class)
         ))
-            ->get()
+            ->getMatched()
             ->current()
         ;
     }
@@ -75,7 +75,7 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $fqn = new FinderFullyQualifiedName('aa aaa', $finderFileMock);
 
         self::assertEquals('aa aaa', $fqn->getNamespace());
-        self::assertEquals('foo', $fqn->getSrc());
+        self::assertEquals('foo', $fqn->getFinderFile()->getSrc());
     }
 
     public function testCannotOpenFile(): void
@@ -84,12 +84,12 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectExceptionMessage('Failed to open stream');
 
         $finderFileMock = $this->createMock(FinderFileInterface::class);
-        $finderFileMock->method('getFiles')->willReturnCallback(static function (): Generator {
+        $finderFileMock->method('getMatchedFiles')->willReturnCallback(static function (): Generator {
             yield new SplFileInfo('file-not-found.php');
         });
 
         (new FinderFullyQualifiedName('App\\', $finderFileMock))
-            ->get()
+            ->getMatched()
             ->valid()
         ;
     }
@@ -100,12 +100,12 @@ class FinderFullyQualifiedClassNameTest extends TestCase
         $this->expectExceptionMessage('Cannot parse code');
 
         $finderFileMock = $this->createMock(FinderFileInterface::class);
-        $finderFileMock->method('getFiles')->willReturnCallback(static function (): Generator {
+        $finderFileMock->method('getMatchedFiles')->willReturnCallback(static function (): Generator {
             yield new SplFileInfo(__DIR__.'/Fixtures/Error/ParseError.php');
         });
 
         (new FinderFullyQualifiedName('App\\', $finderFileMock))
-            ->get()
+            ->getMatched()
             ->valid()
         ;
     }
@@ -113,11 +113,11 @@ class FinderFullyQualifiedClassNameTest extends TestCase
     public function testGetClasses(): void
     {
         $finderFileMock = $this->createMock(FinderFileInterface::class);
-        $finderFileMock->method('getFiles')
+        $finderFileMock->method('getMatchedFiles')
             ->willReturn(new FilesystemIterator(__DIR__.'/Fixtures/Success/'))
         ;
 
-        $fqNames = (new FinderFullyQualifiedName('Tests\\', $finderFileMock))->get();
+        $fqNames = (new FinderFullyQualifiedName('Tests\\', $finderFileMock))->getMatched();
 
         $this->assertTrue($fqNames->valid());
 
