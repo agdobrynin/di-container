@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\Attributes\SetupPriority;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -31,6 +32,7 @@ use function array_keys;
 use function implode;
 use function in_array;
 use function sprintf;
+use function usort;
 
 final class AttributeReader
 {
@@ -122,16 +124,43 @@ final class AttributeReader
     {
         $methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
 
+        /**
+         * @var list<array{0: int, 1: list<Setup|SetupImmutable>}> $setups
+         */
+        $setups = [];
+
         foreach ($methods as $method) {
             /** @var list<ReflectionAttribute<Setup|SetupImmutable>> $attrs */
             $attrs = [...$method->getAttributes(Setup::class), ...$method->getAttributes(SetupImmutable::class)];
 
-            foreach ($attrs as $setupAttribute) {
-                $setup = $setupAttribute->newInstance();
-                $setup->setMethod($method->getName());
+            /** @var list<Setup|SetupImmutable> $methodSetups */
+            $methodSetups = [];
 
-                yield $setup;
+            foreach ($attrs as $setupAttribute) {
+                $setupMethod = $setupAttribute->newInstance();
+                $setupMethod->setMethod($method->getName());
+                $methodSetups[] = $setupMethod;
             }
+
+            $priorityAttr = $method->getAttributes(SetupPriority::class)[0] ?? null;
+
+            $priority = null !== $priorityAttr
+                ? ($priorityAttr->newInstance())->priority
+                : null;
+
+            $setups[] = [$priority, $methodSetups];
+        }
+
+        usort($setups, static function (array $a, array $b) {
+            [$priorityA] = $a;
+            [$priorityB] = $b;
+
+            return $priorityB <=> $priorityA;
+        });
+
+        /** @var list<Setup|SetupImmutable> $methodSetups */
+        foreach ($setups as [, $methodSetups]) {
+            yield from $methodSetups;
         }
     }
 
