@@ -140,7 +140,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
  
 > [!NOTE]
 > Файл конфигурации может возвращать любой итерируемый тип. Например:
-> - Callback функцию с возвращаемым типом `\Generator` через ключевое слово `yield`.
+> - Функцию с возвращаемым типом `\Generator` через оператор `yield`.
 > - простой php массив `[]`.
 > - любое `callable` выражение с возвращаемым типом `iterable`.
 
