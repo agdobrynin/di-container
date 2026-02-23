@@ -221,3 +221,23 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
     $configurator->loadOverride('/app/config/config_1.php');
 };
 ```
+> [!TIP]
+> При использовании конфигурационных файлов с возвращаемым значением рекомендуется использовать генераторы (через оператор `yield`) позволяющий оптимизировать создание определений в контейнере.
+> 
+> ```php
+> // /app/config/services/controllers_services.php
+> use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+> use App\Controllers\Post;
+> use App\Repositories\PostRepository;
+> use function Kaspi\DiContainer\{diAutowire, diGet};
+> 
+> return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+>       yield diAutowire(Post::class)
+>           ->bindArguments(
+>               postRepository: diGet(PostRepository::class),
+>           )
+>       ;
+> }
+> ```
+> 
+
