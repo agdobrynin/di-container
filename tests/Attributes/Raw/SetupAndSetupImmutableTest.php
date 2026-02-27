@@ -20,13 +20,11 @@ use function Kaspi\DiContainer\diGet;
 /**
  * @internal
  */
-#[
-    CoversClass(DiDefinitionAutowire::class),
+#[CoversClass(DiDefinitionAutowire::class),
     CoversClass(SetupImmutable::class),
     CoversClass(Setup::class),
     CoversClass(DiDefinitionGet::class),
-    CoversFunction('Kaspi\DiContainer\diGet')
-]
+    CoversFunction('Kaspi\DiContainer\diGet')]
 class SetupAndSetupImmutableTest extends TestCase
 {
     public function testFailSetupNotSetMethod(): void
