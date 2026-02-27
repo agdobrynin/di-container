@@ -186,10 +186,8 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
          */
         $fn = static fn (
             QuuxInterface $quux,
-            #[
-                ProxyClosure(HeavyDependency::class),
-                ProxyClosure(HeavyDependencyTwo::class),
-            ]
+            #[ProxyClosure(HeavyDependency::class),
+                ProxyClosure(HeavyDependencyTwo::class),]
             Closure ...$heavyDependency,
         ): array => [($heavyDependency[0])()->doMake($quux), ($heavyDependency[1])()->doMake($quux)];
 
