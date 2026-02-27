@@ -82,6 +82,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         };
 
         $this->definitions()[$identifier] = $definition;
+        unset($this->removedDefinitionIds()[$identifier]);
     }
 
     /**
@@ -99,8 +100,18 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         );
     }
 
+    public function getRemovedDefinitionIds(): iterable
+    {
+        return $this->removedDefinitionIds();
+    }
+
     /**
      * @return array<non-empty-string, DiDefinitionInterface>
      */
     abstract protected function &definitions(): array;
+
+    /**
+     * @return array<class-string|non-empty-string, true>
+     */
+    abstract protected function &removedDefinitionIds(): array;
 }

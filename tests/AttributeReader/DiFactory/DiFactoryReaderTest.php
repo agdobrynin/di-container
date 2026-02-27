@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\AttributeReader\DiFactory;
 
-use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
-use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -20,11 +18,10 @@ use ReflectionParameter;
 use Tests\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryOne;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryTwo;
+use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryWithArgs;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFail;
 use Tests\AttributeReader\DiFactory\Fixtures\IntFactory;
 use Tests\AttributeReader\DiFactory\Fixtures\Main;
-use Tests\AttributeReader\DiFactory\Fixtures\MainFail;
-use Tests\AttributeReader\DiFactory\Fixtures\MainFailTwo;
 use Tests\AttributeReader\DiFactory\Fixtures\MainFirstDiFactory;
 use Tests\AttributeReader\DiFactory\Fixtures\NoDiFactories;
 use Tests\AttributeReader\DiFactory\Fixtures\StrFactory;
@@ -35,6 +32,7 @@ use Tests\AttributeReader\DiFactory\Fixtures\StrFactory;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(DiFactory::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(DiDefinitionGet::class)]
 class DiFactoryReaderTest extends TestCase
 {
     public function testHasOneAttribute(): void
@@ -42,7 +40,7 @@ class DiFactoryReaderTest extends TestCase
         $attribute = AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(Main::class));
 
         $this->assertInstanceOf(DiFactory::class, $attribute);
-        $this->assertEquals(MainFirstDiFactory::class, $attribute->getIdentifier());
+        $this->assertEquals(MainFirstDiFactory::class, $attribute->definition);
     }
 
     public function testNoneAttribute(): void
@@ -58,21 +56,6 @@ class DiFactoryReaderTest extends TestCase
         $this->expectExceptionMessageMatches('/Only one of the php attributes.+DiFactory::class.+Autowire::class/');
 
         AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
-    }
-
-    #[DataProvider('dataProviderReturnTypeFromFactory')]
-    public function testReturnTypeFromFactory(string $class): void
-    {
-        $this->expectException(AutowireParameterTypeException::class);
-
-        AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass($class));
-    }
-
-    public static function dataProviderReturnTypeFromFactory(): Generator
-    {
-        yield 'For class '.MainFail::class => [MainFail::class];
-
-        yield 'For class '.MainFailTwo::class => [MainFailTwo::class];
     }
 
     public function testManyFactoryOnClass(): void
@@ -115,15 +98,38 @@ class DiFactoryReaderTest extends TestCase
         self::assertTrue($res->valid());
 
         self::assertInstanceOf(DiFactory::class, $res->current());
-        self::assertEquals(StrFactory::class, $res->current()->getIdentifier());
+        self::assertEquals(StrFactory::class, $res->current()->definition);
 
         $res->next();
 
         self::assertInstanceOf(DiFactory::class, $res->current());
-        self::assertEquals(IntFactory::class, $res->current()->getIdentifier());
+        self::assertEquals(IntFactory::class, $res->current()->definition);
 
         $res->next();
 
         self::assertFalse($res->valid());
+    }
+
+    public function testFactoryOnParamWithArgs(): void
+    {
+        $f = static fn (
+            #[DiFactory(
+                [FooFactoryWithArgs::class, 'create'],
+                arguments: [
+                    'apiKey' => new DiDefinitionGet('keys.api_key'),
+                ]
+            )]
+            mixed $a
+        ) => '';
+        $p = new ReflectionParameter($f, 0);
+
+        $res = AttributeReader::getAttributeOnParameter($p, $this->createMock(ContainerInterface::class));
+
+        $factory = $res->current();
+
+        self::assertInstanceOf(DiFactory::class, $factory);
+        self::assertEquals([
+            'apiKey' => new DiDefinitionGet('keys.api_key'),
+        ], $factory->arguments);
     }
 }

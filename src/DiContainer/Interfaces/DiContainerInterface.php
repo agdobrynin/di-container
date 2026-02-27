@@ -50,4 +50,25 @@ interface DiContainerInterface extends ContainerInterface
      * @throws DiDefinitionExceptionInterface
      */
     public function findTaggedDefinitions(string $tag): iterable;
+
+    /**
+     * Get container definition via container identifier.
+     *
+     * Result definition maybe to create even definition not defined in container
+     * when container configuration switch on option "use zero configuration definition".
+     *
+     *   `\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface::isUseZeroConfigurationDefinition()`.
+     *
+     * @param non-empty-string $id container identifier
+     *
+     * @throws ContainerExceptionInterface|NotFoundExceptionInterface
+     */
+    public function getDefinition(string $id): DiDefinitionInterface;
+
+    /**
+     * Returns container identifiers mark as deleted from  resolving.
+     *
+     * @return iterable<class-string|non-empty-string, true>
+     */
+    public function getRemovedDefinitionIds(): iterable;
 }

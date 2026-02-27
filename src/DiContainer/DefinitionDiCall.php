@@ -68,7 +68,6 @@ final class DefinitionDiCall
         }
 
         if (is_array($definition)) {
-            // @phpstan-ignore isset.offset, isset.offset
             if (isset($definition[0], $definition[1]) && is_string($definition[0]) && is_string($definition[1])) {
                 return [$definition[0], $definition[1]];
             }

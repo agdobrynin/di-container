@@ -37,8 +37,7 @@ use function Kaspi\DiContainer\diGet;
  *
  * @internal
  */
-#[
-    CoversFunction('\Kaspi\DiContainer\diAutowire'),
+#[CoversFunction('\Kaspi\DiContainer\diAutowire'),
     CoversFunction('\Kaspi\DiContainer\diGet'),
     CoversFunction('\Kaspi\DiContainer\diFactory'),
     CoversClass(AttributeReader::class),
@@ -56,8 +55,7 @@ use function Kaspi\DiContainer\diGet;
     CoversClass(DefinitionDiCall::class),
     CoversClass(InjectByCallable::class),
     CoversClass(AbstractSourceDefinitionsMutable::class),
-    CoversClass(ImmediateSourceDefinitionsMutable::class),
-]
+    CoversClass(ImmediateSourceDefinitionsMutable::class),]
 class CallClassDefinitionVariadicArgTest extends TestCase
 {
     public function testCallStaticMethodWithoutAttributePassArgumentBydiGet(): void

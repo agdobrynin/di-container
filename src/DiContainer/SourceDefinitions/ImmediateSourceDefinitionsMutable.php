@@ -13,24 +13,45 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
     /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
     private array $definitions;
 
+    /** @var array<class-string|non-empty-string, true> */
+    private array $removedDefinitionIds;
+
     /**
      * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
+     * @param iterable<class-string|non-empty-string, mixed>     $sourceRemovedDefinitionIds
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface|ContainerIdentifierExceptionInterface
      */
-    public function __construct(private iterable $sourceDefinitions)
+    public function __construct(iterable $sourceDefinitions, iterable $sourceRemovedDefinitionIds = [])
     {
         $this->definitions = [];
+        $this->removedDefinitionIds = [];
 
-        foreach ($this->sourceDefinitions as $identifier => $sourceDefinition) {
+        foreach ($sourceDefinitions as $identifier => $sourceDefinition) {
             $this->offsetSet($identifier, $sourceDefinition);
         }
 
-        unset($this->sourceDefinitions);
+        foreach ($sourceRemovedDefinitionIds as $identifier => $v) {
+            $this->removedDefinitionIds[$identifier] = true;
+
+            if (isset($this->definitions[$identifier])) { // @phpstan-ignore isset.offset
+                unset($this->definitions[$identifier]); // @phpstan-ignore unset.offset
+            }
+        }
+    }
+
+    public function isRemovedDefinition(string $id): bool
+    {
+        return isset($this->removedDefinitionIds[$id]);
     }
 
     protected function &definitions(): array
     {
         return $this->definitions;
+    }
+
+    protected function &removedDefinitionIds(): array
+    {
+        return $this->removedDefinitionIds;
     }
 }

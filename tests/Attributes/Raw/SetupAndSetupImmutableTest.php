@@ -20,27 +20,25 @@ use function Kaspi\DiContainer\diGet;
 /**
  * @internal
  */
-#[
-    CoversClass(DiDefinitionAutowire::class),
+#[CoversClass(DiDefinitionAutowire::class),
     CoversClass(SetupImmutable::class),
     CoversClass(Setup::class),
     CoversClass(DiDefinitionGet::class),
-    CoversFunction('Kaspi\DiContainer\diGet')
-]
+    CoversFunction('Kaspi\DiContainer\diGet')]
 class SetupAndSetupImmutableTest extends TestCase
 {
     public function testFailSetupNotSetMethod(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
 
-        (new Setup())->getIdentifier();
+        (new Setup())->getMethod();
     }
 
     public function testFailSetupImmutableNotSetMethod(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
 
-        (new SetupImmutable())->getIdentifier();
+        (new SetupImmutable())->getMethod();
     }
 
     #[DataProvider('dataProviderMethod')]
@@ -82,8 +80,8 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new Setup();
         $s->setMethod($method);
 
-        self::assertEquals($method, $s->getIdentifier());
-        self::assertEquals([], $s->getArguments());
+        self::assertEquals($method, $s->getMethod());
+        self::assertEquals([], $s->arguments);
     }
 
     #[DataProvider('dataProviderSuccessMethod')]
@@ -92,8 +90,8 @@ class SetupAndSetupImmutableTest extends TestCase
         $s = new SetupImmutable();
         $s->setMethod($method);
 
-        self::assertEquals($method, $s->getIdentifier());
-        self::assertEquals([], $s->getArguments());
+        self::assertEquals($method, $s->getMethod());
+        self::assertEquals([], $s->arguments);
     }
 
     public static function dataProviderSuccessMethod(): Generator
@@ -113,41 +111,41 @@ class SetupAndSetupImmutableTest extends TestCase
     {
         $s = new Setup(one: 'first', two: 'second');
 
-        self::assertEquals(['one' => 'first', 'two' => 'second'], $s->getArguments());
+        self::assertEquals(['one' => 'first', 'two' => 'second'], $s->arguments);
     }
 
     public function testSetupImmutableNamedArgument(): void
     {
         $s = new SetupImmutable(one: 'first', two: 'second');
 
-        self::assertEquals(['one' => 'first', 'two' => 'second'], $s->getArguments());
+        self::assertEquals(['one' => 'first', 'two' => 'second'], $s->arguments);
     }
 
     public function testSetupMixedNamedArgument(): void
     {
         $s = new Setup('first', two: 'second');
 
-        self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
+        self::assertEquals([0 => 'first', 'two' => 'second'], $s->arguments);
     }
 
     public function testSetupImmutableMixedNamedArgument(): void
     {
         $s = new SetupImmutable('first', two: 'second');
 
-        self::assertEquals([0 => 'first', 'two' => 'second'], $s->getArguments());
+        self::assertEquals([0 => 'first', 'two' => 'second'], $s->arguments);
     }
 
     public function testSetupMixedNamedArgumentWithValueAsObject(): void
     {
         $s = new Setup('first', two: diGet('service.one'));
 
-        self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
+        self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->arguments);
     }
 
     public function testSetupImmutableMixedNamedArgumentWithValueAsObject(): void
     {
         $s = new SetupImmutable('first', two: diGet('service.one'));
 
-        self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->getArguments());
+        self::assertEquals([0 => 'first', 'two' => diGet('service.one')], $s->arguments);
     }
 }

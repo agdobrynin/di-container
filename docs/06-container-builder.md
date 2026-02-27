@@ -89,19 +89,63 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 ## Загрузка из файлов конфигураций.
 Загрузка из отдельных файлов конфигураций для конфигурирования определений контейнера.
 
-Предусмотрены режимы загрузки:
-- отслеживать уникальные идентификаторы у добавляемых определений.
-- перезапись ранее добавленных определения с совпадающими идентификаторов контейнера.
+Конфигурационный файл может возвращать настроенные определения для контейнера либо использовать
+вызов callback функции для конфигурирования через параметр [конфигуратор определений контейнера](08-definitions-configurator.md).
+
+Файл конфигурации с возвращаемыми определениями:
+```php
+// /app/config/services.php
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): \Generator {
+
+    yield diAutowire(Foo::class)
+        ->bindArguments('baz val');
+
+};
+```
+Комбинирование возвращаемых определений и [конфигуратора](08-definitions-configurator.md):
+```php
+// /app/config/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+    $configurator->removeDefinition(Baz::class);
+
+    yield diAutowire(Foo::class)
+        ->bindArguments('baz val');
+
+};
+```
+Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](08-definitions-configurator.md):
+```php
+// /app/config/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    $configurator->removeDefinition(Baz::class);
+    
+    $configurator->setDefinition(
+        Foo::class,
+        diAutowire(Foo::class)
+            ->bindTag('tags.foo_app');
+    );
+};
+```
 
 > [!IMPORTANT]
-> Файл конфигурации должен использовать ключевое слово `return`
-> и возвращать любой итерируемый тип. Например:
-> - Функцию обратного вызова (`\Closure`), с возвращаемым значением `\Generator` через ключевое слово `yield`.
+> Файл конфигурации должен использовать ключевое слово `return`.
+ 
+> [!NOTE]
+> Файл конфигурации может возвращать любой итерируемый тип. Например:
+> - Функцию с возвращаемым типом `\Generator` через оператор `yield`.
 > - простой php массив `[]`.
-> - любая функция (метод) возвращаемый тип у которой `iterable`.
+> - любое `callable` выражение с возвращаемым типом `iterable`.
 
 > [!TIP]
-> Использование для конфигурационных файлов возвращаемого типа `\Generator` снизит потребление памяти
+> Использование для конфигурационных файлов возвращаемого типа `\Generator` позволяет оптимизировать создание определений в контейнере
 > и рекомендован для конфигурирования контейнера.
 
 > [!TIP]
@@ -117,10 +161,11 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 
 #### Метод загрузки из файлов конфигураций с отслеживанием уникальности идентификаторов контейнера:
 ```php
-\Kaspi\DiContainer\DiContainerBuilder::load(string ...$file): static;
+\Kaspi\DiContainer\DiContainerBuilder::load(string $file, string ...$_): static;
 ```
 Параметры:
 - `$file` – полный путь к файлу конфигурации определений;
+- `$_` – полный путь к файлу конфигурации определений;
 
 > [!IMPORTANT]
 > При сборке контейнера методом `DiContainerBuilder::build()` при совпадении идентификаторов контейнера будет выброшено исключение.
@@ -130,10 +175,11 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 
 #### Метод загрузки из файлов конфигураций с перезаписью:
 ```php
-\Kaspi\DiContainer\DiContainerBuilder::loadOverride(string ...$file): static;
+\Kaspi\DiContainer\DiContainerBuilder::loadOverride(string $file, string ...$_): static;
 ```
 Параметры:
 - `$file` – полный путь к файлу конфигурации определений;
+- `$_` – полный путь к файлу конфигурации определений;
 
 #### Пример использования.
 
@@ -305,6 +351,13 @@ $container = $builder->build();
 > [!NOTE]
 > Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
 >
+> Классы и интерфейсы (_fully qualified class name_) которые будут найдены в исключённых файлах
+> для контейнера недоступны для разрешения.
+
+> [!TIP]
+> **Удаляемы определения**. При необходимости можно удалить
+> из контейнера определение [через конфигуратор](08-definitions-configurator.md). Это полезно, например, для того, чтобы сделать сервис недоступным при определенных сценариях использования контейнера.
+>
 
 > [!TIP]
 > Импорт может быть выполнен из нескольких директорий если это необходимо.
@@ -330,7 +383,6 @@ $builder = (new DiContainerBuilder())
         src: '/app/src/',
         excludeFiles: [
             '/app/src/Events/*',
-            '/app/src/config/*.php',
             '/app/src/*Kernel.php',
             '/app/src/Container.php',
         ]
@@ -538,6 +590,7 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
 > Установка в контейнер нового определения должно быть до вызова метода контейнера `get()`
 > который может разрешить зависимость `'App\\Services\\Others'`.
 
+Вариант установки объекта в контейнер:
 ```php
 use App\Services\Others;
 
@@ -547,6 +600,21 @@ $others = new Others(
 
 // идентификатор будет указан как 'App\\Services\\Others'
 $container->set($others::class, $others);
+```
+Вариант конфигурирования класса через хелпер-функцию:
+```php
+use App\Services\Others;
+use function Kaspi\DiContainer\diAutowire;
+
+// идентификатор будет указан как 'App\\Services\\Others'
+$container->set(
+    Others::class,
+    diAutowire(Others::class)
+        ->bindTag('tags.other')
+        ->bindArguments(
+            // передача аргументов конструктору класса.
+        )
+);
 ```
 ```php
 use App\Services\Foo;

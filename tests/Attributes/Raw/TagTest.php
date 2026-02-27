@@ -37,18 +37,18 @@ class TagTest extends TestCase
     {
         $tag = new Tag('tags.handler-one');
 
-        $this->assertEquals('tags.handler-one', $tag->getIdentifier());
-        $this->assertEquals([], $tag->getOptions());
-        $this->assertNull($tag->getPriority());
-        $this->assertNull($tag->getPriorityMethod());
+        $this->assertEquals('tags.handler-one', $tag->name);
+        $this->assertEquals([], $tag->options);
+        $this->assertNull($tag->priority);
+        $this->assertNull($tag->priorityMethod);
     }
 
     public function testTagOptionsNotOverrideSomeOptions(): void
     {
         $tag = new Tag('tags.handler-one', ['priority' => 100, 'meta-data' => ['foo' => 'bar']], 50, 'getPriorityTag');
 
-        $this->assertEquals(['priority' => 100, 'meta-data' => ['foo' => 'bar']], $tag->getOptions());
-        $this->assertEquals(50, $tag->getPriority());
-        $this->assertEquals('getPriorityTag', $tag->getPriorityMethod());
+        $this->assertEquals(['priority' => 100, 'meta-data' => ['foo' => 'bar']], $tag->options);
+        $this->assertEquals(50, $tag->priority);
+        $this->assertEquals('getPriorityTag', $tag->priorityMethod);
     }
 }

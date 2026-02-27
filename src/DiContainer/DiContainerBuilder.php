@@ -28,6 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
 use RuntimeException;
 
@@ -90,11 +91,18 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     public function __construct(
         private readonly DiContainerConfigInterface $containerConfig = new DiContainerConfig(),
         private readonly DefinitionsLoaderInterface $definitionsLoader = new DefinitionsLoader(),
-    ) {}
+    ) {
+        $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
+    }
 
-    public function load(string ...$file): static
+    public function load(string $file, string ...$_): static
     {
-        foreach ($file as $loadConfigFile) {
+        $this->loadFiles[] = [
+            'override' => false,
+            'file' => $file,
+        ];
+
+        foreach ($_ as $loadConfigFile) {
             $this->loadFiles[] = [
                 'override' => false,
                 'file' => $loadConfigFile,
@@ -104,9 +112,14 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         return $this;
     }
 
-    public function loadOverride(string ...$file): static
+    public function loadOverride(string $file, string ...$_): static
     {
-        foreach ($file as $loadConfigFile) {
+        $this->loadFiles[] = [
+            'override' => true,
+            'file' => $file,
+        ];
+
+        foreach ($_ as $loadConfigFile) {
             $this->loadFiles[] = [
                 'override' => true,
                 'file' => $loadConfigFile,
@@ -186,7 +199,12 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
         if (!isset($this->compilerOutputDirectory)) {
             try {
-                return new DiContainer($this->definitions(), $this->containerConfig);
+                $definitions = new ImmediateSourceDefinitionsMutable(
+                    $this->configuredDefinitions(),
+                    $this->definitionsLoader->removedDefinitionIds(),
+                );
+
+                return new DiContainer($definitions, $this->containerConfig);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
                     sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
@@ -195,7 +213,12 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        $container = new DiContainer(new DeferredSourceDefinitionsMutable($this->definitions()), $this->containerConfig);
+        $definitions = new DeferredSourceDefinitionsMutable(
+            fn () => $this->configuredDefinitions(),
+            fn () => $this->definitionsLoader->removedDefinitionIds(),
+        );
+
+        $container = new DiContainer($definitions, $this->containerConfig);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {
@@ -234,7 +257,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
         try {
             $file = $containerCompilerToFile->compileToFile($this->compilerOptions['force_rebuild'] ?? false);
-        } catch (DefinitionCompileExceptionInterface|RuntimeException $e) {
+        } catch (ContainerExceptionInterface|DefinitionCompileExceptionInterface|RuntimeException $e) {
             throw new ContainerBuilderException(
                 sprintf('Cannot compile container. Caused by: %s', $e->getMessage()),
                 previous: $e,
@@ -253,7 +276,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      *
      * @throws ContainerBuilderException|DefinitionsLoaderExceptionInterface
      */
-    private function definitions(): Generator
+    private function configuredDefinitions(): Generator
     {
         foreach ($this->imports as $import) {
             try {
@@ -262,7 +285,6 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                     $import['src'],
                     $import['exclude_files'],
                     $import['available_extensions'],
-                    $this->containerConfig->isUseAttribute(),
                 );
             } catch (DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(

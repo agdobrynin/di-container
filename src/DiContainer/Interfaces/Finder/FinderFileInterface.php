@@ -11,11 +11,18 @@ use SplFileInfo;
 interface FinderFileInterface
 {
     /**
-     * @return Iterator<non-negative-int, SplFileInfo>
+     * @return Iterator<SplFileInfo>
      *
      * @throws InvalidArgumentException
      */
-    public function getFiles(): Iterator;
+    public function getMatchedFiles(): Iterator;
+
+    /**
+     * @return Iterator<SplFileInfo>
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getExcludedFiles(): Iterator;
 
     /**
      * Get source directory.
@@ -25,11 +32,11 @@ interface FinderFileInterface
     public function getSrc(): string;
 
     /**
-     * Get exclude matching by pattern files.
+     * Getting patterns that exclude files.
      *
      * @return list<non-empty-string>
      */
-    public function getExcludeFiles(): array;
+    public function getExclude(): array;
 
     /**
      * Get available file extensions.

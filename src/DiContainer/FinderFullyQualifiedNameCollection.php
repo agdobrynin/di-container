@@ -24,7 +24,7 @@ final class FinderFullyQualifiedNameCollection implements FinderFullyQualifiedNa
 
         if (null !== $existItem) {
             throw new InvalidArgumentException(
-                sprintf('The namespace "%s" has already been added to the import collection for source directory "%s".', $existItem->getNamespace(), $existItem->getSrc())
+                sprintf('The namespace "%s" has already been added to the import collection for source directory "%s".', $existItem->getNamespace(), $existItem->getFinderFile()->getSrc())
             );
         }
 

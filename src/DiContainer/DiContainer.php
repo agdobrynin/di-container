@@ -15,7 +15,6 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerGetterDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -54,7 +53,7 @@ use function var_export;
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
-class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface, DiContainerGetterDefinitionInterface
+class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     protected SourceDefinitionsMutableInterface $definitions;
 
@@ -77,6 +76,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
+     * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
      *
      * @throws ContainerIdentifierExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
@@ -84,9 +84,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function __construct(
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
+        iterable $removedDefinitionIds = [],
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
-            ? new ImmediateSourceDefinitionsMutable($definitions)
+            ? new ImmediateSourceDefinitionsMutable($definitions, $removedDefinitionIds)
             : $definitions;
     }
 
@@ -185,21 +186,21 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $tagIsInterface = null;
 
         foreach ($this->definitions->getIterator() as $containerIdentifier => $definition) {
-            if ($definition instanceof DiTaggedDefinitionInterface) {
-                if ($definition instanceof DiDefinitionAutowireInterface) {
-                    $tagIsInterface ??= interface_exists($tag);
-                    // Pass container with configuration for determinate using php attribute or not.
-                    $definition->setContainer($this);
-                    $hasTag = true === $tagIsInterface
-                        ? $definition->getDefinition()->implementsInterface($tag)
-                        : $definition->hasTag($tag);
-                } else {
-                    $hasTag = $definition->hasTag($tag);
-                }
+            if (!$definition instanceof DiTaggedDefinitionInterface) {
+                continue;
+            }
 
-                if ($hasTag) {
-                    yield $containerIdentifier => $definition;
-                }
+            $hasTagAsInterface = false;
+
+            if ($definition instanceof DiDefinitionAutowireInterface) {
+                $tagIsInterface ??= interface_exists($tag);
+                // Pass container with configuration for determinate using php attribute or not.
+                $definition->setContainer($this);
+                $hasTagAsInterface = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
+            }
+
+            if ($hasTagAsInterface || (true !== $tagIsInterface && $definition->hasTag($tag))) {
+                yield $containerIdentifier => $definition;
             }
         }
     }
@@ -221,6 +222,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         throw new NotFoundException(id: $id);
+    }
+
+    public function getRemovedDefinitionIds(): iterable
+    {
+        yield from $this->definitions->getRemovedDefinitionIds();
     }
 
     /**
@@ -294,7 +300,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if ($reflectionClass->isInterface()) {
             if ($this->config->isUseAttribute()
                 && null !== ($service = AttributeReader::getServiceAttribute($reflectionClass))) {
-                $findId = $service->getIdentifier();
+                $findId = $service->id;
 
                 try {
                     do {
@@ -310,7 +316,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     unset($this->circularCallWatcher[$findId]);
                 }
 
-                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton());
+                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton);
             }
 
             throw new AutowireException(sprintf('Attempting to resolve interface "%s". An interface that is not bound to a definition.', $id));
@@ -318,17 +324,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         if ($this->config->isUseAttribute()
             && null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
-            return $this->diResolvedDefinition[$id] = new DiDefinitionFactory(
-                $factory->getIdentifier(),
-                $factory->isSingleton()
-            );
+            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+
+            return $this->diResolvedDefinition[$id] = $diFactory->bindArguments(...$factory->arguments);
         }
 
         if ($this->config->isUseAttribute()
             && ($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
             foreach ($autowires as $autowire) {
-                if ($autowire->getIdentifier() === $reflectionClass->name) {
-                    return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton());
+                if ($autowire->id === $reflectionClass->name) {
+                    return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
+                        ->bindArguments(...$autowire->arguments)
+                    ;
                 }
             }
         }
@@ -344,6 +351,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
         if (!$this->config->isUseZeroConfigurationDefinition()) {
+            return false;
+        }
+
+        if ($this->definitions->isRemovedDefinition($id)) { // @phpstan-ignore argument.type
             return false;
         }
 

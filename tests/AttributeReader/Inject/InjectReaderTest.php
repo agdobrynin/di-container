@@ -86,7 +86,7 @@ class InjectReaderTest extends TestCase
         $identifiers = ['one', 'two', 'three']; // Inject id argument for parameter $a in function $f
 
         foreach ($injects as $k => $inject) {
-            $this->assertEquals($identifiers[$k], $injects->current()->getIdentifier());
+            $this->assertEquals($identifiers[$k], $injects->current()->id);
         }
 
         $this->assertFalse($injects->valid()); // All Inject fetched, generator empty.
@@ -103,7 +103,7 @@ class InjectReaderTest extends TestCase
         $injects = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertTrue($injects->valid());
-        $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());
+        $this->assertEquals(SuperClass::class, $injects->current()->id);
     }
 
     public function testInjectUnionTypeParameter(): void
@@ -122,6 +122,6 @@ class InjectReaderTest extends TestCase
         $injects = AttributeReader::getAttributeOnParameter($p, $this->container);
 
         $this->assertTrue($injects->valid());
-        $this->assertEquals(SuperClass::class, $injects->current()->getIdentifier());
+        $this->assertEquals(SuperClass::class, $injects->current()->id);
     }
 }
