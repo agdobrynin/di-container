@@ -34,8 +34,8 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         foreach ($sourceRemovedDefinitionIds as $identifier => $v) {
             $this->removedDefinitionIds[$identifier] = true;
 
-            if (isset($this->definitions[$identifier])) {
-                unset($this->definitions[$identifier]);
+            if (isset($this->definitions[$identifier])) { // @phpstan-ignore isset.offset
+                unset($this->definitions[$identifier]); // @phpstan-ignore unset.offset
             }
         }
     }
