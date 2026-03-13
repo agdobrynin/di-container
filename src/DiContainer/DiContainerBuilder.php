@@ -294,23 +294,6 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             }
         }
 
-        foreach ($this->loadFiles as $definitionsFromFile) {
-            try {
-                if ($definitionsFromFile['override']) {
-                    $this->definitionsLoader->loadOverride($definitionsFromFile['file']);
-                } else {
-                    $this->definitionsLoader->load($definitionsFromFile['file']);
-                }
-            } catch (DefinitionsLoaderExceptionInterface $e) {
-                $useMethod = $definitionsFromFile['override'] ? 'loadOverride()' : 'load()';
-
-                throw new ContainerBuilderException(
-                    sprintf('Cannot build container while load configuration from file "%s" using method %s::%s.', $definitionsFromFile['file'], self::class, $useMethod),
-                    previous: $e,
-                );
-            }
-        }
-
         foreach ($this->definitions as $definitions) {
             try {
                 $this->definitionsLoader->addDefinitions(
@@ -324,6 +307,23 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
                 throw new ContainerBuilderException(
                     sprintf('Cannot build container while add definition using method %s::%s.', self::class, $useMethod),
+                    previous: $e,
+                );
+            }
+        }
+
+        foreach ($this->loadFiles as $definitionsFromFile) {
+            try {
+                if ($definitionsFromFile['override']) {
+                    $this->definitionsLoader->loadOverride($definitionsFromFile['file']);
+                } else {
+                    $this->definitionsLoader->load($definitionsFromFile['file']);
+                }
+            } catch (DefinitionsLoaderExceptionInterface $e) {
+                $useMethod = $definitionsFromFile['override'] ? 'loadOverride()' : 'load()';
+
+                throw new ContainerBuilderException(
+                    sprintf('Cannot build container while load configuration from file "%s" using method %s::%s.', $definitionsFromFile['file'], self::class, $useMethod),
                     previous: $e,
                 );
             }
