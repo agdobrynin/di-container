@@ -38,7 +38,7 @@ class ConfiguratorTest extends TestCase
         $tagged_keys = array_keys([...$container->findTaggedDefinitions('tags.qux')]);
         $all_keys = array_keys([...$container->getDefinitions()]);
 
-        // configured definitions in file
+        // configured definitions in file __DIR__.'/Fixtures/tagging_services.php'
         self::assertEmpty(
             array_diff(
                 [
@@ -50,7 +50,7 @@ class ConfiguratorTest extends TestCase
             )
         );
 
-        // all loaded definitions __DIR__.'/Fixtures/tagging_services.php'
+        // all loaded definitions
         self::assertEmpty(
             array_diff(
                 [
