@@ -33,11 +33,12 @@ interface DefinitionsConfiguratorInterface
     /**
      * Finds the container definition via container identifier.
      *
-     * @param non-empty-string $id
+     * @param non-empty-string            $id
+     * @param callable(string $id): mixed $fallback
      *
      * @throws NotFoundDefinitionInterface
      */
-    public function getDefinition(string $id): mixed;
+    public function getDefinition(string $id, ?callable $fallback = null): mixed;
 
     /**
      * @param non-empty-string $tag
