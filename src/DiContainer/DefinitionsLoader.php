@@ -20,11 +20,11 @@ use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
+use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
@@ -203,15 +203,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 $this->removedDefinitionIds->offsetUnset($id);
             }
 
-            public function getDefinition(string $id): ?DiDefinitionInterface
+            public function getDefinition(string $id): mixed
             {
                 foreach ($this->getDefinitions() as $identifier => $definition) {
-                    if ($definition instanceof DiDefinitionInterface && $id === $identifier) {
+                    if ($id === $identifier) {
                         return $definition;
                     }
                 }
 
-                return null;
+                throw new NotFoundDefinition(id: $id);
             }
 
             public function findTaggedDefinition(string $tag): iterable

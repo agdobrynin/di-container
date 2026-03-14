@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Interfaces;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface;
 
 interface DefinitionsConfiguratorInterface
 {
@@ -32,12 +33,11 @@ interface DefinitionsConfiguratorInterface
     /**
      * Finds the container definition via container identifier.
      *
-     * Returns an object implementing `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface`,
-     * if no definition is found will be returns null.
-     *
      * @param non-empty-string $id
+     *
+     * @throws NotFoundDefinitionInterface
      */
-    public function getDefinition(string $id): ?DiDefinitionInterface;
+    public function getDefinition(string $id): mixed;
 
     /**
      * @param non-empty-string $tag

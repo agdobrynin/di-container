@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -42,6 +43,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Tag::class)]
+#[CoversClass(NotFoundDefinition::class)]
 class DefinitionsLoaderWithConfiguratorTest extends TestCase
 {
     public function testCircularLoadFromFile(): void
@@ -145,12 +147,13 @@ return static function (DefinitionsConfiguratorInterface $configurator) {
         vfsStream::setup(structure: [
             'config1.php' => '<?php
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use \Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
         
 return static function (DefinitionsConfiguratorInterface $configurator) {
-    $qux = $configurator->getDefinition("services.qux");
-
-    if (null === $qux) {
+    try {
+        $configurator->getDefinition("services.qux");
+    } catch (NotFoundDefinitionInterface) {
         $configurator->setDefinition("services.qux", "qux val");
     }
 };',
