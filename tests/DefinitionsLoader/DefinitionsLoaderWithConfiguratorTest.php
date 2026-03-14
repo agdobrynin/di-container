@@ -156,6 +156,10 @@ return static function (DefinitionsConfiguratorInterface $configurator) {
     } catch (NotFoundDefinitionInterface) {
         $configurator->setDefinition("services.qux", "qux val");
     }
+    
+    if (null === $configurator->getDefinition(NoneExistClass::class, static fn () => null)) {
+        $configurator->setDefinition(NoneExistClass::class, 100_000);
+    }
 };',
         ]);
 
@@ -169,6 +173,10 @@ return static function (DefinitionsConfiguratorInterface $configurator) {
         foreach ($defs as $id => $def) {
             if ('services.qux' === $id) {
                 self::assertEquals('qux val', $def);
+            }
+
+            if (NoneExistClass::class === $id) {
+                self::assertEquals(100_000, $def);
             }
         }
     }
