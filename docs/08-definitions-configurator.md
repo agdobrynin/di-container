@@ -28,33 +28,57 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ## Получить импортированное или добавленное определение.
 ```php
 DefinitionsConfiguratorInterface::getDefinition(
-    string $id
+    string $id,
+    ?callable $fallback = null
 ): mixed
 ```
 Параметры:
 - `$id` – идентификатор контейнера.
+- `$fallback` – выражение для обработки когда не найдено определение.
 
 > [!WARNING]
-> Если определение не найдено по указанному идентификатору, то будет выброшено
-> исключение `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`
+> В случае если определение не найдено: 
+> - параметр `$fallback` установлен `null` будет выброшено
+> исключение `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`;
+> - параметр содержит выражение `$fallback` которое будет выполнено.
+> 
+> Выражение `$fallback` принимает в качестве аргумента параметр `$id`:
+> ```php
+>  callable(string $id): mixed
+> ```
 
 > [!NOTE]
 > Важно: определение будет получено если оно было добавлено раньше вызова метода `DefinitionsConfiguratorInterface::getDefinition()`.
 
-Пример – добавить тег к существующему определению:
+Пример:
+
 ```php
 // /app/config/config_tags.php
 
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use Kaspi\DiContainer\Exception\NotFoundDefinition;
+use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     $foo = $configurator->getDefinition(Foo::class);
 
     if ($foo instanceof DiDefinitionTagArgumentInterface) {
         $foo->bindTag('tags.foo')
-    } 
-}
+    }
+    
+    // Идентификатор `'foo_bar'` не задан, и неустановлен параметр `$fallback`.
+    try {
+        $configurator->getDefinition('foo_bar');
+    } catch (NotFoundDefinition) {
+        $configurator->setDefinition('foo_bar', 100_000);
+    }
+
+    // Идентификатор `'qux'` не задан, выражение `$fallback` вернёт `null`.
+    if (null === $configurator->getDefinition('qux', static fn () => null)) {
+        $configurator->setDefinition('qux', diAutowire(Foo::class));
+    }
+};
 ```
 
 ## Получить коллекцию определений по тегу.
@@ -88,7 +112,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
         $definition->setup('setClient', diAutowire(Client::class));
     }
 
-}
+};
 ```
 
 ## Добавить или заменить определение.
@@ -127,7 +151,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
                 );
         );
     }
-}
+};
 ```
 ## Удаляемые определения.
 
@@ -241,7 +265,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 >               postRepository: diGet(PostRepository::class),
 >           )
 >       ;
-> }
+> };
 > ```
 > 
 
