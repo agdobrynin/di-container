@@ -211,11 +211,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     }
                 }
 
-                if (null === $fallback) {
-                    throw new NotFoundDefinition(id: $id);
-                }
-
-                return $fallback($id);
+                return null !== $fallback
+                    ? $fallback($id)
+                    : throw new NotFoundDefinition(id: $id);
             }
 
             public function findTaggedDefinition(string $tag): iterable
