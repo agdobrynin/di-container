@@ -203,7 +203,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 $this->removedDefinitionIds->offsetUnset($id);
             }
 
-            public function getDefinition(string $id): mixed
+            public function getDefinition(string $id, ?callable $fallback = null): mixed
             {
                 foreach ($this->getDefinitions() as $identifier => $definition) {
                     if ($id === $identifier) {
@@ -211,7 +211,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     }
                 }
 
-                throw new NotFoundDefinition(id: $id);
+                return null !== $fallback
+                    ? $fallback($id)
+                    : throw new NotFoundDefinition(id: $id);
             }
 
             public function findTaggedDefinition(string $tag): iterable
