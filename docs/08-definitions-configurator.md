@@ -29,10 +29,14 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ```php
 DefinitionsConfiguratorInterface::getDefinition(
     string $id
-): ?\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface
+): mixed
 ```
 Параметры:
 - `$id` – идентификатор контейнера.
+
+> [!WARNING]
+> Если определение не найдено по указанному идентификатору, то будет выброшено
+> исключение `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`
 
 > [!NOTE]
 > Важно: определение будет получено если оно было добавлено раньше вызова метода `DefinitionsConfiguratorInterface::getDefinition()`.
