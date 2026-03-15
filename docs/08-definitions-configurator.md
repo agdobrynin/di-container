@@ -38,9 +38,9 @@ DefinitionsConfiguratorInterface::getDefinition(
 
 > [!WARNING]
 > В случае если определение не найдено: 
-> - параметр `$fallback` установлен `null` будет выброшено
-> исключение `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`;
-> - параметр содержит выражение `$fallback` которое будет выполнено.
+> - параметр `$fallback` установлен `null` – будет выброшено
+> исключение `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`.
+> - параметр `$fallback` содержит выражение – будет выполнено выражение с возвращаемым значением.
 > 
 > Выражение `$fallback` принимает в качестве аргумента параметр `$id`:
 > ```php
