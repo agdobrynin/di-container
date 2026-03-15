@@ -1,5 +1,5 @@
 ARG PHP_IMAGE
-FROM ${PHP_IMAGE:-php:8.0-cli-alpine}
+FROM ${PHP_IMAGE:-php:8.1-cli-alpine}
 
 ENV UID=1000
 ENV GID=1000
