@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Exception;
 
-use InvalidArgumentException;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
 use Throwable;
 
 use function ltrim;
 use function sprintf;
 
-final class ParameterNotFoundException extends InvalidArgumentException implements ParameterNotFoundExceptionInterface
+final class ParameterNotFoundException extends NotFoundException implements ParameterNotFoundExceptionInterface
 {
     /**
      * @param string $name parameter name
