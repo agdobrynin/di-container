@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Exception;
 
+use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Throwable;
 
 use function implode;
 use function ltrim;
 use function sprintf;
 
-final class ParameterCallCircularException extends ContainerException
+final class ParameterCallCircularException extends ContainerException implements ParameterExceptionInterface
 {
     /**
      * @param string[] $names parameter names in circular call
