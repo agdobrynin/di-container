@@ -39,7 +39,7 @@ final class SourceParameters implements SourceParametersMutableInterface
      */
     private array $nameCircularCallWatcher = [];
 
-    private bool $isMutable = false;
+    private bool $isParametersChanged = false;
 
     public function has(string $name): bool
     {
@@ -59,13 +59,13 @@ final class SourceParameters implements SourceParametersMutableInterface
 
             $this->nameCircularCallWatcher[$name] = true;
 
-            if (false === $this->isMutable && true === $this->parameters[$name][0]) {
+            if (false === $this->isParametersChanged && true === $this->parameters[$name][0]) {
                 return $this->parameters[$name][1];
             }
 
             $resolvedValue = $this->resolveValue($this->parameters[$name][1]);
             $this->parameters[$name] = [true, $resolvedValue];
-            $this->isMutable = false;
+            $this->isParametersChanged = false;
         } finally {
             unset($this->nameCircularCallWatcher[$name]);
         }
@@ -76,13 +76,13 @@ final class SourceParameters implements SourceParametersMutableInterface
     public function remove(string $name): void
     {
         unset($this->parameters[$name]);
-        $this->isMutable = true;
+        $this->isParametersChanged = true;
     }
 
     public function set(string $name, array|bool|float|int|string|UnitEnum|null $value): void
     {
         $this->parameters[$name] = [false, $value];
-        $this->isMutable = true;
+        $this->isParametersChanged = true;
     }
 
     public function add(iterable $parameters): void
