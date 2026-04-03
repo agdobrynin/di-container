@@ -36,7 +36,7 @@ interface SourceParametersMutableInterface
      * @param non-empty-string    $name
      * @param SourceParameterType $value
      */
-    public function set(string $name, array|bool|float|int|string|UnitEnum|null $value): void;
+    public function set(string $name, mixed $value): void;
 
     /**
      * @param iterable<non-empty-string, SourceParameterType> $parameters
