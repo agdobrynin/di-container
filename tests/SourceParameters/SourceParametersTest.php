@@ -1,0 +1,98 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\SourceParameters;
+
+use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Exception\ParameterCallCircularException;
+use Kaspi\DiContainer\Exception\ParameterNotFoundException;
+use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
+use Kaspi\DiContainer\Parameters\SourceParameters;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use PHPUnit\Framework\Attributes\TestWith;
+use PHPUnit\Framework\TestCase;
+use stdClass;
+
+/**
+ * @internal
+ */
+#[CoversClass(SourceParameters::class)]
+#[CoversClass(ParameterCallCircularException::class)]
+#[CoversClass(ParameterNotFoundException::class)]
+#[CoversClass(NotFoundException::class)]
+class SourceParametersTest extends TestCase
+{
+    public function testCircularParameters(): void
+    {
+        $this->expectException(ParameterExceptionInterface::class);
+        $this->expectExceptionMessage('Trying call cyclical parameter name');
+
+        $p = new SourceParameters();
+        $p->add([
+            'foo' => '{bar}',
+            'bar' => '{baz}',
+            'baz' => '{foo}',
+        ]);
+
+        $p->get('foo');
+    }
+
+    #[DataProviderExternal(ParameterDataset::class, 'notFound')]
+    public function testParameterNotFound(iterable $params, string $getParamName, string $paramNameNotFound): void
+    {
+        $this->expectException(ParameterNotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Parameter name "'.$paramNameNotFound.'" not found');
+
+        $p = new SourceParameters();
+        $p->add($params);
+        $p->get($getParamName);
+    }
+
+    #[DataProviderExternal(ParameterDataset::class, 'successAndCaching')]
+    public function testParametersSuccess(iterable $params, array $expect): void
+    {
+        $p = new SourceParameters();
+        $p->add($params);
+
+        self::assertEquals($expect, [...$p->parameters()]);
+    }
+
+    public function testRemoveParams(): void
+    {
+        $p = new SourceParameters();
+        $p->add(['foo' => 100]);
+
+        self::assertTrue($p->has('foo'));
+
+        $p->remove('foo');
+
+        self::assertFalse($p->has('foo'));
+    }
+
+    #[TestWith([['foo' => new stdClass()]])]
+    #[TestWith([['foo' => ['bar' => ['baz' => new stdClass()]]]])]
+    public function testUnsupportedParameterValue(array $params): void
+    {
+        $this->expectException(ParameterExceptionInterface::class);
+        $this->expectExceptionMessage('unsupported value type');
+
+        $p = new SourceParameters();
+        $p->add($params);
+        $p->get('foo');
+    }
+
+    #[TestWith([['foo' => 'test:{bar}', 'bar' => false]])]
+    #[TestWith([['foo' => 'test:{bar}', 'bar' => 'test:{baz}', 'baz' => ParamEnum::SECOND]])]
+    #[TestWith([['foo' => 'test:{bar}', 'bar' => '{baz}', 'baz' => new stdClass()]])]
+    public function testConcatenateNoneStringOrNoneNumeric(array $params): void
+    {
+        $this->expectException(ParameterExceptionInterface::class);
+
+        $p = new SourceParameters();
+        $p->add($params);
+        $p->get('foo');
+    }
+}
