@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use UnitEnum;
 
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function get_debug_type;
 use function is_array;
@@ -79,7 +80,7 @@ final class SourceParameters implements SourceParametersMutableInterface
         $this->isParametersChanged = true;
     }
 
-    public function set(string $name, array|bool|float|int|string|UnitEnum|null $value): void
+    public function set(string $name, mixed $value): void
     {
         $this->parameters[$name] = [false, $value];
         $this->isParametersChanged = true;
@@ -100,14 +101,12 @@ final class SourceParameters implements SourceParametersMutableInterface
     }
 
     /**
-     * @param SourceParameterType $value parameter value
-     *
      * @return SourceParameterType
      *
      * @throws ParameterNotFoundExceptionInterface
      * @throws ParameterExceptionInterface
      */
-    private function resolveValue(array|bool|float|int|string|UnitEnum|null $value): array|bool|float|int|string|UnitEnum|null
+    private function resolveValue(mixed $value): array|bool|float|int|string|UnitEnum|null
     {
         if (is_string($value)) {
             return $this->resolveString($value);
@@ -118,9 +117,7 @@ final class SourceParameters implements SourceParametersMutableInterface
 
             foreach ($value as $k => $v) {
                 if (!is_array($v) && !is_scalar($v) && null !== $v && !($v instanceof UnitEnum)) {
-                    throw new ParameterException(
-                        sprintf('Unsupported parameter value type: "%s". Parameter value supports a scalar, an enum or null types.', get_debug_type($v))
-                    );
+                    throw $this->unsupportedValueType($v);
                 }
 
                 $rK = is_string($k) ? $this->resolveString($k) : $k;
@@ -128,6 +125,10 @@ final class SourceParameters implements SourceParametersMutableInterface
             }
 
             return $arrValue; // @phpstan-ignore return.type
+        }
+
+        if (!is_scalar($value) && null !== $value && !($value instanceof UnitEnum)) {
+            throw $this->unsupportedValueType($value);
         }
 
         return $value;
@@ -167,5 +168,14 @@ final class SourceParameters implements SourceParametersMutableInterface
         return str_contains($value, '{{')
             ? str_replace('{{', '{', $value)
             : $value;
+    }
+
+    private function unsupportedValueType(mixed $value): ParameterException
+    {
+        $paramName = array_key_first($this->nameCircularCallWatcher);
+
+        return new ParameterException(
+            sprintf('The parameter "%s" has unsupported parameter value type: "%s". A parameter value supports a scalar, an enum or null types.', $paramName, get_debug_type($value))
+        );
     }
 }
