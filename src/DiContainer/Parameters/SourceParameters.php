@@ -20,10 +20,9 @@ use function is_array;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
-use function preg_match_all;
+use function preg_replace_callback;
 use function sprintf;
 use function str_contains;
-use function str_replace;
 
 /**
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
@@ -146,13 +145,19 @@ final class SourceParameters implements SourceParametersMutableInterface
             return $value;
         }
 
-        $matches = [];
-        preg_match_all('/{([^{\s]+)}|{{/', $value, $matches);
-
-        foreach ($matches[1] as $index => $paramName) {
-            if ('' === $paramName) {
-                continue;
+        /**
+         * @param list<non-empty-string> $match
+         */
+        $replaceCallback = function (array $match): string {
+            if (!isset($match[1])) {
+                return '{';
             }
+
+            /**
+             * @var non-empty-string $placeHolder
+             * @var non-empty-string $paramName
+             */
+            [$placeHolder, $paramName] = $match;
 
             $partValue = $this->get($paramName);
 
@@ -160,16 +165,14 @@ final class SourceParameters implements SourceParametersMutableInterface
                 $mainParamName = array_key_first($this->nameCircularCallWatcher);
 
                 throw new ParameterException(
-                    sprintf('Resolving the parameter "%s": cannot concatenate value from parameter "%s" as type "%s" into string. A part value must be presents as number or string types.', $mainParamName, $matches[0][$index], get_debug_type($partValue))
+                    sprintf('Resolving the parameter "%s": cannot concatenate value from parameter placeholder "%s" as type "%s" into string. A part value must be presents as number or string types.', $mainParamName, $placeHolder, get_debug_type($partValue))
                 );
             }
 
-            $value = str_replace($matches[0][$index], (string) $partValue, $value);
-        }
+            return (string) $partValue;
+        };
 
-        return str_contains($value, '{{')
-            ? str_replace('{{', '{', $value)
-            : $value;
+        return (string) preg_replace_callback('/{([^{\s]+)}|{{/', $replaceCallback, $value);
     }
 
     private function unsupportedValueType(mixed $value): ParameterException
