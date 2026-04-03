@@ -157,8 +157,10 @@ final class SourceParameters implements SourceParametersMutableInterface
             $partValue = $this->get($paramName);
 
             if (!is_numeric($partValue) && !is_string($partValue)) {
+                $mainParamName = array_key_first($this->nameCircularCallWatcher);
+
                 throw new ParameterException(
-                    sprintf('Cannot concatenate value from parameter "%s" as type "%s" into string. Supports a part value as number and string types.', $matches[0][$index], get_debug_type($partValue))
+                    sprintf('Resolving the parameter "%s": cannot concatenate value from parameter "%s" as type "%s" into string. A part value must be presents as number or string types.', $mainParamName, $matches[0][$index], get_debug_type($partValue))
                 );
             }
 
@@ -172,10 +174,10 @@ final class SourceParameters implements SourceParametersMutableInterface
 
     private function unsupportedValueType(mixed $value): ParameterException
     {
-        $paramName = array_key_first($this->nameCircularCallWatcher);
+        $mainParamName = array_key_first($this->nameCircularCallWatcher);
 
         return new ParameterException(
-            sprintf('The parameter "%s" has unsupported parameter value type: "%s". A parameter value supports a scalar, an enum or null types.', $paramName, get_debug_type($value))
+            sprintf('The parameter "%s" has unsupported parameter value type: "%s". The parameter value can be scalar, enumerated, or null.', $mainParamName, get_debug_type($value))
         );
     }
 }
