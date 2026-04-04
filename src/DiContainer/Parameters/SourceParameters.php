@@ -13,13 +13,16 @@ use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use UnitEnum;
 
 use function array_key_exists;
-use function array_key_first;
+use function array_key_last;
 use function array_keys;
+use function count;
 use function get_debug_type;
+use function implode;
 use function is_array;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
+use function ltrim;
 use function preg_replace_callback;
 use function sprintf;
 use function str_contains;
@@ -162,10 +165,12 @@ final class SourceParameters implements SourceParametersMutableInterface
             $partValue = $this->get($paramName);
 
             if (!is_numeric($partValue) && !is_string($partValue)) {
-                $mainParamName = array_key_first($this->nameCircularCallWatcher);
+                $resolvingName = array_key_last($this->nameCircularCallWatcher);
 
                 throw new ParameterException(
-                    sprintf('Resolving the parameter "%s": cannot concatenate value from parameter placeholder "%s" as type "%s" into string. A part value must be presents as number or string types.', $mainParamName, $placeHolder, get_debug_type($partValue))
+                    ltrim(
+                        sprintf('%s The parameter "%s": cannot concatenate value from parameter placeholder "%s" as type "%s" into string. A part value must be presents as number or string types.', $this->getCallStackNamesMessage(), $resolvingName, $placeHolder, get_debug_type($partValue))
+                    )
                 );
             }
 
@@ -177,10 +182,19 @@ final class SourceParameters implements SourceParametersMutableInterface
 
     private function unsupportedValueType(mixed $value): ParameterException
     {
-        $mainParamName = array_key_first($this->nameCircularCallWatcher);
+        $resolvingName = array_key_last($this->nameCircularCallWatcher);
 
         return new ParameterException(
-            sprintf('The parameter "%s" has unsupported parameter value type: "%s". The parameter value can be scalar, enumerated, or null.', $mainParamName, get_debug_type($value))
+            ltrim(
+                sprintf('%s The parameter "%s" has unsupported value type: "%s". The parameter value can be scalar, enumerated, or null.', $this->getCallStackNamesMessage(), $resolvingName, get_debug_type($value))
+            )
         );
+    }
+
+    private function getCallStackNamesMessage(): string
+    {
+        return 1 < count($this->nameCircularCallWatcher)
+            ? sprintf('Resolving parameters "%s".', implode('" -> "', array_keys($this->nameCircularCallWatcher)))
+            : '';
     }
 }
