@@ -29,6 +29,8 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
+use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
+use Kaspi\DiContainer\Parameters\SourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -85,6 +87,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
         iterable $removedDefinitionIds = [],
+        protected readonly SourceParametersMutableInterface $parameters = new SourceParameters(),
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
             ? new ImmediateSourceDefinitionsMutable($definitions, $removedDefinitionIds)
@@ -227,6 +230,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function getRemovedDefinitionIds(): iterable
     {
         yield from $this->definitions->getRemovedDefinitionIds();
+    }
+
+    public function parameters(): SourceParametersMutableInterface
+    {
+        return $this->parameters;
     }
 
     /**
