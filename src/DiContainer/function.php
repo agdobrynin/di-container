@@ -90,10 +90,7 @@ if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diParam')) { // @codeCoverageIgnore
-    /**
-     * @param non-empty-string $name
-     */
-    function diParam(string $name): DiDefinitionParameterInterface
+    function diParam(string $name = ''): DiDefinitionParameterInterface
     {
         return new DiDefinitionParameter($name);
     }
