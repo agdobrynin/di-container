@@ -8,11 +8,13 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
@@ -84,5 +86,15 @@ if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     function diTaggedAs(string $tag, bool $isLazy = true, ?string $priorityDefaultMethod = null, bool $useKeys = true, ?string $key = null, ?string $keyDefaultMethod = null, array $containerIdExclude = [], bool $selfExclude = true): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionTaggedAs($tag, $isLazy, $priorityDefaultMethod, $useKeys, $key, $keyDefaultMethod, $containerIdExclude, $selfExclude);
+    }
+} // @codeCoverageIgnore
+
+if (!function_exists('Kaspi\DiContainer\diParam')) { // @codeCoverageIgnore
+    /**
+     * @param non-empty-string $name
+     */
+    function diParam(string $name): DiDefinitionParameterInterface
+    {
+        return new DiDefinitionParameter($name);
     }
 } // @codeCoverageIgnore
