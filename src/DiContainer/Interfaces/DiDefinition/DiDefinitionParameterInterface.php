@@ -20,8 +20,6 @@ interface DiDefinitionParameterInterface extends DiDefinitionInterface
 {
     /**
      * Parameter name.
-     *
-     * @return non-empty-string
      */
     public function getDefinition(): string;
 
