@@ -8,11 +8,13 @@ use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
@@ -292,7 +294,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
@@ -324,8 +326,10 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 $definition = (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments)
                 ;
-            } else {
+            } elseif ($attr instanceof InjectByCallable) {
                 $definition = new DiDefinitionCallable($attr->getCallable());
+            } else {
+                $definition = new DiDefinitionParameter($attr->name);
             }
 
             yield $definition;
