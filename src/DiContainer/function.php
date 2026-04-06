@@ -89,8 +89,8 @@ if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
     }
 } // @codeCoverageIgnore
 
-if (!function_exists('Kaspi\DiContainer\diParam')) { // @codeCoverageIgnore
-    function diParam(string $name = ''): DiDefinitionParameterInterface
+if (!function_exists('Kaspi\DiContainer\diParameter')) { // @codeCoverageIgnore
+    function diParameter(string $name = ''): DiDefinitionParameterInterface
     {
         return new DiDefinitionParameter($name);
     }

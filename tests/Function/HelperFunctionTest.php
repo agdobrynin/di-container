@@ -26,7 +26,7 @@ use Tests\Function\Fixtures\AnyClass;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
-use function Kaspi\DiContainer\diParam;
+use function Kaspi\DiContainer\diParameter;
 use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
 
@@ -46,7 +46,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(DiDefinitionParameter::class)]
-#[CoversFunction('Kaspi\DiContainer\diParam')]
+#[CoversFunction('Kaspi\DiContainer\diParameter')]
 class HelperFunctionTest extends TestCase
 {
     public function testFunctiondiGet(): void
@@ -132,6 +132,6 @@ class HelperFunctionTest extends TestCase
     #[TestWith(['foo', 'foo'])]
     public function testDiParam(string $name, string $expectDefinition): void
     {
-        self::assertEquals($expectDefinition, diParam($name)->getDefinition());
+        self::assertEquals($expectDefinition, diParameter($name)->getDefinition());
     }
 }
