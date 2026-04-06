@@ -10,10 +10,13 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
+use ReflectionParameter;
 
+use function array_filter;
 use function array_key_exists;
 use function is_int;
 use function sprintf;
@@ -56,8 +59,16 @@ final class ArgumentResolver
 
         foreach ($args as $argNameOrIndex => $arg) {
             try {
+                $paramContext = null;
+
+                if ($arg instanceof DiDefinitionParameterInterface && '' === $arg->getDefinition()) {
+                    $paramContext = is_int($argNameOrIndex)
+                        ? $argBuilder->getFunctionOrMethod()->getParameters()[$argNameOrIndex] ?? null
+                        : array_filter($argBuilder->getFunctionOrMethod()->getParameters(), static fn (ReflectionParameter $p) => $p->name === $argNameOrIndex)[0] ?? null;
+                }
+
                 $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                    ? $arg->resolve($container, $context)
+                    ? $arg->resolve($container, null !== $paramContext ? $paramContext : $context)
                     : $arg;
             } catch (ContainerExceptionInterface $e) {
                 if (is_int($argNameOrIndex)) {
