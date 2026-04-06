@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
@@ -50,5 +51,7 @@ class DiDefinitionTest extends TestCase
         yield 'DiDefinitionTaggedAs' => [new DiDefinitionTaggedAs('foo')];
 
         yield 'DiDefinitionValue' => [new DiDefinitionValue('foo')];
+
+        yield 'DiDefinitionParameter' => [new DiDefinitionParameter('foo')];
     }
 }
