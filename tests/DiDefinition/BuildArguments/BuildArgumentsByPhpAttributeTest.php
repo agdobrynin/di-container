@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\BuildArguments;
 
+use ArrayIterator;
 use Closure;
 use DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
@@ -17,6 +19,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Helper;
@@ -64,6 +67,8 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionProxyClosure::class)]
 #[CoversClass(DiFactory::class)]
 #[CoversClass(DiDefinitionFactory::class)]
+#[CoversClass(Parameter::class)]
+#[CoversClass(DiDefinitionParameter::class)]
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;
@@ -404,5 +409,33 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         $arg = $ba->build();
 
         self::assertInstanceOf(DiDefinitionFactory::class, $arg[0]);
+    }
+
+    public function testAttributeParameter(): void
+    {
+        $fn = static fn (
+            #[Inject('services.iter')]
+            ArrayIterator $array,
+            #[Parameter]
+            mixed $bat,
+            #[Parameter('foo.one')]
+            #[Parameter]
+            mixed ...$foo,
+        ) => $bat;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $arg = $ba->build();
+
+        self::assertInstanceOf(DiDefinitionGet::class, $arg[0]);
+        self::assertEquals('services.iter', $arg[0]->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionParameter::class, $arg[1]);
+        self::assertEquals('', $arg[1]->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionParameter::class, $arg[2]);
+        self::assertEquals('foo.one', $arg[2]->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionParameter::class, $arg[3]);
+        self::assertEquals('', $arg[3]->getDefinition());
     }
 }
