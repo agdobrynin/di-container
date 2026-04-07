@@ -9,7 +9,8 @@ use Kaspi\DiContainer\Exception\ParameterCallCircularException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
-use Kaspi\DiContainer\Parameters\SourceParameters;
+use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -19,23 +20,24 @@ use stdClass;
 /**
  * @internal
  */
-#[CoversClass(SourceParameters::class)]
+#[CoversClass(AbstractSourceParameters::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(ParameterCallCircularException::class)]
 #[CoversClass(ParameterNotFoundException::class)]
 #[CoversClass(NotFoundException::class)]
-class SourceParametersTest extends TestCase
+class ImmediateSourceParametersTest extends TestCase
 {
     public function testCircularParameters(): void
     {
         $this->expectException(ParameterExceptionInterface::class);
         $this->expectExceptionMessage('Trying call cyclical parameter name');
 
-        $p = new SourceParameters();
-        $p->add([
+        $p = new ImmediateSourceParameters([
             'foo' => '{bar}',
             'bar' => '{baz}',
-            'baz' => '{foo}',
         ]);
+
+        $p->add(['baz' => '{foo}']);
 
         $p->get('foo');
     }
@@ -46,15 +48,14 @@ class SourceParametersTest extends TestCase
         $this->expectException(ParameterNotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Parameter name "'.$paramNameNotFound.'" not found');
 
-        $p = new SourceParameters();
-        $p->add($params);
+        $p = new ImmediateSourceParameters($params);
         $p->get($getParamName);
     }
 
     #[DataProviderExternal(ParameterDataset::class, 'successAndCaching')]
     public function testParametersSuccess(iterable $params, array $expect): void
     {
-        $p = new SourceParameters();
+        $p = new ImmediateSourceParameters();
         $p->add($params);
 
         self::assertEquals($expect, [...$p->parameters()]);
@@ -62,7 +63,7 @@ class SourceParametersTest extends TestCase
 
     public function testRemoveParams(): void
     {
-        $p = new SourceParameters();
+        $p = new ImmediateSourceParameters();
         $p->add(['foo' => 100]);
 
         self::assertTrue($p->has('foo'));
@@ -79,7 +80,7 @@ class SourceParametersTest extends TestCase
         $this->expectException(ParameterExceptionInterface::class);
         $this->expectExceptionMessage('unsupported value type');
 
-        $p = new SourceParameters();
+        $p = new ImmediateSourceParameters();
         $p->add($params);
         $p->get('foo');
     }
@@ -91,7 +92,7 @@ class SourceParametersTest extends TestCase
     {
         $this->expectException(ParameterExceptionInterface::class);
 
-        $p = new SourceParameters();
+        $p = new ImmediateSourceParameters();
         $p->add($params);
         $p->get('foo');
     }

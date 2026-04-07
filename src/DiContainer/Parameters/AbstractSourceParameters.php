@@ -30,13 +30,8 @@ use function str_contains;
 /**
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
  */
-final class SourceParameters implements SourceParametersMutableInterface
+abstract class AbstractSourceParameters implements SourceParametersMutableInterface
 {
-    /**
-     * @var array<non-empty-string, array{0: bool, 1:SourceParameterType}>
-     */
-    private array $parameters = [];
-
     /**
      * @var array<non-empty-string, true>
      */
@@ -46,7 +41,7 @@ final class SourceParameters implements SourceParametersMutableInterface
 
     public function has(string $name): bool
     {
-        return array_key_exists($name, $this->parameters);
+        return array_key_exists($name, $this->internalParameters());
     }
 
     public function get(string $name): array|bool|float|int|string|UnitEnum|null
@@ -62,29 +57,29 @@ final class SourceParameters implements SourceParametersMutableInterface
 
             $this->nameCircularCallWatcher[$name] = true;
 
-            if (false === $this->isParametersChanged && true === $this->parameters[$name][0]) {
-                return $this->parameters[$name][1];
+            if (false === $this->isParametersChanged && true === $this->internalParameters()[$name][0]) {
+                return $this->internalParameters()[$name][1];
             }
 
-            $resolvedValue = $this->resolveValue($this->parameters[$name][1]);
-            $this->parameters[$name] = [true, $resolvedValue];
+            $resolvedValue = $this->resolveValue($this->internalParameters()[$name][1]);
+            $this->internalParameters()[$name] = [true, $resolvedValue];
             $this->isParametersChanged = false;
         } finally {
             unset($this->nameCircularCallWatcher[$name]);
         }
 
-        return $this->parameters[$name][1];
+        return $this->internalParameters()[$name][1];
     }
 
     public function remove(string $name): void
     {
-        unset($this->parameters[$name]);
+        unset($this->internalParameters()[$name]);
         $this->isParametersChanged = true;
     }
 
     public function set(string $name, mixed $value): void
     {
-        $this->parameters[$name] = [false, $value];
+        $this->internalParameters()[$name] = [false, $value];
         $this->isParametersChanged = true;
     }
 
@@ -97,7 +92,7 @@ final class SourceParameters implements SourceParametersMutableInterface
 
     public function parameters(): iterable
     {
-        foreach ($this->parameters as $name => [,$parameter]) {
+        foreach ($this->internalParameters() as $name => [,$parameter]) {
             yield $name => $this->get($name);
         }
     }
@@ -108,7 +103,7 @@ final class SourceParameters implements SourceParametersMutableInterface
      * @throws ParameterNotFoundExceptionInterface
      * @throws ParameterExceptionInterface
      */
-    private function resolveValue(mixed $value): array|bool|float|int|string|UnitEnum|null
+    protected function resolveValue(mixed $value): array|bool|float|int|string|UnitEnum|null
     {
         if (is_string($value)) {
             return $this->resolveString($value);
@@ -142,7 +137,7 @@ final class SourceParameters implements SourceParametersMutableInterface
      * @throws ParameterNotFoundExceptionInterface
      * @throws ParameterExceptionInterface
      */
-    private function resolveString(string $value): string
+    protected function resolveString(string $value): string
     {
         if (!str_contains($value, '{')) {
             return $value;
@@ -180,7 +175,7 @@ final class SourceParameters implements SourceParametersMutableInterface
         return (string) preg_replace_callback('/{([^{\s]+)}|{{/', $replaceCallback, $value);
     }
 
-    private function unsupportedValueType(mixed $value): ParameterException
+    protected function unsupportedValueType(mixed $value): ParameterException
     {
         $resolvingName = array_key_last($this->nameCircularCallWatcher);
 
@@ -191,10 +186,15 @@ final class SourceParameters implements SourceParametersMutableInterface
         );
     }
 
-    private function getCallStackNamesMessage(): string
+    protected function getCallStackNamesMessage(): string
     {
         return 1 < count($this->nameCircularCallWatcher)
             ? sprintf('Resolving parameters "%s".', implode('" -> "', array_keys($this->nameCircularCallWatcher)))
             : '';
     }
+
+    /**
+     * @return array<non-empty-string, array{0: bool, 1:SourceParameterType}>
+     */
+    abstract protected function &internalParameters(): array;
 }

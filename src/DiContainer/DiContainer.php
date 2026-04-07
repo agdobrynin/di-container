@@ -30,7 +30,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
-use Kaspi\DiContainer\Parameters\SourceParameters;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -87,7 +87,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
         iterable $removedDefinitionIds = [],
-        protected readonly SourceParametersMutableInterface $parameters = new SourceParameters(),
+        protected readonly SourceParametersMutableInterface $parameters = new ImmediateSourceParameters(),
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
             ? new ImmediateSourceDefinitionsMutable($definitions, $removedDefinitionIds)
