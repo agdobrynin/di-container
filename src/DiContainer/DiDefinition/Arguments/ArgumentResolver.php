@@ -58,16 +58,17 @@ final class ArgumentResolver
 
         foreach ($args as $argNameOrIndex => $arg) {
             try {
-                $paramContext = null;
-
                 if ($arg instanceof DiDefinitionParameterInterface && '' === $arg->getDefinition()) {
                     $paramContext = is_int($argNameOrIndex)
                         ? $argBuilder->getFunctionOrMethod()->getParameters()[$argNameOrIndex] ?? null
                         : self::findParameterByName($argBuilder->getFunctionOrMethod()->getParameters(), $argNameOrIndex);
+                    $resolvedArgs[$argNameOrIndex] = $arg->resolve($container, $paramContext);
+
+                    continue;
                 }
 
                 $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
-                    ? $arg->resolve($container, null !== $paramContext ? $paramContext : $context)
+                    ? $arg->resolve($container, $context)
                     : $arg;
             } catch (ContainerExceptionInterface $e) {
                 if (is_int($argNameOrIndex)) {
