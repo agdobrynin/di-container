@@ -29,8 +29,10 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use LogicException;
 use Psr\Container\ContainerExceptionInterface;
 use RuntimeException;
+use UnitEnum;
 
 use function class_exists;
 use function file_exists;
@@ -147,6 +149,21 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         ];
 
         return $this;
+    }
+
+    public function loadParameters(string $file, string ...$_): static
+    {
+        throw new LogicException('Not implemented');
+    }
+
+    public function addParameters(iterable $parameters): static
+    {
+        throw new LogicException('Not implemented');
+    }
+
+    public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static
+    {
+        throw new LogicException('Not implemented');
     }
 
     public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php']): static
