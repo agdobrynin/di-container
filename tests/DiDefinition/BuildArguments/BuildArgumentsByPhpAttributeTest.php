@@ -438,4 +438,18 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         self::assertInstanceOf(DiDefinitionParameter::class, $arg[3]);
         self::assertEquals('', $arg[3]->getDefinition());
     }
+
+    public function testAttributeParameterOnNonVariadic(): void
+    {
+        $this->expectException(ArgumentBuilderExceptionInterface::class);
+
+        $fn = static fn (
+            #[Parameter('foo')]
+            #[Parameter('baz')]
+            mixed $foo
+        ) => null;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba->build();
+    }
 }
