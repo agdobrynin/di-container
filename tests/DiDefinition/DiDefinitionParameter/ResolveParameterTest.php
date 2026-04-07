@@ -9,8 +9,10 @@ use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -28,6 +30,7 @@ use function Kaspi\DiContainer\diParameter;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(DiDefinitionParameter::class)]
 #[CoversClass(Parameter::class)]
+#[CoversClass(Helper::class)]
 class ResolveParameterTest extends TestCase
 {
     private DiContainerInterface $container;
@@ -233,5 +236,40 @@ class ResolveParameterTest extends TestCase
             ],
             $res
         );
+    }
+
+    public function testResolveParameterByNamedArgumentHasException(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+
+        $fn = static fn (string ...$foo) => null;
+
+        $config = self::createMock(DiContainerConfigInterface::class);
+        $config->method('isUseAttribute')
+            ->willReturn(false)
+        ;
+
+        $this->container->method('getConfig')
+            ->willReturn($config)
+        ;
+
+        $sourceParams = self::createMock(SourceParametersMutableInterface::class);
+        $sourceParams->method('get')
+            ->willReturnMap([
+                ['foo', 'bar'],
+                ['baz', 'qux'],
+            ])
+        ;
+
+        $this->container->method('parameters')->willReturn($sourceParams);
+
+        $bindArgs = [
+            'foo' => diParameter(),
+            'foo_2' => diParameter(),
+        ];
+
+        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container);
+
+        ArgumentResolver::resolve($ab, $this->container);
     }
 }

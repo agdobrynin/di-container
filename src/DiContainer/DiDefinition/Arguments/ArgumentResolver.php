@@ -105,6 +105,6 @@ final class ArgumentResolver
             }
         }
 
-        return null; // @codeCoverageIgnore
+        return null;
     }
 }
