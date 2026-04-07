@@ -71,16 +71,13 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
         return $this->internalParameters()[$name][1];
     }
 
-    public function remove(string $name): void
-    {
-        unset($this->internalParameters()[$name]);
-        $this->isParametersChanged = true;
-    }
-
     public function set(string $name, mixed $value): void
     {
+        if (isset($this->internalParameters()[$name])) {
+            $this->isParametersChanged = true;
+        }
+
         $this->internalParameters()[$name] = [false, $value];
-        $this->isParametersChanged = true;
     }
 
     public function add(iterable $parameters): void

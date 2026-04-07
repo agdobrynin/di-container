@@ -28,11 +28,6 @@ interface SourceParametersMutableInterface
     public function get(string $name): array|bool|float|int|string|UnitEnum|null;
 
     /**
-     * @param non-empty-string $name
-     */
-    public function remove(string $name): void;
-
-    /**
      * @param non-empty-string    $name
      * @param SourceParameterType $value
      */

@@ -61,18 +61,6 @@ class ImmediateSourceParametersTest extends TestCase
         self::assertEquals($expect, [...$p->parameters()]);
     }
 
-    public function testRemoveParams(): void
-    {
-        $p = new ImmediateSourceParameters();
-        $p->add(['foo' => 100]);
-
-        self::assertTrue($p->has('foo'));
-
-        $p->remove('foo');
-
-        self::assertFalse($p->has('foo'));
-    }
-
     #[TestWith([['foo' => new stdClass()]])]
     #[TestWith([['foo' => ['bar' => ['baz' => new stdClass()]]]])]
     public function testUnsupportedParameterValue(array $params): void
