@@ -16,7 +16,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use ReflectionParameter;
 
-use function array_filter;
 use function array_key_exists;
 use function is_int;
 use function sprintf;
@@ -64,7 +63,7 @@ final class ArgumentResolver
                 if ($arg instanceof DiDefinitionParameterInterface && '' === $arg->getDefinition()) {
                     $paramContext = is_int($argNameOrIndex)
                         ? $argBuilder->getFunctionOrMethod()->getParameters()[$argNameOrIndex] ?? null
-                        : array_filter($argBuilder->getFunctionOrMethod()->getParameters(), static fn (ReflectionParameter $p) => $p->name === $argNameOrIndex)[0] ?? null;
+                        : self::findParameterByName($argBuilder->getFunctionOrMethod()->getParameters(), $argNameOrIndex);
                 }
 
                 $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
@@ -92,5 +91,19 @@ final class ArgumentResolver
         }
 
         return $resolvedArgs;
+    }
+
+    /**
+     * @param ReflectionParameter[] $params
+     */
+    private static function findParameterByName(array $params, string $needName): ?ReflectionParameter
+    {
+        foreach ($params as $param) {
+            if ($needName === $param->getName()) {
+                return $param;
+            }
+        }
+
+        return null;
     }
 }
