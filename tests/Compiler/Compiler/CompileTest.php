@@ -22,6 +22,7 @@ use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionIn
 use Kaspi\DiContainer\Interfaces\Compiler\IdsIteratorInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use org\bovigo\vfs\vfsStream;
@@ -49,6 +50,7 @@ use function random_bytes;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(CompiledEntries::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class CompileTest extends TestCase
 {
     private DiDefinitionTransformerInterface $mockTransformer;
