@@ -27,9 +27,9 @@ use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
-use LogicException;
 use Psr\Container\ContainerExceptionInterface;
 use RuntimeException;
 use UnitEnum;
@@ -38,6 +38,9 @@ use function class_exists;
 use function file_exists;
 use function sprintf;
 
+/**
+ * @phpstan-import-type  SourceParameterType from SourceParametersMutableInterface
+ */
 final class DiContainerBuilder implements DiContainerBuilderInterface
 {
     /**
@@ -65,6 +68,18 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      * }>
      */
     private array $definitions = [];
+
+    /**
+     * Load parameters from string.
+     *
+     * @var list<non-empty-string>
+     */
+    private array $loadParameters = [];
+
+    /**
+     * @var list<iterable<non-empty-string, SourceParameterType>>
+     */
+    private array $addParameters = [];
 
     /**
      * @var non-empty-string
@@ -153,17 +168,27 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
     public function loadParameters(string $file, string ...$_): static
     {
-        throw new LogicException('Not implemented');
+        $this->loadParameters[] = $file;
+
+        foreach ($_ as $fromFile) {
+            $this->loadParameters[] = $fromFile;
+        }
+
+        return $this;
     }
 
     public function addParameters(iterable $parameters): static
     {
-        throw new LogicException('Not implemented');
+        $this->addParameters[] = $parameters;
+
+        return $this;
     }
 
     public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static
     {
-        throw new LogicException('Not implemented');
+        $this->addParameters[] = [$name => $value];
+
+        return $this;
     }
 
     public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php']): static
