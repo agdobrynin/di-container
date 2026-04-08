@@ -28,6 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
@@ -256,7 +257,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             fn () => $this->definitionsLoader->removedDefinitionIds(),
         );
 
-        $container = new DiContainer($definitions, $this->containerConfig);
+        $parameters = new DeferredSourceParameters(fn () => $this->configuredParameters());
+
+        $container = new DiContainer($definitions, $this->containerConfig, parameters: $parameters);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {
