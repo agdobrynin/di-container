@@ -70,7 +70,8 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     private array $definitions = [];
 
     /**
-     * Parameters from file presents as `string` type aka file name.
+     * If the value is of type `string`: try loading the container parameters from the file,
+     * otherwise the container parameters will be loaded as a collection.
      *
      * @var list<iterable<non-empty-string, mixed>|non-empty-string>
      */
