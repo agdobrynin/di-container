@@ -67,9 +67,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<non-empty-string, mixed> */
     private readonly ArrayIterator $parameters;
 
-    /** @var ArrayIterator<non-empty-string, true> */
-    private readonly ArrayIterator $removedParameters;
-
     private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
     /**
@@ -95,7 +92,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configuredDefinitions = new ArrayIterator();
         $this->removedDefinitionIds = new ArrayIterator();
         $this->parameters = new ArrayIterator();
-        $this->removedParameters = new ArrayIterator();
     }
 
     public function load(string ...$file): static
@@ -167,11 +163,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function parameters(): iterable
     {
-        foreach ($this->parameters as $name => $parameter) {
-            if (!$this->removedParameters->offsetExists($name)) {
-                yield $name => $parameter;
-            }
-        }
+        yield from $this->parameters;
     }
 
     /**
@@ -219,12 +211,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->removedParameters) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters) implements DefinitionsConfiguratorInterface {
             public function __construct(
                 private readonly DefinitionsLoaderInterface $definitionsLoader,
                 private readonly ArrayIterator $removedDefinitionIds,
                 private readonly ArrayIterator $parameters,
-                private readonly ArrayIterator $removedParameters,
             ) {}
 
             public function removeDefinition(string $id): void
@@ -314,13 +305,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function removeParameter(string $name): void
             {
-                $this->removedParameters->offsetSet($name, true);
+                $this->parameters->offsetUnset($name);
             }
 
             public function hasParameter(string $name): bool
             {
-                return !$this->removedParameters->offsetExists($name)
-                    && $this->parameters->offsetExists($name);
+                return $this->parameters->offsetExists($name);
             }
         };
     }
@@ -399,10 +389,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         while ($this->parameters->valid()) {
             $this->parameters->offsetUnset($this->parameters->key());
-        }
-
-        while ($this->removedParameters->valid()) {
-            $this->removedParameters->offsetUnset($this->removedParameters->key());
         }
 
         $this->useAttribute = true;
