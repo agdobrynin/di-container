@@ -191,6 +191,9 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     }
 
     /**
+     * Key "0" if a container parameter resolved value is `true` and value is `false` when a container parameter not resolved yet.
+     * Key "1" container parameter value.
+     *
      * @return array<non-empty-string, array{0: bool, 1:SourceParameterType}>
      */
     abstract protected function &internalParameters(): array;
