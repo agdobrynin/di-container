@@ -67,7 +67,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<non-empty-string, mixed> */
     private readonly ArrayIterator $parameters;
 
-    /** @var array<non-empty-string, true> */
+    /** @var ArrayIterator<non-empty-string, true> */
     private readonly ArrayIterator $removedParameters;
 
     private DefinitionsConfiguratorInterface $definitionsConfigurator;
@@ -149,8 +149,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         $this->loadParametersFromFile($file);
 
-        foreach ($_ as $file) {
-            $this->loadParametersFromFile($file);
+        foreach ($_ as $f) {
+            $this->loadParametersFromFile($f);
         }
 
         return $this;
@@ -701,6 +701,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             );
         }
 
-        $this->addParameters($content);
+        $this->addParameters($content); // @phpstan-ignore argument.type
     }
 }
