@@ -27,7 +27,6 @@ use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
-use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
@@ -38,9 +37,6 @@ use function class_exists;
 use function file_exists;
 use function sprintf;
 
-/**
- * @phpstan-import-type  SourceParameterType from SourceParametersMutableInterface
- */
 final class DiContainerBuilder implements DiContainerBuilderInterface
 {
     /**
@@ -70,16 +66,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     private array $definitions = [];
 
     /**
-     * Load parameters from string.
-     *
-     * @var list<non-empty-string>
+     * @var list<array{isFile: bool, params: iterable<non-empty-string, mixed>|non-empty-string}>
      */
-    private array $loadParameters = [];
-
-    /**
-     * @var list<iterable<non-empty-string, SourceParameterType>>
-     */
-    private array $addParameters = [];
+    private array $parameters = [];
 
     /**
      * @var non-empty-string
@@ -168,10 +157,10 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
     public function loadParameters(string $file, string ...$_): static
     {
-        $this->loadParameters[] = $file;
+        $this->parameters[] = ['isFile' => true, 'params' => $file];
 
         foreach ($_ as $fromFile) {
-            $this->loadParameters[] = $fromFile;
+            $this->parameters[] = ['isFile' => true, 'params' => $fromFile];
         }
 
         return $this;
@@ -179,14 +168,14 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
     public function addParameters(iterable $parameters): static
     {
-        $this->addParameters[] = $parameters;
+        $this->parameters[] = ['isFile' => false, 'params' => $parameters];
 
         return $this;
     }
 
     public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static
     {
-        $this->addParameters[] = [$name => $value];
+        $this->parameters[] = ['isFile' => false, 'params' => [$name => $value]];
 
         return $this;
     }
