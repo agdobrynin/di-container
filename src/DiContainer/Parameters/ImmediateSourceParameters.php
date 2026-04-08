@@ -18,20 +18,11 @@ final class ImmediateSourceParameters extends AbstractSourceParameters
 
     /**
      * @param iterable<non-empty-string, SourceParameterType> $parameters
-     * @param iterable<non-empty-string, mixed>               $removedParameters
      */
-    public function __construct(iterable $parameters = [], iterable $removedParameters = [])
+    public function __construct(iterable $parameters = [])
     {
-        $removedNames = [];
-
-        foreach ($removedParameters as $name => $v) {
-            $removedNames[$name] = true;
-        }
-
         foreach ($parameters as $name => $parameter) {
-            if (!isset($removedNames[$name])) {
-                $this->parameters[$name] = [false, $parameter];
-            }
+            $this->parameters[$name] = [false, $parameter];
         }
     }
 
