@@ -54,10 +54,13 @@ use function var_export;
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     protected SourceDefinitionsMutableInterface $definitions;
+
+    protected readonly SourceParametersMutableInterface $parameters;
 
     /**
      * @var array<class-string|string, DiDefinitionInterface>
@@ -79,6 +82,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
+     * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
      *
      * @throws ContainerIdentifierExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
@@ -87,11 +91,14 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
         iterable $removedDefinitionIds = [],
-        protected readonly SourceParametersMutableInterface $parameters = new ImmediateSourceParameters(),
+        iterable|SourceParametersMutableInterface $parameters = [],
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
             ? new ImmediateSourceDefinitionsMutable($definitions, $removedDefinitionIds)
             : $definitions;
+        $this->parameters = !($parameters instanceof SourceParametersMutableInterface)
+            ? new ImmediateSourceParameters($parameters)
+            : $parameters;
     }
 
     /**
