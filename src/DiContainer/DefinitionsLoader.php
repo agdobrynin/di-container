@@ -36,6 +36,7 @@ use ReflectionException;
 use RuntimeException;
 use UnitEnum;
 
+use function array_map;
 use function class_exists;
 use function file_exists;
 use function in_array;
@@ -144,10 +145,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function loadParameters(string $file, string ...$_): static
     {
         $this->loadParametersFromFile($file);
-
-        foreach ($_ as $f) {
-            $this->loadParametersFromFile($f);
-        }
+        array_map($this->loadParametersFromFile(...), $_);
 
         return $this;
     }
