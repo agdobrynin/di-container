@@ -22,6 +22,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
+use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
@@ -61,6 +62,7 @@ use function random_bytes;
 #[CoversClass(FinderFile::class)]
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(DeferredSourceParameters::class)]
 class RemovedDefinitionIdsTest extends TestCase
 {
     public function testRemovedDefinitionIds(): void
