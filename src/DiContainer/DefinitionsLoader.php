@@ -395,6 +395,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->removedDefinitionIds->offsetUnset($this->removedDefinitionIds->key());
         }
 
+        while ($this->parameters->valid()) {
+            $this->parameters->offsetUnset($this->parameters->key());
+        }
+
+        while ($this->removedParameters->valid()) {
+            $this->removedParameters->offsetUnset($this->removedParameters->key());
+        }
+
         $this->useAttribute = true;
         $this->finderFullyQualifiedNameCollection?->reset();
         unset($this->importedDefinitions);
