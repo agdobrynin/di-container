@@ -26,7 +26,9 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
@@ -35,6 +37,7 @@ use UnitEnum;
 
 use function class_exists;
 use function file_exists;
+use function is_string;
 use function sprintf;
 
 final class DiContainerBuilder implements DiContainerBuilderInterface
@@ -66,7 +69,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     private array $definitions = [];
 
     /**
-     * @var list<array{isFile: bool, params: iterable<non-empty-string, mixed>|non-empty-string}>
+     * Parameters from file presents as `string` type aka file name.
+     *
+     * @var list<iterable<non-empty-string, mixed>|non-empty-string>
      */
     private array $parameters = [];
 
@@ -157,10 +162,10 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
     public function loadParameters(string $file, string ...$_): static
     {
-        $this->parameters[] = ['isFile' => true, 'params' => $file];
+        $this->parameters[] = $file;
 
-        foreach ($_ as $fromFile) {
-            $this->parameters[] = ['isFile' => true, 'params' => $fromFile];
+        foreach ($_ as $f) {
+            $this->parameters[] = $f;
         }
 
         return $this;
@@ -168,14 +173,14 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
 
     public function addParameters(iterable $parameters): static
     {
-        $this->parameters[] = ['isFile' => false, 'params' => $parameters];
+        $this->parameters[] = $parameters;
 
         return $this;
     }
 
     public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static
     {
-        $this->parameters[] = ['isFile' => false, 'params' => [$name => $value]];
+        $this->parameters[] = [$name => $value];
 
         return $this;
     }
@@ -235,7 +240,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                     $this->definitionsLoader->removedDefinitionIds(),
                 );
 
-                return new DiContainer($definitions, $this->containerConfig);
+                $parameters = new ImmediateSourceParameters($this->configuredParameters());
+
+                return new DiContainer($definitions, $this->containerConfig, parameters: $parameters);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
                     sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
@@ -361,5 +368,28 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         }
 
         yield from $this->definitionsLoader->definitions();
+    }
+
+    /**
+     * @throws ContainerBuilderExceptionInterface
+     */
+    private function configuredParameters(): Generator
+    {
+        foreach ($this->parameters as $parameter) {
+            if (is_string($parameter)) {
+                try {
+                    $this->definitionsLoader->loadParameters($parameter);
+                } catch (DefinitionsLoaderExceptionInterface $e) {
+                    throw new ContainerBuilderException(
+                        sprintf('Cannot build container while load container parameters from file "%s".', $parameter),
+                        previous: $e,
+                    );
+                }
+            } else {
+                $this->definitionsLoader->addParameters($parameter);
+            }
+        }
+
+        yield from $this->definitionsLoader->parameters();
     }
 }
