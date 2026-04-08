@@ -63,6 +63,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<class-string|non-empty-string, true> */
     private readonly ArrayIterator $removedDefinitionIds;
 
+    /** @var ArrayIterator<non-empty-string, mixed> */
+    private readonly ArrayIterator $parameters;
+
+    /** @var array<non-empty-string, true> */
+    private readonly ArrayIterator $removedParameters;
+
     private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
     /**
@@ -87,6 +93,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     ) {
         $this->configuredDefinitions = new ArrayIterator();
         $this->removedDefinitionIds = new ArrayIterator();
+        $this->parameters = new ArrayIterator();
+        $this->removedParameters = new ArrayIterator();
     }
 
     public function load(string ...$file): static
@@ -134,6 +142,35 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         return $this;
+    }
+
+    public function loadParameters(string $file, string ...$_): static
+    {
+        $this->loadParametersFromFile($file);
+
+        foreach ($_ as $file) {
+            $this->loadParametersFromFile($file);
+        }
+
+        return $this;
+    }
+
+    public function addParameters(iterable $parameters): static
+    {
+        foreach ($this->parameters as $name => $parameter) {
+            $this->parameters->offsetSet($name, $parameter);
+        }
+
+        return $this;
+    }
+
+    public function parameters(): iterable
+    {
+        foreach ($this->parameters as $name => $parameter) {
+            if (!$this->removedParameters->offsetExists($name)) {
+                yield $name => $parameter;
+            }
+        }
     }
 
     /**
@@ -604,5 +641,37 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
         }
+    }
+
+    /**
+     * @throws DefinitionsLoaderExceptionInterface
+     */
+    private function loadParametersFromFile(string $file): void
+    {
+        if (!file_exists($file) || !is_readable($file)) {
+            throw new DefinitionsLoaderInvalidArgumentException(
+                sprintf('The file "%s" does not exist or isn\'t readable.', $file)
+            );
+        }
+
+        try {
+            ob_start();
+            $content = require $file;
+        } catch (Error|ParseError $e) {
+            throw new DefinitionsLoaderException(
+                sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $file),
+                previous: $e
+            );
+        } finally {
+            ob_get_clean();
+        }
+
+        if (!is_iterable($content)) {
+            throw new DefinitionsLoaderInvalidArgumentException(
+                sprintf('The file "%s" must be use "return" keyword and return any iterable type.', $file)
+            );
+        }
+
+        $this->addParameters($content);
     }
 }
