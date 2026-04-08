@@ -34,6 +34,7 @@ use ParseError;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
+use UnitEnum;
 
 use function class_exists;
 use function file_exists;
@@ -218,10 +219,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->removedParameters) implements DefinitionsConfiguratorInterface {
             public function __construct(
                 private readonly DefinitionsLoaderInterface $definitionsLoader,
                 private readonly ArrayIterator $removedDefinitionIds,
+                private readonly ArrayIterator $parameters,
+                private readonly ArrayIterator $removedParameters,
             ) {}
 
             public function removeDefinition(string $id): void
@@ -290,6 +293,32 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             public function loadOverride(string $file, string ...$_): void
             {
                 $this->definitionsLoader->loadOverride($file, ...$_);
+            }
+
+            public function loadParameters(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->loadParameters($file, ...$_);
+            }
+
+            public function addParameters(iterable $parameters): void
+            {
+                $this->definitionsLoader->addParameters($parameters);
+            }
+
+            public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): void
+            {
+                $this->definitionsLoader->addParameters([$name => $value]);
+            }
+
+            public function removeParameter(string $name): void
+            {
+                $this->removedParameters->offsetSet($name, true);
+            }
+
+            public function hasParameter(string $name): bool
+            {
+                return !$this->removedParameters->offsetExists($name)
+                    && $this->parameters->offsetExists($name);
             }
         };
     }
