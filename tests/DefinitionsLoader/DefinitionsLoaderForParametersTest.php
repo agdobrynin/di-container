@@ -135,4 +135,48 @@ class DefinitionsLoaderForParametersTest extends TestCase
 
         self::assertEquals([], [...$loader->parameters()]);
     }
+
+    public function testConfigurator(): void
+    {
+        vfsStream::setup(structure: [
+            'parameters' => [
+                'params1.php' => '<?php return ["foo" => "bar", "qux" => "quux"];',
+                'params2.php' => '<?php return static function () { yield "baz" => "baz-val"; };',
+            ],
+            'services.php' => '<?php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
+return static function (DefinitionsConfiguratorInterface $configurator) {
+    $configurator->loadParameters("vfs://root/parameters/params1.php");
+    $configurator->removeParameter("qux");
+    $configurator->addParameters([
+        "bat" => true,
+        "port" => 8080,
+    ]);
+
+    if ($configurator->hasParameter("baz")) {
+        $configurator->setParameter("bazz", "hasBaz={baz}");
+    }
+}; 
+',
+        ]);
+
+        $loader = (new DefinitionsLoader())
+            ->loadParameters(vfsStream::url('root/parameters/params2.php'))
+            ->load(vfsStream::url('root/services.php'))
+        ;
+        // fetch definitions with configurator
+        [...$loader->definitions()];
+
+        self::assertEquals(
+            [
+                'baz' => 'baz-val',
+                'foo' => 'bar',
+                'bat' => true,
+                'port' => 8080,
+                'bazz' => 'hasBaz={baz}',
+            ],
+            [...$loader->parameters()]
+        );
+    }
 }
