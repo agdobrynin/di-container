@@ -152,7 +152,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function addParameters(iterable $parameters): static
     {
-        foreach ($this->parameters as $name => $parameter) {
+        foreach ($parameters as $name => $parameter) {
             $this->parameters->offsetSet($name, $parameter);
         }
 
