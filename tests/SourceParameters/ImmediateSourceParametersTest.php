@@ -84,4 +84,12 @@ class ImmediateSourceParametersTest extends TestCase
         $p->add($params);
         $p->get('foo');
     }
+
+    public function testCannotReplaceParameter(): void
+    {
+        $this->expectException(ParameterExceptionInterface::class);
+
+        $p = new ImmediateSourceParameters(['foo' => 'bar']);
+        $p->set('foo', 'baz');
+    }
 }
