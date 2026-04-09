@@ -689,12 +689,20 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             ob_get_clean();
         }
 
-        if (!is_iterable($content)) {
-            throw new DefinitionsLoaderInvalidArgumentException(
-                sprintf('The file "%s" must be use "return" keyword and return any iterable type.', $file)
-            );
+        if (is_iterable($content)) {
+            $this->addParameters($content); // @phpstan-ignore argument.type
+
+            return;
         }
 
-        $this->addParameters($content); // @phpstan-ignore argument.type
+        if (is_callable($content) && is_iterable($content())) {
+            $this->addParameters($content()); // @phpstan-ignore argument.type
+
+            return;
+        }
+
+        throw new DefinitionsLoaderInvalidArgumentException(
+            sprintf('The file "%s" must be use "return" keyword and return any iterable type or callable expression that returns any iterable type.', $file)
+        );
     }
 }
