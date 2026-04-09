@@ -37,8 +37,6 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
      */
     private array $nameCircularCallWatcher = [];
 
-    private bool $isParametersChanged = false;
-
     public function has(string $name): bool
     {
         return array_key_exists($name, $this->internalParameters());
@@ -57,13 +55,12 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
 
             $this->nameCircularCallWatcher[$name] = true;
 
-            if (false === $this->isParametersChanged && true === $this->internalParameters()[$name][0]) {
+            if (true === $this->internalParameters()[$name][0]) {
                 return $this->internalParameters()[$name][1];
             }
 
             $resolvedValue = $this->resolveValue($this->internalParameters()[$name][1]);
             $this->internalParameters()[$name] = [true, $resolvedValue];
-            $this->isParametersChanged = false;
         } finally {
             unset($this->nameCircularCallWatcher[$name]);
         }
@@ -74,7 +71,9 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     public function set(string $name, mixed $value): void
     {
         if (isset($this->internalParameters()[$name])) {
-            $this->isParametersChanged = true;
+            throw new ParameterException(
+                sprintf('The container parameter "%s" already defined.', $name)
+            );
         }
 
         $this->internalParameters()[$name] = [false, $value];
