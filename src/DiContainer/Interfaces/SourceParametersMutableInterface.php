@@ -30,11 +30,15 @@ interface SourceParametersMutableInterface
     /**
      * @param non-empty-string    $name
      * @param SourceParameterType $value
+     *
+     * @throws ParameterExceptionInterface
      */
     public function set(string $name, mixed $value): void;
 
     /**
      * @param iterable<non-empty-string, SourceParameterType> $parameters
+     *
+     * @throws ParameterExceptionInterface
      */
     public function add(iterable $parameters): void;
 
