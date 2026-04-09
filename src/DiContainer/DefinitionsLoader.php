@@ -377,14 +377,17 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function reset(): void
     {
+        $this->configuredDefinitions->rewind();
         while ($this->configuredDefinitions->valid()) {
             $this->configuredDefinitions->offsetUnset($this->configuredDefinitions->key());
         }
 
+        $this->removedDefinitionIds->rewind();
         while ($this->removedDefinitionIds->valid()) {
             $this->removedDefinitionIds->offsetUnset($this->removedDefinitionIds->key());
         }
 
+        $this->parameters->rewind();
         while ($this->parameters->valid()) {
             $this->parameters->offsetUnset($this->parameters->key());
         }
