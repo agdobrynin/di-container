@@ -58,17 +58,23 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
 
             $this->nameCircularCallWatcher[$name] = true;
 
-            if (true === $this->internalParameters()[$name][0]) {
-                return $this->internalParameters()[$name][1];
+            /**
+             * @var bool                                               $isResolved
+             * @var ($isResolve is true ? SourceParameterType : mixed) $value
+             */
+            [$isResolved, $value] = $this->internalParameters()[$name];
+
+            if ($isResolved) {
+                return $value; // @phpstan-ignore return.type
             }
 
-            $resolvedValue = $this->resolveValue($this->internalParameters()[$name][1]);
+            $resolvedValue = $this->resolveValue($value);
             $this->internalParameters()[$name] = [true, $resolvedValue];
+
+            return $resolvedValue;
         } finally {
             unset($this->nameCircularCallWatcher[$name]);
         }
-
-        return $this->internalParameters()[$name][1];
     }
 
     public function set(string $name, mixed $value): void
