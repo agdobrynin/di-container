@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Parameters;
 
-use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
-
 /**
- * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
+ * @phpstan-import-type SourceParameterResolvedType from AbstractSourceParameters
+ * @phpstan-import-type SourceParameterRawType from AbstractSourceParameters
  */
 final class ImmediateSourceParameters extends AbstractSourceParameters
 {
     /**
-     * @var array<non-empty-string, array{0: false, 1:mixed}|array{0: true, 1: SourceParameterType}>
+     * @var array<non-empty-string, SourceParameterRawType|SourceParameterResolvedType>
      */
     private array $parameters = [];
 

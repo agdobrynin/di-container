@@ -29,6 +29,9 @@ use function str_contains;
 
 /**
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
+ *
+ * @phpstan-type SourceParameterResolvedType array{0: true, SourceParameterType}
+ * @phpstan-type SourceParameterRawType array{0: false, mixed}
  */
 abstract class AbstractSourceParameters implements SourceParametersMutableInterface
 {
@@ -190,10 +193,7 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     }
 
     /**
-     * Key "0" if a container parameter resolved value is `true` and value is `false` when a container parameter not resolved yet.
-     * Key "1" container parameter value.
-     *
-     * @return array<non-empty-string, array{0: false, 1: mixed}|array{0: true, 1:SourceParameterType}>
+     * @return array<non-empty-string, SourceParameterRawType|SourceParameterResolvedType>
      */
     abstract protected function &internalParameters(): array;
 }
