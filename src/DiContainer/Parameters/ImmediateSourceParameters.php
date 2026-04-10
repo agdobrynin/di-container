@@ -12,12 +12,12 @@ use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 final class ImmediateSourceParameters extends AbstractSourceParameters
 {
     /**
-     * @var array<non-empty-string, array{0: bool, 1:SourceParameterType}>
+     * @var array<non-empty-string, array{0: false, 1:mixed}|array{0: true, 1: SourceParameterType}>
      */
     private array $parameters = [];
 
     /**
-     * @param iterable<non-empty-string, SourceParameterType> $parameters
+     * @param iterable<non-empty-string, mixed> $parameters
      */
     public function __construct(iterable $parameters = [])
     {
