@@ -12,17 +12,17 @@ use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 final class DeferredSourceParameters extends AbstractSourceParameters
 {
     /**
-     * @var callable(): iterable<non-empty-string, SourceParameterType>
+     * @var callable(): iterable<non-empty-string, mixed>
      */
     private $sourceParameters;
 
     /**
-     * @var array<non-empty-string, array{0: bool, 1:SourceParameterType}>
+     * @var array<non-empty-string, array{0: false, 1: mixed}|array{0: true, 1:SourceParameterType}>
      */
     private array $parameters;
 
     /**
-     * @param callable(): iterable<non-empty-string, SourceParameterType> $sourceParameters
+     * @param callable(): iterable<non-empty-string, mixed> $sourceParameters
      */
     public function __construct(callable $sourceParameters)
     {
