@@ -698,8 +698,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return;
         }
 
-        if (is_callable($content) && is_iterable($content())) {
-            $this->addParameters($content()); // @phpstan-ignore argument.type
+        if (is_callable($content) && is_iterable($params = $content())) {
+            $this->addParameters($params); // @phpstan-ignore argument.type
 
             return;
         }
