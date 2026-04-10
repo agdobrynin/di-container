@@ -35,7 +35,7 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     /**
      * @var array<non-empty-string, true>
      */
-    private array $nameCircularCallWatcher = [];
+    protected array $nameCircularCallWatcher = [];
 
     public function has(string $name): bool
     {
@@ -193,7 +193,7 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
      * Key "0" if a container parameter resolved value is `true` and value is `false` when a container parameter not resolved yet.
      * Key "1" container parameter value.
      *
-     * @return array<non-empty-string, array{0: bool, 1:SourceParameterType}>
+     * @return array<non-empty-string, array{0: false, 1: mixed}|array{0: true, 1:SourceParameterType}>
      */
     abstract protected function &internalParameters(): array;
 }
