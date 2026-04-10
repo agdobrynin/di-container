@@ -10,11 +10,9 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
-use ReflectionParameter;
 
 use function array_key_exists;
 use function is_int;
@@ -58,15 +56,6 @@ final class ArgumentResolver
 
         foreach ($args as $argNameOrIndex => $arg) {
             try {
-                if ($arg instanceof DiDefinitionParameterInterface && '' === $arg->getDefinition()) {
-                    $paramContext = is_int($argNameOrIndex)
-                        ? $argBuilder->getFunctionOrMethod()->getParameters()[$argNameOrIndex] ?? null
-                        : self::findParameterByName($argBuilder->getFunctionOrMethod()->getParameters(), $argNameOrIndex);
-                    $resolvedArgs[$argNameOrIndex] = $arg->resolve($container, $paramContext);
-
-                    continue;
-                }
-
                 $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
                     ? $arg->resolve($container, $context)
                     : $arg;
@@ -92,19 +81,5 @@ final class ArgumentResolver
         }
 
         return $resolvedArgs;
-    }
-
-    /**
-     * @param ReflectionParameter[] $params
-     */
-    private static function findParameterByName(array $params, string $needName): ?ReflectionParameter
-    {
-        foreach ($params as $param) {
-            if ($needName === $param->getName()) {
-                return $param;
-            }
-        }
-
-        return null;
     }
 }

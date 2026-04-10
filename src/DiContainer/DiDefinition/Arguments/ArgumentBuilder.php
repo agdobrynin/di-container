@@ -25,6 +25,7 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
@@ -220,13 +221,15 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             if ($param->isVariadic()) {
                 foreach ($this->capturingVariadicArguments($argNameOrIndex) as $argKey => $definition) {
                     $args[$argKey] = $definition;
+                    $this->setContainerParameterContext($argKey, $definition, $param);
                 }
 
                 return true; // Variadic Parameter has last position
             }
 
             // @phpstan-ignore parameterByRef.type
-            $args[$param->getPosition()] = $this->bindArguments[$argNameOrIndex];
+            $args[$param->getPosition()] = $definition = $this->bindArguments[$argNameOrIndex];
+            $this->setContainerParameterContext($argNameOrIndex, $definition, $param);
 
             return true;
         }
@@ -238,6 +241,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         if ($param->isVariadic()) {
             foreach ($this->capturingVariadicArguments($param->name) as $argKey => $definition) {
                 $args[$argKey] = $definition;
+                $this->setContainerParameterContext($argKey, $definition, $param);
             }
 
             return true; // Variadic Parameter has last position
@@ -329,10 +333,28 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             } elseif ($attr instanceof InjectByCallable) {
                 $definition = new DiDefinitionCallable($attr->getCallable());
             } else {
-                $definition = new DiDefinitionParameter($attr->name);
+                $definition = (new DiDefinitionParameter($attr->name))
+                    ->setContext('' === $attr->name ? $param->name : null)
+                ;
             }
 
             yield $definition;
+        }
+    }
+
+    private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void
+    {
+        if (!($definition instanceof DiDefinitionParameterInterface) || '' !== $definition->getDefinition()) {
+            return;
+        }
+
+        if ($param->isVariadic()) {
+            $paramContext = is_string($argKey)
+                ? $argKey
+                : $param->name;
+            $definition->setContext($paramContext);
+        } else {
+            $definition->setContext($param->name);
         }
     }
 }
