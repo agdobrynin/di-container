@@ -28,15 +28,14 @@ interface SourceParametersMutableInterface
     public function get(string $name): array|bool|float|int|string|UnitEnum|null;
 
     /**
-     * @param non-empty-string    $name
-     * @param SourceParameterType $value
+     * @param non-empty-string $name
      *
      * @throws ParameterExceptionInterface
      */
     public function set(string $name, mixed $value): void;
 
     /**
-     * @param iterable<non-empty-string, SourceParameterType> $parameters
+     * @param iterable<non-empty-string, mixed> $parameters
      *
      * @throws ParameterExceptionInterface
      */
