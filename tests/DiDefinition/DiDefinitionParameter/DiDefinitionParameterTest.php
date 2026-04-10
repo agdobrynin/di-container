@@ -51,7 +51,7 @@ class DiDefinitionParameterTest extends TestCase
         $container = self::createMock(DiContainerInterface::class);
         $container->method('parameters')->willReturn($parameters);
 
-        $paramValue = (new DiDefinitionParameter(''))->resolve($container, $context);
+        $paramValue = (new DiDefinitionParameter(''))->resolve($container, $context->name);
 
         self::assertEquals(8080, $paramValue);
     }
@@ -80,5 +80,14 @@ class DiDefinitionParameterTest extends TestCase
         $container->method('parameters')->willReturn($parameters);
 
         (new DiDefinitionParameter('foo.bar'))->resolve($container);
+    }
+
+    #[TestWith([null, null])]
+    #[TestWith(['foo', 'foo'])]
+    public function testGetParameterContext(?string $context, ?string $expected): void
+    {
+        $p = (new DiDefinitionParameter())->setContext($context);
+
+        self::assertEquals($expected, $p->getContext());
     }
 }

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionParameter;
 
+use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Exception\ParameterNotFoundException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -16,6 +19,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 
@@ -31,6 +35,8 @@ use function Kaspi\DiContainer\diParameter;
 #[CoversClass(DiDefinitionParameter::class)]
 #[CoversClass(Parameter::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(NotFoundException::class)]
+#[CoversClass(ParameterNotFoundException::class)]
 class ResolveParameterTest extends TestCase
 {
     private DiContainerInterface $container;
@@ -255,10 +261,13 @@ class ResolveParameterTest extends TestCase
 
         $sourceParams = self::createMock(SourceParametersMutableInterface::class);
         $sourceParams->method('get')
-            ->willReturnMap([
-                ['foo', 'bar'],
-                ['baz', 'qux'],
-            ])
+            ->willReturnCallback(static function (string $id) {
+                if ('foo' === $id) {
+                    return 'bar';
+                }
+
+                throw new ParameterNotFoundException();
+            })
         ;
 
         $this->container->method('parameters')->willReturn($sourceParams);
@@ -271,5 +280,41 @@ class ResolveParameterTest extends TestCase
         $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container);
 
         ArgumentResolver::resolve($ab, $this->container);
+    }
+
+    #[DataProvider('provideResolveUsingOrderingNameAndContext')]
+    public function testResolveUsingOrderingNameAndContext(DiDefinitionParameter $param, string $expectParamName, ?string $resolveContext): void
+    {
+        $parameters = self::createMock(SourceParametersMutableInterface::class);
+        $parameters->expects(self::once())
+            ->method('get')
+            ->with($expectParamName) // This important
+        ;
+
+        $container = self::createMock(DiContainerInterface::class);
+        $container->method('parameters')->willReturn($parameters);
+
+        $param->resolve($container, $resolveContext);
+    }
+
+    public static function provideResolveUsingOrderingNameAndContext(): Generator
+    {
+        yield 'set name in constructor' => [
+            new DiDefinitionParameter('foo.constructor'),
+            'foo.constructor',
+            null,
+        ];
+
+        yield 'set name via `setContext()`' => [
+            (new DiDefinitionParameter())->setContext('foo.set_context'),
+            'foo.set_context',
+            null,
+        ];
+
+        yield 'set name via `resolve()`' => [
+            new DiDefinitionParameter(),
+            'foo.set_in_resolve',
+            'foo.set_in_resolve',
+        ];
     }
 }
