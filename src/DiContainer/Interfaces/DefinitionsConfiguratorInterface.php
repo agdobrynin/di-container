@@ -82,7 +82,7 @@ interface DefinitionsConfiguratorInterface
     public function loadParameters(string $file, string ...$_): void;
 
     /**
-     * @param iterable<non-empty-string, SourceParameterType> $parameters
+     * @param iterable<non-empty-string, mixed> $parameters
      */
     public function addParameters(iterable $parameters): void;
 
