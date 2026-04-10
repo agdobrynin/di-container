@@ -23,6 +23,13 @@ interface DiDefinitionParameterInterface extends DiDefinitionInterface
      */
     public function getDefinition(): string;
 
+    public function getContext(): ?string;
+
+    /**
+     * When the parameter name is not defined, $context will provide the container parameter name.
+     */
+    public function setContext(?string $context): static;
+
     /**
      * @return SourceParameterType
      *
