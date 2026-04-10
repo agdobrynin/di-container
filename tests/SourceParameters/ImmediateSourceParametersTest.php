@@ -42,6 +42,17 @@ class ImmediateSourceParametersTest extends TestCase
         $p->get('foo');
     }
 
+    public function testOneValue(): void
+    {
+        $p = new ImmediateSourceParameters([
+            'foo' => 'one.{bar}.two.{bar}',
+            'bar' => '{baz}',
+            'baz' => 'qux',
+        ]);
+
+        self::assertSame('one.qux.two.qux', $p->get('foo'));
+    }
+
     #[DataProviderExternal(ParameterDataset::class, 'notFound')]
     public function testParameterNotFound(iterable $params, string $getParamName, string $paramNameNotFound): void
     {
