@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use UnitEnum;
 
 use function array_key_exists;
+use function array_key_first;
 use function array_key_last;
 use function array_keys;
 use function count;
@@ -48,7 +49,11 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     public function get(string $name): array|bool|float|int|string|UnitEnum|null
     {
         if (!$this->has($name)) {
-            throw new ParameterNotFoundException(name: $name);
+            $message = is_string($fk = array_key_first($this->nameCircularCallWatcher)) && $fk !== $name
+                ? sprintf('When resolving the container parameter "%s", an error occurred: getting the container parameter via the placeholder "{%s}".', $fk, $name)
+                : '';
+
+            throw new ParameterNotFoundException($message, name: $name);
         }
 
         try {
