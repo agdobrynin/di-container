@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Compiler\CompilableDefinition\CallableEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\FactoryEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ParameterEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ProxyClosureEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\TaggedAsEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
@@ -19,6 +20,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionValueInterface;
@@ -39,6 +41,7 @@ use stdClass;
 #[CoversClass(ObjectEntry::class)]
 #[CoversClass(FactoryEntry::class)]
 #[CoversClass(DiDefinitionTransformer::class)]
+#[CoversClass(ParameterEntry::class)]
 class DiDefinitionTransformerTest extends TestCase
 {
     private object $closureParser;
@@ -100,6 +103,11 @@ class DiDefinitionTransformerTest extends TestCase
         yield 'DiDefinitionFactory' => [
             DiDefinitionFactoryInterface::class,
             FactoryEntry::class,
+        ];
+
+        yield 'DiDefinitionParameter' => [
+            DiDefinitionParameterInterface::class,
+            ParameterEntry::class,
         ];
     }
 
