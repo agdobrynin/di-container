@@ -15,7 +15,7 @@ class ParameterDataset
         yield 'empty params' => [
             [],
             'foo',
-            'foo',
+            '/^Parameter name "foo" not found\.$/',
         ];
 
         yield 'partial value by name' => [
@@ -23,7 +23,7 @@ class ParameterDataset
                 'foo' => 'bar:{baz}',
             ],
             'foo',
-            'baz',
+            '/container parameter "foo":.+placeholder "{baz}"\. Parameter name "baz" not found/',
         ];
 
         yield 'partial value in multilevel array' => [
@@ -36,7 +36,17 @@ class ParameterDataset
                 'port' => 25_25,
             ],
             'foo',
-            'hash',
+            '/container parameter "foo":.+placeholder "{hash}"\. Parameter name "hash" not found/',
+        ];
+
+        yield 'chain in resolving not found' => [
+            [
+                'foo' => 'bar:{baz}',
+                'baz' => 'bar:{qux}',
+                'qux' => 'bar:{hash}',
+            ],
+            'foo',
+            '/parameters "foo" -> "baz" -> "qux".+placeholder "{hash}"\. Parameter name "hash" not found/',
         ];
     }
 

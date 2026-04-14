@@ -54,10 +54,10 @@ class ImmediateSourceParametersTest extends TestCase
     }
 
     #[DataProviderExternal(ParameterDataset::class, 'notFound')]
-    public function testParameterNotFound(iterable $params, string $getParamName, string $paramNameNotFound): void
+    public function testParameterNotFound(iterable $params, string $getParamName, string $regExpExpectExceptionMessage): void
     {
         $this->expectException(ParameterNotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Parameter name "'.$paramNameNotFound.'" not found');
+        $this->expectExceptionMessageMatches($regExpExpectExceptionMessage);
 
         $p = new ImmediateSourceParameters($params);
         $p->get($getParamName);
@@ -74,6 +74,7 @@ class ImmediateSourceParametersTest extends TestCase
 
     #[TestWith([['foo' => new stdClass()]])]
     #[TestWith([['foo' => ['bar' => ['baz' => new stdClass()]]]])]
+    #[TestWith([['foo' => ['bar' => ['baz' => '{qux}']], 'qux' => new stdClass()]])]
     public function testUnsupportedParameterValue(array $params): void
     {
         $this->expectException(ParameterExceptionInterface::class);
