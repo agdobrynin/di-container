@@ -23,7 +23,6 @@ use function is_array;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
-use function ltrim;
 use function preg_replace_callback;
 use function sprintf;
 use function str_contains;
@@ -49,8 +48,8 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     public function get(string $name): array|bool|float|int|string|UnitEnum|null
     {
         if (!$this->has($name)) {
-            $message = is_string($fk = array_key_first($this->nameCircularCallWatcher)) && $fk !== $name
-                ? sprintf('When resolving the container parameter "%s", an error occurred: getting the container parameter via the placeholder "{%s}".', $fk, $name)
+            $message = 0 < count($this->nameCircularCallWatcher)
+                ? sprintf('%s: getting the container parameter via the placeholder "{%s}".', $this->getExceptionPartMessage(), $name)
                 : '';
 
             throw new ParameterNotFoundException($message, name: $name);
@@ -170,12 +169,8 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
             $partValue = $this->get($paramName);
 
             if (!is_numeric($partValue) && !is_string($partValue)) {
-                $resolvingName = array_key_last($this->nameCircularCallWatcher);
-
                 throw new ParameterException(
-                    ltrim(
-                        sprintf('%s The parameter "%s": cannot concatenate value from parameter placeholder "%s" as type "%s" into string. A part value must be presents as number or string types.', $this->getCallStackNamesMessage(), $resolvingName, $placeHolder, get_debug_type($partValue))
-                    )
+                    sprintf('%s: cannot concatenate value from parameter placeholder "%s" as type "%s" into string. A part value must be presents as number or string types.', $this->getExceptionPartMessage(), $placeHolder, get_debug_type($partValue))
                 );
             }
 
@@ -190,17 +185,15 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
         $resolvingName = array_key_last($this->nameCircularCallWatcher);
 
         return new ParameterException(
-            ltrim(
-                sprintf('%s The parameter "%s" has unsupported value type: "%s". The parameter value can be scalar, enumerated, or null.', $this->getCallStackNamesMessage(), $resolvingName, get_debug_type($value))
-            )
+            sprintf('%s: the parameter "%s" has unsupported value type: "%s". The parameter value can be scalar, enumerated, or null.', $this->getExceptionPartMessage(), $resolvingName, get_debug_type($value))
         );
     }
 
-    protected function getCallStackNamesMessage(): string
+    protected function getExceptionPartMessage(): string
     {
         return 1 < count($this->nameCircularCallWatcher)
-            ? sprintf('Resolving parameters "%s".', implode('" -> "', array_keys($this->nameCircularCallWatcher)))
-            : '';
+            ? sprintf('An error occurred when resolving container parameters "%s"', implode('" -> "', array_keys($this->nameCircularCallWatcher)))
+            : sprintf('An error occurred when resolving the container parameter "%s"', array_key_first($this->nameCircularCallWatcher));
     }
 
     /**
