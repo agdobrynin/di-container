@@ -20,18 +20,18 @@ final class ValueEntry implements CompilableDefinitionInterface
 
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
+        try {
+            $expression = Helper::exportSimplestValues($this->definition);
+        } catch (InvalidArgumentException $e) {
+            throw new DefinitionCompileException($e->getMessage(), previous: $e);
+        }
+
         /** @var non-empty-string $returnType */
         $returnType = $this->definition instanceof UnitEnum
             ? '\\'.get_debug_type($this->definition)
             : get_debug_type($this->definition);
 
-        try {
-            $expression = Helper::exportSimplestValues($this->definition);
-
-            return new CompiledEntry(expression: $expression, returnType: $returnType);
-        } catch (InvalidArgumentException $e) {
-            throw new DefinitionCompileException($e->getMessage(), previous: $e);
-        }
+        return new CompiledEntry(expression: $expression, returnType: $returnType);
     }
 
     public function getDiDefinition(): mixed
