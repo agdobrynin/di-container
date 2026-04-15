@@ -27,19 +27,40 @@ use stdClass;
 #[CoversClass(NotFoundException::class)]
 class ImmediateSourceParametersTest extends TestCase
 {
-    public function testCircularParameters(): void
+    #[TestWith([
+        'foo',
+        [
+            'foo' => '{bar}',
+            'bar' => '{baz}',
+        ],
+        [
+            'baz' => '{foo}',
+        ],
+    ])]
+    #[TestWith([
+        'foo',
+        [
+            'foo' => [
+                '{foo}' => true,
+            ],
+        ],
+    ])]
+    #[TestWith([
+        'foo',
+        [
+            'foo' => [0 => '{foo}'],
+        ],
+    ])]
+    public function testCircularParameters(string $name, array $params, array $addParams = []): void
     {
         $this->expectException(ParameterExceptionInterface::class);
         $this->expectExceptionMessage('Trying call cyclical parameter name');
 
-        $p = new ImmediateSourceParameters([
-            'foo' => '{bar}',
-            'bar' => '{baz}',
-        ]);
+        $p = new ImmediateSourceParameters($params);
 
-        $p->add(['baz' => '{foo}']);
+        $p->add($addParams);
 
-        $p->get('foo');
+        $p->get($name);
     }
 
     public function testOneValue(): void
@@ -75,10 +96,11 @@ class ImmediateSourceParametersTest extends TestCase
     #[TestWith([['foo' => new stdClass()]])]
     #[TestWith([['foo' => ['bar' => ['baz' => new stdClass()]]]])]
     #[TestWith([['foo' => ['bar' => ['baz' => '{qux}']], 'qux' => new stdClass()]])]
-    public function testUnsupportedParameterValue(array $params): void
+    #[TestWith([['foo' => ['{bar}' => true], 'bar' => null], 'Array key must be resolve as integer or string type'])]
+    public function testUnsupportedParameterValue(array $params, string $expectMessage = 'unsupported value type'): void
     {
         $this->expectException(ParameterExceptionInterface::class);
-        $this->expectExceptionMessage('unsupported value type');
+        $this->expectExceptionMessage($expectMessage);
 
         $p = new ImmediateSourceParameters();
         $p->add($params);

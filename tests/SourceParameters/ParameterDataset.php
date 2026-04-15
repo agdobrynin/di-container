@@ -115,6 +115,35 @@ class ParameterDataset
                 'null' => null,
             ],
         ];
+
+        yield 'parameter link as one to one' => [
+            [
+                'foo' => '{baz}',
+                'baz' => true,
+                'qux' => '{quux}',
+                'quux' => [
+                    'string' => '{bat}',
+                    'number' => 1_000,
+                    'bool' => '{baz}',
+                ],
+                'bat' => 'random_string',
+            ],
+            [
+                'foo' => true,
+                'baz' => true,
+                'qux' => [
+                    'string' => 'random_string',
+                    'number' => 1000,
+                    'bool' => true,
+                ],
+                'quux' => [
+                    'string' => 'random_string',
+                    'number' => 1000,
+                    'bool' => true,
+                ],
+                'bat' => 'random_string',
+            ],
+        ];
     }
 }
 
