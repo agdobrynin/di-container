@@ -20,9 +20,11 @@ use function count;
 use function get_debug_type;
 use function implode;
 use function is_array;
+use function is_int;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
+use function preg_match;
 use function preg_replace_callback;
 use function sprintf;
 use function str_contains;
@@ -127,6 +129,13 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
                 }
 
                 $rK = is_string($k) ? $this->resolveString($k) : $k;
+
+                if (!is_int($rK) && !is_string($rK)) {
+                    throw new ParameterException(
+                        sprintf('%s: Resolved array key "%s" got type "%s". Array key must be resolve as integer or string type.', $this->getExceptionPartMessage(), $k, get_debug_type($rK))
+                    );
+                }
+
                 $arrValue[$rK] = $this->resolveValue($v);
             }
 
@@ -143,13 +152,19 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     /**
      * @param string $value parameter value
      *
+     * @return SourceParameterType
+     *
      * @throws ParameterNotFoundExceptionInterface
      * @throws ParameterExceptionInterface
      */
-    protected function resolveString(string $value): string
+    protected function resolveString(string $value): array|bool|float|int|string|UnitEnum|null
     {
         if (!str_contains($value, '{')) {
             return $value;
+        }
+
+        if (1 === preg_match('/^{([^{\s]+)}$/', $value, $match)) {
+            return $this->get($match[1]);
         }
 
         /**
