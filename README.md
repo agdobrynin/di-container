@@ -229,6 +229,7 @@ var_dump($container->get(TestClass::class)->container instanceof ContainerInterf
 * #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](https://github.com/agdobrynin/di-container/blob/main/docs/02-attribute-definition.md).
 * 📦 [Метод контейнера `call()`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
 * 🔖 [Тэгирование определений и сервисов](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
+* 📋 [Параметры контейнера](https://github.com/agdobrynin/di-container/blob/main/docs/09-container-parameters.md).
 
 ## Тесты
 Прогнать тесты без подсчёта покрытия кода
