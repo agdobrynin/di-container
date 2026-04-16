@@ -89,10 +89,12 @@ var_dump(
    - [diProxyClosure](#diproxyclosure) – сервис через вызов `\Closure`
    - [diTaggedAs](#ditaggedas) – тегированные определения
    - [diFactory](#difactory) – фабрика для разрешения зависимости
+   - [diParameter](#diparameter) – параметр контейнера
 
 ### Определения для простых типов
 
-Можно добавлять любые [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar) или массив содержащий их.
+Можно добавлять любые [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar),
+`null`, перечисляемые типы наследуемые от `\UnitEnum`, массив содержащий выше перечисленные типы.
 
 ```php
 // config/values.php
@@ -118,6 +120,12 @@ $container->get('logger.file'); // '/var/log/payment.log'
 $container->get('feedback.show-recipient'); // FALSE
 $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
 ```
+> [!TIP]
+> Повторяющиеся скалярные значения можно определить как «параметр контейнера»,
+> который представляет собой многократно используемое значение при конфигурировании определений контейнера.
+> 
+> Для указания как разрешать скалярные типы для зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+
 > [!TIP]
 > Так же для некоторых случаев может понадобиться определение без обработки «как есть»,
 > то нужно использовать хэлпер функцию [diValue](#divalue). 
@@ -854,6 +862,24 @@ return static function (): \Generator {
     yield 'factories.my_factory' => diFactory(\App\Factories\FactoryMyClass::class);
 };
 ```
+
+#### diParameter
+Параметр контейнера это простой скалярный тип который можно повторно использовать
+для указания как разрешить зависимость.
+
+Сигнатура функции:
+```php
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use function \Kaspi\DiContainer\diParameter;
+
+diParameter(string $name = ''): DiDefinitionNoArgumentsInterface
+```
+
+Параметры:
+- `$name` – имя параметра контейнера.
+
+> [!NOTE]
+> Подробное [описание работы с параметрами контейнера](09-container-parameters.md).
 
 ## Получение класса по интерфейсу
 
