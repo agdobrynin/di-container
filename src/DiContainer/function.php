@@ -14,7 +14,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
@@ -90,7 +89,7 @@ if (!function_exists('Kaspi\DiContainer\diTaggedAs')) { // @codeCoverageIgnore
 } // @codeCoverageIgnore
 
 if (!function_exists('Kaspi\DiContainer\diParameter')) { // @codeCoverageIgnore
-    function diParameter(string $name = ''): DiDefinitionParameterInterface
+    function diParameter(string $name = ''): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionParameter($name);
     }

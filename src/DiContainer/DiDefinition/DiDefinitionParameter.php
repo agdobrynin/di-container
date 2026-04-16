@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
 use UnitEnum;
 
@@ -13,7 +14,7 @@ use function get_debug_type;
 use function is_string;
 use function sprintf;
 
-final class DiDefinitionParameter implements DiDefinitionParameterInterface
+final class DiDefinitionParameter implements DiDefinitionNoArgumentsInterface, DiDefinitionParameterInterface
 {
     private ?string $context = null;
 
