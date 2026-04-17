@@ -137,7 +137,7 @@ DefinitionsConfiguratorInterface::setDefinition(
 
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use App\Transport\Mail;
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     
@@ -146,8 +146,8 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
             Mail::class,
             diAutowire(Mail::class)
                 ->bindArguments(
-                    host: '10.10.10.10',
-                    port: 20251,
+                    host: diParameter('mail.host.local'),
+                    port: diParameter('mail.port.local'),
                 );
         );
     }
@@ -250,7 +250,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 > [!TIP]
-> При использовании конфигурационных файлов с возвращаемым значением рекомендуется использовать генераторы (через оператор `yield`) позволяющий оптимизировать создание определений в контейнере.
+> При использовании конфигурационных файлов с возвращаемым значением рекомендуется использовать генераторы (`\Generator`) позволяющие оптимизировать создание определений в контейнере.
 > 
 > ```php
 > // /app/config/services/controllers_services.php
