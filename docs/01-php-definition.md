@@ -163,6 +163,9 @@ bindArguments(mixed ...$argument)
 Параметры:
 - `$argument` – аргументы к параметрам конструктора класса
 
+> [!TIP]
+> ✅ Для указания как разрешать скалярные типы зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+ 
 > [!WARNING]
 > метод перезаписывает ранее определенные аргументы.
  
@@ -261,14 +264,14 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 
 ```php
 // config/services_without_id.php
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (): \Generator {
     // идентификатор контейнера сформируется
     // из имени класса включая пространство имен
     yield diAutowire(\PDO::class)
         ->bindArguments(
-            dsn: 'sqlite:/tmp/my.db'
+            dsn: diParameter('db.dsn')
         ),
     );
 };
@@ -276,28 +279,37 @@ return static function (): \Generator {
 ```php
 // эквивалентно
 // config/services_with_id.php
+use function Kaspi\DiContainer\{diAutowire, diParameter};
+
 return static function (): \Generator {
     yeild \PDO::class => diAutowire(\PDO::class)
         ->bindArguments(
-            dsn: 'sqlite:/tmp/my.db'
+            dsn: diParameter('db.dsn')
         );
 };
 ```
 Если необходим другой идентификатор контейнера, то можно указывать так:
 ```php
-use function Kaspi\DiContainer\diAutowire;
+// /app/config/parameters.php
+return [
+    'db.dsn_file' => 'sqlite:/tmp/my.db',
+    'db.dsn_memory' => 'sqlite::memory:',
+];
+```
+```php
+use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (): \Generator {
     // $container->get('pdo-in-tmp-file')
     yield 'pdo-in-tmp-file' => diAutowire(\PDO::class)
         ->bindArguments(
-            dsn: 'sqlite:/tmp/my.db'
+            dsn: diParameter('db.dsn_file')
         );
 
     // $container->get('pdo-in-memory')
     yield 'pdo-in-memory' => diAutowire(\PDO::class)
         ->bindArguments(
-            dsn: 'sqlite::memory:'
+            dsn: diParameter('db.dsn_memory')
         );
 };
 ```
@@ -325,6 +337,9 @@ bindArguments(mixed ...$argument)
 ```
 Параметры:
 - `$argument` – аргументы к параметрам метода класса
+
+> [!TIP]
+> ✅ Для указания как разрешать скалярные типы зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 Можно использовать именованные аргументы параметров
  ```php
@@ -370,33 +385,36 @@ class ServiceOne {
     // some methods here
 }
 ```
-Файл конфигурации `config/api_keys.php`:
+Файл конфигурации параметров:
 ```php
-// config/api_keys.php
+// /app/config/parameters/api_keys.php
 return [
+    'api_key' => 'value_api_key',
     'api_key.other' => 'other_value_api_key',    
 ];
 ```
-Файл конфигурации `config/services.php`:
+Файл конфигурации определений:
 ```php
-// config/services.php
-use function \Kaspi\DiContainer\{diCallable, diGet};
+// /app/config/services.php
+use function \Kaspi\DiContainer\{diCallable, diParameter};
 
 require static function (): \Generator {
 
     yield 'services.one' => diCallable(
-        definition: static fn () => new App\Services\ServiceOne(apiKey: 'value_api_key', false),
+        definition: static fn (string $apiKey) => new App\Services\ServiceOne($apiKey, false),
         isSingleton: true,
-    );
+    )
+        ->bindArguments(
+            diParameter('api_key')
+        );
 
     yield 'services.two' => diCallable(
         definition: [App\Services\ServiceOne::class, 'makeForTest'],
         isSingleton: false, 
     )
         // Получить значение аргумента для ServiceOne::makeForTest()
-        // по ссылке на другой идентификатор контейнера.
         ->bindArguments(
-            apiKey: diGet('api_key.other')
+            apiKey: diParameter('api_key.other')
         );
 
 };
@@ -408,10 +426,8 @@ require static function (): \Generator {
 use \Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->load(
-        __DIR__.'/config/api_keys.php',
-        __DIR__.'/config/services.php',
-    )
+    ->loadParameters(__DIR__.'/config/parameters/api_keys.php')
+    ->load(__DIR__.'/config/services.php')
     ->build()
 ;
 
@@ -792,6 +808,9 @@ diFactory(string|array $definition, ?bool $isSingleton = null): DiDefinitionArgu
 Интерфейс представляет методы:
 - `bindArguments` - аргументы для метода фабрики.
 
+> [!TIP]
+> ✅ Для указания как разрешать скалярные типы зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+
 > [!NOTE]
 > Подробное [описание работы с фабриками](07-factory.md) для разрешения зависимостей в контейнере.
 
@@ -846,7 +865,7 @@ class MyLogger {
 }
 ```
 ```php
-// config/values.php
+// config/parameters.php
 return [
 
     'logger_file' => '/path/to/your.log',
@@ -861,17 +880,21 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Monolog\{Logger, Handler\StreamHandler, Level};
 
-use function Kaspi\DiContainer\diCallable;
+use function Kaspi\DiContainer\{diCallable, diParameter};
 
 return static function (): \Generator {
 
     yield LoggerInterface::class => diCallable(
-        definition: static function (ContainerInterface $c) {
-            return (new Logger($c->get('logger_name')))
-                ->pushHandler(new StreamHandler($c->get('logger_file')));    
+        definition: static function (string $loggerName, string $loggerFile) {
+            return (new Logger($loggerName))
+                ->pushHandler(new StreamHandler($loggerFile));    
         },
         isSingleton: true
     )
+        ->bindArguments(
+            diParameter('logger_name'),
+            diParameter('logger_file'),
+        );
 
 };
 ```
@@ -881,7 +904,7 @@ return static function (): \Generator {
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/values.php')
+    ->loadParameters(__DIR__.'/config/parameters.php')
     ->load(__DIR__.'/config/loggers.php')
     ->build()
 ;
@@ -1424,14 +1447,21 @@ class FileLogger implements LoggerInterface {
     // implement methods from LoggerInterface
 }
 ```
+Параметры контейнера:
+```php
+// config/parameters/params.php
+return [
+    'app.logger_file' => '/var/logs/application.log',
+];
+```
 Определения для контейнера:
 ```php
-// config/services.php
-use function Kaspi\DiContainer\{diAutowire, diGet};
+// config/services/services.php
+use function Kaspi\DiContainer\{diAutowire, diGet, diParameter};
 
 return static function(): \Generator {
     yield diAutowire(App\Servces\FileLogger::class)
-        ->bindArguments(fileName: '/var/logs/application.log');
+        ->bindArguments(fileName: diParameter('app.logger_file'));
 
     yield diAutowire(App\SomeClass::class)
         // Будет возвращён объект из метода `withLogger`
@@ -1443,7 +1473,8 @@ return static function(): \Generator {
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->load(...\glob(__DIR__.'/config/*.php'))
+    ->loadParameters(...\glob(__DIR__.'/config/parameters/*.php'))
+    ->load(...\glob(__DIR__.'/config/services/*.php'))
     ->build()
 ;
 
