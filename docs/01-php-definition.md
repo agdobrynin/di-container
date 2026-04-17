@@ -121,14 +121,10 @@ $container->get('feedback.show-recipient'); // FALSE
 $container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
 ```
 > [!TIP]
-> Повторяющиеся скалярные значения можно определить как «параметр контейнера»,
+> Повторяющиеся скалярные значения можно определить как «**параметр контейнера**»,
 > который представляет собой многократно используемое значение при конфигурировании определений контейнера.
 > 
-> Для указания как разрешать скалярные типы для зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
-
-> [!TIP]
-> Так же для некоторых случаев может понадобиться определение без обработки «как есть»,
-> то нужно использовать хэлпер функцию [diValue](#divalue). 
+> ✅ Для указания как разрешать скалярные типы для зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 ### Объявления через хэлпер функции:
 
@@ -510,70 +506,19 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 > [!TIP]
 > Более подробное [описание работы с тегами](05-tags.md).
 
-##### Идентификатор контейнера.
+##### Идентификатор контейнера для `diValue`.
 При объявлении зависимости через `diValue` необходимо указать в конфигурации идентификатор контейнера.
 
-**Пример использования тегов для хэлпер функции `diValue`.**
-```php
-// src/Notifications/CompanyStaff.php
-namespace App\Notifications;
-
-class CompanyStaff {
-    public function __construct(private array $emails) {}
-    //...
-}
-```
 ```php
 // config/emails.php
 use function Kaspi\DiContainer\diValue;
 
 return static function () {
 
-    yield 'admin.email.tasks' => diValue('runner@company.inc')
-        ->bindTag('tags.system-emails');
-
-    yield 'admin.email.report' => diValue('vasiliy@company.inc')
-        ->bindTag('tags.system-emails');
-
-    yield 'admin.email.stock' => diValue('stock@company.inc')
-        ->bindTag('tags.system-emails');
+    yield 'admin.email.tasks' => diValue('runner@company.inc');
 
 };
 ```
-```php
-// config/services.php
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-
-return static function (): \Generator {
-
-    yield diAutowire(App\Notifications\CompanyStaff::class)
-        ->bindArguments(
-            emails: diTaggedAs(
-                tag: 'tags.system-emails',
-                isLazy: false, // 🚩 для параметра с типом array
-                useKeys: false // 🚩 не использовать строковые ключи коллекции
-            )
-        );
-
-};
-```
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->load(
-        __DIR__.'/config/emails.php',
-        __DIR__.'/config/services.php',
-    )
-    ->build();
-
-$notifyStaff = $container->get(App\Notifications\CompanyStaff::class);
-// $notifyStaff->emails массив ['runner@company.inc', 'vasiliy@company.inc', 'stock@company.inc']
-```
-
-> [!TIP]
-> Подробнее [о ключах элементов в коллекции.](05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 #### diProxyClosure
 
