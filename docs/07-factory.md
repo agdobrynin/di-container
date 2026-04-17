@@ -311,22 +311,27 @@ $container->get(\App\Classes\Foo::class);
 > контейнер попытается разрешить зависимости самостоятельно на основе конфигурации контейнера.
 
 > [!TIP]
-> Для передачи аргументов можно использовать хэлпер функции такие как:
+> Для передачи аргументов при конфигурировании контейнера [в стеле PHP определений](01-php-definition.md) можно использовать хэлпер функции такие как:
 > - `\Kaspi\DiContainer\diGet`
-> - `\Kaspi\DiContainer\diValue`
+> - `\Kaspi\DiContainer\diParameter`
 > - `\Kaspi\DiContainer\diAutowire`
 > - `\Kaspi\DiContainer\diTaggedAs`
-> - и другие доступные
+> - `\Kaspi\DiContainer\diProxyClosure`
+> - `\Kaspi\DiContainer\diCallable`
+> - `\Kaspi\DiContainer\diValue`
+> 
 > 
 > Для php атрибута `\Kaspi\DiContainer\Attributes\DiFactory` использовать доступные определения такие как:
-> - `\Kaspi\DiContainer\DiDefinition\DiDefinitionGet`
-> - `\Kaspi\DiContainer\DiDefinition\DiDefinitionValue`
-> - `\Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire`
-> - `\Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs`
-> - и другие доступные
+> - `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс
+> - `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера
+> - `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – `callable` тип
+> - `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
+> - `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
+> - `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
+> - `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
 >
 
-### Пример передачи аргументов в метод фабрику.
+### Пример передачи аргументов в метод фабрику через параметры контейнера.
 
 ```php
 namespace App\Factories;
@@ -343,38 +348,50 @@ final class ClassFactory {
 
 }
 ```
-#### В хелпер функцию:
+
+**В хелпер функцию:**
+
 ```php
 use App\Services\Foo;
 use App\Factories\ClassFactory;
-use function Kaspi\DiContainer\diFactory;
+use function Kaspi\DiContainer\{diFactory, diParameter};
 
 return static function () {
     yield Foo::class => diFactory([ClassFactory::class, 'create'])
-        // `'value 1'` передача в параметр #1
-        // `'value 2'` передача к параметру `$var2`
+        // передача в параметр #1
+        // передача к параметру `$var2`
         // для параметра `$bar` выполнить разрешение на основе настроек контейнера 
-        ->bindArguments('value 1', var2: 'value 2');
+        ->bindArguments(
+            diParameter('app.param1'),
+            var2: diParameter('app.param2'),
+        );
 
 }
 ```
-#### В php атрибут:
+**В php атрибут:**
+
 ```php
 namespace App\Services;
 
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
+
 #[DiFactory(
     [ClassFactory::class, 'create'],
-    // `'value 1'` передача в параметр #1
-    // `'value 2'` передача к параметру `$var2`
+    // передача в параметр #1
+    // передача к параметру `$var2`
     // для параметра `$bar` выполнить разрешение на основе настроек контейнера 
     arguments: [
-        'value 1',
-        'var2' => 'value 2',
+        new DiParameter('app.param1'),
+        'var2' => DiParameter('app.param2'),
     ]
 )]
 final class Foo {}
 ```
-#### Указание аргумента через другие определения контейнера.
+
+> [!NOTE]
+> Подробное описание работы с «[параметрами контейнера](09-container-parameters.md)».
+
+### Указание аргумента через другие определения контейнера.
 Для сценариев когда необходимо указать аргумент через определение можно использовать хэлпер функции и классы определений контейнера.
 ```php
 namespace App\Factories;
@@ -389,7 +406,7 @@ final class ClassFactory {
 
 }
 ```
-В хэлпер функции:
+**В хэлпер функции:**
 ```php
 use App\Services\Foo;
 use App\Factories\ClassFactory;
@@ -402,7 +419,7 @@ return static function () {
 
 }
 ```
-В php атрибут:
+**В php атрибут:**
 ```php
 namespace App\Services;
 
