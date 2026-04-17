@@ -64,7 +64,7 @@ return [
 ];
 ```
 ```php
-// /app/config/services_one.php
+// /app/config/services.php
 use App\Services\Foo;
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
@@ -73,14 +73,7 @@ return function () {
         ->bindArguments(
             diParameter('adminEmail')
         );
-};
-```
-```php
-// /app/config/services_two.php
-use App\Services\Bar;
-use function Kaspi\DiContainer\{diAutowire, diGet, diParameter};
-
-return function () {
+        
     yield diAutowire(Bar::class)
         ->bindArguments(
             diGet('qux.service'),
@@ -107,21 +100,21 @@ $container = (new DiContainerBuilder())
 ## Регистрация параметров.
 Класс-строитель `\Kaspi\DiContainer\DiContainerBuilder` для сборки контейнера
 предоставляет несколько методов для регистрации параметров контейнера:
-- [загрузка из файлов](#загрузка-из-файлов-конфигураций)
-- [загрузка из коллекции](#загрузка-из-коллекции)
-- [установка значения параметра](#установка-параметра)
+- [загрузка из файлов](#регистрация-параметров-контейнера-из-файлов-конфигураций)
+- [загрузка из коллекции](#регистрация-параметров-контейнера-из-коллекции)
+- [установка значения параметра](#регистрация-одного-параметра-контейнера)
 - [установка параметров контейнера в конфигураторе определений](#управление-параметрами-контейнера-в-конфигураторе-определений)
 
 > [!IMPORTANT]
 > Порядок загрузки конфигураций параметров важен – при совпадении имен параметров контейнера
 > значение будет перезаписано более поздним вызовом в конфигурации.
 
-### Загрузка из файлов конфигураций.
+### Регистрация параметров контейнера из файлов конфигураций.
 ```php
 DiContainerBuilder::loadParameters(string $file, string ...$_): static
 ```
 Параметры:
-- `$file` – полный пусть к файлу описывающий конфигурацию параметров.
+- `$file` – полный путь к файлу описывающий конфигурацию параметров.
 - `$_` – дополнительные файлы конфигураций параметров контейнера.
 
 > [!IMPORTANT]
@@ -129,14 +122,14 @@ DiContainerBuilder::loadParameters(string $file, string ...$_): static
 > и возвращать любой итерируемый тип или callable выражение которое также возвращает любой итерируемый тип.
 >
 
-### Загрузка из коллекции.
+### Регистрация параметров контейнера из коллекции.
 ```php
 DiContainerBuilder::addParameters(iterable $params): static
 ```
 Параметры:
 - `$params` – коллекция ключ-значение конфигурации параметров.
 
-### Установка параметра.
+### Регистрация одного параметра контейнера.
 ```php
 DiContainerBuilder::setParameter(string $name, array|int|float|string|bool|null|\UnitEnum $value): static
 ```
@@ -222,7 +215,9 @@ return [
 
 ## Ссылки на другие параметры в конфигурации параметров контейнера.
 Чтобы указать ссылку на другой ранее добавленный параметр контейнера,
-необходимо имя параметра указать между символами `{` и `}` – `'{emails.admin}'` будет интерпретировано как получение значения
+необходимо имя параметра указать между символами `{` и `}`.
+
+Значение `'{emails.admin}'` будет интерпретировано как получение значения
 параметра контейнера с именем `'emails.admin'`.
 
 Для параметра типа `string` поддерживается синтаксис объединения строковых значений.
@@ -240,8 +235,12 @@ return [
 ```php
 // /app/config/dev_params.php
 return [
+    // будет приведено к виду `'/var/storage/images'`
     'storage.images' => '{storage}/images',
+    // будет приведено к виду `'admin@example.com, manager@example.com'`
     'emails.as_string' => '{emails.admin}, {emails.manager}',
+    // будет приведено к виду
+    // `array(0 => 'admin@example.com', 1 => 'manager@example.com')`
     'emails.as_array' => [
         '{emails.admin}',
         '{emails.manager}',
