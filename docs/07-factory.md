@@ -198,18 +198,12 @@ return function () {
     yield 'factories.class_factory.config_one' => diAutowire(ClassFactory::class)
         ->setupImmutable('withLogger', diGet('services.app_logger'));
 
-};
-```
-Объявление определения фабрики через хэлпер функцию:
-```php
-// config/services_base.php
-use App\Classes\Foo;
-use function Kaspi\DiContainer\diFactory;
-
-return function () {
+    // использование идентификатора контейнера
     yield Foo::class => diFactory([
         'factories.class_factory.config_one', 'create'
     ]);
+
+};
 ```
 Объявление фабрики через php атрибут:
 ```php
@@ -223,7 +217,6 @@ use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
     ->load(__DIR__.'/config/services.php')
-    ->load(__DIR__.'/config/services_base.php')
     ->build()
 ;
 
@@ -305,6 +298,10 @@ $container->get(\App\Classes\Foo::class);
     #[DiFactory(string|array $definition, ?bool $isSingleton = null, array $arguments = [])]
     ```
   > для передачи неполного списка аргументов используйте в качестве ключа в массиве `$arguments` имя параметра в методе фабрике.
+
+> [!TIP]
+> Для указания как разрешать скалярные типы зависимостей в аргументах рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+
 
 > [!TIP]
 > Для параметров **не объявленных** через `bindArgument()` или через `$arguments` в php атрибуте `\Kaspi\DiContainer\Attributes\DiFactory`,
