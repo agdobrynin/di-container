@@ -79,54 +79,21 @@ var_dump(
 
 ## Объявления для определений контейнера.
 
-Доступны объявления:
-- [простые типы](#определения-для-простых-типов) 
-- хэлпер функции:
-   - [diAutowire](#diautowire) – php класс
-   - [diCallable](#dicallable) – `callable` тип
-   - [diGet](#diget) – ссылка на идентификатор контейнера
-   - [diValue](#divalue) – определение «как есть».
-   - [diProxyClosure](#diproxyclosure) – сервис через вызов `\Closure`
-   - [diTaggedAs](#ditaggedas) – тегированные определения
-   - [diFactory](#difactory) – фабрика для разрешения зависимости
-   - [diParameter](#diparameter) – параметр контейнера
-
-### Определения для простых типов
-
-Можно добавлять любые [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar),
-`null`, перечисляемые типы наследуемые от `\UnitEnum`, массив содержащий выше перечисленные типы.
-
-```php
-// config/values.php
-return [
-    'logger.name' => 'payment',
-    'logger.file' => '/var/log/payment.log',
-    'feedback.show-recipient' => false,
-    'feedback.email' => [
-        'help@my-company.inc',
-        'boss@my-company.inc',
-    ],
-];
-```
-
-```php
-$container = (new \Kaspi\DiContainer\DiContainerBuilder())
-    ->load(__DIR__.'/config/values.php')
-    ->build()
-;
-
-$container->get('logger.name'); // 'payment'
-$container->get('logger.file'); // '/var/log/payment.log'
-$container->get('feedback.show-recipient'); // FALSE
-$container->get('feedback.email'); // array('help@my-company.inc', 'boss@my-company.inc')
-```
-> [!TIP]
-> Повторяющиеся скалярные значения можно определить как «**параметр контейнера**»,
-> который представляет собой многократно используемое значение при конфигурировании определений контейнера.
-> 
-> ✅ Для указания как разрешать скалярные типы для зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
-
 ### Объявления через хэлпер функции:
+- хэлпер функции:
+  - [diAutowire](#diautowire) – php класс
+  - [diCallable](#dicallable) – `callable` тип
+  - [diGet](#diget) – ссылка на идентификатор контейнера
+  - [diValue](#divalue) – определение «как есть».
+  - [diProxyClosure](#diproxyclosure) – сервис через вызов `\Closure`
+  - [diTaggedAs](#ditaggedas) – тегированные определения
+  - [diFactory](#difactory) – фабрика для разрешения зависимости
+  - [diParameter](#diparameter) – параметр контейнера
+
+> [!TIP]
+> ✅ Для параметров методов php классов или `callable` типов можно указывать [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar),
+`null`, перечисляемые типы, «как есть» – без указания как разрешить зависимость.
+> Для повторяющихся значений рекомендуется использовать «[параметры контейнера](09-container-parameters.md)». 
 
 > [!NOTE]
 > Хэлпер функции имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
@@ -164,7 +131,7 @@ bindArguments(mixed ...$argument)
 - `$argument` – аргументы к параметрам конструктора класса
 
 > [!TIP]
-> ✅ Для указания как разрешать скалярные типы зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+> ✅ Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
  
 > [!WARNING]
 > метод перезаписывает ранее определенные аргументы.
@@ -198,6 +165,9 @@ setup(string $method, array $arguments = [])
 
 > [!TIP]
 > Для аргументов не объявленных через `setup` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
+
+> [!TIP]
+> Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 > [!TIP]
 > Аргументы метода в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
@@ -240,6 +210,9 @@ setupImmutable(string $method, array $arguments = [])
 
 > [!TIP]
 > Для аргументов не объявленных через `setupImmutable` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
+
+> [!TIP]
+> Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 > [!TIP]
 > Аргументы в `setupImmutable` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
@@ -339,7 +312,7 @@ bindArguments(mixed ...$argument)
 - `$argument` – аргументы к параметрам метода класса
 
 > [!TIP]
-> ✅ Для указания как разрешать скалярные типы зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+> Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 Можно использовать именованные аргументы параметров
  ```php
@@ -385,7 +358,7 @@ class ServiceOne {
     // some methods here
 }
 ```
-Файл конфигурации параметров:
+Файл конфигураций параметров:
 ```php
 // /app/config/parameters/api_keys.php
 return [
@@ -393,7 +366,7 @@ return [
     'api_key.other' => 'other_value_api_key',    
 ];
 ```
-Файл конфигурации определений:
+Файл конфигураций определений:
 ```php
 // /app/config/services.php
 use function \Kaspi\DiContainer\{diCallable, diParameter};
@@ -805,11 +778,12 @@ diFactory(string|array $definition, ?bool $isSingleton = null): DiDefinitionArgu
 Функция `diFactory` возвращает объект реализующий интерфейс
 `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`.
 
-Интерфейс представляет методы:
-- `bindArguments` - аргументы для метода фабрики.
-
+**Аргументы для фабрики:**
+```php
+bindArguments(mixed ...$argument)
+```
 > [!TIP]
-> ✅ Для указания как разрешать скалярные типы зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+> Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 > [!NOTE]
 > Подробное [описание работы с фабриками](07-factory.md) для разрешения зависимостей в контейнере.
