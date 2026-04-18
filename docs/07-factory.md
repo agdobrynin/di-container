@@ -379,7 +379,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
     // для параметра `$bar` выполнить разрешение на основе настроек контейнера 
     arguments: [
         new DiParameter('app.param1'),
-        'var2' => DiParameter('app.param2'),
+        'var2' => new DiParameter('app.param2'),
     ]
 )]
 final class Foo {}
