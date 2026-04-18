@@ -1145,6 +1145,9 @@ class AnyService {
 Параметры:
 - `$name` – имя параметра контейнера.
 
+> [!NOTE]
+> Атрибут может быть применен несколько раз к параметрам переменной длины (_variadic parameter_).
+
 ```php
 namespace App\Services;
 
