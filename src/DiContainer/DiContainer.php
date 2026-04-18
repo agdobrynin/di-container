@@ -29,6 +29,8 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
+use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -52,10 +54,13 @@ use function var_export;
  * @phpstan-import-type NotParsedCallable from DiContainerCallInterface
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
     protected SourceDefinitionsMutableInterface $definitions;
+
+    protected readonly SourceParametersMutableInterface $parameters;
 
     /**
      * @var array<class-string|string, DiDefinitionInterface>
@@ -77,6 +82,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
+     * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
      *
      * @throws ContainerIdentifierExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
@@ -85,10 +91,14 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         iterable|SourceDefinitionsMutableInterface $definitions = [],
         protected DiContainerConfigInterface $config = new DiContainerNullConfig(),
         iterable $removedDefinitionIds = [],
+        iterable|SourceParametersMutableInterface $parameters = [],
     ) {
         $this->definitions = !($definitions instanceof SourceDefinitionsMutableInterface)
             ? new ImmediateSourceDefinitionsMutable($definitions, $removedDefinitionIds)
             : $definitions;
+        $this->parameters = !($parameters instanceof SourceParametersMutableInterface)
+            ? new ImmediateSourceParameters($parameters)
+            : $parameters;
     }
 
     /**
@@ -227,6 +237,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function getRemovedDefinitionIds(): iterable
     {
         yield from $this->definitions->getRemovedDefinitionIds();
+    }
+
+    public function parameters(): SourceParametersMutableInterface
+    {
+        return $this->parameters;
     }
 
     /**

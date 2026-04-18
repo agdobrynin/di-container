@@ -6,7 +6,11 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
+use UnitEnum;
 
+/**
+ * @phpstan-type SourceParameterType null|scalar|UnitEnum|(null|scalar|UnitEnum)[]
+ */
 interface DiContainerBuilderInterface
 {
     /**
@@ -46,6 +50,35 @@ interface DiContainerBuilderInterface
      * @return $this
      */
     public function addDefinitionsOverride(iterable $definitions): static;
+
+    /**
+     * Load container parameters from configuration files and override exist parameters.
+     *
+     * @param non-empty-string $file
+     * @param non-empty-string ...$_
+     *
+     * @return $this
+     */
+    public function loadParameters(string $file, string ...$_): static;
+
+    /**
+     * Add container parameters from collection.
+     *
+     * @param iterable<non-empty-string, SourceParameterType> $parameters
+     *
+     * @return $this
+     */
+    public function addParameters(iterable $parameters): static;
+
+    /**
+     * Add a container parameter with override exist parameter.
+     *
+     * @param non-empty-string    $name
+     * @param SourceParameterType $value
+     *
+     * @return $this
+     */
+    public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static;
 
     /**
      * Import classes from directories.

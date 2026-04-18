@@ -8,7 +8,11 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface;
+use UnitEnum;
 
+/**
+ * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
+ */
 interface DefinitionsConfiguratorInterface
 {
     /**
@@ -66,4 +70,32 @@ interface DefinitionsConfiguratorInterface
      * @throws DefinitionsLoaderExceptionInterface
      */
     public function loadOverride(string $file, string ...$_): void;
+
+    /**
+     * Loads container parameters.
+     *
+     * @param non-empty-string $file
+     * @param non-empty-string ...$_
+     *
+     * @throws DefinitionsLoaderExceptionInterface
+     */
+    public function loadParameters(string $file, string ...$_): void;
+
+    /**
+     * @param iterable<non-empty-string, mixed> $parameters
+     */
+    public function addParameters(iterable $parameters): void;
+
+    /**
+     * @param non-empty-string    $name
+     * @param SourceParameterType $value
+     */
+    public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): void;
+
+    /**
+     * @param non-empty-string $name
+     */
+    public function removeParameter(string $name): void;
+
+    public function hasParameter(string $name): bool;
 }

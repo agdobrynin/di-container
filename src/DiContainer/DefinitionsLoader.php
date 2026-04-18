@@ -34,7 +34,9 @@ use ParseError;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
+use UnitEnum;
 
+use function array_map;
 use function class_exists;
 use function file_exists;
 use function in_array;
@@ -63,6 +65,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<class-string|non-empty-string, true> */
     private readonly ArrayIterator $removedDefinitionIds;
 
+    /** @var ArrayIterator<non-empty-string, mixed> */
+    private readonly ArrayIterator $parameters;
+
     private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
     /**
@@ -87,6 +92,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     ) {
         $this->configuredDefinitions = new ArrayIterator();
         $this->removedDefinitionIds = new ArrayIterator();
+        $this->parameters = new ArrayIterator();
     }
 
     public function load(string ...$file): static
@@ -136,6 +142,28 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this;
     }
 
+    public function loadParameters(string $file, string ...$_): static
+    {
+        $this->loadParametersFromFile($file);
+        array_map($this->loadParametersFromFile(...), $_);
+
+        return $this;
+    }
+
+    public function addParameters(iterable $parameters): static
+    {
+        foreach ($parameters as $name => $parameter) {
+            $this->parameters->offsetSet($name, $parameter);
+        }
+
+        return $this;
+    }
+
+    public function parameters(): iterable
+    {
+        yield from $this->parameters;
+    }
+
     /**
      * Note: parameter `$excludeFiles` use php function `\fnmatch()`, detail info about file pattern see in documentation.
      *
@@ -181,10 +209,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters) implements DefinitionsConfiguratorInterface {
             public function __construct(
                 private readonly DefinitionsLoaderInterface $definitionsLoader,
                 private readonly ArrayIterator $removedDefinitionIds,
+                private readonly ArrayIterator $parameters,
             ) {}
 
             public function removeDefinition(string $id): void
@@ -256,6 +285,31 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             {
                 $this->definitionsLoader->loadOverride($file, ...$_);
             }
+
+            public function loadParameters(string $file, string ...$_): void
+            {
+                $this->definitionsLoader->loadParameters($file, ...$_);
+            }
+
+            public function addParameters(iterable $parameters): void
+            {
+                $this->definitionsLoader->addParameters($parameters);
+            }
+
+            public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): void
+            {
+                $this->definitionsLoader->addParameters([$name => $value]);
+            }
+
+            public function removeParameter(string $name): void
+            {
+                $this->parameters->offsetUnset($name);
+            }
+
+            public function hasParameter(string $name): bool
+            {
+                return $this->parameters->offsetExists($name);
+            }
         };
     }
 
@@ -323,12 +377,19 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function reset(): void
     {
+        $this->configuredDefinitions->rewind();
         while ($this->configuredDefinitions->valid()) {
             $this->configuredDefinitions->offsetUnset($this->configuredDefinitions->key());
         }
 
+        $this->removedDefinitionIds->rewind();
         while ($this->removedDefinitionIds->valid()) {
             $this->removedDefinitionIds->offsetUnset($this->removedDefinitionIds->key());
+        }
+
+        $this->parameters->rewind();
+        while ($this->parameters->valid()) {
+            $this->parameters->offsetUnset($this->parameters->key());
         }
 
         $this->useAttribute = true;
@@ -606,5 +667,45 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
         }
+    }
+
+    /**
+     * @throws DefinitionsLoaderExceptionInterface
+     */
+    private function loadParametersFromFile(string $file): void
+    {
+        if (!file_exists($file) || !is_readable($file)) {
+            throw new DefinitionsLoaderInvalidArgumentException(
+                sprintf('The file "%s" does not exist or isn\'t readable.', $file)
+            );
+        }
+
+        try {
+            ob_start();
+            $content = require $file;
+        } catch (Error|ParseError $e) {
+            throw new DefinitionsLoaderException(
+                sprintf('Required file has an error: %s. File: "%s".', $e->getMessage(), $file),
+                previous: $e
+            );
+        } finally {
+            ob_get_clean();
+        }
+
+        if (is_iterable($content)) {
+            $this->addParameters($content); // @phpstan-ignore argument.type
+
+            return;
+        }
+
+        if (is_callable($content) && is_iterable($params = $content())) {
+            $this->addParameters($params); // @phpstan-ignore argument.type
+
+            return;
+        }
+
+        throw new DefinitionsLoaderInvalidArgumentException(
+            sprintf('The file "%s" must be use "return" keyword and return any iterable type or callable expression that returns any iterable type.', $file)
+        );
     }
 }

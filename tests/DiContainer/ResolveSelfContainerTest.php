@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -22,6 +23,7 @@ use Psr\Container\ContainerInterface;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class ResolveSelfContainerTest extends TestCase
 {
     #[DataProvider('dataProvider')]

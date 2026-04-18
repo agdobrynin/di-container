@@ -71,4 +71,6 @@ interface DiContainerInterface extends ContainerInterface
      * @return iterable<class-string|non-empty-string, true>
      */
     public function getRemovedDefinitionIds(): iterable;
+
+    public function parameters(): SourceParametersMutableInterface;
 }

@@ -7,6 +7,7 @@ namespace Tests\Compiler\CompilableDefinition\ValueEntry;
 use Generator;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
+use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -19,6 +20,7 @@ use Tests\Compiler\CompilableDefinition\ValueEntry\Fixtures\FooBarEnum;
  */
 #[CoversClass(ValueEntry::class)]
 #[CoversClass(CompiledEntry::class)]
+#[CoversClass(Helper::class)]
 class ValueEntryTest extends TestCase
 {
     #[DataProvider('dataProvideFailCompile')]

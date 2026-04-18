@@ -21,6 +21,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -52,6 +53,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class ImportAutoconfigureTest extends TestCase
 {
     public function testAutoconfigure(): void

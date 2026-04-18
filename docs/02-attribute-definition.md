@@ -25,6 +25,7 @@
 - **[ProxyClosure](#proxyclosure)** – внедрение зависимости в параметры конструктора PHP класса, метода или аргументов функции с отложенной инициализацией через класс `\Closure`, анонимную функцию.
 - **[Tag](#tag)** – определение тегов для класса.
 - **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода PHP класса.
+- **[Parameter](#parameter)** – разрешение зависимости через «параметр контейнера».
 - **[Параметр переменной длины](#параметр-переменной-длины)** – особенности применения атрибутов.
 
 ## Autowire
@@ -46,7 +47,18 @@
 > - Для параметров не переданных через `$arguments` в php атрибуте, контейнер попытается разрешить зависимости самостоятельно на основе конфигурации.
 > - Атрибут `#[Autowire]` имеет признак `repetable` и может быть применен несколько раз для одного и того же класса. 
 > - При применении нескольких атрибутов `#[Autowire]` к php классу параметр `$id` у каждого атрибута должен быть уникальным, иначе выбрасывается исключение при разрешении класса контейнером.
-> 
+>
+
+Для объектов передаваемых в качестве аргумента через параметр `$arguments` используются
+классы описывающие определения контейнера:
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – `callable` тип
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
+
 
 ```php
 // src/Services/FooService.php
@@ -55,29 +67,40 @@ namespace App\Services;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire as DiAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
 use App\Interfaces\QuxInterface;
 use App\Classes\{Foo, Bar};
 
 #[
     Autowire(arguments: [
-        'qux' => new DiGet(Foo::class),
+        new DiGet(Foo::class),
+        new DiParameter('adminEmail'),       
     ]),
     Autowire(id: 'services.foo_baz', arguments: [
-        'qux' => new DiAutowire(Bar::class),
+        new DiAutowire(Bar::class),
+        new DiParameter('adminEmail'),
     ]),
 ]
 class FooService
 {
     public function __construct(
-        public readonly QuxInterface $qux
+        public readonly QuxInterface $qux,
+        public readonly string $adminEmail
     ) {}
 }
+```
+```php
+// config/parameters/params.php
+return [
+    'adminEmail' => 'admin@example.com',
+];
 ```
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\FooService;
 
 $container = (new DiContainerBuilder())
+    ->loadParameters(__DIR__.'/config/parameters/params.php')
     ->import(namespace: 'App\\', src: __DIR__.'/src/')
     ->build()
 ;
@@ -95,11 +118,13 @@ var_dump(
 ```
 > [!NOTE]
 > При получении из контейнера по идентификатору `'App\Services\FooService'`
-> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Foo`.
+> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Foo`,
+> в параметр `App\Services\FooService::$adminEmail` будет получено значение `'admin@example.com'` из параметра контейнера `'adminEail'`.
 >
 > При получении из контейнера по идентификатору `'services.foo_baz'`
-> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Bar`.
->
+> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Bar`,
+> в параметр `App\Services\FooService::$adminEmail` будет получено значение `'admin@example.com'` из параметра контейнера `'adminEail'`.
+> 
 
 ## AutowireExclude
 Применятся к классу или интерфейсу для исключения разрешения зависимости контейнером.
@@ -159,6 +184,7 @@ var_dump($container->has(SomeService::class)); // false
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
 
 > [!TIP]
 > Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
@@ -255,6 +281,7 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
 
 > [!TIP]
 > Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
@@ -389,18 +416,30 @@ class MyDb {
 }
 ```
 ```php
+// file config/params.php
+return [
+    'db_dsn.prod' => 'sqlite:/data/prod/db.db',
+    'db_dsn.local' => 'sqlite:/tmp/db.db',
+    'db_dsn.test' => 'sqlite::memory:',
+];
+```
+```php
 // file config/main.php
-use function Kaspi\DiContainer\{diAutowire, diCallable};
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\{diAutowire, diCallable, diParameter};
 
-return static function (): \Generator {
+return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+    // 🚩 загрузка конфигураций параметров контейнера.
+    $configurator->loadParameters(__DIR__.'/params.php');
+
     yield 'services.pdo-prod' => diAutowire(PDO::class)
-        ->bindArguments(dsn: 'sqlite:/data/prod/db.db');
+        ->bindArguments(dsn: diParameter('db_dsn.prod'));
 
     yield 'services.pdo-local' => diAutowire(PDO::class)
-        ->bindArguments(dsn: 'sqlite:/tmp/db.db');
+        ->bindArguments(dsn: diParameter('db_dsn.local'));
 
     yield 'services.pdo-test' => diAutowire(PDO::class)
-        ->bindArguments(dsn: 'sqlite::memory:');
+        ->bindArguments(dsn: diParameter('db_dsn.test'));
 
     yield 'services.pdo-env' => diCallable(
         definition: static fn (ContainerInterface $container) => match (\getenv('APP_PDO')) {
@@ -432,7 +471,7 @@ $myClass = $container->get(App\Databases\MyDb::class);
 Атрибут имеет признак `repetable`
 
 > [!WARNING]
-> Параметр переменной длинны является опциональным и если у него не задан
+> Параметр переменной длины является опциональным и если у него не задан
 > PHP атрибут указывающий какой аргумент использовать
 > для разрешения зависимости, то он будет пропущен.
 
@@ -496,7 +535,7 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ### Атрибут #[Inject] для параметра переменной длины по идентификатору контейнера
 
 > [!WARNING]
-> Параметр переменной длинны является опциональным и если у него не задан
+> Параметр переменной длины является опциональным и если у него не задан
 > PHP атрибут указывающий какой аргумент использовать
 > для разрешения зависимости, то он будет пропущен.
 
@@ -630,14 +669,14 @@ var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 // src/Classes/One.php
 namespace App\Classes;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\Parameter;
 
 class One {
     
     public function __construct(private string $code) {}
     
     public static function config(
-        #[Inject('config.secure_code')]
+        #[Parameter('config.secure_code')]
         string $configCode
     ): One {
         return new self($configCode);
@@ -661,15 +700,17 @@ class ServiceOne {
 }
 ```
 ```php
+// config/parameters.php
+return [
+    'config.secure_code' => 'abc',
+];
+```
+```php
 // Определения для DiContainer
 use Kaspi\DiContainer\DiContainerBuilder;
 
-$definitions = [
-    'config.secure_code' => 'abc',
-];
-
 $container = (new DiContainerBuilder())
-    ->addDefinitions($definitions)
+    ->loadParameters(__DIR__.'/config/parameters.php')
     ->build()
 ;
 
@@ -731,10 +772,19 @@ interface CustomLoggerInterface {
     public function loggerFile(): string;
 }
 ```
+
 ```php
 // src/Loggers/CustomLogger.php
 namespace App\Loggers;
 
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
+
+#[Autowire(
+    arguments: [
+        'file' => new DiParameter('logger.file_name')    
+    ]
+)]
 class CustomLogger implements CustomLoggerInterface {
 
     public function __construct(
@@ -761,21 +811,17 @@ class MyLogger {
 ```
 
 ```php
-// config/services.php
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (): \Generator {
-    yield diAutowire(App\Loggers\CustomLogger::class)
-        // подставить в параметр $file в конструкторе.
-        ->bindArguments(file: '/var/log/app.log');
-};
+// config/parameters.php
+return [
+    'logger.file_name' => '/var/log/app.log'
+];
 ```
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
+    ->loadParameters(__DIR__.'/config/parameters.php')
     ->import(namespace: 'App\\', src: __DIR__.'/src/')
     ->build()
 ;
@@ -800,18 +846,29 @@ interface CustomLoggerInterface {
 }
 ```
 ```php
-// config/services.php
-use App\Loggers\CustomLogger;
+// src/Loggers/CustomLogger.php
+namespace App\Loggers;
 
-return static function (): \Generator {
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
 
-    yield 'services.app_logger' => static function(): CustomLogger {
-        return new CustomLogger(file: '/var/log/app.log');
+#[Autowire(
+    id: 'services.app_logger',
+    arguments: [
+    'file' => new DiParameter('logger.file_name')    
+    ]
+)]
+class CustomLogger implements CustomLoggerInterface {
+
+    public function __construct(
+        protected string $file,
+    ) {}
+    
+    public function loggerFile(): string {
+        return $this->file;
     }
-
-};
+}
 ```
-
 ## DiFactory
 Атрибут может применяться к классу или к параметру функции, метода.
 
@@ -1076,6 +1133,38 @@ class AnyService {
 
 > [!TIP]
 > Более подробное [описание работы с тегами](05-tags.md).
+
+## Parameter
+Атрибут может применяться к параметру функции, метода
+для указания как разрешить зависимость через «параметры контейнера».
+
+Сигнатура php атрибута:
+```php
+#[Parameter(string $name = '')]
+```
+Параметры:
+- `$name` – имя параметра контейнера.
+
+> [!NOTE]
+> Атрибут может быть применен несколько раз к параметрам переменной длины (_variadic parameter_).
+
+```php
+namespace App\Services;
+
+use App\Services\Qux;
+use Kaspi\DiContainer\Attributes\{Inject, Parameter};
+
+final class Foo {
+    public function __construct(
+        private Qux $qux,
+        #[Parameter('adminEmail')]
+        private string $adminEmail,
+    ) {}
+}
+```
+
+> [!NOTE]
+> Подробное [описание работы с параметрами контейнера](09-container-parameters.md).
 
 ## Параметр переменной длины.
 При разрешении зависимостей параметра переменной длины у метода или функции можно использовать

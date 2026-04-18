@@ -16,6 +16,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -54,6 +55,7 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(CallCircularDependencyException::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class ResolveByInterfaceTest extends TestCase
 {
     public function testResolveByInterfaceViaAttributeWithZeroConfig(): void

@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -28,6 +29,7 @@ use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Two;
 #[CoversClass(Helper::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class ResolveByAutowireTest extends TestCase
 {
     public function testAutowireAttributeWithSingletonTrueButContainerSetDefaultSingletonFalse(): void

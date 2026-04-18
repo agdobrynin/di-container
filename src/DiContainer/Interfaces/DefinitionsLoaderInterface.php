@@ -48,6 +48,34 @@ interface DefinitionsLoaderInterface extends ResetInterface
     public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static;
 
     /**
+     * Load container parameters from file.
+     *
+     * @param non-empty-string $file
+     * @param non-empty-string ...$_
+     *
+     * @return $this
+     *
+     * @throws DefinitionsLoaderExceptionInterface
+     */
+    public function loadParameters(string $file, string ...$_): static;
+
+    /**
+     * Add container parameters from collection.
+     *
+     * @param iterable<non-empty-string, mixed> $parameters
+     *
+     * @return $this
+     */
+    public function addParameters(iterable $parameters): static;
+
+    /**
+     * Get container parameters.
+     *
+     * @return iterable<non-empty-string, mixed>
+     */
+    public function parameters(): iterable;
+
+    /**
      * @return iterable<class-string|non-empty-string, DiDefinitionInterface|mixed>
      *
      * @throws DefinitionsLoaderExceptionInterface
