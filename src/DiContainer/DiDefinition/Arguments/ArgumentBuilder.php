@@ -9,12 +9,14 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
@@ -26,6 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
@@ -298,7 +301,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
@@ -332,8 +335,12 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 ;
             } elseif ($attr instanceof InjectByCallable) {
                 $definition = new DiDefinitionCallable($attr->getCallable());
-            } else {
+            } elseif ($attr instanceof Parameter) {
                 $definition = (new DiDefinitionParameter($attr->name))
+                    ->setContext('' === $attr->name ? $param->name : null)
+                ;
+            } else {
+                $definition = (new DiDefinitionParameterRuntime($attr->name, $attr->message))
                     ->setContext('' === $attr->name ? $param->name : null)
                 ;
             }
@@ -344,7 +351,10 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void
     {
-        if (!($definition instanceof DiDefinitionParameterInterface) || '' !== $definition->getDefinition()) {
+        $isParameterType = $definition instanceof DiDefinitionParameterInterface
+            || $definition instanceof DiDefinitionParameterRuntimeInterface;
+
+        if (!$isParameterType || '' !== $definition->getDefinition()) {
             return;
         }
 
