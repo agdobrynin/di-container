@@ -27,8 +27,7 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterWithContextInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
@@ -351,10 +350,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void
     {
-        $isParameterType = $definition instanceof DiDefinitionParameterInterface
-            || $definition instanceof DiDefinitionParameterRuntimeInterface;
-
-        if (!$isParameterType || '' !== $definition->getDefinition()) {
+        if (!($definition instanceof DiDefinitionParameterWithContextInterface) || '' !== $definition->getDefinition()) {
             return;
         }
 
