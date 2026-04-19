@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\Parameter;
+use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
@@ -20,10 +21,12 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -42,6 +45,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\QuuxTwo;
 
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diParameterRuntime;
 use function Kaspi\DiContainer\diProxyClosure;
 use function Kaspi\DiContainer\diTaggedAs;
 
@@ -69,6 +73,9 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionFactory::class)]
 #[CoversClass(Parameter::class)]
 #[CoversClass(DiDefinitionParameter::class)]
+#[CoversClass(ParameterRuntime::class)]
+#[CoversClass(DiDefinitionParameterRuntime::class)]
+#[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;
@@ -451,5 +458,39 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
         $ba->build();
+    }
+
+    public function testAttributeParameterRuntime(): void
+    {
+        $fn = static fn (
+            #[ParameterRuntime('foo')]
+            string $str,
+            #[ParameterRuntime]
+            string $bar,
+            #[ParameterRuntime('tmp')]
+            #[ParameterRuntime]
+            string ...$baz
+        ) => null;
+
+        $this->bindArguments(str: diParameterRuntime('qux'));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $arg = $ba->build();
+
+        self::assertCount(4, $arg);
+        self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $arg[0]);
+        self::assertEquals('foo', $arg[0]->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $arg[1]);
+        self::assertEquals('', $arg[1]->getDefinition());
+        self::assertEquals('bar', $arg[1]->getContext());
+
+        self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $arg[2]);
+        self::assertEquals('tmp', $arg[2]->getDefinition());
+        self::assertEquals('', $arg[2]->getContext());
+
+        self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $arg[3]);
+        self::assertEquals('', $arg[3]->getDefinition());
+        self::assertEquals('baz', $arg[3]->getContext());
     }
 }
