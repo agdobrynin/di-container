@@ -21,7 +21,7 @@ final class DiDefinitionParameterRuntime extends DiDefinitionParameterWithContex
         private readonly string $name = '',
         ?string $message = null,
     ) {
-        $this->message = $message ?? 'Did you forget to define it? Define parameter using method DiContainerInterface::parameters()->set()';
+        $this->message = $message ?? 'Did you forget to define it? Define parameter using method DiContainerInterface::parameters()->set().';
     }
 
     public function getDefinition(): string
