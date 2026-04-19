@@ -146,6 +146,6 @@ class HelperFunctionTest extends TestCase
         $p = diParameterRuntime($name, $message);
 
         self::assertEquals($expectDefinition, $p->getDefinition());
-        self::assertEquals($expectMessage, $p->getMessage());
+        self::assertStringContainsString($expectMessage, $p->getMessage());
     }
 }

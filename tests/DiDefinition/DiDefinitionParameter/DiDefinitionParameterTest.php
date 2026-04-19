@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionParameter;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Exception\ParameterException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
@@ -24,6 +25,7 @@ use ReflectionParameter;
 #[CoversClass(DiDefinitionParameter::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(ParameterNotFoundException::class)]
+#[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 class DiDefinitionParameterTest extends TestCase
 {
     #[TestWith(['name' => '', 'expect' => ''])]

@@ -13,6 +13,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
@@ -48,6 +49,7 @@ use function Kaspi\DiContainer\diParameterRuntime;
 #[CoversClass(DiDefinitionParameter::class)]
 #[CoversClass(DiDefinitionParameterRuntime::class)]
 #[CoversClass(ParameterRuntime::class)]
+#[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 #[CoversFunction('Kaspi\DiContainer\diParameter')]
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
 class BuildArgumentsByPriorityBindArgumentsTest extends TestCase

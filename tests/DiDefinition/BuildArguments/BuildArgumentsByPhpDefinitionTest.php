@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -64,6 +65,7 @@ use function Kaspi\DiContainer\diValue;
 #[CoversClass(DiDefinitionParameter::class)]
 #[CoversFunction('Kaspi\DiContainer\diParameter')]
 #[CoversClass(DiDefinitionParameterRuntime::class)]
+#[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
 class BuildArgumentsByPhpDefinitionTest extends TestCase
 {

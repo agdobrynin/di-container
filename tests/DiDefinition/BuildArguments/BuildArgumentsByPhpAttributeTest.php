@@ -22,6 +22,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Helper;
@@ -75,6 +76,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionParameter::class)]
 #[CoversClass(ParameterRuntime::class)]
 #[CoversClass(DiDefinitionParameterRuntime::class)]
+#[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {

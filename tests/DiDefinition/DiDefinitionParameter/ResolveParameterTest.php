@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
 use Kaspi\DiContainer\Helper;
@@ -37,6 +38,7 @@ use function Kaspi\DiContainer\diParameter;
 #[CoversClass(Helper::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(ParameterNotFoundException::class)]
+#[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 class ResolveParameterTest extends TestCase
 {
     private DiContainerInterface $container;

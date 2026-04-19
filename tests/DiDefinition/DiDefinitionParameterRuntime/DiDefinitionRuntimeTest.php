@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionParameterRuntime;
 
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
@@ -15,6 +16,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(DiDefinitionParameterRuntime::class)]
+#[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 class DiDefinitionRuntimeTest extends TestCase
 {
     private SourceParametersMutableInterface $sourceParams;
