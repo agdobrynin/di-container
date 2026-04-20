@@ -26,7 +26,7 @@ use function substr;
  * @internal
  */
 #[CoversNothing]
-class ContainerParameterCompiledTest extends TestCase
+class ContainerParameterOnCompiledContainerTest extends TestCase
 {
     public function testCompileParameterInConstructor(): void
     {

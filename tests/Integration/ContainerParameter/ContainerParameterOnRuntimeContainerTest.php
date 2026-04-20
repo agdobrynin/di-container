@@ -16,7 +16,7 @@ use Tests\Integration\ContainerParameter\Fixtures\FooAttr;
  * @internal
  */
 #[CoversNothing]
-class ContainerParameterRuntimeTest extends TestCase
+class ContainerParameterOnRuntimeContainerTest extends TestCase
 {
     public function testResolveParameterInConstructor(): void
     {
