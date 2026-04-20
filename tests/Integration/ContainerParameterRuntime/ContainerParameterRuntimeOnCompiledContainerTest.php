@@ -6,7 +6,8 @@ namespace Tests\Integration\ContainerParameterRuntime;
 
 use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerConfig;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerBuilderInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -25,7 +26,7 @@ use function random_bytes;
 #[CoversNothing]
 class ContainerParameterRuntimeOnCompiledContainerTest extends TestCase
 {
-    protected DiContainerInterface $container;
+    protected DiContainerBuilderInterface $containerBuilder;
 
     protected function setUp(): void
     {
@@ -33,39 +34,39 @@ class ContainerParameterRuntimeOnCompiledContainerTest extends TestCase
 
         vfsStream::setup('root');
 
-        $this->container = (new DiContainerBuilder(
+        $this->containerBuilder = (new DiContainerBuilder(
             new DiContainerConfig(
                 useZeroConfigurationDefinition: false
             )
         ))
             ->addDefinitions([
+                // Use php attribute for configure parameters
+                diAutowire(Bar::class),
                 diAutowire(Foo::class)
                     ->bindArguments(
                         diParameterRuntime(),
                         baz: diParameterRuntime('qux.value')
                     ),
-                // Use php attribute for configure parameters
-                diAutowire(Bar::class),
             ])
             ->compileToFile(vfsStream::url('root/'), $containerClass, isExclusiveLockFile: false)
-            ->build()
         ;
     }
 
     protected function tearDown(): void
     {
-        unset($this->container);
+        unset($this->containerBuilder);
     }
 
     public function testCompileDiDefinitionParameterRuntime(): void
     {
-        $this->container->parameters()->add(['bar' => 'ola', 'qux.value' => 1_000]);
+        $container = $this->containerBuilder->build();
+        $container->parameters()->add(['bar' => 'ola', 'qux.value' => 1_000]);
 
-        self::assertEquals(['bar' => 'ola', 'baz' => 1_000], (array) $this->container->get(Foo::class));
+        self::assertEquals(['bar' => 'ola', 'baz' => 1_000], (array) $container->get(Foo::class));
 
-        $this->container->parameters()->set('bat', 'aloha');
+        $container->parameters()->set('bat', 'aloha');
 
-        self::assertEquals(['bat' => 'aloha', 'qux' => 1_000], (array) $this->container->get(Bar::class));
+        self::assertEquals(['bat' => 'aloha', 'qux' => 1_000], (array) $container->get(Bar::class));
     }
 
     public function testParameterRuntimeNotDefined(): void
@@ -73,7 +74,23 @@ class ContainerParameterRuntimeOnCompiledContainerTest extends TestCase
         $this->expectException(ParameterNotFoundExceptionInterface::class);
         $this->expectExceptionMessage('The container parameter "qux.value" must be set in the container at runtime');
 
-        $this->container->parameters()->set('bat', 'aloha');
-        $this->container->get(Bar::class);
+        $container = $this->containerBuilder->build();
+        $container->parameters()->set('bat', 'aloha');
+        $container->get(Bar::class);
+    }
+
+    public function testCannotCompileParameterRuntimeWhenParameterAlreadyRegistered(): void
+    {
+        $this->expectException(ContainerBuilderExceptionInterface::class);
+        $this->expectExceptionMessage('Tests\Integration\ContainerParameterRuntime\Fixtures\Bar::__construct()');
+
+        /*
+         * The parameter 'qux.value' defined before compile,
+         * this definition fire exception because parameter Bar::$qux
+         * has php attribute #[ParameterRuntime('qux.value')].
+         * The parameter runtime must be defined in runtime container.
+        */
+        $this->containerBuilder->addParameters(['qux.value' => 1_000]);
+        $this->containerBuilder->build();
     }
 }
