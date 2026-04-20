@@ -426,6 +426,8 @@ use Kaspi\DiContainer\DiContainerBuilder;
 $container = (new DiContainerBuilder())
     ->import('App\\', src: '/app/src/')
     ->load('/app/config/services.php')
+    // компиляция контейнера
+    ->compileToFile('/app/var/cache/', 'App\AppContainer')
     ->build()
 ;
 
