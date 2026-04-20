@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
+use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
 
 use function is_string;
@@ -19,11 +20,18 @@ final class ParameterRuntimeEntry implements CompilableDefinitionInterface
 {
     public function __construct(
         private readonly DiDefinitionParameterRuntimeInterface $parameter,
+        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
     ) {}
 
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
         $parameterName = $this->getParameterName();
+
+        if ($this->diContainerDefinitions->getContainer()->parameters()->has($parameterName)) {
+            throw new DefinitionCompileException(
+                sprintf('The container\'s runtime parameter "%s" must be set in the container at runtime. Use the DiContainerInterface::parameters()->set() method.', $parameterName)
+            );
+        }
 
         $compiledEntry = new CompiledEntry(
             scopeServiceVar: '$parameters',

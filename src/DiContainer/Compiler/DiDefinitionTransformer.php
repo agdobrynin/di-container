@@ -71,7 +71,7 @@ final class DiDefinitionTransformer implements DiDefinitionTransformerInterface
         }
 
         if ($definition instanceof DiDefinitionParameterRuntimeInterface) {
-            return new ParameterRuntimeEntry($definition);
+            return new ParameterRuntimeEntry($definition, $diContainerDefinitions);
         }
 
         if (null !== $fallback) {
