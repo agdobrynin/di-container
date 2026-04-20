@@ -26,6 +26,7 @@
 - **[Tag](#tag)** – определение тегов для класса.
 - **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода PHP класса.
 - **[Parameter](#parameter)** – разрешение зависимости через «параметр контейнера».
+- **[ParameterRuntime](#parameterruntime)** – разрешение зависимости через «параметр контейнера времени исполнения».
 - **[Параметр переменной длины](#параметр-переменной-длины)** – особенности применения атрибутов.
 
 ## Autowire
@@ -1152,7 +1153,7 @@ class AnyService {
 namespace App\Services;
 
 use App\Services\Qux;
-use Kaspi\DiContainer\Attributes\{Inject, Parameter};
+use Kaspi\DiContainer\Attributes\Parameter;
 
 final class Foo {
     public function __construct(
@@ -1165,6 +1166,40 @@ final class Foo {
 
 > [!NOTE]
 > Подробное [описание работы с параметрами контейнера](09-container-parameters.md).
+
+## ParameterRuntime
+Параметр контейнера времени исполнения. [Аналогичен PHP атрибуту `Parameter`](#parameter), но значение необходимо установить в контейнер
+после его формирования.
+
+Сигнатура php атрибута:
+```php
+#[ParameterRuntime(string $name = '', ?string $message = null)]
+```
+Параметры:
+- `$name` – имя параметра контейнера.
+- `$message` – дополнительное сообщение, если параметр контейнера еще не определен.
+
+> [!NOTE]
+> Атрибут может быть применен несколько раз к параметрам переменной длины (_variadic parameter_).
+
+```php
+namespace App\Services;
+
+use App\Services\Qux;
+use Kaspi\DiContainer\Attributes\ParameterRuntime;
+
+final class Bar {
+    public function __construct(
+        private Qux $qux,
+        #[ParameterRuntime('foo.parameter')]
+        private string $value,
+    ) {}
+}
+```
+
+> [!NOTE]
+> Подробное [описание работы с параметрами контейнера](09-container-parameters.md#параметры-контейнера-определяемые-во-время-выполнения).
+
 
 ## Параметр переменной длины.
 При разрешении зависимостей параметра переменной длины у метода или функции можно использовать
