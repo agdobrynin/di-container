@@ -89,6 +89,7 @@ var_dump(
   - [diTaggedAs](#ditaggedas) – тегированные определения
   - [diFactory](#difactory) – фабрика для разрешения зависимости
   - [diParameter](#diparameter) – параметр контейнера
+  - [diParameterRuntime](#diparameterruntime) – параметр контейнера времени исполнения
 
 > [!TIP]
 > ✅ Для параметров методов php классов или `callable` типов можно указывать [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar),
@@ -818,6 +819,25 @@ diParameter(string $name = ''): DiDefinitionNoArgumentsInterface
 
 > [!NOTE]
 > Подробное [описание работы с параметрами контейнера](09-container-parameters.md).
+
+#### diParameterRuntime
+Параметр контейнера времени исполнения. [Аналогичен хелпер функции `diParameter`](#diparameter), но значение необходимо установить в контейнер
+после его формирования.
+
+Сигнатура функции:
+```php
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use function \Kaspi\DiContainer\diParameterRuntime;
+
+diParameterRuntime(string $name = '', ?string $message = nul): DiDefinitionNoArgumentsInterface
+```
+
+Параметры:
+- `$name` – имя параметра контейнера.
+- `$message` – дополнительное сообщение, если параметр контейнера еще не определен.
+
+> [!NOTE]
+> Подробное [описание работы с параметрами контейнера](09-container-parameters.md#параметры-контейнера-определяемые-во-время-выполнения).
 
 ## Получение класса по интерфейсу
 

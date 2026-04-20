@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
@@ -92,5 +93,12 @@ if (!function_exists('Kaspi\DiContainer\diParameter')) { // @codeCoverageIgnore
     function diParameter(string $name = ''): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionParameter($name);
+    }
+} // @codeCoverageIgnore
+
+if (!function_exists('Kaspi\DiContainer\diParameterRuntime')) { // @codeCoverageIgnore
+    function diParameterRuntime(string $name = '', ?string $message = null): DiDefinitionNoArgumentsInterface
+    {
+        return new DiDefinitionParameterRuntime($name, $message);
     }
 } // @codeCoverageIgnore
