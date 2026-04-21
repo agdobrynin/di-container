@@ -7,6 +7,7 @@ namespace Tests\SourceDefinitionsMutable;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
@@ -26,6 +27,7 @@ use function array_keys;
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
 class SourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]

@@ -8,9 +8,8 @@ use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
-use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Exception\SourceDefinitionsMutableException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
@@ -61,13 +60,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        $identifier = match (true) {
-            is_string($offset) && '' !== $offset => $offset,
-            $value instanceof DiDefinitionIdentifierInterface => $value->getIdentifier(),
-            default => throw new ContainerIdentifierException(
-                sprintf('Definition identifier must be a non-empty string. Definition type "%s".', get_debug_type($value))
-            )
-        };
+        $identifier = Helper::getContainerIdentifier($offset, $value);
 
         if ($this->offsetExists($identifier)) {
             throw new ContainerAlreadyRegisteredException(
