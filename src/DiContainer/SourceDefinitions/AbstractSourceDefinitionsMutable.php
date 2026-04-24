@@ -8,16 +8,20 @@ use Closure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\SourceDefinitionsMutableException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Traversable;
 
 use function get_debug_type;
+use function is_object;
 use function is_string;
 use function sprintf;
 use function var_export;
@@ -57,24 +61,38 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
     /**
      * @throws ContainerIdentifierExceptionInterface
      * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
         $identifier = Helper::getContainerIdentifier($offset, $value);
 
         if ($this->offsetExists($identifier)) {
-            throw new ContainerAlreadyRegisteredException(
-                sprintf('The container identifier "%s" already registered in the source. Definition type: "%s".', $identifier, get_debug_type($value))
-            );
+            $definition = $this->definitions()[$identifier];
+
+            if (!$definition instanceof DiDefinitionRuntimeInterface) {
+                throw new ContainerAlreadyRegisteredException(
+                    sprintf('The container identifier "%s" already registered in the source. Definition type: "%s".', $identifier, get_debug_type($value))
+                );
+            }
+
+            if (!is_object($value)) {
+                throw new DiDefinitionException(
+                    sprintf('The runtime definition with the identifier %s must be specified as an object. Got value type "%s".', var_export($identifier, true), get_debug_type($value))
+                );
+            }
+
+            $definition->setDefinition($value);
+
+            return;
         }
 
-        $definition = match (true) {
+        $this->definitions()[$identifier] = match (true) {
             $value instanceof DiDefinitionInterface => $value,
             $value instanceof Closure => new DiDefinitionCallable($value),
             default => new DiDefinitionValue($value)
         };
 
-        $this->definitions()[$identifier] = $definition;
         unset($this->removedDefinitionIds()[$identifier]);
     }
 
