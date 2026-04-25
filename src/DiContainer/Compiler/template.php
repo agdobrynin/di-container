@@ -10,6 +10,7 @@ echo '<?php';
 
 /** @var DiContainerConfigInterface $config */
 $config = $this->diContainerDefinitions->getContainer()->getConfig();
+$runtimeDefinitions = $this->runtimeDefinitions;
 ?>
 
 declare(strict_types=1);
@@ -32,17 +33,19 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 {
     public function __construct(
         private readonly array $runtimeDefinitionIds = [
-<?php foreach ($this->runtimeDefinitions as $id => $definition) { ?>
+<?php foreach ($runtimeDefinitions as $id => $definition) { ?>
             <?php echo \sprintf('%s => true', \var_export($id, true)); ?>,
 <?php } ?>
         ]
     ) {
         parent::__construct(
-            [
-<?php foreach ($this->runtimeDefinitions as $id => $definition) { ?>
-                <?php echo \sprintf('\Kaspi\DiContainer\diRuntime(%s, %s)', \var_export($id, true), \var_export($definition->getMessage(), true)); ?>,
+<?php if ([] !== $runtimeDefinitions) { ?>
+            definitions: (static function (): \Generator {
+<?php foreach ($runtimeDefinitions as $id => $definition) { ?>
+                <?php echo \sprintf('yield \Kaspi\DiContainer\diRuntime(%s, %s);'.PHP_EOL, \var_export($id, true), \var_export($definition->getMessage(), true)); ?>
 <?php } ?>
-            ],
+            })(),
+<?php } ?>
             config: new class implements \Kaspi\DiContainer\Interfaces\DiContainerConfigInterface {
                 public function isSingletonServiceDefault(): bool
                 {
@@ -59,13 +62,12 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
                     return <?php echo \var_export($config->isUseAttribute(), true); ?>;
                 }
             },
-<?php
-if ($config->isUseZeroConfigurationDefinition()) {?>
-            removedDefinitionIds: [
+<?php if ($this->diContainerDefinitions->getContainer()->getRemovedDefinitionIds()->valid()) { ?>
+            removedDefinitionIds: (static function (): \Generator {
 <?php foreach ($this->diContainerDefinitions->getContainer()->getRemovedDefinitionIds() as $id => $v) {?>
-                <?php echo \var_export($id, true); ?> => true,
+                <?php echo \sprintf('yield %s => true;'.PHP_EOL, \var_export($id, true))?>
 <?php } ?>
-            ]
+            })()
 <?php } ?>
         );
     }
