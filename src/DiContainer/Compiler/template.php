@@ -30,9 +30,19 @@ use Kaspi\DiContainer\Exception\{
 
 final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly array $runtimeDefinitionIds = [
+<?php foreach ($this->runtimeDefinitions as $id => $definition) { ?>
+            <?php echo \sprintf('%s => true', \var_export($id, true)); ?>,
+<?php } ?>
+        ]
+    ) {
         parent::__construct(
+            [
+<?php foreach ($this->runtimeDefinitions as $id => $definition) { ?>
+                <?php echo \sprintf('\Kaspi\DiContainer\diRuntime(%s, %s)', \var_export($id, true), \var_export($definition->getMessage(), true)); ?>,
+<?php } ?>
+            ],
             config: new class implements \Kaspi\DiContainer\Interfaces\DiContainerConfigInterface {
                 public function isSingletonServiceDefault(): bool
                 {
@@ -53,7 +63,7 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 if ($config->isUseZeroConfigurationDefinition()) {?>
             removedDefinitionIds: [
 <?php foreach ($this->diContainerDefinitions->getContainer()->getRemovedDefinitionIds() as $id => $v) {?>
-                <?php echo var_export($id, true); ?> => true,
+                <?php echo \var_export($id, true); ?> => true,
 <?php } ?>
             ]
 <?php } ?>
@@ -62,7 +72,7 @@ if ($config->isUseZeroConfigurationDefinition()) {?>
 
     public function set(string $id, mixed $definition): static
     {
-        if (false === $this->containerIdMapMethod($id)) {
+        if (isset($this->runtimeDefinitionIds[$id]) || false === $this->containerIdMapMethod($id)) {
             return parent::set($id, $definition);
         }
 

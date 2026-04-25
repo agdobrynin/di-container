@@ -21,6 +21,7 @@ use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Throwable;
@@ -40,6 +41,13 @@ use function var_export;
 final class ContainerCompiler implements ContainerCompilerInterface
 {
     private CompiledContainerFQNInterface $compiledContainerFQN;
+
+    /**
+     * The property used in the file `template.php`.
+     *
+     * @var array<non-empty-string, DiDefinitionRuntimeInterface>
+     */
+    private array $runtimeDefinitions = []; // @phpstan-ignore property.onlyWritten
 
     /**
      * @param class-string $containerClass container class as fully qualified name
@@ -105,6 +113,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
     public function compile(): string
     {
         $definitions = $this->containerDefinitions();
+        $this->runtimeDefinitions = [];
 
         while ($definitions->valid()) {
             try {
@@ -140,6 +149,10 @@ final class ContainerCompiler implements ContainerCompilerInterface
                 }
 
                 $compiledEntry = $this->compiledExceptionStack($exception, $id);
+            }
+
+            if ($definition instanceof DiDefinitionRuntimeInterface) {
+                $this->runtimeDefinitions[$id] = $definition;
             }
 
             $this->compiledEntries->setServiceMethod($id, $compiledEntry);
