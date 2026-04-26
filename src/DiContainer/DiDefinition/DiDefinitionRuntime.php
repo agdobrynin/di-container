@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 
 use function rtrim;
 use function sprintf;
+use function var_export;
 
 final class DiDefinitionRuntime implements DiDefinitionNoArgumentsInterface, DiDefinitionRuntimeInterface
 {
@@ -37,11 +38,11 @@ final class DiDefinitionRuntime implements DiDefinitionNoArgumentsInterface, DiD
     public function resolve(DiContainerInterface $container, mixed $context = null): object
     {
         if (!isset($this->definition)) {
-            $additionalMessage = $this->message ?? 'You should replace the value of "runtime definition" in the runtime container using the DiContainerInterface::set() method.';
+            $additionalMessage = $this->message ?? sprintf('You should replace the value of definition in the runtime container using the method DiContainerInterface::set(%s, $objectInstance).', var_export($this->containerIdentifier, true));
 
             throw new DiDefinitionException(
                 rtrim(
-                    sprintf('The "runtime definition" cannot be resolved. %s', $additionalMessage)
+                    sprintf('The runtime definition with container identifier %s cannot be resolved. %s', var_export($this->containerIdentifier, true), $additionalMessage)
                 )
             );
         }
