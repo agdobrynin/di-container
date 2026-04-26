@@ -1,23 +1,23 @@
 <?php
 
 declare(strict_types=1);
-use Kaspi\DiContainer\Compiler\ContainerCompiler;
-use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 
 // Template for compiled container.
-/** @var ContainerCompiler $this */
+/** @var \Kaspi\DiContainer\Compiler\ContainerCompiler $this */
 echo '<?php';
-
-/** @var DiContainerConfigInterface $config */
+$definitions = $this->diContainerDefinitions;
 $config = $this->diContainerDefinitions->getContainer()->getConfig();
+$compiledEntries = $this->compiledEntries;
 $runtimeDefinitions = $this->runtimeDefinitions;
+$idsForHasMethod = $this->getForHasMethod();
+$containerFQN = $this->getContainerFQN();
 ?>
 
 declare(strict_types=1);
 <?php
-if ('' !== $this->getContainerFQN()->getNamespace()) { ?>
+if ('' !== $containerFQN->getNamespace()) { ?>
 
-namespace <?php echo $this->getContainerFQN()->getNamespace(); ?>;
+namespace <?php echo $containerFQN->getNamespace(); ?>;
 
 use function array_keys;
 use function array_key_exists;
@@ -29,7 +29,7 @@ use Kaspi\DiContainer\Exception\{
     NotFoundException,
 };
 
-final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
+final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
     public function __construct(
         private readonly array $runtimeDefinitionIds = [
@@ -62,9 +62,9 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
                     return <?php echo \var_export($config->isUseAttribute(), true); ?>;
                 }
             },
-<?php if ($this->diContainerDefinitions->getContainer()->getRemovedDefinitionIds()->valid()) { ?>
+<?php if ($definitions->getContainer()->getRemovedDefinitionIds()->valid()) { ?>
             removedDefinitionIds: (static function (): \Generator {
-<?php foreach ($this->diContainerDefinitions->getContainer()->getRemovedDefinitionIds() as $id => $v) {?>
+<?php foreach ($definitions->getContainer()->getRemovedDefinitionIds() as $id => $v) {?>
                 <?php echo \sprintf('yield %s => true;'.PHP_EOL, \var_export($id, true))?>
 <?php } ?>
             })()
@@ -85,6 +85,10 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 
     public function get(string $id): mixed
     {
+        if (isset($this->runtimeDefinitionIds[$id])) {
+            return parent::get($id);
+        }
+
         /** @var false|non-empty-string $method */
         $method = $this->containerIdMapMethod($id);
 
@@ -112,11 +116,11 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
 <?php
 $expressionHasDefault = $config->isUseZeroConfigurationDefinition() ? 'parent::has($id)' : 'false';
 
-if (!$this->compiledEntries->getHasIdentifiers()->valid()) {?>
+if (!$idsForHasMethod->valid()) {?>
         return <?php echo $expressionHasDefault; ?>;
 <?php } else { ?>
         return match($id) {<?php
-    $hasIds = $this->compiledEntries->getHasIdentifiers();
+    $hasIds = $idsForHasMethod;
     do {
         $id = $hasIds->current();
         $hasIds->next();
@@ -140,14 +144,14 @@ if (!$this->compiledEntries->getHasIdentifiers()->valid()) {?>
     private function containerIdMapMethod(string $id): false|string
     {
         return match($id) {
-<?php foreach ($this->compiledEntries->getContainerIdentifierMappedMethodResolve() as ['id' => $id, 'serviceMethod' => $serviceMethod]) {?>
+<?php foreach ($compiledEntries->getContainerIdentifierMappedMethodResolve() as ['id' => $id, 'serviceMethod' => $serviceMethod]) {?>
             <?php echo \var_export($id, true); ?> => <?php echo \var_export($serviceMethod, true); ?>,
 <?php } ?>
             default => false,
         };
     }
 
-<?php foreach ($this->compiledEntries->getCompiledEntries() as ['id' => $id, 'serviceMethod' => $method , 'entry' => $compiledEntry]) {?>
+<?php foreach ($compiledEntries->getCompiledEntries() as ['id' => $id, 'serviceMethod' => $method , 'entry' => $compiledEntry]) {?>
 
     // container identifier <?php echo \var_export($id, true).PHP_EOL; ?>
     private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>

@@ -47,7 +47,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
      *
      * @var array<non-empty-string, DiDefinitionRuntimeInterface>
      */
-    private array $runtimeDefinitions = []; // @phpstan-ignore property.onlyWritten
+    private array $runtimeDefinitions = [];
 
     /**
      * @param class-string $containerClass container class as fully qualified name
@@ -121,6 +121,18 @@ final class ContainerCompiler implements ContainerCompilerInterface
                 $definition = $definitions->current();
                 $id = $definitions->key();
 
+                /*
+                 * Runtime definition not compilable.
+                 *
+                 * These definitions provide only IDs for container method `has()`.
+                 */
+                if ($definition instanceof DiDefinitionRuntimeInterface) {
+                    $this->runtimeDefinitions[$id] = $definition;
+                    $definitions->next();
+
+                    continue;
+                }
+
                 if ($definition instanceof InvalidDefinitionCompileException
                     || $definition instanceof NotFoundExceptionInterface) {
                     throw $definition;
@@ -151,10 +163,6 @@ final class ContainerCompiler implements ContainerCompilerInterface
                 $compiledEntry = $this->compiledExceptionStack($exception, $id);
             }
 
-            if ($definition instanceof DiDefinitionRuntimeInterface) {
-                $this->runtimeDefinitions[$id] = $definition;
-            }
-
             $this->compiledEntries->setServiceMethod($id, $compiledEntry);
 
             $definitions->next();
@@ -165,6 +173,24 @@ final class ContainerCompiler implements ContainerCompilerInterface
         require __DIR__.'/template.php';
 
         return (string) ob_get_clean();
+    }
+
+    /**
+     * Get container identifies for method `has()` in compiled container.
+     *
+     * @return Generator<int, non-empty-string>
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function getForHasMethod(): Generator
+    {
+        $this->compiledEntries->getHasIdentifiers()->rewind();
+
+        yield from $this->compiledEntries->getHasIdentifiers();
+
+        foreach ($this->runtimeDefinitions as $runtimeDefinition) {
+            yield $runtimeDefinition->getIdentifier();
+        }
     }
 
     /**
