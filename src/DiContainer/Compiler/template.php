@@ -5,7 +5,7 @@ declare(strict_types=1);
 // Template for compiled container.
 /** @var \Kaspi\DiContainer\Compiler\ContainerCompiler $this */
 echo '<?php';
-$definitions = $this->diContainerDefinitions;
+$container = $this->diContainerDefinitions->getContainer();
 $config = $this->diContainerDefinitions->getContainer()->getConfig();
 $compiledEntries = $this->compiledEntries;
 $runtimeDefinitions = $this->runtimeDefinitions;
@@ -56,9 +56,9 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
                     return <?php echo \var_export($config->isUseAttribute(), true); ?>;
                 }
             },
-<?php if ($definitions->getContainer()->getRemovedDefinitionIds()->valid()) { ?>
+<?php if ($container->getRemovedDefinitionIds()->valid()) { ?>
             removedDefinitionIds: (static function (): \Generator {
-<?php foreach ($definitions->getContainer()->getRemovedDefinitionIds() as $id => $v) {?>
+<?php foreach ($container->getRemovedDefinitionIds() as $id => $v) {?>
                 <?php echo \sprintf('yield %s => true;'.PHP_EOL, \var_export($id, true))?>
 <?php } ?>
             })()
