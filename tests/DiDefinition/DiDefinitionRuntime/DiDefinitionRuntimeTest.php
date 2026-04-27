@@ -36,7 +36,7 @@ class DiDefinitionRuntimeTest extends TestCase
     public function testCannotResolveWithoutDefinition(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('The "runtime definition" cannot be resolved');
+        $this->expectExceptionMessage('The runtime definition with container identifier \'service.foo\' cannot be resolved.');
 
         (new DiDefinitionRuntime('service.foo'))
             ->resolve($this->createMock(DiContainerInterface::class))
