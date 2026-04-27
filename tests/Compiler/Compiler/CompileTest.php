@@ -14,9 +14,11 @@ use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerNullConfig;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\NotFoundException;
+use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\IdsIteratorInterface;
@@ -27,9 +29,11 @@ use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
+use stdClass;
 
 use function bin2hex;
 use function random_bytes;
@@ -51,6 +55,9 @@ use function random_bytes;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(CompiledEntries::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(DiDefinitionRuntime::class)]
+#[CoversClass(\Kaspi\DiContainer\Helper::class)]
+#[CoversFunction('Kaspi\DiContainer\diRuntime')]
 class CompileTest extends TestCase
 {
     private DiDefinitionTransformerInterface $mockTransformer;
@@ -141,5 +148,50 @@ class CompileTest extends TestCase
 
         self::assertTrue($reflectionClass->hasMethod('resolve_container'));
         self::assertTrue($reflectionClass->hasMethod('resolve_container1'));
+    }
+
+    public function testCompileParamsForRuntimeDefinition(): void
+    {
+        $containerMock = $this->createMock(DiContainerInterface::class);
+        $containerMock->method('getDefinitions')
+            ->willReturnCallback(static function (): Generator {
+                yield 'foo' => new DiDefinitionRuntime('foo');
+            })
+        ;
+
+        $idsIter = $this->createMock(IdsIteratorInterface::class);
+        $containerDefinitions = new DiContainerDefinitions($containerMock, $idsIter);
+        $transformerMock = $this->createMock(DiDefinitionTransformerInterface::class);
+        $compiledEntriesMock = $this->createMock(CompiledEntriesInterface::class);
+
+        $containerName = 'Container'.bin2hex(random_bytes(8));
+        $containerClass = __NAMESPACE__.'\\'.$containerName;
+
+        $compiler = new ContainerCompiler(
+            $containerClass,
+            $containerDefinitions,
+            $transformerMock,
+            $compiledEntriesMock,
+            InvalidBehaviorCompileEnum::ExceptionOnCompile,
+        );
+
+        $containerFile = $containerName.'.php';
+
+        vfsStream::setup(structure: [
+            $containerFile => $compiler->compile(),
+        ]);
+
+        require_once vfsStream::url('root/'.$containerFile);
+
+        $container = new $containerClass();
+
+        self::assertTrue($container->has('foo'));
+        self::assertFalse($container->has('bar'));
+
+        $instance = new stdClass();
+
+        $container->set('foo', $instance);
+
+        self::assertSame($instance, $container->get('foo'));
     }
 }
