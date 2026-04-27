@@ -26,18 +26,12 @@ use function array_key_exists;
 use Kaspi\DiContainer\Exception\{
     CallCircularDependencyException,
     ContainerAlreadyRegisteredException,
-    NotFoundException,
 };
 
 final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
-    public function __construct(
-        private readonly array $runtimeDefinitionIds = [
-<?php foreach ($runtimeDefinitions as $id => $definition) { ?>
-            <?php echo \sprintf('%s => true', \var_export($id, true)); ?>,
-<?php } ?>
-        ]
-    ) {
+    public function __construct()
+    {
         parent::__construct(
 <?php if ([] !== $runtimeDefinitions) { ?>
             definitions: (static function (): \Generator {
@@ -74,7 +68,7 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
 
     public function set(string $id, mixed $definition): static
     {
-        if (isset($this->runtimeDefinitionIds[$id]) || false === $this->containerIdMapMethod($id)) {
+        if (false === $this->containerIdMapMethod($id)) {
             return parent::set($id, $definition);
         }
 
@@ -85,17 +79,11 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
 
     public function get(string $id): mixed
     {
-        if (isset($this->runtimeDefinitionIds[$id])) {
-            return parent::get($id);
-        }
-
         /** @var false|non-empty-string $method */
         $method = $this->containerIdMapMethod($id);
 
         if (false === $method) {
-            return $this->config->isUseZeroConfigurationDefinition()
-                ? parent::get($id)
-                : throw new NotFoundException(id: $id);
+            return parent::get($id);
         }
 
         try {
@@ -114,7 +102,7 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
     public function has(string $id): bool
     {
 <?php
-$expressionHasDefault = $config->isUseZeroConfigurationDefinition() ? 'parent::has($id)' : 'false';
+$expressionHasDefault = 'parent::has($id)';
 
 if (!$idsForHasMethod->valid()) {?>
         return <?php echo $expressionHasDefault; ?>;
