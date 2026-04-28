@@ -68,6 +68,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var ArrayIterator<non-empty-string, mixed> */
     private readonly ArrayIterator $parameters;
 
+    /** @var ArrayIterator<non-empty-string, mixed> */
+    private readonly ArrayIterator $configuratorContext;
+
     private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
     /**
@@ -93,6 +96,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configuredDefinitions = new ArrayIterator();
         $this->removedDefinitionIds = new ArrayIterator();
         $this->parameters = new ArrayIterator();
+        $this->configuratorContext = new ArrayIterator();
     }
 
     public function load(string ...$file): static
@@ -207,13 +211,23 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         return $this->useAttribute;
     }
 
+    public function setConfiguratorContexts(iterable $context): static
+    {
+        foreach ($context as $name => $value) {
+            $this->configuratorContext->offsetSet($name, $value);
+        }
+
+        return $this;
+    }
+
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->configuratorContext) implements DefinitionsConfiguratorInterface {
             public function __construct(
                 private readonly DefinitionsLoaderInterface $definitionsLoader,
                 private readonly ArrayIterator $removedDefinitionIds,
                 private readonly ArrayIterator $parameters,
+                private readonly ArrayIterator $configuratorContext,
             ) {}
 
             public function removeDefinition(string $id): void
@@ -310,6 +324,19 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             {
                 return $this->parameters->offsetExists($name);
             }
+
+            public function getContext(string $name, ?callable $fallback = null): mixed
+            {
+                if ($this->configuratorContext->offsetExists($name)) {
+                    return $this->configuratorContext->offsetGet($name);
+                }
+
+                if (null !== $fallback) {
+                    return ($fallback)($name);
+                }
+
+                throw new DefinitionsLoaderException(sprintf('The context name %s does not exist.', var_export($name, true)));
+            }
         };
     }
 
@@ -390,6 +417,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->parameters->rewind();
         while ($this->parameters->valid()) {
             $this->parameters->offsetUnset($this->parameters->key());
+        }
+
+        $this->configuratorContext->rewind();
+        while ($this->configuratorContext->valid()) {
+            $this->configuratorContext->offsetUnset($this->configuratorContext->key());
         }
 
         $this->useAttribute = true;

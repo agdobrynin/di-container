@@ -77,6 +77,11 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     private array $parameters = [];
 
     /**
+     * @var list<array<non-empty-string, mixed>>
+     */
+    private array $configuratorContext = [];
+
+    /**
      * @var non-empty-string
      */
     private string $compilerOutputDirectory;
@@ -105,6 +110,15 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         private readonly DefinitionsLoaderInterface $definitionsLoader = new DefinitionsLoader(),
     ) {
         $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
+    }
+
+    public function setConfiguratorContexts(iterable $context): static
+    {
+        foreach ($context as $name => $value) {
+            $this->configuratorContext[] = [$name => $value];
+        }
+
+        return $this;
     }
 
     public function load(string $file, string ...$_): static
@@ -319,6 +333,10 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      */
     private function configuredDefinitions(): Generator
     {
+        foreach ($this->configuratorContext as $context) {
+            $this->definitionsLoader->setConfiguratorContexts($context);
+        }
+
         foreach ($this->parameters as $parameter) {
             if (is_string($parameter)) {
                 try {

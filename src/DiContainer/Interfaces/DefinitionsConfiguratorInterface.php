@@ -98,4 +98,16 @@ interface DefinitionsConfiguratorInterface
     public function removeParameter(string $name): void;
 
     public function hasParameter(string $name): bool;
+
+    /**
+     * Configurator context.
+     *
+     * Provides any additional data for the configuration file.
+     *
+     * @param non-empty-string                   $name
+     * @param null|callable(string $name): mixed $fallback
+     *
+     * @throws DefinitionsLoaderExceptionInterface
+     */
+    public function getContext(string $name, ?callable $fallback = null): mixed;
 }

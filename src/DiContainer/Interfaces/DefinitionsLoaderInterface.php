@@ -111,4 +111,17 @@ interface DefinitionsLoaderInterface extends ResetInterface
     public function isUseAttribute(): bool;
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface;
+
+    /**
+     * Set configurator context.
+     *
+     * Provides any additional data for the configuration file as collection.
+     *
+     * The existing context name will be replaced.
+     *
+     * @param iterable<non-empty-string, mixed> $context
+     *
+     * @return $this
+     */
+    public function setConfiguratorContexts(iterable $context): static;
 }

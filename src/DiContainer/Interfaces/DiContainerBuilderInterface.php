@@ -81,6 +81,19 @@ interface DiContainerBuilderInterface
     public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static;
 
     /**
+     * Set configurator context.
+     *
+     * Provides any additional data for the configuration file as collection.
+     *
+     * The existing context name will be replaced.
+     *
+     * @param iterable<non-empty-string, mixed> $context
+     *
+     * @return $this
+     */
+    public function setConfiguratorContexts(iterable $context): static;
+
+    /**
      * Import classes from directories.
      *
      * @param non-empty-string       $namespace           PSR-4 namespace prefix
