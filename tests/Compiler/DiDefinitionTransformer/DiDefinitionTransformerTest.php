@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Compiler\CompilableDefinition\ProxyClosureEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\TaggedAsEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
@@ -29,6 +30,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionValueInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -119,14 +121,6 @@ class DiDefinitionTransformerTest extends TestCase
         ];
     }
 
-    public function testUnsupportedDefinitionWithoutFallback(): void
-    {
-        $this->expectException(DefinitionCompileExceptionInterface::class);
-        $this->expectExceptionMessage('Unsupported definition type "stdClass"');
-
-        $this->transformer->transform(new stdClass(), $this->diContainerDefinitions);
-    }
-
     public function testUnsupportedDefinitionWithFallback(): void
     {
         $compilableDefinotion = $this->transformer->transform(
@@ -141,5 +135,15 @@ class DiDefinitionTransformerTest extends TestCase
     public function testGetClosureParser(): void
     {
         self::assertInstanceOf(FinderClosureCodeInterface::class, $this->transformer->getClosureParser());
+    }
+
+    #[TestWith([new DiDefinitionRuntime('foo'), 'Unsupported definition type "Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime"'])]
+    #[TestWith([new stdClass(), 'Unsupported definition type "stdClass"'])]
+    public function testUnsupportedDefinition(mixed $def, string $expectMsg): void
+    {
+        $this->expectException(DefinitionCompileExceptionInterface::class);
+        $this->expectExceptionMessage($expectMsg);
+
+        $this->transformer->transform($def, $this->diContainerDefinitions);
     }
 }

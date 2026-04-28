@@ -11,6 +11,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
@@ -30,6 +31,7 @@ use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diParameter;
 use function Kaspi\DiContainer\diParameterRuntime;
 use function Kaspi\DiContainer\diProxyClosure;
+use function Kaspi\DiContainer\diRuntime;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
@@ -51,6 +53,8 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversFunction('Kaspi\DiContainer\diParameter')]
 #[CoversClass(DiDefinitionParameterRuntime::class)]
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
+#[CoversClass(DiDefinitionRuntime::class)]
+#[CoversFunction('Kaspi\DiContainer\diRuntime')]
 class HelperFunctionTest extends TestCase
 {
     public function testFunctiondiGet(): void
@@ -147,5 +151,16 @@ class HelperFunctionTest extends TestCase
 
         self::assertEquals($expectDefinition, $p->getDefinition());
         self::assertStringContainsString($expectMessage, $p->getMessage());
+    }
+
+    #[TestWith(['foo', 'foo'])]
+    #[TestWith(['foo', null])]
+    public function testDiDefinitionRuntime(string $identifier, ?string $message): void
+    {
+        $d = diRuntime($identifier, $message);
+
+        self::assertInstanceOf(DiDefinitionRuntime::class, $d);
+        self::assertEquals($identifier, $d->getIdentifier());
+        self::assertEquals($message, $d->getMessage());
     }
 }

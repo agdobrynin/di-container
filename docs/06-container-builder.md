@@ -156,6 +156,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 > [!TIP]
 > Для некоторых определений идентификатор контейнера может быть сформирован автоматически.
 > - [хэлпер функция `diAutowire()`](01-php-definition.md#diautowire)
+> - [хэлпер функция `diRuntime()`](10-runtime-definition.md#diruntime)
 > - [PHP атрибут `#[Autowire()]`](02-attribute-definition.md#autowire)
 >
 

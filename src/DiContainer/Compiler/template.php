@@ -1,22 +1,23 @@
 <?php
 
 declare(strict_types=1);
-use Kaspi\DiContainer\Compiler\ContainerCompiler;
-use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 
 // Template for compiled container.
-/** @var ContainerCompiler $this */
+/** @var \Kaspi\DiContainer\Compiler\ContainerCompiler $this */
 echo '<?php';
-
-/** @var DiContainerConfigInterface $config */
+$container = $this->diContainerDefinitions->getContainer();
 $config = $this->diContainerDefinitions->getContainer()->getConfig();
+$compiledEntries = $this->compiledEntries;
+$runtimeDefinitions = $this->runtimeDefinitions;
+$idsForHasMethod = $this->getForHasMethod();
+$containerFQN = $this->getContainerFQN();
 ?>
 
 declare(strict_types=1);
 <?php
-if ('' !== $this->getContainerFQN()->getNamespace()) { ?>
+if ('' !== $containerFQN->getNamespace()) { ?>
 
-namespace <?php echo $this->getContainerFQN()->getNamespace(); ?>;
+namespace <?php echo $containerFQN->getNamespace(); ?>;
 
 use function array_keys;
 use function array_key_exists;
@@ -25,14 +26,20 @@ use function array_key_exists;
 use Kaspi\DiContainer\Exception\{
     CallCircularDependencyException,
     ContainerAlreadyRegisteredException,
-    NotFoundException,
 };
 
-final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
+final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
 {
     public function __construct()
     {
         parent::__construct(
+<?php if ([] !== $runtimeDefinitions) { ?>
+            definitions: (static function (): \Generator {
+<?php foreach ($runtimeDefinitions as $id => $definition) { ?>
+                <?php echo \sprintf('yield \Kaspi\DiContainer\diRuntime(%s, %s);'.PHP_EOL, \var_export($id, true), \var_export($definition->getMessage(), true)); ?>
+<?php } ?>
+            })(),
+<?php } ?>
             config: new class implements \Kaspi\DiContainer\Interfaces\DiContainerConfigInterface {
                 public function isSingletonServiceDefault(): bool
                 {
@@ -49,13 +56,12 @@ final class <?php echo $this->getContainerFQN()->getClass(); ?> extends \Kaspi\D
                     return <?php echo \var_export($config->isUseAttribute(), true); ?>;
                 }
             },
-<?php
-if ($config->isUseZeroConfigurationDefinition()) {?>
-            removedDefinitionIds: [
-<?php foreach ($this->diContainerDefinitions->getContainer()->getRemovedDefinitionIds() as $id => $v) {?>
-                <?php echo var_export($id, true); ?> => true,
+<?php if ($container->getRemovedDefinitionIds()->valid()) { ?>
+            removedDefinitionIds: (static function (): \Generator {
+<?php foreach ($container->getRemovedDefinitionIds() as $id => $v) {?>
+                <?php echo \sprintf('yield %s => true;'.PHP_EOL, \var_export($id, true))?>
 <?php } ?>
-            ]
+            })()
 <?php } ?>
         );
     }
@@ -77,9 +83,7 @@ if ($config->isUseZeroConfigurationDefinition()) {?>
         $method = $this->containerIdMapMethod($id);
 
         if (false === $method) {
-            return $this->config->isUseZeroConfigurationDefinition()
-                ? parent::get($id)
-                : throw new NotFoundException(id: $id);
+            return parent::get($id);
         }
 
         try {
@@ -98,13 +102,13 @@ if ($config->isUseZeroConfigurationDefinition()) {?>
     public function has(string $id): bool
     {
 <?php
-$expressionHasDefault = $config->isUseZeroConfigurationDefinition() ? 'parent::has($id)' : 'false';
+$expressionHasDefault = 'parent::has($id)';
 
-if (!$this->compiledEntries->getHasIdentifiers()->valid()) {?>
+if (!$idsForHasMethod->valid()) {?>
         return <?php echo $expressionHasDefault; ?>;
 <?php } else { ?>
         return match($id) {<?php
-    $hasIds = $this->compiledEntries->getHasIdentifiers();
+    $hasIds = $idsForHasMethod;
     do {
         $id = $hasIds->current();
         $hasIds->next();
@@ -128,14 +132,14 @@ if (!$this->compiledEntries->getHasIdentifiers()->valid()) {?>
     private function containerIdMapMethod(string $id): false|string
     {
         return match($id) {
-<?php foreach ($this->compiledEntries->getContainerIdentifierMappedMethodResolve() as ['id' => $id, 'serviceMethod' => $serviceMethod]) {?>
+<?php foreach ($compiledEntries->getContainerIdentifierMappedMethodResolve() as ['id' => $id, 'serviceMethod' => $serviceMethod]) {?>
             <?php echo \var_export($id, true); ?> => <?php echo \var_export($serviceMethod, true); ?>,
 <?php } ?>
             default => false,
         };
     }
 
-<?php foreach ($this->compiledEntries->getCompiledEntries() as ['id' => $id, 'serviceMethod' => $method , 'entry' => $compiledEntry]) {?>
+<?php foreach ($compiledEntries->getCompiledEntries() as ['id' => $id, 'serviceMethod' => $method , 'entry' => $compiledEntry]) {?>
 
     // container identifier <?php echo \var_export($id, true).PHP_EOL; ?>
     private function <?php echo $method; ?>(): <?php echo $compiledEntry->getReturnType(); ?>

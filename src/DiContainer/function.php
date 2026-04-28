@@ -11,6 +11,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -100,5 +101,15 @@ if (!function_exists('Kaspi\DiContainer\diParameterRuntime')) { // @codeCoverage
     function diParameterRuntime(string $name = '', ?string $message = null): DiDefinitionNoArgumentsInterface
     {
         return new DiDefinitionParameterRuntime($name, $message);
+    }
+} // @codeCoverageIgnore
+
+if (!function_exists('Kaspi\DiContainer\diRuntime')) { // @codeCoverageIgnore
+    /**
+     * @param non-empty-string $containerIdentifier
+     */
+    function diRuntime(string $containerIdentifier, ?string $message = null): DiDefinitionNoArgumentsInterface
+    {
+        return new DiDefinitionRuntime($containerIdentifier, $message);
     }
 } // @codeCoverageIgnore
