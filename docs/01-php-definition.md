@@ -18,7 +18,7 @@ class MyClass {
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (): \Generator {
-    // хэлпер функция для объявления зависимости
+    // хелпер функция для объявления зависимости
     yield diAutowire(
         // получить класс \PDO 
         definition: \PDO::class,
@@ -79,8 +79,8 @@ var_dump(
 
 ## Объявления для определений контейнера.
 
-### Объявления через хэлпер функции:
-- хэлпер функции:
+### Объявления через хелпер функции:
+- хелпер функции:
   - [diAutowire](#diautowire) – php класс
   - [diCallable](#dicallable) – `callable` тип
   - [diGet](#diget) – ссылка на идентификатор контейнера
@@ -97,7 +97,7 @@ var_dump(
 > Для повторяющихся значений рекомендуется использовать «[параметры контейнера](09-container-parameters.md)». 
 
 > [!NOTE]
-> Хэлпер функции имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
+> Хелпер функции имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
 
 #### diAutowire
 
@@ -146,9 +146,9 @@ diAutowire(...)->bindArguments(var1: 'value 1', var2: 'value 2')
 > Для параметров не объявленных через `bindArgument` контейнер попытается разрешить зависимости самостоятельно.
 
 > [!TIP]
-> Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргумент `$argument` в `bindArgument` может принимать хелпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 >
-> Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
+> Если в `$argument` присваивается хелпер функция или объект реализующий интерфейс
 > `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface::class`
 > (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
 > то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
@@ -171,7 +171,7 @@ setup(string $method, array $arguments = [])
 > Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 > [!TIP]
-> Аргументы метода в `setup` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргументы метода в `setup` могут принимать хелпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
 Можно использовать именованные аргументы параметров:
 ```php
@@ -216,7 +216,7 @@ setupImmutable(string $method, array $arguments = [])
 > Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 > [!TIP]
-> Аргументы в `setupImmutable` могут принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргументы в `setupImmutable` могут принимать хелпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 
 > [!NOTE]
 > [пример использования метода `diAutowire(...)->setupImmutable`](#пример-5)
@@ -321,9 +321,9 @@ bindArguments(mixed ...$argument)
  // function(string $var1, string $var2) 
  ```
 > [!TIP]
-> Аргумент `$argument` в `bindArgument` может принимать хэлпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
+> Аргумент `$argument` в `bindArgument` может принимать хелпер функции такие как `diGet`, `diValue`, `diAutowire` и другие.
 >
-> Если в `$argument` присваивается хэлпер функция или объект реализующий интерфейс
+> Если в `$argument` присваивается хелпер функция или объект реализующий интерфейс
 > `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface::class`
 > (например `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::class`)
 > то признак isSingleton будет проигнорирован при разрешении зависимости данного параметра.
@@ -441,7 +441,7 @@ diGet(string $containerIdentifier)
 Аргумент:
 - `$containerIdentifier` - содержит указание на идентификатор контейнера, или указание на php класс.
 
-> У хэлпер функции нет дополнительных методов.
+> У хелпер функции нет дополнительных методов.
 
 **Пример с указанием на идентификатор контейнера.**
 ```php
@@ -666,7 +666,7 @@ diTaggedAs(
     bool $selfExclude = true
 ): DiDefinitionNoArgumentsInterface
 ```
-> У хэлпер функции нет дополнительных методов.
+> У хелпер функции нет дополнительных методов.
 
 Параметры:
 - `$tag` – имя тега на сервисах которые нужно собрать из контейнера.
@@ -704,7 +704,7 @@ diTaggedAs(
 >  - `string $tag` - имя тега;
 >  - `array $options` - метаданные тега;
 
-**Пример использования хэлпер функции diTaggedAs для аргумента:**
+**Пример использования хелпер функции diTaggedAs для аргумента:**
 ```php
 // src/Services/RuleCollection.php
 namespace App\Services;
@@ -1363,7 +1363,7 @@ $class = $container->get(App\Services\IterableArg::class);
 ```
 > [!TIP]
 > Если требуется чтобы сервис `services.rule-list` был объявлен как `isSingleton`
-> необходимо использовать хэлпер функцию `diCallable`
+> необходимо использовать хелпер функцию `diCallable`
 > ```php
 > // config/services.php
 > use App\Rules\{RuleA, RuleB, RuleC};
