@@ -155,8 +155,8 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 > [!TIP]
 > Для некоторых определений идентификатор контейнера может быть сформирован автоматически.
-> - [хэлпер функция `diAutowire()`](01-php-definition.md#diautowire)
-> - [хэлпер функция `diRuntime()`](10-runtime-definition.md#diruntime)
+> - [хелпер функция `diAutowire()`](01-php-definition.md#diautowire)
+> - [хелпер функция `diRuntime()`](10-runtime-definition.md#diruntime)
 > - [PHP атрибут `#[Autowire()]`](02-attribute-definition.md#autowire)
 >
 
@@ -576,7 +576,7 @@ $container = $builder->build();
 > [!NOTE] 
 > Если идентификатор контейнера не уникален в рамках текущего контейнера, то будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface`.
 
-Определение может быть представлено ввиде [хэлпер функции](01-php-definition.md#объявления-для-определений-контейнера) или
+Определение может быть представлено ввиде [хелпер функции](01-php-definition.md#объявления-для-определений-контейнера) или
 объекта.
 
 > [!WARNING]
