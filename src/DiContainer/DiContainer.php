@@ -58,7 +58,7 @@ use function var_export;
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
 {
-    protected SourceDefinitionsMutableInterface $definitions;
+    protected readonly SourceDefinitionsMutableInterface $definitions;
 
     protected readonly SourceParametersMutableInterface $parameters;
 
@@ -129,7 +129,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function set(string $id, mixed $definition): static
     {
-        $this->definitions[$id] = $definition;
+        $this->definitions->offsetSet($id, $definition);
 
         return $this;
     }
