@@ -80,6 +80,15 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected array $circularCallWatcher = [];
 
     /**
+     * Memorizing a class or interface using zero-definition configuration.
+     *
+     * @see DiContainerConfigInterface::isUseZeroConfigurationDefinition()
+     *
+     * @var array<class-string|string, bool>
+     */
+    protected array $hasViaZeroConfig = [];
+
+    /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
@@ -369,15 +378,20 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return false;
         }
 
+        if (isset($this->hasViaZeroConfig[$id])) {
+            return $this->hasViaZeroConfig[$id];
+        }
+
         if ($this->definitions->isRemovedDefinition($id)) { // @phpstan-ignore argument.type
             return false;
         }
 
         if (class_exists($id) || interface_exists($id)) {
-            return !$this->config->isUseAttribute() || !AttributeReader::isAutowireExclude(new ReflectionClass($id));
+            return $this->hasViaZeroConfig[$id] = !$this->config->isUseAttribute()
+                || !AttributeReader::isAutowireExclude(new ReflectionClass($id));
         }
 
-        return false;
+        return $this->hasViaZeroConfig[$id] = false;
     }
 
     protected function checkCyclicalDependencyCall(string $id): void
