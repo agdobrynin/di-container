@@ -240,4 +240,31 @@ class SourceDefinitionsMutableTest extends TestCase
 
         $s['service.foo'] = ['bar' => 'Service bar'];
     }
+
+    public function testUseStaticFabricAsSource(): void
+    {
+        $s = new DeferredSourceDefinitionsMutable([SourceDefinitions::class, 'src'], [SourceDefinitions::class, 'removed']);
+
+        self::assertFalse(isset($s['baz']));
+        self::assertTrue($s->isRemovedDefinition('baz'));
+
+        self::assertTrue(isset($s['foo'], $s['qux']));
+    }
+}
+
+final class SourceDefinitions
+{
+    public static function src(): Generator
+    {
+        yield 'foo' => 'bar';
+
+        yield 'baz' => 'fuz';
+
+        yield 'qux' => 'quux';
+    }
+
+    public static function removed(): Generator
+    {
+        yield 'baz' => true;
+    }
 }
