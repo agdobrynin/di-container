@@ -378,12 +378,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return false;
         }
 
-        if ($this->definitions->isRemovedDefinition($id)) { // @phpstan-ignore argument.type
-            return false;
-        }
-
         if (isset($this->hasViaZeroConfig[$id])) {
             return $this->hasViaZeroConfig[$id];
+        }
+
+        if ($this->definitions->isRemovedDefinition($id)) { // @phpstan-ignore argument.type
+            return false;
         }
 
         if (class_exists($id) || interface_exists($id)) {
