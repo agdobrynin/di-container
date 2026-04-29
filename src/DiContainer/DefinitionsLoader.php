@@ -69,7 +69,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     private readonly ArrayIterator $parameters;
 
     /** @var ArrayIterator<non-empty-string, mixed> */
-    private readonly ArrayIterator $configuratorContext;
+    private readonly ArrayIterator $configuratorContexts;
 
     private DefinitionsConfiguratorInterface $definitionsConfigurator;
 
@@ -96,7 +96,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->configuredDefinitions = new ArrayIterator();
         $this->removedDefinitionIds = new ArrayIterator();
         $this->parameters = new ArrayIterator();
-        $this->configuratorContext = new ArrayIterator();
+        $this->configuratorContexts = new ArrayIterator();
     }
 
     public function load(string ...$file): static
@@ -214,7 +214,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function setConfiguratorContexts(iterable $context): static
     {
         foreach ($context as $name => $value) {
-            $this->configuratorContext->offsetSet($name, $value);
+            $this->configuratorContexts->offsetSet($name, $value);
         }
 
         return $this;
@@ -222,12 +222,12 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->configuratorContext) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->configuratorContexts) implements DefinitionsConfiguratorInterface {
             public function __construct(
                 private readonly DefinitionsLoaderInterface $definitionsLoader,
                 private readonly ArrayIterator $removedDefinitionIds,
                 private readonly ArrayIterator $parameters,
-                private readonly ArrayIterator $configuratorContext,
+                private readonly ArrayIterator $configuratorContexts,
             ) {}
 
             public function removeDefinition(string $id): void
@@ -327,8 +327,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function getContext(string $name, ?callable $fallback = null): mixed
             {
-                if ($this->configuratorContext->offsetExists($name)) {
-                    return $this->configuratorContext->offsetGet($name);
+                if ($this->configuratorContexts->offsetExists($name)) {
+                    return $this->configuratorContexts->offsetGet($name);
                 }
 
                 if (null !== $fallback) {
@@ -419,9 +419,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->parameters->offsetUnset($this->parameters->key());
         }
 
-        $this->configuratorContext->rewind();
-        while ($this->configuratorContext->valid()) {
-            $this->configuratorContext->offsetUnset($this->configuratorContext->key());
+        $this->configuratorContexts->rewind();
+        while ($this->configuratorContexts->valid()) {
+            $this->configuratorContexts->offsetUnset($this->configuratorContexts->key());
         }
 
         $this->useAttribute = true;
