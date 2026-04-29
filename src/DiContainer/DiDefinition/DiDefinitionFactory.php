@@ -146,6 +146,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         [$constructor] = $this->getDefinition();
 
         try {
+            /** @var object $object */
             $object = $container->get($constructor);
         } catch (ContainerExceptionInterface $e) {
             throw new DiDefinitionException(

@@ -24,12 +24,10 @@ interface DiContainerInterface extends ContainerInterface
      *
      * @param class-string<T>|string $id
      *
-     * @return T
+     * @return ($id is class-string<T> ? T : mixed)
      *
      * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
      * @throws ContainerExceptionInterface Error while retrieving the entry.*
-     *
-     * @phpstan-ignore method.templateTypeNotInParameter
      */
     public function get(string $id): mixed;
 
