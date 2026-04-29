@@ -29,7 +29,6 @@ use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
-    /** @var \Tests\Integration\Core $core */
     $core = $configurator->getContext(\Tests\Integration\Core::class);
 
     yield diAutowire(\Tests\Integration\FooContext::class)

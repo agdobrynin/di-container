@@ -48,7 +48,6 @@ class DiContainerBuilderConfiguratorContextTest extends TestCase
     
     return static function (DefinitionsConfiguratorInterface $config): \Generator {
         $value = $config->getContext("foo").":".$config->getContext("bar");
-        /** @var \Tests\ContainerBuilder\Core $core */
         $core = $config->getContext(\Tests\ContainerBuilder\Core::class);
         
         yield \Kaspi\DiContainer\diAutowire(\Tests\ContainerBuilder\FooContext::class)
