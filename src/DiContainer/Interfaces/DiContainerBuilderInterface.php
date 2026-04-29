@@ -81,9 +81,10 @@ interface DiContainerBuilderInterface
     public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static;
 
     /**
-     * Set configurator context.
+     * Adds configurator contexts for configuration files.
      *
-     * Provides any additional data for the configuration file as collection.
+     * The collection is represented as key-value type elements,
+     * where the key defines the context name as a non-empty string.
      *
      * The existing context name will be replaced.
      *
@@ -91,7 +92,16 @@ interface DiContainerBuilderInterface
      *
      * @return $this
      */
-    public function setConfiguratorContexts(iterable $context): static;
+    public function addConfiguratorContexts(iterable $context): static;
+
+    /**
+     * Sets the context value for configuration files.
+     *
+     * @param non-empty-string $name context name
+     *
+     * @return $this
+     */
+    public function setConfiguratorContext(string $name, mixed $context): static;
 
     /**
      * Import classes from directories.

@@ -79,7 +79,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     /**
      * @var list<array<non-empty-string, mixed>>
      */
-    private array $configuratorContext = [];
+    private array $configuratorContexts = [];
 
     /**
      * @var non-empty-string
@@ -112,11 +112,18 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
     }
 
-    public function setConfiguratorContexts(iterable $context): static
+    public function addConfiguratorContexts(iterable $context): static
     {
         foreach ($context as $name => $value) {
-            $this->configuratorContext[] = [$name => $value];
+            $this->configuratorContexts[] = [$name => $value];
         }
+
+        return $this;
+    }
+
+    public function setConfiguratorContext(string $name, mixed $context): static
+    {
+        $this->configuratorContexts[] = [$name => $context];
 
         return $this;
     }
@@ -333,7 +340,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      */
     private function configuredDefinitions(): Generator
     {
-        foreach ($this->configuratorContext as $context) {
+        foreach ($this->configuratorContexts as $context) {
             $this->definitionsLoader->setConfiguratorContexts($context);
         }
 

@@ -44,14 +44,12 @@ return static function (DefinitionsConfiguratorInterface $configurator): \Genera
         $core = new Core('Lorem ipsum');
 
         $this->builder = (new DiContainerBuilder())
-            ->setConfiguratorContexts([
-                Core::class => $core,
-            ])
+            ->setConfiguratorContext(Core::class, $core)
         ;
 
         $this->builder->load(vfsStream::url('root/services.php'));
 
-        $this->builder->setConfiguratorContexts((static function () {
+        $this->builder->addConfiguratorContexts((static function () {
             yield 'APP_ENV' => 'test';
         })());
     }
@@ -75,7 +73,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): \Genera
     {
         $containerClass = 'Container'.bin2hex(random_bytes(16));
         $container = $this->builder
-            ->setConfiguratorContexts(['APP_ENV' => 'prod'])
+            ->addConfiguratorContexts(['APP_ENV' => 'prod'])
             ->compileToFile(
                 vfsStream::url('root/'),
                 __NAMESPACE__.'\\'.$containerClass,
