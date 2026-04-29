@@ -100,12 +100,15 @@ interface DefinitionsConfiguratorInterface
     public function hasParameter(string $name): bool;
 
     /**
+     * @template T of object
      * Configurator context.
      *
      * Provides any additional data for the configuration file.
      *
-     * @param non-empty-string                   $name
+     * @param class-string<T>|non-empty-string   $name
      * @param null|callable(string $name): mixed $fallback
+     *
+     * @return ($name is class-string<T> ? T : mixed)
      *
      * @throws DefinitionsLoaderExceptionInterface
      */
