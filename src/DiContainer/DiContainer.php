@@ -307,7 +307,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $reflectionClass = new ReflectionClass($id); // @phpstan-ignore argument.type
         } catch (ReflectionException $e) {
             throw new AutowireException(
-                sprintf('Cannot resolve definition "%s" via container identifier "%s".', $id, $previousId),
+                sprintf('Cannot resolve definition %s via container identifier %s.', var_export($id, true), var_export($previousId ?? $id, true)),
                 previous: $e,
             );
         }
