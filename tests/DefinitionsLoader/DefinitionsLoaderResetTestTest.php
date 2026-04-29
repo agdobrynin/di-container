@@ -35,13 +35,16 @@ class DefinitionsLoaderResetTestTest extends TestCase
         $loader = (new DefinitionsLoader())
             ->addDefinitions(false, ['foo' => 'bar'])
             ->addDefinitions(false, ['baz' => 'qux'])
+            ->setConfiguratorContexts(['foo' => 'bar'])
             ->import('Tests\DefinitionsLoader\Fixtures\Import\\', __DIR__.'/Fixtures/Import')
         ;
 
         self::assertTrue($loader->definitions()->valid());
+        self::assertEquals('bar', $loader->definitionsConfigurator()->getContext('foo'));
 
         $loader->reset();
 
         self::assertFalse($loader->definitions()->valid());
+        self::assertEquals(false, $loader->definitionsConfigurator()->getContext('foo', static fn () => false));
     }
 }
