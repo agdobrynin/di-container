@@ -655,8 +655,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             return;
         }
 
-        if (is_callable($content) && is_iterable($content($this->definitionsConfigurator()))) {
-            yield from $content($this->definitionsConfigurator());
+        if (is_callable($content) && is_iterable($definitions = $content($this->definitionsConfigurator()))) {
+            yield from $definitions;
 
             unset($this->circularLoadFromFileWatcher[$srcFile]);
 
