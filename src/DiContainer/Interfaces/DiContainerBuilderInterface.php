@@ -88,11 +88,11 @@ interface DiContainerBuilderInterface
      *
      * The existing context name will be replaced.
      *
-     * @param iterable<non-empty-string, mixed> $context
+     * @param iterable<non-empty-string, mixed> $contexts
      *
      * @return $this
      */
-    public function addConfiguratorContexts(iterable $context): static;
+    public function addConfiguratorContexts(iterable $contexts): static;
 
     /**
      * Sets the context value for configuration files.

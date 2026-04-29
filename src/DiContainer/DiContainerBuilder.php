@@ -112,9 +112,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
     }
 
-    public function addConfiguratorContexts(iterable $context): static
+    public function addConfiguratorContexts(iterable $contexts): static
     {
-        foreach ($context as $name => $value) {
+        foreach ($contexts as $name => $value) {
             $this->configuratorContexts[] = [$name => $value];
         }
 
