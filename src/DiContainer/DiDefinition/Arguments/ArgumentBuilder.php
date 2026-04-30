@@ -315,13 +315,25 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
         foreach ($attrs as $attr) {
             yield match ($attr::class) {
-                DiFactory::class => (new DiDefinitionFactory($attr->definition))->bindArguments(...$attr->arguments),
+                DiFactory::class => (new DiDefinitionFactory($attr->definition))
+                    ->bindArguments(...$attr->arguments),
                 Inject::class => new DiDefinitionGet($attr->id), // @phpstan-ignore argument.type
                 InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
                 ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
-                TaggedAs::class => new DiDefinitionTaggedAs($attr->name, $attr->isLazy, $attr->priorityDefaultMethod, $attr->useKeys, $attr->key, $attr->keyDefaultMethod, $attr->containerIdExclude, $attr->selfExclude),
-                Parameter::class => (new DiDefinitionParameter($attr->name))->setContext('' === $attr->name ? $param->name : null),
-                ParameterRuntime::class => (new DiDefinitionParameterRuntime($attr->name, $attr->message))->setContext('' === $attr->name ? $param->name : null),
+                TaggedAs::class => new DiDefinitionTaggedAs(
+                    $attr->name,
+                    $attr->isLazy,
+                    $attr->priorityDefaultMethod,
+                    $attr->useKeys,
+                    $attr->key,
+                    $attr->keyDefaultMethod,
+                    $attr->containerIdExclude,
+                    $attr->selfExclude,
+                ),
+                Parameter::class => (new DiDefinitionParameter($attr->name))
+                    ->setContext('' === $attr->name ? $param->name : null),
+                ParameterRuntime::class => (new DiDefinitionParameterRuntime($attr->name, $attr->message))
+                    ->setContext('' === $attr->name ? $param->name : null),
             };
         }
     }
