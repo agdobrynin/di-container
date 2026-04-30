@@ -187,6 +187,9 @@ final class AttributeReader
             );
         }
 
+        /** @var null|string $paramType */
+        $paramType = null;
+
         foreach ($attrs as $attr) {
             if (Inject::class === $attr->getName()) {
                 /** @var ReflectionAttribute<Inject> $attr */
