@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Closure;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 
 final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
+    /** @var callable(): iterable<(class-string|non-empty-string|non-negative-int), mixed> */
+    private $sourceDefinitions;
+
+    /** @var null|callable(): iterable<(class-string|non-empty-string), mixed> */
+    private $sourceRemovedDefinitionIds;
+
     /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
     private array $definitions;
 
@@ -16,10 +21,14 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
     private array $removedDefinitionIds;
 
     /**
-     * @param Closure(): iterable<non-empty-string|non-negative-int, mixed>  $sourceDefinitions
-     * @param null|Closure(): iterable<class-string|non-empty-string, mixed> $sourceRemovedDefinitionIds
+     * @param callable(): iterable<(class-string|non-empty-string|non-negative-int), mixed> $sourceDefinitions
+     * @param null|callable(): iterable<(class-string|non-empty-string), mixed>             $sourceRemovedDefinitionIds
      */
-    public function __construct(private Closure $sourceDefinitions, private ?Closure $sourceRemovedDefinitionIds = null) {}
+    public function __construct(callable $sourceDefinitions, ?callable $sourceRemovedDefinitionIds = null)
+    {
+        $this->sourceDefinitions = $sourceDefinitions;
+        $this->sourceRemovedDefinitionIds = $sourceRemovedDefinitionIds;
+    }
 
     public function isRemovedDefinition(string $id): bool
     {
@@ -43,10 +52,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
             if (null !== $this->sourceRemovedDefinitionIds) {
                 foreach (($this->sourceRemovedDefinitionIds)() as $identifier => $v) {
                     $this->removedDefinitionIds[$identifier] = true;
-
-                    if (isset($this->definitions[$identifier])) {
-                        unset($this->definitions[$identifier]);
-                    }
+                    unset($this->definitions[$identifier]); // @phpstan-ignore unset.offset
                 }
             }
 
