@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\Parameter;
+use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
@@ -313,38 +314,15 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         }
 
         foreach ($attrs as $attr) {
-            if ($attr instanceof Inject) {
-                $definition = new DiDefinitionGet($attr->id); // @phpstan-ignore argument.type
-            } elseif ($attr instanceof ProxyClosure) {
-                $definition = new DiDefinitionProxyClosure($attr->id);
-            } elseif ($attr instanceof TaggedAs) {
-                $definition = new DiDefinitionTaggedAs(
-                    $attr->name,
-                    $attr->isLazy,
-                    $attr->priorityDefaultMethod,
-                    $attr->useKeys,
-                    $attr->key,
-                    $attr->keyDefaultMethod,
-                    $attr->containerIdExclude,
-                    $attr->selfExclude,
-                );
-            } elseif ($attr instanceof DiFactory) {
-                $definition = (new DiDefinitionFactory($attr->definition))
-                    ->bindArguments(...$attr->arguments)
-                ;
-            } elseif ($attr instanceof InjectByCallable) {
-                $definition = new DiDefinitionCallable($attr->getCallable());
-            } elseif ($attr instanceof Parameter) {
-                $definition = (new DiDefinitionParameter($attr->name))
-                    ->setContext('' === $attr->name ? $param->name : null)
-                ;
-            } else {
-                $definition = (new DiDefinitionParameterRuntime($attr->name, $attr->message))
-                    ->setContext('' === $attr->name ? $param->name : null)
-                ;
-            }
-
-            yield $definition;
+            yield match ($attr::class) {
+                DiFactory::class => (new DiDefinitionFactory($attr->definition))->bindArguments(...$attr->arguments),
+                Inject::class => new DiDefinitionGet($attr->id), // @phpstan-ignore argument.type
+                InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
+                ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
+                TaggedAs::class => new DiDefinitionTaggedAs($attr->name, $attr->isLazy, $attr->priorityDefaultMethod, $attr->useKeys, $attr->key, $attr->keyDefaultMethod, $attr->containerIdExclude, $attr->selfExclude),
+                Parameter::class => (new DiDefinitionParameter($attr->name))->setContext('' === $attr->name ? $param->name : null),
+                ParameterRuntime::class => (new DiDefinitionParameterRuntime($attr->name, $attr->message))->setContext('' === $attr->name ? $param->name : null),
+            };
         }
     }
 
