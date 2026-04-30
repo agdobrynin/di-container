@@ -243,7 +243,10 @@ class SourceDefinitionsMutableTest extends TestCase
 
     public function testUseStaticFabricAsSource(): void
     {
-        $s = new DeferredSourceDefinitionsMutable([SourceDefinitions::class, 'src'], [SourceDefinitions::class, 'removed']);
+        $s = new DeferredSourceDefinitionsMutable(
+            [SourceDefinitions::class, 'src'],
+            '\Tests\SourceDefinitionsMutable\SourceDefinitions::removed'
+        );
 
         self::assertFalse(isset($s['baz']));
         self::assertTrue($s->isRemovedDefinition('baz'));
