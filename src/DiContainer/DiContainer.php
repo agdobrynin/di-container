@@ -41,8 +41,11 @@ use ReflectionMethod;
 
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function call_user_func_array;
 use function class_exists;
+use function count;
+use function implode;
 use function in_array;
 use function interface_exists;
 use function is_callable;
@@ -260,7 +263,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      *
      * @throws ContainerExceptionInterface|NotFoundExceptionInterface
      */
-    protected function resolve(string $id, ?string $previousId = null): mixed
+    protected function resolve(string $id): mixed
     {
         try {
             if ($this->isContainer($id)) {
@@ -268,9 +271,15 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if (!$this->has($id)) {
-                $message = null !== $previousId
-                    ? sprintf('Cannot resolve definition "%s" via container identifier "%s".', $id, $previousId)
-                    : '';
+                $message = '';
+
+                if (1 < count($this->circularCallWatcher)) {
+                    $chainIds = array_map(
+                        static fn (string $i) => var_export($i, true),
+                        [...array_keys($this->circularCallWatcher), ...[$id]]
+                    );
+                    $message = sprintf('Chain resolving container identifiers: %s.', implode(' -> ', $chainIds));
+                }
 
                 throw new NotFoundException(message: $message, id: $id);
             }
@@ -281,7 +290,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $diDefinition = $this->resolveDefinition($id);
 
             if ($diDefinition instanceof DiDefinitionLinkInterface) {
-                $this->resolve($diDefinition->getDefinition(), $id);
+                $this->resolve($diDefinition->getDefinition());
             }
 
             $resolvedEntry = $diDefinition->resolve($this, $this);
