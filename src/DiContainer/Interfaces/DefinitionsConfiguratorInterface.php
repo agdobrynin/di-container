@@ -82,6 +82,8 @@ interface DefinitionsConfiguratorInterface
     public function loadParameters(string $file, string ...$_): void;
 
     /**
+     * Add container parameters from collection.
+     *
      * @param iterable<non-empty-string, mixed> $parameters
      */
     public function addParameters(iterable $parameters): void;
@@ -100,10 +102,11 @@ interface DefinitionsConfiguratorInterface
     public function hasParameter(string $name): bool;
 
     /**
-     * @template T of object
      * Configurator context.
      *
      * Provides any additional data for the configuration file.
+     *
+     * @template T of object
      *
      * @param class-string<T>|non-empty-string   $name
      * @param null|callable(string $name): mixed $fallback
