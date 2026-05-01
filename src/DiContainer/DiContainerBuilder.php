@@ -27,13 +27,17 @@ use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Psr\Container\ContainerExceptionInterface;
 use RuntimeException;
+use UnitEnum;
 
 use function class_exists;
 use function file_exists;
+use function is_string;
 use function sprintf;
 
 final class DiContainerBuilder implements DiContainerBuilderInterface
@@ -65,6 +69,19 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
     private array $definitions = [];
 
     /**
+     * If the value is of type `string`: try loading the container parameters from the file,
+     * otherwise the container parameters will be loaded as a collection.
+     *
+     * @var list<iterable<non-empty-string, mixed>|non-empty-string>
+     */
+    private array $parameters = [];
+
+    /**
+     * @var list<array<non-empty-string, mixed>>
+     */
+    private array $configuratorContexts = [];
+
+    /**
      * @var non-empty-string
      */
     private string $compilerOutputDirectory;
@@ -93,6 +110,22 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         private readonly DefinitionsLoaderInterface $definitionsLoader = new DefinitionsLoader(),
     ) {
         $this->definitionsLoader->useAttribute($this->containerConfig->isUseAttribute());
+    }
+
+    public function addConfiguratorContexts(iterable $contexts): static
+    {
+        foreach ($contexts as $name => $value) {
+            $this->configuratorContexts[] = [$name => $value];
+        }
+
+        return $this;
+    }
+
+    public function setConfiguratorContext(string $name, mixed $context): static
+    {
+        $this->configuratorContexts[] = [$name => $context];
+
+        return $this;
     }
 
     public function load(string $file, string ...$_): static
@@ -145,6 +178,31 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             'override' => true,
             'definitions' => $definitions,
         ];
+
+        return $this;
+    }
+
+    public function loadParameters(string $file, string ...$_): static
+    {
+        $this->parameters[] = $file;
+
+        foreach ($_ as $f) {
+            $this->parameters[] = $f;
+        }
+
+        return $this;
+    }
+
+    public function addParameters(iterable $parameters): static
+    {
+        $this->parameters[] = $parameters;
+
+        return $this;
+    }
+
+    public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): static
+    {
+        $this->parameters[] = [$name => $value];
 
         return $this;
     }
@@ -204,7 +262,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                     $this->definitionsLoader->removedDefinitionIds(),
                 );
 
-                return new DiContainer($definitions, $this->containerConfig);
+                $parameters = new ImmediateSourceParameters($this->definitionsLoader->parameters());
+
+                return new DiContainer($definitions, $this->containerConfig, parameters: $parameters);
             } catch (ContainerExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 throw new ContainerBuilderException(
                     sprintf('Cannot build runtime container. Caused by: %s', $e->getMessage()),
@@ -218,7 +278,9 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
             fn () => $this->definitionsLoader->removedDefinitionIds(),
         );
 
-        $container = new DiContainer($definitions, $this->containerConfig);
+        $parameters = new DeferredSourceParameters(fn () => $this->definitionsLoader->parameters());
+
+        $container = new DiContainer($definitions, $this->containerConfig, parameters: $parameters);
         $diContainerDefinitions = new DiContainerDefinitions($container, new IdsIterator());
 
         if (!isset($this->compilerDiDefinitionTransformer)) {
@@ -278,6 +340,25 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
      */
     private function configuredDefinitions(): Generator
     {
+        foreach ($this->configuratorContexts as $context) {
+            $this->definitionsLoader->setConfiguratorContexts($context);
+        }
+
+        foreach ($this->parameters as $parameter) {
+            if (is_string($parameter)) {
+                try {
+                    $this->definitionsLoader->loadParameters($parameter);
+                } catch (DefinitionsLoaderExceptionInterface $e) {
+                    throw new ContainerBuilderException(
+                        sprintf('Cannot build container while load container parameters from file "%s".', $parameter),
+                        previous: $e,
+                    );
+                }
+            } else {
+                $this->definitionsLoader->addParameters($parameter);
+            }
+        }
+
         foreach ($this->imports as $import) {
             try {
                 $this->definitionsLoader->import(

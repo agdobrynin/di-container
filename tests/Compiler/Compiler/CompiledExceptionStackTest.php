@@ -22,6 +22,7 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use org\bovigo\vfs\vfsStream;
@@ -49,6 +50,7 @@ use function random_bytes;
 #[CoversClass(CompiledContainerExceptionAbstract::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(CompiledContainerNotFoundException::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class CompiledExceptionStackTest extends TestCase
 {
     private DiContainerInterface $container;

@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -27,6 +28,7 @@ use stdClass;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class DiContainerSetTest extends TestCase
 {
     #[DataProvider('dataProviderWrongIdentifier')]

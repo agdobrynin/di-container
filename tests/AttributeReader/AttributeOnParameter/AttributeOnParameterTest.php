@@ -9,6 +9,8 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\Attributes\Parameter;
+use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
@@ -33,6 +35,8 @@ use Tests\AttributeReader\AttributeOnParameter\Fixtures\FooFactory;
 #[CoversClass(InjectByCallable::class)]
 #[CoversClass(ProxyClosure::class)]
 #[CoversClass(TaggedAs::class)]
+#[CoversClass(Parameter::class)]
+#[CoversClass(ParameterRuntime::class)]
 class AttributeOnParameterTest extends TestCase
 {
     #[DataProvider('dataProviderParam')]
@@ -64,6 +68,14 @@ class AttributeOnParameterTest extends TestCase
         yield 'Inject and DiFactory' => [
             (new ReflectionFunction(static fn (#[Inject('service.one'), DiFactory(FooFactory::class)] $param) => true))->getParameters()[0],
         ];
+
+        yield 'Inject and Parameter' => [
+            (new ReflectionFunction(static fn (#[Inject('service.one'), Parameter('foo')] $param) => true))->getParameters()[0],
+        ];
+
+        yield 'DiFactory and ParameterRuntime' => [
+            (new ReflectionFunction(static fn (#[DiFactory(FooFactory::class), ParameterRuntime('foo')] $param) => true))->getParameters()[0],
+        ];
     }
 
     public function testMixedAttributes(): void
@@ -88,13 +100,15 @@ class AttributeOnParameterTest extends TestCase
             #[InjectByCallable('\uniqid')]
             #[ProxyClosure('service.heavy')]
             #[TaggedAs('tags.one')]
+            #[Parameter('foo')]
+            #[ParameterRuntime('bar')]
             mixed ...$a
         ) => '';
         $param = new ReflectionParameter($f, 0);
 
         $res = [...AttributeReader::getAttributeOnParameter($param, $this->createMock(DiContainerInterface::class))];
 
-        self::assertCount(5, $res);
+        self::assertCount(7, $res);
 
         self::assertEquals(FooFactory::class, $res[0]->definition);
         self::assertNull($res[0]->isSingleton);
@@ -108,5 +122,10 @@ class AttributeOnParameterTest extends TestCase
 
         self::assertEquals('tags.one', $res[4]->name);
         self::assertTrue($res[4]->isLazy);
+
+        self::assertEquals('foo', $res[5]->name);
+
+        self::assertEquals('bar', $res[6]->name);
+        self::assertEquals(null, $res[6]->message);
     }
 }

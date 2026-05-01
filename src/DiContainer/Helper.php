@@ -82,7 +82,8 @@ final class Helper
             return $identifier;
         }
 
-        if ($definition instanceof DiDefinitionIdentifierInterface) {
+        if ($definition instanceof DiDefinitionIdentifierInterface
+            && '' !== $definition->getIdentifier()) {
             return $definition->getIdentifier();
         }
 

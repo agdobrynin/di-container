@@ -6,9 +6,12 @@ namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
@@ -26,6 +29,8 @@ use function array_keys;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(DiDefinitionRuntime::class)]
+#[CoversClass(Helper::class)]
 class ImmediateSourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -209,5 +214,28 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         // set service id and remove if exist in `removedDefinitionIds`
         $s['service.foo'] = 'Service foo';
         self::assertFalse($s->isRemovedDefinition('service.foo'));
+    }
+
+    public function testReplaceRuntimeDefinitionSuccess(): void
+    {
+        $s = new ImmediateSourceDefinitionsMutable([
+            new DiDefinitionRuntime('service.foo'),
+        ]);
+
+        $s['service.foo'] = $instance = (object) ['bar' => 'Service bar'];
+
+        self::assertSame($instance, $s['service.foo']->getDefinition());
+    }
+
+    public function testReplaceRuntimeDefinitionFail(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('The runtime definition with the identifier \'service.foo\' must be specified as an object.');
+
+        $s = new ImmediateSourceDefinitionsMutable([
+            new DiDefinitionRuntime('service.foo'),
+        ]);
+
+        $s['service.foo'] = ['bar' => 'Service bar'];
     }
 }

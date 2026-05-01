@@ -8,13 +8,17 @@ use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
@@ -24,7 +28,10 @@ use Tests\Function\Fixtures\AnyClass;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diParameter;
+use function Kaspi\DiContainer\diParameterRuntime;
 use function Kaspi\DiContainer\diProxyClosure;
+use function Kaspi\DiContainer\diRuntime;
 use function Kaspi\DiContainer\diTaggedAs;
 
 /**
@@ -42,6 +49,12 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(DiDefinitionParameter::class)]
+#[CoversFunction('Kaspi\DiContainer\diParameter')]
+#[CoversClass(DiDefinitionParameterRuntime::class)]
+#[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
+#[CoversClass(DiDefinitionRuntime::class)]
+#[CoversFunction('Kaspi\DiContainer\diRuntime')]
 class HelperFunctionTest extends TestCase
 {
     public function testFunctiondiGet(): void
@@ -121,5 +134,33 @@ class HelperFunctionTest extends TestCase
             new ReflectionFunction(require __DIR__.'/Fixtures/closure.php'),
             '/{closure.+tests\/Function\/Fixtures\/closure.php:7}\(\)/',
         ];
+    }
+
+    #[TestWith(['', ''])]
+    #[TestWith(['foo', 'foo'])]
+    public function testDiParam(string $name, string $expectDefinition): void
+    {
+        self::assertEquals($expectDefinition, diParameter($name)->getDefinition());
+    }
+
+    #[TestWith(['foo', 'foo', 'msg', 'msg'])]
+    #[TestWith(['', '', null, 'Did you forget to define it?'])]
+    public function testDiParameterRuntime(string $name, string $expectDefinition, ?string $message, ?string $expectMessage): void
+    {
+        $p = diParameterRuntime($name, $message);
+
+        self::assertEquals($expectDefinition, $p->getDefinition());
+        self::assertStringContainsString($expectMessage, $p->getMessage());
+    }
+
+    #[TestWith(['foo', 'foo'])]
+    #[TestWith(['foo', null])]
+    public function testDiDefinitionRuntime(string $identifier, ?string $message): void
+    {
+        $d = diRuntime($identifier, $message);
+
+        self::assertInstanceOf(DiDefinitionRuntime::class, $d);
+        self::assertEquals($identifier, $d->getIdentifier());
+        self::assertEquals($message, $d->getMessage());
     }
 }

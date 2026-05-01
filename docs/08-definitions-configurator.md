@@ -137,7 +137,7 @@ DefinitionsConfiguratorInterface::setDefinition(
 
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use App\Transport\Mail;
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     
@@ -146,8 +146,8 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
             Mail::class,
             diAutowire(Mail::class)
                 ->bindArguments(
-                    host: '10.10.10.10',
-                    port: 20251,
+                    host: diParameter('mail.host.local'),
+                    port: diParameter('mail.port.local'),
                 );
         );
     }
@@ -250,7 +250,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 > [!TIP]
-> При использовании конфигурационных файлов с возвращаемым значением рекомендуется использовать генераторы (через оператор `yield`) позволяющий оптимизировать создание определений в контейнере.
+> При использовании конфигурационных файлов с возвращаемым значением рекомендуется использовать генераторы (`\Generator`) позволяющие оптимизировать создание определений в контейнере.
 > 
 > ```php
 > // /app/config/services/controllers_services.php
@@ -269,3 +269,78 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 > ```
 > 
 
+## Использование контекста для конфигурационных файлов.
+При сборке и настройке контейнера можно определить дополнительный контекст для конфигурационных файлов.
+
+Контекст определятся самим разработчиком как коллекция ключ-значение.
+Передать в коллекцию по ключу можно любой тип – `mixed`, например объект, массив значений и т.д.
+```php
+DefinitionsConfiguratorInterface::getContext(string $name, ?callable $fallback = null): mixed
+```
+Параметры:
+- `$name` – имя контекста.
+- `$fallback`  – обработчик если контекст не найден по имени.
+
+> [!WARNING]
+> Метод `getContext()` выбросит исключение `\Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface`
+> если контекст не найден по имени.
+> 
+> Чтобы избежать выброса исключения можно использовать `callable` выражение `$fallback` которое принимает в качестве аргумента параметр `$name`:
+> ```php
+>  callable(string $name): mixed
+> ```
+
+
+Передать значения можно через методы:
+- `\Kaspi\DiContainer\Interfaces\DiContainerBuilder::addConfiguratorContexts()`
+- `\Kaspi\DiContainer\Interfaces\DiContainerBuilder::setConfiguratorContext()`
+
+Описание методов доступно в разделе «[Передача контекста для конфигурационных файлов](06-container-builder.md#передача-контекста-для-конфигурационных-файлов)»
+
+### Пример использования контекста для конфигурационных файлов.
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use Dotenv\Dotenv;
+
+$builder = (new DiContainerBuilder())
+    ->import('App\\', '/app/src')
+    ->load('/app/config/services/services.php');
+
+// ...
+$dotenv = Dotenv::createImmutable('/app/');
+$dotenv->required('DATABASE_DSN');
+$dotenv->load();
+
+$builder->setConfiguratorContext('DATABASE_DSN', $_ENV['DATABASE_DSN']);
+
+/*
+ * объект содержащий нужные данные для конфигурирования контейнера
+ * @var \App\Core $core
+ */ 
+$builder->setConfiguratorContext($core::class, $core);
+
+// ...
+
+$container = $builder->build();
+```
+```php
+// /app/config/services/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+
+    $dsn = $configurator->getContext('DATABASE_DSN');
+    $core = $configurator->getContext(\App\Core::class);
+
+    yield diAutowire(\App\Services\Foo::class)
+        ->bindArguments(
+            dsn: $dsn,
+            foo: $core->calculateFoo(),
+        );
+};
+```
+
+## Конфигурирование параметров контейнера.
+В конфигурационных файлах поддерживается управление «параметрами контейнера».
+Подробное [описание доступных методов для параметров контейнера](09-container-parameters.md#управление-параметрами-контейнера-в-конфигураторе-определений).

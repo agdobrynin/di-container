@@ -10,6 +10,8 @@ use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\Attributes\Parameter;
+use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\Attributes\Setup;
@@ -165,13 +167,13 @@ final class AttributeReader
     }
 
     /**
-     * @return Generator<DiFactory|Inject|InjectByCallable|ProxyClosure|TaggedAs>
+     * @return Generator<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
     public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
-        $supportAttrs = [DiFactory::class, Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class];
+        $supportAttrs = [DiFactory::class, Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class, Parameter::class, ParameterRuntime::class];
 
         $attrs = array_filter($param->getAttributes(), static fn (ReflectionAttribute $attr) => in_array($attr->getName(), $supportAttrs, true));
 
@@ -184,6 +186,9 @@ final class AttributeReader
                 sprintf('The php attribute can be applied once per non-variadic %s in %s.', $param, Helper::functionName($param->getDeclaringFunction()))
             );
         }
+
+        /** @var null|string $paramType */
+        $paramType = null;
 
         foreach ($attrs as $attr) {
             if (Inject::class === $attr->getName()) {
@@ -205,7 +210,7 @@ final class AttributeReader
                     );
                 }
             } else {
-                /** @var ReflectionAttribute<DiFactory|ProxyClosure|TaggedAs> $attr */
+                /** @var ReflectionAttribute<DiFactory|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr */
                 $attrInit = $attr->newInstance();
             }
 

@@ -8,11 +8,16 @@ use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
+use Kaspi\DiContainer\Attributes\Parameter;
+use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
@@ -23,6 +28,7 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterWithContextInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
@@ -218,13 +224,15 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             if ($param->isVariadic()) {
                 foreach ($this->capturingVariadicArguments($argNameOrIndex) as $argKey => $definition) {
                     $args[$argKey] = $definition;
+                    $this->setContainerParameterContext($argKey, $definition, $param);
                 }
 
                 return true; // Variadic Parameter has last position
             }
 
             // @phpstan-ignore parameterByRef.type
-            $args[$param->getPosition()] = $this->bindArguments[$argNameOrIndex];
+            $args[$param->getPosition()] = $definition = $this->bindArguments[$argNameOrIndex];
+            $this->setContainerParameterContext($argNameOrIndex, $definition, $param);
 
             return true;
         }
@@ -236,6 +244,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         if ($param->isVariadic()) {
             foreach ($this->capturingVariadicArguments($param->name) as $argKey => $definition) {
                 $args[$argKey] = $definition;
+                $this->setContainerParameterContext($argKey, $definition, $param);
             }
 
             return true; // Variadic Parameter has last position
@@ -292,7 +301,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
@@ -305,12 +314,13 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         }
 
         foreach ($attrs as $attr) {
-            if ($attr instanceof Inject) {
-                $definition = new DiDefinitionGet($attr->id); // @phpstan-ignore argument.type
-            } elseif ($attr instanceof ProxyClosure) {
-                $definition = new DiDefinitionProxyClosure($attr->id);
-            } elseif ($attr instanceof TaggedAs) {
-                $definition = new DiDefinitionTaggedAs(
+            yield match ($attr::class) {
+                DiFactory::class => (new DiDefinitionFactory($attr->definition))
+                    ->bindArguments(...$attr->arguments),
+                Inject::class => new DiDefinitionGet($attr->id), // @phpstan-ignore argument.type
+                InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
+                ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
+                TaggedAs::class => new DiDefinitionTaggedAs(
                     $attr->name,
                     $attr->isLazy,
                     $attr->priorityDefaultMethod,
@@ -319,16 +329,28 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     $attr->keyDefaultMethod,
                     $attr->containerIdExclude,
                     $attr->selfExclude,
-                );
-            } elseif ($attr instanceof DiFactory) {
-                $definition = (new DiDefinitionFactory($attr->definition))
-                    ->bindArguments(...$attr->arguments)
-                ;
-            } else {
-                $definition = new DiDefinitionCallable($attr->getCallable());
-            }
+                ),
+                Parameter::class => (new DiDefinitionParameter($attr->name))
+                    ->setContext('' === $attr->name ? $param->name : null),
+                ParameterRuntime::class => (new DiDefinitionParameterRuntime($attr->name, $attr->message))
+                    ->setContext('' === $attr->name ? $param->name : null),
+            };
+        }
+    }
 
-            yield $definition;
+    private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void
+    {
+        if (!($definition instanceof DiDefinitionParameterWithContextInterface) || '' !== $definition->getDefinition()) {
+            return;
+        }
+
+        if ($param->isVariadic()) {
+            $paramContext = is_string($argKey)
+                ? $argKey
+                : $param->name;
+            $definition->setContext($paramContext);
+        } else {
+            $definition->setContext($param->name);
         }
     }
 }

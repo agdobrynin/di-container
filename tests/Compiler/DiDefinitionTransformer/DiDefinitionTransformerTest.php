@@ -9,22 +9,28 @@ use Kaspi\DiContainer\Compiler\CompilableDefinition\CallableEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\FactoryEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ParameterEntry;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ParameterRuntimeEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ProxyClosureEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\TaggedAsEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionValueInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -39,6 +45,8 @@ use stdClass;
 #[CoversClass(ObjectEntry::class)]
 #[CoversClass(FactoryEntry::class)]
 #[CoversClass(DiDefinitionTransformer::class)]
+#[CoversClass(ParameterEntry::class)]
+#[CoversClass(ParameterRuntimeEntry::class)]
 class DiDefinitionTransformerTest extends TestCase
 {
     private object $closureParser;
@@ -101,14 +109,16 @@ class DiDefinitionTransformerTest extends TestCase
             DiDefinitionFactoryInterface::class,
             FactoryEntry::class,
         ];
-    }
 
-    public function testUnsupportedDefinitionWithoutFallback(): void
-    {
-        $this->expectException(DefinitionCompileExceptionInterface::class);
-        $this->expectExceptionMessage('Unsupported definition type "stdClass"');
+        yield 'DiDefinitionParameter' => [
+            DiDefinitionParameterInterface::class,
+            ParameterEntry::class,
+        ];
 
-        $this->transformer->transform(new stdClass(), $this->diContainerDefinitions);
+        yield 'DiDefinitionParameterRuntime' => [
+            DiDefinitionParameterRuntimeInterface::class,
+            ParameterRuntimeEntry::class,
+        ];
     }
 
     public function testUnsupportedDefinitionWithFallback(): void
@@ -125,5 +135,15 @@ class DiDefinitionTransformerTest extends TestCase
     public function testGetClosureParser(): void
     {
         self::assertInstanceOf(FinderClosureCodeInterface::class, $this->transformer->getClosureParser());
+    }
+
+    #[TestWith([new DiDefinitionRuntime('foo'), 'Unsupported definition type "Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime"'])]
+    #[TestWith([new stdClass(), 'Unsupported definition type "stdClass"'])]
+    public function testUnsupportedDefinition(mixed $def, string $expectMsg): void
+    {
+        $this->expectException(DefinitionCompileExceptionInterface::class);
+        $this->expectExceptionMessage($expectMsg);
+
+        $this->transformer->transform($def, $this->diContainerDefinitions);
     }
 }

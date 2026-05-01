@@ -6,11 +6,17 @@ namespace Tests\DiDefinition\BuildArguments;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\Parameter;
+use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -26,6 +32,8 @@ use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 
 use function Kaspi\DiContainer\diGet;
+use function Kaspi\DiContainer\diParameter;
+use function Kaspi\DiContainer\diParameterRuntime;
 
 /**
  * @internal
@@ -38,6 +46,12 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(BindArgumentsTrait::class)]
+#[CoversClass(DiDefinitionParameter::class)]
+#[CoversClass(DiDefinitionParameterRuntime::class)]
+#[CoversClass(ParameterRuntime::class)]
+#[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
+#[CoversFunction('Kaspi\DiContainer\diParameter')]
+#[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
 class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 {
     use BindArgumentsTrait;
@@ -99,5 +113,50 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
             self::assertInstanceOf(AutowireExceptionInterface::class, $e->getPrevious());
             self::assertStringContainsString('can be applied once per non-variadic Parameter #1', $e->getPrevious()->getMessage());
         }
+    }
+
+    public function testParamOverrideHigherPriority(): void
+    {
+        $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux, #[Parameter('bar.one')] mixed $bar) => null;
+
+        $this->bindArguments(bar: diParameter('bar.two'));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+
+        // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
+        $args = $ba->buildByPriorityBindArguments();
+
+        self::assertEquals(
+            [
+                0 => diGet(Quux::class),
+                1 => diParameter('bar.two'),
+            ],
+            $args
+        );
+    }
+
+    public function testAttributeParameterRuntime(): void
+    {
+        $fn = static fn (
+            #[Parameter('foo')]
+            string $str,
+            #[ParameterRuntime]
+            string $bar,
+        ) => null;
+
+        $this->bindArguments(str: diParameterRuntime('qux'));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+
+        // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
+        $args = $ba->buildByPriorityBindArguments();
+
+        self::assertCount(2, $args);
+        self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $args[0]);
+        self::assertEquals('qux', $args[0]->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $args[1]);
+        self::assertEquals('', $args[1]->getDefinition());
+        self::assertEquals('bar', $args[1]->getContext());
     }
 }

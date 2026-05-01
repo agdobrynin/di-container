@@ -6,9 +6,12 @@ namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
@@ -25,7 +28,9 @@ use function array_keys;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Helper::class)]
 class SourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -211,5 +216,58 @@ class SourceDefinitionsMutableTest extends TestCase
         );
 
         self::assertTrue($s->isRemovedDefinition('service.foo'));
+    }
+
+    public function testReplaceRuntimeDefinitionSuccess(): void
+    {
+        $s = new DeferredSourceDefinitionsMutable(
+            static fn () => yield new DiDefinitionRuntime('service.foo')
+        );
+
+        $s['service.foo'] = $instance = (object) ['bar' => 'Service bar'];
+
+        self::assertSame($instance, $s['service.foo']->getDefinition());
+    }
+
+    public function testReplaceRuntimeDefinitionFail(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('The runtime definition with the identifier \'service.foo\' must be specified as an object.');
+
+        $s = new DeferredSourceDefinitionsMutable(
+            static fn () => yield new DiDefinitionRuntime('service.foo')
+        );
+
+        $s['service.foo'] = ['bar' => 'Service bar'];
+    }
+
+    public function testUseStaticFabricAsSource(): void
+    {
+        $s = new DeferredSourceDefinitionsMutable(
+            [SourceDefinitions::class, 'src'],
+            '\Tests\SourceDefinitionsMutable\SourceDefinitions::removed'
+        );
+
+        self::assertFalse(isset($s['baz']));
+        self::assertTrue($s->isRemovedDefinition('baz'));
+
+        self::assertTrue(isset($s['foo'], $s['qux']));
+    }
+}
+
+final class SourceDefinitions
+{
+    public static function src(): Generator
+    {
+        yield 'foo' => 'bar';
+
+        yield 'baz' => 'fuz';
+
+        yield 'qux' => 'quux';
+    }
+
+    public static function removed(): Generator
+    {
+        yield 'baz' => true;
     }
 }

@@ -27,6 +27,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
+use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -69,6 +70,7 @@ use const T_TRAIT;
 #[CoversClass(DiContainerNullConfig::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
+#[CoversClass(ImmediateSourceParameters::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void

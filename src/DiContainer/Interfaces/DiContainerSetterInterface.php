@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
 interface DiContainerSetterInterface
 {
@@ -23,6 +24,7 @@ interface DiContainerSetterInterface
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     public function set(string $id, mixed $definition): static;
 }

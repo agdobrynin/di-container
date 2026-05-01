@@ -21,6 +21,7 @@ use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Throwable;
@@ -40,6 +41,13 @@ use function var_export;
 final class ContainerCompiler implements ContainerCompilerInterface
 {
     private CompiledContainerFQNInterface $compiledContainerFQN;
+
+    /**
+     * The property used in the file `template.php`.
+     *
+     * @var array<non-empty-string, DiDefinitionRuntimeInterface>
+     */
+    private array $runtimeDefinitions = [];
 
     /**
      * @param class-string $containerClass container class as fully qualified name
@@ -105,12 +113,25 @@ final class ContainerCompiler implements ContainerCompilerInterface
     public function compile(): string
     {
         $definitions = $this->containerDefinitions();
+        $this->runtimeDefinitions = [];
 
         while ($definitions->valid()) {
             try {
                 /** @var CompiledEntryInterface|InvalidDefinitionCompileException|mixed|NotFoundExceptionInterface $definition */
                 $definition = $definitions->current();
                 $id = $definitions->key();
+
+                /*
+                 * Runtime definition not compilable.
+                 *
+                 * These definitions provide only IDs for container method `has()`.
+                 */
+                if ($definition instanceof DiDefinitionRuntimeInterface) {
+                    $this->runtimeDefinitions[$id] = $definition;
+                    $definitions->next();
+
+                    continue;
+                }
 
                 if ($definition instanceof InvalidDefinitionCompileException
                     || $definition instanceof NotFoundExceptionInterface) {
@@ -152,6 +173,24 @@ final class ContainerCompiler implements ContainerCompilerInterface
         require __DIR__.'/template.php';
 
         return (string) ob_get_clean();
+    }
+
+    /**
+     * Get container identifies for method `has()` in compiled container.
+     *
+     * @return Generator<int, non-empty-string>
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function getForHasMethod(): Generator
+    {
+        $this->compiledEntries->getHasIdentifiers()->rewind();
+
+        yield from $this->compiledEntries->getHasIdentifiers();
+
+        foreach ($this->runtimeDefinitions as $runtimeDefinition) {
+            yield $runtimeDefinition->getIdentifier();
+        }
     }
 
     /**

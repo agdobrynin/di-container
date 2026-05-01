@@ -24,7 +24,7 @@
 > используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
 
 Для получения тегированных сервисов для параметров определений (_параметры – конструктора, метода или функции_) нужно использовать:
-- `diTaggedAs` – [хэлпер функцию](01-php-definition.md#ditaggedas) в стиле php определений 
+- `diTaggedAs` – [хелпер функцию](01-php-definition.md#ditaggedas) в стиле php определений 
 - `#[TaggedAs]` – [php атрибут](02-attribute-definition.md#taggedas) 
 
 ### Ленивая коллекция
@@ -35,7 +35,7 @@
 ### Ключ элемента в коллекции.
 По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
 определений в контейнере (_container identifier – не пустая строка_). Это поведение можно изменить
-через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хэлпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции diTaggedAs](01-php-definition.md#ditaggedas)
 или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
 от идентификаторов определений (_container identifier_) представленные не пустыми строками
 или целыми числами (_последовательные значения от нуля и больше_).
@@ -45,7 +45,7 @@
 ## 🐘 Объявление тега в стиле php определений.
 
 Для указания тегов используется метод `bindTag`
-который доступен через [хэлпер функции](01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
+который доступен через [хелпер функции](01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
 реализующие интерфейс `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`
 
 ```php
@@ -108,7 +108,7 @@ final class SomeClass {}
 >
 > Подробнее о [приоритете в коллекции](#приоритет-в-коллекции).
 
-🧪 Пример использования с хэлпер функцией `diAutowire`:
+🧪 Пример использования с хелпер функцией `diAutowire`:
 ```php
 // src/Classes/One.php
 namespace App\Classes;
@@ -477,7 +477,7 @@ $class = $container->get(SrvRules::class);
 
 > [!TIP] 
 > Если нужен определенный порядок можно воспользоваться
-> аргументом `$priorityDefaultMethod` у хэлпер функции:
+> аргументом `$priorityDefaultMethod` у хелпер функции:
 > ```php
 >   use function Kaspi\DiContainer\diTaggedAs;
 > 
@@ -747,7 +747,7 @@ $container->get(App\Rules\Rules::class);
 
 - `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
 - `priorityDefaultMethod` – метод указанный через
-[хэлпер функцию `diTaggedAs`](01-php-definition.md#ditaggedas)
+[хелпер функцию `diTaggedAs`](01-php-definition.md#ditaggedas)
 или через [php атрибут #[TaggedAs]](02-attribute-definition.md#taggedas)
 который **может быть реализован** в тегированном php классе возвращающий `priority`.
  
@@ -974,7 +974,7 @@ $container->get(Rules::class);
 Это поведение можно изменить:
 - указав в метаданных ключ (_аргумент `$options` у тега_);
 - указа конкретный метод у тегированного класса (_аргумент `$options` у тега_);
-- указав метод по умолчанию в хэлпер функции `diTaggedAs` или у атрибута `#[TaggedAs]`
+- указав метод по умолчанию в хелпер функции `diTaggedAs` или у атрибута `#[TaggedAs]`
 который будет вызван у тегированного класса для получения ключа; 
 
 > [!WARNING]
@@ -1056,7 +1056,7 @@ class TaggedServices {
 Для получения в качестве ключей коллекции целых чисел (_последовательные значения от нуля и больше_)
 нужно указать в аргументе `$useKeys=false`.
 
-Для хэлпер функции `diTaggedAs`:
+Для хелпер функции `diTaggedAs`:
 
 ```php
 // config/services.php
@@ -1093,7 +1093,7 @@ class ClassTaggedAs {
 Для замены ключа по умолчанию на другое строковое значение
 необходимо указать в аргументе `$key` имя ключа из метаданных тега.
 
-🐘 Для хэлпер функции `diTaggedAs`:
+🐘 Для хелпер функции `diTaggedAs`:
 ```php
 // src/Classes/ServiceOne.php
 namespace App\Classes;
@@ -1297,7 +1297,7 @@ class ClassTaggedAs {
 если у тегированного определения не указан ключ для коллекции в метаданных (_в `$options`_).
 
 Указать метод получения ключа по умолчанию можно через аргумент
-`$keyDefaultMethod` [в хэлпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+`$keyDefaultMethod` [в хелпер функции diTaggedAs](01-php-definition.md#ditaggedas)
 или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas).
 
 > [!IMPORTANT]
