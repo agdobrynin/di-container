@@ -140,7 +140,7 @@ class ExceptionsTest extends TestCase
     public function testRecursiveResolveViaDiDefinitionGet(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Chain resolving container identifiers: \'foo\' -> \'bar\' -> \'baz\' -> \'foobar\'. No entry was found for "foobar" identifier');
+        $this->expectExceptionMessage('Chain resolving container identifiers: \'foo\' -> \'bar\' -> \'baz\' -> \'foobar\'. No entry was found for \'foobar\' identifier');
 
         $def1 = ['foo' => diGet('bar')];
         // ...

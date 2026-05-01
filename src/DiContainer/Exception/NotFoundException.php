@@ -9,6 +9,7 @@ use Throwable;
 
 use function ltrim;
 use function sprintf;
+use function var_export;
 
 class NotFoundException extends ContainerException implements NotFoundExceptionInterface
 {
@@ -19,7 +20,7 @@ class NotFoundException extends ContainerException implements NotFoundExceptionI
     {
         if ('' !== $id) {
             $message = ltrim(
-                sprintf('%s No entry was found for "%s" identifier.', $message, $id),
+                sprintf('%s No entry was found for %s identifier.', $message, var_export($id, true)),
                 ' '
             );
         }
