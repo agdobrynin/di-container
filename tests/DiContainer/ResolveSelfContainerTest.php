@@ -58,7 +58,7 @@ class ResolveSelfContainerTest extends TestCase
     }
 
     #[DataProvider('dataProvider')]
-    public function testGetDefinition(string $id): array
+    public function testGetDefinition(string $id): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
 
