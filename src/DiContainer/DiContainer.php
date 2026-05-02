@@ -126,15 +126,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function get(string $id): mixed
     {
-        if (array_key_exists($id, $this->resolved)) {
-            return $this->resolved[$id];
-        }
-
-        if ($this->isContainer($id)) {
-            return $this;
-        }
-
-        return $this->resolve($id);
+        return array_key_exists($id, $this->resolved)
+            ? $this->resolved[$id]
+            : $this->resolve($id);
     }
 
     public function has(string $id): bool
