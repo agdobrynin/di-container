@@ -46,7 +46,6 @@ use function call_user_func_array;
 use function class_exists;
 use function count;
 use function implode;
-use function in_array;
 use function interface_exists;
 use function is_callable;
 use function is_string;
@@ -378,7 +377,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function isContainer(string $id): bool
     {
-        return in_array($id, [ContainerInterface::class, DiContainerInterface::class, __CLASS__], true);
+        return match ($id) {
+            ContainerInterface::class, DiContainerInterface::class, __CLASS__ => true,
+            default => false,
+        };
     }
 
     protected function hasViaZeroConfigurationDefinition(string $id): bool
