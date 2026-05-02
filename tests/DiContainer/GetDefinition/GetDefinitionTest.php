@@ -85,7 +85,7 @@ class GetDefinitionTest extends TestCase
     public function testNotBoundInterface(): void
     {
         $this->expectException(ContainerExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot create definition via container identifier "'.BazInterface::class.'"');
+        $this->expectExceptionMessage('Cannot create definition via container identifier \'Tests\\\DiContainer\\\GetDefinition\\\Fixtures\\\BazInterface\'');
 
         $container = new DiContainer(config: new DiContainerConfig(true, false));
         $container->getDefinition(BazInterface::class);

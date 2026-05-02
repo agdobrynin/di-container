@@ -248,7 +248,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->resolveDefinition($id);
         } catch (AutowireExceptionInterface $e) {
             throw new ContainerException(
-                sprintf('Cannot create definition via container identifier "%s".', $id),
+                sprintf('Cannot create definition via container identifier %s.', var_export($id, true)),
                 previous: $e
             );
         }
