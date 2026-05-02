@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
@@ -31,6 +32,7 @@ use function array_keys;
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(ContainerAlreadyRegisteredException::class)]
 class SourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -118,7 +120,7 @@ class SourceDefinitionsMutableTest extends TestCase
     public function testSetFail(): void
     {
         $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
-        $this->expectExceptionMessage('The container identifier "service.bar" already registered in the source.');
+        $this->expectExceptionMessage('The container identifier \'service.bar\' already registered in the source.');
 
         $s = new DeferredSourceDefinitionsMutable(static fn () => ['service.bar' => 'Service bar']);
         $s['service.bar'] = 'Other value';

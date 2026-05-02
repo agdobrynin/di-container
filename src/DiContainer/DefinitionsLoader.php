@@ -130,11 +130,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             if (!$overrideDefinitions && $this->configuredDefinitions->offsetExists($identifier)) {
                 throw new ContainerAlreadyRegisteredException(
-                    sprintf(
-                        'Definition with identifier "%s" is already registered in container. Item position #%d.',
-                        $identifier,
-                        $itemCount
-                    )
+                    sprintf('Item position #%d.', $itemCount),
+                    id: $identifier
                 );
             }
 

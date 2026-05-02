@@ -72,7 +72,8 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 
             if (!$definition instanceof DiDefinitionRuntimeInterface) {
                 throw new ContainerAlreadyRegisteredException(
-                    sprintf('The container identifier "%s" already registered in the source. Definition type: "%s".', $identifier, get_debug_type($value))
+                    sprintf('Definition type: "%s".', get_debug_type($value)),
+                    id: $identifier,
                 );
             }
 

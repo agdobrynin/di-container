@@ -72,9 +72,7 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
             return parent::set($id, $definition);
         }
 
-        throw new ContainerAlreadyRegisteredException(
-            sprintf('Definition identifier "%s" already registered in container.', $id)
-        );
+        throw new ContainerAlreadyRegisteredException(id: $id);
     }
 
     public function get(string $id): mixed

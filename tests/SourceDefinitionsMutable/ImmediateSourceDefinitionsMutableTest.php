@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
@@ -31,6 +32,7 @@ use function array_keys;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(ContainerAlreadyRegisteredException::class)]
 class ImmediateSourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -109,7 +111,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
     public function testSetFail(): void
     {
         $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
-        $this->expectExceptionMessage('The container identifier "service.bar" already registered in the source.');
+        $this->expectExceptionMessage('The container identifier \'service.bar\' already registered in the source.');
 
         $s = new ImmediateSourceDefinitionsMutable(['service.bar' => 'Service bar']);
         $s['service.bar'] = 'Other value';
@@ -126,7 +128,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
     public function testKeyExistThroughConstructor(): void
     {
         $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
-        $this->expectExceptionMessage('The container identifier "service.foo" already registered in the source.');
+        $this->expectExceptionMessage('The container identifier \'service.foo\' already registered in the source.');
 
         $defs = static function (): Generator {
             yield 'service.foo' => 'foo value';
