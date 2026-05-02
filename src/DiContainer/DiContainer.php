@@ -396,8 +396,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         if (class_exists($id) || interface_exists($id)) {
-            return $this->hasViaZeroConfig[$id] = !$this->config->isUseAttribute()
-                || !AttributeReader::isAutowireExclude(new ReflectionClass($id));
+            return $this->hasViaZeroConfig[$id] = (!$this->config->isUseAttribute()
+                || !AttributeReader::isAutowireExclude(new ReflectionClass($id)));
         }
 
         return $this->hasViaZeroConfig[$id] = false;
