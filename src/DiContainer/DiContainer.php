@@ -240,22 +240,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinition(string $id): DiDefinitionInterface
     {
-        if ($this->isContainer($id)) {
+        if ($this->isContainer($id) || !$this->has($id)) {
             throw new NotFoundException(id: $id);
         }
 
-        if ($this->has($id)) {
-            try {
-                return $this->resolveDefinition($id);
-            } catch (AutowireExceptionInterface $e) {
-                throw new ContainerException(
-                    sprintf('Cannot create definition via container identifier "%s".', $id),
-                    previous: $e
-                );
-            }
+        try {
+            return $this->resolveDefinition($id);
+        } catch (AutowireExceptionInterface $e) {
+            throw new ContainerException(
+                sprintf('Cannot create definition via container identifier %s.', var_export($id, true)),
+                previous: $e
+            );
         }
-
-        throw new NotFoundException(id: $id);
     }
 
     public function getRemovedDefinitionIds(): iterable
@@ -283,17 +279,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if (!$this->has($id)) {
-                $message = '';
-
-                if (1 < count($this->circularCallWatcher)) {
-                    $chainIds = array_map(
-                        static fn (string $i) => var_export($i, true),
-                        [...array_keys($this->circularCallWatcher), ...[$id]]
-                    );
-                    $message = sprintf('Chain resolving container identifiers: %s.', implode(' -> ', $chainIds));
-                }
-
-                throw new NotFoundException(message: $message, id: $id);
+                throw new NotFoundException($this->getMessageChainResolving($id), id: $id);
             }
 
             $this->checkCyclicalDependencyCall($id);
@@ -321,25 +307,22 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param class-string|string $id
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireException|NotFoundException
      */
-    protected function resolveDefinition(string $id, ?string $previousId = null): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
+    protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
-        if (isset($this->diResolvedDefinition[$id])) {
-            return $this->diResolvedDefinition[$id];
-        }
-
         if (isset($this->definitions[$id])) {
             return $this->definitions[$id]; // @phpstan-ignore return.type
+        }
+
+        if (isset($this->diResolvedDefinition[$id])) {
+            return $this->diResolvedDefinition[$id];
         }
 
         try {
             $reflectionClass = new ReflectionClass($id); // @phpstan-ignore argument.type
         } catch (ReflectionException $e) {
-            throw new AutowireException(
-                sprintf('Cannot resolve definition %s via container identifier %s.', var_export($id, true), var_export($previousId ?? $id, true)),
-                previous: $e,
-            );
+            throw new NotFoundException($this->getMessageChainResolving($id), previous: $e, id: $id);
         }
 
         if ($reflectionClass->isInterface()) {
@@ -350,18 +333,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 try {
                     do {
                         $this->circularCallWatcher[$findId] = true;
-                        $def = $this->resolveDefinition($findId, $reflectionClass->name);
+                        $definition = $this->resolveDefinition($findId);
 
-                        if ($def instanceof DiDefinitionLinkInterface) {
-                            $findId = $def->getDefinition();
+                        if ($definition instanceof DiDefinitionLinkInterface) {
+                            $findId = $definition->getDefinition();
                             $this->checkCyclicalDependencyCall($findId);
                         }
-                    } while ($def instanceof DiDefinitionLinkInterface);
+                    } while ($definition instanceof DiDefinitionLinkInterface);
                 } finally {
                     unset($this->circularCallWatcher[$findId]);
                 }
 
-                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($def, $service->isSingleton);
+                return $this->diResolvedDefinition[$id] = $this->getDiDefinitionWrapper($definition, $service->isSingleton);
             }
 
             throw new AutowireException(sprintf('Attempting to resolve interface "%s". An interface that is not bound to a definition.', $id));
@@ -386,6 +369,20 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->config->isSingletonServiceDefault());
+    }
+
+    protected function getMessageChainResolving(string $currentResolveId): string
+    {
+        if (1 < count($this->circularCallWatcher)) {
+            $chainIds = array_map(
+                static fn (string $i) => var_export($i, true),
+                [...array_keys($this->circularCallWatcher), ...[$currentResolveId]]
+            );
+
+            return sprintf('Chain resolving container identifiers: %s.', implode(' -> ', $chainIds));
+        }
+
+        return '';
     }
 
     protected function isContainer(string $id): bool
@@ -425,22 +422,22 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
     }
 
-    private function getDiDefinitionWrapper(DiDefinitionAutowireInterface|DiDefinitionInterface $def, ?bool $singleton): DiDefinitionSingletonInterface
+    private function getDiDefinitionWrapper(DiDefinitionAutowireInterface|DiDefinitionInterface $definition, ?bool $singleton): DiDefinitionSingletonInterface
     {
-        return new class($def, $singleton) implements DiDefinitionSingletonInterface {
+        return new class($definition, $singleton) implements DiDefinitionSingletonInterface {
             public function __construct(
-                private readonly DiDefinitionAutowireInterface|DiDefinitionInterface $def,
+                private readonly DiDefinitionAutowireInterface|DiDefinitionInterface $definition,
                 private readonly ?bool $isSingleton
             ) {}
 
             public function getDefinition(): DiDefinitionAutowireInterface|DiDefinitionInterface
             {
-                return $this->def; // @codeCoverageIgnore
+                return $this->definition; // @codeCoverageIgnore
             }
 
             public function resolve(DiContainerInterface $container, mixed $context = null): mixed
             {
-                return $this->def->resolve($container, $context);
+                return $this->definition->resolve($container, $context);
             }
 
             public function isSingleton(): ?bool
