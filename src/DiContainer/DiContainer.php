@@ -307,7 +307,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     /**
      * @param class-string|string $id
      *
-     * @throws AutowireExceptionInterface
+     * @throws AutowireException|NotFoundException
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
@@ -322,13 +322,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         try {
             $reflectionClass = new ReflectionClass($id); // @phpstan-ignore argument.type
         } catch (ReflectionException $e) {
-            throw new AutowireException(
-                rtrim(
-                    sprintf('No entry was found for %s identifier. %s', var_export($id, true), $this->getMessageChainResolving($id)),
-                    ' '
-                ),
-                previous: $e,
-            );
+            throw new NotFoundException($this->getMessageChainResolving($id), previous: $e, id: $id);
         }
 
         if ($reflectionClass->isInterface()) {
