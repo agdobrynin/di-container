@@ -240,11 +240,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinition(string $id): DiDefinitionInterface
     {
-        if ($this->has($id)) {
-            if ($this->isContainer($id)) {
-                throw new NotFoundException(id: $id);
-            }
+        if ($this->isContainer($id)) {
+            throw new NotFoundException(id: $id);
+        }
 
+        if ($this->has($id)) {
             try {
                 return $this->resolveDefinition($id);
             } catch (AutowireExceptionInterface $e) {
