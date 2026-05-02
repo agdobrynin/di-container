@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
@@ -125,21 +126,31 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function get(string $id): mixed
     {
-        return array_key_exists($id, $this->resolved)
-            ? $this->resolved[$id]
-            : $this->resolve($id);
+        if (array_key_exists($id, $this->resolved)) {
+            return $this->resolved[$id];
+        }
+
+        if ($this->isContainer($id)) {
+            return $this;
+        }
+
+        return $this->resolve($id);
     }
 
     public function has(string $id): bool
     {
         return isset($this->definitions[$id])
             || array_key_exists($id, $this->resolved)
-            || $this->hasViaZeroConfigurationDefinition($id)
-            || $this->isContainer($id);
+            || $this->isContainer($id)
+            || $this->hasViaZeroConfigurationDefinition($id);
     }
 
     public function set(string $id, mixed $definition): static
     {
+        if ($this->isContainer($id)) {
+            throw new ContainerAlreadyRegisteredException(id: $id);
+        }
+
         $this->definitions->offsetSet($id, $definition);
 
         return $this;
@@ -194,7 +205,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinitions(): iterable
     {
-        yield from $this->definitions->getIterator();
+        foreach ($this->definitions as $id => $definition) {
+            if (!$this->isContainer($id)) {
+                yield $id => $definition;
+            }
+        }
     }
 
     public function getConfig(): DiContainerConfigInterface
@@ -232,6 +247,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function getDefinition(string $id): DiDefinitionInterface
     {
         if ($this->has($id)) {
+            if ($this->isContainer($id)) {
+                throw new NotFoundException(id: $id);
+            }
+
             try {
                 return $this->resolveDefinition($id);
             } catch (AutowireExceptionInterface $e) {
