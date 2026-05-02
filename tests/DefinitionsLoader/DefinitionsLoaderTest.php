@@ -7,6 +7,7 @@ namespace Tests\DefinitionsLoader;
 use Generator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Helper;
@@ -27,6 +28,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ContainerIdentifierException::class)]
 #[CoversClass(DefinitionsLoaderException::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(ContainerAlreadyRegisteredException::class)]
 class DefinitionsLoaderTest extends TestCase
 {
     #[DataProvider('dataProviderInvalidContent')]

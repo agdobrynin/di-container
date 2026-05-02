@@ -7,6 +7,7 @@ namespace Tests\DiContainer\Set;
 use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -29,6 +30,7 @@ use stdClass;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(ContainerAlreadyRegisteredException::class)]
 class DiContainerSetTest extends TestCase
 {
     #[DataProvider('dataProviderWrongIdentifier')]

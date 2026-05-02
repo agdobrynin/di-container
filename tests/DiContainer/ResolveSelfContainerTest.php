@@ -8,6 +8,8 @@ use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
@@ -31,6 +33,8 @@ use stdClass;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(ContainerAlreadyRegisteredException::class)]
+#[CoversClass(NotFoundException::class)]
 class ResolveSelfContainerTest extends TestCase
 {
     #[DataProvider('dataProvider')]
