@@ -50,7 +50,6 @@ use function implode;
 use function interface_exists;
 use function is_callable;
 use function is_string;
-use function rtrim;
 use function sprintf;
 use function var_export;
 
@@ -241,22 +240,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinition(string $id): DiDefinitionInterface
     {
-        if ($this->isContainer($id)) {
+        if ($this->isContainer($id) || !$this->has($id)) {
             throw new NotFoundException(id: $id);
         }
 
-        if ($this->has($id)) {
-            try {
-                return $this->resolveDefinition($id);
-            } catch (AutowireExceptionInterface $e) {
-                throw new ContainerException(
-                    sprintf('Cannot create definition via container identifier "%s".', $id),
-                    previous: $e
-                );
-            }
+        try {
+            return $this->resolveDefinition($id);
+        } catch (AutowireExceptionInterface $e) {
+            throw new ContainerException(
+                sprintf('Cannot create definition via container identifier "%s".', $id),
+                previous: $e
+            );
         }
-
-        throw new NotFoundException(id: $id);
     }
 
     public function getRemovedDefinitionIds(): iterable
