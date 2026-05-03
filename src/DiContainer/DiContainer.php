@@ -311,8 +311,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
-        if ($this->definitions->has($id)) {
-            return $this->definitions->get($id);
+        $sourceDefinition = $this->definitions->get($id);
+
+        if (null !== $sourceDefinition) {
+            return $sourceDefinition;
         }
 
         if (isset($this->diResolvedDefinition[$id])) {
