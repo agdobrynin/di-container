@@ -29,7 +29,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 
     public function has(string $id): bool
     {
-        return !('' === $id) && isset($this->definitions()[$id]);
+        return isset($this->definitions()[$id]);
     }
 
     public function get(string $id): ?DiDefinitionInterface
