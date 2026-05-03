@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\SourceDefinitions;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 
 final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
@@ -20,7 +21,9 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
      * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
      * @param iterable<class-string|non-empty-string, mixed>     $sourceRemovedDefinitionIds
      *
-     * @throws ContainerAlreadyRegisteredExceptionInterface|ContainerIdentifierExceptionInterface
+     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerIdentifierExceptionInterface
+     * @throws DiDefinitionExceptionInterface
      */
     public function __construct(iterable $sourceDefinitions, iterable $sourceRemovedDefinitionIds = [])
     {
@@ -28,7 +31,7 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         $this->removedDefinitionIds = [];
 
         foreach ($sourceDefinitions as $identifier => $sourceDefinition) {
-            $this->offsetSet($identifier, $sourceDefinition);
+            $this->set($identifier, $sourceDefinition);
         }
 
         foreach ($sourceRemovedDefinitionIds as $identifier => $v) {

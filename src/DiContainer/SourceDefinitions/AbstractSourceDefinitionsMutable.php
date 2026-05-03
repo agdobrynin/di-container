@@ -13,16 +13,11 @@ use Kaspi\DiContainer\Exception\SourceDefinitionsMutableException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Traversable;
 
 use function get_debug_type;
 use function is_object;
-use function is_string;
 use function sprintf;
 use function var_export;
 
@@ -33,41 +28,25 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         yield from $this->definitions();
     }
 
-    public function offsetExists(mixed $offset): bool
+    public function has(string $id): bool
     {
-        if (is_string($offset) && '' !== $offset) {
-            return isset($this->definitions()[$offset]);
-        }
-
-        return false;
+        return !('' === $id) && isset($this->definitions()[$id]);
     }
 
-    /**
-     * @throws SourceDefinitionsMutableExceptionInterface
-     */
-    public function offsetGet(mixed $offset): DiDefinitionInterface
+    public function get(string $id): DiDefinitionInterface
     {
-        if (!$this->offsetExists($offset)) {
-            $message = is_string($offset)
-                ? sprintf('Unregistered the container identifier "%s" in the source.', $offset)
-                : sprintf('Unsupported identifier type "%s"', get_debug_type($offset));
-
-            throw new SourceDefinitionsMutableException($message);
-        }
-
-        return $this->definitions()[$offset]; // @phpstan-ignore offsetAccess.invalidOffset
+        return $this->has($id)
+            ? $this->definitions()[$id]
+            : throw new SourceDefinitionsMutableException(
+                sprintf('Unregistered the container identifier %s in the source.', var_export($id, true))
+            );
     }
 
-    /**
-     * @throws ContainerIdentifierExceptionInterface
-     * @throws ContainerAlreadyRegisteredExceptionInterface
-     * @throws DiDefinitionExceptionInterface
-     */
-    public function offsetSet(mixed $offset, mixed $value): void
+    public function set(int|string $id, mixed $value): void
     {
-        $identifier = Helper::getContainerIdentifier($offset, $value);
+        $identifier = Helper::getContainerIdentifier($id, $value);
 
-        if ($this->offsetExists($identifier)) {
+        if ($this->has($identifier)) {
             $definition = $this->definitions()[$identifier];
 
             if (!$definition instanceof DiDefinitionRuntimeInterface) {
@@ -95,21 +74,6 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         };
 
         unset($this->removedDefinitionIds()[$identifier]);
-    }
-
-    /**
-     * @throws ContainerIdentifierExceptionInterface
-     * @throws SourceDefinitionsMutableExceptionInterface
-     */
-    public function offsetUnset(mixed $offset): void
-    {
-        $identifier = is_string($offset)
-            ? $offset
-            : var_export($offset, true);
-
-        throw new SourceDefinitionsMutableException(
-            sprintf('Definitions in the source are non-removable. Operation using the container identifier "%s".', $identifier)
-        );
     }
 
     public function getRemovedDefinitionIds(): iterable
