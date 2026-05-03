@@ -9,7 +9,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Exception\SourceDefinitionsMutableException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
@@ -33,11 +32,9 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         return !('' === $id) && isset($this->definitions()[$id]);
     }
 
-    public function get(string $id): DiDefinitionInterface
+    public function get(string $id): ?DiDefinitionInterface
     {
-        return $this->definitions()[$id] ?? throw new SourceDefinitionsMutableException(
-            sprintf('Unregistered the container identifier %s in the source.', var_export($id, true))
-        );
+        return $this->definitions()[$id] ?? null;
     }
 
     public function set(int|string $id, mixed $value): void
