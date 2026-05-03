@@ -30,22 +30,16 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 
     public function has(string $id): bool
     {
-        if ('' !== $id) {
-            return isset($this->definitions()[$id]);
-        }
-
-        return false;
+        return !('' === $id) && isset($this->definitions()[$id]);
     }
 
     public function get(string $id): DiDefinitionInterface
     {
-        if (!$this->has($id)) {
-            throw new SourceDefinitionsMutableException(
+        return $this->has($id)
+            ? $this->definitions()[$id]
+            : throw new SourceDefinitionsMutableException(
                 sprintf('Unregistered the container identifier %s in the source.', var_export($id, true))
             );
-        }
-
-        return $this->definitions()[$id];
     }
 
     public function set(int|string $id, mixed $value): void
