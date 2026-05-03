@@ -4,13 +4,30 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use ArrayAccess;
 use IteratorAggregate;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Traversable;
 
-interface SourceDefinitionsMutableInterface extends ArrayAccess, IteratorAggregate
+interface SourceDefinitionsMutableInterface extends IteratorAggregate
 {
+    public function has(string $id): bool;
+
+    /**
+     * @throws SourceDefinitionsMutableExceptionInterface
+     */
+    public function get(string $id): DiDefinitionInterface;
+
+    /**
+     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerIdentifierExceptionInterface
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function set(int|string $id, mixed $value): void;
+
     /**
      * @return Traversable<non-empty-string, DiDefinitionInterface>
      */

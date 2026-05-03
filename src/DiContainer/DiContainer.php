@@ -133,7 +133,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function has(string $id): bool
     {
-        return isset($this->definitions[$id])
+        return $this->definitions->has($id)
             || array_key_exists($id, $this->resolved)
             || $this->isContainer($id)
             || $this->hasViaZeroConfigurationDefinition($id);
@@ -145,7 +145,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             throw new ContainerAlreadyRegisteredException(id: $id);
         }
 
-        $this->definitions->offsetSet($id, $definition);
+        $this->definitions->set($id, $definition);
 
         return $this;
     }
@@ -199,7 +199,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinitions(): iterable
     {
-        foreach ($this->definitions as $id => $definition) {
+        foreach ($this->definitions->getIterator() as $id => $definition) {
             if (!$this->isContainer($id)) {
                 yield $id => $definition;
             }
@@ -311,8 +311,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     protected function resolveDefinition(string $id): DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSingletonInterface|DiDefinitionTaggedAsInterface
     {
-        if (isset($this->definitions[$id])) {
-            return $this->definitions[$id]; // @phpstan-ignore return.type
+        if ($this->definitions->has($id)) {
+            return $this->definitions->get($id);
         }
 
         if (isset($this->diResolvedDefinition[$id])) {

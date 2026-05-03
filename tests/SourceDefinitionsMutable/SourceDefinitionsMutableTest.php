@@ -19,7 +19,6 @@ use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 use function array_keys;
 
@@ -38,7 +37,7 @@ class SourceDefinitionsMutableTest extends TestCase
     #[DataProvider('provideIterableType')]
     public function testConstructorIterableType(iterable $src, string $id): void
     {
-        self::assertTrue(isset((new DeferredSourceDefinitionsMutable(static fn () => $src))[$id]));
+        self::assertTrue((new DeferredSourceDefinitionsMutable(static fn () => $src))->has($id));
     }
 
     public static function provideIterableType(): Generator
@@ -70,8 +69,8 @@ class SourceDefinitionsMutableTest extends TestCase
             'service.null' => null,
         ]);
 
-        self::assertTrue(isset($s['service.null']));
-        self::assertFalse(isset($s['service.not_exist']));
+        self::assertTrue($s->has('service.null'));
+        self::assertFalse($s->has('service.not_exist'));
     }
 
     public function testNoneValidKeyInDefinitionsThroughConstructor(): void
@@ -86,26 +85,17 @@ class SourceDefinitionsMutableTest extends TestCase
     public function testGetUndefinedKey(): void
     {
         $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
-        $this->expectExceptionMessage('Unregistered the container identifier "service.foo" in the source.');
+        $this->expectExceptionMessage('Unregistered the container identifier \'service.foo\' in the source.');
 
         $s = new DeferredSourceDefinitionsMutable(static fn () => ['service.bar' => 'Lorem ipsum']);
-        $s['service.foo'];
-    }
-
-    public function testUnsetNotAvailable(): void
-    {
-        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
-        $this->expectExceptionMessage('Definitions in the source are non-removable. Operation using the container identifier "service.bar".');
-
-        $s = new DeferredSourceDefinitionsMutable(static fn () => ['service.bar' => 'Lorem ipsum']);
-        unset($s['service.bar']);
+        $s->get('service.foo');
     }
 
     public function testSetSuccess(): void
     {
         $s = new DeferredSourceDefinitionsMutable(static fn () => ['service.bar' => 'Service bar']);
-        $s['service.baz'] = 'Service baz';
-        $s[] = new DiDefinitionAutowire(self::class);
+        $s->set('service.baz', 'Service baz');
+        $s->set(0, new DiDefinitionAutowire(self::class));
 
         self::assertEquals(
             [
@@ -123,63 +113,24 @@ class SourceDefinitionsMutableTest extends TestCase
         $this->expectExceptionMessage('The container identifier \'service.bar\' already registered in the source.');
 
         $s = new DeferredSourceDefinitionsMutable(static fn () => ['service.bar' => 'Service bar']);
-        $s['service.bar'] = 'Other value';
+        $s->set('service.bar', 'Other value');
     }
 
     #[DataProvider('dataProviderWrongKeyForSetter')]
-    public function testNoneStringKeyForSetter(mixed $offset): void
+    public function testNoneStringKeyForSetter(int|string $offset, mixed $value): void
     {
         $this->expectException(ContainerIdentifierExceptionInterface::class);
         $this->expectExceptionMessage('Definition identifier must be a non-empty string');
 
         $s = new DeferredSourceDefinitionsMutable(static fn () => []);
-        $s[$offset] = 'Service value';
+        $s->set($offset, $value);
     }
 
     public static function dataProviderWrongKeyForSetter(): Generator
     {
-        yield 'object' => [new stdClass()];
+        yield 'empty key' => ['', 'foo'];
 
-        yield 'array' => [[]];
-
-        yield 'bool' => [true];
-
-        yield 'empty string' => [''];
-    }
-
-    public function testNoneStringKeyForGetter(): void
-    {
-        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
-        $this->expectExceptionMessage('Unsupported identifier type "stdClass"');
-
-        (new DeferredSourceDefinitionsMutable(static fn () => []))[new stdClass()];
-    }
-
-    public function testNoneStringKeyForExister(): void
-    {
-        $s = new DeferredSourceDefinitionsMutable(static fn () => []);
-
-        self::assertFalse(isset($s[new stdClass()]));
-    }
-
-    public function testNoneStringKeyForUnset(): void
-    {
-        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
-        $this->expectExceptionMessage('Definitions in the source are non-removable');
-
-        $s = new DeferredSourceDefinitionsMutable(static fn () => []);
-        unset($s[new stdClass()]);
-    }
-
-    public function testUnset(): void
-    {
-        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
-        $this->expectExceptionMessage('Definitions in the source are non-removable');
-
-        $src = static fn (): iterable => ['service.bar' => 'Service bar'];
-
-        $s = new DeferredSourceDefinitionsMutable($src);
-        unset($s['service.bar']);
+        yield 'number and value none implement DiDefinitionIdentifierInterface' => [10, 'foo'];
     }
 
     public function testRemovedDefinitionIds(): void
@@ -202,7 +153,7 @@ class SourceDefinitionsMutableTest extends TestCase
         self::assertSame(['service.bar', 'service.baz'], array_keys([...$s->getIterator()]));
 
         // set service id and remove if exist in `removedDefinitionIds`
-        $s['service.foo'] = 'Service foo';
+        $s->set('service.foo', 'Service foo');
         self::assertFalse($s->isRemovedDefinition('service.foo'));
     }
 
@@ -226,9 +177,9 @@ class SourceDefinitionsMutableTest extends TestCase
             static fn () => yield new DiDefinitionRuntime('service.foo')
         );
 
-        $s['service.foo'] = $instance = (object) ['bar' => 'Service bar'];
+        $s->set('service.foo', $instance = (object) ['bar' => 'Service bar']);
 
-        self::assertSame($instance, $s['service.foo']->getDefinition());
+        self::assertSame($instance, $s->get('service.foo')->getDefinition());
     }
 
     public function testReplaceRuntimeDefinitionFail(): void
@@ -240,7 +191,7 @@ class SourceDefinitionsMutableTest extends TestCase
             static fn () => yield new DiDefinitionRuntime('service.foo')
         );
 
-        $s['service.foo'] = ['bar' => 'Service bar'];
+        $s->set('service.foo', ['bar' => 'Service bar']);
     }
 
     public function testUseStaticFabricAsSource(): void
@@ -250,10 +201,18 @@ class SourceDefinitionsMutableTest extends TestCase
             '\Tests\SourceDefinitionsMutable\SourceDefinitions::removed'
         );
 
-        self::assertFalse(isset($s['baz']));
+        self::assertFalse($s->has('baz'));
         self::assertTrue($s->isRemovedDefinition('baz'));
 
-        self::assertTrue(isset($s['foo'], $s['qux']));
+        self::assertTrue($s->has('foo'));
+        self::assertTrue($s->has('qux'));
+    }
+
+    public function testHasEmptyString(): void
+    {
+        $s = new DeferredSourceDefinitionsMutable(static fn () => []);
+
+        self::assertFalse($s->has(''));
     }
 }
 
