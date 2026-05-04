@@ -40,10 +40,9 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
     public function set(int|string $id, mixed $value): void
     {
         $identifier = Helper::getContainerIdentifier($id, $value);
+        $definition = $this->get($identifier);
 
-        if ($this->has($identifier)) {
-            $definition = $this->definitions()[$identifier];
-
+        if (null !== $definition) {
             if (!$definition instanceof DiDefinitionRuntimeInterface) {
                 throw new ContainerAlreadyRegisteredException(
                     sprintf('Definition type: "%s".', get_debug_type($value)),
