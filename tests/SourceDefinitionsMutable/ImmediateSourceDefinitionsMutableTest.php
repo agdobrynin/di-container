@@ -13,7 +13,6 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -75,11 +74,9 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
 
     public function testGetUndefinedKey(): void
     {
-        $this->expectException(SourceDefinitionsMutableExceptionInterface::class);
-        $this->expectExceptionMessage('Unregistered the container identifier \'service.foo\' in the source.');
-
         $s = new ImmediateSourceDefinitionsMutable(['service.bar' => 'Lorem ipsum']);
-        $s->get('service.foo');
+
+        self::assertNull($s->get('service.foo'));
     }
 
     public function testSetSuccess(): void

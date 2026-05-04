@@ -9,17 +9,13 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\SourceDefinitionsMutableExceptionInterface;
 use Traversable;
 
 interface SourceDefinitionsMutableInterface extends IteratorAggregate
 {
     public function has(string $id): bool;
 
-    /**
-     * @throws SourceDefinitionsMutableExceptionInterface
-     */
-    public function get(string $id): DiDefinitionInterface;
+    public function get(string $id): ?DiDefinitionInterface;
 
     /**
      * @throws ContainerAlreadyRegisteredExceptionInterface
