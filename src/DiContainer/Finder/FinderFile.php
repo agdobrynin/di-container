@@ -13,9 +13,9 @@ use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
+use function array_flip;
 use function array_map;
 use function fnmatch;
-use function in_array;
 use function is_dir;
 use function is_readable;
 use function realpath;
@@ -27,8 +27,8 @@ final class FinderFile implements FinderFileInterface
     /** @var non-empty-string */
     private string $normalizedSrc;
 
-    /** @var list<non-empty-string> */
-    private array $normalizedAvailableExtensions;
+    /** @var array<non-empty-string, non-negative-int> */
+    private array $flippedAndNormalizedAvailableExtensions;
 
     private RecursiveIteratorIterator $recursiveDirectoryIterator;
 
@@ -106,18 +106,17 @@ final class FinderFile implements FinderFileInterface
             )
         );
 
-        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
+        $this->flippedAndNormalizedAvailableExtensions ??= array_flip(array_map(strtolower(...), $this->availableExtensions));
 
         foreach ($this->recursiveDirectoryIterator as $entry) {
             /** @var DirectoryIterator $entry */
-            if (($realPath = $entry->getRealPath())
-                && $entry->isFile()
-                && (
-                    [] === $this->normalizedAvailableExtensions
-                    || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true)
-                )
-            ) {
-                yield $realPath => $entry;
+            if (!($entry->getRealPath() && $entry->isFile())) {
+                continue;
+            }
+
+            if ([] === $this->flippedAndNormalizedAvailableExtensions
+                || isset($this->flippedAndNormalizedAvailableExtensions[strtolower($entry->getExtension())])) {
+                yield $entry->getRealPath() => $entry;
             }
         }
     }
