@@ -14,7 +14,6 @@ use RuntimeException;
 use SplFileInfo;
 
 use function count;
-use function in_array;
 use function is_array;
 use function preg_match;
 use function sprintf;
@@ -158,7 +157,12 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
 
-                    if (in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                    $isValidToken = match ($token_id) {
+                        T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED => true,
+                        default => false,
+                    };
+
+                    if ($isValidToken) {
                         $namespace = $token_text;
 
                         break;
@@ -168,13 +172,13 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                 continue;
             }
 
-            if (in_array($token_id, [T_ABSTRACT, T_TRAIT], true)) {
+            if (T_ABSTRACT === $token_id || T_TRAIT === $token_id) {
                 $isValidFqn = false;
 
                 continue;
             }
 
-            if ($isValidFqn && in_array($token_id, [T_CLASS, T_INTERFACE], true)) {
+            if ($isValidFqn && (T_CLASS === $token_id || T_INTERFACE === $token_id)) {
                 $fqnItem = [];
                 $classOrInterfaceTokenId = $token_id;
 
