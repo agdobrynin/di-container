@@ -29,9 +29,6 @@ use ReflectionParameter;
 use TypeError;
 
 use function array_filter;
-use function array_intersect;
-use function array_keys;
-use function implode;
 use function sprintf;
 use function usort;
 
@@ -47,22 +44,28 @@ final class AttributeReader
      */
     public static function getDiFactoryAttributeOnClass(ReflectionClass $class): ?DiFactory
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
+        /** @var ReflectionAttribute<DiFactory>[] $factoryAttrs */
+        $factoryAttrs = $class->getAttributes(DiFactory::class);
 
-        /** @var null|list<ReflectionAttribute<DiFactory>> $groupDiFactory */
-        $groupDiFactory = $groupAttrs[DiFactory::class] ?? null;
-
-        if (null === $groupDiFactory) {
+        if ([] === $factoryAttrs) {
             return null;
         }
 
-        if (isset($groupDiFactory[1])) {
+        if (isset($factoryAttrs[1])) {
             throw new AutowireAttributeException(
-                sprintf('The attribute %s::class can be applied once for %s class.', DiFactory::class, $class->name)
+                sprintf('The attribute %s can be applied once for %s class.', DiFactory::class, $class->name)
             );
         }
 
-        return $groupDiFactory[0]->newInstance();
+        $autowireAttrs = $class->getAttributes(Autowire::class);
+
+        if ([] !== $autowireAttrs) {
+            throw new AutowireAttributeException(
+                sprintf('The attributes %s and %s cannot be declared together at class %s.', DiFactory::class, Autowire::class, $class->name)
+            );
+        }
+
+        return $factoryAttrs[0]->newInstance();
     }
 
     /**
@@ -72,16 +75,24 @@ final class AttributeReader
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
-        $groupAttrs = self::getNotIntersectGroupAttrs($class->getAttributes(), $class);
+        /** @var ReflectionAttribute<Autowire>[] $autowireAttrs */
+        $autowireAttrs = $class->getAttributes(Autowire::class);
 
-        if (!isset($groupAttrs[Autowire::class])) {
+        if ([] === $autowireAttrs) {
             return;
+        }
+
+        $factoryAttrs = $class->getAttributes(DiFactory::class);
+
+        if ([] !== $factoryAttrs) {
+            throw new AutowireAttributeException(
+                sprintf('The attributes %s and %s cannot be declared together at class %s.', Autowire::class, DiFactory::class, $class->name)
+            );
         }
 
         $containerIdentifier = '';
 
-        /** @var ReflectionAttribute<Autowire> $attr */
-        foreach ($groupAttrs[Autowire::class] as $attr) {
+        foreach ($autowireAttrs as $attr) {
             if ('' === ($autowire = $attr->newInstance())->id) {
                 $autowire = new Autowire($class->name, $autowire->isSingleton, $autowire->arguments);
             }
@@ -223,40 +234,5 @@ final class AttributeReader
 
             yield $attrInit;
         }
-    }
-
-    /**
-     * @param list<ReflectionAttribute> $attrs
-     *
-     * @return array<class-string, list<ReflectionAttribute<Autowire|DiFactory>>>
-     *
-     * @throws AutowireAttributeException
-     */
-    private static function getNotIntersectGroupAttrs(array $attrs, ReflectionClass $whereUseAttribute): array
-    {
-        $flipAvailableAttrs = [Autowire::class => true, DiFactory::class => true];
-        $groupAttrs = [];
-
-        foreach ($attrs as $attr) {
-            if (isset($flipAvailableAttrs[$attr->getName()])) {
-                $groupAttrs[$attr->getName()][] = $attr;
-            }
-        }
-
-        if ([] === $groupAttrs) {
-            return [];
-        }
-
-        $intersectAttrs = array_intersect(array_keys($groupAttrs), array_keys($flipAvailableAttrs));
-
-        if (isset($intersectAttrs[1])) {
-            $strIntersect = implode('::class, ', $intersectAttrs).'::class';
-
-            throw new AutowireAttributeException(
-                sprintf('Only one of the php attributes %s may be declared at %s::class.', $strIntersect, $whereUseAttribute->name)
-            );
-        }
-
-        return $groupAttrs;
     }
 }

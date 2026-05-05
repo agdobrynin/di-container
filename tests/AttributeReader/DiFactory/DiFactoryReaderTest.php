@@ -53,7 +53,7 @@ class DiFactoryReaderTest extends TestCase
     public function testCannotUseTogetherDiFactoryAndAutowire(): void
     {
         $this->expectException(AutowireExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/Only one of the php attributes.+DiFactory::class.+Autowire::class/');
+        $this->expectExceptionMessageMatches('/The attributes .+DiFactory and .+Autowire cannot be declared together/');
 
         AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(ClassWithAttrsDiFactoryAndAutowire::class));
     }
