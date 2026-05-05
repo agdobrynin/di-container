@@ -32,6 +32,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     private bool $keyChecked;
     private readonly bool $isUseKeysComputed;
 
+    /**
+     * @var array<non-empty-string, int>
+     */
+    private array $flippedContainerIdExclude;
+
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
     /**
@@ -114,10 +119,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         $taggedServices = new SplPriorityQueue();
         $taggedServices->setExtractFlags(SplPriorityQueue::EXTR_DATA);
-        $flippedContainerIdExclude = array_flip($this->containerIdExclude);
+        $this->flippedContainerIdExclude ??= array_flip($this->containerIdExclude);
 
         foreach ($definitions as $containerIdentifier => $definition) {
-            if (isset($flippedContainerIdExclude[$containerIdentifier])
+            if (isset($this->flippedContainerIdExclude[$containerIdentifier])
                 || ($this->selfExclude && $containerIdentifier === $this->callingByDefinitionAutowire?->getDefinition()->getName())) {
                 continue;
             }
