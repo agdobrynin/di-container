@@ -39,10 +39,18 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
     /** @var non-empty-string */
     private string $verifiedNamespace;
 
+    /** @var array<int, true> */
+    private readonly array $flippedValidTokenIdInNamespace;
+
     /**
      * @param non-empty-string $namespace PSR-4 namespace
      */
-    public function __construct(private readonly string $namespace, private readonly FinderFileInterface $finderFile) {}
+    public function __construct(private readonly string $namespace, private readonly FinderFileInterface $finderFile)
+    {
+        $this->flippedValidTokenIdInNamespace = [
+            T_STRING => true, T_NAME_QUALIFIED => true, T_NAME_FULLY_QUALIFIED => true,
+        ];
+    }
 
     public function getNamespace(): string
     {
@@ -157,12 +165,7 @@ final class FinderFullyQualifiedName implements FinderFullyQualifiedNameInterfac
                         ? [$tokens[$i][0], $tokens[$i][1]]
                         : [0, $tokens[$i]];
 
-                    $isValidToken = match ($token_id) {
-                        T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED => true,
-                        default => false,
-                    };
-
-                    if ($isValidToken) {
+                    if (isset($this->flippedValidTokenIdInNamespace[$token_id])) {
                         $namespace = $token_text;
 
                         break;
