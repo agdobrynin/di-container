@@ -39,7 +39,6 @@ use UnitEnum;
 use function array_map;
 use function class_exists;
 use function file_exists;
-use function in_array;
 use function interface_exists;
 use function is_callable;
 use function is_iterable;
@@ -523,7 +522,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     {
         ['fqn' => $fqn, 'tokenId' => $tokenId] = $itemFQN;
 
-        if (!in_array($tokenId, [T_INTERFACE, T_CLASS], true)) {
+        if (T_INTERFACE !== $tokenId && T_CLASS !== $tokenId) {
             throw new DefinitionsLoaderInvalidArgumentException(
                 sprintf('Unsupported token id. Support only T_INTERFACE with id %d, T_CLASS with id %d. Got %s.', T_INTERFACE, T_CLASS, var_export($tokenId, true))
             );

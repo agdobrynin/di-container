@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\FinderClosureCode;
 
+use Generator;
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
+use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -19,6 +24,8 @@ use Tests\FinderClosureCode\Fixture\SomeTrait;
 use Tests\FinderClosureCode\Fixture\Y;
 
 use function dirname;
+use function get_debug_type;
+use function sprintf;
 
 /**
  * @internal
@@ -395,5 +402,33 @@ static fn(\Foo $a, \Bar $b, \Baz $q) => true
 EXPECT;
 
         self::assertEquals($expectCode4, $code4);
+    }
+
+    public function testParseAttributeWithNamespace(): void
+    {
+        $fn = static function (#[Inject('foo'), Parameter('foo.param')] mixed ...$foo): Generator {
+            if ([] === $foo) {
+                return;
+            }
+
+            foreach ($foo as $f) {
+                yield !($f instanceof DiContainerInterface)
+                    ? $f
+                    : throw new ContainerException(sprintf('Cannot pass %s', get_debug_type($foo)));
+            }
+        };
+
+        $code = (new FinderClosureCode())->getCode($fn);
+        self::assertEquals('static function (#[\Kaspi\DiContainer\Attributes\Inject(\'foo\'), \Kaspi\DiContainer\Attributes\Parameter(\'foo.param\')] mixed ...$foo): \Generator {
+            if ([] === $foo) {
+                return;
+            }
+
+            foreach ($foo as $f) {
+                yield !($f instanceof \Kaspi\DiContainer\Interfaces\DiContainerInterface)
+                    ? $f
+                    : throw new \Kaspi\DiContainer\Exception\ContainerException(\sprintf(\'Cannot pass %s\', \get_debug_type($foo)));
+            }
+        }', $code);
     }
 }

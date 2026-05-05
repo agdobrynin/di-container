@@ -17,9 +17,9 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use SplPriorityQueue;
 
+use function array_flip;
 use function array_map;
 use function explode;
-use function in_array;
 use function is_callable;
 use function is_string;
 use function sprintf;
@@ -31,6 +31,11 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 {
     private bool $keyChecked;
     private readonly bool $isUseKeysComputed;
+
+    /**
+     * @var array<non-empty-string, int>
+     */
+    private array $flippedContainerIdExclude;
 
     private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
 
@@ -114,9 +119,10 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         $taggedServices = new SplPriorityQueue();
         $taggedServices->setExtractFlags(SplPriorityQueue::EXTR_DATA);
+        $this->flippedContainerIdExclude ??= array_flip($this->containerIdExclude);
 
         foreach ($definitions as $containerIdentifier => $definition) {
-            if (in_array($containerIdentifier, $this->containerIdExclude, true)
+            if (isset($this->flippedContainerIdExclude[$containerIdentifier])
                 || ($this->selfExclude && $containerIdentifier === $this->callingByDefinitionAutowire?->getDefinition()->getName())) {
                 continue;
             }

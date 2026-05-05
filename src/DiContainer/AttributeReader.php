@@ -32,7 +32,6 @@ use function array_filter;
 use function array_intersect;
 use function array_keys;
 use function implode;
-use function in_array;
 use function sprintf;
 use function usort;
 
@@ -173,9 +172,17 @@ final class AttributeReader
      */
     public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
     {
-        $supportAttrs = [DiFactory::class, Inject::class, InjectByCallable::class, ProxyClosure::class, TaggedAs::class, Parameter::class, ParameterRuntime::class];
+        $flipSupportAttrs = [
+            DiFactory::class => true,
+            Inject::class => true,
+            InjectByCallable::class => true,
+            ProxyClosure::class => true,
+            TaggedAs::class => true,
+            Parameter::class => true,
+            ParameterRuntime::class => true,
+        ];
 
-        $attrs = array_filter($param->getAttributes(), static fn (ReflectionAttribute $attr) => in_array($attr->getName(), $supportAttrs, true));
+        $attrs = array_filter($param->getAttributes(), static fn (ReflectionAttribute $attr) => isset($flipSupportAttrs[$attr->getName()]));
 
         if ([] === $attrs) {
             return;
@@ -227,11 +234,11 @@ final class AttributeReader
      */
     private static function getNotIntersectGroupAttrs(array $attrs, ReflectionClass $whereUseAttribute): array
     {
-        $availableAttrs = [Autowire::class, DiFactory::class];
+        $flipAvailableAttrs = [Autowire::class => true, DiFactory::class => true];
         $groupAttrs = [];
 
         foreach ($attrs as $attr) {
-            if (in_array($attr->getName(), $availableAttrs, true)) {
+            if (isset($flipAvailableAttrs[$attr->getName()])) {
                 $groupAttrs[$attr->getName()][] = $attr;
             }
         }
@@ -240,7 +247,7 @@ final class AttributeReader
             return [];
         }
 
-        $intersectAttrs = array_intersect(array_keys($groupAttrs), $availableAttrs);
+        $intersectAttrs = array_intersect(array_keys($groupAttrs), array_keys($flipAvailableAttrs));
 
         if (isset($intersectAttrs[1])) {
             $strIntersect = implode('::class, ', $intersectAttrs).'::class';
