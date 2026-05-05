@@ -65,67 +65,68 @@ use const T_XOR_EQUAL;
  */
 final class FinderClosureCode implements FinderClosureCodeInterface
 {
-    /**
-     * @var array<string, array{tokens: PhpTokens, namespaces: ParsedNamespaces}>
-     */
+    /** @var array<string, array{tokens: PhpTokens, namespaces: ParsedNamespaces}> */
     private array $closureFileStruct = [];
 
-    /**
-     * @var array<non-empty-string, true>
-     */
-    private static array $flippedBuiltinTypes = [
-        'bool' => true, 'int' => true, 'float' => true, 'string' => true,
-        'array' => true, 'object' => true, 'resource' => true, 'never' => true,
-        'void' => true, 'false' => true, 'true' => true, 'null' => true,
-        'callable' => true, 'mixed' => true, 'iterable' => true, 'self' => true,
-        'parent' => true, 'static' => true,
-    ];
+    /** @var array<non-empty-string, true> */
+    private readonly array $flippedBuiltinTypes;
 
-    /**
-     * @var array<int, true>
-     */
-    private static array $flippedSkipTokenId = [
-        T_DOC_COMMENT => true, T_WHITESPACE => true, T_COMMENT => true,
-    ];
+    /** @var array<int, true> */
+    private readonly array $flippedSkipTokenId;
 
-    /**
-     * @var array<int, true>
-     */
-    private static array $flippedAssignmentOperators = [
-        T_AND_EQUAL => true, T_COALESCE_EQUAL => true, T_CONCAT_EQUAL => true,
-        T_DIV_EQUAL => true, T_MINUS_EQUAL => true, T_MOD_EQUAL => true,
-        T_MUL_EQUAL => true, T_OR_EQUAL => true, T_PLUS_EQUAL => true,
-        T_POW_EQUAL => true, T_SL_EQUAL => true, T_SR_EQUAL => true, T_XOR_EQUAL => true,
-    ];
+    /** @var array<int, true> */
+    private readonly array $flippedAssignmentOperators;
 
-    /**
-     * @var array<non-empty-string, true>
-     */
-    private static array $flippedTokenTextEndFunctions = [
-        ',' => true, ')' => true, '}' => true, ';' => true, ']' => true,
-    ];
+    /** @var array<non-empty-string, true> */
+    private readonly array $flippedTokenTextEndFunctions;
 
-    /**
-     * @var array<int, true>
-     */
-    private static array $flippedTokenIdIgnoreConvertTokenStringToFQN = [
-        T_OBJECT_OPERATOR => true, T_NULLSAFE_OBJECT_OPERATOR => true,
-        T_DOUBLE_COLON => true, T_FUNCTION => true, T_CONST => true,
-    ];
+    /** @var array<int, true> */
+    private readonly array $flippedTokenIdIgnoreConvertTokenStringToFQN;
 
-    /**
-     * @var array<non-empty-string, true>
-     */
-    private static array $flippedTokenTextBreakConvertTokenStringToFQN = [
-        '(' => true, ')' => true, '=' => true, ';' => true, ',' => true, '[' => true,
-    ];
+    /** @var array<non-empty-string, true> */
+    private readonly array $flippedTokenTextBreakConvertTokenStringToFQN;
 
-    /**
-     * @var array<int, true>
-     */
-    private static array $flippedTokenIdUseTokenTextInUse = [
-        T_STRING => true, T_NAME_QUALIFIED => true, T_NAME_FULLY_QUALIFIED => true,
-    ];
+    /** @var array<int, true> */
+    private readonly array $flippedTokenIdUseTokenTextInUse;
+
+    public function __construct()
+    {
+        $this->flippedBuiltinTypes = [
+            'bool' => true, 'int' => true, 'float' => true, 'string' => true,
+            'array' => true, 'object' => true, 'resource' => true, 'never' => true,
+            'void' => true, 'false' => true, 'true' => true, 'null' => true,
+            'callable' => true, 'mixed' => true, 'iterable' => true, 'self' => true,
+            'parent' => true, 'static' => true,
+        ];
+
+        $this->flippedSkipTokenId = [
+            T_DOC_COMMENT => true, T_WHITESPACE => true, T_COMMENT => true,
+        ];
+
+        $this->flippedAssignmentOperators = [
+            T_AND_EQUAL => true, T_COALESCE_EQUAL => true, T_CONCAT_EQUAL => true,
+            T_DIV_EQUAL => true, T_MINUS_EQUAL => true, T_MOD_EQUAL => true,
+            T_MUL_EQUAL => true, T_OR_EQUAL => true, T_PLUS_EQUAL => true,
+            T_POW_EQUAL => true, T_SL_EQUAL => true, T_SR_EQUAL => true, T_XOR_EQUAL => true,
+        ];
+
+        $this->flippedTokenTextEndFunctions = [
+            ',' => true, ')' => true, '}' => true, ';' => true, ']' => true,
+        ];
+
+        $this->flippedTokenIdIgnoreConvertTokenStringToFQN = [
+            T_OBJECT_OPERATOR => true, T_NULLSAFE_OBJECT_OPERATOR => true,
+            T_DOUBLE_COLON => true, T_FUNCTION => true, T_CONST => true,
+        ];
+
+        $this->flippedTokenTextBreakConvertTokenStringToFQN = [
+            '(' => true, ')' => true, '=' => true, ';' => true, ',' => true, '[' => true,
+        ];
+
+        $this->flippedTokenIdUseTokenTextInUse = [
+            T_STRING => true, T_NAME_QUALIFIED => true, T_NAME_FULLY_QUALIFIED => true,
+        ];
+    }
 
     /**
      * @throws RuntimeException
@@ -210,7 +211,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
             }
 
             if (0 !== $fnType) {
-                if (0 === $fnLevel && isset(self::$flippedTokenTextEndFunctions[$token_text])) {
+                if (0 === $fnLevel && isset($this->flippedTokenTextEndFunctions[$token_text])) {
                     break;
                 }
 
@@ -220,7 +221,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                     default => $openRound
                 };
 
-                if (isset(self::$flippedTokenIdIgnoreConvertTokenStringToFQN[$token_id])) {
+                if (isset($this->flippedTokenIdIgnoreConvertTokenStringToFQN[$token_id])) {
                     $ignoreConvertTStringToFQN = true;
                     $fnTokens[] = $token_text;
 
@@ -230,8 +231,8 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 // char brake ignoring convert T_STRING to FQN.
                 if ($ignoreConvertTStringToFQN
                     && (
-                        isset(self::$flippedAssignmentOperators[$token_id])
-                        || isset(self::$flippedTokenTextBreakConvertTokenStringToFQN[$token_text])
+                        isset($this->flippedAssignmentOperators[$token_id])
+                        || isset($this->flippedTokenTextBreakConvertTokenStringToFQN[$token_text])
                     )
                 ) {
                     $ignoreConvertTStringToFQN = false;
@@ -249,7 +250,9 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 }
 
                 if ($isAnonymousClass && 0 === match ($token_text) {
-                    '{' => ++$anonymousClassLevel, '}' => --$anonymousClassLevel, default => null
+                    '{' => ++$anonymousClassLevel,
+                    '}' => --$anonymousClassLevel,
+                    default => null
                 }) {
                     $isAnonymousClass = false;
                     $anonymousClassLevel = 0;
@@ -273,14 +276,14 @@ final class FinderClosureCode implements FinderClosureCodeInterface
 
                 if (T_STRING === $token_id && !$ignoreConvertTStringToFQN) {
                     $token_key = strtolower($token_text);
-                    if (!isset(self::$flippedBuiltinTypes[$token_key])) {
+                    if (!isset($this->flippedBuiltinTypes[$token_key])) {
                         if ($openRound > 0) {
                             for ($j = $i + 1; $j < $totalTokens; ++$j) {
                                 [$inside_round_token_id, $inside_round_token_text] = is_array($tokens[$j])
                                     ? [$tokens[$j][0], $tokens[$j][1]]
                                     : [0, $tokens[$j]];
 
-                                if (isset(self::$flippedSkipTokenId[$inside_round_token_id])) {
+                                if (isset($this->flippedSkipTokenId[$inside_round_token_id])) {
                                     continue;
                                 }
 
@@ -538,7 +541,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                     continue;
                 }
 
-                if (false === $isAlias && null !== $token_id && isset(self::$flippedTokenIdUseTokenTextInUse[$token_id])) {
+                if (false === $isAlias && null !== $token_id && isset($this->flippedTokenIdUseTokenTextInUse[$token_id])) {
                     $use[$useNamespaceLevel][] = $token_text;
                 }
             }
