@@ -92,6 +92,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected array $hasViaZeroConfig = [];
 
     /**
+     * @var array<class-string, true>
+     */
+    protected readonly array $containerIds;
+
+    /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
@@ -111,6 +116,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->parameters = !($parameters instanceof SourceParametersMutableInterface)
             ? new ImmediateSourceParameters($parameters)
             : $parameters;
+        $this->containerIds = [ContainerInterface::class => true, DiContainerInterface::class => true, __CLASS__ => true];
     }
 
     /**
@@ -135,13 +141,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     {
         return $this->definitions->has($id)
             || array_key_exists($id, $this->resolved)
-            || $this->isContainer($id)
+            || isset($this->containerIds[$id])
             || $this->hasViaZeroConfigurationDefinition($id);
     }
 
     public function set(string $id, mixed $definition): static
     {
-        if ($this->isContainer($id)) {
+        if (isset($this->containerIds[$id])) {
             throw new ContainerAlreadyRegisteredException(id: $id);
         }
 
@@ -200,7 +206,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function getDefinitions(): iterable
     {
         foreach ($this->definitions->getIterator() as $id => $definition) {
-            if (!$this->isContainer($id)) {
+            if (!isset($this->containerIds[$id])) {
                 yield $id => $definition;
             }
         }
@@ -240,7 +246,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinition(string $id): DiDefinitionInterface
     {
-        if ($this->isContainer($id) || !$this->has($id)) {
+        if (isset($this->containerIds[$id]) || !$this->has($id)) {
             throw new NotFoundException(id: $id);
         }
 
@@ -274,7 +280,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected function resolve(string $id): mixed
     {
         try {
-            if ($this->isContainer($id)) {
+            if (isset($this->containerIds[$id])) {
                 return $this;
             }
 
@@ -385,14 +391,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         return '';
-    }
-
-    protected function isContainer(string $id): bool
-    {
-        return match ($id) {
-            ContainerInterface::class, DiContainerInterface::class, __CLASS__ => true,
-            default => false,
-        };
     }
 
     protected function hasViaZeroConfigurationDefinition(string $id): bool
