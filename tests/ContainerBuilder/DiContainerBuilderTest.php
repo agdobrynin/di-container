@@ -25,6 +25,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
+use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
 use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
@@ -71,6 +72,7 @@ use function random_bytes;
 #[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(DeferredSourceParameters::class)]
+#[CoversClass(FinderClosureCode::class)]
 class DiContainerBuilderTest extends TestCase
 {
     public function testDefinitionLoaderImportThrowException(): void

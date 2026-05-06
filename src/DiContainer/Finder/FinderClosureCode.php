@@ -19,8 +19,8 @@ use function end;
 use function explode;
 use function function_exists;
 use function implode;
-use function in_array;
 use function is_array;
+use function is_string;
 use function md5;
 use function sprintf;
 use function str_starts_with;
@@ -65,22 +65,68 @@ use const T_XOR_EQUAL;
  */
 final class FinderClosureCode implements FinderClosureCodeInterface
 {
-    /**
-     * @var array<string, array{tokens: PhpTokens, namespaces: ParsedNamespaces}>
-     */
+    /** @var array<string, array{tokens: PhpTokens, namespaces: ParsedNamespaces}> */
     private array $closureFileStruct = [];
 
-    /** @var non-empty-string[] */
-    private static array $builtinTypes = [
-        'bool', 'int', 'float', 'string', 'array', 'object', 'resource', 'never', 'void', 'false', 'true',
-        'null', 'callable', 'mixed', 'iterable', 'self', 'parent', 'static',
-    ];
+    /** @var array<non-empty-string, true> */
+    private readonly array $flippedBuiltinTypes;
 
-    /** @var positive-int[] */
-    private static array $assignmentOperators = [
-        T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL,
-        T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL, T_XOR_EQUAL,
-    ];
+    /** @var array<int, true> */
+    private readonly array $flippedSkipTokenId;
+
+    /** @var array<int, true> */
+    private readonly array $flippedAssignmentOperators;
+
+    /** @var array<non-empty-string, true> */
+    private readonly array $flippedTokenTextEndFunctions;
+
+    /** @var array<int, true> */
+    private readonly array $flippedTokenIdIgnoreConvertTokenStringToFQN;
+
+    /** @var array<non-empty-string, true> */
+    private readonly array $flippedTokenTextBreakConvertTokenStringToFQN;
+
+    /** @var array<int, true> */
+    private readonly array $flippedTokenIdUseTokenTextInUse;
+
+    public function __construct()
+    {
+        $this->flippedBuiltinTypes = [
+            'bool' => true, 'int' => true, 'float' => true, 'string' => true,
+            'array' => true, 'object' => true, 'resource' => true, 'never' => true,
+            'void' => true, 'false' => true, 'true' => true, 'null' => true,
+            'callable' => true, 'mixed' => true, 'iterable' => true, 'self' => true,
+            'parent' => true, 'static' => true,
+        ];
+
+        $this->flippedSkipTokenId = [
+            T_DOC_COMMENT => true, T_WHITESPACE => true, T_COMMENT => true,
+        ];
+
+        $this->flippedAssignmentOperators = [
+            T_AND_EQUAL => true, T_COALESCE_EQUAL => true, T_CONCAT_EQUAL => true,
+            T_DIV_EQUAL => true, T_MINUS_EQUAL => true, T_MOD_EQUAL => true,
+            T_MUL_EQUAL => true, T_OR_EQUAL => true, T_PLUS_EQUAL => true,
+            T_POW_EQUAL => true, T_SL_EQUAL => true, T_SR_EQUAL => true, T_XOR_EQUAL => true,
+        ];
+
+        $this->flippedTokenTextEndFunctions = [
+            ',' => true, ')' => true, '}' => true, ';' => true, ']' => true,
+        ];
+
+        $this->flippedTokenIdIgnoreConvertTokenStringToFQN = [
+            T_OBJECT_OPERATOR => true, T_NULLSAFE_OBJECT_OPERATOR => true,
+            T_DOUBLE_COLON => true, T_FUNCTION => true, T_CONST => true,
+        ];
+
+        $this->flippedTokenTextBreakConvertTokenStringToFQN = [
+            '(' => true, ')' => true, '=' => true, ';' => true, ',' => true, '[' => true,
+        ];
+
+        $this->flippedTokenIdUseTokenTextInUse = [
+            T_STRING => true, T_NAME_QUALIFIED => true, T_NAME_FULLY_QUALIFIED => true,
+        ];
+    }
 
     /**
      * @throws RuntimeException
@@ -128,6 +174,10 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         for ($i = 0, $totalTokens = count($tokens); $i < $totalTokens; ++$i) {
             $token = &$tokens[$i];
 
+            /**
+             * @var null|int $token_id
+             * @var string   $token_text
+             */
             [$token_id, $token_text, $token_line] = is_array($token)
                 ? [$token[0], $token[1], $token[2]]
                 : [null, $token, $token_line];
@@ -141,7 +191,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 $fnTokens[] = $token_text.' ';
             }
 
-            if (0 === $fnLevel && in_array($token_id, [T_FN, T_FUNCTION], true)) {
+            if (0 === $fnLevel && (T_FN === $token_id || T_FUNCTION === $token_id)) {
                 if (!$fnIsStatic) {
                     throw new LogicException(
                         sprintf('Anonymous function must be declared as static via keyword "static". Code from file "%s" at line %d.', $closureFileName, $token_line)
@@ -161,22 +211,30 @@ final class FinderClosureCode implements FinderClosureCodeInterface
             }
 
             if (0 !== $fnType) {
-                if (0 === $fnLevel && in_array($token_text, [',', ')', '}', ';', ']'], true)) {
+                if (0 === $fnLevel && isset($this->flippedTokenTextEndFunctions[$token_text])) {
                     break;
                 }
 
                 $openRound = match ($token_text) {
-                    '(' => $openRound + 1, ')' => $openRound - 1, default => $openRound
+                    '(' => $openRound + 1,
+                    ')' => $openRound - 1,
+                    default => $openRound
                 };
 
-                if (in_array($token_id, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_FUNCTION, T_CONST], true)) {
+                if (null !== $token_id && isset($this->flippedTokenIdIgnoreConvertTokenStringToFQN[$token_id])) {
                     $ignoreConvertTStringToFQN = true;
+                    $fnTokens[] = $token_text;
+
+                    continue;
                 }
 
                 // char brake ignoring convert T_STRING to FQN.
                 if ($ignoreConvertTStringToFQN
-                    && (in_array($token_text, ['(', ')', '=', ';', ',', '['], true)
-                        || in_array($token_id, self::$assignmentOperators, true))) {
+                    && (
+                        (null !== $token_id && isset($this->flippedAssignmentOperators[$token_id]))
+                        || isset($this->flippedTokenTextBreakConvertTokenStringToFQN[$token_text])
+                    )
+                ) {
                     $ignoreConvertTStringToFQN = false;
                 }
 
@@ -192,7 +250,9 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 }
 
                 if ($isAnonymousClass && 0 === match ($token_text) {
-                    '{' => ++$anonymousClassLevel, '}' => --$anonymousClassLevel, default => null
+                    '{' => ++$anonymousClassLevel,
+                    '}' => --$anonymousClassLevel,
+                    default => null
                 }) {
                     $isAnonymousClass = false;
                     $anonymousClassLevel = 0;
@@ -216,26 +276,29 @@ final class FinderClosureCode implements FinderClosureCodeInterface
 
                 if (T_STRING === $token_id && !$ignoreConvertTStringToFQN) {
                     $token_key = strtolower($token_text);
-                    if (!in_array($token_key, self::$builtinTypes, true)) {
+                    if (!isset($this->flippedBuiltinTypes[$token_key])) {
                         if ($openRound > 0) {
-                            for ($t = $i + 1; $t < $totalTokens; ++$t) {
-                                [$t_id, $t_text] = is_array($tokens[$t])
-                                    ? [$tokens[$t][0], $tokens[$t][1]]
-                                    : [0, $tokens[$t]];
+                            for ($j = $i + 1; $j < $totalTokens; ++$j) {
+                                [$inside_round_token_id, $inside_round_token_text] = is_array($tokens[$j])
+                                    ? [$tokens[$j][0], $tokens[$j][1]]
+                                    : [0, $tokens[$j]];
 
-                                if (in_array($t_id, [T_DOC_COMMENT, T_WHITESPACE, T_COMMENT], true)) {
+                                if (isset($this->flippedSkipTokenId[$inside_round_token_id])) {
                                     continue;
                                 }
 
-                                if (':' === $t_text) {
+                                if (':' === $inside_round_token_text) {
                                     $fnTokens[] = $token_text.':';
 
-                                    $i = $t;
+                                    $i = $j;
 
                                     continue 2;
                                 }
 
-                                if ($t_id > 0 || in_array($tokens[$t], ['(', ',', ')'], true)) {
+                                if ($inside_round_token_id > 0
+                                    || '(' === $tokens[$j]
+                                    || ',' === $tokens[$j]
+                                    || ')' === $tokens[$j]) {
                                     break;
                                 }
                             }
@@ -259,16 +322,21 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                         .'\\'.implode('\\', $qualified_parts);
 
                     continue;
-                } elseif (in_array($token_id, [T_DIR, T_FILE, T_LINE, T_NS_C], true)) { // magic constants.
-                    $fnTokens[] = match ($token_id) {
-                        T_DIR => $t_dir ??= var_export(dirname($closureFileName), true),
-                        T_FILE => $t_file ??= var_export($closureFileName, true),
-                        T_LINE => var_export($token_line, true),
-                        T_NS_C => $t_ns ??= var_export(
-                            '\\' !== ($defaultPrefixNamespace) ? substr($defaultPrefixNamespace, 0, -1) : '',
-                            true
-                        ),
-                    };
+                }
+
+                $magicConstStr = match ($token_id) {
+                    T_DIR => $t_dir ??= var_export(dirname($closureFileName), true),
+                    T_FILE => $t_file ??= var_export($closureFileName, true),
+                    T_LINE => var_export($token_line, true),
+                    T_NS_C => $t_ns ??= var_export(
+                        '\\' !== ($defaultPrefixNamespace) ? substr($defaultPrefixNamespace, 0, -1) : '',
+                        true
+                    ),
+                    default => false
+                };
+
+                if (is_string($magicConstStr)) {
+                    $fnTokens[] = $magicConstStr;
 
                     continue;
                 }
@@ -365,7 +433,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 }
             }
 
-            if ($isNamespace && in_array($token_id, [T_STRING, T_NAME_QUALIFIED], true)) {
+            if ($isNamespace && (T_STRING === $token_id || T_NAME_QUALIFIED === $token_id)) {
                 $isNamespaceDetected = true;
                 $namespace = $token_text;
                 $namespaces[$namespace] = [
@@ -376,7 +444,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 continue;
             }
 
-            if ($isNamespace && in_array($token_text, ['{', ';'], true)) {
+            if ($isNamespace && ('{' === $token_text || ';' === $token_text)) {
                 $isNamespace = false;
 
                 if (false === $isNamespaceDetected) {
@@ -446,7 +514,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                     continue;
                 }
 
-                if (in_array($token_text, ['{', '}'], true)) {
+                if ('{' === $token_text || '}' === $token_text) {
                     '{' === $token_text
                         ? ++$useNamespaceLevel
                         : --$useNamespaceLevel;
@@ -473,7 +541,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                     continue;
                 }
 
-                if (false === $isAlias && in_array($token_id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                if (false === $isAlias && null !== $token_id && isset($this->flippedTokenIdUseTokenTextInUse[$token_id])) {
                     $use[$useNamespaceLevel][] = $token_text;
                 }
             }

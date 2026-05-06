@@ -33,13 +33,10 @@ use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 
-use function array_column;
-use function array_filter;
 use function array_key_exists;
 use function array_push;
 use function array_slice;
 use function count;
-use function in_array;
 use function is_int;
 use function is_string;
 use function sprintf;
@@ -50,6 +47,11 @@ use function sprintf;
  */
 final class ArgumentBuilder implements ArgumentBuilderInterface
 {
+    /**
+     * @var array<non-empty-string, int>
+     */
+    private array $flippedParamNames;
+
     /**
      * @param BindArgumentsType $bindArguments
      */
@@ -291,13 +293,22 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             return array_slice($this->bindArguments, $argumentNameOrIndex, preserve_keys: true);
         }
 
-        $paramNames = array_column($this->functionOrMethod->getParameters(), 'name');
+        if (!isset($this->flippedParamNames)) {
+            $this->flippedParamNames = [];
+            foreach ($this->functionOrMethod->getParameters() as $index => $param) {
+                $this->flippedParamNames[$param->getName()] = $index;
+            }
+        }
 
-        return array_filter(
-            $this->bindArguments,
-            static fn (int|string $nameOrIndex) => !in_array($nameOrIndex, $paramNames, true) || $nameOrIndex === $argumentNameOrIndex,
-            ARRAY_FILTER_USE_KEY
-        );
+        $tailArgs = [];
+
+        foreach ($this->bindArguments as $nameOrIndex => $value) {
+            if (!isset($this->flippedParamNames[$nameOrIndex]) || $nameOrIndex === $argumentNameOrIndex) {
+                $tailArgs[$nameOrIndex] = $value;
+            }
+        }
+
+        return $tailArgs;
     }
 
     /**

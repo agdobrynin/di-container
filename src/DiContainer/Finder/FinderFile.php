@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Finder;
 
-use DirectoryIterator;
 use FilesystemIterator;
 use Generator;
 use InvalidArgumentException;
@@ -12,10 +11,11 @@ use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 
+use function array_flip;
 use function array_map;
 use function fnmatch;
-use function in_array;
 use function is_dir;
 use function is_readable;
 use function realpath;
@@ -27,8 +27,8 @@ final class FinderFile implements FinderFileInterface
     /** @var non-empty-string */
     private string $normalizedSrc;
 
-    /** @var list<non-empty-string> */
-    private array $normalizedAvailableExtensions;
+    /** @var array<non-empty-string, non-negative-int> */
+    private array $flippedAndNormalizedAvailableExtensions;
 
     private RecursiveIteratorIterator $recursiveDirectoryIterator;
 
@@ -77,7 +77,7 @@ final class FinderFile implements FinderFileInterface
     }
 
     /**
-     * @return Generator<non-empty-string, DirectoryIterator>
+     * @return Generator<non-empty-string, SplFileInfo>
      */
     private function fetchFiles(): Generator
     {
@@ -106,18 +106,20 @@ final class FinderFile implements FinderFileInterface
             )
         );
 
-        $this->normalizedAvailableExtensions ??= array_map(strtolower(...), $this->availableExtensions);
+        $this->flippedAndNormalizedAvailableExtensions ??= array_flip(array_map(strtolower(...), $this->availableExtensions));
 
         foreach ($this->recursiveDirectoryIterator as $entry) {
-            /** @var DirectoryIterator $entry */
-            if (($realPath = $entry->getRealPath())
-                && $entry->isFile()
+            /**
+             * @var SplFileInfo      $entry
+             * @var non-empty-string $filePath
+             */
+            if (false !== ($filePath = $entry->getRealPath())
                 && (
-                    [] === $this->normalizedAvailableExtensions
-                    || in_array(strtolower($entry->getExtension()), $this->normalizedAvailableExtensions, true)
+                    [] === $this->flippedAndNormalizedAvailableExtensions
+                    || isset($this->flippedAndNormalizedAvailableExtensions[strtolower($entry->getExtension())])
                 )
             ) {
-                yield $realPath => $entry;
+                yield $filePath => $entry;
             }
         }
     }

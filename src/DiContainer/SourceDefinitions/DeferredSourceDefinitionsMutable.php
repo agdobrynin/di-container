@@ -46,7 +46,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
             $this->removedDefinitionIds = [];
 
             foreach (($this->sourceDefinitions)() as $identifier => $sourceDefinition) {
-                $this->offsetSet($identifier, $sourceDefinition);
+                $this->set($identifier, $sourceDefinition);
             }
 
             if (null !== $this->sourceRemovedDefinitionIds) {

@@ -48,7 +48,7 @@ class GetTest extends TestCase
     public function testGetFail(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('No entry was found for "foo" identifier.');
+        $this->expectExceptionMessage('No entry was found for \'foo\' identifier.');
 
         $this->container->expects(self::never())
             ->method('get')
@@ -75,7 +75,7 @@ class GetTest extends TestCase
     public function testArrayAccessFail(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('No entry was found for "foo" identifier.');
+        $this->expectExceptionMessage('No entry was found for \'foo\' identifier.');
 
         $this->container->expects(self::never())
             ->method('get')
@@ -100,7 +100,7 @@ class GetTest extends TestCase
     public function testByOffsetGetFail(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('No entry was found for "foo" identifier.');
+        $this->expectExceptionMessage('No entry was found for \'foo\' identifier.');
 
         $this->container->expects(self::never())
             ->method('get')

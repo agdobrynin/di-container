@@ -8,7 +8,8 @@ use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 
-use function in_array;
+use function array_flip;
+use function array_keys;
 use function ltrim;
 use function preg_match;
 use function sprintf;
@@ -40,24 +41,23 @@ final class CompiledEntry implements CompiledEntryInterface
     ) {
         $this->validateVar($scopeServiceVar, 'Invalid scope service variable.');
 
-        foreach ($scopeVars as $var) {
-            $this->validateVar($var, 'Invalid scope variables.');
+        /** @var array<non-empty-string, non-negative-int> $flippedScopeVars */
+        $flippedScopeVars = array_flip($scopeVars);
 
-            if (!in_array($var, $this->scopeVars, true)) {
-                $this->scopeVars[] = $var;
-            }
+        foreach ($flippedScopeVars as $var => $k) {
+            $this->validateVar($var, 'Invalid scope variables.');
+            $this->scopeVars[] = $var;
         }
 
         $scopeServiceVarUnique = null;
         $suffixVar = 0;
 
-        while (in_array($scopeServiceVarUnique ?? $scopeServiceVar, $this->scopeVars, true)) {
+        while (isset($flippedScopeVars[$scopeServiceVarUnique ?? $scopeServiceVar])) {
             ++$suffixVar;
             $scopeServiceVarUnique = $scopeServiceVar.$suffixVar;
         }
 
-        $this->scopeServiceVar = $scopeServiceVarUnique ?? $scopeServiceVar;
-        $this->scopeVars[] = $this->scopeServiceVar;
+        $this->scopeVars[] = $this->scopeServiceVar = ($scopeServiceVarUnique ?? $scopeServiceVar);
     }
 
     public function getExpression(): string
@@ -98,12 +98,14 @@ final class CompiledEntry implements CompiledEntryInterface
 
     public function addToScopeVars(string ...$name): static
     {
-        foreach ($name as $n) {
-            if (!in_array($n, $this->scopeVars, true)) {
-                $this->validateVar($n, 'Invalid scope variable.');
-                $this->scopeVars[] = $n;
-            }
+        /** @var array<non-empty-string, non-negative-int> $flippedNames */
+        $flippedNames = array_flip($name);
+
+        foreach ($flippedNames as $var => $k) {
+            $this->validateVar($var, 'Invalid scope variable.');
         }
+
+        $this->scopeVars = array_keys(array_flip($this->scopeVars) + $flippedNames);
 
         return $this;
     }
