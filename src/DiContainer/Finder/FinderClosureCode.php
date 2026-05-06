@@ -175,8 +175,8 @@ final class FinderClosureCode implements FinderClosureCodeInterface
             $token = &$tokens[$i];
 
             /**
-             * @var int    $token_id
-             * @var string $token_text
+             * @var null|int $token_id
+             * @var string   $token_text
              */
             [$token_id, $token_text, $token_line] = is_array($token)
                 ? [$token[0], $token[1], $token[2]]
@@ -221,7 +221,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                     default => $openRound
                 };
 
-                if (isset($this->flippedTokenIdIgnoreConvertTokenStringToFQN[$token_id])) {
+                if (null !== $token_id && isset($this->flippedTokenIdIgnoreConvertTokenStringToFQN[$token_id])) {
                     $ignoreConvertTStringToFQN = true;
                     $fnTokens[] = $token_text;
 
@@ -231,7 +231,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 // char brake ignoring convert T_STRING to FQN.
                 if ($ignoreConvertTStringToFQN
                     && (
-                        isset($this->flippedAssignmentOperators[$token_id])
+                        (null !== $token_id && isset($this->flippedAssignmentOperators[$token_id]))
                         || isset($this->flippedTokenTextBreakConvertTokenStringToFQN[$token_text])
                     )
                 ) {
