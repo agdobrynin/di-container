@@ -6,15 +6,19 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
 
 use function rtrim;
 use function sprintf;
 use function var_export;
 
-final class DiDefinitionRuntime implements DiDefinitionNoArgumentsInterface, DiDefinitionRuntimeInterface
+final class DiDefinitionRuntime implements DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface, DiDefinitionRuntimeInterface
 {
+    use TagsTrait;
+
     private object $definition;
 
     /**

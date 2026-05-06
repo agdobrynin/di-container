@@ -108,7 +108,7 @@ if (!function_exists('Kaspi\DiContainer\diRuntime')) { // @codeCoverageIgnore
     /**
      * @param non-empty-string $containerIdentifier
      */
-    function diRuntime(string $containerIdentifier, ?string $message = null): DiDefinitionNoArgumentsInterface
+    function diRuntime(string $containerIdentifier, ?string $message = null): DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionRuntime($containerIdentifier, $message);
     }
