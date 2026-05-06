@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Finder;
 
-use DirectoryIterator;
 use FilesystemIterator;
 use Generator;
 use InvalidArgumentException;
@@ -12,6 +11,7 @@ use Iterator;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFileInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 
 use function array_flip;
 use function array_map;
@@ -77,7 +77,7 @@ final class FinderFile implements FinderFileInterface
     }
 
     /**
-     * @return Generator<non-empty-string, DirectoryIterator>
+     * @return Generator<non-empty-string, SplFileInfo>
      */
     private function fetchFiles(): Generator
     {
@@ -109,14 +109,17 @@ final class FinderFile implements FinderFileInterface
         $this->flippedAndNormalizedAvailableExtensions ??= array_flip(array_map(strtolower(...), $this->availableExtensions));
 
         foreach ($this->recursiveDirectoryIterator as $entry) {
-            /** @var DirectoryIterator $entry */
-            if (!($entry->getRealPath() && $entry->isFile())) {
-                continue;
-            }
-
-            if ([] === $this->flippedAndNormalizedAvailableExtensions
-                || isset($this->flippedAndNormalizedAvailableExtensions[strtolower($entry->getExtension())])) {
-                yield $entry->getRealPath() => $entry;
+            /**
+             * @var SplFileInfo      $entry
+             * @var non-empty-string $filePath
+             */
+            if (false !== ($filePath = $entry->getRealPath())
+                && (
+                    [] === $this->flippedAndNormalizedAvailableExtensions
+                    || isset($this->flippedAndNormalizedAvailableExtensions[strtolower($entry->getExtension())])
+                )
+            ) {
+                yield $filePath => $entry;
             }
         }
     }
