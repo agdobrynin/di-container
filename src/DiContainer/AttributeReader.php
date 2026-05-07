@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\DiRuntime;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\Parameter;
@@ -44,28 +45,42 @@ final class AttributeReader
      */
     public static function getDiFactoryAttributeOnClass(ReflectionClass $class): ?DiFactory
     {
-        /** @var ReflectionAttribute<DiFactory>[] $factoryAttrs */
-        $factoryAttrs = $class->getAttributes(DiFactory::class);
+        $factoryAttrs = self::getNotIntersectAttributes($class, DiFactory::class, false, [Autowire::class, DiRuntime::class]);
 
-        if ([] === $factoryAttrs) {
-            return null;
+        return isset($factoryAttrs[0])
+            ? $factoryAttrs[0]->newInstance()
+            : null;
+    }
+
+    /**
+     * Return `DiRuntime::$containerIdentifier` as none-empty string.
+     *
+     * @return Generator<DiRuntime>
+     *
+     * @throws AutowireAttributeException
+     */
+    public static function getDiRuntimeAttribute(ReflectionClass $class): Generator
+    {
+        $diRuntimeAttrs = self::getNotIntersectAttributes($class, DiRuntime::class, true, [DiFactory::class, Autowire::class]);
+
+        $containerIdentifier = '';
+
+        /** @var ReflectionAttribute<DiRuntime> $attr */
+        foreach ($diRuntimeAttrs as $attr) {
+            if ('' === ($diRuntime = $attr->newInstance())->containerIdentifier) {
+                $diRuntime = new DiRuntime($class->name, $diRuntime->message);
+            }
+
+            if ($containerIdentifier === $diRuntime->containerIdentifier) {
+                throw new AutowireAttributeException(
+                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $containerIdentifier, DiRuntime::class, $containerIdentifier, $class->name),
+                );
+            }
+
+            $containerIdentifier = $diRuntime->containerIdentifier;
+
+            yield $diRuntime;
         }
-
-        if (isset($factoryAttrs[1])) {
-            throw new AutowireAttributeException(
-                sprintf('The attribute %s can be applied once for %s class.', DiFactory::class, $class->name)
-            );
-        }
-
-        $autowireAttrs = $class->getAttributes(Autowire::class);
-
-        if ([] !== $autowireAttrs) {
-            throw new AutowireAttributeException(
-                sprintf('The attributes %s and %s cannot be declared together at class %s.', DiFactory::class, Autowire::class, $class->name)
-            );
-        }
-
-        return $factoryAttrs[0]->newInstance();
     }
 
     /**
@@ -75,23 +90,15 @@ final class AttributeReader
      */
     public static function getAutowireAttribute(ReflectionClass $class): Generator
     {
-        /** @var ReflectionAttribute<Autowire>[] $autowireAttrs */
-        $autowireAttrs = $class->getAttributes(Autowire::class);
+        $autowireAttrs = self::getNotIntersectAttributes($class, Autowire::class, true, [DiRuntime::class, DiFactory::class]);
 
         if ([] === $autowireAttrs) {
             return;
         }
 
-        $factoryAttrs = $class->getAttributes(DiFactory::class);
-
-        if ([] !== $factoryAttrs) {
-            throw new AutowireAttributeException(
-                sprintf('The attributes %s and %s cannot be declared together at class %s.', Autowire::class, DiFactory::class, $class->name)
-            );
-        }
-
         $containerIdentifier = '';
 
+        /** @var ReflectionAttribute<Autowire> $attr */
         foreach ($autowireAttrs as $attr) {
             if ('' === ($autowire = $attr->newInstance())->id) {
                 $autowire = new Autowire($class->name, $autowire->isSingleton, $autowire->arguments);
@@ -234,5 +241,38 @@ final class AttributeReader
 
             yield $attrInit;
         }
+    }
+
+    /**
+     * @template T of Autowire|DiFactory|DiRuntime
+     *
+     * @param class-string<T>    $mainAttribute
+     * @param list<class-string> $notIntersectAttrs
+     *
+     * @return list<ReflectionAttribute<T>>
+     */
+    private static function getNotIntersectAttributes(ReflectionClass $class, string $mainAttribute, bool $isRepeatedMainAttribute, array $notIntersectAttrs): array
+    {
+        $mainAttrs = $class->getAttributes($mainAttribute);
+
+        if ([] === $mainAttrs) {
+            return [];
+        }
+
+        if (!$isRepeatedMainAttribute && isset($mainAttrs[1])) {
+            throw new AutowireAttributeException(
+                sprintf('The attribute %s can be applied once for %s class.', $mainAttribute, $class->name)
+            );
+        }
+
+        foreach ($notIntersectAttrs as $attr) {
+            if ([] !== $class->getAttributes($attr)) {
+                throw new AutowireAttributeException(
+                    sprintf('The attributes %s and %s cannot be declared together at class %s.', $mainAttribute, $attr, $class->name)
+                );
+            }
+        }
+
+        return $mainAttrs;
     }
 }
