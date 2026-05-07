@@ -16,6 +16,7 @@ use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionParameter;
 use Tests\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
+use Tests\AttributeReader\DiFactory\Fixtures\Foo;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryOne;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryTwo;
 use Tests\AttributeReader\DiFactory\Fixtures\FooFactoryWithArgs;
@@ -131,5 +132,13 @@ class DiFactoryReaderTest extends TestCase
         self::assertEquals([
             'apiKey' => new DiDefinitionGet('keys.api_key'),
         ], $factory->arguments);
+    }
+
+    public function testCannotUseTogetherDiFactoryAndDiRuntime(): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/The attributes .+DiFactory and .+DiRuntime cannot be declared together/');
+
+        AttributeReader::getDiFactoryAttributeOnClass(new ReflectionClass(Foo::class));
     }
 }
