@@ -8,6 +8,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -23,6 +24,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
@@ -201,7 +203,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @return iterable<class-string|non-empty-string, DiDefinitionType>
+     * @return iterable<class-string|non-empty-string, DiDefinitionRuntimeInterface|DiDefinitionType>
      */
     public function getDefinitions(): iterable
     {
@@ -242,7 +244,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @return DiDefinitionInterface&DiDefinitionType
+     * @return (DiDefinitionInterface&DiDefinitionType)|DiDefinitionRuntimeInterface
      */
     public function getDefinition(string $id): DiDefinitionInterface
     {
@@ -358,20 +360,28 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             throw new AutowireException(sprintf('Attempting to resolve interface "%s". An interface that is not bound to a definition.', $id));
         }
 
-        if ($this->config->isUseAttribute()
-            && null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
-            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+        if ($this->config->isUseAttribute()) {
+            if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
+                $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
 
-            return $this->diResolvedDefinition[$id] = $diFactory->bindArguments(...$factory->arguments);
-        }
+                return $this->diResolvedDefinition[$id] = $diFactory->bindArguments(...$factory->arguments);
+            }
 
-        if ($this->config->isUseAttribute()
-            && ($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
-            foreach ($autowires as $autowire) {
-                if ($autowire->id === $reflectionClass->name) {
-                    return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
-                        ->bindArguments(...$autowire->arguments)
-                    ;
+            if (($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
+                foreach ($autowires as $autowire) {
+                    if ($autowire->id === $reflectionClass->name) {
+                        return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
+                            ->bindArguments(...$autowire->arguments)
+                        ;
+                    }
+                }
+            }
+
+            if (($diRuntimes = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
+                foreach ($diRuntimes as $diRuntime) {
+                    if ($diRuntime->containerIdentifier === $reflectionClass->name) {
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionRuntime($diRuntime->containerIdentifier, $diRuntime->message);
+                    }
                 }
             }
         }
