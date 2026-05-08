@@ -11,10 +11,12 @@ use InvalidArgumentException;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\DiRuntime;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -79,7 +81,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     private bool $useAttribute = true;
 
-    /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
+    /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime> */
     private array $importedDefinitions;
 
     /**
@@ -428,7 +430,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     }
 
     /**
-     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
+     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime>
      *
      * @throws DefinitionsLoaderException
      */
@@ -514,7 +516,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @param ItemFQN $itemFQN
      *
-     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
+     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException
      */
@@ -612,6 +614,26 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
 
             return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
+        }
+
+        if (($diRuntimeAttrs = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
+            /** @var array<non-empty-string, DiDefinitionRuntime> $diRuntimeServices */
+            $diRuntimeServices = [];
+
+            foreach ($diRuntimeAttrs as $diRuntimeAttr) {
+                /** @var non-empty-string $containerIdentifier */
+                $containerIdentifier = $diRuntimeAttr->containerIdentifier;
+
+                if ($this->configuredDefinitions->offsetExists($containerIdentifier)) {
+                    throw new DefinitionsLoaderInvalidArgumentException(
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, DiRuntime::class, $containerIdentifier, $reflectionClass->name)
+                    );
+                }
+
+                $diRuntimeServices[$containerIdentifier] = new DiDefinitionRuntime($containerIdentifier, $diRuntimeAttr->message);
+            }
+
+            return $diRuntimeServices;
         }
 
         return $this->configuredDefinitions->offsetExists($reflectionClass->name)
