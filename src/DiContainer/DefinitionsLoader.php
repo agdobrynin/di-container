@@ -630,7 +630,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $diRuntimeServices[$containerIdentifier] = new DiDefinitionRuntime($containerIdentifier, $diRuntimeAttr->message);
+                $diRuntimeServices[$containerIdentifier] = new DiDefinitionRuntime($containerIdentifier, $diRuntimeAttr->message, $diRuntimeAttr->classDefinition);
             }
 
             return $diRuntimeServices;
