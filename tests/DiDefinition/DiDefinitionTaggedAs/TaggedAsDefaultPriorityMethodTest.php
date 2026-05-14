@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -30,6 +31,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(TagsTrait::class)]
 class TaggedAsDefaultPriorityMethodTest extends TestCase
 {
     /**

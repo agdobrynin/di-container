@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -44,6 +45,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Tag::class)]
 #[CoversClass(NotFoundDefinition::class)]
+#[CoversClass(TagsTrait::class)]
 class DefinitionsLoaderWithConfiguratorTest extends TestCase
 {
     public function testCircularLoadFromFile(): void
