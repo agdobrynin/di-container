@@ -13,6 +13,8 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use ReflectionClass;
+use ReflectionException;
 
 use function get_debug_type;
 use function is_callable;
@@ -153,8 +155,8 @@ trait TagsOnObjectDefinitionTrait
         $this->tagsByAttribute = [];
 
         try {
-            $tagAttributes = AttributeReader::getTagAttribute($this->getDefinition());
-        } catch (DiDefinitionExceptionInterface $e) {
+            $tagAttributes = AttributeReader::getTagAttribute(new ReflectionClass($this->getDefinitionIdentifier()));
+        } catch (ReflectionException $e) {
             throw new DiDefinitionException(
                 message: sprintf('Cannot read php attribute #[%s] on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
                 previous: $e,
