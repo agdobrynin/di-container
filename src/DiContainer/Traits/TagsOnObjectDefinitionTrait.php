@@ -110,10 +110,10 @@ trait TagsOnObjectDefinitionTrait
             if (!is_string($method) || '' === trim($method)) {
                 $wherePriorityMethod = isset($this->getBoundTags()[$name]['priority.method'])
                     ? 'value with key "priority.method" into the $options parameter pass via method '.DiDefinitionTagArgumentInterface::class.'::bindTag()'
-                    : 'the $priorityMethod parameter or the value with key "priority.method" into the $options parameter via the php attribute #[Tag]';
+                    : 'the parameter $priorityMethod or the value with key "priority.method" into the $options parameter via the php attribute '.Tag::class;
 
                 throw new DiDefinitionException(
-                    sprintf('Cannot get tag priority for tag "%s" via method in class %s. The name of the priority method is specified by %s. Priority method must be present none-empty string. Got: %s', $name, $this->getDefinitionIdentifier(), $wherePriorityMethod, var_export($method, true))
+                    sprintf('Cannot get priority for tag name "%s" on class %s. The name of the priority method is specified by %s. Priority method must be present none-empty string. Got: %s', $name, $this->getDefinitionIdentifier(), $wherePriorityMethod, var_export($method, true))
                 );
             }
 
@@ -121,7 +121,7 @@ trait TagsOnObjectDefinitionTrait
                 return $this->getTagPriorityFromMethod($method, $name, $tagOptions);
             } catch (AutowireException|InvalidArgumentException $e) {
                 throw new DiDefinitionException(
-                    message: sprintf('Cannot get tag priority for tag "%s" via method %s::%s(). Caused by: %s', $name, $this->getDefinitionIdentifier(), $method, $e->getMessage()),
+                    message: sprintf('Cannot get priority for tag name "%s" on %s. Caused by: %s', $name, $this->getDefinitionIdentifier(), $e->getMessage()),
                     previous: $e
                 );
             }
@@ -140,7 +140,7 @@ trait TagsOnObjectDefinitionTrait
             return null;
         } catch (AutowireException $e) {
             throw new DiDefinitionException(
-                message: sprintf('Cannot get tag priority for tag "%s" via default priority method %s::%s(). Caused by: %s', $name, $this->getDefinitionIdentifier(), $priorityDefaultMethod, $e->getMessage()),
+                message: sprintf('Cannot get priority for tag name "%s" on class %s. Caused by: %s', $name, $this->getDefinitionIdentifier(), $e->getMessage()),
                 previous: $e
             );
         }
@@ -158,7 +158,7 @@ trait TagsOnObjectDefinitionTrait
             $tagAttributes = AttributeReader::getTagAttribute(new ReflectionClass($this->getDefinitionIdentifier()));
         } catch (ReflectionException $e) {
             throw new DiDefinitionException(
-                message: sprintf('Cannot read php attribute #[%s] on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
+                message: sprintf('Cannot read php attribute "%s" on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
                 previous: $e,
             );
         }
@@ -197,7 +197,9 @@ trait TagsOnObjectDefinitionTrait
         $callable = [$this->getDefinitionIdentifier(), $method];
 
         if (!is_callable($callable)) {
-            throw new InvalidArgumentException('Method must be declared with public and static modifiers.');
+            throw new InvalidArgumentException(
+                sprintf('The method must be declared with public and static modifiers. Got callable expression [%s, %s].', var_export($callable[0], true), var_export($callable[1], true))
+            );
         }
 
         $priority = $callable($tag, $tagOptions);
@@ -207,7 +209,7 @@ trait TagsOnObjectDefinitionTrait
         }
 
         throw new AutowireException(
-            sprintf('Method must return type "int|string|null" but return type "%s".', get_debug_type($priority))
+            sprintf('The return type must be of type "int|string|null", but the return type is "%s". Got callable expression [%s, %s].', get_debug_type($priority), var_export($callable[0], true), var_export($callable[1], true))
         );
     }
 }
