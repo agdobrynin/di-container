@@ -11,7 +11,6 @@ final class DiRuntime
 {
     /**
      * @param class-string|string $containerIdentifier
-     * @param null|class-string   $classDefinition
      */
-    public function __construct(public readonly string $containerIdentifier = '', public readonly ?string $message = null, public readonly ?string $classDefinition = null) {}
+    public function __construct(public readonly string $containerIdentifier = '', public readonly ?string $message = null) {}
 }
