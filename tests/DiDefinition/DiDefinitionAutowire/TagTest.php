@@ -24,6 +24,8 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefaul
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Bar;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Foo;
 
+use function preg_quote;
+
 /**
  * @internal
  */
@@ -175,7 +177,7 @@ class TagTest extends TestCase
     public function testGetPriorityMethodByPhpAttributeWithWrongType(string $class, string $tagName): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('the php attribute #[Tag]');
+        $this->expectExceptionMessageMatches('/^Cannot get priority for tag name "'.preg_quote($tagName).'" on class '.preg_quote($class).'.+Priority method must be present none-empty string/');
 
         $container = $this->createMock(DiContainerInterface::class);
         $container->method('getConfig')->willReturn(
