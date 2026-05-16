@@ -122,17 +122,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->containerIds = [ContainerInterface::class => true, DiContainerInterface::class => true, __CLASS__ => true];
     }
 
-    /**
-     * @template T of object
-     *
-     * @param class-string<T>|string $id
-     *
-     * @return mixed|T
-     *
-     * @throws ContainerExceptionInterface|NotFoundExceptionInterface
-     *
-     * @phpstan-ignore method.childReturnType, method.templateTypeNotInParameter
-     */
     public function get(string $id): mixed
     {
         return array_key_exists($id, $this->resolved)
