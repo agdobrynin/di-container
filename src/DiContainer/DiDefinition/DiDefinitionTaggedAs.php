@@ -9,10 +9,10 @@ use InvalidArgumentException;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use SplPriorityQueue;
@@ -37,7 +37,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     private array $flippedContainerIdExclude;
 
-    private ?DiDefinitionAutowireInterface $callingByDefinitionAutowire = null;
+    private ?DiTaggedObjectDefinitionInterface $callingByDefinition = null;
 
     /**
      * @param non-empty-string       $tag
@@ -84,8 +84,8 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      */
     public function exposeContainerIdentifiers(DiContainerInterface $container, mixed $context = null): iterable
     {
-        if ($context instanceof DiDefinitionAutowireInterface) {
-            $this->callingByDefinitionAutowire = $context;
+        if ($context instanceof DiTaggedObjectDefinitionInterface) {
+            $this->callingByDefinition = $context;
         }
 
         $mapKeyToContainerIdentifier = [];
@@ -105,9 +105,9 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
     }
 
     /**
-     * @param iterable<non-empty-string, (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface> $definitions
+     * @param iterable<non-empty-string, DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface> $definitions
      *
-     * @return Generator<array{0: non-empty-string, 1: (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface}>
+     * @return Generator<array{0: non-empty-string, 1: DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface}>
      *
      * @throws DiDefinitionExceptionInterface
      */
@@ -123,13 +123,13 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
 
         foreach ($definitions as $containerIdentifier => $definition) {
             if (isset($this->flippedContainerIdExclude[$containerIdentifier])
-                || ($this->selfExclude && $containerIdentifier === $this->callingByDefinitionAutowire?->getDefinition()->getName())) {
+                || ($this->selfExclude && $containerIdentifier === $this->callingByDefinition?->getDefinitionIdentifier())) {
                 continue;
             }
 
             $operationOptions = [];
 
-            if ($definition instanceof DiDefinitionAutowireInterface) {
+            if ($definition instanceof DiTaggedObjectDefinitionInterface) {
                 $operationOptions['priority.default_method'] = $this->priorityDefaultMethod;
             }
 
@@ -137,21 +137,20 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
             $taggedServices->insert([$containerIdentifier, $definition], $definition->geTagPriority($this->tag, $operationOptions));
         }
 
-        /** @var array{0: non-empty-string, 1: (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface} $item */
+        /** @var array{0: non-empty-string, 1: DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface} $item */
         foreach ($taggedServices as $item) {
             yield $item;
         }
     }
 
     /**
-     * @param non-empty-string                                                                        $identifier
-     * @param (DiDefinitionAutowireInterface&DiTaggedDefinitionInterface)|DiTaggedDefinitionInterface $taggedAs
+     * @param non-empty-string $identifier
      *
      * @return non-empty-string
      *
      * @throws DiDefinitionExceptionInterface
      */
-    private function getTagKeyFromTagOptionsOrFromClassMethod(string $identifier, DiDefinitionAutowireInterface|DiTaggedDefinitionInterface $taggedAs): string
+    private function getTagKeyFromTagOptionsOrFromClassMethod(string $identifier, DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface $taggedAs): string
     {
         if (null !== $this->key) {
             if (!isset($this->keyChecked)) {
@@ -173,7 +172,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                     );
                 }
 
-                if (!$taggedAs instanceof DiDefinitionAutowireInterface) {
+                if (!$taggedAs instanceof DiTaggedObjectDefinitionInterface) {
                     return $optionKey;
                 }
 
@@ -184,27 +183,27 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
                 try {
                     $method = explode('::', $optionKey)[1];
 
-                    return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $method, $taggedAs);
+                    return $this->getTagKeyFromClassMethod($taggedAs->getDefinitionIdentifier(), $method, $taggedAs);
                 } catch (AutowireException|InvalidArgumentException $e) {
                     throw new DiDefinitionException(
-                        message: sprintf('Cannot get key for tag "%s" via method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getIdentifier(), $method, $e->getMessage()),
+                        message: sprintf('Cannot get key for tag "%s" via method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getDefinitionIdentifier(), $method, $e->getMessage()),
                         previous: $e
                     );
                 }
             }
         }
 
-        if (null === $this->keyDefaultMethod || !($taggedAs instanceof DiDefinitionAutowireInterface)) {
+        if (null === $this->keyDefaultMethod || !($taggedAs instanceof DiTaggedObjectDefinitionInterface)) {
             return $identifier;
         }
 
         try {
-            return $this->getTagKeyFromClassMethod($taggedAs->getIdentifier(), $this->keyDefaultMethod, $taggedAs);
+            return $this->getTagKeyFromClassMethod($taggedAs->getDefinitionIdentifier(), $this->keyDefaultMethod, $taggedAs);
         } catch (InvalidArgumentException) {
             return $identifier;
         } catch (AutowireException $e) {
             throw new DiDefinitionException(
-                message: sprintf('Cannot get key for tag "%s" via default method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getIdentifier(), $this->keyDefaultMethod, $e->getMessage()),
+                message: sprintf('Cannot get key for tag "%s" via default method %s::%s(). Caused by: %s', $this->tag, $taggedAs->getDefinitionIdentifier(), $this->keyDefaultMethod, $e->getMessage()),
                 previous: $e
             );
         }
@@ -215,7 +214,7 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
      *
      * @throws AutowireException|InvalidArgumentException
      */
-    private function getTagKeyFromClassMethod(string $class, string $method, DiTaggedDefinitionInterface $taggedAs): string
+    private function getTagKeyFromClassMethod(string $class, string $method, DiTaggedObjectDefinitionInterface $taggedAs): string
     {
         $callable = [$class, $method];
 

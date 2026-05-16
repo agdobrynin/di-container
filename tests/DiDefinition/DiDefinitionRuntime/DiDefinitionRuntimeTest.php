@@ -58,4 +58,34 @@ class DiDefinitionRuntimeTest extends TestCase
         self::assertSame($object, $d->getDefinition());
         self::assertSame($object, $d->resolve($this->createMock(DiContainerInterface::class)));
     }
+
+    #[TestWith(['foo', null, 'foo'])]
+    #[TestWith(['foo', Foo::class, 'Tests\DiDefinition\DiDefinitionRuntime\Foo'])]
+    public function testGetDefinitionIdentifier(string $containerIdentifier, ?string $classDefinition, string $expectDefinitionIdentifier): void
+    {
+        $d = new DiDefinitionRuntime($containerIdentifier, classDefinition: $classDefinition);
+
+        self::assertEquals($expectDefinitionIdentifier, $d->getDefinitionIdentifier());
+    }
+
+    public function testIsImplementInterfaceFail(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('You should to be defined a php class through the parameters $containerIdentifier or $classDefinition');
+
+        (new DiDefinitionRuntime('foo'))->isImplementInterface(FooInterface::class);
+    }
+
+    #[TestWith([Foo::class, null, FooInterface::class])]
+    #[TestWith(['service.foo', Foo::class, FooInterface::class])]
+    public function testIsImplementInterface(string $containerIdentifier, ?string $classDefinition, string $interface): void
+    {
+        $d = new DiDefinitionRuntime($containerIdentifier, classDefinition: $classDefinition);
+
+        self::assertEquals($containerIdentifier, $d->getIdentifier());
+        self::assertTrue($d->isImplementInterface($interface));
+    }
 }
+
+interface FooInterface {}
+final class Foo implements FooInterface {}

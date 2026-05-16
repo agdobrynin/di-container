@@ -17,14 +17,28 @@
 Хелпер функция для конфигурационных файлов.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use function \Kaspi\DiContainer\diRuntime;
 
-diRuntime(string $containerIdentifier, ?string $message = null): DiDefinitionNoArgumentsInterface
+diRuntime(
+    string $containerIdentifier,
+    ?string $message = null,
+    ?string $classDefinition = null
+): DiDefinitionTagArgumentInterface
 ```
 Параметры:
 - `$containerIdentifier` – идентификатора контейнера реализующий сервис, который будет добавлен позже.
 - `$message` – дополнительное информационное сообщение при ошибке.
+- `$classDefinition` – применяется для точного указания PHP класса в определении если необходимо [получать ключ элемента](05-tags.md#ключ-из-метаданных-тега-через-метод-класса) в тегированной коллекции через метод PHP класса или [получать приоритет элемента в тегированной коллекции](05-tags.md#prioritymethod-и-prioritydefaultmethod-для-приоритизации-в-коллекции) через метод PHP класса.
+
+> [!IMPORTANT]
+> Функция `diRuntime` возвращает объект реализующий интерфейс
+> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+>
+> Интерфейс представляет методы:
+>   - `bindTag` - добавляет тег с мета-данными для определения
+>
+> [Пример использования тегов](#пример-тегирования-runtime-definition).
 
 > [!WARNING]
 > Хелпер функция не может быть применена к параметрам метода класса или callable выражения.
@@ -167,6 +181,60 @@ class Kernel {
         // Инициализация класс Bar
         $bar = new Bar(...\do_calcualte_bar_params());
         $this->container->set('services.bar', $bar);
+    }
+}
+```
+## Пример тегирования Runtime definition.
+Для «runtime definition» можно определять теги.
+
+### Пример тегирования через хелпер функцию diRuntime в конфигурационных файлах.
+```php
+// /app/config/runtime_definitions.php
+use App\Core\Kernel;
+use App\RuntimeServices\Foo;
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diRuntime;
+
+return static function (DefinitionsConfiguratorInterface $configurator) {
+    yield diRuntime(Kernel::class)
+        ->bindTag('tags.core');
+
+    yield diRuntime('services.foo', classDefinition: Foo::class)
+        ->bindTag(
+            'tags.core_services',
+            // 🚩 ключ коллекции из метода класса Foo::getKey()
+            options: ['key' => 'self::getKey'],
+        );
+};
+```
+### Пример тегирования через PHP атрибуты.
+
+```php
+namespace Core;
+
+use Kaspi\DiContainer\Attributes\DiRuntime;
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[DiRuntime]
+#[Tag('tags.core')]
+class Kernel {
+    // ...
+}
+```
+```php
+// /app/src/RuntimeServices/Foo.php
+namespace App\RuntimeServices;
+
+use Kaspi\DiContainer\Attributes\DiRuntime;
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[DiRuntime(containerIdentifier: 'services.foo')]
+#[Tag('tags.core_services', options: ['key' => 'self::getKey'])]
+final class Foo {
+    // ...
+    public static function getKey(): string
+    {
+        return 'runtime_definition.foo';
     }
 }
 ```
