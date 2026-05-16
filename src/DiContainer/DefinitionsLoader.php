@@ -28,6 +28,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -266,23 +267,23 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         continue;
                     }
 
-                    $hasTagOnAutowire = false;
+                    $hasTagOnObject = false;
 
-                    if ($definition instanceof DiDefinitionAutowire) {
+                    if ($definition instanceof DiTaggedObjectDefinitionInterface) {
                         $tagIsInterface ??= interface_exists($tag);
-                        $hasTagOnAutowire = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
+                        $hasTagOnObject = $tagIsInterface && $definition->isImplementInterface($tag);
 
-                        if (!$tagIsInterface && !$hasTagOnAutowire) {
-                            $hasTagOnAutowire = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
+                        if (!$tagIsInterface && !$hasTagOnObject) {
+                            $hasTagOnObject = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
                                 || isset($definition->getBoundTags()[$tag]);
                         }
 
-                        if (!$hasTagOnAutowire) {
+                        if (!$hasTagOnObject) {
                             continue;
                         }
                     }
 
-                    if ($hasTagOnAutowire || $definition->hasTag($tag)) {
+                    if ($hasTagOnObject || $definition->hasTag($tag)) {
                         yield $identifier => $definition;
                     }
                 }
