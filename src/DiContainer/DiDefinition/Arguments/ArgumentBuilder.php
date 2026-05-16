@@ -318,6 +318,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
+        /** @var null|non-empty-string $paramType */
+        $paramType = null;
+
         foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
             yield match ($attr::class) {
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
@@ -325,7 +328,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 Inject::class => new DiDefinitionGet(
                     '' !== $attr->id
                         ? $attr->id
-                        : Helper::getParameterTypeHint($param, $this->container)
+                        : $paramType ??= Helper::getParameterTypeHint($param, $this->container)
                 ),
                 InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
                 ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
