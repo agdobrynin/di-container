@@ -318,13 +318,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        $attrs = AttributeReader::getAttributeOnParameter($param);
-
-        if (!$attrs->valid()) {
-            return;
-        }
-
-        foreach ($attrs as $attr) {
+        foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
             yield match ($attr::class) {
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
