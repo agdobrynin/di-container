@@ -94,21 +94,22 @@ final class AttributeReader
             return;
         }
 
-        $containerIdentifier = '';
+        $previousContainerIdentifier = '';
 
         /** @var ReflectionAttribute<Autowire> $attr */
         foreach ($autowireAttrs as $attr) {
-            if ('' === ($autowire = $attr->newInstance())->id) {
-                $autowire = new Autowire($class->name, $autowire->isSingleton, $autowire->arguments);
-            }
+            $autowire = $attr->newInstance();
+            $currentContainerIdentifier = '' !== $autowire->id
+                ? $autowire->id
+                : $class->name;
 
-            if ($containerIdentifier === $autowire->id) {
+            if ($previousContainerIdentifier === $currentContainerIdentifier) {
                 throw new AutowireAttributeException(
-                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $containerIdentifier, Autowire::class, $containerIdentifier, $class->name),
+                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $previousContainerIdentifier, Autowire::class, $previousContainerIdentifier, $class->name),
                 );
             }
 
-            $containerIdentifier = $autowire->id;
+            $previousContainerIdentifier = $currentContainerIdentifier;
 
             yield $autowire;
         }
