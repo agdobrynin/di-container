@@ -41,6 +41,6 @@ class DiRuntimeReaderTest extends TestCase
 
         self::assertCount(2, $attrs);
         self::assertEquals('foo', $attrs[0]->containerIdentifier);
-        self::assertEquals(Foo::class, $attrs[1]->containerIdentifier);
+        self::assertEquals('', $attrs[1]->containerIdentifier);
     }
 }

@@ -622,8 +622,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $diRuntimeServices = [];
 
             foreach ($diRuntimeAttrs as $diRuntimeAttr) {
-                /** @var non-empty-string $containerIdentifier */
-                $containerIdentifier = $diRuntimeAttr->containerIdentifier;
+                $containerIdentifier = '' !== $diRuntimeAttr->containerIdentifier
+                    ? $diRuntimeAttr->containerIdentifier
+                    : $reflectionClass->name;
 
                 if ($this->configuredDefinitions->offsetExists($containerIdentifier)) {
                     throw new DefinitionsLoaderInvalidArgumentException(

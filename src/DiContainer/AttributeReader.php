@@ -52,8 +52,6 @@ final class AttributeReader
     }
 
     /**
-     * Return `DiRuntime::$containerIdentifier` as none-empty string.
-     *
      * @return Generator<DiRuntime>
      *
      * @throws AutowireAttributeException
@@ -62,21 +60,22 @@ final class AttributeReader
     {
         $diRuntimeAttrs = self::getNotIntersectAttributes($class, DiRuntime::class, true, [DiFactory::class, Autowire::class]);
 
-        $containerIdentifier = '';
+        $previousContainerIdentifier = '';
 
         /** @var ReflectionAttribute<DiRuntime> $attr */
         foreach ($diRuntimeAttrs as $attr) {
-            if ('' === ($diRuntime = $attr->newInstance())->containerIdentifier) {
-                $diRuntime = new DiRuntime($class->name, $diRuntime->message);
-            }
+            $diRuntime = $attr->newInstance();
+            $currentContainerIdentifier = '' !== $diRuntime->containerIdentifier
+                ? $diRuntime->containerIdentifier
+                : $class->name;
 
-            if ($containerIdentifier === $diRuntime->containerIdentifier) {
+            if ($previousContainerIdentifier === $currentContainerIdentifier) {
                 throw new AutowireAttributeException(
-                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $containerIdentifier, DiRuntime::class, $containerIdentifier, $class->name),
+                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $previousContainerIdentifier, DiRuntime::class, $previousContainerIdentifier, $class->name),
                 );
             }
 
-            $containerIdentifier = $diRuntime->containerIdentifier;
+            $previousContainerIdentifier = $currentContainerIdentifier;
 
             yield $diRuntime;
         }
