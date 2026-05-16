@@ -211,9 +211,6 @@ final class AttributeReader
             );
         }
 
-        /** @var null|string $paramType */
-        $paramType = null;
-
         /**
          * @var ReflectionAttribute<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr
          */
