@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface;
@@ -48,7 +47,7 @@ interface DefinitionsConfiguratorInterface
     /**
      * @param non-empty-string $tag
      *
-     * @return iterable<non-empty-string, DiDefinitionTagArgumentInterface|DiTaggedDefinitionInterface>
+     * @return iterable<non-empty-string, DiTaggedDefinitionInterface>
      */
     public function findTaggedDefinition(string $tag): iterable;
 
