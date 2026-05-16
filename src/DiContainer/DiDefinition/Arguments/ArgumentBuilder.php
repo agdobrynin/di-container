@@ -322,7 +322,11 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             yield match ($attr::class) {
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
-                Inject::class => new DiDefinitionGet('' === $attr->id ? Helper::getParameterTypeHint($param, $this->container) : $attr->id),
+                Inject::class => new DiDefinitionGet(
+                    '' !== $attr->id
+                        ? $attr->id
+                        : Helper::getParameterTypeHint($param, $this->container)
+                ),
                 InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
                 ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
                 TaggedAs::class => new DiDefinitionTaggedAs(
