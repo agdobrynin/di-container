@@ -318,7 +318,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        $attrs = AttributeReader::getAttributeOnParameter($param, $this->container);
+        $attrs = AttributeReader::getAttributeOnParameter($param);
 
         if (!$attrs->valid()) {
             return;
@@ -328,7 +328,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             yield match ($attr::class) {
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
-                Inject::class => new DiDefinitionGet($attr->id), // @phpstan-ignore argument.type
+                Inject::class => new DiDefinitionGet('' === $attr->id ? Helper::getParameterTypeHint($param, $this->container) : $attr->id),
                 InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
                 ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
                 TaggedAs::class => new DiDefinitionTaggedAs(

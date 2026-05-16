@@ -15,7 +15,6 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -45,10 +44,7 @@ class AttributeOnParameterTest extends TestCase
         $this->expectException(AutowireAttributeException::class);
         $this->expectExceptionMessage('The php attribute can be applied once per non-variadic Parameter');
 
-        AttributeReader::getAttributeOnParameter(
-            $param,
-            $this->createMock(DiContainerInterface::class)
-        )->valid();
+        AttributeReader::getAttributeOnParameter($param)->valid();
     }
 
     public static function dataProviderParam(): Generator
@@ -87,7 +83,7 @@ class AttributeOnParameterTest extends TestCase
         ) => '';
         $param = new ReflectionParameter($f, 0);
 
-        $res = [...AttributeReader::getAttributeOnParameter($param, $this->createMock(DiContainerInterface::class))];
+        $res = [...AttributeReader::getAttributeOnParameter($param)];
 
         self::assertCount(1, $res);
     }
@@ -106,7 +102,7 @@ class AttributeOnParameterTest extends TestCase
         ) => '';
         $param = new ReflectionParameter($f, 0);
 
-        $res = [...AttributeReader::getAttributeOnParameter($param, $this->createMock(DiContainerInterface::class))];
+        $res = [...AttributeReader::getAttributeOnParameter($param)];
 
         self::assertCount(7, $res);
 

@@ -22,7 +22,6 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
-use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -186,9 +185,9 @@ final class AttributeReader
     /**
      * @return Generator<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs>
      *
-     * @throws AutowireAttributeException|AutowireParameterTypeException
+     * @throws AutowireAttributeException
      */
-    public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
+    public static function getAttributeOnParameter(ReflectionParameter $param): Generator
     {
         $flipSupportAttrs = [
             DiFactory::class => true,
@@ -215,31 +214,18 @@ final class AttributeReader
         /** @var null|string $paramType */
         $paramType = null;
 
+        /**
+         * @var ReflectionAttribute<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr
+         */
         foreach ($attrs as $attr) {
-            if (Inject::class === $attr->getName()) {
-                /** @var ReflectionAttribute<Inject> $attr */
-                $attrInit = $attr->newInstance();
-
-                if ('' === $attrInit->id) {
-                    $paramType ??= Helper::getParameterTypeHint($param, $container);
-                    $attrInit = new Inject($paramType);
-                }
-            } elseif (InjectByCallable::class === $attr->getName()) {
-                try {
-                    /** @var ReflectionAttribute<InjectByCallable> $attr */
-                    $attrInit = $attr->newInstance();
-                } catch (TypeError $e) {
-                    throw new AutowireAttributeException(
-                        message: sprintf('Unable to create an instance of PHP attribute "%s". Parameter $callable must be of type callable.', InjectByCallable::class),
-                        previous: $e
-                    );
-                }
-            } else {
-                /** @var ReflectionAttribute<DiFactory|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr */
-                $attrInit = $attr->newInstance();
+            try {
+                yield $attr->newInstance();
+            } catch (TypeError $e) {
+                throw new AutowireAttributeException(
+                    message: sprintf('Unable to create an instance of PHP attribute "%s". Reason by: %s', $attr->getName(), $e->getMessage()),
+                    previous: $e
+                );
             }
-
-            yield $attrInit;
         }
     }
 

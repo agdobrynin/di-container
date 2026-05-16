@@ -12,7 +12,6 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionParameter;
 use Tests\AttributeReader\DiFactory\Fixtures\ClassWithAttrsDiFactoryAndAutowire;
@@ -79,10 +78,7 @@ class DiFactoryReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        AttributeReader::getAttributeOnParameter(
-            $p,
-            $this->createMock(ContainerInterface::class)
-        )->valid();
+        AttributeReader::getAttributeOnParameter($p)->valid();
     }
 
     public function testVariadicParam(): void
@@ -94,7 +90,7 @@ class DiFactoryReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $res = AttributeReader::getAttributeOnParameter($p, $this->createMock(ContainerInterface::class));
+        $res = AttributeReader::getAttributeOnParameter($p);
 
         self::assertTrue($res->valid());
 
@@ -124,7 +120,7 @@ class DiFactoryReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $res = AttributeReader::getAttributeOnParameter($p, $this->createMock(ContainerInterface::class));
+        $res = AttributeReader::getAttributeOnParameter($p);
 
         $factory = $res->current();
 
