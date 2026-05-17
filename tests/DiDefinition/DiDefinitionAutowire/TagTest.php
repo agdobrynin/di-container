@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -23,6 +24,8 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefaul
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Bar;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Foo;
 
+use function preg_quote;
+
 /**
  * @internal
  */
@@ -31,6 +34,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Foo;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(TagsTrait::class)]
 class TagTest extends TestCase
 {
     public function testTagsByBindTag(): void
@@ -173,7 +177,7 @@ class TagTest extends TestCase
     public function testGetPriorityMethodByPhpAttributeWithWrongType(string $class, string $tagName): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('in the php attribute #[Tag]');
+        $this->expectExceptionMessageMatches('/^Cannot get priority for tag name "'.preg_quote($tagName).'" on class '.preg_quote($class).'.+Priority method must be present none-empty string/');
 
         $container = $this->createMock(DiContainerInterface::class);
         $container->method('getConfig')->willReturn(

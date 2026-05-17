@@ -11,6 +11,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(LazyDefinitionIterator::class)]
+#[CoversClass(TagsTrait::class)]
 class TaggedAsExcludePhpAttributeTest extends TestCase
 {
     private ?DiContainerInterface $container = null;

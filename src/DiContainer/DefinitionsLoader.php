@@ -11,10 +11,12 @@ use InvalidArgumentException;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\DiRuntime;
 use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -26,6 +28,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -79,7 +82,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     private bool $useAttribute = true;
 
-    /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet> */
+    /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime> */
     private array $importedDefinitions;
 
     /**
@@ -264,23 +267,23 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         continue;
                     }
 
-                    $hasTagOnAutowire = false;
+                    $hasTagOnObject = false;
 
-                    if ($definition instanceof DiDefinitionAutowire) {
+                    if ($definition instanceof DiTaggedObjectDefinitionInterface) {
                         $tagIsInterface ??= interface_exists($tag);
-                        $hasTagOnAutowire = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
+                        $hasTagOnObject = $tagIsInterface && $definition->isImplementInterface($tag);
 
-                        if (!$tagIsInterface && !$hasTagOnAutowire) {
-                            $hasTagOnAutowire = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
+                        if (!$tagIsInterface && !$hasTagOnObject) {
+                            $hasTagOnObject = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
                                 || isset($definition->getBoundTags()[$tag]);
                         }
 
-                        if (!$hasTagOnAutowire) {
+                        if (!$hasTagOnObject) {
                             continue;
                         }
                     }
 
-                    if ($hasTagOnAutowire || $definition->hasTag($tag)) {
+                    if ($hasTagOnObject || $definition->hasTag($tag)) {
                         yield $identifier => $definition;
                     }
                 }
@@ -428,7 +431,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     }
 
     /**
-     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
+     * @return Generator<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime>
      *
      * @throws DefinitionsLoaderException
      */
@@ -514,7 +517,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /**
      * @param ItemFQN $itemFQN
      *
-     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet>
+     * @return array<class-string|non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException|DefinitionsLoaderInvalidArgumentException
      */
@@ -585,21 +588,25 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if (($autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
-            $services = [];
+            $autowireServices = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
-                if ($this->configuredDefinitions->offsetExists($autowireAttr->id)) {
+                $containerIdentifier = '' !== $autowireAttr->id
+                    ? $autowireAttr->id
+                    : $reflectionClass->name;
+
+                if ($this->configuredDefinitions->offsetExists($containerIdentifier)) {
                     throw new DefinitionsLoaderInvalidArgumentException(
-                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->id, $reflectionClass->name)
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $containerIdentifier, $reflectionClass->name)
                     );
                 }
 
-                $services[$autowireAttr->id] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
+                $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
                     ->bindArguments(...$autowireAttr->arguments)
                 ;
             }
 
-            return $services; // @phpstan-ignore return.type
+            return $autowireServices;
         }
 
         if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
@@ -612,6 +619,27 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
 
             return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
+        }
+
+        if (($diRuntimeAttrs = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
+            /** @var array<non-empty-string, DiDefinitionRuntime> $diRuntimeServices */
+            $diRuntimeServices = [];
+
+            foreach ($diRuntimeAttrs as $diRuntimeAttr) {
+                $containerIdentifier = '' !== $diRuntimeAttr->containerIdentifier
+                    ? $diRuntimeAttr->containerIdentifier
+                    : $reflectionClass->name;
+
+                if ($this->configuredDefinitions->offsetExists($containerIdentifier)) {
+                    throw new DefinitionsLoaderInvalidArgumentException(
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, DiRuntime::class, $containerIdentifier, $reflectionClass->name)
+                    );
+                }
+
+                $diRuntimeServices[$containerIdentifier] = new DiDefinitionRuntime($containerIdentifier, $diRuntimeAttr->message, $reflectionClass->name);
+            }
+
+            return $diRuntimeServices;
         }
 
         return $this->configuredDefinitions->offsetExists($reflectionClass->name)
