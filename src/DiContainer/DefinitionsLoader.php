@@ -588,21 +588,25 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         if (($autowireAttrs = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
-            $services = [];
+            $autowireServices = [];
 
             foreach ($autowireAttrs as $autowireAttr) {
-                if ($this->configuredDefinitions->offsetExists($autowireAttr->id)) {
+                $containerIdentifier = '' !== $autowireAttr->id
+                    ? $autowireAttr->id
+                    : $reflectionClass->name;
+
+                if ($this->configuredDefinitions->offsetExists($containerIdentifier)) {
                     throw new DefinitionsLoaderInvalidArgumentException(
-                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $autowireAttr->id, $reflectionClass->name)
+                        sprintf('Cannot automatically configure class "%s" via php attribute "%s". Container identifier "%s" already registered. This class "%s" must be configure via php attribute or via config file.', $reflectionClass->name, Autowire::class, $containerIdentifier, $reflectionClass->name)
                     );
                 }
 
-                $services[$autowireAttr->id] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
+                $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
                     ->bindArguments(...$autowireAttr->arguments)
                 ;
             }
 
-            return $services; // @phpstan-ignore return.type
+            return $autowireServices;
         }
 
         if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
@@ -622,8 +626,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $diRuntimeServices = [];
 
             foreach ($diRuntimeAttrs as $diRuntimeAttr) {
-                /** @var non-empty-string $containerIdentifier */
-                $containerIdentifier = $diRuntimeAttr->containerIdentifier;
+                $containerIdentifier = '' !== $diRuntimeAttr->containerIdentifier
+                    ? $diRuntimeAttr->containerIdentifier
+                    : $reflectionClass->name;
 
                 if ($this->configuredDefinitions->offsetExists($containerIdentifier)) {
                     throw new DefinitionsLoaderInvalidArgumentException(

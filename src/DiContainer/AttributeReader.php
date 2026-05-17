@@ -22,7 +22,6 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
-use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -53,8 +52,6 @@ final class AttributeReader
     }
 
     /**
-     * Return `DiRuntime::$containerIdentifier` as none-empty string.
-     *
      * @return Generator<DiRuntime>
      *
      * @throws AutowireAttributeException
@@ -63,21 +60,22 @@ final class AttributeReader
     {
         $diRuntimeAttrs = self::getNotIntersectAttributes($class, DiRuntime::class, true, [DiFactory::class, Autowire::class]);
 
-        $containerIdentifier = '';
+        $previousContainerIdentifier = '';
 
         /** @var ReflectionAttribute<DiRuntime> $attr */
         foreach ($diRuntimeAttrs as $attr) {
-            if ('' === ($diRuntime = $attr->newInstance())->containerIdentifier) {
-                $diRuntime = new DiRuntime($class->name, $diRuntime->message);
-            }
+            $diRuntime = $attr->newInstance();
+            $currentContainerIdentifier = '' !== $diRuntime->containerIdentifier
+                ? $diRuntime->containerIdentifier
+                : $class->name;
 
-            if ($containerIdentifier === $diRuntime->containerIdentifier) {
+            if ($previousContainerIdentifier === $currentContainerIdentifier) {
                 throw new AutowireAttributeException(
-                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $containerIdentifier, DiRuntime::class, $containerIdentifier, $class->name),
+                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $previousContainerIdentifier, DiRuntime::class, $previousContainerIdentifier, $class->name),
                 );
             }
 
-            $containerIdentifier = $diRuntime->containerIdentifier;
+            $previousContainerIdentifier = $currentContainerIdentifier;
 
             yield $diRuntime;
         }
@@ -96,21 +94,22 @@ final class AttributeReader
             return;
         }
 
-        $containerIdentifier = '';
+        $previousContainerIdentifier = '';
 
         /** @var ReflectionAttribute<Autowire> $attr */
         foreach ($autowireAttrs as $attr) {
-            if ('' === ($autowire = $attr->newInstance())->id) {
-                $autowire = new Autowire($class->name, $autowire->isSingleton, $autowire->arguments);
-            }
+            $autowire = $attr->newInstance();
+            $currentContainerIdentifier = '' !== $autowire->id
+                ? $autowire->id
+                : $class->name;
 
-            if ($containerIdentifier === $autowire->id) {
+            if ($previousContainerIdentifier === $currentContainerIdentifier) {
                 throw new AutowireAttributeException(
-                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $containerIdentifier, Autowire::class, $containerIdentifier, $class->name),
+                    sprintf('Container identifier "%s" already defined via previous php attribute #[%s("%s")] for class "%s".', $previousContainerIdentifier, Autowire::class, $previousContainerIdentifier, $class->name),
                 );
             }
 
-            $containerIdentifier = $autowire->id;
+            $previousContainerIdentifier = $currentContainerIdentifier;
 
             yield $autowire;
         }
@@ -186,9 +185,9 @@ final class AttributeReader
     /**
      * @return Generator<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs>
      *
-     * @throws AutowireAttributeException|AutowireParameterTypeException
+     * @throws AutowireAttributeException
      */
-    public static function getAttributeOnParameter(ReflectionParameter $param, ContainerInterface $container): Generator
+    public static function getAttributeOnParameter(ReflectionParameter $param): Generator
     {
         $flipSupportAttrs = [
             DiFactory::class => true,
@@ -212,34 +211,18 @@ final class AttributeReader
             );
         }
 
-        /** @var null|string $paramType */
-        $paramType = null;
-
+        /**
+         * @var ReflectionAttribute<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr
+         */
         foreach ($attrs as $attr) {
-            if (Inject::class === $attr->getName()) {
-                /** @var ReflectionAttribute<Inject> $attr */
-                $attrInit = $attr->newInstance();
-
-                if ('' === $attrInit->id) {
-                    $paramType ??= Helper::getParameterTypeHint($param, $container);
-                    $attrInit = new Inject($paramType);
-                }
-            } elseif (InjectByCallable::class === $attr->getName()) {
-                try {
-                    /** @var ReflectionAttribute<InjectByCallable> $attr */
-                    $attrInit = $attr->newInstance();
-                } catch (TypeError $e) {
-                    throw new AutowireAttributeException(
-                        message: sprintf('Unable to create an instance of PHP attribute "%s". Parameter $callable must be of type callable.', InjectByCallable::class),
-                        previous: $e
-                    );
-                }
-            } else {
-                /** @var ReflectionAttribute<DiFactory|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr */
-                $attrInit = $attr->newInstance();
+            try {
+                yield $attr->newInstance();
+            } catch (TypeError $e) {
+                throw new AutowireAttributeException(
+                    message: sprintf('Unable to create an instance of PHP attribute "%s". Reason by: %s', $attr->getName(), $e->getMessage()),
+                    previous: $e
+                );
             }
-
-            yield $attrInit;
         }
     }
 

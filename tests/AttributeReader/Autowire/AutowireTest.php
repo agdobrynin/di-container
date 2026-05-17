@@ -38,7 +38,7 @@ class AutowireTest extends TestCase
 
         $this->assertTrue($attrs->valid());
 
-        $this->assertEquals(MultipleAutowire::class, $attrs->current()->id);
+        $this->assertEquals('', $attrs->current()->id);
         $this->assertNull($attrs->current()->isSingleton);
         $this->assertEquals(['foo'], $attrs->current()->arguments);
 
