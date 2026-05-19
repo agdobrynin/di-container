@@ -260,30 +260,45 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function findTaggedDefinition(string $tag): iterable
             {
-                $tagIsInterface = null;
+                $tagIsInterface = $useAttribute = null;
 
                 foreach ($this->getDefinitions() as $identifier => $definition) {
                     if (!$definition instanceof DiTaggedDefinitionInterface) {
                         continue;
                     }
 
-                    $hasTagOnObject = false;
-
                     if ($definition instanceof DiTaggedObjectDefinitionInterface) {
                         $tagIsInterface ??= interface_exists($tag);
-                        $hasTagOnObject = $tagIsInterface && $definition->isImplementInterface($tag);
+                        $useAttribute ??= $this->definitionsLoader->isUseAttribute();
 
-                        if (!$tagIsInterface && !$hasTagOnObject) {
-                            $hasTagOnObject = ($this->definitionsLoader->isUseAttribute() && isset($definition->getTagsByAttribute()[$tag]))
-                                || isset($definition->getBoundTags()[$tag]);
-                        }
+                        if ($tagIsInterface && $definition->isImplementInterface($tag)) {
+                            yield $identifier => $definition;
 
-                        if (!$hasTagOnObject) {
                             continue;
                         }
+
+                        /*
+                         * Tag bound via php attribute.
+                         * The tag name, represented as a php interface, must be excluded from the valid tag name.
+                         * 🚩 The documentation says that PHP attributes have higher priority than PHP definitions.
+                         */
+                        if (!$tagIsInterface && $useAttribute && isset($definition->getTagsByAttribute()[$tag])) {
+                            yield $identifier => $definition;
+
+                            continue;
+                        }
+
+                        // The tag name, represented as a php interface, must be excluded from the valid tag name.
+                        if (!$tagIsInterface && isset($definition->getBoundTags()[$tag])) {
+                            yield $identifier => $definition;
+
+                            continue;
+                        }
+
+                        continue;
                     }
 
-                    if ($hasTagOnObject || $definition->hasTag($tag)) {
+                    if ($definition->hasTag($tag)) {
                         yield $identifier => $definition;
                     }
                 }

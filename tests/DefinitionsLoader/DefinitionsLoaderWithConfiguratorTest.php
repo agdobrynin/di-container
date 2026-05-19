@@ -9,11 +9,14 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use org\bovigo\vfs\vfsStream;
@@ -29,6 +32,7 @@ use Tests\DefinitionsLoader\Fixtures\TaggedInterface\QuxInterface;
 use function array_keys;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diTaggedAs;
+use function Kaspi\DiContainer\diValue;
 
 /**
  * @internal
@@ -46,6 +50,8 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(Tag::class)]
 #[CoversClass(NotFoundDefinition::class)]
 #[CoversClass(TagsTrait::class)]
+#[CoversClass(DiDefinitionValue::class)]
+#[CoversFunction('\Kaspi\DiContainer\diValue')]
 class DefinitionsLoaderWithConfiguratorTest extends TestCase
 {
     public function testCircularLoadFromFile(): void
@@ -289,5 +295,39 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
             ],
             $res
         );
+    }
+
+    public function testConfiguratorFindTaggedDefinitionWithoutAttribute(): void
+    {
+        vfsStream::setup(structure: [
+            'config1.php' => '<?php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+        
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    foreach ($configurator->findTaggedDefinition("tags.one") as $def) {
+        $def->bindTag("tags.two");
+    }
+};',
+        ]);
+
+        $defs = (new DefinitionsLoader())
+            ->useAttribute(false)
+            ->import('Tests\DefinitionsLoader\Fixtures\Classes\\', __DIR__.'/Fixtures/Classes/')
+            ->addDefinitions(true, [
+                diAutowire(Fixtures\Classes\Foo::class)
+                    ->bindTag('tags.one'),
+                'service.magic_str' => diValue('Lorem ipsum!')
+                    ->bindTag('tags.one'),
+            ])
+            ->load(vfsStream::url('root/config1.php'))
+            ->definitions()
+        ;
+
+        /** @var (DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface)[] $res */
+        $res = [...$defs];
+
+        self::assertArrayHasKey('tags.two', $res[Fixtures\Classes\Foo::class]->getBoundTags());
+        self::assertTrue($res['service.magic_str']->hasTag('tags.two'));
+        self::assertArrayNotHasKey('tags.two', $res[Fixtures\Classes\Bar::class]->getBoundTags());
     }
 }
