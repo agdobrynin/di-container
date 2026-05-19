@@ -291,14 +291,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                         // The tag name, represented as a php interface, must be excluded from the valid tag name.
                         if (!$tagIsInterface && isset($definition->getBoundTags()[$tag])) {
                             yield $identifier => $definition;
-
-                            continue;
                         }
-
-                        continue;
-                    }
-
-                    if ($definition->hasTag($tag)) {
+                    } elseif ($definition->hasTag($tag)) {
                         yield $identifier => $definition;
                     }
                 }
