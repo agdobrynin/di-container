@@ -247,4 +247,23 @@ class DiDefinitionFactoryTest extends TestCase
 
         $factory->resolve($containerMock);
     }
+
+    public function testReset(): void
+    {
+        $container = $this->createMock(DiContainerInterface::class);
+        $container->method('getDefinition')
+            ->with('Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooFactory')
+            ->willReturn(new DiDefinitionAutowire(FooFactory::class))
+        ;
+
+        $factory = new DiDefinitionFactory(FooFactory::class.'::make');
+
+        self::assertEquals(['Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooFactory', 'make'], $factory->getDefinition());
+        self::assertEquals('make', $factory->exposeFactoryMethodArgumentBuilder($container)->getFunctionOrMethod()->getName());
+
+        $factory->reset();
+
+        self::assertEquals(['Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooFactory', 'make'], $factory->getDefinition());
+        self::assertEquals('make', $factory->exposeFactoryMethodArgumentBuilder($container)->getFunctionOrMethod()->getName());
+    }
 }

@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Psr\Container\ContainerExceptionInterface;
 use ReflectionException;
@@ -25,7 +26,7 @@ use function is_string;
 use function sprintf;
 use function strpos;
 
-final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionArgumentsInterface
+final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionArgumentsInterface, ResetInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -161,5 +162,13 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
     public function isSingleton(): ?bool
     {
         return $this->isSingleton;
+    }
+
+    public function reset(): void
+    {
+        unset(
+            $this->factoryMethodArgumentBuilder,
+            $this->verifiedDefinition,
+        );
     }
 }
