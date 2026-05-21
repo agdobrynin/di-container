@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\LazyDefinitionIterator;
 use SplPriorityQueue;
 
@@ -27,7 +28,7 @@ use function str_starts_with;
 use function trim;
 use function var_export;
 
-final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface
+final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDefinitionNoArgumentsInterface, ResetInterface
 {
     private bool $keyChecked;
     private readonly bool $isUseKeysComputed;
@@ -102,6 +103,12 @@ final class DiDefinitionTaggedAs implements DiDefinitionTaggedAsInterface, DiDef
         }
 
         return $mapKeyToContainerIdentifier;
+    }
+
+    public function reset(): void
+    {
+        $this->callingByDefinition = null;
+        unset($this->keyChecked);
     }
 
     /**
