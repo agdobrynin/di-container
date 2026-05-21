@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\TagsOnObjectDefinitionTrait;
 use ReflectionClass;
 use ReflectionException;
@@ -17,9 +18,11 @@ use function rtrim;
 use function sprintf;
 use function var_export;
 
-final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface
+final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface
 {
-    use TagsOnObjectDefinitionTrait;
+    use TagsOnObjectDefinitionTrait {
+        reset as private resetTrait;
+    }
 
     private object $definition;
 
@@ -87,5 +90,15 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
     public function getDefinitionIdentifier(): string
     {
         return $this->classDefinition ?? $this->containerIdentifier; // @phpstan-ignore return.type
+    }
+
+    public function reset(): void
+    {
+        $this->resetTrait();
+
+        unset(
+            $this->definition,
+            $this->classDefinitionReflection,
+        );
     }
 }

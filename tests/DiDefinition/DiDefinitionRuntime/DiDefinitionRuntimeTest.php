@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionRuntime;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
@@ -14,7 +16,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
+#[CoversClass(TagsTrait::class)]
 class DiDefinitionRuntimeTest extends TestCase
 {
     #[TestWith([null, null])]
@@ -84,6 +88,23 @@ class DiDefinitionRuntimeTest extends TestCase
 
         self::assertEquals($containerIdentifier, $d->getIdentifier());
         self::assertTrue($d->isImplementInterface($interface));
+    }
+
+    public function testReset(): void
+    {
+        $d = new DiDefinitionRuntime(Foo::class);
+        $d->setDefinition($foo = new Foo());
+        $d->setContainer($this->createMock(DiContainerInterface::class));
+
+        self::assertSame($foo, $d->getDefinition());
+        self::assertIsArray($d->getTags());
+
+        $d->reset();
+
+        self::assertNull($d->getDefinition());
+        // $d->reset() clear container too.
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $d->getTags();
     }
 }
 
