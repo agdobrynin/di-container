@@ -45,7 +45,9 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         bindArguments as private bindArgumentsInternal;
     }
 
-    use TagsOnObjectDefinitionTrait;
+    use TagsOnObjectDefinitionTrait {
+        reset as private resetTrait;
+    }
 
     private ReflectionClass $reflectionClass;
 
@@ -220,8 +222,9 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     public function reset(): void
     {
+        $this->resetTrait();
+
         unset(
-            $this->tagsByAttribute,
             $this->constructArgBuilder,
             $this->setupArgBuilders,
             $this->setupByAttributes,
