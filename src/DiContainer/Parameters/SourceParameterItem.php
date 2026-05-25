@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Parameters;
 
+use Kaspi\DiContainer\Exception\ParameterException;
+use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use UnitEnum;
+
+use function sprintf;
 
 /**
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
@@ -47,10 +51,14 @@ final class SourceParameterItem implements ResetInterface
 
     /**
      * @return SourceParameterType
+     *
+     * @throws ParameterExceptionInterface
      */
     public function getResolved(): array|bool|float|int|string|UnitEnum|null
     {
-        return $this->resolved;
+        return $this->isResolved
+            ? $this->resolved
+            : throw new ParameterException(sprintf('Container parameter "%s" is not resolve yet.', $this->name));
     }
 
     public function reset(): void
