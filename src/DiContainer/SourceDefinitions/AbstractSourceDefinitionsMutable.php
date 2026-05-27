@@ -8,6 +8,7 @@ use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Traversable;
 
@@ -78,6 +79,12 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
                 }
 
                 unset($this->initializerDefinitions()[$item->containerIdentifier]);
+
+                continue;
+            }
+
+            if ($item->diDefinition instanceof ResetInterface) {
+                $item->diDefinition->reset();
             }
         }
     }

@@ -6,6 +6,7 @@ namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -28,6 +29,7 @@ use function array_keys;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(Helper::class)]
@@ -196,7 +198,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
     {
         $s = new ImmediateSourceDefinitionsMutable($src, $srcRemovedIds);
 
-        self::assertCount(2, [...$s->getIterator()]);
+        self::assertCount(3, [...$s->getIterator()]);
 
         self::assertTrue($s->has('service.bar'));
         self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
@@ -206,6 +208,8 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
 
         self::assertTrue($s->has('service.foo'));
         self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
 
         self::assertFalse($s->has('service.qux'));
         self::assertNull($s->get('service.qux'));
@@ -217,13 +221,13 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         self::assertTrue($s->has('service.qux'));
         self::assertEquals('Service qux', $s->get('service.qux')->getDefinition());
 
-        self::assertCount(3, [...$s->getIterator()]);
+        self::assertCount(4, [...$s->getIterator()]);
 
         self::assertEquals(['service.baz'], array_keys([...$s->getRemovedDefinitionIds()]));
 
         $s->reset();
 
-        self::assertCount(2, [...$s->getIterator()]);
+        self::assertCount(3, [...$s->getIterator()]);
 
         self::assertTrue($s->has('service.bar'));
         self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
@@ -233,6 +237,8 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
 
         self::assertTrue($s->has('service.foo'));
         self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
 
         self::assertFalse($s->has('service.qux'));
         self::assertNull($s->get('service.qux'));
@@ -246,6 +252,8 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
             'service.bar' => 'Service bar',
             'service.baz' => 'Service baz',
             'service.foo' => 'Service foo',
+            'hash.suffix' => (new DiDefinitionCallable('bin2hex'))
+                ->bindArguments('random_string'),
         ];
         $removedIds = [
             'service.baz' => true,

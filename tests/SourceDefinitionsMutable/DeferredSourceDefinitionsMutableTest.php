@@ -6,6 +6,7 @@ namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -28,6 +29,7 @@ use function array_keys;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
@@ -233,7 +235,7 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
     {
         $s = new DeferredSourceDefinitionsMutable($src, $srcRemovedIds);
 
-        self::assertCount(2, [...$s->getIterator()]);
+        self::assertCount(3, [...$s->getIterator()]);
 
         self::assertTrue($s->has('service.bar'));
         self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
@@ -246,6 +248,8 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
 
         self::assertFalse($s->has('service.qux'));
         self::assertNull($s->get('service.qux'));
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
 
         self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
 
@@ -254,13 +258,13 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
         self::assertTrue($s->has('service.qux'));
         self::assertEquals('Service qux', $s->get('service.qux')->getDefinition());
 
-        self::assertCount(3, [...$s->getIterator()]);
+        self::assertCount(4, [...$s->getIterator()]);
 
         self::assertEquals(['service.baz'], array_keys([...$s->getRemovedDefinitionIds()]));
 
         $s->reset();
 
-        self::assertCount(2, [...$s->getIterator()]);
+        self::assertCount(3, [...$s->getIterator()]);
 
         self::assertTrue($s->has('service.bar'));
         self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
@@ -273,6 +277,8 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
 
         self::assertFalse($s->has('service.qux'));
         self::assertNull($s->get('service.qux'));
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
 
         self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
     }
@@ -287,6 +293,10 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
                 yield 'service.baz' => 'Service baz';
 
                 yield 'service.foo' => 'Service foo';
+
+                yield 'hash.suffix' => (new DiDefinitionCallable('bin2hex'))
+                    ->bindArguments('random_string')
+                ;
             }
 
             public static function removed(): Generator
@@ -309,6 +319,10 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
                 yield 'service.baz' => 'Service baz';
 
                 yield 'service.foo' => 'Service foo';
+
+                yield 'hash.suffix' => (new DiDefinitionCallable('bin2hex'))
+                    ->bindArguments('random_string')
+                ;
             },
             static function () {
                 yield 'service.baz' => true;
