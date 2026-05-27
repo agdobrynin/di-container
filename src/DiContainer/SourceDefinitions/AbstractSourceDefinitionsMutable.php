@@ -69,6 +69,19 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         return $this->initializerRemovedIds();
     }
 
+    public function reset(): void
+    {
+        foreach ($this->initializerDefinitions() as $item) {
+            if ($item->isMutable) {
+                if ($item->isReplaceRemovedId) {
+                    $this->initializerRemovedIds()[$item->containerIdentifier] = true;
+                }
+
+                unset($this->initializerDefinitions()[$item->containerIdentifier]);
+            }
+        }
+    }
+
     /**
      * @return array<non-empty-string, SourceDefinitionItem>
      */

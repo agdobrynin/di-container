@@ -227,6 +227,96 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
 
         (new DeferredSourceDefinitionsMutable($defs))->has('service.foo');
     }
+
+    #[DataProvider('dataProviderForReset')]
+    public function testReset(callable $src, callable $srcRemovedIds): void
+    {
+        $s = new DeferredSourceDefinitionsMutable($src, $srcRemovedIds);
+
+        self::assertCount(2, [...$s->getIterator()]);
+
+        self::assertTrue($s->has('service.bar'));
+        self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
+
+        self::assertFalse($s->has('service.baz'));
+        self::assertNull($s->get('service.baz'));
+
+        self::assertTrue($s->has('service.foo'));
+        self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertFalse($s->has('service.qux'));
+        self::assertNull($s->get('service.qux'));
+
+        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+
+        $s->set('service.qux', 'Service qux');
+
+        self::assertTrue($s->has('service.qux'));
+        self::assertEquals('Service qux', $s->get('service.qux')->getDefinition());
+
+        self::assertCount(3, [...$s->getIterator()]);
+
+        self::assertEquals(['service.baz'], array_keys([...$s->getRemovedDefinitionIds()]));
+
+        $s->reset();
+
+        self::assertCount(2, [...$s->getIterator()]);
+
+        self::assertTrue($s->has('service.bar'));
+        self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
+
+        self::assertFalse($s->has('service.baz'));
+        self::assertNull($s->get('service.baz'));
+
+        self::assertTrue($s->has('service.foo'));
+        self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertFalse($s->has('service.qux'));
+        self::assertNull($s->get('service.qux'));
+
+        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+    }
+
+    public static function dataProviderForReset(): Generator
+    {
+        $class = new class {
+            public static function src(): Generator
+            {
+                yield 'service.bar' => 'Service bar';
+
+                yield 'service.baz' => 'Service baz';
+
+                yield 'service.foo' => 'Service foo';
+            }
+
+            public static function removed(): Generator
+            {
+                yield 'service.baz' => true;
+
+                yield 'service.qux' => true;
+            }
+        };
+
+        yield 'definitions via static method' => [
+            [$class::class, 'src'],
+            [$class::class, 'removed'],
+        ];
+
+        yield 'definitions via callback function' => [
+            static function () {
+                yield 'service.bar' => 'Service bar';
+
+                yield 'service.baz' => 'Service baz';
+
+                yield 'service.foo' => 'Service foo';
+            },
+            static function () {
+                yield 'service.baz' => true;
+
+                yield 'service.qux' => true;
+            },
+        ];
+    }
 }
 
 final class SourceDefinitions
