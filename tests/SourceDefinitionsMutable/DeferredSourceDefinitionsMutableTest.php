@@ -33,7 +33,7 @@ use function array_keys;
 #[CoversClass(Helper::class)]
 #[CoversClass(ContainerAlreadyRegisteredException::class)]
 #[CoversClass(SourceDefinitionItem::class)]
-class SourceDefinitionsMutableTest extends TestCase
+class DeferredSourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
     public function testConstructorIterableType(iterable $src, string $id): void
@@ -212,6 +212,20 @@ class SourceDefinitionsMutableTest extends TestCase
         $s = new DeferredSourceDefinitionsMutable(static fn () => []);
 
         self::assertFalse($s->has(''));
+    }
+
+    public function testKeyExistThroughConstructor(): void
+    {
+        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+        $this->expectExceptionMessage('The container identifier \'service.foo\' already registered in the source.');
+
+        $defs = static function (): Generator {
+            yield 'service.foo' => 'foo value';
+
+            yield 'service.foo' => 'duplicate foo value';
+        };
+
+        (new DeferredSourceDefinitionsMutable($defs))->has('service.foo');
     }
 }
 
