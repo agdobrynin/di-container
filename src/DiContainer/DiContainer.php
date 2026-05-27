@@ -32,6 +32,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
@@ -62,7 +63,7 @@ use function var_export;
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
  */
-class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
+class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface, ResetInterface
 {
     protected readonly SourceDefinitionsMutableInterface $definitions;
 
@@ -260,6 +261,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function parameters(): SourceParametersMutableInterface
     {
         return $this->parameters;
+    }
+
+    public function reset(): void
+    {
+        $this->definitions->reset();
+        $this->parameters->reset();
+        $this->diResolvedDefinition = $this->resolved = $this->hasViaZeroConfig = [];
     }
 
     /**
