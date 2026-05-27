@@ -33,7 +33,9 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 
     public function get(string $id): ?DiDefinitionInterface
     {
-        return ($this->initializerDefinitions()[$id] ?? null)?->diDefinition;
+        return $this->has($id)
+            ? $this->initializerDefinitions()[$id]->diDefinition
+            : null;
     }
 
     public function set(int|string $id, mixed $value): void
