@@ -18,6 +18,8 @@ interface SourceDefinitionsMutableInterface extends IteratorAggregate
     public function get(string $id): ?DiDefinitionInterface;
 
     /**
+     * @param int|non-empty-string $id
+     *
      * @throws ContainerAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
      * @throws DiDefinitionExceptionInterface

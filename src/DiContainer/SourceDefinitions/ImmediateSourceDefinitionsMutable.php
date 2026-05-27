@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
+use function get_debug_type;
+use function sprintf;
 
 final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
-    /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
+    /** @var array<class-string|non-empty-string, SourceDefinitionItem> */
     private array $definitions;
 
     /** @var array<class-string|non-empty-string, true> */
@@ -23,7 +25,6 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
      *
      * @throws ContainerAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
-     * @throws DiDefinitionExceptionInterface
      */
     public function __construct(iterable $sourceDefinitions, iterable $sourceRemovedDefinitionIds = [])
     {
@@ -31,12 +32,21 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         $this->removedDefinitionIds = [];
 
         foreach ($sourceDefinitions as $identifier => $sourceDefinition) {
-            $this->set($identifier, $sourceDefinition);
+            $item = new SourceDefinitionItem($identifier, $sourceDefinition, false);
+
+            if (isset($this->definitions[$item->containerIdentifier])) {
+                throw new ContainerAlreadyRegisteredException(
+                    sprintf('Definition type: "%s".', get_debug_type($sourceDefinition)),
+                    id: $item->containerIdentifier,
+                );
+            }
+
+            $this->definitions[$item->containerIdentifier] = $item;
         }
 
         foreach ($sourceRemovedDefinitionIds as $identifier => $v) {
             $this->removedDefinitionIds[$identifier] = true;
-            unset($this->definitions[$identifier]); // @phpstan-ignore unset.offset
+            unset($this->definitions[$identifier]);
         }
     }
 
@@ -45,12 +55,12 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         return isset($this->removedDefinitionIds[$id]);
     }
 
-    protected function &definitions(): array
+    protected function &initializerDefinitions(): array
     {
         return $this->definitions;
     }
 
-    protected function &removedDefinitionIds(): array
+    protected function &initializerRemovedIds(): array
     {
         return $this->removedDefinitionIds;
     }
