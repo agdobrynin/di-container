@@ -16,6 +16,7 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -34,6 +35,7 @@ use Psr\Container\ContainerInterface;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class MainTest extends TestCase
 {
     public function testMakeContainerByFactory(): void

@@ -24,6 +24,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -54,6 +55,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class ImportAutoconfigureTest extends TestCase
 {
     public function testAutoconfigure(): void

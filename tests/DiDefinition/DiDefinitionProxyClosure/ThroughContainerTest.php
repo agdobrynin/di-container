@@ -16,6 +16,7 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -45,6 +46,7 @@ use function Kaspi\DiContainer\diProxyClosure;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class ThroughContainerTest extends TestCase
 {
     public function testOverrideDiProxyClosureAsPhpAttributeProxyClosure(): void

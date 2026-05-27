@@ -31,9 +31,6 @@ use function str_contains;
 
 /**
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
- *
- * @phpstan-type SourceParameterResolvedType array{0: true, SourceParameterType}
- * @phpstan-type SourceParameterRawType array{0: false, mixed}
  */
 abstract class AbstractSourceParameters implements SourceParametersMutableInterface
 {
@@ -42,9 +39,20 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
      */
     protected array $nameCircularCallWatcher = [];
 
+    public function reset(): void
+    {
+        foreach ($this->initializerParameters() as $parameter) {
+            if ($parameter->isMutable) {
+                unset($this->initializerParameters()[$parameter->name]);
+            } else {
+                $parameter->reset();
+            }
+        }
+    }
+
     public function has(string $name): bool
     {
-        return array_key_exists($name, $this->internalParameters());
+        return array_key_exists($name, $this->initializerParameters());
     }
 
     public function get(string $name): array|bool|float|int|string|UnitEnum|null
@@ -63,21 +71,11 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
             }
 
             $this->nameCircularCallWatcher[$name] = true;
+            $parameterItem = $this->initializerParameters()[$name];
 
-            /**
-             * @var bool                                               $isResolved
-             * @var ($isResolve is true ? SourceParameterType : mixed) $value
-             */
-            [$isResolved, $value] = $this->internalParameters()[$name];
-
-            if ($isResolved) {
-                return $value; // @phpstan-ignore return.type
-            }
-
-            $resolvedValue = $this->resolveValue($value);
-            $this->internalParameters()[$name] = [true, $resolvedValue];
-
-            return $resolvedValue;
+            return $parameterItem->isResolved()
+                ? $parameterItem->getResolved()
+                : $parameterItem->setResolved($this->resolveValue($parameterItem->src))->getResolved();
         } finally {
             unset($this->nameCircularCallWatcher[$name]);
         }
@@ -85,13 +83,13 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
 
     public function set(string $name, mixed $value): void
     {
-        if (isset($this->internalParameters()[$name])) {
+        if ($this->has($name)) {
             throw new ParameterException(
                 sprintf('The container parameter "%s" already defined.', $name)
             );
         }
 
-        $this->internalParameters()[$name] = [false, $value];
+        $this->initializerParameters()[$name] = new SourceParameterItem($name, $value, true);
     }
 
     public function add(iterable $parameters): void
@@ -103,8 +101,8 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
 
     public function parameters(): iterable
     {
-        foreach ($this->internalParameters() as $name => [,$parameter]) {
-            yield $name => $this->get($name);
+        foreach ($this->initializerParameters() as $parameter) {
+            yield $parameter->name => $this->get($parameter->name);
         }
     }
 
@@ -212,7 +210,7 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
     }
 
     /**
-     * @return array<non-empty-string, SourceParameterRawType|SourceParameterResolvedType>
+     * @return array<non-empty-string, SourceParameterItem>
      */
-    abstract protected function &internalParameters(): array;
+    abstract protected function &initializerParameters(): array;
 }

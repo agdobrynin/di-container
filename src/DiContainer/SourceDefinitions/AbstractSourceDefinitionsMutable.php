@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Closure;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
-use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
@@ -24,35 +20,37 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 {
     public function getIterator(): Traversable
     {
-        yield from $this->definitions();
+        foreach ($this->initializerDefinitions() as $item) {
+            yield $item->containerIdentifier => $item->diDefinition;
+        }
     }
 
     public function has(string $id): bool
     {
-        return isset($this->definitions()[$id]);
+        return isset($this->initializerDefinitions()[$id]);
     }
 
     public function get(string $id): ?DiDefinitionInterface
     {
-        return $this->definitions()[$id] ?? null;
+        return ($this->initializerDefinitions()[$id] ?? null)?->diDefinition;
     }
 
     public function set(int|string $id, mixed $value): void
     {
-        $identifier = Helper::getContainerIdentifier($id, $value);
-        $definition = $this->get($identifier);
+        $item = new SourceDefinitionItem($id, $value, true);
+        $definition = $this->get($item->containerIdentifier);
 
         if (null !== $definition) {
             if (!$definition instanceof DiDefinitionRuntimeInterface) {
                 throw new ContainerAlreadyRegisteredException(
                     sprintf('Definition type: "%s".', get_debug_type($value)),
-                    id: $identifier,
+                    id: $item->containerIdentifier,
                 );
             }
 
             if (!is_object($value)) {
                 throw new DiDefinitionException(
-                    sprintf('The runtime definition with the identifier %s must be specified as an object. Got value type "%s".', var_export($identifier, true), get_debug_type($value))
+                    sprintf('The runtime definition with the identifier %s must be specified as an object. Got value type "%s".', var_export($item->containerIdentifier, true), get_debug_type($value))
                 );
             }
 
@@ -61,27 +59,36 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
             return;
         }
 
-        $this->definitions()[$identifier] = match (true) {
-            $value instanceof DiDefinitionInterface => $value,
-            $value instanceof Closure => new DiDefinitionCallable($value),
-            default => new DiDefinitionValue($value)
-        };
-
-        unset($this->removedDefinitionIds()[$identifier]);
+        $this->initializerDefinitions()[$item->containerIdentifier] = $item;
+        $item->isReplaceRemovedId = $this->isRemovedDefinition($item->containerIdentifier);
+        unset($this->initializerRemovedIds()[$item->containerIdentifier]);
     }
 
     public function getRemovedDefinitionIds(): iterable
     {
-        return $this->removedDefinitionIds();
+        return $this->initializerRemovedIds();
+    }
+
+    public function reset(): void
+    {
+        foreach ($this->initializerDefinitions() as $item) {
+            if ($item->isMutable) {
+                if ($item->isReplaceRemovedId) {
+                    $this->initializerRemovedIds()[$item->containerIdentifier] = true;
+                }
+
+                unset($this->initializerDefinitions()[$item->containerIdentifier]);
+            }
+        }
     }
 
     /**
-     * @return array<non-empty-string, DiDefinitionInterface>
+     * @return array<non-empty-string, SourceDefinitionItem>
      */
-    abstract protected function &definitions(): array;
+    abstract protected function &initializerDefinitions(): array;
 
     /**
      * @return array<class-string|non-empty-string, true>
      */
-    abstract protected function &removedDefinitionIds(): array;
+    abstract protected function &initializerRemovedIds(): array;
 }

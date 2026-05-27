@@ -30,6 +30,7 @@ use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -71,6 +72,7 @@ use const T_TRAIT;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void

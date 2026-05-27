@@ -27,6 +27,7 @@ use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -57,6 +58,7 @@ use function random_bytes;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(\Kaspi\DiContainer\Helper::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 #[CoversFunction('Kaspi\DiContainer\diRuntime')]
 class CompileTest extends TestCase
 {

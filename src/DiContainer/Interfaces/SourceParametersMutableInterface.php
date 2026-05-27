@@ -11,7 +11,7 @@ use UnitEnum;
 /**
  * @phpstan-type SourceParameterType null|scalar|UnitEnum|(null|scalar|UnitEnum)[]
  */
-interface SourceParametersMutableInterface
+interface SourceParametersMutableInterface extends ResetInterface
 {
     /**
      * @param non-empty-string $name

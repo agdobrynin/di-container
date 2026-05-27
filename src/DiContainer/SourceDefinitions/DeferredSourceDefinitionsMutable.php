@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
+use Closure;
+use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+
+use function get_debug_type;
+use function sprintf;
 
 final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
-    /** @var callable(): iterable<(class-string|non-empty-string|non-negative-int), mixed> */
-    private $sourceDefinitions;
+    /** @var ?Closure(): iterable<(class-string|non-empty-string|non-negative-int), mixed> */
+    private ?Closure $sourceDefinitions;
 
-    /** @var null|callable(): iterable<(class-string|non-empty-string), mixed> */
-    private $sourceRemovedDefinitionIds;
+    /** @var null|Closure(): iterable<(class-string|non-empty-string), mixed> */
+    private ?Closure $sourceRemovedDefinitionIds;
 
-    /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
+    /** @var array<class-string|non-empty-string, SourceDefinitionItem> */
     private array $definitions;
 
     /** @var array<class-string|non-empty-string, true> */
@@ -26,46 +30,57 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
      */
     public function __construct(callable $sourceDefinitions, ?callable $sourceRemovedDefinitionIds = null)
     {
-        $this->sourceDefinitions = $sourceDefinitions;
-        $this->sourceRemovedDefinitionIds = $sourceRemovedDefinitionIds;
+        $this->sourceDefinitions = $sourceDefinitions(...);
+        $this->sourceRemovedDefinitionIds = null !== $sourceRemovedDefinitionIds
+            ? $sourceRemovedDefinitionIds(...)
+            : null;
     }
 
     public function isRemovedDefinition(string $id): bool
     {
         if (!isset($this->removedDefinitionIds)) {
-            $this->definitions();
+            $this->initializerDefinitions();
         }
 
         return isset($this->removedDefinitionIds[$id]);
     }
 
-    protected function &definitions(): array
+    protected function &initializerDefinitions(): array
     {
-        if (!isset($this->definitions)) {
+        if (null !== $this->sourceDefinitions) {
             $this->definitions = [];
             $this->removedDefinitionIds = [];
 
             foreach (($this->sourceDefinitions)() as $identifier => $sourceDefinition) {
-                $this->set($identifier, $sourceDefinition);
+                $item = new SourceDefinitionItem($identifier, $sourceDefinition, false);
+
+                if (isset($this->definitions[$item->containerIdentifier])) {
+                    throw new ContainerAlreadyRegisteredException(
+                        sprintf('Definition type: "%s".', get_debug_type($sourceDefinition)),
+                        id: $item->containerIdentifier,
+                    );
+                }
+
+                $this->definitions[$item->containerIdentifier] = $item;
             }
 
             if (null !== $this->sourceRemovedDefinitionIds) {
                 foreach (($this->sourceRemovedDefinitionIds)() as $identifier => $v) {
                     $this->removedDefinitionIds[$identifier] = true;
-                    unset($this->definitions[$identifier]); // @phpstan-ignore unset.offset
+                    unset($this->definitions[$identifier]);
                 }
             }
 
-            unset($this->sourceDefinitions, $this->sourceRemovedDefinitionIds);
+            $this->sourceDefinitions = $this->sourceRemovedDefinitionIds = null;
         }
 
         return $this->definitions;
     }
 
-    protected function &removedDefinitionIds(): array
+    protected function &initializerRemovedIds(): array
     {
         if (!isset($this->definitions)) {
-            $this->definitions();
+            $this->initializerDefinitions();
         }
 
         return $this->removedDefinitionIds;

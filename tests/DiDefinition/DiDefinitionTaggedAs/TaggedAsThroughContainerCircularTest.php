@@ -21,6 +21,7 @@ use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -61,6 +62,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(TagsTrait::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class TaggedAsThroughContainerCircularTest extends TestCase
 {
     public function testCircularTaggedAsByPhpDefinition(): void
