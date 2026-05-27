@@ -16,6 +16,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionI
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -35,6 +36,7 @@ use stdClass;
 #[CoversClass(Helper::class)]
 #[CoversClass(ContainerAlreadyRegisteredException::class)]
 #[CoversClass(NotFoundException::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class ResolveSelfContainerTest extends TestCase
 {
     #[DataProvider('dataProvider')]

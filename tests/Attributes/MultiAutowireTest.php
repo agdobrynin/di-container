@@ -21,6 +21,7 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Attributes\Fixtures\Bar;
@@ -47,6 +48,7 @@ use Tests\Attributes\Fixtures\MultiAutowire;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiContainerBuilder::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class MultiAutowireTest extends TestCase
 {
     public function testMultiAutowireContainer(): void
