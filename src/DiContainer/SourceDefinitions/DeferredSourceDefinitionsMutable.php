@@ -79,7 +79,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
 
     protected function &initializerRemovedIds(): array
     {
-        if (!isset($this->definitions)) {
+        if (null !== $this->sourceDefinitions) {
             $this->initializerDefinitions();
         }
 
