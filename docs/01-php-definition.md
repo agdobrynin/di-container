@@ -420,17 +420,24 @@ var_dump($container->get('services.two') instanceof App\Services\ServiceOne); //
 
 
 > [!TIP]
-> Так же доступно объявление через callback функцию которое будет корректно:
+> При конфигурации определений доступно объявление callable типа как-есть, без применения хелпер функции если нет необходимости объявлять
+> аргументы или добавлять теги. Такое объявление будет преобразовано к `\Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` определению:
+> 
 > ```php
 > // для примера из config/services.php
-> // ...
->   yield 'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'value_api_key', debug: false),
-> // ....
+>
+>   // Callback функция
+>   yield 'services.one' => static fn () => new App\Services\ServiceOne(apiKey: 'value_api_key', debug: false);
+>
+>   // `callable` тип – статический метод класса.
+>   yield 'services.two' =>  [App\Services\ServiceOne::class, 'makeForTest'];
+>
 > ```
 
 > [!TIP]
 > Если у определения объявленного через `diCallable` присутствуют аргументы,
-> то они могут быть разрешены контейнером автоматически включая [использование php атрибутов](02-attribute-definition.md).
+> то они могут быть разрешены контейнером автоматически,
+> включая [использование php атрибутов](02-attribute-definition.md).
 
 #### diGet
 Определение как ссылки на другой идентификатор контейнера.
