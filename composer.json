@@ -53,11 +53,13 @@
     "scripts": {
         "fixer" : "./vendor/bin/php-cs-fixer fix",
         "test" : "./vendor/bin/phpunit --testdox --no-coverage",
+        "test-cover" : "./vendor/bin/phpunit --coverage-text",
         "stat" : "./vendor/bin/phpstan"
     },
     "scripts-descriptions": {
         "fixer": "Run PHP Coding Standards Fixer",
         "test" : "Run Phpunit test without coverage",
+        "test-cover" : "Run Phpunit with class coverage",
         "stat" : "Run PHPstan static analyzer"
     }
 }
