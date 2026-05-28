@@ -7,9 +7,10 @@ namespace Kaspi\DiContainer\DiDefinition;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use UnitEnum;
 
-final class DiDefinitionParameter extends DiDefinitionParameterWithContextAbstract implements DiDefinitionNoArgumentsInterface, DiDefinitionParameterInterface
+final class DiDefinitionParameter extends DiDefinitionParameterWithContextAbstract implements DiDefinitionNoArgumentsInterface, DiDefinitionParameterInterface, ResetInterface
 {
     public function __construct(private readonly string $name = '') {}
 

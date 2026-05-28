@@ -11,13 +11,15 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterfac
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Traversable;
 
-interface SourceDefinitionsMutableInterface extends IteratorAggregate
+interface SourceDefinitionsMutableInterface extends IteratorAggregate, ResetInterface
 {
     public function has(string $id): bool;
 
     public function get(string $id): ?DiDefinitionInterface;
 
     /**
+     * @param int|non-empty-string $id
+     *
      * @throws ContainerAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
      * @throws DiDefinitionExceptionInterface

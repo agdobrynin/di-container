@@ -139,4 +139,15 @@ class DiDefinitionRuntimeTest extends TestCase
 
         $p->resolve($this->container);
     }
+
+    public function testRest(): void
+    {
+        $p = (new DiDefinitionParameterRuntime())->setContext('foo');
+
+        self::assertEquals('foo', $p->getContext());
+
+        $p->reset();
+
+        self::assertNull($p->getContext());
+    }
 }

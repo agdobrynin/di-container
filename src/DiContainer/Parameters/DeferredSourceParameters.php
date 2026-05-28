@@ -4,40 +4,38 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Parameters;
 
-/**
- * @phpstan-import-type SourceParameterResolvedType from AbstractSourceParameters
- * @phpstan-import-type SourceParameterRawType from AbstractSourceParameters
- */
+use Closure;
+
 final class DeferredSourceParameters extends AbstractSourceParameters
 {
     /**
-     * @var callable(): iterable<non-empty-string, mixed>
-     */
-    private $sourceParameters;
-
-    /**
-     * @var array<non-empty-string, SourceParameterRawType|SourceParameterResolvedType>
+     * @var array<non-empty-string, SourceParameterItem>
      */
     private array $parameters;
+
+    /**
+     * @var null|Closure(): iterable<non-empty-string, mixed>
+     */
+    private ?Closure $sourceParameters;
 
     /**
      * @param callable(): iterable<non-empty-string, mixed> $sourceParameters
      */
     public function __construct(callable $sourceParameters)
     {
-        $this->sourceParameters = $sourceParameters;
+        $this->sourceParameters = $sourceParameters(...);
     }
 
-    protected function &internalParameters(): array
+    protected function &initializerParameters(): array
     {
-        if (!isset($this->parameters)) {
+        if (null !== $this->sourceParameters) {
             $this->parameters = [];
 
             foreach (($this->sourceParameters)() as $name => $parameter) {
-                $this->parameters[$name] = [false, $parameter];
+                $this->parameters[$name] = new SourceParameterItem($name, $parameter, false);
             }
 
-            unset($this->sourceParameters);
+            $this->sourceParameters = null;
         }
 
         return $this->parameters;

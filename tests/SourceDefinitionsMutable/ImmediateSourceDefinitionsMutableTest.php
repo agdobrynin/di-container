@@ -6,6 +6,7 @@ namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
@@ -15,6 +16,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterfac
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -27,10 +29,12 @@ use function array_keys;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(ContainerAlreadyRegisteredException::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class ImmediateSourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -187,5 +191,83 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         $s = new ImmediateSourceDefinitionsMutable([]);
 
         self::assertFalse($s->has(''));
+    }
+
+    #[DataProvider('dataProviderForReset')]
+    public function testReset(iterable $src, iterable $srcRemovedIds): void
+    {
+        $s = new ImmediateSourceDefinitionsMutable($src, $srcRemovedIds);
+
+        self::assertCount(3, [...$s->getIterator()]);
+
+        self::assertTrue($s->has('service.bar'));
+        self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
+
+        self::assertFalse($s->has('service.baz'));
+        self::assertNull($s->get('service.baz'));
+
+        self::assertTrue($s->has('service.foo'));
+        self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
+
+        self::assertFalse($s->has('service.qux'));
+        self::assertNull($s->get('service.qux'));
+
+        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+
+        $s->set('service.qux', 'Service qux');
+
+        self::assertTrue($s->has('service.qux'));
+        self::assertEquals('Service qux', $s->get('service.qux')->getDefinition());
+
+        self::assertCount(4, [...$s->getIterator()]);
+
+        self::assertEquals(['service.baz'], array_keys([...$s->getRemovedDefinitionIds()]));
+
+        $s->reset();
+
+        self::assertCount(3, [...$s->getIterator()]);
+
+        self::assertTrue($s->has('service.bar'));
+        self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
+
+        self::assertFalse($s->has('service.baz'));
+        self::assertNull($s->get('service.baz'));
+
+        self::assertTrue($s->has('service.foo'));
+        self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
+
+        self::assertFalse($s->has('service.qux'));
+        self::assertNull($s->get('service.qux'));
+
+        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+    }
+
+    public static function dataProviderForReset(): Generator
+    {
+        $definitions = [
+            'service.bar' => 'Service bar',
+            'service.baz' => 'Service baz',
+            'service.foo' => 'Service foo',
+            'hash.suffix' => (new DiDefinitionCallable('bin2hex'))
+                ->bindArguments('random_string'),
+        ];
+        $removedIds = [
+            'service.baz' => true,
+            'service.qux' => true,
+        ];
+
+        yield 'definitions via array' => [
+            $definitions,
+            $removedIds,
+        ];
+
+        yield 'definitions via generator' => [
+            (static fn () => yield from $definitions)(),
+            (static fn () => yield from $removedIds)(),
+        ];
     }
 }

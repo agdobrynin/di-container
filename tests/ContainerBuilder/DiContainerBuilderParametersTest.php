@@ -11,6 +11,7 @@ use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
 use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
+use Kaspi\DiContainer\Parameters\SourceParameterItem;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -26,6 +27,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractSourceParameters::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
+#[CoversClass(SourceParameterItem::class)]
 class DiContainerBuilderParametersTest extends TestCase
 {
     public function testUseConfiguratorForParameters(): void

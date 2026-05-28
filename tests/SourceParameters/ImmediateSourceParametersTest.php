@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
 use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
+use Kaspi\DiContainer\Parameters\SourceParameterItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -25,6 +26,7 @@ use stdClass;
 #[CoversClass(ParameterCallCircularException::class)]
 #[CoversClass(ParameterNotFoundException::class)]
 #[CoversClass(NotFoundException::class)]
+#[CoversClass(SourceParameterItem::class)]
 class ImmediateSourceParametersTest extends TestCase
 {
     #[TestWith([

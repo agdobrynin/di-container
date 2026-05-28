@@ -176,6 +176,14 @@ trait TagsOnObjectDefinitionTrait
         return $this->tagsByAttribute;
     }
 
+    private function reset(): void
+    {
+        unset(
+            $this->tagsByAttribute,
+            $this->container,
+        );
+    }
+
     private function getContainer(): DiContainerInterface
     {
         if (!isset($this->container)) {

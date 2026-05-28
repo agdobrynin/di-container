@@ -92,4 +92,15 @@ class DiDefinitionParameterTest extends TestCase
 
         self::assertEquals($expected, $p->getContext());
     }
+
+    public function testRest(): void
+    {
+        $p = (new DiDefinitionParameter())->setContext('foo');
+
+        self::assertEquals('foo', $p->getContext());
+
+        $p->reset();
+
+        self::assertNull($p->getContext());
+    }
 }

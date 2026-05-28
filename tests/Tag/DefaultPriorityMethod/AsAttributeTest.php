@@ -18,6 +18,7 @@ use Kaspi\DiContainer\LazyDefinitionIterator;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -55,6 +56,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(TagsTrait::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class AsAttributeTest extends TestCase
 {
     public function testCollectionByInterface(): void

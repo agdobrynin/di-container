@@ -27,6 +27,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
@@ -251,7 +252,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         return $this;
     }
 
-    public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface
+    public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface&ResetInterface
     {
         $this->definitionsLoader->reset();
 

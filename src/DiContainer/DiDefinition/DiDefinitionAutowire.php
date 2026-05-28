@@ -20,6 +20,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\TagsOnObjectDefinitionTrait;
 use ReflectionClass;
@@ -38,13 +39,15 @@ use function sprintf;
  * @phpstan-type SetupConfigureArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
  * @phpstan-type SetupConfigureItem array{0: SetupConfigureMethod, 1: SetupConfigureArgumentsType}
  */
-final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface
+final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
     }
 
-    use TagsOnObjectDefinitionTrait;
+    use TagsOnObjectDefinitionTrait {
+        reset as private resetTrait;
+    }
 
     private ReflectionClass $reflectionClass;
 
@@ -215,6 +218,21 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function getDefinitionIdentifier(): string
     {
         return $this->getIdentifier();
+    }
+
+    public function reset(): void
+    {
+        $this->resetTrait();
+
+        unset(
+            $this->constructArgBuilder,
+            $this->setupArgBuilders,
+            $this->setupByAttributes,
+        );
+
+        if (is_string($this->definition)) {
+            unset($this->reflectionClass);
+        }
     }
 
     /**
