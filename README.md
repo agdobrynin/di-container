@@ -233,13 +233,13 @@ var_dump($container->get(TestClass::class)->container instanceof ContainerInterf
 * 🗳️ [Внедрение экземпляра класса в рантайм контейнер](https://github.com/agdobrynin/di-container/blob/main/docs/10-runtime-definition.md).
 
 ## Тесты
-Прогнать тесты без подсчёта покрытия кода
+Запуск тестов без подсчёта покрытия кода
 ```shell
 composer test
 ```
 Запуск тестов с проверкой покрытия кода тестами
 ```shell
-./vendor/bin/phpunit
+composer test-cover
 ```
 
 ## Статический анализ кода
@@ -247,9 +247,6 @@ composer test
 Для статического анализа используем пакет [PHPStan](https://github.com/phpstan/phpstan).
 ```shell
 composer stat
-```
-```shell
-./vendor/bin/phpstan
 ```
 
 ## Code style
