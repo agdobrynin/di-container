@@ -143,7 +143,7 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
                 'service.foo' => 'Service foo',
             ],
             static fn () => [
-                'service.foo' => true,
+                'service.foo',
             ]
         );
 
@@ -165,7 +165,7 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
                 'service.bar' => 'Service bar',
             ],
             static fn () => [
-                'service.foo' => true,
+                'service.foo',
             ]
         );
 
@@ -251,7 +251,7 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
 
         self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
 
-        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+        self::assertEquals(['service.baz', 'service.qux'], [...$s->getRemovedDefinitionIds()]);
 
         $s->set('service.qux', 'Service qux');
 
@@ -260,7 +260,7 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
 
         self::assertCount(4, [...$s->getIterator()]);
 
-        self::assertEquals(['service.baz'], array_keys([...$s->getRemovedDefinitionIds()]));
+        self::assertEquals(['service.baz'], [...$s->getRemovedDefinitionIds()]);
 
         $s->reset();
 
@@ -280,7 +280,7 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
 
         self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
 
-        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+        self::assertEquals(['service.baz', 'service.qux'], [...$s->getRemovedDefinitionIds()]);
     }
 
     public static function dataProviderForReset(): Generator
@@ -301,9 +301,9 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
 
             public static function removed(): Generator
             {
-                yield 'service.baz' => true;
+                yield 'service.baz';
 
-                yield 'service.qux' => true;
+                yield 'service.qux';
             }
         };
 
@@ -325,9 +325,9 @@ class DeferredSourceDefinitionsMutableTest extends TestCase
                 ;
             },
             static function () {
-                yield 'service.baz' => true;
+                yield 'service.baz';
 
-                yield 'service.qux' => true;
+                yield 'service.qux';
             },
         ];
     }
@@ -346,6 +346,6 @@ final class SourceDefinitions
 
     public static function removed(): Generator
     {
-        yield 'baz' => true;
+        yield 'baz';
     }
 }

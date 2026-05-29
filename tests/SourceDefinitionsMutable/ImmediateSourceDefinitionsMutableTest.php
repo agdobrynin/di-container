@@ -148,7 +148,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
                 'service.foo' => 'Service foo',
             ],
             [
-                'service.foo' => true,
+                'service.foo',
             ]
         );
 
@@ -214,7 +214,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         self::assertFalse($s->has('service.qux'));
         self::assertNull($s->get('service.qux'));
 
-        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+        self::assertEquals(['service.baz', 'service.qux'], [...$s->getRemovedDefinitionIds()]);
 
         $s->set('service.qux', 'Service qux');
 
@@ -223,7 +223,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
 
         self::assertCount(4, [...$s->getIterator()]);
 
-        self::assertEquals(['service.baz'], array_keys([...$s->getRemovedDefinitionIds()]));
+        self::assertEquals(['service.baz'], [...$s->getRemovedDefinitionIds()]);
 
         $s->reset();
 
@@ -243,7 +243,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         self::assertFalse($s->has('service.qux'));
         self::assertNull($s->get('service.qux'));
 
-        self::assertEquals(['service.baz', 'service.qux'], array_keys([...$s->getRemovedDefinitionIds()]));
+        self::assertEquals(['service.baz', 'service.qux'], [...$s->getRemovedDefinitionIds()]);
     }
 
     public static function dataProviderForReset(): Generator
@@ -256,8 +256,8 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
                 ->bindArguments('random_string'),
         ];
         $removedIds = [
-            'service.baz' => true,
-            'service.qux' => true,
+            'service.baz',
+            'service.qux',
         ];
 
         yield 'definitions via array' => [

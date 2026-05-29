@@ -90,7 +90,7 @@ class ImportAutoconfigureTest extends TestCase
         ;
 
         self::assertEquals([Fixtures\Person::class, Fixtures\Factories\DiFactoryPerson::class], array_keys([...$loader->definitions()]));
-        self::assertEquals([Fixtures\Foo::class], array_keys([...$loader->removedDefinitionIds()]));
+        self::assertEquals([Fixtures\Foo::class], [...$loader->removedDefinitionIds()]);
     }
 
     public function testConflictAttributeAutowireExcludeAndConfigByDefinition(): void

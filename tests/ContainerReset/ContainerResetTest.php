@@ -79,7 +79,7 @@ class ContainerResetTest extends TestCase
         self::assertFalse($container->has(Bar::class));
 
         self::assertEquals(
-            [__CLASS__ => true, Bar::class => true],
+            [__CLASS__, Bar::class],
             [...$container->getRemovedDefinitionIds()]
         );
 
