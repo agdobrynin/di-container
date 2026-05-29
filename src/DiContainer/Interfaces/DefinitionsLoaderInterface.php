@@ -83,7 +83,7 @@ interface DefinitionsLoaderInterface extends ResetInterface
     public function definitions(): iterable;
 
     /**
-     * @return iterable<class-string|non-empty-string, true>
+     * @return iterable<class-string|non-empty-string>
      *
      * @throws DefinitionsLoaderExceptionInterface
      */
