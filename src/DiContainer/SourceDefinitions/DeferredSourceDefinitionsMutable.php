@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\SourceDefinitions;
 
 use Closure;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 
 use function get_debug_type;
 use function sprintf;
@@ -55,7 +55,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
                 $item = new SourceDefinitionItem($identifier, $sourceDefinition, false);
 
                 if (isset($this->definitions[$item->containerIdentifier])) {
-                    throw new ContainerAlreadyRegisteredException(
+                    throw new ContainerIdentifierAlreadyRegisteredException(
                         sprintf('Definition type: "%s".', get_debug_type($sourceDefinition)),
                         id: $item->containerIdentifier,
                     );

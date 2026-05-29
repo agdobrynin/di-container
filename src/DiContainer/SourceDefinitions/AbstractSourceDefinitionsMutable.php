@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
@@ -45,7 +45,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 
         if (null !== $definition) {
             if (!$definition instanceof DiDefinitionRuntimeInterface) {
-                throw new ContainerAlreadyRegisteredException(
+                throw new ContainerIdentifierAlreadyRegisteredException(
                     sprintf('Definition type: "%s".', get_debug_type($value)),
                     id: $item->containerIdentifier,
                 );

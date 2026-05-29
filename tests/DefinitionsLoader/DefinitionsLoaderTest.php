@@ -7,11 +7,11 @@ namespace Tests\DefinitionsLoader;
 use Generator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -28,7 +28,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ContainerIdentifierException::class)]
 #[CoversClass(DefinitionsLoaderException::class)]
 #[CoversClass(Helper::class)]
-#[CoversClass(ContainerAlreadyRegisteredException::class)]
+#[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
 class DefinitionsLoaderTest extends TestCase
 {
     #[DataProvider('dataProviderInvalidContent')]
@@ -92,7 +92,7 @@ class DefinitionsLoaderTest extends TestCase
 
     public function testContainerIdentifierAlreadyRegistered(): void
     {
-        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+        $this->expectException(ContainerIdentifierAlreadyRegisteredExceptionInterface::class);
 
         $config = static function (): Generator {
             yield 'services.foo' => 'foo';

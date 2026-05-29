@@ -7,10 +7,10 @@ namespace Tests\DiContainer\Set;
 use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerIdentifierException;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -31,7 +31,7 @@ use stdClass;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
-#[CoversClass(ContainerAlreadyRegisteredException::class)]
+#[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
 #[CoversClass(SourceDefinitionItem::class)]
 class DiContainerSetTest extends TestCase
 {
@@ -69,7 +69,7 @@ class DiContainerSetTest extends TestCase
     {
         $container = (new DiContainer())->set('key', 'value');
 
-        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+        $this->expectException(ContainerIdentifierAlreadyRegisteredExceptionInterface::class);
 
         $container->set('key', 'value2');
     }

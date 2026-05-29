@@ -19,7 +19,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
 use Kaspi\DiContainer\Exception\NotFoundDefinition;
@@ -131,7 +131,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             if (!$overrideDefinitions && $this->configuredDefinitions->offsetExists($identifier)) {
-                throw new ContainerAlreadyRegisteredException(
+                throw new ContainerIdentifierAlreadyRegisteredException(
                     sprintf('Item position #%d.', $itemCount),
                     id: $identifier
                 );
@@ -725,7 +725,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             try {
                 $this->addDefinitions($overrideDefinitions, $this->getDefinitionsFromFile($srcFile));
-            } catch (ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
+            } catch (ContainerIdentifierAlreadyRegisteredException|DefinitionsLoaderExceptionInterface $e) {
                 throw new DefinitionsLoaderInvalidArgumentException(
                     message: sprintf('Invalid definition in file "%s".', $srcFile),
                     previous: $e
