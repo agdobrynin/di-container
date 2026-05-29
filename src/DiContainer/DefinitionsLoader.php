@@ -573,6 +573,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
+            $this->removedDefinitionIds->offsetSet($reflectionClass->name, true);
+
             return [];
         }
 
