@@ -15,7 +15,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
     /** @var ?Closure(): iterable<(class-string|non-empty-string|non-negative-int), mixed> */
     private ?Closure $sourceDefinitions;
 
-    /** @var null|Closure(): iterable<(class-string|non-empty-string), mixed> */
+    /** @var null|Closure(): iterable<class-string|non-empty-string> */
     private ?Closure $sourceRemovedDefinitionIds;
 
     /** @var array<class-string|non-empty-string, SourceDefinitionItem> */
@@ -26,7 +26,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
 
     /**
      * @param callable(): iterable<(class-string|non-empty-string|non-negative-int), mixed> $sourceDefinitions
-     * @param null|callable(): iterable<(class-string|non-empty-string), mixed>             $sourceRemovedDefinitionIds
+     * @param null|callable(): iterable<class-string|non-empty-string>                      $sourceRemovedDefinitionIds
      */
     public function __construct(callable $sourceDefinitions, ?callable $sourceRemovedDefinitionIds = null)
     {
@@ -65,7 +65,7 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
             }
 
             if (null !== $this->sourceRemovedDefinitionIds) {
-                foreach (($this->sourceRemovedDefinitionIds)() as $identifier => $v) {
+                foreach (($this->sourceRemovedDefinitionIds)() as $identifier) {
                     $this->removedDefinitionIds[$identifier] = true;
                     unset($this->definitions[$identifier]);
                 }
