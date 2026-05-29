@@ -21,7 +21,7 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
 
     /**
      * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
-     * @param iterable<class-string|non-empty-string, mixed>     $sourceRemovedDefinitionIds
+     * @param iterable<class-string|non-empty-string>            $sourceRemovedDefinitionIds
      *
      * @throws ContainerIdentifierAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
@@ -44,7 +44,7 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
             $this->definitions[$item->containerIdentifier] = $item;
         }
 
-        foreach ($sourceRemovedDefinitionIds as $identifier => $v) {
+        foreach ($sourceRemovedDefinitionIds as $identifier) {
             $this->removedDefinitionIds[$identifier] = true;
             unset($this->definitions[$identifier]);
         }

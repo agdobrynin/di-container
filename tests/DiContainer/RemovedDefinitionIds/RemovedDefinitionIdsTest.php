@@ -78,13 +78,13 @@ class RemovedDefinitionIdsTest extends TestCase
                 useZeroConfigurationDefinition: true,
                 useAttribute: false,
             ),
-            removedDefinitionIds: [Foo::class => true]
+            removedDefinitionIds: [Foo::class]
         );
 
         self::assertTrue($container->has(Bar::class));
         self::assertFalse($container->has(Foo::class));
         self::assertSame(
-            [Foo::class => true],
+            [Foo::class],
             [...$container->getRemovedDefinitionIds()]
         );
     }
@@ -94,7 +94,7 @@ class RemovedDefinitionIdsTest extends TestCase
         $container = new DiContainer(
             new DeferredSourceDefinitionsMutable(
                 static fn () => [],
-                static fn () => [Foo::class => true]
+                static fn () => [Foo::class]
             ),
             config: new DiContainerConfig(
                 useZeroConfigurationDefinition: true,
@@ -103,7 +103,7 @@ class RemovedDefinitionIdsTest extends TestCase
         );
 
         self::assertSame(
-            [Foo::class => true],
+            [Foo::class],
             [...$container->getRemovedDefinitionIds()]
         );
     }
@@ -117,7 +117,7 @@ class RemovedDefinitionIdsTest extends TestCase
                 useZeroConfigurationDefinition: true,
                 useAttribute: false,
             ),
-            removedDefinitionIds: [Foo::class => true]
+            removedDefinitionIds: [Foo::class]
         );
 
         $container->get(Foo::class);
@@ -149,7 +149,6 @@ class RemovedDefinitionIdsTest extends TestCase
             )
             ->build()
         ;
-
         $container->get(Foo::class);
     }
 }

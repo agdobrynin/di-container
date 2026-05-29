@@ -67,7 +67,7 @@ interface DiContainerInterface extends ContainerInterface
     /**
      * Returns container identifiers mark as deleted from  resolving.
      *
-     * @return iterable<class-string|non-empty-string, true>
+     * @return iterable<class-string|non-empty-string>
      */
     public function getRemovedDefinitionIds(): iterable;
 

@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Traversable;
 
+use function array_keys;
 use function get_debug_type;
 use function is_object;
 use function sprintf;
@@ -69,7 +70,7 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
 
     public function getRemovedDefinitionIds(): iterable
     {
-        return $this->initializerRemovedIds();
+        yield from array_keys($this->initializerRemovedIds());
     }
 
     public function reset(): void

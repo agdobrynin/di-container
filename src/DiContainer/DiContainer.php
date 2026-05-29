@@ -102,7 +102,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
-     * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
+     * @param iterable<class-string|non-empty-string>                                            $removedDefinitionIds
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
      *
      * @throws ContainerIdentifierExceptionInterface
