@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
+use function array_keys;
 use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 
@@ -77,6 +78,19 @@ class ImportAutoconfigureTest extends TestCase
             ['name' => 'Ivan', 'surname' => 'Petrov', 'age' => 22],
             (array) $container->get(Fixtures\Person::class)
         );
+
+        self::assertEquals([], [...$container->getRemovedDefinitionIds()]);
+    }
+
+    public function testAutoconfigureViaAttributeAutowireExclude(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\\', __DIR__.'/Fixtures/')
+            ->useAttribute(true)
+        ;
+
+        self::assertEquals([Fixtures\Person::class, Fixtures\Factories\DiFactoryPerson::class], array_keys([...$loader->definitions()]));
+        self::assertEquals([Fixtures\Foo::class], array_keys([...$loader->removedDefinitionIds()]));
     }
 
     public function testConflictAttributeAutowireExcludeAndConfigByDefinition(): void
