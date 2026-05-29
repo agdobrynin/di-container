@@ -36,15 +36,6 @@ final class DeferredSourceDefinitionsMutable extends AbstractSourceDefinitionsMu
             : null;
     }
 
-    public function isRemovedDefinition(string $id): bool
-    {
-        if (!isset($this->removedDefinitionIds)) {
-            $this->initializerDefinitions();
-        }
-
-        return isset($this->removedDefinitionIds[$id]);
-    }
-
     protected function &initializerDefinitions(): array
     {
         if (null !== $this->sourceDefinitions) {
