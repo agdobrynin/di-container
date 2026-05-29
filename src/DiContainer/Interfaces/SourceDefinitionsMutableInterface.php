@@ -6,19 +6,21 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use IteratorAggregate;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Traversable;
 
-interface SourceDefinitionsMutableInterface extends IteratorAggregate
+interface SourceDefinitionsMutableInterface extends IteratorAggregate, ResetInterface
 {
     public function has(string $id): bool;
 
     public function get(string $id): ?DiDefinitionInterface;
 
     /**
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @param int|non-empty-string $id
+     *
+     * @throws ContainerIdentifierAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
      * @throws DiDefinitionExceptionInterface
      */
@@ -35,7 +37,7 @@ interface SourceDefinitionsMutableInterface extends IteratorAggregate
     public function isRemovedDefinition(string $id): bool;
 
     /**
-     * @return iterable<class-string|non-empty-string, true>
+     * @return iterable<class-string|non-empty-string>
      */
     public function getRemovedDefinitionIds(): iterable;
 }

@@ -8,12 +8,13 @@ use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use UnitEnum;
 
 use function rtrim;
 use function sprintf;
 
-final class DiDefinitionParameterRuntime extends DiDefinitionParameterWithContextAbstract implements DiDefinitionParameterRuntimeInterface, DiDefinitionNoArgumentsInterface
+final class DiDefinitionParameterRuntime extends DiDefinitionParameterWithContextAbstract implements DiDefinitionParameterRuntimeInterface, DiDefinitionNoArgumentsInterface, ResetInterface
 {
     private readonly string $message;
 

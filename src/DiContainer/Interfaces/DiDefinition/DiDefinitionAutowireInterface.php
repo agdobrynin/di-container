@@ -20,8 +20,6 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface
      */
     public function getDefinition(): ReflectionClass;
 
-    public function setContainer(DiContainerInterface $container): static;
-
     /**
      * @return class-string|non-empty-string
      */

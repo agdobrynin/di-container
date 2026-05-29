@@ -6,15 +6,17 @@ namespace Tests\SourceDefinitionsMutable;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -27,11 +29,13 @@ use function array_keys;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(DeferredSourceDefinitionsMutable::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
+#[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
-#[CoversClass(ContainerAlreadyRegisteredException::class)]
-class SourceDefinitionsMutableTest extends TestCase
+#[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
+#[CoversClass(SourceDefinitionItem::class)]
+class DeferredSourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
     public function testConstructorIterableType(iterable $src, string $id): void
@@ -106,7 +110,7 @@ class SourceDefinitionsMutableTest extends TestCase
 
     public function testSetFail(): void
     {
-        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+        $this->expectException(ContainerIdentifierAlreadyRegisteredExceptionInterface::class);
         $this->expectExceptionMessage('The container identifier \'service.bar\' already registered in the source.');
 
         $s = new DeferredSourceDefinitionsMutable(static fn () => ['service.bar' => 'Service bar']);
@@ -139,7 +143,7 @@ class SourceDefinitionsMutableTest extends TestCase
                 'service.foo' => 'Service foo',
             ],
             static fn () => [
-                'service.foo' => true,
+                'service.foo',
             ]
         );
 
@@ -161,7 +165,7 @@ class SourceDefinitionsMutableTest extends TestCase
                 'service.bar' => 'Service bar',
             ],
             static fn () => [
-                'service.foo' => true,
+                'service.foo',
             ]
         );
 
@@ -211,6 +215,122 @@ class SourceDefinitionsMutableTest extends TestCase
 
         self::assertFalse($s->has(''));
     }
+
+    public function testKeyExistThroughConstructor(): void
+    {
+        $this->expectException(ContainerIdentifierAlreadyRegisteredExceptionInterface::class);
+        $this->expectExceptionMessage('The container identifier \'service.foo\' already registered in the source.');
+
+        $defs = static function (): Generator {
+            yield 'service.foo' => 'foo value';
+
+            yield 'service.foo' => 'duplicate foo value';
+        };
+
+        (new DeferredSourceDefinitionsMutable($defs))->has('service.foo');
+    }
+
+    #[DataProvider('dataProviderForReset')]
+    public function testReset(callable $src, callable $srcRemovedIds): void
+    {
+        $s = new DeferredSourceDefinitionsMutable($src, $srcRemovedIds);
+
+        self::assertCount(3, [...$s->getIterator()]);
+
+        self::assertTrue($s->has('service.bar'));
+        self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
+
+        self::assertFalse($s->has('service.baz'));
+        self::assertNull($s->get('service.baz'));
+
+        self::assertTrue($s->has('service.foo'));
+        self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertFalse($s->has('service.qux'));
+        self::assertNull($s->get('service.qux'));
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
+
+        self::assertEquals(['service.baz', 'service.qux'], [...$s->getRemovedDefinitionIds()]);
+
+        $s->set('service.qux', 'Service qux');
+
+        self::assertTrue($s->has('service.qux'));
+        self::assertEquals('Service qux', $s->get('service.qux')->getDefinition());
+
+        self::assertCount(4, [...$s->getIterator()]);
+
+        self::assertEquals(['service.baz'], [...$s->getRemovedDefinitionIds()]);
+
+        $s->reset();
+
+        self::assertCount(3, [...$s->getIterator()]);
+
+        self::assertTrue($s->has('service.bar'));
+        self::assertEquals('Service bar', $s->get('service.bar')->getDefinition());
+
+        self::assertFalse($s->has('service.baz'));
+        self::assertNull($s->get('service.baz'));
+
+        self::assertTrue($s->has('service.foo'));
+        self::assertEquals('Service foo', $s->get('service.foo')->getDefinition());
+
+        self::assertFalse($s->has('service.qux'));
+        self::assertNull($s->get('service.qux'));
+
+        self::assertEquals('bin2hex', (string) $s->get('hash.suffix')->getDefinition());
+
+        self::assertEquals(['service.baz', 'service.qux'], [...$s->getRemovedDefinitionIds()]);
+    }
+
+    public static function dataProviderForReset(): Generator
+    {
+        $class = new class {
+            public static function src(): Generator
+            {
+                yield 'service.bar' => 'Service bar';
+
+                yield 'service.baz' => 'Service baz';
+
+                yield 'service.foo' => 'Service foo';
+
+                yield 'hash.suffix' => (new DiDefinitionCallable('bin2hex'))
+                    ->bindArguments('random_string')
+                ;
+            }
+
+            public static function removed(): Generator
+            {
+                yield 'service.baz';
+
+                yield 'service.qux';
+            }
+        };
+
+        yield 'definitions via static method' => [
+            [$class::class, 'src'],
+            [$class::class, 'removed'],
+        ];
+
+        yield 'definitions via callback function' => [
+            static function () {
+                yield 'service.bar' => 'Service bar';
+
+                yield 'service.baz' => 'Service baz';
+
+                yield 'service.foo' => 'Service foo';
+
+                yield 'hash.suffix' => (new DiDefinitionCallable('bin2hex'))
+                    ->bindArguments('random_string')
+                ;
+            },
+            static function () {
+                yield 'service.baz';
+
+                yield 'service.qux';
+            },
+        ];
+    }
 }
 
 final class SourceDefinitions
@@ -226,6 +346,6 @@ final class SourceDefinitions
 
     public static function removed(): Generator
     {
-        yield 'baz' => true;
+        yield 'baz';
     }
 }

@@ -24,10 +24,12 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 
+use function array_keys;
 use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 
@@ -54,6 +56,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(SourceDefinitionItem::class)]
 class ImportAutoconfigureTest extends TestCase
 {
     public function testAutoconfigure(): void
@@ -75,6 +78,19 @@ class ImportAutoconfigureTest extends TestCase
             ['name' => 'Ivan', 'surname' => 'Petrov', 'age' => 22],
             (array) $container->get(Fixtures\Person::class)
         );
+
+        self::assertEquals([], [...$container->getRemovedDefinitionIds()]);
+    }
+
+    public function testAutoconfigureViaAttributeAutowireExclude(): void
+    {
+        $loader = (new DefinitionsLoader())
+            ->import('Tests\\', __DIR__.'/Fixtures/')
+            ->useAttribute(true)
+        ;
+
+        self::assertEquals([Fixtures\Person::class, Fixtures\Factories\DiFactoryPerson::class], array_keys([...$loader->definitions()]));
+        self::assertEquals([Fixtures\Foo::class], [...$loader->removedDefinitionIds()]);
     }
 
     public function testConflictAttributeAutowireExcludeAndConfigByDefinition(): void

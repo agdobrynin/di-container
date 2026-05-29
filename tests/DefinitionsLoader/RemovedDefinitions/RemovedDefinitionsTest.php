@@ -49,7 +49,7 @@ class RemovedDefinitionsTest extends TestCase
                 'Tests\DefinitionsLoader\RemovedDefinitions\Fixtures\Qux\Quux\Baz',
                 'Tests\DefinitionsLoader\RemovedDefinitions\Fixtures\Qux\Bar',
             ],
-            array_keys([...$loader->removedDefinitionIds()])
+            [...$loader->removedDefinitionIds()]
         );
         // available classes
         self::assertSame(

@@ -26,6 +26,11 @@ abstract class DiDefinitionParameterWithContextAbstract
         return $this->context;
     }
 
+    public function reset(): void
+    {
+        $this->context = null;
+    }
+
     abstract public function getDefinition(): string;
 
     /**

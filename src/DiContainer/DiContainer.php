@@ -8,10 +8,11 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
@@ -23,12 +24,15 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
@@ -59,7 +63,7 @@ use function var_export;
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
  */
-class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface
+class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface, ResetInterface
 {
     protected readonly SourceDefinitionsMutableInterface $definitions;
 
@@ -98,11 +102,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
-     * @param iterable<class-string|non-empty-string, mixed>                                     $removedDefinitionIds
+     * @param iterable<class-string|non-empty-string>                                            $removedDefinitionIds
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
      *
      * @throws ContainerIdentifierExceptionInterface
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerIdentifierAlreadyRegisteredExceptionInterface
      */
     public function __construct(
         iterable|SourceDefinitionsMutableInterface $definitions = [],
@@ -119,17 +123,6 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->containerIds = [ContainerInterface::class => true, DiContainerInterface::class => true, __CLASS__ => true];
     }
 
-    /**
-     * @template T of object
-     *
-     * @param class-string<T>|string $id
-     *
-     * @return mixed|T
-     *
-     * @throws ContainerExceptionInterface|NotFoundExceptionInterface
-     *
-     * @phpstan-ignore method.childReturnType, method.templateTypeNotInParameter
-     */
     public function get(string $id): mixed
     {
         return array_key_exists($id, $this->resolved)
@@ -148,7 +141,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function set(string $id, mixed $definition): static
     {
         if (isset($this->containerIds[$id])) {
-            throw new ContainerAlreadyRegisteredException(id: $id);
+            throw new ContainerIdentifierAlreadyRegisteredException(id: $id);
         }
 
         $this->definitions->set($id, $definition);
@@ -201,7 +194,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @return iterable<class-string|non-empty-string, DiDefinitionType>
+     * @return iterable<class-string|non-empty-string, DiDefinitionRuntimeInterface|DiDefinitionType>
      */
     public function getDefinitions(): iterable
     {
@@ -228,11 +221,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             $hasTagAsInterface = false;
 
-            if ($definition instanceof DiDefinitionAutowireInterface) {
+            if ($definition instanceof DiTaggedObjectDefinitionInterface) {
                 $tagIsInterface ??= interface_exists($tag);
                 // Pass container with configuration for determinate using php attribute or not.
                 $definition->setContainer($this);
-                $hasTagAsInterface = $tagIsInterface && $definition->getDefinition()->implementsInterface($tag);
+                $hasTagAsInterface = $tagIsInterface && $definition->isImplementInterface($tag);
             }
 
             if ($hasTagAsInterface || (true !== $tagIsInterface && $definition->hasTag($tag))) {
@@ -242,7 +235,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @return DiDefinitionInterface&DiDefinitionType
+     * @return (DiDefinitionInterface&DiDefinitionType)|DiDefinitionRuntimeInterface
      */
     public function getDefinition(string $id): DiDefinitionInterface
     {
@@ -268,6 +261,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function parameters(): SourceParametersMutableInterface
     {
         return $this->parameters;
+    }
+
+    public function reset(): void
+    {
+        $this->definitions->reset();
+        $this->parameters->reset();
+        $this->diResolvedDefinition = $this->resolved = $this->hasViaZeroConfig = [];
     }
 
     /**
@@ -358,20 +358,28 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             throw new AutowireException(sprintf('Attempting to resolve interface "%s". An interface that is not bound to a definition.', $id));
         }
 
-        if ($this->config->isUseAttribute()
-            && null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
-            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+        if ($this->config->isUseAttribute()) {
+            if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
+                $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
 
-            return $this->diResolvedDefinition[$id] = $diFactory->bindArguments(...$factory->arguments);
-        }
+                return $this->diResolvedDefinition[$id] = $diFactory->bindArguments(...$factory->arguments);
+            }
 
-        if ($this->config->isUseAttribute()
-            && ($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
-            foreach ($autowires as $autowire) {
-                if ($autowire->id === $reflectionClass->name) {
-                    return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
-                        ->bindArguments(...$autowire->arguments)
-                    ;
+            if (($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
+                foreach ($autowires as $autowire) {
+                    if ('' === $autowire->id || $autowire->id === $reflectionClass->name) {
+                        return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
+                            ->bindArguments(...$autowire->arguments)
+                        ;
+                    }
+                }
+            }
+
+            if (($diRuntimes = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
+                foreach ($diRuntimes as $diRuntime) {
+                    if ('' === $diRuntime->containerIdentifier || $diRuntime->containerIdentifier === $reflectionClass->name) {
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message);
+                    }
                 }
             }
         }

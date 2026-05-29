@@ -577,7 +577,7 @@ $container = $builder->build();
 - `$definition` – определение соответствующее идентификатору `$id`;
 
 > [!WARNING] 
-> Если идентификатор контейнера не уникален в рамках текущего контейнера, то будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface`.
+> Если идентификатор контейнера не уникален в рамках текущего контейнера, то будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface`.
 
 > [!WARNING]
 > Рекомендуется использовать [файлы конфигурации](#загрузка-из-файлов-конфигураций),

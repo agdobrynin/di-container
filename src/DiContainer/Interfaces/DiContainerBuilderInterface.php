@@ -130,5 +130,5 @@ interface DiContainerBuilderInterface
      *
      * @throws ContainerBuilderExceptionInterface
      */
-    public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface;
+    public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface&ResetInterface;
 }

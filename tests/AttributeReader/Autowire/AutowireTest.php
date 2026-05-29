@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Tests\AttributeReader\Autowire\Fixtures\ClassWithDiFactoryAndAutowire;
+use Tests\AttributeReader\Autowire\Fixtures\Foo;
 use Tests\AttributeReader\Autowire\Fixtures\MultipleAutowire;
 use Tests\AttributeReader\Autowire\Fixtures\MultipleAutowireFail;
 
@@ -37,7 +38,7 @@ class AutowireTest extends TestCase
 
         $this->assertTrue($attrs->valid());
 
-        $this->assertEquals(MultipleAutowire::class, $attrs->current()->id);
+        $this->assertEquals('', $attrs->current()->id);
         $this->assertNull($attrs->current()->isSingleton);
         $this->assertEquals(['foo'], $attrs->current()->arguments);
 
@@ -66,5 +67,13 @@ class AutowireTest extends TestCase
         $this->expectExceptionMessageMatches('/Container identifier "service" already defined/');
 
         iterator_to_array($attrs);
+    }
+
+    public function testAutowireAndDiRuntime(): void
+    {
+        $this->expectException(AutowireExceptionInterface::class);
+        $this->expectExceptionMessageMatches('/The attributes .+Autowire and .+DiRuntime cannot be declared together/');
+
+        [...AttributeReader::getAutowireAttribute(new ReflectionClass(Foo::class))];
     }
 }

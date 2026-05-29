@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use ReflectionFunction;
@@ -22,7 +23,7 @@ use function is_array;
 use function is_string;
 use function strpos;
 
-final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDefinitionArgumentsInterface, DiTaggedDefinitionInterface, DiDefinitionTagArgumentInterface
+final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDefinitionArgumentsInterface, DiTaggedDefinitionInterface, DiDefinitionTagArgumentInterface, ResetInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -69,6 +70,11 @@ final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDef
     public function getDefinition(): callable
     {
         return $this->definition;
+    }
+
+    public function reset(): void
+    {
+        unset($this->argBuilder);
     }
 
     private function reflectionFunction(): ReflectionFunction|ReflectionMethod

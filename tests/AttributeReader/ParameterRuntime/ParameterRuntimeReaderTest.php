@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
@@ -21,18 +20,6 @@ use ReflectionParameter;
 #[CoversClass(Helper::class)]
 class ParameterRuntimeReaderTest extends TestCase
 {
-    private ?ContainerInterface $container;
-
-    public function setUp(): void
-    {
-        $this->container = $this->createMock(ContainerInterface::class);
-    }
-
-    public function tearDown(): void
-    {
-        unset($this->container);
-    }
-
     public function testReadNoneVariadicManyAttributes(): void
     {
         $f = static fn (
@@ -45,7 +32,7 @@ class ParameterRuntimeReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/can be applied once per non-variadic Parameter #0.+[ <required> string \$a ]/');
 
-        AttributeReader::getAttributeOnParameter($p, $this->container)->valid();
+        AttributeReader::getAttributeOnParameter($p)->valid();
     }
 
     public function testReadVariadicManyAttributes(): void
@@ -57,6 +44,6 @@ class ParameterRuntimeReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        self::assertTrue(AttributeReader::getAttributeOnParameter($p, $this->container)->valid());
+        self::assertTrue(AttributeReader::getAttributeOnParameter($p)->valid());
     }
 }

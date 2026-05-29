@@ -231,15 +231,16 @@ var_dump($container->get(TestClass::class)->container instanceof ContainerInterf
 * 🔖 [Тэгирование определений и сервисов](https://github.com/agdobrynin/di-container/blob/main/docs/05-tags.md).
 * 📋 [Параметры контейнера](https://github.com/agdobrynin/di-container/blob/main/docs/09-container-parameters.md).
 * 🗳️ [Внедрение экземпляра класса в рантайм контейнер](https://github.com/agdobrynin/di-container/blob/main/docs/10-runtime-definition.md).
+* 🧹 [Сброс контейнера зависимостей](https://github.com/agdobrynin/di-container/blob/main/docs/11-container-reset.md).
 
 ## Тесты
-Прогнать тесты без подсчёта покрытия кода
+Запуск тестов без подсчёта покрытия кода
 ```shell
 composer test
 ```
 Запуск тестов с проверкой покрытия кода тестами
 ```shell
-./vendor/bin/phpunit
+composer test-cover
 ```
 
 ## Статический анализ кода
@@ -247,9 +248,6 @@ composer test
 Для статического анализа используем пакет [PHPStan](https://github.com/phpstan/phpstan).
 ```shell
 composer stat
-```
-```shell
-./vendor/bin/phpstan
 ```
 
 ## Code style

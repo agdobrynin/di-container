@@ -25,8 +25,9 @@ use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
@@ -251,7 +252,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
         return $this;
     }
 
-    public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface
+    public function build(): DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface&ResetInterface
     {
         $this->definitionsLoader->reset();
 
@@ -381,7 +382,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                     $definitions['override'],
                     $definitions['definitions'],
                 );
-            } catch (ContainerAlreadyRegisteredExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
+            } catch (ContainerIdentifierAlreadyRegisteredExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 $useMethod = $definitions['override']
                     ? 'addDefinitionsOverride()'
                     : 'addDefinitions()';

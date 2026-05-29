@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
 /**
@@ -21,18 +20,6 @@ use ReflectionParameter;
 #[CoversClass(AttributeReader::class)]
 class ProxyClosureReaderTest extends TestCase
 {
-    private ?ContainerInterface $container;
-
-    public function setUp(): void
-    {
-        $this->container = $this->createMock(ContainerInterface::class);
-    }
-
-    public function tearDown(): void
-    {
-        $this->container = null;
-    }
-
     public function testNoneAsClosure(): void
     {
         $f = static fn (
@@ -40,7 +27,7 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $this->assertFalse(AttributeReader::getAttributeOnParameter($p, $this->container)->valid());
+        $this->assertFalse(AttributeReader::getAttributeOnParameter($p)->valid());
     }
 
     public function testManyAsClosureNonVariadicParameter(): void
@@ -55,7 +42,7 @@ class ProxyClosureReaderTest extends TestCase
         $this->expectException(AutowireExceptionInterface::class);
         $this->expectExceptionMessageMatches('/can be applied once per non-variadic Parameter #0.+[ <required> string \$a ]/');
 
-        AttributeReader::getAttributeOnParameter($p, $this->container)->valid();
+        AttributeReader::getAttributeOnParameter($p)->valid();
     }
 
     public function testInjectNonVariadicParameter(): void
@@ -66,7 +53,7 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $attrs = AttributeReader::getAttributeOnParameter($p, $this->container);
+        $attrs = AttributeReader::getAttributeOnParameter($p);
 
         $this->assertTrue($attrs->valid());
         $attrs->rewind();
@@ -89,7 +76,7 @@ class ProxyClosureReaderTest extends TestCase
         ) => '';
         $p = new ReflectionParameter($f, 0);
 
-        $attrs = AttributeReader::getAttributeOnParameter($p, $this->container);
+        $attrs = AttributeReader::getAttributeOnParameter($p);
 
         $this->assertTrue($attrs->valid());
 

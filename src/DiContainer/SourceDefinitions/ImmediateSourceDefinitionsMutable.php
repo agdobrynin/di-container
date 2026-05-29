@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
+use function get_debug_type;
+use function sprintf;
 
 final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsMutable
 {
-    /** @var array<class-string|non-empty-string, DiDefinitionInterface> */
+    /** @var array<class-string|non-empty-string, SourceDefinitionItem> */
     private array $definitions;
 
     /** @var array<class-string|non-empty-string, true> */
@@ -19,11 +21,10 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
 
     /**
      * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
-     * @param iterable<class-string|non-empty-string, mixed>     $sourceRemovedDefinitionIds
+     * @param iterable<class-string|non-empty-string>            $sourceRemovedDefinitionIds
      *
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerIdentifierAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
-     * @throws DiDefinitionExceptionInterface
      */
     public function __construct(iterable $sourceDefinitions, iterable $sourceRemovedDefinitionIds = [])
     {
@@ -31,26 +32,30 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         $this->removedDefinitionIds = [];
 
         foreach ($sourceDefinitions as $identifier => $sourceDefinition) {
-            $this->set($identifier, $sourceDefinition);
+            $item = new SourceDefinitionItem($identifier, $sourceDefinition, false);
+
+            if (isset($this->definitions[$item->containerIdentifier])) {
+                throw new ContainerIdentifierAlreadyRegisteredException(
+                    sprintf('Definition type: "%s".', get_debug_type($sourceDefinition)),
+                    id: $item->containerIdentifier,
+                );
+            }
+
+            $this->definitions[$item->containerIdentifier] = $item;
         }
 
-        foreach ($sourceRemovedDefinitionIds as $identifier => $v) {
+        foreach ($sourceRemovedDefinitionIds as $identifier) {
             $this->removedDefinitionIds[$identifier] = true;
-            unset($this->definitions[$identifier]); // @phpstan-ignore unset.offset
+            unset($this->definitions[$identifier]);
         }
     }
 
-    public function isRemovedDefinition(string $id): bool
-    {
-        return isset($this->removedDefinitionIds[$id]);
-    }
-
-    protected function &definitions(): array
+    protected function &initializerDefinitions(): array
     {
         return $this->definitions;
     }
 
-    protected function &removedDefinitionIds(): array
+    protected function &initializerRemovedIds(): array
     {
         return $this->removedDefinitionIds;
     }

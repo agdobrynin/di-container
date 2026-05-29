@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces;
 
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
@@ -43,7 +43,7 @@ interface DefinitionsLoaderInterface extends ResetInterface
      *
      * @return $this
      *
-     * @throws ContainerAlreadyRegisteredException|DefinitionsLoaderExceptionInterface
+     * @throws ContainerIdentifierAlreadyRegisteredException|DefinitionsLoaderExceptionInterface
      */
     public function addDefinitions(bool $overrideDefinitions, iterable $definitions): static;
 
@@ -83,7 +83,7 @@ interface DefinitionsLoaderInterface extends ResetInterface
     public function definitions(): iterable;
 
     /**
-     * @return iterable<class-string|non-empty-string, true>
+     * @return iterable<class-string|non-empty-string>
      *
      * @throws DefinitionsLoaderExceptionInterface
      */

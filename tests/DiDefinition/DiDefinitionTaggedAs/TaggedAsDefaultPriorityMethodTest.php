@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -20,6 +21,7 @@ use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\DefaultPriorityMethodWrong\
 use Tests\DiDefinition\DiDefinitionTaggedAs\Fixtures\DefaultPriorityMethodWrong\Foo;
 
 use function Kaspi\DiContainer\diAutowire;
+use function preg_quote;
 
 /**
  * @internal
@@ -30,6 +32,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversClass(TagsTrait::class)]
 class TaggedAsDefaultPriorityMethodTest extends TestCase
 {
     /**
@@ -39,7 +42,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
     public function testGetDefaultPriorityMethodWrongWithPhpAttribute(string $tagName, array $definitions, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/via default priority method .+Baz::'.$method.'\(\).+Method must return type "int\|string\|null"/');
+        $this->expectExceptionMessageMatches('/Cannot get priority for tag name "'.preg_quote($tagName).'" on class.+Caused by: The return type must be of type "int\|string\|null"/');
 
         $container = $this->createMock(DiContainerInterface::class);
         $container->method('getConfig')->willReturn(
@@ -89,7 +92,7 @@ class TaggedAsDefaultPriorityMethodTest extends TestCase
     public function testGetDefaultPriorityMethodWrong(string $tagName, array $definitions, string $method): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessageMatches('/via default priority method .+Baz::'.$method.'()/');
+        $this->expectExceptionMessageMatches('/Cannot get priority for tag name "tags.baz" on class.+Caused by: The return type must be of type "int|string|null"/');
 
         // Php attribute disabled.
         $container = $this->createMock(DiContainerInterface::class);

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionRuntime;
 
+use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
@@ -14,7 +16,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
+#[CoversClass(AttributeReader::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
+#[CoversClass(TagsTrait::class)]
 class DiDefinitionRuntimeTest extends TestCase
 {
     #[TestWith([null, null])]
@@ -58,4 +62,51 @@ class DiDefinitionRuntimeTest extends TestCase
         self::assertSame($object, $d->getDefinition());
         self::assertSame($object, $d->resolve($this->createMock(DiContainerInterface::class)));
     }
+
+    #[TestWith(['foo', null, 'foo'])]
+    #[TestWith(['foo', Foo::class, 'Tests\DiDefinition\DiDefinitionRuntime\Foo'])]
+    public function testGetDefinitionIdentifier(string $containerIdentifier, ?string $classDefinition, string $expectDefinitionIdentifier): void
+    {
+        $d = new DiDefinitionRuntime($containerIdentifier, classDefinition: $classDefinition);
+
+        self::assertEquals($expectDefinitionIdentifier, $d->getDefinitionIdentifier());
+    }
+
+    public function testIsImplementInterfaceFail(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('You should to be defined a php class through the parameters $containerIdentifier or $classDefinition');
+
+        (new DiDefinitionRuntime('foo'))->isImplementInterface(FooInterface::class);
+    }
+
+    #[TestWith([Foo::class, null, FooInterface::class])]
+    #[TestWith(['service.foo', Foo::class, FooInterface::class])]
+    public function testIsImplementInterface(string $containerIdentifier, ?string $classDefinition, string $interface): void
+    {
+        $d = new DiDefinitionRuntime($containerIdentifier, classDefinition: $classDefinition);
+
+        self::assertEquals($containerIdentifier, $d->getIdentifier());
+        self::assertTrue($d->isImplementInterface($interface));
+    }
+
+    public function testReset(): void
+    {
+        $d = new DiDefinitionRuntime(Foo::class);
+        $d->setDefinition($foo = new Foo());
+        $d->setContainer($this->createMock(DiContainerInterface::class));
+
+        self::assertSame($foo, $d->getDefinition());
+        self::assertIsArray($d->getTags());
+
+        $d->reset();
+
+        self::assertNull($d->getDefinition());
+        // $d->reset() clear container too.
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $d->getTags();
+    }
 }
+
+interface FooInterface {}
+final class Foo implements FooInterface {}
