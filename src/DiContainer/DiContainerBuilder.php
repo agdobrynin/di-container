@@ -25,7 +25,7 @@ use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
@@ -382,7 +382,7 @@ final class DiContainerBuilder implements DiContainerBuilderInterface
                     $definitions['override'],
                     $definitions['definitions'],
                 );
-            } catch (ContainerAlreadyRegisteredExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
+            } catch (ContainerIdentifierAlreadyRegisteredExceptionInterface|DefinitionsLoaderExceptionInterface $e) {
                 $useMethod = $definitions['override']
                     ? 'addDefinitionsOverride()'
                     : 'addDefinitions()';

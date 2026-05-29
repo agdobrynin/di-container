@@ -11,8 +11,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\ContainerException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
@@ -30,7 +30,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
@@ -106,7 +106,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
      *
      * @throws ContainerIdentifierExceptionInterface
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerIdentifierAlreadyRegisteredExceptionInterface
      */
     public function __construct(
         iterable|SourceDefinitionsMutableInterface $definitions = [],
@@ -141,7 +141,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     public function set(string $id, mixed $definition): static
     {
         if (isset($this->containerIds[$id])) {
-            throw new ContainerAlreadyRegisteredException(id: $id);
+            throw new ContainerIdentifierAlreadyRegisteredException(id: $id);
         }
 
         $this->definitions->set($id, $definition);

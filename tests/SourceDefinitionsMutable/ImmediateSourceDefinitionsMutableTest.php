@@ -9,9 +9,9 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -33,7 +33,7 @@ use function array_keys;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(Helper::class)]
-#[CoversClass(ContainerAlreadyRegisteredException::class)]
+#[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
 #[CoversClass(SourceDefinitionItem::class)]
 class ImmediateSourceDefinitionsMutableTest extends TestCase
 {
@@ -101,7 +101,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
 
     public function testSetFail(): void
     {
-        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+        $this->expectException(ContainerIdentifierAlreadyRegisteredExceptionInterface::class);
         $this->expectExceptionMessage('The container identifier \'service.bar\' already registered in the source.');
 
         $s = new ImmediateSourceDefinitionsMutable(['service.bar' => 'Service bar']);
@@ -118,7 +118,7 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
 
     public function testKeyExistThroughConstructor(): void
     {
-        $this->expectException(ContainerAlreadyRegisteredExceptionInterface::class);
+        $this->expectException(ContainerIdentifierAlreadyRegisteredExceptionInterface::class);
         $this->expectExceptionMessage('The container identifier \'service.foo\' already registered in the source.');
 
         $defs = static function (): Generator {

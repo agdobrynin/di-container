@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\SourceDefinitions;
 
-use Kaspi\DiContainer\Exception\ContainerAlreadyRegisteredException;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 
 use function get_debug_type;
@@ -23,7 +23,7 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
      * @param iterable<non-empty-string|non-negative-int, mixed> $sourceDefinitions
      * @param iterable<class-string|non-empty-string, mixed>     $sourceRemovedDefinitionIds
      *
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerIdentifierAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
      */
     public function __construct(iterable $sourceDefinitions, iterable $sourceRemovedDefinitionIds = [])
@@ -35,7 +35,7 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
             $item = new SourceDefinitionItem($identifier, $sourceDefinition, false);
 
             if (isset($this->definitions[$item->containerIdentifier])) {
-                throw new ContainerAlreadyRegisteredException(
+                throw new ContainerIdentifierAlreadyRegisteredException(
                     sprintf('Definition type: "%s".', get_debug_type($sourceDefinition)),
                     id: $item->containerIdentifier,
                 );

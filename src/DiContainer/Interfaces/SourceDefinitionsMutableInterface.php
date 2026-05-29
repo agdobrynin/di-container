@@ -6,7 +6,7 @@ namespace Kaspi\DiContainer\Interfaces;
 
 use IteratorAggregate;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Traversable;
@@ -20,7 +20,7 @@ interface SourceDefinitionsMutableInterface extends IteratorAggregate, ResetInte
     /**
      * @param int|non-empty-string $id
      *
-     * @throws ContainerAlreadyRegisteredExceptionInterface
+     * @throws ContainerIdentifierAlreadyRegisteredExceptionInterface
      * @throws ContainerIdentifierExceptionInterface
      * @throws DiDefinitionExceptionInterface
      */

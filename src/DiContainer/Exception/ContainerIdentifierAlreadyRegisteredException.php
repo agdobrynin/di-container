@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Exception;
 
-use Kaspi\DiContainer\Interfaces\Exceptions\ContainerAlreadyRegisteredExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Throwable;
 
 use function rtrim;
 use function sprintf;
 use function var_export;
 
-class ContainerAlreadyRegisteredException extends ContainerException implements ContainerAlreadyRegisteredExceptionInterface
+class ContainerIdentifierAlreadyRegisteredException extends ContainerException implements ContainerIdentifierAlreadyRegisteredExceptionInterface
 {
     public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null, string $id = '')
     {
