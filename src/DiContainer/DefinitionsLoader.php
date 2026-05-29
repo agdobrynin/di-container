@@ -358,7 +358,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function removedDefinitionIds(): iterable
     {
         if ($this->isRemovedDefinitionsImported) {
-            yield from $this->removedDefinitionIds;
+            foreach ($this->removedDefinitionIds as $removedDefinitionId => $v) {
+                yield $removedDefinitionId;
+            }
 
             return;
         }
@@ -366,7 +368,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         if (null === $this->finderFullyQualifiedNameCollection) {
             $this->isRemovedDefinitionsImported = true;
 
-            yield from $this->removedDefinitionIds;
+            foreach ($this->removedDefinitionIds as $removedDefinitionId => $v) {
+                yield $removedDefinitionId;
+            }
 
             return;
         }
@@ -407,7 +411,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         $this->isRemovedDefinitionsImported = true;
 
-        yield from $this->removedDefinitionIds;
+        foreach ($this->removedDefinitionIds as $removedDefinitionId => $v) {
+            yield $removedDefinitionId;
+        }
     }
 
     public function reset(): void
