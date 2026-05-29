@@ -58,8 +58,8 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
             },
 <?php if ($container->getRemovedDefinitionIds()->valid()) { ?>
             removedDefinitionIds: (static function (): \Generator {
-<?php foreach ($container->getRemovedDefinitionIds() as $id => $v) {?>
-                <?php echo \sprintf('yield %s => true;'.PHP_EOL, \var_export($id, true))?>
+<?php foreach ($container->getRemovedDefinitionIds() as $id) {?>
+                <?php echo \sprintf('yield %s;'.PHP_EOL, \var_export($id, true))?>
 <?php } ?>
             })()
 <?php } ?>
