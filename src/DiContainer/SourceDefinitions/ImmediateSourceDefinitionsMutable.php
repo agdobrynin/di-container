@@ -50,11 +50,6 @@ final class ImmediateSourceDefinitionsMutable extends AbstractSourceDefinitionsM
         }
     }
 
-    public function isRemovedDefinition(string $id): bool
-    {
-        return isset($this->removedDefinitionIds[$id]);
-    }
-
     protected function &initializerDefinitions(): array
     {
         return $this->definitions;

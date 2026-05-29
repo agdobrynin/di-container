@@ -73,6 +73,11 @@ abstract class AbstractSourceDefinitionsMutable implements SourceDefinitionsMuta
         yield from array_keys($this->initializerRemovedIds());
     }
 
+    public function isRemovedDefinition(string $id): bool
+    {
+        return isset($this->initializerRemovedIds()[$id]);
+    }
+
     public function reset(): void
     {
         foreach ($this->initializerDefinitions() as $item) {
