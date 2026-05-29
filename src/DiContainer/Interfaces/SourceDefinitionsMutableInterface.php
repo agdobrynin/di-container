@@ -37,7 +37,7 @@ interface SourceDefinitionsMutableInterface extends IteratorAggregate, ResetInte
     public function isRemovedDefinition(string $id): bool;
 
     /**
-     * @return iterable<class-string|non-empty-string, true>
+     * @return iterable<class-string|non-empty-string>
      */
     public function getRemovedDefinitionIds(): iterable;
 }
