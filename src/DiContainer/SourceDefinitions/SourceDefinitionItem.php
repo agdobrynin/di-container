@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\SourceDefinitions;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionContainerIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 
@@ -34,5 +35,9 @@ final class SourceDefinitionItem
             is_callable($definitionValue) => new DiDefinitionCallable($definitionValue),
             default => new DiDefinitionValue($definitionValue)
         };
+
+        if ($this->diDefinition instanceof DiDefinitionContainerIdentifierInterface) {
+            $this->diDefinition->setContainerIdentifier($this->containerIdentifier);
+        }
     }
 }
