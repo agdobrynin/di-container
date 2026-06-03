@@ -14,7 +14,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 final class Autowire
 {
     /**
-     * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed> $arguments
+     * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed> $arguments arguments for `__constructor()` method
      */
     public function __construct(public readonly string $id = '', public readonly ?bool $isSingleton = null, public readonly array $arguments = []) {}
 }
