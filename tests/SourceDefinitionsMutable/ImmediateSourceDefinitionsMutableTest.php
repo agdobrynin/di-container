@@ -11,6 +11,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionValueInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
@@ -20,6 +22,7 @@ use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 use function array_keys;
 
@@ -89,14 +92,20 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
         $s->set('service.baz', 'Service baz');
         $s->set(0, new DiDefinitionAutowire(self::class));
 
-        self::assertEquals(
-            [
-                'service.bar' => new DiDefinitionValue('Service bar'),
-                'service.baz' => new DiDefinitionValue('Service baz'),
-                self::class => new DiDefinitionAutowire(self::class),
-            ],
-            [...$s->getIterator()]
-        );
+        $definitions = [...$s->getIterator()];
+
+        self::assertCount(3, $definitions);
+
+        self::assertInstanceOf(DiDefinitionValueInterface::class, $definitions['service.bar']);
+        self::assertEquals('Service bar', $definitions['service.bar']->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionValueInterface::class, $definitions['service.baz']);
+        self::assertEquals('Service baz', $definitions['service.baz']->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionAutowireInterface::class, $definitions[self::class]);
+        self::assertInstanceOf(ReflectionClass::class, $definitions[self::class]->getDefinition());
+        self::assertEquals(self::class, $definitions[self::class]->getDefinition()->name);
+        self::assertEquals(self::class, $definitions[self::class]->getContainerIdentifier());
     }
 
     public function testSetFail(): void

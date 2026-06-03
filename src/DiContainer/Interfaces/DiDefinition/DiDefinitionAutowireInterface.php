@@ -13,7 +13,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 
-interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface
+interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface, DiDefinitionContainerIdentifierInterface
 {
     /**
      * @throws DiDefinitionExceptionInterface
@@ -21,7 +21,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface
     public function getDefinition(): ReflectionClass;
 
     /**
-     * @return class-string|non-empty-string
+     * @return class-string
      */
     public function getIdentifier(): string;
 

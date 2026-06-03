@@ -73,6 +73,11 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     private array $setupByAttributes;
 
     /**
+     * @var null|non-empty-string
+     */
+    private ?string $containerIdentifier = null;
+
+    /**
      * @param class-string|ReflectionClass $definition
      */
     public function __construct(private readonly ReflectionClass|string $definition, private readonly ?bool $isSingleton = null)
@@ -233,6 +238,16 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         if (is_string($this->definition)) {
             unset($this->reflectionClass);
         }
+    }
+
+    public function setContainerIdentifier(string $containerIdentifier): void
+    {
+        $this->containerIdentifier = $containerIdentifier;
+    }
+
+    public function getContainerIdentifier(): ?string
+    {
+        return $this->containerIdentifier;
     }
 
     /**
