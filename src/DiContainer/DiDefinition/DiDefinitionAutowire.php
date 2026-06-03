@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
@@ -19,6 +21,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
@@ -29,6 +32,7 @@ use ReflectionException;
 use function call_user_func_array;
 use function get_class;
 use function get_debug_type;
+use function is_array;
 use function is_object;
 use function is_string;
 use function sprintf;
@@ -252,6 +256,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     /**
      * @return array<non-empty-string, list<SetupConfigureItem>>
+     *
+     * @throws AutowireExceptionInterface
      */
     private function getSetups(ReflectionClass $class, DiContainerInterface $container): array
     {
@@ -262,7 +268,27 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         if (!isset($this->setupByAttributes)) {
             $this->setupByAttributes = [];
 
-            foreach (AttributeReader::getSetupAttribute($class) as $setupAttr) {
+            $autowire = $this->getAutowireAttributeConfiguringDefinition($class);
+
+            if (false === $autowire || null === $autowire->setups) {
+                $methodSetups = AttributeReader::getSetupAttribute($class);
+            } else {
+                /** @var list<Setup|SetupImmutable> $methodSetups */
+                $methodSetups = [];
+
+                foreach ($autowire->setups as $method => $setup) {
+                    $callSetups = !is_array($setup) ? [$autowire->setups] : $setup;
+
+                    foreach ($callSetups as $callSetup) {
+                        if ($callSetup instanceof Setup || $callSetup instanceof SetupImmutable) {
+                            $callSetup->setMethod($method);
+                            $methodSetups[] = $callSetup;
+                        }
+                    }
+                }
+            }
+
+            foreach ($methodSetups as $setupAttr) {
                 $setupType = $setupAttr instanceof Setup
                     ? SetupConfigureMethod::Mutable
                     : SetupConfigureMethod::Immutable;
@@ -272,6 +298,17 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
 
         return $this->setupByAttributes + $this->setup;
+    }
+
+    private function getAutowireAttributeConfiguringDefinition(ReflectionClass $class): Autowire|false
+    {
+        foreach (AttributeReader::getAutowireAttribute($class) as $attribute) {
+            if ('' === $attribute->id || $this->getContainerIdentifier() === $attribute->id) {
+                return $attribute;
+            }
+        }
+
+        return false;
     }
 
     /**
