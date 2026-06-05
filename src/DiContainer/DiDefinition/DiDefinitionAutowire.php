@@ -334,8 +334,18 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     private function getAutowireAttributeConfiguringDefinition(ReflectionClass $class): Autowire|false
     {
+        if (null === $this->getContainerIdentifier()) {
+            foreach (AttributeReader::getAutowireAttribute($class) as $attribute) {
+                if ('' === $attribute->id) {
+                    return $attribute;
+                }
+            }
+
+            return false;
+        }
+
         foreach (AttributeReader::getAutowireAttribute($class) as $attribute) {
-            if ('' === $attribute->id || $this->getContainerIdentifier() === $attribute->id) {
+            if ($this->getContainerIdentifier() === $attribute->id) {
                 return $attribute;
             }
         }
