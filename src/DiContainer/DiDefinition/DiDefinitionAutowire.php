@@ -261,7 +261,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     protected function readTagAttributes(): Generator
     {
         try {
-            $class = $this->getDefinition();
+            $reflectionClass = $this->getDefinition();
         } catch (DiDefinitionException $e) {
             throw new DiDefinitionException(
                 sprintf('Cannot read php attribute "%s" on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
@@ -269,15 +269,15 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             );
         }
 
-        $autowire = $this->getAutowireAttributeConfiguringDefinition($class);
+        $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($reflectionClass);
 
-        if (false === $autowire || null === $autowire->tags) {
-            yield from AttributeReader::getTagAttribute($class);
+        if (false === $autowireAttribute || null === $autowireAttribute->tags) {
+            yield from AttributeReader::getTagAttribute($reflectionClass);
 
             return;
         }
 
-        $tags = is_array($autowire->tags) ? $autowire->tags : [$autowire->tags];
+        $tags = is_array($autowireAttribute->tags) ? $autowireAttribute->tags : [$autowireAttribute->tags];
 
         foreach ($tags as $argTag) {
             if ($argTag instanceof Tag) {
@@ -300,27 +300,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         if (!isset($this->setupByAttributes)) {
             $this->setupByAttributes = [];
 
-            $autowire = $this->getAutowireAttributeConfiguringDefinition($class);
-
-            if (false === $autowire || null === $autowire->setups) {
-                $methodSetups = AttributeReader::getSetupAttribute($class);
-            } else {
-                /** @var list<Setup|SetupImmutable> $methodSetups */
-                $methodSetups = [];
-
-                foreach ($autowire->setups as $method => $setup) {
-                    $callSetups = !is_array($setup) ? [$setup] : $setup;
-
-                    foreach ($callSetups as $callSetup) {
-                        if ($callSetup instanceof Setup || $callSetup instanceof SetupImmutable) {
-                            $callSetup->setMethod($method);
-                            $methodSetups[] = $callSetup;
-                        }
-                    }
-                }
-            }
-
-            foreach ($methodSetups as $setupAttr) {
+            foreach ($this->getSetupAttributes($class) as $setupAttr) {
                 $setupType = $setupAttr instanceof Setup
                     ? SetupConfigureMethod::Mutable
                     : SetupConfigureMethod::Immutable;
@@ -330,6 +310,36 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
 
         return $this->setupByAttributes + $this->setup;
+    }
+
+    /**
+     * @return Generator<Setup|SetupImmutable>
+     */
+    private function getSetupAttributes(ReflectionClass $class): Generator
+    {
+        $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($class);
+
+        if (false === $autowireAttribute || null === $autowireAttribute->setups) {
+            yield from AttributeReader::getSetupAttribute($class);
+
+            return;
+        }
+
+        foreach ($autowireAttribute->setups as $method => $setups) {
+            if (is_array($setups)) {
+                foreach ($setups as $setup) {
+                    if ($setup instanceof Setup || $setup instanceof SetupImmutable) {
+                        $setup->setMethod($method);
+
+                        yield $setup;
+                    }
+                }
+            } elseif ($setups instanceof Setup || $setups instanceof SetupImmutable) {
+                $setups->setMethod($method);
+
+                yield $setups;
+            }
+        }
     }
 
     private function getAutowireAttributeConfiguringDefinition(ReflectionClass $class): Autowire|false
