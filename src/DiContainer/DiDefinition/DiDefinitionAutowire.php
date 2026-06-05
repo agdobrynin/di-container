@@ -309,7 +309,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
                 $methodSetups = [];
 
                 foreach ($autowire->setups as $method => $setup) {
-                    $callSetups = !is_array($setup) ? [$autowire->setups] : $setup;
+                    $callSetups = !is_array($setup) ? [$setup] : $setup;
 
                     foreach ($callSetups as $callSetup) {
                         if ($callSetup instanceof Setup || $callSetup instanceof SetupImmutable) {
