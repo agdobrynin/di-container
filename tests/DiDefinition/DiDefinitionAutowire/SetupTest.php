@@ -6,6 +6,8 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
@@ -21,6 +23,7 @@ use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooMultiConfigSetup;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupByAttributeWithArgumentAsReference;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClassByAttribute;
@@ -31,9 +34,10 @@ use function Kaspi\DiContainer\diValue;
 /**
  * @internal
  */
+#[CoversClass(Autowire::class)]
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
 #[CoversClass(AttributeReader::class)]
-#[CoversClass(\Kaspi\DiContainer\Attributes\Setup::class)]
+#[CoversClass(Setup::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(ArgumentResolver::class)]
@@ -175,5 +179,93 @@ class SetupTest extends TestCase
         yield 'on construct setup method' => [ClassWithConstructDestruct::class, '__construct'];
 
         yield 'on destruct setup method' => [ClassWithConstructDestruct::class, '__destruct'];
+    }
+
+    public function testSetupViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = new DiDefinitionAutowire(FooMultiConfigSetup::class);
+        $setups = $definition->exposeSetupArgumentBuilders($mockContainer);
+
+        self::assertCount(1, $setups);
+        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0][0]);
+        self::assertEquals('doSetup', $setups[0][1]->getFunctionOrMethod()->name);
+        self::assertEquals([], $setups[0][1]->getBindArguments());
+    }
+
+    public function testSetupEmptyViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = new DiDefinitionAutowire(FooMultiConfigSetup::class);
+        $definition->setContainerIdentifier('foo');
+
+        $setups = $definition->exposeSetupArgumentBuilders($mockContainer);
+
+        self::assertCount(0, $setups);
+    }
+
+    public function testSetupOneViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = new DiDefinitionAutowire(FooMultiConfigSetup::class);
+        $definition->setContainerIdentifier('bar');
+
+        $setups = $definition->exposeSetupArgumentBuilders($mockContainer);
+
+        self::assertCount(1, $setups);
+        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0][0]);
+        self::assertEquals('doSetupTwo', $setups[0][1]->getFunctionOrMethod()->name);
+        self::assertEquals([], $setups[0][1]->getBindArguments());
+    }
+
+    public function testSetupManyViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = new DiDefinitionAutowire(FooMultiConfigSetup::class);
+        $definition->setContainerIdentifier('baz');
+
+        $setups = $definition->exposeSetupArgumentBuilders($mockContainer);
+
+        self::assertCount(2, $setups);
+
+        self::assertEquals(SetupConfigureMethod::Immutable, $setups[0][0]);
+        self::assertEquals('doSetupImmutable', $setups[0][1]->getFunctionOrMethod()->name);
+        self::assertEquals(['bar'], $setups[0][1]->getBindArguments());
+
+        self::assertEquals(SetupConfigureMethod::Mutable, $setups[1][0]);
+        self::assertEquals('doSetupThree', $setups[1][1]->getFunctionOrMethod()->name);
+        self::assertEquals(['foo'], $setups[1][1]->getBindArguments());
+    }
+
+    public function testSetupNoneExistMethodViaAutowire(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('FooMultiConfigSetup::noneExist()" does not exist');
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = new DiDefinitionAutowire(FooMultiConfigSetup::class);
+        $definition->setContainerIdentifier('qux');
+
+        $definition->exposeSetupArgumentBuilders($mockContainer);
     }
 }
