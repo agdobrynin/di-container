@@ -8,6 +8,7 @@ use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
@@ -38,6 +39,7 @@ use function Kaspi\DiContainer\diValue;
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Setup::class)]
+#[CoversClass(Tag::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(ArgumentResolver::class)]
