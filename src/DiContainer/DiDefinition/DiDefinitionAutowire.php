@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
@@ -252,6 +254,34 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function getContainerIdentifier(): ?string
     {
         return $this->containerIdentifier;
+    }
+
+    protected function readTagAttributes(): Generator
+    {
+        try {
+            $class = $this->getDefinition();
+        } catch (DiDefinitionException $e) {
+            throw new DiDefinitionException(
+                sprintf('Cannot read php attribute "%s" on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
+                previous: $e
+            );
+        }
+
+        $autowire = $this->getAutowireAttributeConfiguringDefinition($class);
+
+        if (false === $autowire || null === $autowire->tags) {
+            yield from AttributeReader::getTagAttribute($class);
+
+            return;
+        }
+
+        $tags = is_array($autowire->tags) ? $autowire->tags : [$autowire->tags];
+
+        foreach ($tags as $argTag) {
+            if ($argTag instanceof Tag) {
+                yield $argTag;
+            }
+        }
     }
 
     /**
