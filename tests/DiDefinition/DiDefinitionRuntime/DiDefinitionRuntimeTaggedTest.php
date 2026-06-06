@@ -31,6 +31,7 @@ class DiDefinitionRuntimeTaggedTest extends TestCase
     #[TestWith(['foo', null])]
     #[TestWith(['service.foo', NonExist::class])]
     #[TestWith([FooFail::class, null])]
+    #[TestWith(['service.foo_fail', FooFail::class])]
     public function testCannotReadTagAttributes(string $id, ?string $classDefinition): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
@@ -100,8 +101,8 @@ class DiDefinitionRuntimeTaggedTest extends TestCase
     }
 }
 
-#[DiRuntime('foo.service')]
-#[DiRuntime('foo.service')]
+#[DiRuntime]
+#[DiRuntime]
 final class FooFail {}
 
 #[DiRuntime]

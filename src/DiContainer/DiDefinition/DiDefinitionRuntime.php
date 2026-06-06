@@ -143,22 +143,26 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
      */
     private function getDiRuntimeAttributeConfiguringDefinition(ReflectionClass $class): DiRuntime|false
     {
+        $foundDiRuntimeAttribute = false;
+
         if (null === $this->classDefinition) {
+            // We need to ensure that all attributes that have `DiRuntime::$containerIdentifier` are unique.
             foreach (AttributeReader::getDiRuntimeAttribute($class) as $diRuntimeAttribute) {
                 if ('' === $diRuntimeAttribute->containerIdentifier) {
-                    return $diRuntimeAttribute;
+                    $foundDiRuntimeAttribute = $diRuntimeAttribute;
                 }
             }
 
-            return false;
+            return $foundDiRuntimeAttribute;
         }
 
+        // We need to ensure that all attributes that have `DiRuntime::$containerIdentifier` are unique.
         foreach (AttributeReader::getDiRuntimeAttribute($class) as $diRuntimeAttribute) {
             if ($this->containerIdentifierOrClass === $diRuntimeAttribute->containerIdentifier) {
-                return $diRuntimeAttribute;
+                $foundDiRuntimeAttribute = $diRuntimeAttribute;
             }
         }
 
-        return false;
+        return $foundDiRuntimeAttribute;
     }
 }
