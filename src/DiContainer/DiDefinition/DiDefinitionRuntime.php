@@ -6,7 +6,9 @@ namespace Kaspi\DiContainer\DiDefinition;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\DiRuntime;
 use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
@@ -109,13 +111,54 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
     {
         try {
             $this->classDefinitionReflection ??= new ReflectionClass($this->getDefinitionIdentifier());
-
-            yield from AttributeReader::getTagAttribute($this->classDefinitionReflection);
-        } catch (ReflectionException $e) {
+            $diRuntimeAttribute = $this->getDiRuntimeAttributeConfiguringDefinition($this->classDefinitionReflection);
+        } catch (AutowireAttributeException|ReflectionException $e) {
             throw new DiDefinitionException(
                 sprintf('Cannot read php attribute "%s" on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
                 previous: $e
             );
         }
+
+        if (false === $diRuntimeAttribute || null === $diRuntimeAttribute->tags) {
+            yield from AttributeReader::getTagAttribute($this->classDefinitionReflection);
+
+            return;
+        }
+
+        if ($diRuntimeAttribute->tags instanceof Tag) {
+            yield $diRuntimeAttribute->tags;
+
+            return;
+        }
+
+        foreach ($diRuntimeAttribute->tags as $argTag) {
+            if ($argTag instanceof Tag) {
+                yield $argTag;
+            }
+        }
+    }
+
+    /**
+     * @throws AutowireAttributeException
+     */
+    private function getDiRuntimeAttributeConfiguringDefinition(ReflectionClass $class): DiRuntime|false
+    {
+        if (null === $this->classDefinition) {
+            foreach (AttributeReader::getDiRuntimeAttribute($class) as $diRuntimeAttribute) {
+                if ('' === $diRuntimeAttribute->containerIdentifier) {
+                    return $diRuntimeAttribute;
+                }
+            }
+
+            return false;
+        }
+
+        foreach (AttributeReader::getDiRuntimeAttribute($class) as $diRuntimeAttribute) {
+            if ($this->containerIdentifier === $diRuntimeAttribute->containerIdentifier) {
+                return $diRuntimeAttribute;
+            }
+        }
+
+        return false;
     }
 }
