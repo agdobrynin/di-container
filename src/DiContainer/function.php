@@ -106,11 +106,11 @@ if (!function_exists('Kaspi\DiContainer\diParameterRuntime')) { // @codeCoverage
 
 if (!function_exists('Kaspi\DiContainer\diRuntime')) { // @codeCoverageIgnore
     /**
-     * @param non-empty-string  $containerIdentifier
-     * @param null|class-string $classDefinition
+     * @param class-string|non-empty-string $containerIdentifierOrClass
+     * @param null|class-string             $classDefinition
      */
-    function diRuntime(string $containerIdentifier, ?string $message = null, ?string $classDefinition = null): DiDefinitionTagArgumentInterface
+    function diRuntime(string $containerIdentifierOrClass, ?string $message = null, ?string $classDefinition = null): DiDefinitionTagArgumentInterface
     {
-        return new DiDefinitionRuntime($containerIdentifier, $message, $classDefinition);
+        return new DiDefinitionRuntime($containerIdentifierOrClass, $message, $classDefinition);
     }
 } // @codeCoverageIgnore
