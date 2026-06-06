@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Generator;
 use InvalidArgumentException;
-use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
@@ -13,8 +13,6 @@ use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
-use ReflectionClass;
-use ReflectionException;
 
 use function get_debug_type;
 use function is_callable;
@@ -154,16 +152,7 @@ trait TagsOnObjectDefinitionTrait
 
         $this->tagsByAttribute = [];
 
-        try {
-            $tagAttributes = AttributeReader::getTagAttribute(new ReflectionClass($this->getDefinitionIdentifier()));
-        } catch (ReflectionException $e) {
-            throw new DiDefinitionException(
-                message: sprintf('Cannot read php attribute "%s" on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
-                previous: $e,
-            );
-        }
-
-        foreach ($tagAttributes as $tagAttribute) {
+        foreach ($this->readTagAttributes() as $tagAttribute) {
             $priorityMethod = null !== $tagAttribute->priorityMethod
                 ? ['priority.method' => $tagAttribute->priorityMethod]
                 : [];
@@ -175,6 +164,13 @@ trait TagsOnObjectDefinitionTrait
 
         return $this->tagsByAttribute;
     }
+
+    /**
+     * @return Generator<Tag>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    abstract protected function readTagAttributes(): Generator;
 
     private function reset(): void
     {

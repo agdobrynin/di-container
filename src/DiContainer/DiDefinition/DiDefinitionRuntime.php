@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Generator;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
@@ -100,5 +103,19 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
             $this->definition,
             $this->classDefinitionReflection,
         );
+    }
+
+    protected function readTagAttributes(): Generator
+    {
+        try {
+            $this->classDefinitionReflection ??= new ReflectionClass($this->getDefinitionIdentifier());
+
+            yield from AttributeReader::getTagAttribute($this->classDefinitionReflection);
+        } catch (ReflectionException $e) {
+            throw new DiDefinitionException(
+                sprintf('Cannot read php attribute "%s" on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
+                previous: $e
+            );
+        }
     }
 }
