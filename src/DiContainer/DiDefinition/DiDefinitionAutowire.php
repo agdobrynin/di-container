@@ -250,6 +250,13 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     public function setContainerIdentifier(string $containerIdentifier): void
     {
+        if ($containerIdentifier !== $this->containerIdentifier) {
+            unset(
+                $this->tagsByAttribute,
+                $this->setupByAttributes,
+            );
+        }
+
         $this->containerIdentifier = $containerIdentifier;
     }
 
