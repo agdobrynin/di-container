@@ -284,9 +284,13 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             return;
         }
 
-        $tags = is_array($autowireAttribute->tags) ? $autowireAttribute->tags : [$autowireAttribute->tags];
+        if ($autowireAttribute->tags instanceof Tag) {
+            yield $autowireAttribute->tags;
 
-        foreach ($tags as $argTag) {
+            return;
+        }
+
+        foreach ($autowireAttribute->tags as $argTag) {
             if ($argTag instanceof Tag) {
                 yield $argTag;
             }
