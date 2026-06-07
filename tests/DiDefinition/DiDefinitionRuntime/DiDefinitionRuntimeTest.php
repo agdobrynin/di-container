@@ -75,7 +75,7 @@ class DiDefinitionRuntimeTest extends TestCase
     public function testIsImplementInterfaceFail(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('You should to be defined a php class through the parameters $containerIdentifier or $classDefinition');
+        $this->expectExceptionMessage('You should to be defined a php class through the parameters $containerIdentifierOrClass or $classDefinition');
 
         (new DiDefinitionRuntime('foo'))->isImplementInterface(FooInterface::class);
     }

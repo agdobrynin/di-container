@@ -11,6 +11,11 @@ final class DiRuntime
 {
     /**
      * @param class-string|string $containerIdentifier
+     * @param null|list<Tag>|Tag  $tags                tags bound to the current `DiRuntime` attribute
      */
-    public function __construct(public readonly string $containerIdentifier = '', public readonly ?string $message = null) {}
+    public function __construct(
+        public readonly string $containerIdentifier = '',
+        public readonly ?string $message = null,
+        public readonly array|Tag|null $tags = null,
+    ) {}
 }
