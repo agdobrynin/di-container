@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
+use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -269,14 +270,13 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     {
         try {
             $reflectionClass = $this->getDefinition();
-        } catch (DiDefinitionException $e) {
+            $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($reflectionClass);
+        } catch (AutowireAttributeException|DiDefinitionException $e) {
             throw new DiDefinitionException(
                 sprintf('Cannot read php attribute "%s" on class "%s".', Tag::class, $this->getDefinitionIdentifier()),
                 previous: $e
             );
         }
-
-        $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($reflectionClass);
 
         if (false === $autowireAttribute || null === $autowireAttribute->tags) {
             yield from AttributeReader::getTagAttribute($reflectionClass);
@@ -321,6 +321,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     /**
      * @return Generator<Setup|SetupImmutable>
+     *
+     * @throws AutowireAttributeException
      */
     private function getSetupAttributes(ReflectionClass $class): Generator
     {
@@ -349,25 +351,32 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
     }
 
+    /**
+     * @throws AutowireAttributeException
+     */
     private function getAutowireAttributeConfiguringDefinition(ReflectionClass $class): Autowire|false
     {
+        $foundAttribute = false;
+
         if (null === $this->getContainerIdentifier()) {
+            // We need to ensure that all attributes that have `Autowire::$id` are unique.
             foreach (AttributeReader::getAutowireAttribute($class) as $attribute) {
                 if ('' === $attribute->id) {
-                    return $attribute;
+                    $foundAttribute = $attribute;
                 }
             }
 
-            return false;
+            return $foundAttribute;
         }
 
+        // We need to ensure that all attributes that have `Autowire::$id` are unique.
         foreach (AttributeReader::getAutowireAttribute($class) as $attribute) {
             if ($this->getContainerIdentifier() === $attribute->id) {
-                return $attribute;
+                $foundAttribute = $attribute;
             }
         }
 
-        return false;
+        return $foundAttribute;
     }
 
     /**
