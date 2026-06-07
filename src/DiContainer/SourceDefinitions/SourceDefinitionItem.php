@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionContainerIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\FreezeInterface;
 
 use function is_callable;
 
@@ -38,6 +39,10 @@ final class SourceDefinitionItem
 
         if ($this->diDefinition instanceof DiDefinitionContainerIdentifierInterface) {
             $this->diDefinition->setContainerIdentifier($this->containerIdentifier);
+        }
+
+        if ($this->diDefinition instanceof FreezeInterface) {
+            $this->diDefinition->freeze();
         }
     }
 }
