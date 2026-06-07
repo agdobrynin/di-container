@@ -20,6 +20,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooConfigureAutowireAttr;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooMultiConfigSetup;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagOne;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwo;
@@ -385,5 +386,22 @@ class TagTest extends TestCase
         self::assertCount(2, $definition->getTags());
         self::assertTrue($definition->hasTag('tags.baz'));
         self::assertTrue($definition->hasTag('tags.qux'));
+    }
+
+    public function testUniqueIdParameterInAutowireAttr(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get tags on class');
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = (new DiDefinitionAutowire(FooConfigureAutowireAttr::class))
+            ->setContainer($mockContainer)
+        ;
+
+        $definition->getTags();
     }
 }
