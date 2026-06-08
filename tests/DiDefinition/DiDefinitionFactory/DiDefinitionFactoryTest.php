@@ -15,10 +15,12 @@ use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Baz;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooFactory;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -34,6 +36,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(ArgumentResolver::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(FreezeTrait::class)]
 class DiDefinitionFactoryTest extends TestCase
 {
     #[DataProvider('dataProviderGetDefinitionSuccess')]
@@ -265,5 +268,25 @@ class DiDefinitionFactoryTest extends TestCase
 
         self::assertEquals(['Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooFactory', 'make'], $factory->getDefinition());
         self::assertEquals('make', $factory->exposeFactoryMethodArgumentBuilder($container)->getFunctionOrMethod()->getName());
+    }
+
+    public function testFreeze(): void
+    {
+        $factory = new DiDefinitionFactory([Baz::class, 'create']);
+        $factory->bindArguments('foo');
+
+        $containerMock = $this->createMock(DiContainerInterface::class);
+        $containerMock->method('getDefinition')
+            ->willReturn(new DiDefinitionAutowire(Baz::class))
+        ;
+
+        self::assertEquals('foo', $factory->resolve($containerMock));
+
+        $factory->freeze();
+
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::bindArguments() on a frozen definition.');
+
+        $factory->bindArguments('bar');
     }
 }
