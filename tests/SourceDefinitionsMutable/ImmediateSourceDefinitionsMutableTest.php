@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SourceDefinitionsMutable;
 
+use ArrayIterator;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
@@ -58,13 +59,15 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
             'id' => 'service.foo',
         ];
 
-        yield 'Other SourceDefinitionsMutable class' => [
-            'src' => new ImmediateSourceDefinitionsMutable(['service.foo' => 'foo value']),
+        yield 'Other class' => [
+            'src' => new ArrayIterator(['service.foo' => 'foo value']),
             'id' => 'service.foo',
         ];
 
-        yield 'Object implement DiDefinitionIdentifierInterface' => [
-            'src' => new ImmediateSourceDefinitionsMutable([new DiDefinitionAutowire(self::class)]),
+        yield 'Generator return Autowire object' => [
+            'src' => (static function () {
+                yield new DiDefinitionAutowire(self::class);
+            })(),
             'id' => self::class,
         ];
     }
