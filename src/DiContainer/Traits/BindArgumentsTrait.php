@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+
+use function sprintf;
 
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
@@ -12,6 +15,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
  */
 trait BindArgumentsTrait
 {
+    use FreezeTrait;
+
     /**
      * User defined parameters by parameter name.
      *
@@ -21,6 +26,12 @@ trait BindArgumentsTrait
 
     public function bindArguments(mixed ...$argument): static
     {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call %s::bindArguments() on a frozen definition.', static::class)
+            );
+        }
+
         /**
          * @phpstan-var BindArgumentsType $argument
          */
