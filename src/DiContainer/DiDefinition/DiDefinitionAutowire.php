@@ -26,6 +26,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\FreezeInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\TagsOnObjectDefinitionTrait;
@@ -46,7 +47,7 @@ use function sprintf;
  * @phpstan-type SetupConfigureArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
  * @phpstan-type SetupConfigureItem array{0: SetupConfigureMethod, 1: SetupConfigureArgumentsType}
  */
-final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface
+final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -99,24 +100,36 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     public function setup(string $method, array $arguments = []): static
     {
-        unset($this->setupArgBuilders);
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call %s::setup() on a frozen definition.', __CLASS__)
+            );
+        }
+
         $this->setup[$method][] = [SetupConfigureMethod::Mutable, $arguments];
+        unset($this->setupArgBuilders);
 
         return $this;
     }
 
     public function setupImmutable(string $method, array $arguments = []): static
     {
-        unset($this->setupArgBuilders);
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call %s::setupImmutable() on a frozen definition.', __CLASS__)
+            );
+        }
+
         $this->setup[$method][] = [SetupConfigureMethod::Immutable, $arguments];
+        unset($this->setupArgBuilders);
 
         return $this;
     }
 
     public function bindArguments(mixed ...$argument): static
     {
-        unset($this->constructArgBuilder);
         $this->bindArgumentsInternal(...$argument);
+        unset($this->constructArgBuilder);
 
         return $this;
     }
@@ -251,6 +264,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     public function setContainerIdentifier(string $containerIdentifier): void
     {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call %s::setContainerIdentifier() on a frozen definition.', __CLASS__)
+            );
+        }
+
         if ($containerIdentifier !== $this->containerIdentifier) {
             unset(
                 $this->tagsByAttribute,
