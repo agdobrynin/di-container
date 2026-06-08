@@ -10,6 +10,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(DiDefinitionProxyClosure::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(FreezeTrait::class)]
 class MainTest extends TestCase
 {
     #[DataProvider('successDefinitionDataProvider')]
@@ -94,5 +96,22 @@ class MainTest extends TestCase
         ;
 
         $this->assertEquals('result of get', $res());
+    }
+
+    public function testFreeze(): void
+    {
+        $def = new DiDefinitionProxyClosure('ok');
+        $def->bindTag('tags.foo');
+
+        self::assertEquals(['tags.foo' => []], $def->getTags());
+
+        $def->freeze();
+
+        self::assertEquals(['tags.foo' => []], $def->getTags());
+
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure::bindTag() on a frozen definition.');
+
+        $def->bindTag('tags.bar');
     }
 }
