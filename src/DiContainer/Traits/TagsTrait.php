@@ -26,9 +26,6 @@ trait TagsTrait
      */
     private array $tags = [];
 
-    /**
-     * @return $this
-     */
     public function bindTag(string $name, array $options = [], int|string|null $priority = null): static
     {
         if ($this->isFrozen) {
