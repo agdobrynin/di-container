@@ -12,4 +12,14 @@ class SuperClass
     {
         return $this->dependency;
     }
+
+    public function withDependency(string $dependency): self
+    {
+        return new self($dependency);
+    }
+
+    public function setDependency(string $dependency): void
+    {
+        $this->dependency = $dependency;
+    }
 }
