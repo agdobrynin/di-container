@@ -102,7 +102,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     {
         if ($this->isFrozen) {
             throw new DiDefinitionException(
-                sprintf('Cannot call %s::setup() on a frozen definition.', __CLASS__)
+                sprintf('Cannot call \%s::setup() on a frozen definition.', __CLASS__)
             );
         }
 
@@ -116,7 +116,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     {
         if ($this->isFrozen) {
             throw new DiDefinitionException(
-                sprintf('Cannot call %s::setupImmutable() on a frozen definition.', __CLASS__)
+                sprintf('Cannot call \%s::setupImmutable() on a frozen definition.', __CLASS__)
             );
         }
 
@@ -266,7 +266,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     {
         if ($this->isFrozen) {
             throw new DiDefinitionException(
-                sprintf('Cannot call %s::setContainerIdentifier() on a frozen definition.', __CLASS__)
+                sprintf('Cannot call \%s::setContainerIdentifier() on a frozen definition.', __CLASS__)
             );
         }
 

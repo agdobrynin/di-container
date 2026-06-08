@@ -285,7 +285,7 @@ class DiDefinitionFactoryTest extends TestCase
         $factory->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::bindArguments() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::bindArguments() on a frozen definition.');
 
         $factory->bindArguments('bar');
     }

@@ -33,7 +33,7 @@ trait TagsTrait
     {
         if ($this->isFrozen) {
             throw new DiDefinitionException(
-                sprintf('Cannot call %s::bindTag() on a frozen definition.', static::class)
+                sprintf('Cannot call \%s::bindTag() on a frozen definition.', static::class)
             );
         }
 

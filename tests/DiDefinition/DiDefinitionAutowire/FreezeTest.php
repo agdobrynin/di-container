@@ -49,7 +49,7 @@ class FreezeTest extends TestCase
         $this->definition->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::bindArguments() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::bindArguments() on a frozen definition.');
 
         $this->definition->bindArguments('bar');
     }
@@ -62,7 +62,7 @@ class FreezeTest extends TestCase
         $this->definition->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::setContainerIdentifier() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::setContainerIdentifier() on a frozen definition.');
 
         $this->definition->setContainerIdentifier('service.bar');
     }
@@ -81,7 +81,7 @@ class FreezeTest extends TestCase
         $this->definition->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::setupImmutable() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::setupImmutable() on a frozen definition.');
 
         $this->definition->setupImmutable('withDependency', ['baz']);
     }
@@ -100,7 +100,7 @@ class FreezeTest extends TestCase
         $this->definition->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::setup() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::setup() on a frozen definition.');
 
         $this->definition->setup('setDependency', ['baz']);
     }
@@ -116,7 +116,7 @@ class FreezeTest extends TestCase
         $this->definition->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::bindTag() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::bindTag() on a frozen definition.');
 
         $this->definition->bindTag('tags.bar');
     }

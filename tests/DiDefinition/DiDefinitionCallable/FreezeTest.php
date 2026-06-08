@@ -35,7 +35,7 @@ class FreezeTest extends TestCase
         $def->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionCallable::'.$callMethod.'() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionCallable::'.$callMethod.'() on a frozen definition.');
 
         $def->{$callMethod}('x');
     }

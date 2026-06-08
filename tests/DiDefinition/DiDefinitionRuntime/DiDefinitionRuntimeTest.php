@@ -123,7 +123,7 @@ class DiDefinitionRuntimeTest extends TestCase
         $d->freeze();
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime::bindTag() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime::bindTag() on a frozen definition.');
 
         $d->bindTag('tags.baz');
     }

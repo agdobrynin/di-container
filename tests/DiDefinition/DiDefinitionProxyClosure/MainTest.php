@@ -110,7 +110,7 @@ class MainTest extends TestCase
         self::assertEquals(['tags.foo' => []], $def->getTags());
 
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure::bindTag() on a frozen definition.');
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure::bindTag() on a frozen definition.');
 
         $def->bindTag('tags.bar');
     }
