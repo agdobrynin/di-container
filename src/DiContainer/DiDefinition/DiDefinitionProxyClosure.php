@@ -12,11 +12,12 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionProxyClosureInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\FreezeInterface;
 use Kaspi\DiContainer\Traits\TagsTrait;
 
 use function sprintf;
 
-final class DiDefinitionProxyClosure implements DiDefinitionProxyClosureInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface
+final class DiDefinitionProxyClosure implements DiDefinitionProxyClosureInterface, DiDefinitionTagArgumentInterface, DiTaggedDefinitionInterface, FreezeInterface
 {
     use TagsTrait;
 
