@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
@@ -33,6 +35,8 @@ interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterf
      * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed> $arguments
      *
      * @return $this
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function setup(string $method, array $arguments = []): static;
 
@@ -60,6 +64,8 @@ interface DiDefinitionSetupAutowireInterface extends DiDefinitionArgumentsInterf
      * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed> $arguments
      *
      * @return $this
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function setupImmutable(string $method, array $arguments = []): static;
 }
