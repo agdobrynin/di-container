@@ -95,9 +95,6 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
     }
 
-    /**
-     * @return $this
-     */
     public function setup(string $method, array $arguments = []): static
     {
         if ($this->isFrozen) {
