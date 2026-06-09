@@ -34,6 +34,7 @@ use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -75,6 +76,7 @@ use function random_bytes;
 #[CoversClass(DeferredSourceParameters::class)]
 #[CoversClass(FinderClosureCode::class)]
 #[CoversClass(SourceDefinitionItem::class)]
+#[CoversClass(FreezeTrait::class)]
 class DiContainerBuilderTest extends TestCase
 {
     public function testDefinitionLoaderImportThrowException(): void

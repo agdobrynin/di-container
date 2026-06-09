@@ -20,6 +20,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\DeferredSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -39,6 +40,7 @@ use function array_keys;
 #[CoversClass(Helper::class)]
 #[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
 #[CoversClass(SourceDefinitionItem::class)]
+#[CoversClass(FreezeTrait::class)]
 class DeferredSourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]

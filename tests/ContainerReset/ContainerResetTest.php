@@ -29,6 +29,7 @@ use Kaspi\DiContainer\Parameters\SourceParameterItem;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use Kaspi\DiContainer\Traits\TagsOnObjectDefinitionTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -69,6 +70,7 @@ use function random_bytes;
 #[CoversClass(FinderFile::class)]
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversFunction('Kaspi\DiContainer\diAutowire')]
+#[CoversClass(FreezeTrait::class)]
 class ContainerResetTest extends TestCase
 {
     #[DataProvider('dataProviderContainer')]

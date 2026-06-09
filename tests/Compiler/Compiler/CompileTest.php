@@ -28,6 +28,7 @@ use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
@@ -60,6 +61,7 @@ use function random_bytes;
 #[CoversClass(\Kaspi\DiContainer\Helper::class)]
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversFunction('Kaspi\DiContainer\diRuntime')]
+#[CoversClass(FreezeTrait::class)]
 class CompileTest extends TestCase
 {
     private DiDefinitionTransformerInterface $mockTransformer;

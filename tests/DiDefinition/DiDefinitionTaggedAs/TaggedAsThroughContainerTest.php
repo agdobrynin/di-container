@@ -20,6 +20,7 @@ use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -60,6 +61,7 @@ use function Kaspi\DiContainer\diValue;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(SourceDefinitionItem::class)]
+#[CoversClass(FreezeTrait::class)]
 class TaggedAsThroughContainerTest extends TestCase
 {
     public function testTaggedAsServicesWithoutPriorityAndLazy(): void
