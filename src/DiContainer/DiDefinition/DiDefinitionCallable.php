@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionCallableInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\FreezeInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
@@ -23,7 +24,7 @@ use function is_array;
 use function is_string;
 use function strpos;
 
-final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDefinitionArgumentsInterface, DiTaggedDefinitionInterface, DiDefinitionTagArgumentInterface, ResetInterface
+final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDefinitionArgumentsInterface, DiTaggedDefinitionInterface, DiDefinitionTagArgumentInterface, ResetInterface, FreezeInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -49,8 +50,8 @@ final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDef
 
     public function bindArguments(mixed ...$argument): static
     {
-        unset($this->argBuilder);
         $this->bindArgumentsInternal(...$argument);
+        unset($this->argBuilder);
 
         return $this;
     }

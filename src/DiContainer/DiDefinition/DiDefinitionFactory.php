@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionFactoryInterface;
+use Kaspi\DiContainer\Interfaces\FreezeInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Psr\Container\ContainerExceptionInterface;
@@ -26,7 +27,7 @@ use function is_string;
 use function sprintf;
 use function strpos;
 
-final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionArgumentsInterface, ResetInterface
+final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionArgumentsInterface, ResetInterface, FreezeInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -46,9 +47,8 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
 
     public function bindArguments(mixed ...$argument): static
     {
-        unset($this->factoryMethodArgumentBuilder);
-
         $this->bindArgumentsInternal(...$argument);
+        unset($this->factoryMethodArgumentBuilder);
 
         return $this;
     }

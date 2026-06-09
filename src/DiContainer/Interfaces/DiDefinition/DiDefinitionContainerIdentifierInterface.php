@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
 interface DiDefinitionContainerIdentifierInterface
 {
     /**
@@ -17,6 +19,8 @@ interface DiDefinitionContainerIdentifierInterface
      * Sets the identifier corresponding to this definition in the container.
      *
      * @param non-empty-string $containerIdentifier
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function setContainerIdentifier(string $containerIdentifier): void;
 }

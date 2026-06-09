@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SourceDefinitionsMutable;
 
+use ArrayIterator;
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
@@ -19,6 +20,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -38,6 +40,7 @@ use function array_keys;
 #[CoversClass(Helper::class)]
 #[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
 #[CoversClass(SourceDefinitionItem::class)]
+#[CoversClass(FreezeTrait::class)]
 class ImmediateSourceDefinitionsMutableTest extends TestCase
 {
     #[DataProvider('provideIterableType')]
@@ -58,13 +61,15 @@ class ImmediateSourceDefinitionsMutableTest extends TestCase
             'id' => 'service.foo',
         ];
 
-        yield 'Other SourceDefinitionsMutable class' => [
-            'src' => new ImmediateSourceDefinitionsMutable(['service.foo' => 'foo value']),
+        yield 'Other class' => [
+            'src' => new ArrayIterator(['service.foo' => 'foo value']),
             'id' => 'service.foo',
         ];
 
-        yield 'Object implement DiDefinitionIdentifierInterface' => [
-            'src' => new ImmediateSourceDefinitionsMutable([new DiDefinitionAutowire(self::class)]),
+        yield 'Generator return Autowire object' => [
+            'src' => (static function () {
+                yield new DiDefinitionAutowire(self::class);
+            })(),
             'id' => self::class,
         ];
     }

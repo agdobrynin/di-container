@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Traits;
 
+use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 
 use function array_key_exists;
 use function is_int;
 use function is_string;
+use function sprintf;
 
 /**
  * @phpstan-import-type TagOptions from DiDefinitionTagArgumentInterface
@@ -17,16 +19,21 @@ use function is_string;
  */
 trait TagsTrait
 {
+    use FreezeTrait;
+
     /**
      * @var array<non-empty-string, TagOptions>
      */
     private array $tags = [];
 
-    /**
-     * @return $this
-     */
     public function bindTag(string $name, array $options = [], int|string|null $priority = null): static
     {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call \%s::bindTag() on a frozen definition.', static::class)
+            );
+        }
+
         $this->tags[$name] = static::transformTagOptions($options, $priority);
 
         return $this;
