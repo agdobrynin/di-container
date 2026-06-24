@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Compiler;
 
 use InvalidArgumentException;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\CallableEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
@@ -15,6 +17,7 @@ use UnitEnum;
 use function array_key_last;
 use function get_debug_type;
 use function is_array;
+use function is_callable;
 use function is_scalar;
 use function is_string;
 use function sprintf;
@@ -43,8 +46,12 @@ final class Helper
     ): string {
         $expression = '(';
 
+        $fallbackTransform = static fn (mixed $arg) => is_callable($arg)
+             ? new CallableEntry(new DiDefinitionCallable($arg), $diContainerDefinitions, $transformer)
+             : new ValueEntry($arg);
+
         foreach ($args as $argIndexOrName => $arg) {
-            $compiledEntity = $transformer->transform($arg, $diContainerDefinitions, static fn (mixed $arg) => new ValueEntry($arg))
+            $compiledEntity = $transformer->transform($arg, $diContainerDefinitions, $fallbackTransform)
                 ->compile($containerVar, [...$mainEntry->getScopeVars(), $containerVar], $context)
             ;
             $mainEntry->addToScopeVars($compiledEntity->getScopeServiceVar(), ...$compiledEntity->getScopeVars());
