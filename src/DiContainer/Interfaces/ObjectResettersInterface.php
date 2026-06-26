@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kaspi\DiContainer\Interfaces\DiDefinition;
+namespace Kaspi\DiContainer\Interfaces;
 
 use Kaspi\DiContainer\Interfaces\Exceptions\ResetterExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;

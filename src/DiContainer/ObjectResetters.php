@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use Kaspi\DiContainer\Exception\ResetterException;
-use Kaspi\DiContainer\Interfaces\DiDefinition\ObjectResettersInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ResetterExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
