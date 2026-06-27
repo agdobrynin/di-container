@@ -24,6 +24,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
@@ -32,6 +33,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
@@ -135,7 +137,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this->definitions->has($id)
             || array_key_exists($id, $this->resolved)
             || isset($this->containerIds[$id])
-            || $this->hasViaZeroConfigurationDefinition($id);
+            || $this->hasViaZeroConfigurationDefinition($id)
+            || ObjectResetters::class === $id
+            || ObjectResettersInterface::class === $id;
     }
 
     public function set(string $id, mixed $definition): static
@@ -325,6 +329,23 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         if (isset($this->diResolvedDefinition[$id])) {
             return $this->diResolvedDefinition[$id];
+        }
+
+        if (ObjectResetters::class === $id || ObjectResettersInterface::class === $id) {
+            $objectResetters = new DiDefinitionAutowire(ObjectResetters::class, true);
+            $resetters = [];
+
+            foreach ($this->definitions->getIterator() as $entryId => $definition) {
+                if ($definition instanceof DiDefinitionResetterInterface
+                    && false !== ($definitionResetter = $definition->getResetter())) {
+                    $resetters[$entryId] = $definitionResetter;
+                }
+            }
+
+            $objectResetters->setup('setup', [$resetters]);
+            $this->definitions->set($id, $objectResetters);
+
+            return $this->diResolvedDefinition[$id] = $objectResetters;
         }
 
         try {
