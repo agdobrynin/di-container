@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
 /**
  * Provides a reset mechanism for container definition.
  *
@@ -20,6 +22,8 @@ interface DiDefinitionResetterSetterInterface
      * @param callable(object $object): void|non-empty-string $resetter
      *
      * @return $this
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function setResetter(callable|string $resetter): self;
 }
