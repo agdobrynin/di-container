@@ -11,6 +11,8 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
@@ -24,7 +26,7 @@ use function rtrim;
 use function sprintf;
 use function var_export;
 
-final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface
+final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface, DiDefinitionResetterSetterInterface, DiDefinitionResetterInterface
 {
     use TagsOnObjectDefinitionTrait {
         reset as private resetTrait;
@@ -33,6 +35,11 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
     private object $definition;
 
     private ReflectionClass $classDefinitionReflection;
+
+    /**
+     * @var callable(object): void|false|non-empty-string
+     */
+    private $resetter = false;
 
     /**
      * @param class-string|non-empty-string $containerIdentifierOrClass
@@ -106,6 +113,18 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
             $this->definition,
             $this->classDefinitionReflection,
         );
+    }
+
+    public function getResetter(): callable|false|string
+    {
+        return $this->resetter;
+    }
+
+    public function setResetter(callable|string $resetter): static
+    {
+        $this->resetter = $resetter;
+
+        return $this;
     }
 
     protected function readTagAttributes(): Generator
