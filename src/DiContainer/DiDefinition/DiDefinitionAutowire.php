@@ -21,6 +21,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
@@ -47,7 +49,7 @@ use function sprintf;
  * @phpstan-type SetupConfigureArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
  * @phpstan-type SetupConfigureItem array{0: SetupConfigureMethod, 1: SetupConfigureArgumentsType}
  */
-final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface
+final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface, DiDefinitionResetterSetterInterface, DiDefinitionResetterInterface
 {
     use BindArgumentsTrait {
         bindArguments as private bindArgumentsInternal;
@@ -84,6 +86,11 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      * @var null|non-empty-string
      */
     private ?string $containerIdentifier = null;
+
+    /**
+     * @var callable(object): void|false|non-empty-string
+     */
+    private $resetter = false;
 
     /**
      * @param class-string|ReflectionClass $definition
@@ -280,6 +287,24 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function getContainerIdentifier(): ?string
     {
         return $this->containerIdentifier;
+    }
+
+    public function setResetter(callable|string $resetter): static
+    {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call \%s::setResetter() on a frozen definition.', __CLASS__)
+            );
+        }
+
+        $this->resetter = $resetter;
+
+        return $this;
+    }
+
+    public function getResetter(): callable|false|string
+    {
+        return $this->resetter;
     }
 
     protected function readTagAttributes(): Generator
