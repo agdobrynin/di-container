@@ -83,14 +83,20 @@ final class ObjectResetters implements ObjectResettersInterface
             );
         }
 
+        if (is_string($resetter) && is_callable($callable = [$object, $resetter])) {
+            ($callable)();
+
+            return;
+        }
+
         if (is_callable($resetter)) {
             ($resetter)($object);
-        } elseif (is_callable($callable = [$object, $resetter])) {
-            ($callable)();
-        } else {
-            throw new ResetterException(
-                sprintf('Resetter must be is `callable(object $object): void` or existing public method in class "%s" class. Got: %s as type "%s".', $object::class, var_export($resetter, true), get_debug_type($resetter))
-            );
+
+            return;
         }
+
+        throw new ResetterException(
+            sprintf('Resetter must be is `callable(object $object): void` or existing public method in class "%s" class. Got: %s as type "%s".', $object::class, var_export($resetter, true), get_debug_type($resetter))
+        );
     }
 }
