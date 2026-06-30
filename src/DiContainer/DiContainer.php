@@ -103,6 +103,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected readonly array $containerIds;
 
     /**
+     * @var array<class-string, true>
+     */
+    protected readonly array $objectResetterIds;
+
+    /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      * @param iterable<class-string|non-empty-string>                                            $removedDefinitionIds
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
@@ -123,6 +128,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             ? new ImmediateSourceParameters($parameters)
             : $parameters;
         $this->containerIds = [ContainerInterface::class => true, DiContainerInterface::class => true, __CLASS__ => true];
+        $this->objectResetterIds = [ObjectResetters::class => true, ObjectResettersInterface::class => true];
     }
 
     public function get(string $id): mixed
@@ -138,13 +144,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             || array_key_exists($id, $this->resolved)
             || isset($this->containerIds[$id])
             || $this->hasViaZeroConfigurationDefinition($id)
-            || ObjectResetters::class === $id
-            || ObjectResettersInterface::class === $id;
+            || array_key_exists($id, $this->objectResetterIds);
     }
 
     public function set(string $id, mixed $definition): static
     {
-        if (isset($this->containerIds[$id])) {
+        if (isset($this->containerIds[$id]) || isset($this->objectResetterIds[$id])) {
             throw new ContainerIdentifierAlreadyRegisteredException(id: $id);
         }
 
@@ -331,7 +336,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id];
         }
 
-        if (ObjectResetters::class === $id || ObjectResettersInterface::class === $id) {
+        if (isset($this->objectResetterIds[$id])) {
             $objectResetters = new DiDefinitionAutowire(ObjectResetters::class, true);
             $resetters = [];
 
