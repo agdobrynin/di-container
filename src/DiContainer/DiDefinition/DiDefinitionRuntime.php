@@ -122,6 +122,12 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
 
     public function setResetter(callable|string $resetter): static
     {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call \%s::setResetter() on a frozen definition.', __CLASS__)
+            );
+        }
+
         $this->resetter = $resetter;
 
         return $this;
