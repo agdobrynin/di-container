@@ -16,6 +16,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
@@ -25,7 +26,7 @@ if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
      * @param class-string $definition Fully Qualified Class Name
      */
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface&DiDefinitionTagArgumentInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionResetterSetterInterface&DiDefinitionSetupAutowireInterface&DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionAutowire($definition, $isSingleton);
     }
@@ -109,7 +110,7 @@ if (!function_exists('Kaspi\DiContainer\diRuntime')) { // @codeCoverageIgnore
      * @param class-string|non-empty-string $containerIdentifierOrClass
      * @param null|class-string             $classDefinition
      */
-    function diRuntime(string $containerIdentifierOrClass, ?string $message = null, ?string $classDefinition = null): DiDefinitionTagArgumentInterface
+    function diRuntime(string $containerIdentifierOrClass, ?string $message = null, ?string $classDefinition = null): DiDefinitionResetterSetterInterface&DiDefinitionTagArgumentInterface
     {
         return new DiDefinitionRuntime($containerIdentifierOrClass, $message, $classDefinition);
     }
