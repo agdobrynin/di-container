@@ -42,9 +42,10 @@ final class ObjectResetters implements ObjectResettersInterface
 
             if (!is_callable($resetter) && !is_string($resetter)) {
                 throw new ResetterException(sprintf(
-                    'Resetter with the key %s must be is `callable(object $object): void` or non-empty string. Got type: "%s".',
+                    'Resetter with the key %s must be is `callable(object $object): void` or non-empty string. Got %s as type "%s".',
                     var_export($id, true),
-                    get_debug_type($resetter),
+                    var_export($resetter, true),
+                    get_debug_type($resetter)
                 ));
             }
 
@@ -88,7 +89,7 @@ final class ObjectResetters implements ObjectResettersInterface
             ($callable)();
         } else {
             throw new ResetterException(
-                sprintf('Resetter must be is `callable(object $object): void` or existing public method in class "%s" class. Got type: "%s".', $object::class, get_debug_type($resetter))
+                sprintf('Resetter must be is `callable(object $object): void` or existing public method in class "%s" class. Got: %s as type "%s".', $object::class, var_export($resetter, true), get_debug_type($resetter))
             );
         }
     }
