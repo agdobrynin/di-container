@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireException;
@@ -337,20 +338,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         if (isset($this->objectResetterIds[$id])) {
-            $objectResetters = new DiDefinitionAutowire(ObjectResetters::class, true);
-            $resetters = [];
+            $resetter = $this->autoconfigureObjectResettersDefinition();
+            $this->definitions->set($id, $resetter);
 
-            foreach ($this->definitions->getIterator() as $entryId => $definition) {
-                if ($definition instanceof DiDefinitionResetterInterface
-                    && false !== ($definitionResetter = $definition->getResetter())) {
-                    $resetters[$entryId] = $definitionResetter;
-                }
-            }
-
-            $objectResetters->setup('setup', [$resetters]);
-            $this->definitions->set($id, $objectResetters);
-
-            return $this->diResolvedDefinition[$id] = $objectResetters;
+            return $this->diResolvedDefinition[$id] = $resetter;
         }
 
         try {
@@ -454,6 +445,23 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if (array_key_exists($id, $this->circularCallWatcher)) {
             throw new CallCircularDependencyException(callIds: [...array_keys($this->circularCallWatcher), $id]);
         }
+    }
+
+    protected function autoconfigureObjectResettersDefinition(): DiDefinitionCallable
+    {
+        $resetters = [];
+
+        foreach ($this->definitions as $entryId => $definition) {
+            if ($definition instanceof DiDefinitionResetterInterface
+                && false !== ($definitionResetter = $definition->getResetter())) {
+                $resetters[$entryId] = $definitionResetter;
+            }
+        }
+
+        return new DiDefinitionCallable(
+            definition: static fn (ContainerInterface $container) => (new ObjectResetters($container))->setup($resetters),
+            isSingleton: true
+        );
     }
 
     private function getDiDefinitionWrapper(DiDefinitionAutowireInterface|DiDefinitionInterface $definition, ?bool $singleton): DiDefinitionSingletonInterface
