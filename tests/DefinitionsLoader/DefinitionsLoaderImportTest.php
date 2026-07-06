@@ -27,6 +27,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
+use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
@@ -103,6 +104,7 @@ class DefinitionsLoaderImportTest extends TestCase
         $containerIds = array_keys(iterator_to_array($container->getDefinitions()));
 
         $expectContainerIds = [
+            ObjectResettersInterface::class,
             Fixtures\Import\SubDirectory\One::class,
             Two::class,
             Fixtures\Import\One::class,

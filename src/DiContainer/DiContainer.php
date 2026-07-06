@@ -201,10 +201,20 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinitions(): iterable
     {
+        $needAutoconfigureObjectRestters = true;
+
         foreach ($this->definitions->getIterator() as $id => $definition) {
             if (!isset($this->containerIds[$id])) {
                 yield $id => $definition;
             }
+
+            if ($needAutoconfigureObjectRestters && ObjectResettersInterface::class === $id) {
+                $needAutoconfigureObjectRestters = false;
+            }
+        }
+
+        if ($needAutoconfigureObjectRestters) {
+            yield ObjectResettersInterface::class => $this->autoconfigureObjectResettersDefinition();
         }
     }
 
