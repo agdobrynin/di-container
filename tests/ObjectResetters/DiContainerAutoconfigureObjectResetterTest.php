@@ -58,15 +58,7 @@ class DiContainerAutoconfigureObjectResetterTest extends TestCase
 {
     #[TestWith([
         [],
-        ObjectResetters::class,
-    ])]
-    #[TestWith([
-        [],
         ObjectResettersInterface::class,
-    ])]
-    #[TestWith([
-        [ObjectResetters::class => new DiDefinitionAutowire(ObjectResetters::class)],
-        ObjectResetters::class,
     ])]
     #[TestWith([
         [ObjectResettersInterface::class => new DiDefinitionAutowire(ObjectResetters::class)],
@@ -112,7 +104,7 @@ class DiContainerAutoconfigureObjectResetterTest extends TestCase
 
         self::assertEquals('bar', $container->get(Foo::class)->foo);
 
-        $resetter = $container->get(ObjectResetters::class);
+        $resetter = $container->get(ObjectResettersInterface::class);
         $resetter->reset();
 
         self::assertEquals('foo', $container->get(Foo::class)->foo);
