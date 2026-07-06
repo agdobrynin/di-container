@@ -7,7 +7,6 @@ namespace Kaspi\DiContainer;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Exception\AutowireException;
@@ -447,7 +446,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
     }
 
-    protected function autoconfigureObjectResettersDefinition(): DiDefinitionCallable
+    protected function autoconfigureObjectResettersDefinition(): DiDefinitionAutowire
     {
         $resetters = [];
 
@@ -458,10 +457,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
         }
 
-        return new DiDefinitionCallable(
-            definition: static fn (ContainerInterface $container) => (new ObjectResetters($container))->setup($resetters),
-            isSingleton: true
-        );
+        return (new DiDefinitionAutowire(ObjectResetters::class, true))
+            ->setup('setup', [$resetters])
+        ;
     }
 
     private function getDiDefinitionWrapper(DiDefinitionAutowireInterface|DiDefinitionInterface $definition, ?bool $singleton): DiDefinitionSingletonInterface
