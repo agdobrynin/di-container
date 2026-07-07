@@ -12,6 +12,7 @@ final class DiContainerConfig implements DiContainerConfigInterface
         private readonly bool $useZeroConfigurationDefinition = true,
         private readonly bool $useAttribute = true,
         private readonly bool $isSingletonServiceDefault = false,
+        private readonly bool $isConfigureObjectResettersFromDefinitions = true,
     ) {}
 
     public function isSingletonServiceDefault(): bool
@@ -27,5 +28,10 @@ final class DiContainerConfig implements DiContainerConfigInterface
     public function isUseAttribute(): bool
     {
         return $this->useAttribute;
+    }
+
+    public function isConfigureObjectResettersFromDefinitions(): bool
+    {
+        return $this->isConfigureObjectResettersFromDefinitions;
     }
 }

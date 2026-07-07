@@ -137,8 +137,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         return $this->definitions->has($id)
             || array_key_exists($id, $this->resolved)
             || isset($this->containerIds[$id])
-            || $this->hasViaZeroConfigurationDefinition($id)
-            || ObjectResettersInterface::class === $id;
+            || $this->hasViaZeroConfigurationDefinition($id);
     }
 
     public function set(string $id, mixed $definition): static
@@ -201,7 +200,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinitions(): iterable
     {
-        $needAutoconfigureObjectRestters = true;
+        $needAutoconfigureObjectRestters = $this->config->isConfigureObjectResettersFromDefinitions();
 
         foreach ($this->definitions->getIterator() as $id => $definition) {
             if (!isset($this->containerIds[$id])) {
@@ -340,7 +339,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id];
         }
 
-        if (ObjectResettersInterface::class === $id) {
+        if ($this->config->isConfigureObjectResettersFromDefinitions() && ObjectResettersInterface::class === $id) {
             $resetter = $this->autoconfigureObjectResettersDefinition();
             $this->definitions->set($id, $resetter);
 
@@ -423,6 +422,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
+        if (ObjectResettersInterface::class === $id) {
+            return $this->config->isConfigureObjectResettersFromDefinitions();
+        }
+
         if (!$this->config->isUseZeroConfigurationDefinition()) {
             return false;
         }

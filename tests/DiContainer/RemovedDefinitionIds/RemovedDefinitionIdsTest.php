@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\DiContainer\RemovedDefinitionIds;
 
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\ContainerCompiler;
@@ -17,7 +19,9 @@ use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Finder\FinderFile;
@@ -71,6 +75,11 @@ use function random_bytes;
 #[CoversClass(FinderClosureCode::class)]
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(GetEntry::class)]
+#[CoversClass(ValueEntry::class)]
+#[CoversClass(\Kaspi\DiContainer\Compiler\Helper::class)]
+#[CoversClass(ArgumentBuilder::class)]
+#[CoversClass(DiDefinitionGet::class)]
 class RemovedDefinitionIdsTest extends TestCase
 {
     public function testRemovedDefinitionIds(): void

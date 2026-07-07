@@ -7,6 +7,7 @@ namespace Tests\DiContainer;
 use Generator;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\NotFoundException;
@@ -37,6 +38,7 @@ use stdClass;
 #[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(SourceDefinitionItem::class)]
+#[CoversClass(DiContainerNullConfig::class)]
 class ResolveSelfContainerTest extends TestCase
 {
     #[DataProvider('dataProvider')]

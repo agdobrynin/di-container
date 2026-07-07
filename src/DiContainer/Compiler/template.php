@@ -55,6 +55,11 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
                 {
                     return <?php echo \var_export($config->isUseAttribute(), true); ?>;
                 }
+
+                public function isConfigureObjectResettersFromDefinitions(): bool
+                {
+                    return <?php echo \var_export($config->isConfigureObjectResettersFromDefinitions(), true); ?>;
+                }
             },
 <?php if ($container->getRemovedDefinitionIds()->valid()) { ?>
             removedDefinitionIds: (static function (): \Generator {

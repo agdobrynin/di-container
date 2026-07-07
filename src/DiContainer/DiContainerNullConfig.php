@@ -22,4 +22,9 @@ final class DiContainerNullConfig implements DiContainerConfigInterface
     {
         return false;
     }
+
+    public function isConfigureObjectResettersFromDefinitions(): bool
+    {
+        return false;
+    }
 }
