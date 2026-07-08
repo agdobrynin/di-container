@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\ObjectResetters\Fixtures\Bar;
 use Tests\ObjectResetters\Fixtures\Foo;
 use Tests\ObjectResetters\Fixtures\FooResetter;
 
@@ -79,5 +80,12 @@ class AutowireResetterTest extends TestCase
             Foo::class,
             '\Tests\ObjectResetters\Fixtures\resetFoo',
         ];
+    }
+
+    public function testResetterViaResetterInterface(): void
+    {
+        $definition = new DiDefinitionAutowire(Bar::class);
+
+        self::assertEquals('reset', $definition->getResetter());
     }
 }
