@@ -37,7 +37,9 @@ final class ObjectResetters implements ObjectResettersInterface
 
         foreach ($resetters as $id => $resetter) {
             if (!is_string($id) || '' === $id) {
-                throw new ResetterException('The iterator key must be a non-empty string.');
+                throw new ResetterException(
+                    sprintf('The iterator key must be a non-empty string. Got resetter type "%s" with value %s', get_debug_type($resetter), var_export($resetter, true))
+                );
             }
 
             if (!is_callable($resetter) && !is_string($resetter)) {
