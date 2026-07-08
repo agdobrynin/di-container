@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Compiler\CompilableDefinition;
 
+use Closure;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
@@ -18,8 +19,16 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 
+use function get_debug_type;
+use function is_array;
+use function is_iterable;
+use function is_string;
+use function reset;
 use function sprintf;
+use function str_starts_with;
+use function var_export;
 
 final class ObjectEntry implements CompilableDefinitionInterface
 {
@@ -108,6 +117,53 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
         $objectCreateStatement = sprintf('%s = %s', $objectCompiledEntry->getScopeServiceVar(), $compiledObjectConstructor);
         $objectCompiledEntry->addToStatements($objectCreateStatement);
+
+        if ($this->definition->getDefinition()->implementsInterface(ObjectResettersInterface::class)) {
+            /**
+             * @var ArgumentBuilderInterface $setupArgBuilder
+             */
+            foreach ($setupArgBuilders as [, $setupArgBuilder]) {
+                $setupArgs = $setupArgBuilder->buildByPriorityBindArguments();
+                $argumentResetters = reset($setupArgs);
+
+                if (!is_iterable($argumentResetters)) {
+                    throw new DefinitionCompileException(
+                        sprintf('The first argument for %s should be `iterable` type. Got argument type `%s`.', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod()), get_debug_type($argumentResetters))
+                    );
+                }
+
+                $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
+                $serviceVar = $objectCompiledEntry->getScopeServiceVar();
+
+                $codeResetters = "[\n";
+
+                foreach ($argumentResetters as $entryId => $resetter) {
+                    $codeResetters .= sprintf('  %s => ', var_export($entryId, true));
+
+                    if ($resetter instanceof Closure) {
+                        $codeResetters .= $this->transformer->getClosureParser()->getCode($resetter);
+                    } elseif (is_array($resetter) && is_string($resetter[0])) {
+                        $class = str_starts_with($resetter[0], '\\') ? $resetter[0] : '\\'.$resetter[0];
+                        $codeResetters .= sprintf('[%s, %s]', var_export($class, true), var_export($resetter[1], true));
+                    } elseif (is_string($resetter)) {
+                        $codeResetters .= sprintf('%s', var_export($resetter, true));
+                    } else {
+                        throw new DefinitionCompileException(
+                            sprintf('The resetter for container identifier %s type should be is `callable` or `string`. Got type `%s`.', var_export($entryId, true), get_debug_type($resetter))
+                        );
+                    }
+
+                    $codeResetters .= ",\n";
+                }
+
+                $codeResetters .= "]\n";
+
+                $serviceSetupStatement = sprintf('%s->%s(%s)', $serviceVar, $methodName, $codeResetters);
+                $objectCompiledEntry->addToStatements($serviceSetupStatement);
+            }
+
+            return $objectCompiledEntry->setExpression($objectCompiledEntry->getScopeServiceVar());
+        }
 
         /**
          * @var ArgumentBuilderInterface $setupArgBuilder
