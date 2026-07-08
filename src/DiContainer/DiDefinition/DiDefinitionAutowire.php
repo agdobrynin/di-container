@@ -304,6 +304,10 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     public function getResetter(): callable|false|string
     {
+        if (false === $this->resetter && $this->isImplementInterface(ResetInterface::class)) {
+            return 'reset';
+        }
+
         return $this->resetter;
     }
 
