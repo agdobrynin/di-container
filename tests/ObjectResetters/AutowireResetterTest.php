@@ -88,4 +88,11 @@ class AutowireResetterTest extends TestCase
 
         self::assertEquals('reset', $definition->getResetter());
     }
+
+    public function testResetterViaResetterInterfaceIdIsWrongClassName(): void
+    {
+        $definition = new DiDefinitionAutowire(NotFound::class);
+
+        self::assertFalse($definition->getResetter());
+    }
 }
