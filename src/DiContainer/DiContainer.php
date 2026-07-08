@@ -103,6 +103,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected readonly array $containerIds;
 
     /**
+     * @var array<class-string, true>
+     */
+    protected readonly array $objectResettersIds;
+
+    /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      * @param iterable<class-string|non-empty-string>                                            $removedDefinitionIds
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
@@ -123,6 +128,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             ? new ImmediateSourceParameters($parameters)
             : $parameters;
         $this->containerIds = [ContainerInterface::class => true, DiContainerInterface::class => true, __CLASS__ => true];
+        $this->objectResettersIds = [ObjectResetters::class => true, ObjectResettersInterface::class => true];
     }
 
     public function get(string $id): mixed
@@ -142,7 +148,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function set(string $id, mixed $definition): static
     {
-        if (isset($this->containerIds[$id]) || ObjectResettersInterface::class === $id) {
+        if (isset($this->containerIds[$id]) || isset($this->objectResettersIds[$id])) {
             throw new ContainerIdentifierAlreadyRegisteredException(id: $id);
         }
 
@@ -200,20 +206,18 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      */
     public function getDefinitions(): iterable
     {
-        $needAutoconfigureObjectRestters = $this->config->isConfigureObjectResettersFromDefinitions();
-
         foreach ($this->definitions->getIterator() as $id => $definition) {
             if (!isset($this->containerIds[$id])) {
                 yield $id => $definition;
             }
-
-            if ($needAutoconfigureObjectRestters && ObjectResettersInterface::class === $id) {
-                $needAutoconfigureObjectRestters = false;
-            }
         }
 
-        if ($needAutoconfigureObjectRestters) {
-            yield ObjectResettersInterface::class => $this->autoconfigureObjectResettersDefinition();
+        if ($this->config->isConfigureObjectResettersFromDefinitions()) {
+            foreach ($this->objectResettersIds as $id => $v) {
+                if (!$this->definitions->has($id)) {
+                    yield $id => $this->autoconfigureObjectResettersDefinition();
+                }
+            }
         }
     }
 
@@ -339,7 +343,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id];
         }
 
-        if ($this->config->isConfigureObjectResettersFromDefinitions() && ObjectResettersInterface::class === $id) {
+        if ($this->config->isConfigureObjectResettersFromDefinitions() && isset($this->objectResettersIds[$id])) {
             $resetter = $this->autoconfigureObjectResettersDefinition();
             $this->definitions->set($id, $resetter);
 
@@ -422,7 +426,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
-        if (ObjectResettersInterface::class === $id) {
+        if (isset($this->objectResettersIds[$id])) {
             return $this->config->isConfigureObjectResettersFromDefinitions();
         }
 

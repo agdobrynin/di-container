@@ -27,7 +27,6 @@ use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
 use Kaspi\DiContainer\Interfaces\FinderFullyQualifiedNameCollectionInterface;
-use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
@@ -42,7 +41,6 @@ use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\Foo;
 use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\FooInterface;
 
 use function array_keys;
-use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 use function sort;
 
@@ -98,13 +96,13 @@ class DefinitionsLoaderImportTest extends TestCase
         $container = (new DiContainerFactory(
             new DiContainerConfig(
                 isSingletonServiceDefault: false, // by default service none-singleton
+                isConfigureObjectResettersFromDefinitions: false,
             )
         ))->make($loader->definitions());
 
-        $containerIds = array_keys(iterator_to_array($container->getDefinitions()));
+        $containerIds = array_keys([...$container->getDefinitions()]);
 
         $expectContainerIds = [
-            ObjectResettersInterface::class,
             Fixtures\Import\SubDirectory\One::class,
             Two::class,
             Fixtures\Import\One::class,
