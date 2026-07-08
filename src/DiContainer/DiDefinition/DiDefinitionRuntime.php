@@ -16,6 +16,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterfac
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\FreezeInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\TagsOnObjectDefinitionTrait;
@@ -117,6 +118,14 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
 
     public function getResetter(): callable|false|string
     {
+        try {
+            if (false === $this->resetter && $this->isImplementInterface(ResetInterface::class)) {
+                return 'reset';
+            }
+        } catch (DiDefinitionExceptionInterface) {
+            return false;
+        }
+
         return $this->resetter;
     }
 
