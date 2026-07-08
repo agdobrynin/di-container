@@ -58,7 +58,7 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
 
                 public function isConfigureObjectResettersFromDefinitions(): bool
                 {
-                    return <?php echo \var_export($config->isConfigureObjectResettersFromDefinitions(), true); ?>;
+                    return false;
                 }
             },
 <?php if ($container->getRemovedDefinitionIds()->valid()) { ?>
