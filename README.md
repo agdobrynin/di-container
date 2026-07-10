@@ -169,6 +169,14 @@ $container->call(
 Для определений контейнера у которых неуказан способ получения через метод контейнера `get()`
 применяется значение по умолчанию из конфигурации.
 
+#### Конфигурировать сервис сброса состояния объектов из определений контейнера:
+```php
+\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface::isConfigureObjectResettersFromDefinitions(): bool;
+```
+В долгоживущих процессах некоторые сервисы контейнера могут требовать сброса своего состояния.
+Для сброса состояния таких сервисов может быть использован механизм автоматического конфигурирования
+сервиса на основе конфигурации определений контейнера. Подробности в разделе [«Сброс состояния объектов для долго-живущих процессов».](https://github.com/agdobrynin/di-container/blob/main/docs/12-object-resetters.md)
+
 **Пример конфигурации:**
 ```php
 use Kaspi\DiContainer\{DiContainerConfig, DiContainerBuilder};
@@ -177,6 +185,7 @@ $diConfig = new DiContainerConfig(
     useZeroConfigurationDefinition: false,
     useAttribute: false,
     isSingletonServiceDefault: true,
+    isConfigureObjectResettersFromDefinitions: false,
 );
 
 // передать настройки в построитель контейнера
