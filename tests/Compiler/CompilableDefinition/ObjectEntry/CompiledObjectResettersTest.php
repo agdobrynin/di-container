@@ -132,8 +132,7 @@ class CompiledObjectResettersTest extends TestCase
   \'service.foo\' => static function (\Tests\Compiler\CompilableDefinition\ObjectEntry\Fixtures\Foo $foo): void {},
   \'service.baz\' => [\'\\\Tests\\\Compiler\\\CompilableDefinition\\\ObjectEntry\\\Fixtures\\\BazResetter\', \'doReset\'],
   \'service.bar\' => \'reset\',
-]
-)',
+])',
             $compiledEntry->getStatements()[1]
         );
     }

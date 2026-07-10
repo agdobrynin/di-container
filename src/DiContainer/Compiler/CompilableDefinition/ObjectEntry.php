@@ -156,7 +156,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
                     $codeResetters .= ",\n";
                 }
 
-                $codeResetters .= "]\n";
+                $codeResetters .= ']';
 
                 $serviceSetupStatement = sprintf('%s->%s(%s)', $serviceVar, $methodName, $codeResetters);
                 $objectCompiledEntry->addToStatements($serviceSetupStatement);
