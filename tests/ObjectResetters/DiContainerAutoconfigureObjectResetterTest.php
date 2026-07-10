@@ -112,8 +112,10 @@ class DiContainerAutoconfigureObjectResetterTest extends TestCase
 
         self::assertEquals('bar', $container->get(Foo::class)->foo);
 
-        $resetter = $container->get(ObjectResettersInterface::class);
-        $resetter->reset();
+        foreach ([ObjectResetters::class, ObjectResettersInterface::class] as $objectResettersEntryId) {
+            $resetter = $container->get($objectResettersEntryId);
+            $resetter->reset();
+        }
 
         self::assertEquals('null', $container->get(Foo::class)->foo);
     }

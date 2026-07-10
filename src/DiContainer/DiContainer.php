@@ -213,10 +213,20 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         if ($this->config->isConfigureObjectResettersFromDefinitions()) {
+            $needAutoconfigureObjectResetters = true;
+
             foreach ($this->objectResettersIds as $id => $v) {
-                if (!$this->definitions->has($id)) {
-                    yield $id => $this->autoconfigureObjectResettersDefinition();
+                if ($this->definitions->has($id)) {
+                    $needAutoconfigureObjectResetters = false;
+
+                    break;
                 }
+            }
+
+            if ($needAutoconfigureObjectResetters) {
+                $diDefinitionAutowireObjectResetters = $this->autoconfigureObjectResettersDefinition();
+
+                yield $diDefinitionAutowireObjectResetters->getIdentifier() => $diDefinitionAutowireObjectResetters;
             }
         }
     }
@@ -343,7 +353,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id];
         }
 
-        if ($this->config->isConfigureObjectResettersFromDefinitions() && isset($this->objectResettersIds[$id])) {
+        if (isset($this->objectResettersIds[$id]) && $this->config->isConfigureObjectResettersFromDefinitions()) {
+            foreach ($this->objectResettersIds as $entryId => $v) {
+                if (isset($this->diResolvedDefinition[$entryId])) {
+                    return $this->diResolvedDefinition[$id] = $this->diResolvedDefinition[$entryId];
+                }
+            }
+
             $resetter = $this->autoconfigureObjectResettersDefinition();
             $this->definitions->set($id, $resetter);
 
