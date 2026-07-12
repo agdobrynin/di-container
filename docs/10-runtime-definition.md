@@ -17,14 +17,14 @@
 Хелпер функция для конфигурационных файлов.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\{DiDefinitionTagArgumentInterface, DiDefinitionResetterSetterInterface};
 use function \Kaspi\DiContainer\diRuntime;
 
 diRuntime(
     string $containerIdentifierOrClass,
     ?string $message = null,
     ?string $classDefinition = null
-): DiDefinitionTagArgumentInterface
+): DiDefinitionTagArgumentInterface & DiDefinitionResetterSetterInterface
 ```
 Параметры:
 - `$containerIdentifierOrClass` – идентификатора контейнера реализующий сервис или имя класса реализующего сервис, который будет добавлен позже.
@@ -32,11 +32,14 @@ diRuntime(
 - `$classDefinition` – применяется для точного указания PHP класса в определении если необходимо [получать ключ элемента](05-tags.md#ключ-из-метаданных-тега-через-метод-класса) в тегированной коллекции через метод PHP класса или [получать приоритет элемента в тегированной коллекции](05-tags.md#prioritymethod-и-prioritydefaultmethod-для-приоритизации-в-коллекции) через метод PHP класса.
 
 > [!IMPORTANT]
-> Функция `diRuntime` возвращает объект реализующий интерфейс
-> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+> Функция `diRuntime` возвращает объект реализующий интерфейсы:
+> - `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`, 
+> - `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
+
 >
-> Интерфейс представляет методы:
->   - `bindTag` - добавляет тег с мета-данными для определения
+> Методы доступные при вызове хелпер функции:
+>   - `bindTag` - добавляет тег с мета-данными для определения.
+>   - `setResetter` - [конфигурация сброса состояния объекта](12-object-resetters.md).
 >
 > [Пример использования тегов](#пример-тегирования-runtime-definition).
 
