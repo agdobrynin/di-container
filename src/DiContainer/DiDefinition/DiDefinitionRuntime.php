@@ -11,9 +11,12 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\FreezeInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Traits\TagsOnObjectDefinitionTrait;
@@ -24,7 +27,7 @@ use function rtrim;
 use function sprintf;
 use function var_export;
 
-final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface
+final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface, DiDefinitionResetterSetterInterface, DiDefinitionResetterInterface
 {
     use TagsOnObjectDefinitionTrait {
         reset as private resetTrait;
@@ -33,6 +36,11 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
     private object $definition;
 
     private ReflectionClass $classDefinitionReflection;
+
+    /**
+     * @var callable(object): void|false|non-empty-string
+     */
+    private $resetter = false;
 
     /**
      * @param class-string|non-empty-string $containerIdentifierOrClass
@@ -106,6 +114,32 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
             $this->definition,
             $this->classDefinitionReflection,
         );
+    }
+
+    public function getResetter(): callable|false|string
+    {
+        try {
+            if (false === $this->resetter && $this->isImplementInterface(ResetInterface::class)) {
+                return 'reset';
+            }
+        } catch (DiDefinitionExceptionInterface) {
+            return false;
+        }
+
+        return $this->resetter;
+    }
+
+    public function setResetter(callable|string $resetter): static
+    {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call \%s::setResetter() on a frozen definition.', __CLASS__)
+            );
+        }
+
+        $this->resetter = $resetter;
+
+        return $this;
     }
 
     protected function readTagAttributes(): Generator

@@ -41,7 +41,6 @@ use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\Foo;
 use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\FooInterface;
 
 use function array_keys;
-use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 use function sort;
 
@@ -97,10 +96,11 @@ class DefinitionsLoaderImportTest extends TestCase
         $container = (new DiContainerFactory(
             new DiContainerConfig(
                 isSingletonServiceDefault: false, // by default service none-singleton
+                isConfigureObjectResettersFromDefinitions: false,
             )
         ))->make($loader->definitions());
 
-        $containerIds = array_keys(iterator_to_array($container->getDefinitions()));
+        $containerIds = array_keys([...$container->getDefinitions()]);
 
         $expectContainerIds = [
             Fixtures\Import\SubDirectory\One::class,

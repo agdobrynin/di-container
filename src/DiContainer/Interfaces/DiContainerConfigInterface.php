@@ -11,4 +11,6 @@ interface DiContainerConfigInterface
     public function isUseZeroConfigurationDefinition(): bool;
 
     public function isUseAttribute(): bool;
+
+    public function isConfigureObjectResettersFromDefinitions(): bool;
 }
