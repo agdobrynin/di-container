@@ -241,6 +241,7 @@ var_dump($container->get(TestClass::class)->container instanceof ContainerInterf
 * 📋 [Параметры контейнера](https://github.com/agdobrynin/di-container/blob/main/docs/09-container-parameters.md).
 * 🗳️ [Внедрение экземпляра класса в рантайм контейнер](https://github.com/agdobrynin/di-container/blob/main/docs/10-runtime-definition.md).
 * 🧹 [Сброс контейнера зависимостей](https://github.com/agdobrynin/di-container/blob/main/docs/11-container-reset.md).
+* ♻️ [Сброс состояния объектов для долго-живущих процессов](https://github.com/agdobrynin/di-container/blob/main/docs/12-object-resetters.md).
 
 ## Тесты
 Запуск тестов без подсчёта покрытия кода
