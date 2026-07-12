@@ -423,7 +423,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if (($diRuntimes = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
                 foreach ($diRuntimes as $diRuntime) {
                     if ('' === $diRuntime->containerIdentifier || $diRuntime->containerIdentifier === $reflectionClass->name) {
-                        return $this->diResolvedDefinition[$id] = new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message);
+                        $runtimeDefinition = new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message);
+
+                        if (false !== $diRuntime->getResetter()) {
+                            $runtimeDefinition->setResetter($diRuntime->getResetter());
+                        }
+
+                        return $this->diResolvedDefinition[$id] = $runtimeDefinition;
                     }
                 }
             }
