@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DefinitionsLoader\RemovedDefinitions\Fixtures\Foo;
@@ -136,5 +137,31 @@ class RemovedDefinitionsTest extends TestCase
         self::assertTrue($loader->removedDefinitionIds()->valid());
         $loader->reset();
         self::assertFalse($loader->removedDefinitionIds()->valid());
+    }
+
+    public function testCachedRemovedDefinitionsInConfigurator(): void
+    {
+        vfsStream::setup(structure: [
+            'config1.php' => '<?php return function (\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface $configurator) {
+    $configurator->removeDefinition(\App\Services\Foo::class);
+};',
+            'config2.php' => '<?php return function (\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface $configurator) {
+    $configurator->removeDefinition(\App\Services\Bar::class);
+};',
+        ]);
+        $loader = (new DefinitionsLoader());
+        $loader->load(vfsStream::url('root/config1.php'));
+        $loader->load(vfsStream::url('root/config2.php'));
+
+        $removedIdsOne = [...$loader->removedDefinitionIds()];
+
+        self::assertSame(
+            [
+                'App\Services\Foo',
+                'App\Services\Bar',
+            ],
+            $removedIdsOne,
+        );
+        self::assertEquals($removedIdsOne, [...$loader->removedDefinitionIds()]);
     }
 }
