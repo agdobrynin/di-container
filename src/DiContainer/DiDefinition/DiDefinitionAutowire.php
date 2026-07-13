@@ -289,7 +289,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->containerIdentifier;
     }
 
-    public function setResetter(callable|string $resetter): static
+    public function setResetter(callable|false|string $resetter): static
     {
         if ($this->isFrozen) {
             throw new DiDefinitionException(

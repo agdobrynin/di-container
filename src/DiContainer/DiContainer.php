@@ -407,15 +407,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if (($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
                 foreach ($autowires as $autowire) {
                     if ('' === $autowire->id || $autowire->id === $reflectionClass->name) {
-                        $autowireDefinition = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
+                        return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
                             ->bindArguments(...$autowire->arguments)
+                            ->setResetter($autowire->getResetter())
                         ;
-
-                        if (false !== $autowire->getResetter()) {
-                            $autowireDefinition->setResetter($autowire->getResetter());
-                        }
-
-                        return $this->diResolvedDefinition[$id] = $autowireDefinition;
                     }
                 }
             }
@@ -423,13 +418,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if (($diRuntimes = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
                 foreach ($diRuntimes as $diRuntime) {
                     if ('' === $diRuntime->containerIdentifier || $diRuntime->containerIdentifier === $reflectionClass->name) {
-                        $runtimeDefinition = new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message);
-
-                        if (false !== $diRuntime->getResetter()) {
-                            $runtimeDefinition->setResetter($diRuntime->getResetter());
-                        }
-
-                        return $this->diResolvedDefinition[$id] = $runtimeDefinition;
+                        return $this->diResolvedDefinition[$id] = (new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message))
+                            ->setResetter($diRuntime->getResetter())
+                        ;
                     }
                 }
             }
