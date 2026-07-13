@@ -242,7 +242,7 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 
 **Конфигурация сброса состояния объекта:**
 ```php
-setResetter(callable|string $resetter)
+setResetter(callable|false|string $resetter)
 ```
 
 > Более подробное [описание конфигурации для сброса состояния объекта](12-object-resetters.md).

@@ -97,7 +97,7 @@ while ($request = $app->getRequest()) {
 
 Метод конфигурирования:
 ```php
-setResetter(callable|string $resetter)
+setResetter(callable|false|string $resetter)
 ``` 
 Параметры:
 - `$resetter` – конфигурация сброса состояния объекта.
