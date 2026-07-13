@@ -6,5 +6,8 @@ namespace Tests\DiContainer\ResolveByDiRuntime\Fixtures;
 
 use Kaspi\DiContainer\Attributes\DiRuntime;
 
-#[DiRuntime]
-final class Foo {}
+#[DiRuntime(resetter: 'doReset')]
+final class Foo
+{
+    public function doReset(): void {}
+}
