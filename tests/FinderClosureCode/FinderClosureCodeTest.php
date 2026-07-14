@@ -20,6 +20,7 @@ use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
+use Tests\FinderClosureCode\Fixture\Foo;
 use Tests\FinderClosureCode\Fixture\SomeTrait;
 use Tests\FinderClosureCode\Fixture\Y;
 
@@ -245,14 +246,18 @@ EXPECT;
     public function testCachedParseFileUses(): void
     {
         $fn = static fn () => true;
-        $fn2 = static function (): Tag { return new Tag(name: 'ok'); };
+        $fn2 = static function (): Tag {
+            return new Tag(name: 'ok');
+        };
 
         $fcc = new FinderClosureCode();
         $code1 = $fcc->getCode($fn);
         $code2 = $fcc->getCode($fn2);
 
         self::assertEquals('static fn () => true', $code1);
-        self::assertEquals('static function (): \Kaspi\DiContainer\Attributes\Tag { return new \Kaspi\DiContainer\Attributes\Tag(name: \'ok\'); }', $code2);
+        self::assertEquals('static function (): \Kaspi\DiContainer\Attributes\Tag {
+            return new \Kaspi\DiContainer\Attributes\Tag(name: \'ok\');
+        }', $code2);
     }
 
     public function testUseTraitInAnonymousClass(): void
@@ -430,5 +435,52 @@ EXPECT;
                     : throw new \Kaspi\DiContainer\Exception\ContainerException(\sprintf(\'Cannot pass %s\', \get_debug_type($foo)));
             }
         }', $code);
+    }
+
+    public function testLocalThisStaticFunction(): void
+    {
+        $fn = static function (Foo $foo): void {
+            (fn () => $this->foo = 'foo value')->bindTo($foo, $foo)();
+        };
+
+        $foo = new Foo();
+        self::assertEquals('Lorem ipsum', $foo->getFoo());
+
+        $fn($foo);
+
+        self::assertEquals('foo value', $foo->getFoo());
+
+        $code = (new FinderClosureCode())->getCode($fn);
+
+        $expectCode = <<< 'EXPECT'
+static function (\Tests\FinderClosureCode\Fixture\Foo $foo): void {
+            (fn () => $this->foo = 'foo value')->bindTo($foo, $foo)();
+        }
+EXPECT;
+
+        self::assertEquals($expectCode, $code);
+    }
+
+    public function testLocalThisStaticShortFunction(): void
+    {
+        $fn = static fn (Foo $foo) => (fn () => $this->foo = 'foo value')
+            ->bindTo($foo, $foo)()
+        ;
+
+        $foo = new Foo();
+        self::assertEquals('Lorem ipsum', $foo->getFoo());
+
+        $fn($foo);
+
+        self::assertEquals('foo value', $foo->getFoo());
+
+        $code = (new FinderClosureCode())->getCode($fn);
+
+        $expectCode = <<< 'EXPECT'
+static fn (\Tests\FinderClosureCode\Fixture\Foo $foo) => (fn () => $this->foo = 'foo value')
+            ->bindTo($foo, $foo)()
+EXPECT;
+
+        self::assertEquals($expectCode, $code);
     }
 }
