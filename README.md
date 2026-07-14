@@ -136,9 +136,6 @@ $container->call(
 > [!TIP]
 > Больше информации о [методе `call()`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
 
-> [!NOTE]
-> Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples)
-
 ### Конфигурирование DiContainer
 
 Для конфигурирования контейнера используется класс
