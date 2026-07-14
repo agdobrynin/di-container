@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\DiContainer\ResolveByDiRuntime\Fixtures;
+namespace Tests\AttributeReader\DiRuntime\Fixtures;
 
 use Kaspi\DiContainer\Attributes\DiRuntime;
 
 #[DiRuntime(resetter: 'doReset')]
-final class Foo
+final class Bat
 {
     public function doReset(): void {}
 }

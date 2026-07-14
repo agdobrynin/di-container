@@ -620,6 +620,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
                 $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
                     ->bindArguments(...$autowireAttr->arguments)
+                    ->setResetter($autowireAttr->getResetter())
                 ;
             }
 
@@ -653,7 +654,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $diRuntimeServices[$containerIdentifier] = new DiDefinitionRuntime($containerIdentifier, $diRuntimeAttr->message, $reflectionClass->name);
+                $diRuntimeServices[$containerIdentifier] = (new DiDefinitionRuntime($containerIdentifier, $diRuntimeAttr->message, $reflectionClass->name))
+                    ->setResetter($diRuntimeAttr->getResetter())
+                ;
             }
 
             return $diRuntimeServices;

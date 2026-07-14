@@ -70,10 +70,10 @@ class ResolveByDiRuntimeTest extends TestCase
 
     public function testGetRuntimeDefinitionSuccess(): void
     {
-        $this->diContainer->getDefinition(Foo::class)
-            ->setDefinition(new Foo())
-        ;
+        $definition = $this->diContainer->getDefinition(Foo::class);
+        $definition->setDefinition(new Foo());
 
+        self::assertEquals('doReset', $definition->getResetter());
         self::assertInstanceOf(Foo::class, $this->diContainer->get(Foo::class));
     }
 }

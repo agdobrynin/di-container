@@ -66,12 +66,14 @@ diRuntime(
     string $containerIdentifier = '',
     ?string $message = null,
     array|\Kaspi\DiContainer\Attributes\Tag|null $tags = null,
+    callable|false|string $resetter = false,
 )]
 ```
 Параметры:
 - `$containerIdentifier` – идентификатора контейнера реализующий сервис, который будет добавлен позже.
 - `$message` – дополнительное информационное сообщение при ошибке.
 - `$tags` – указание тегов к конкретному идентификатору контейнера указанному в параметре `$containerIdentifier`.
+- `$resetter` – значение которое будет вызвано [для сброса состояния объекта](12-object-resetters.md).
 
 > [!TIP]
 > Атрибут может быть применен к классу несколько раз с разными значениями параметра `$containerIdentifier`.

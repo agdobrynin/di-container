@@ -79,6 +79,7 @@ while ($request = $app->getRequest()) {
 Типы значений:
 - `callable(object $object): void` – вызываемое выражение с параметром типа `object` которое будет получено через метод контейнера `get(string $id)`.
 - `non-empty-string` – имя публичного метода PHP класса которое будет получено через метод контейнера `get(string $id)`.
+- `false` – значение конфигурации сброса не установлено, проводить проверку реализации интерфейса `\Kaspi\DiContainer\Interfaces\ResetInterface`.
 
 
 > [!TIP]
@@ -97,7 +98,7 @@ while ($request = $app->getRequest()) {
 
 Метод конфигурирования:
 ```php
-setResetter(callable|string $resetter)
+setResetter(callable|false|string $resetter)
 ``` 
 Параметры:
 - `$resetter` – конфигурация сброса состояния объекта.
@@ -108,13 +109,23 @@ setResetter(callable|string $resetter)
 - [diAutowire](01-php-definition.md#diautowire).
 - [diRuntime](10-runtime-definition.md#хелпер-функция-diruntime).
 
-**Пример конфигурирования сброса состояния объекта через определение контейнера**:
+Установить конфигурацию сброса для нужного объекта так же можно через значение в PHP атрибутах:
+- [Autowire](02-attribute-definition.md#autowire).
+- [DiRuntime](10-runtime-definition.md#атрибут-diruntime).
+
+**Пример конфигурирования сброса состояния объекта через определение контейнера**.
+
+Конфигурирование сервиса через [PHP атрибут Autowire](02-attribute-definition.md#autowire):
 ```php
 declare(strict_types=1);
 
 // /app/src/Services/Foo.php
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\Autowire;
+
+// Для сброса вызвать метод класса Foo::doReset()
+#[Autowire(isSingleton: true, resetter: 'doReset')]
 final class Foo {
     // other method here
 
@@ -129,6 +140,8 @@ declare(strict_types=1);
 // /app/src/Services/Bar.php
 namespace App\Services;
 
+// конфигурировать класс в файле 
+// `'/app/src/config/services_with_resetters.php'`
 final class Bar {
     // other method here
     
@@ -152,10 +165,6 @@ use App\Services\{Foo, Bar};
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-    yield diAutowire(Foo::class, isSingleton: true)
-        // Для сброса вызвать метод класса Foo::doReset()
-        ->setResetter('doReset');
-    
     yield diAutowire(Bar::class, isSingleton: true)
         // Для сброса вызвать callback функцию
         ->setResetter(static function (Bar $bar): void {
@@ -203,8 +212,8 @@ while ($request = $app->getRequest()) {
 >
 
 > [!TIP]
-> Если PHP класс реализует интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`,
-> то контейнер автоматически сконфигурирует определение для сброса состояния через метод класса `reset()`.
+> При установленном значении `false` для сброса состояния объекта, будет проверено реализуется ли PHP классом интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`,
+> если реализует, то контейнер автоматически сконфигурирует определение для сброса состояния через метод класса `reset()`.
 > ```php
 >   final class Foo implements \Kaspi\DiContainer\Interfaces\ResetInterface
 >   {
