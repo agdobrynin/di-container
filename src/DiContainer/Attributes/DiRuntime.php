@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\Attributes;
 
 use Attribute;
+use Kaspi\DiContainer\Traits\ResetterTrait;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 final class DiRuntime
 {
-    /**
-     * @var callable|false|non-empty-string
-     */
-    private $resetter;
+    use ResetterTrait;
 
     /**
      * @param class-string|string                                   $containerIdentifier
@@ -26,15 +24,5 @@ final class DiRuntime
         callable|false|string $resetter = false,
     ) {
         $this->resetter = $resetter;
-    }
-
-    /**
-     * Provides a reset mechanism for an object obtained via the container's `get()` method.
-     *
-     * @return callable(object $object): void|false|non-empty-string
-     */
-    public function getResetter(): callable|false|string
-    {
-        return $this->resetter;
     }
 }

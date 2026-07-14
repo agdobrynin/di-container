@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Attributes;
 
 use Attribute;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Traits\ResetterTrait;
 
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
@@ -13,10 +14,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 final class Autowire
 {
-    /**
-     * @var callable|false|non-empty-string
-     */
-    private $resetter;
+    use ResetterTrait;
 
     /**
      * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed>              $arguments arguments for `__constructor()` method
@@ -33,15 +31,5 @@ final class Autowire
         callable|false|string $resetter = false,
     ) {
         $this->resetter = $resetter;
-    }
-
-    /**
-     * Provides a reset mechanism for an object obtained via the container's `get()` method.
-     *
-     * @return callable(object $object): void|false|non-empty-string
-     */
-    public function getResetter(): callable|false|string
-    {
-        return $this->resetter;
     }
 }
