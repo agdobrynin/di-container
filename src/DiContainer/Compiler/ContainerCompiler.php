@@ -50,7 +50,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
      */
     private array $runtimeDefinitions = [];
 
-    private CompiledEntryInterface $containerParametersEntry;
+    private CompiledEntryInterface $containerParametersEntry; // @phpstan-ignore property.onlyWritten
 
     /**
      * @param class-string $containerClass container class as fully qualified name
