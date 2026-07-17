@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Compiler;
 
 use Generator;
 use InvalidArgumentException;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ContainerParametersEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
@@ -48,6 +49,8 @@ final class ContainerCompiler implements ContainerCompilerInterface
      * @var array<non-empty-string, DiDefinitionRuntimeInterface>
      */
     private array $runtimeDefinitions = [];
+
+    private CompiledEntryInterface $containerParametersEntry;
 
     /**
      * @param class-string $containerClass container class as fully qualified name
@@ -167,6 +170,10 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
             $definitions->next();
         }
+
+        $this->containerParametersEntry = (new ContainerParametersEntry($this->diContainerDefinitions, $this->invalidBehaviorCompile))
+            ->compile('$this')
+        ;
 
         ob_start();
 
