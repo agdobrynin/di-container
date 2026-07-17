@@ -6,6 +6,7 @@ namespace Tests\ContainerBuilder;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ContainerParametersEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
@@ -31,6 +32,7 @@ use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
+use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
 use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -83,6 +85,8 @@ use function random_bytes;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(GetEntry::class)]
 #[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(ContainerParametersEntry::class)]
+#[CoversClass(AbstractSourceParameters::class)]
 class DiContainerBuilderTest extends TestCase
 {
     public function testDefinitionLoaderImportThrowException(): void

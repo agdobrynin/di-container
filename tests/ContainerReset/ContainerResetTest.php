@@ -24,6 +24,7 @@ use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
+use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\Parameters\SourceParameterItem;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -71,6 +72,7 @@ use function random_bytes;
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversFunction('Kaspi\DiContainer\diAutowire')]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(DeferredSourceParameters::class)]
 class ContainerResetTest extends TestCase
 {
     #[DataProvider('dataProviderContainer')]

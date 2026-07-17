@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Compiler\Compiler;
 
 use Generator;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ContainerParametersEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
@@ -62,6 +63,7 @@ use function random_bytes;
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversFunction('Kaspi\DiContainer\diRuntime')]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(ContainerParametersEntry::class)]
 class CompileTest extends TestCase
 {
     private DiDefinitionTransformerInterface $mockTransformer;

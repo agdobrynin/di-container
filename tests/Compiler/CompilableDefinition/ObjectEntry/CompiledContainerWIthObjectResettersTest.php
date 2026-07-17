@@ -6,6 +6,7 @@ namespace Tests\Compiler\CompilableDefinition\ObjectEntry;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ContainerParametersEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\GetEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ObjectEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntries;
@@ -28,6 +29,7 @@ use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\ObjectResetters;
+use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
 use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -86,6 +88,8 @@ use function random_bytes;
 #[CoversFunction('Kaspi\DiContainer\diAutowire')]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(ContainerParametersEntry::class)]
+#[CoversClass(AbstractSourceParameters::class)]
 class CompiledContainerWIthObjectResettersTest extends TestCase
 {
     public function testObjectResettersCompilation(): void
