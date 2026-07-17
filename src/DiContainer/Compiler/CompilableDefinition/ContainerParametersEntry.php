@@ -14,6 +14,7 @@ use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
+use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Throwable;
 
 use function sprintf;
@@ -64,10 +65,7 @@ final class ContainerParametersEntry implements CompilableDefinitionInterface
         } while ($parameters->valid());
 
         if ('' !== $yieldParameters) {
-            $expression = <<< DEFERRED
-new \\Kaspi\\DiContainer\\Parameters\\DeferredSourceParameters(static function () {
-{$yieldParameters}})
-DEFERRED;
+            $expression = sprintf('new \%s(static function () {%s})', DeferredSourceParameters::class, PHP_EOL.$yieldParameters);
 
             return (new CompiledEntry())
                 ->setExpression($expression)
