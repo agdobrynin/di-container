@@ -74,6 +74,11 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
             $this->nameCircularCallWatcher[$name] = true;
             $parameterItem = $this->initializerParameters()[$name];
 
+            if ($parameterItem->src instanceof ParameterExceptionInterface
+                || $parameterItem->src instanceof ParameterNotFoundExceptionInterface) {
+                throw $parameterItem->src;
+            }
+
             return $parameterItem->isResolved()
                 ? $parameterItem->getResolved()
                 : $parameterItem->setResolved($this->resolveValue($parameterItem->src))->getResolved();

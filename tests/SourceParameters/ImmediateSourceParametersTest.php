@@ -6,6 +6,7 @@ namespace Tests\SourceParameters;
 
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Exception\ParameterCallCircularException;
+use Kaspi\DiContainer\Exception\ParameterException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
@@ -137,5 +138,19 @@ class ImmediateSourceParametersTest extends TestCase
 
         $p = new ImmediateSourceParameters(['foo' => 'bar']);
         $p->set('foo', 'baz');
+    }
+
+    public function testGetParameterWithException(): void
+    {
+        $this->expectException(ParameterExceptionInterface::class);
+        $this->expectExceptionMessage('Something went wrong!');
+
+        $p = new ImmediateSourceParameters([
+            'foo' => '{bar}',
+            'bar' => ['Lorem ipsum', '{baz}'],
+            'baz' => new ParameterException('Something went wrong!'),
+        ]);
+
+        $p->get('foo');
     }
 }
