@@ -105,10 +105,18 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
         }
     }
 
-    public function parameters(): Iterator
+    public function parameters(?callable $fallback = null): Iterator
     {
         foreach ($this->initializerParameters() as $parameter) {
-            yield $parameter->name => $this->get($parameter->name);
+            try {
+                yield $parameter->name => $this->get($parameter->name);
+            } catch (ParameterExceptionInterface|ParameterNotFoundExceptionInterface $e) {
+                if (null === $fallback) {
+                    throw $e;
+                }
+
+                yield $parameter->name => $fallback($parameter->name, $e);
+            }
         }
     }
 

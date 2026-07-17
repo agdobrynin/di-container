@@ -7,6 +7,7 @@ namespace Kaspi\DiContainer\Interfaces;
 use Iterator;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
+use Throwable;
 use UnitEnum;
 
 /**
@@ -43,9 +44,11 @@ interface SourceParametersMutableInterface extends ResetInterface
     public function add(iterable $parameters): void;
 
     /**
-     * @return Iterator<non-empty-string, SourceParameterType>
+     * @param null|callable(string $parameterName, Throwable $e): mixed $fallback
+     *
+     * @return Iterator<non-empty-string, ($fallback is null ? SourceParameterType : mixed|SourceParameterType)>
      *
      * @throws ParameterExceptionInterface|ParameterNotFoundExceptionInterface
      */
-    public function parameters(): Iterator;
+    public function parameters(?callable $fallback = null): Iterator;
 }

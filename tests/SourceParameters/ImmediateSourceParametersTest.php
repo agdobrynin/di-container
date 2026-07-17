@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Throwable;
 
 use function current;
 use function next;
@@ -152,5 +153,51 @@ class ImmediateSourceParametersTest extends TestCase
         ]);
 
         $p->get('foo');
+    }
+
+    public function testFallbackEnabledForGetParameters(): void
+    {
+        $p = new ImmediateSourceParameters([
+            'foo' => 'Lorem ipsum',
+            'baz' => '{none-exist-param-name}',
+            'bar' => new stdClass(),
+        ]);
+
+        $fallback = static fn (string $name, Throwable $exception): mixed => $exception;
+
+        $params = $p->parameters($fallback);
+
+        self::assertEquals('foo', $params->key());
+        self::assertEquals('Lorem ipsum', $params->current());
+
+        $params->next();
+
+        self::assertEquals('baz', $params->key());
+        self::assertInstanceOf(ParameterNotFoundExceptionInterface::class, $params->current());
+        self::assertStringContainsString('Parameter name "none-exist-param-name" not found.', $params->current()->getMessage());
+
+        $params->next();
+
+        self::assertEquals('bar', $params->key());
+        self::assertInstanceOf(ParameterExceptionInterface::class, $params->current());
+        self::assertStringContainsString('unsupported value type: "stdClass".', $params->current()->getMessage());
+    }
+
+    public function testFallbackDisabledForGetParameters(): void
+    {
+        $p = new ImmediateSourceParameters([
+            'foo' => 'Lorem ipsum',
+            'baz' => '{none-exist-param-name}',
+        ]);
+
+        $params = $p->parameters();
+
+        self::assertEquals('foo', $params->key());
+        self::assertEquals('Lorem ipsum', $params->current());
+
+        $this->expectException(ParameterNotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Parameter name "none-exist-param-name" not found.');
+
+        $params->next();
     }
 }
