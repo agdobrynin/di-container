@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Parameters;
 
+use Iterator;
 use Kaspi\DiContainer\Exception\ParameterCallCircularException;
 use Kaspi\DiContainer\Exception\ParameterException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
@@ -99,7 +100,7 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
         }
     }
 
-    public function parameters(): iterable
+    public function parameters(): Iterator
     {
         foreach ($this->initializerParameters() as $parameter) {
             yield $parameter->name => $this->get($parameter->name);

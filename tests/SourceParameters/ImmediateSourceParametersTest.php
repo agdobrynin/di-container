@@ -18,6 +18,9 @@ use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+use function current;
+use function next;
+
 /**
  * @internal
  */
@@ -92,7 +95,14 @@ class ImmediateSourceParametersTest extends TestCase
         $p = new ImmediateSourceParameters();
         $p->add($params);
 
-        self::assertEquals($expect, [...$p->parameters()]);
+        $paramsIterator = $p->parameters();
+
+        while ($paramsIterator->valid()) {
+            self::assertEquals(current($expect), $paramsIterator->current());
+
+            next($expect);
+            $paramsIterator->next();
+        }
     }
 
     #[TestWith([['foo' => new stdClass()]])]
