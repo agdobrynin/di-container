@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader;
 
+use Closure;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiRuntime;
@@ -16,8 +17,10 @@ use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\Bar;
+use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\Baz;
 use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\Foo;
 use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\FooResetter;
 
@@ -44,6 +47,7 @@ class AttributeConfireResetterTest extends TestCase
                 __DIR__.'/Fixtures/AttributeResetterConfig',
                 excludeFiles: [
                     __DIR__.'/Fixtures/AttributeResetterConfig/FooFailResetter.php',
+                    __DIR__.'/Fixtures/AttributeResetterConfig/Baz.php',
                 ]
             )
             ->definitions()];
@@ -66,9 +70,42 @@ class AttributeConfireResetterTest extends TestCase
         $this->expectExceptionMessage('($resetter) must be of type callable|string|false, array given');
 
         $definitions = (new DefinitionsLoader())
-            ->import('Tests\\', __DIR__.'/Fixtures/AttributeResetterConfig')
+            ->import(
+                'Tests\\',
+                __DIR__.'/Fixtures/AttributeResetterConfig',
+                excludeFiles: [
+                    __DIR__.'/Fixtures/AttributeResetterConfig/Baz.php',
+                ]
+            )
         ;
 
         [...$definitions->definitions()];
+    }
+
+    #[RequiresPhp('>= 8.5')]
+    public function testConfigureResetterViaAttributeResetterAsClosure(): void
+    {
+        $definitions = (new DefinitionsLoader())
+            ->import(
+                'Tests\\',
+                __DIR__.'/Fixtures/AttributeResetterConfig',
+                excludeFiles: [
+                    __DIR__.'/Fixtures/AttributeResetterConfig/FooFailResetter.php',
+                ]
+            )
+        ;
+
+        /** @var DiDefinitionAutowire $definition */
+        $definition = [...$definitions->definitions()][Baz::class];
+
+        self::assertInstanceOf(Closure::class, $resetterBaz = $definition->getResetter());
+
+        $baz = new Baz();
+
+        self::assertEquals('Lorem ipsum', $baz->getVal());
+
+        $resetterBaz($baz);
+
+        self::assertEquals('', $baz->getVal());
     }
 }
