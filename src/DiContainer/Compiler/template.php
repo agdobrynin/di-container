@@ -68,7 +68,7 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
 <?php } ?>
             })(),
 <?php } ?>
-            parameters: <?php echo $this->containerParametersEntry->getExpression();?>
+            parameters: <?php echo $this->compiledContainerParameters->getExpression();?>
 
         );
     }

@@ -50,7 +50,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
      */
     private array $runtimeDefinitions = [];
 
-    private CompiledEntryInterface $containerParametersEntry; // @phpstan-ignore property.onlyWritten
+    private CompiledEntryInterface $compiledContainerParameters;
 
     /**
      * @param class-string $containerClass container class as fully qualified name
@@ -177,13 +177,15 @@ final class ContainerCompiler implements ContainerCompilerInterface
             ->parameters()
         ;
 
-        $this->containerParametersEntry = (new ContainerParametersEntry($parameters, $this->invalidBehaviorCompile))
+        $this->compiledContainerParameters = (new ContainerParametersEntry($parameters, $this->invalidBehaviorCompile))
             ->compile('$this')
         ;
 
         ob_start();
 
         require __DIR__.'/template.php';
+
+        unset($this->compiledContainerParameters);
 
         return (string) ob_get_clean();
     }
