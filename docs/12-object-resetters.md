@@ -116,6 +116,24 @@ setResetter(callable|false|string $resetter)
 - [Autowire](02-attribute-definition.md#autowire).
 - [DiRuntime](10-runtime-definition.md#атрибут-diruntime).
 
+> [!TIP]
+> Для приложений использующих **PHP 8.5 и выше** параметр `$resetter`
+> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](10-runtime-definition.md#атрибут-diruntime)
+> может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
+> ```php
+>  use Kaspi\DiContainer\Attributes\Autowire;
+>  
+>  #[Autowire(
+>       isSingleton: true,
+>       resetter: static function (Foo $foo): void {
+>           // реализация механизма сброса объекта.
+>       }
+>  )]
+>  final class Foo {
+>    //
+>  }
+> ```
+
 **Пример конфигурирования сброса состояния объекта через определение контейнера**.
 
 Конфигурирование сервиса через [PHP атрибут Autowire](02-attribute-definition.md#autowire):
