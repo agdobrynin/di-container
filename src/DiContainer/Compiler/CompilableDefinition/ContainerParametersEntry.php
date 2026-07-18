@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
 use Kaspi\DiContainer\Exception\DefinitionCompileException;
 use Kaspi\DiContainer\Interfaces\Compiler\CompilableDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
-use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
@@ -25,7 +24,7 @@ use const PHP_EOL;
 final class ContainerParametersEntry implements CompilableDefinitionInterface
 {
     public function __construct(
-        private readonly DiContainerDefinitionsInterface $diContainerDefinitions,
+        private readonly SourceParametersMutableInterface $definition,
         private readonly InvalidBehaviorCompileEnum $invalidBehaviorCompile,
     ) {}
 
@@ -79,9 +78,6 @@ final class ContainerParametersEntry implements CompilableDefinitionInterface
 
     public function getDiDefinition(): SourceParametersMutableInterface
     {
-        return $this->diContainerDefinitions
-            ->getContainer()
-            ->parameters()
-        ;
+        return $this->definition;
     }
 }

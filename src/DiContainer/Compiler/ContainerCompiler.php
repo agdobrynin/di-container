@@ -171,7 +171,13 @@ final class ContainerCompiler implements ContainerCompilerInterface
             $definitions->next();
         }
 
-        $this->containerParametersEntry = (new ContainerParametersEntry($this->diContainerDefinitions, $this->invalidBehaviorCompile))
+        // Compile container parameters.
+        $parameters = $this->diContainerDefinitions
+            ->getContainer()
+            ->parameters()
+        ;
+
+        $this->containerParametersEntry = (new ContainerParametersEntry($parameters, $this->invalidBehaviorCompile))
             ->compile('$this')
         ;
 
