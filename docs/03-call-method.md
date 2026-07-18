@@ -3,7 +3,7 @@
 Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface`
 предоставляющий метод `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface::call()`.
 
-Получение результата `callable` типа или [преобразуеемого в callable тип](#класс-с-нестатическим-методом) выражения, с разрешением зависимостей через контейнер:
+Получение результата `callable` типа или [преобразуеемого в callable тип](#класс-с-нестатическим-методом) значения, с разрешением зависимостей через контейнер:
 ```php
 call(array|callable|string $definition, mixed ...$argument)
 ```

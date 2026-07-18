@@ -41,7 +41,10 @@ use App\Services\FooLogger;
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-    // `$container->get(\App\Services\FooLogger::class)` всегда возвращать один и тот же объект
+    /*
+     * Установить параметр `$isSingleton` в `true чтобы всегда возвращать один и тот же объект
+     * через метод контейнера `$container->get(\App\Services\FooLogger::class)` 
+     */
     yield diAutowire(FooLogger::class, isSingleton: true);
 };
 ```
@@ -59,7 +62,7 @@ $container = (new DiContainerBuilder())
 
 $app = AppFactory::create(
     // ... some dependency here
-    container: $container;
+    container: $container
 );
 
 // Event loop
@@ -77,7 +80,7 @@ while ($request = $app->getRequest()) {
 Конфигурация представлена как идентификатор контейнера для сервиса получаемого через метод контейнера `get(string $id)` и значение которое будет вызвано для сброса состояния полученного объекта.
 
 Типы значений:
-- `callable(object $object): void` – вызываемое выражение с параметром типа `object` которое будет получено через метод контейнера `get(string $id)`.
+- `callable(object $object): void` – вызываемый тип с параметром типа `object` которое будет получено через метод контейнера `get(string $id)`.
 - `non-empty-string` – имя публичного метода PHP класса которое будет получено через метод контейнера `get(string $id)`.
 - `false` – значение конфигурации сброса не установлено, проводить проверку реализации интерфейса `\Kaspi\DiContainer\Interfaces\ResetInterface`.
 
