@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Compiler\Compiler;
 
 use ArrayIterator;
+use Kaspi\DiContainer\Compiler\CompilableDefinition\ContainerParametersEntry;
 use Kaspi\DiContainer\Compiler\CompilableDefinition\ValueEntry;
 use Kaspi\DiContainer\Compiler\CompiledEntries;
 use Kaspi\DiContainer\Compiler\CompiledEntry;
@@ -51,6 +52,7 @@ use function random_bytes;
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(CompiledContainerNotFoundException::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(ContainerParametersEntry::class)]
 class CompiledExceptionStackTest extends TestCase
 {
     private DiContainerInterface $container;

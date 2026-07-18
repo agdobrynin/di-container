@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Parameters;
 
+use Iterator;
 use Kaspi\DiContainer\Exception\ParameterCallCircularException;
 use Kaspi\DiContainer\Exception\ParameterException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
@@ -73,6 +74,11 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
             $this->nameCircularCallWatcher[$name] = true;
             $parameterItem = $this->initializerParameters()[$name];
 
+            if ($parameterItem->src instanceof ParameterExceptionInterface
+                || $parameterItem->src instanceof ParameterNotFoundExceptionInterface) {
+                throw $parameterItem->src;
+            }
+
             return $parameterItem->isResolved()
                 ? $parameterItem->getResolved()
                 : $parameterItem->setResolved($this->resolveValue($parameterItem->src))->getResolved();
@@ -99,10 +105,18 @@ abstract class AbstractSourceParameters implements SourceParametersMutableInterf
         }
     }
 
-    public function parameters(): iterable
+    public function parameters(?callable $fallback = null): Iterator
     {
         foreach ($this->initializerParameters() as $parameter) {
-            yield $parameter->name => $this->get($parameter->name);
+            try {
+                yield $parameter->name => $this->get($parameter->name);
+            } catch (ParameterExceptionInterface|ParameterNotFoundExceptionInterface $e) {
+                if (null === $fallback) {
+                    throw $e;
+                }
+
+                yield $parameter->name => $fallback($parameter->name, $e);
+            }
         }
     }
 

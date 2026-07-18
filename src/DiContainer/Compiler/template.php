@@ -66,8 +66,10 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
 <?php foreach ($container->getRemovedDefinitionIds() as $id) {?>
                 <?php echo \sprintf('yield %s;'.PHP_EOL, \var_export($id, true))?>
 <?php } ?>
-            })()
+            })(),
 <?php } ?>
+            parameters: <?php echo $this->compiledContainerParameters->getExpression();?>
+
         );
     }
 

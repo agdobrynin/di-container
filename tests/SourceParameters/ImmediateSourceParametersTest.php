@@ -6,6 +6,7 @@ namespace Tests\SourceParameters;
 
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Exception\ParameterCallCircularException;
+use Kaspi\DiContainer\Exception\ParameterException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ParameterNotFoundExceptionInterface;
@@ -17,6 +18,10 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Throwable;
+
+use function current;
+use function next;
 
 /**
  * @internal
@@ -92,7 +97,14 @@ class ImmediateSourceParametersTest extends TestCase
         $p = new ImmediateSourceParameters();
         $p->add($params);
 
-        self::assertEquals($expect, [...$p->parameters()]);
+        $paramsIterator = $p->parameters();
+
+        while ($paramsIterator->valid()) {
+            self::assertEquals(current($expect), $paramsIterator->current());
+
+            next($expect);
+            $paramsIterator->next();
+        }
     }
 
     #[TestWith([['foo' => new stdClass()]])]
@@ -127,5 +139,65 @@ class ImmediateSourceParametersTest extends TestCase
 
         $p = new ImmediateSourceParameters(['foo' => 'bar']);
         $p->set('foo', 'baz');
+    }
+
+    public function testGetParameterWithException(): void
+    {
+        $this->expectException(ParameterExceptionInterface::class);
+        $this->expectExceptionMessage('Something went wrong!');
+
+        $p = new ImmediateSourceParameters([
+            'foo' => '{bar}',
+            'bar' => ['Lorem ipsum', '{baz}'],
+            'baz' => new ParameterException('Something went wrong!'),
+        ]);
+
+        $p->get('foo');
+    }
+
+    public function testFallbackEnabledForGetParameters(): void
+    {
+        $p = new ImmediateSourceParameters([
+            'foo' => 'Lorem ipsum',
+            'baz' => '{none-exist-param-name}',
+            'bar' => new stdClass(),
+        ]);
+
+        $fallback = static fn (string $name, Throwable $exception): mixed => $exception;
+
+        $params = $p->parameters($fallback);
+
+        self::assertEquals('foo', $params->key());
+        self::assertEquals('Lorem ipsum', $params->current());
+
+        $params->next();
+
+        self::assertEquals('baz', $params->key());
+        self::assertInstanceOf(ParameterNotFoundExceptionInterface::class, $params->current());
+        self::assertStringContainsString('Parameter name "none-exist-param-name" not found.', $params->current()->getMessage());
+
+        $params->next();
+
+        self::assertEquals('bar', $params->key());
+        self::assertInstanceOf(ParameterExceptionInterface::class, $params->current());
+        self::assertStringContainsString('unsupported value type: "stdClass".', $params->current()->getMessage());
+    }
+
+    public function testFallbackDisabledForGetParameters(): void
+    {
+        $p = new ImmediateSourceParameters([
+            'foo' => 'Lorem ipsum',
+            'baz' => '{none-exist-param-name}',
+        ]);
+
+        $params = $p->parameters();
+
+        self::assertEquals('foo', $params->key());
+        self::assertEquals('Lorem ipsum', $params->current());
+
+        $this->expectException(ParameterNotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Parameter name "none-exist-param-name" not found.');
+
+        $params->next();
     }
 }
