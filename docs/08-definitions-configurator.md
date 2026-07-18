@@ -34,15 +34,15 @@ DefinitionsConfiguratorInterface::getDefinition(
 ```
 Параметры:
 - `$id` – идентификатор контейнера.
-- `$fallback` – выражение для обработки когда не найдено определение.
+  - `$fallback` – `callable` тип для обработки когда не найдено определение. Если передано значение `null`, то метод может выкинуть исключение.
 
 > [!WARNING]
 > В случае если определение не найдено: 
 > - параметр `$fallback` установлен `null` – будет выброшено
 > исключение `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`.
-> - параметр `$fallback` содержит выражение – будет выполнено выражение с возвращаемым значением.
+> - параметр `$fallback` установлен `callable` тип – будет выполнено указанное значение вместо выброса исключения.
 > 
-> Выражение `$fallback` принимает в качестве аргумента параметр `$id`:
+> `Callable` тип `$fallback` принимает в качестве аргумента параметр `$id`:
 > ```php
 >  callable(string $id): mixed
 > ```
@@ -74,7 +74,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
         $configurator->setDefinition('foo_bar', 100_000);
     }
 
-    // Идентификатор `'qux'` не задан, выражение `$fallback` вернёт `null`.
+    // Идентификатор `'qux'` не задан, вызов `$fallback` вернёт `null`.
     if (null === $configurator->getDefinition('qux', static fn () => null)) {
         $configurator->setDefinition('qux', diAutowire(Foo::class));
     }
@@ -285,7 +285,7 @@ DefinitionsConfiguratorInterface::getContext(string $name, ?callable $fallback =
 > Метод `getContext()` выбросит исключение `\Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface`
 > если контекст не найден по имени.
 > 
-> Чтобы избежать выброса исключения можно использовать `callable` выражение `$fallback` которое принимает в качестве аргумента параметр `$name`:
+> Чтобы избежать выброса исключения можно использовать `callable` тип в параметре `$fallback` который принимает в качестве аргумента параметр `$name`:
 > ```php
 >  callable(string $name): mixed
 > ```
