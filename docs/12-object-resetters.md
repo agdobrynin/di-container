@@ -96,8 +96,8 @@ while ($request = $app->getRequest()) {
 >
 
 ### Автоматическое конфигурирование сервиса сброса состояния объектов на основе установленных значений в определения контейнера.
-Определения контейнера поддерживающие конфигурирование сброса состояния объекта реализуют интерфейс
-`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
+При [настойке определений контейнера](01-php-definition.md) через конфигурационные файлы, некоторые хелпер функции реализуют интерфейс
+`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface` который предоставляет настройку сброса состояния объекта.
 
 Метод конфигурирования:
 ```php
@@ -105,8 +105,6 @@ setResetter(callable|false|string $resetter)
 ``` 
 Параметры:
 - `$resetter` – конфигурация сброса состояния объекта.
-
-Параметр `$resetter` должен иметь сигнатуру `callable(object $object): void | non-empty-string`.
 
 Метод `setResetter()` применим к хелпер функциям:
 - [diAutowire](01-php-definition.md#diautowire).
