@@ -96,8 +96,8 @@ while ($request = $app->getRequest()) {
 >
 
 ### Автоматическое конфигурирование сервиса сброса состояния объектов на основе установленных значений в определения контейнера.
-Определения контейнера поддерживающие конфигурирование сброса состояния объекта реализуют интерфейс
-`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
+При [настойке определений контейнера](01-php-definition.md) через конфигурационные файлы, некоторые хелпер функции реализуют интерфейс
+`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface` который предоставляет настройку сброса состояния объекта.
 
 Метод конфигурирования:
 ```php
@@ -106,8 +106,6 @@ setResetter(callable|false|string $resetter)
 Параметры:
 - `$resetter` – конфигурация сброса состояния объекта.
 
-Параметр `$resetter` должен иметь сигнатуру `callable(object $object): void | non-empty-string`.
-
 Метод `setResetter()` применим к хелпер функциям:
 - [diAutowire](01-php-definition.md#diautowire).
 - [diRuntime](10-runtime-definition.md#хелпер-функция-diruntime).
@@ -115,6 +113,24 @@ setResetter(callable|false|string $resetter)
 Установить конфигурацию сброса для нужного объекта так же можно через значение в PHP атрибутах:
 - [Autowire](02-attribute-definition.md#autowire).
 - [DiRuntime](10-runtime-definition.md#атрибут-diruntime).
+
+> [!TIP]
+> Для приложений использующих **PHP 8.5 и выше** параметр `$resetter`
+> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](10-runtime-definition.md#атрибут-diruntime)
+> может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
+> ```php
+>  use Kaspi\DiContainer\Attributes\Autowire;
+>  
+>  #[Autowire(
+>       isSingleton: true,
+>       resetter: static function (Foo $foo): void {
+>           // реализация механизма сброса объекта.
+>       }
+>  )]
+>  final class Foo {
+>    //
+>  }
+> ```
 
 **Пример конфигурирования сброса состояния объекта через определение контейнера**.
 
