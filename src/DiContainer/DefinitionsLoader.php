@@ -781,7 +781,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         throw new DefinitionsLoaderInvalidArgumentException(
-            sprintf('The file "%s" must be use "return" keyword and return any iterable type or callable expression that returns any iterable type.', $file)
+            sprintf('The file "%s" must be use "return" keyword and return any iterable type or callable type that returns any iterable type.', $file)
         );
     }
 }
