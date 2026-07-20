@@ -17,7 +17,7 @@ interface DiDefinitionResetterSetterInterface
     /**
      * The parameter `$resetter` can be present:
      *  - a non-empty string as the name of the method that performs cleanup for the object
-     *  - `callable` expression that get the object from container and  performs cleanup for this object
+     *  - `callable` type that get the object from container and  performs cleanup for this object
      *  - boolean value `false` — resetter undefined
      *
      * @param callable(object $object): void|false|non-empty-string $resetter
