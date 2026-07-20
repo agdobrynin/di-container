@@ -21,7 +21,7 @@ interface ObjectResettersInterface
      *
      * A resetter can be represented as:
      *  - a method name of a PHP class that performs the reset of a container entry;
-     *  - a callable expression that accepts a container entry object;
+     *  - a callable type that accepts a container entry object;
      *
      * @param iterable<non-empty-string, callable(object $object): void|non-empty-string> $resetters
      *

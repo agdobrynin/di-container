@@ -9,7 +9,7 @@ interface DiDefinitionResetterInterface extends DiDefinitionResetterSetterInterf
     /**
      *  The return value may contain:
      *   - a non-empty string as the name of the method that performs cleanup for the object
-     *   - `callable` expression that get the object from container and  performs cleanup for this object
+     *   - `callable` type that get the object from container and  performs cleanup for this object
      *   - the value `false` means that the resetter is not defined.
      *
      * @return callable(object $object): void|false|non-empty-string
