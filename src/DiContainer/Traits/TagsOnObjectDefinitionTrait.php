@@ -202,7 +202,7 @@ trait TagsOnObjectDefinitionTrait
 
         if (!is_callable($callable)) {
             throw new InvalidArgumentException(
-                sprintf('The method must be declared with public and static modifiers. Got callable expression [%s, %s].', var_export($callable[0], true), var_export($callable[1], true))
+                sprintf('The method must be declared with public and static modifiers. Got callable type [%s, %s].', var_export($callable[0], true), var_export($callable[1], true))
             );
         }
 
@@ -213,7 +213,7 @@ trait TagsOnObjectDefinitionTrait
         }
 
         throw new AutowireException(
-            sprintf('The return type must be of type "int|string|null", but the return type is "%s". Got callable expression [%s, %s].', get_debug_type($priority), var_export($callable[0], true), var_export($callable[1], true))
+            sprintf('The return type must be of type "int|string|null", but the return type is "%s". Got callable type [%s, %s].', get_debug_type($priority), var_export($callable[0], true), var_export($callable[1], true))
         );
     }
 }
