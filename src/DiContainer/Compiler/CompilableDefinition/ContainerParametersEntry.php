@@ -63,7 +63,7 @@ final class ContainerParametersEntry implements CompilableDefinitionInterface
         } while ($parameters->valid());
 
         if ('' !== $yieldParameters) {
-            $expression = sprintf('new \%s(static function () {%s})', DeferredSourceParameters::class, PHP_EOL.$yieldParameters);
+            $expression = sprintf('new \%s(static function (): \Generator {%s})', DeferredSourceParameters::class, PHP_EOL.$yieldParameters);
 
             return (new CompiledEntry())
                 ->setExpression($expression)
