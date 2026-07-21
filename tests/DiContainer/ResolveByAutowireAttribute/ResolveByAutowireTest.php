@@ -16,6 +16,8 @@ use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\One;
+use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Three;
+use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\ThreeResetter;
 use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Two;
 
 /**
@@ -52,5 +54,15 @@ class ResolveByAutowireTest extends TestCase
         $two = $container->get(Two::class);
 
         $this->assertNotSame($two, $container->get(Two::class));
+    }
+
+    public function testAutowireWithResetter(): void
+    {
+        $container = new DiContainer(config: new DiContainerConfig());
+
+        $definition = $container->getDefinition(Three::class);
+
+        self::assertIsCallable($definition->getResetter());
+        self::assertEquals([ThreeResetter::class, 'flush'], $definition->getResetter());
     }
 }

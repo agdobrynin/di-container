@@ -28,6 +28,7 @@ use function strcasecmp;
 use function strtolower;
 use function substr;
 use function token_get_all;
+use function trim;
 use function var_export;
 
 use const PHP_INT_MAX;
@@ -239,7 +240,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
                 }
 
                 // check using $this in closure
-                if (0 === $anonymousClassLevel && T_VARIABLE === $token_id && 0 === strcasecmp('$this', $token_text)) {
+                if (0 === $anonymousClassLevel && 0 === $fnLevel && T_VARIABLE === $token_id && 0 === strcasecmp('$this', $token_text)) {
                     throw new LogicException(
                         sprintf('Anonymous arrow function cannot use a reference variable via "$this". Code from file "%s" at line %d.', $closureFileName, $token_line)
                     );
@@ -358,7 +359,7 @@ final class FinderClosureCode implements FinderClosureCodeInterface
             }
         }
 
-        return implode($fnTokens);
+        return trim(implode($fnTokens));
     }
 
     /**

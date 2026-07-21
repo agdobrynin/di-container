@@ -55,14 +55,21 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
                 {
                     return <?php echo \var_export($config->isUseAttribute(), true); ?>;
                 }
+
+                public function isConfigureObjectResettersFromDefinitions(): bool
+                {
+                    return false;
+                }
             },
 <?php if ($container->getRemovedDefinitionIds()->valid()) { ?>
             removedDefinitionIds: (static function (): \Generator {
 <?php foreach ($container->getRemovedDefinitionIds() as $id) {?>
                 <?php echo \sprintf('yield %s;'.PHP_EOL, \var_export($id, true))?>
 <?php } ?>
-            })()
+            })(),
 <?php } ?>
+            parameters: <?php echo $this->compiledContainerParameters->getExpression();?>
+
         );
     }
 

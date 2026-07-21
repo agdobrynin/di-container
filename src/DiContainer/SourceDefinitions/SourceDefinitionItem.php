@@ -7,8 +7,10 @@ namespace Kaspi\DiContainer\SourceDefinitions;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\Helper;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionContainerIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\FreezeInterface;
 
 use function is_callable;
 
@@ -34,5 +36,13 @@ final class SourceDefinitionItem
             is_callable($definitionValue) => new DiDefinitionCallable($definitionValue),
             default => new DiDefinitionValue($definitionValue)
         };
+
+        if ($this->diDefinition instanceof DiDefinitionContainerIdentifierInterface) {
+            $this->diDefinition->setContainerIdentifier($this->containerIdentifier);
+        }
+
+        if ($this->diDefinition instanceof FreezeInterface) {
+            $this->diDefinition->freeze();
+        }
     }
 }

@@ -64,7 +64,15 @@ final class AttributeReader
 
         /** @var ReflectionAttribute<DiRuntime> $attr */
         foreach ($diRuntimeAttrs as $attr) {
-            $diRuntime = $attr->newInstance();
+            try {
+                $diRuntime = $attr->newInstance();
+            } catch (TypeError $e) {
+                throw new AutowireAttributeException(
+                    message: sprintf('Unable to create an instance of PHP attribute "%s". Reason by: %s', $attr->getName(), $e->getMessage()),
+                    previous: $e
+                );
+            }
+
             $currentContainerIdentifier = '' !== $diRuntime->containerIdentifier
                 ? $diRuntime->containerIdentifier
                 : $class->name;
@@ -98,7 +106,15 @@ final class AttributeReader
 
         /** @var ReflectionAttribute<Autowire> $attr */
         foreach ($autowireAttrs as $attr) {
-            $autowire = $attr->newInstance();
+            try {
+                $autowire = $attr->newInstance();
+            } catch (TypeError $e) {
+                throw new AutowireAttributeException(
+                    message: sprintf('Unable to create an instance of PHP attribute "%s". Reason by: %s', $attr->getName(), $e->getMessage()),
+                    previous: $e
+                );
+            }
+
             $currentContainerIdentifier = '' !== $autowire->id
                 ? $autowire->id
                 : $class->name;

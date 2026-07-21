@@ -31,6 +31,7 @@ use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
@@ -40,7 +41,6 @@ use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\Foo;
 use Tests\DefinitionsLoader\Fixtures\ImportConfigInterface\FooInterface;
 
 use function array_keys;
-use function iterator_to_array;
 use function Kaspi\DiContainer\diAutowire;
 use function sort;
 
@@ -73,6 +73,7 @@ use const T_TRAIT;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(SourceDefinitionItem::class)]
+#[CoversClass(FreezeTrait::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void
@@ -95,10 +96,11 @@ class DefinitionsLoaderImportTest extends TestCase
         $container = (new DiContainerFactory(
             new DiContainerConfig(
                 isSingletonServiceDefault: false, // by default service none-singleton
+                isConfigureObjectResettersFromDefinitions: false,
             )
         ))->make($loader->definitions());
 
-        $containerIds = array_keys(iterator_to_array($container->getDefinitions()));
+        $containerIds = array_keys([...$container->getDefinitions()]);
 
         $expectContainerIds = [
             Fixtures\Import\SubDirectory\One::class,

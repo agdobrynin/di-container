@@ -24,6 +24,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSingletonInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTaggedAsInterface;
@@ -32,6 +33,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
 use Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface;
@@ -101,6 +103,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected readonly array $containerIds;
 
     /**
+     * @var array<class-string, true>
+     */
+    protected readonly array $objectResettersIds;
+
+    /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
      * @param iterable<class-string|non-empty-string>                                            $removedDefinitionIds
      * @param iterable<non-empty-string, SourceParameterType>|SourceParametersMutableInterface   $parameters
@@ -121,6 +128,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             ? new ImmediateSourceParameters($parameters)
             : $parameters;
         $this->containerIds = [ContainerInterface::class => true, DiContainerInterface::class => true, __CLASS__ => true];
+        $this->objectResettersIds = [ObjectResetters::class => true, ObjectResettersInterface::class => true];
     }
 
     public function get(string $id): mixed
@@ -140,7 +148,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function set(string $id, mixed $definition): static
     {
-        if (isset($this->containerIds[$id])) {
+        if (isset($this->containerIds[$id]) || isset($this->objectResettersIds[$id])) {
             throw new ContainerIdentifierAlreadyRegisteredException(id: $id);
         }
 
@@ -201,6 +209,24 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         foreach ($this->definitions->getIterator() as $id => $definition) {
             if (!isset($this->containerIds[$id])) {
                 yield $id => $definition;
+            }
+        }
+
+        if ($this->config->isConfigureObjectResettersFromDefinitions()) {
+            $needAutoconfigureObjectResetters = true;
+
+            foreach ($this->objectResettersIds as $id => $v) {
+                if ($this->definitions->has($id)) {
+                    $needAutoconfigureObjectResetters = false;
+
+                    break;
+                }
+            }
+
+            if ($needAutoconfigureObjectResetters) {
+                $diDefinitionAutowireObjectResetters = $this->autoconfigureObjectResettersDefinition();
+
+                yield $diDefinitionAutowireObjectResetters->getIdentifier() => $diDefinitionAutowireObjectResetters;
             }
         }
     }
@@ -327,6 +353,19 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return $this->diResolvedDefinition[$id];
         }
 
+        if (isset($this->objectResettersIds[$id]) && $this->config->isConfigureObjectResettersFromDefinitions()) {
+            foreach ($this->objectResettersIds as $entryId => $v) {
+                if (isset($this->diResolvedDefinition[$entryId])) {
+                    return $this->diResolvedDefinition[$id] = $this->diResolvedDefinition[$entryId];
+                }
+            }
+
+            $resetter = $this->autoconfigureObjectResettersDefinition();
+            $this->definitions->set($id, $resetter);
+
+            return $this->diResolvedDefinition[$id] = $resetter;
+        }
+
         try {
             $reflectionClass = new ReflectionClass($id); // @phpstan-ignore argument.type
         } catch (ReflectionException $e) {
@@ -370,6 +409,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     if ('' === $autowire->id || $autowire->id === $reflectionClass->name) {
                         return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton))
                             ->bindArguments(...$autowire->arguments)
+                            ->setResetter($autowire->getResetter())
                         ;
                     }
                 }
@@ -378,7 +418,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if (($diRuntimes = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
                 foreach ($diRuntimes as $diRuntime) {
                     if ('' === $diRuntime->containerIdentifier || $diRuntime->containerIdentifier === $reflectionClass->name) {
-                        return $this->diResolvedDefinition[$id] = new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message);
+                        return $this->diResolvedDefinition[$id] = (new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message))
+                            ->setResetter($diRuntime->getResetter())
+                        ;
                     }
                 }
             }
@@ -403,6 +445,10 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     protected function hasViaZeroConfigurationDefinition(string $id): bool
     {
+        if (isset($this->objectResettersIds[$id])) {
+            return $this->config->isConfigureObjectResettersFromDefinitions();
+        }
+
         if (!$this->config->isUseZeroConfigurationDefinition()) {
             return false;
         }
@@ -428,6 +474,22 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if (array_key_exists($id, $this->circularCallWatcher)) {
             throw new CallCircularDependencyException(callIds: [...array_keys($this->circularCallWatcher), $id]);
         }
+    }
+
+    protected function autoconfigureObjectResettersDefinition(): DiDefinitionAutowire
+    {
+        $resetters = [];
+
+        foreach ($this->definitions as $entryId => $definition) {
+            if ($definition instanceof DiDefinitionResetterInterface
+                && false !== ($definitionResetter = $definition->getResetter())) {
+                $resetters[$entryId] = $definitionResetter;
+            }
+        }
+
+        return (new DiDefinitionAutowire(ObjectResetters::class, true))
+            ->setup('setup', [$resetters])
+        ;
     }
 
     private function getDiDefinitionWrapper(DiDefinitionAutowireInterface|DiDefinitionInterface $definition, ?bool $singleton): DiDefinitionSingletonInterface

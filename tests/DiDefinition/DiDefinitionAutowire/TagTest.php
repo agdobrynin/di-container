@@ -6,18 +6,22 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\SetupAttributeTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooConfigureAutowireAttr;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooMultiConfigSetup;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagOne;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwo;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefault;
@@ -29,12 +33,14 @@ use function preg_quote;
 /**
  * @internal
  */
+#[CoversClass(Autowire::class)]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Tag::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(TagsTrait::class)]
+#[CoversClass(SetupAttributeTrait::class)]
 class TagTest extends TestCase
 {
     public function testTagsByBindTag(): void
@@ -301,5 +307,101 @@ class TagTest extends TestCase
             ->bindTag('tags.handler-one')
             ->getTag('tags.handler-one')
         ;
+    }
+
+    public function testTagViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = (new DiDefinitionAutowire(FooMultiConfigSetup::class))
+            ->setContainer($mockContainer)
+        ;
+
+        self::assertTrue($definition->hasTag('tags.foo'));
+        self::assertCount(1, $definition->getTags());
+    }
+
+    public function testTagIsNullViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = (new DiDefinitionAutowire(FooMultiConfigSetup::class))
+            ->setContainer($mockContainer)
+        ;
+        $definition->setContainerIdentifier('qux');
+
+        self::assertTrue($definition->hasTag('tags.foo'));
+        self::assertCount(1, $definition->getTags());
+    }
+
+    public function testTagEmptyViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = (new DiDefinitionAutowire(FooMultiConfigSetup::class))
+            ->setContainer($mockContainer)
+        ;
+        $definition->setContainerIdentifier('foo');
+
+        self::assertCount(0, $definition->getTags());
+    }
+
+    public function testTagOneViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = (new DiDefinitionAutowire(FooMultiConfigSetup::class))
+            ->setContainer($mockContainer)
+        ;
+        $definition->setContainerIdentifier('bar');
+
+        self::assertCount(1, $definition->getTags());
+        self::assertTrue($definition->hasTag('tags.bar'));
+    }
+
+    public function testTagManyViaAutowire(): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = (new DiDefinitionAutowire(FooMultiConfigSetup::class))
+            ->setContainer($mockContainer)
+        ;
+        $definition->setContainerIdentifier('baz');
+
+        self::assertCount(2, $definition->getTags());
+        self::assertTrue($definition->hasTag('tags.baz'));
+        self::assertTrue($definition->hasTag('tags.qux'));
+    }
+
+    public function testUniqueIdParameterInAutowireAttr(): void
+    {
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot get tags on class');
+
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = (new DiDefinitionAutowire(FooConfigureAutowireAttr::class))
+            ->setContainer($mockContainer)
+        ;
+
+        $definition->getTags();
     }
 }

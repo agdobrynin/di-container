@@ -75,12 +75,12 @@ var_dump(
 > [класс-строитель `DiContainerBuilder`](06-container-builder.md).
 
 > [!TIP]
-> ✅ Для параметра метода php класса или `callable` выражения можно указывать [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar),
+> ✅ Для параметра метода php класса или `callable` типа можно указывать [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar),
 `null`, перечисляемые типы, «как есть» – без указания как разрешить зависимость.
 > Для повторяющихся значений рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 > [!TIP]
-> ✅ Можно не указывать контейнеру как разрешить параметр метода php класса или `callable` выражения являющийся классом или интерфейсом
+> ✅ Можно не указывать контейнеру как разрешить параметр метода php класса или `callable` типа являющийся классом или интерфейсом
 > при условии, что требуемый тип был ранее сконфигурирован в контейнере
 > или не требует дополнительной конфигурации, контейнер самостоятельно разрешит такой тип зависимости.
 
@@ -106,10 +106,13 @@ var_dump(
 Автоматическое создание объекта и внедрения зависимостей.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\{DiDefinitionSetupAutowireInterface, DiDefinitionTagArgumentInterface};
+use \Kaspi\DiContainer\Interfaces\DiDefinition\{DiDefinitionSetupAutowireInterface, DiDefinitionTagArgumentInterface, DiDefinitionResetterSetterInterface};
 use function \Kaspi\DiContainer\diAutowire;
 
-diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAutowireInterface & DiDefinitionTagArgumentInterface
+diAutowire(
+    string $definition,
+    ?bool $isSingleton = null
+): DiDefinitionSetupAutowireInterface & DiDefinitionTagArgumentInterface & DiDefinitionResetterSetterInterface
 ```
 Параметры:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
@@ -117,15 +120,17 @@ diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionSetupAuto
 
 > [!IMPORTANT]
 > Функция `diAutowire` возвращает объект реализующий интерфейсы
-> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`
-> и `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`, 
+> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`, 
+> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
 > 
 > Интерфейсы представляют методы:
 >   - `bindArguments` - аргументы для конструктора класса
 >   - `setup` - вызов метода класса с параметрами (_mutable setter method_) для настройки класса
 >   - `setupImmutable` - вызов метода класса с параметрами (_immutable setter method_) и возвращаемым значением
 >   - `bindTag` - добавляет тег с мета-данными для определения
- 
+>   - `setResetter` - конфигурация сброса состояния объекта.
+
 **Аргументы для конструктора:**
 ```php
 bindArguments(mixed ...$argument)
@@ -234,6 +239,13 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 > [!TIP]
 > Более подробное [описание работы с тегами](05-tags.md).
+
+**Конфигурация сброса состояния объекта:**
+```php
+setResetter(callable|false|string $resetter)
+```
+
+> Более подробное [описание конфигурации для сброса состояния объекта](12-object-resetters.md).
 
 ##### Идентификатор контейнера для diAutowire.
 При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**)

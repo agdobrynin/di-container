@@ -17,35 +17,38 @@
 Хелпер функция для конфигурационных файлов.
 
 ```php
-use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
+use \Kaspi\DiContainer\Interfaces\DiDefinition\{DiDefinitionTagArgumentInterface, DiDefinitionResetterSetterInterface};
 use function \Kaspi\DiContainer\diRuntime;
 
 diRuntime(
-    string $containerIdentifier,
+    string $containerIdentifierOrClass,
     ?string $message = null,
     ?string $classDefinition = null
-): DiDefinitionTagArgumentInterface
+): DiDefinitionTagArgumentInterface & DiDefinitionResetterSetterInterface
 ```
 Параметры:
-- `$containerIdentifier` – идентификатора контейнера реализующий сервис, который будет добавлен позже.
+- `$containerIdentifierOrClass` – идентификатора контейнера реализующий сервис или имя класса реализующего сервис, который будет добавлен позже.
 - `$message` – дополнительное информационное сообщение при ошибке.
 - `$classDefinition` – применяется для точного указания PHP класса в определении если необходимо [получать ключ элемента](05-tags.md#ключ-из-метаданных-тега-через-метод-класса) в тегированной коллекции через метод PHP класса или [получать приоритет элемента в тегированной коллекции](05-tags.md#prioritymethod-и-prioritydefaultmethod-для-приоритизации-в-коллекции) через метод PHP класса.
 
 > [!IMPORTANT]
-> Функция `diRuntime` возвращает объект реализующий интерфейс
-> `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+> Функция `diRuntime` возвращает объект реализующий интерфейсы:
+> - `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`, 
+> - `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
+
 >
-> Интерфейс представляет методы:
->   - `bindTag` - добавляет тег с мета-данными для определения
+> Методы доступные при вызове хелпер функции:
+>   - `bindTag` - добавляет тег с мета-данными для определения.
+>   - `setResetter` - [конфигурация сброса состояния объекта](12-object-resetters.md).
 >
 > [Пример использования тегов](#пример-тегирования-runtime-definition).
 
 > [!WARNING]
-> Хелпер функция не может быть применена к параметрам метода класса или callable выражения.
+> Хелпер функция не может быть применена к параметрам метода класса или `callable` типа.
 > 
 
 > [!NOTE]
-> `$containerIdentifier` может быть представлен любой не пустой строкой
+> `$containerIdentifierOrClass` может быть представлен любой не пустой строкой
 > чтобы сервис можно было получить через метод контейнера `get()`.
 > 
 > Хелпер функция `diRuntime()` не создает конфигурацию экземпляра класса, а только предоставляет идентификатор контейнера.
@@ -59,11 +62,18 @@ diRuntime(
 Применятся к классу для конфигурирования «Runtime definition» в контейнере.
 
 ```php
-#[DiRuntime(string $containerIdentifier = '', ?string $message = null)]
+#[DiRuntime(
+    string $containerIdentifier = '',
+    ?string $message = null,
+    array|\Kaspi\DiContainer\Attributes\Tag|null $tags = null,
+    callable|false|string $resetter = false,
+)]
 ```
 Параметры:
 - `$containerIdentifier` – идентификатора контейнера реализующий сервис, который будет добавлен позже.
 - `$message` – дополнительное информационное сообщение при ошибке.
+- `$tags` – указание тегов к конкретному идентификатору контейнера указанному в параметре `$containerIdentifier`.
+- `$resetter` – значение которое будет вызвано [для сброса состояния объекта](12-object-resetters.md).
 
 > [!TIP]
 > Атрибут может быть применен к классу несколько раз с разными значениями параметра `$containerIdentifier`.
@@ -71,6 +81,15 @@ diRuntime(
 
 > [!TIP]
 > Пустая строка в аргументе `$containerIdentifier` будет представлена как полное имя класса – **fully qualified class name** которая является идентификатором контейнера для этого php класса.
+
+> [!NOTE]
+> Значение переданное параметру `$tags` определит как будет сконфигурирован сервис:
+> - значение по умолчанию `null` – конфигурировать через [атрибуты `\Kaspi\DiContainer\Attributes\Tag`](#tag) примененные к текущему классу.
+> - массив из атрибутов `\Kaspi\DiContainer\Attributes\Tag` или одиночный атрибут `\Kaspi\DiContainer\Attributes\Tag` – конфигурировать теги из указанных значений.
+>   - типизация параметра `list<Tag>|Tag`
+> - значение пустой массив (`empty-array` aka `[]`) – не применять никаких тегов к определению.
+>
+
 
 > [!NOTE]
 > [Пример конфигурирования через PHP атрибут](#пример-использования-php-атрибута-diruntime-для-конфигурирования).

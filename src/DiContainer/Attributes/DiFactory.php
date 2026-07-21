@@ -21,7 +21,7 @@ final class DiFactory
 {
     /**
      * @param array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string $definition
-     * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed>                           $arguments
+     * @param array<non-empty-string|non-negative-int, DiDefinitionType|mixed>                           $arguments  arguments for a factory method or callable type
      */
     public function __construct(
         public readonly array|string $definition,

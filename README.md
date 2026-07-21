@@ -101,7 +101,7 @@ $post->title = 'Publication about DiContainer';
 $postController->send($post);
 ```
 > [!NOTE]
-> Контейнер "пытается" самостоятельно определить запрашиваемую зависимость - является ли это классом или callable типом.
+> Контейнер "пытается" самостоятельно определить запрашиваемую зависимость - является ли это классом или `callable` типом.
 
 `DiContainer` выполнит следующие действия для `App\Controllers\PostController`:
 
@@ -136,9 +136,6 @@ $container->call(
 > [!TIP]
 > Больше информации о [методе `call()`](https://github.com/agdobrynin/di-container/blob/main/docs/03-call-method.md)
 
-> [!NOTE]
-> Примеры использования пакета kaspi/di-container в [репозитории](https://github.com/agdobrynin/di-container-examples)
-
 ### Конфигурирование DiContainer
 
 Для конфигурирования контейнера используется класс
@@ -169,6 +166,14 @@ $container->call(
 Для определений контейнера у которых неуказан способ получения через метод контейнера `get()`
 применяется значение по умолчанию из конфигурации.
 
+#### Конфигурировать сервис сброса состояния объектов из определений контейнера:
+```php
+\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface::isConfigureObjectResettersFromDefinitions(): bool;
+```
+В долгоживущих процессах некоторые сервисы контейнера могут требовать сброса своего состояния.
+Для сброса состояния таких сервисов может быть использован механизм автоматического конфигурирования
+сервиса на основе конфигурации определений контейнера. Подробности в разделе [«Сброс состояния объектов для долго-живущих процессов».](https://github.com/agdobrynin/di-container/blob/main/docs/12-object-resetters.md)
+
 **Пример конфигурации:**
 ```php
 use Kaspi\DiContainer\{DiContainerConfig, DiContainerBuilder};
@@ -177,6 +182,7 @@ $diConfig = new DiContainerConfig(
     useZeroConfigurationDefinition: false,
     useAttribute: false,
     isSingletonServiceDefault: true,
+    isConfigureObjectResettersFromDefinitions: false,
 );
 
 // передать настройки в построитель контейнера
@@ -232,6 +238,7 @@ var_dump($container->get(TestClass::class)->container instanceof ContainerInterf
 * 📋 [Параметры контейнера](https://github.com/agdobrynin/di-container/blob/main/docs/09-container-parameters.md).
 * 🗳️ [Внедрение экземпляра класса в рантайм контейнер](https://github.com/agdobrynin/di-container/blob/main/docs/10-runtime-definition.md).
 * 🧹 [Сброс контейнера зависимостей](https://github.com/agdobrynin/di-container/blob/main/docs/11-container-reset.md).
+* ♻️ [Сброс состояния объектов для долго-живущих процессов](https://github.com/agdobrynin/di-container/blob/main/docs/12-object-resetters.md).
 
 ## Тесты
 Запуск тестов без подсчёта покрытия кода

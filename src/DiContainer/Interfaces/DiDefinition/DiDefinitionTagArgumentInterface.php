@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
 /**
  * @phpstan-type TagOptions array<non-empty-string, null|array<non-empty-string, null|scalar>|scalar>
  */
@@ -16,6 +18,8 @@ interface DiDefinitionTagArgumentInterface
      * @param TagOptions       $options tag's meta-data
      *
      * @return $this
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function bindTag(string $name, array $options = [], int|string|null $priority = null): static;
 }

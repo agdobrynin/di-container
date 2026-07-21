@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+
 /**
  * @phpstan-type DiDefinitionType DiDefinitionArgumentsInterface|DiDefinitionAutowireInterface|DiDefinitionInterface|DiDefinitionLinkInterface|DiDefinitionSetupAutowireInterface|DiDefinitionSingletonInterface|DiDefinitionTagArgumentInterface|DiDefinitionTaggedAsInterface|DiTaggedDefinitionInterface|DiDefinitionProxyClosureInterface|DiDefinitionFactoryInterface
  * @phpstan-type BindArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
@@ -22,6 +24,8 @@ interface DiDefinitionArgumentsInterface
      * @param (DiDefinitionType|mixed) ...$argument
      *
      * @return $this
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function bindArguments(mixed ...$argument): static;
 }

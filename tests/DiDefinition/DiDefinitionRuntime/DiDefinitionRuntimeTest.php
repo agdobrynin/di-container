@@ -8,6 +8,7 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(DiDefinitionRuntime::class)]
 #[CoversClass(TagsTrait::class)]
+#[CoversClass(FreezeTrait::class)]
 class DiDefinitionRuntimeTest extends TestCase
 {
     #[TestWith([null, null])]
@@ -75,7 +77,7 @@ class DiDefinitionRuntimeTest extends TestCase
     public function testIsImplementInterfaceFail(): void
     {
         $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('You should to be defined a php class through the parameters $containerIdentifier or $classDefinition');
+        $this->expectExceptionMessage('You should to be defined a php class through the parameters $containerIdentifierOrClass or $classDefinition');
 
         (new DiDefinitionRuntime('foo'))->isImplementInterface(FooInterface::class);
     }
@@ -105,6 +107,25 @@ class DiDefinitionRuntimeTest extends TestCase
         // $d->reset() clear container too.
         $this->expectException(DiDefinitionExceptionInterface::class);
         $d->getTags();
+    }
+
+    public function testFreeze(): void
+    {
+        $d = new DiDefinitionRuntime(Foo::class);
+        $d->setContainer($this->createMock(DiContainerInterface::class));
+
+        self::assertEmpty($d->getTags());
+
+        $d->bindTag('tags.foo', priority: 10);
+
+        self::assertEquals(['tags.foo' => ['priority' => 10]], $d->getTags());
+
+        $d->freeze();
+
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime::bindTag() on a frozen definition.');
+
+        $d->bindTag('tags.baz');
     }
 }
 
