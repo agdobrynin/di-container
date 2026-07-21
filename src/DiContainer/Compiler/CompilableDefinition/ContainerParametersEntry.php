@@ -91,16 +91,11 @@ final class ContainerParametersEntry implements CompilableDefinitionInterface
         try {
             return Helper::exportSimplestValues($value);
         } catch (InvalidArgumentException $e) {
-            if (InvalidBehaviorCompileEnum::RuntimeContainerException === $this->invalidBehaviorCompile) {
-                $message = sprintf('Cannot compile container parameter "%s". Reason by: %s', $name, $e->getMessage());
+            $message = sprintf('Cannot compile container parameter "%s". Reason by: %s', $name, $e->getMessage());
 
-                return sprintf('new \%s(message: %s)', ParameterException::class, var_export($message, true));
-            }
-
-            throw new DefinitionCompileException(
-                message: sprintf('Cannot compile container parameter "%s". Reason by: %s', $name, $e->getMessage()),
-                previous: $e,
-            );
+            return InvalidBehaviorCompileEnum::RuntimeContainerException === $this->invalidBehaviorCompile
+                ? sprintf('new \%s(message: %s)', ParameterException::class, var_export($message, true))
+                : throw new DefinitionCompileException(message: $message, previous: $e);
         }
     }
 }
