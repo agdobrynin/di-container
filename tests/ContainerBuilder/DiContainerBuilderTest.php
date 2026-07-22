@@ -28,10 +28,12 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
 use Kaspi\DiContainer\Parameters\DeferredSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
@@ -45,6 +47,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Tests\ContainerBuilder\Fixtures\Foo;
+use Tests\ContainerBuilder\Fixtures2\Bar;
 
 use function bin2hex;
 use function Kaspi\DiContainer\diAutowire;
@@ -87,6 +90,7 @@ use function random_bytes;
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(ContainerParametersEntry::class)]
 #[CoversClass(AbstractSourceParameters::class)]
+#[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
 class DiContainerBuilderTest extends TestCase
 {
     public function testDefinitionLoaderImportThrowException(): void
@@ -287,5 +291,24 @@ class DiContainerBuilderTest extends TestCase
         ;
 
         self::assertEquals('qux', $container->get('foo'));
+    }
+
+    public function testContainerIdentifierAlreadyRegisteredException(): void
+    {
+        vfsStream::setup();
+
+        $containerSuffix = bin2hex(random_bytes(5));
+        $container = (new DiContainerBuilder())
+            ->addDefinitions([
+                diAutowire(Bar::class),
+            ])
+            ->compileToFile(vfsStream::url('root'), 'App\Core\Container'.$containerSuffix, isExclusiveLockFile: false)
+            ->build()
+        ;
+
+        $this->expectException(ContainerIdentifierAlreadyRegisteredExceptionInterface::class);
+        $this->expectExceptionMessage('The container identifier \'Tests\\\ContainerBuilder\\\Fixtures2\\\Bar\' already registered in the source.');
+
+        $container->set(Bar::class, diAutowire(Bar::class));
     }
 }
