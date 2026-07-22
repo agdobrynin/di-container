@@ -25,7 +25,7 @@ use function array_key_exists;
 
 use Kaspi\DiContainer\Exception\{
     CallCircularDependencyException,
-    ContainerAlreadyRegisteredException,
+    ContainerIdentifierAlreadyRegisteredException,
 };
 
 final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\DiContainer
@@ -79,7 +79,7 @@ final class <?php echo $containerFQN->getClass(); ?> extends \Kaspi\DiContainer\
             return parent::set($id, $definition);
         }
 
-        throw new ContainerAlreadyRegisteredException(id: $id);
+        throw new ContainerIdentifierAlreadyRegisteredException(id: $id);
     }
 
     public function get(string $id): mixed
