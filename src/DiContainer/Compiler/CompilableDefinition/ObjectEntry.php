@@ -30,6 +30,9 @@ use function sprintf;
 use function str_starts_with;
 use function var_export;
 
+use const PHP_EOL;
+use const PHP_VERSION_ID;
+
 final class ObjectEntry implements CompilableDefinitionInterface
 {
     public function __construct(
@@ -40,6 +43,12 @@ final class ObjectEntry implements CompilableDefinitionInterface
 
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
+        if (PHP_VERSION_ID < 80400 && $this->definition->isLazy()) {
+            throw new DefinitionCompileException(
+                sprintf('The definition “%s” is a lazy object. Lazy object require PHP 8.4 or higher. Current PHP version: %s.', $this->definition->getIdentifier(), PHP_VERSION_ID)
+            );
+        }
+
         try {
             $argBuilderConstructor = $this->definition->exposeArgumentBuilder(
                 $this->diContainerDefinitions->getContainer()
@@ -73,7 +82,9 @@ final class ObjectEntry implements CompilableDefinitionInterface
         );
 
         if (null === $argBuilderConstructor && [] === $setupArgBuilders) {
-            return $objectCompiledEntry->setExpression($objectExpression);
+            return $this->definition->isLazy()
+                ? $this->generateLazyProxy($objectCompiledEntry, $objectExpression)
+                : $objectCompiledEntry->setExpression($objectExpression);
         }
 
         $argsConstructorExpression = '';
@@ -110,9 +121,9 @@ final class ObjectEntry implements CompilableDefinitionInterface
         $compiledObjectConstructor = $objectExpression.$argsConstructorExpression;
 
         if ([] === $setupArgBuilders) {
-            return $objectCompiledEntry
-                ->setExpression($compiledObjectConstructor)
-            ;
+            return $this->definition->isLazy()
+                ? $this->generateLazyProxy($objectCompiledEntry, $compiledObjectConstructor)
+                : $objectCompiledEntry->setExpression($compiledObjectConstructor);
         }
 
         $objectCreateStatement = sprintf('%s = %s', $objectCompiledEntry->getScopeServiceVar(), $compiledObjectConstructor);
@@ -205,11 +216,45 @@ final class ObjectEntry implements CompilableDefinitionInterface
             $objectCompiledEntry->addToStatements($serviceSetupStatement);
         }
 
-        return $objectCompiledEntry->setExpression($objectCompiledEntry->getScopeServiceVar());
+        return $this->definition->isLazy()
+            ? $this->generateLazyProxy($objectCompiledEntry, $objectCompiledEntry->getScopeServiceVar())
+            : $objectCompiledEntry->setExpression($objectCompiledEntry->getScopeServiceVar());
     }
 
     public function getDiDefinition(): DiDefinitionAutowireInterface
     {
         return $this->definition;
+    }
+
+    /**
+     * @param CompiledEntry $compiledEntry compiled object entry
+     */
+    private function generateLazyProxy(CompiledEntry $compiledEntry, string $returnExpression): CompiledEntry
+    {
+        $lazyInitializerStatements = '';
+
+        foreach ($compiledEntry->getStatements() as $statement) {
+            $lazyInitializerStatements .= sprintf('  %s;'.PHP_EOL, $statement);
+        }
+
+        if ('' !== $lazyInitializerStatements) {
+            $lazyInitializerStatements .= PHP_EOL;
+        }
+
+        $lazyInitializerStatements .= sprintf('  return %s;', $returnExpression);
+
+        $fullyQualifiedClassName = $compiledEntry->getReturnType();
+        $expression = <<< EXPRESSION
+new \\ReflectionClass({$fullyQualifiedClassName}::class)->newLazyProxy(function (): {$fullyQualifiedClassName} {
+  {$lazyInitializerStatements}
+})
+EXPRESSION;
+
+        return (new CompiledEntry(
+            isSingleton: $compiledEntry->isSingleton(),
+            returnType: $fullyQualifiedClassName,
+        ))
+            ->setExpression($expression)
+        ;
     }
 }
