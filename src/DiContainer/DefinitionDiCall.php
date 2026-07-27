@@ -38,7 +38,7 @@ final class DefinitionDiCall
 
         try {
             return is_array($parsedDefinition)
-                ? new ReflectionMethodByDefinition(...$parsedDefinition) // @phpstan-ignore argument.type
+                ? new ReflectionMethodByDefinition(...$parsedDefinition)
                 : new ReflectionFunction($parsedDefinition); // @phpstan-ignore argument.type
         } catch (ReflectionException $e) {
             throw new DiDefinitionException(

@@ -71,7 +71,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         $pos = strrpos($this->containerClass, '\\');
 
-        /** @var non-empty-string $class */
+        /** @var class-string $class */
         $class = false === $pos ? $this->containerClass : substr($this->containerClass, $pos + 1);
         $namespace = false === $pos ? '' : ltrim(substr($this->containerClass, 0, $pos), '\\');
 
@@ -90,7 +90,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
         return $this->compiledContainerFQN = new class($namespace, $class) implements CompiledContainerFQNInterface {
             private string $fqn;
 
-            /** @param non-empty-string $class */
+            /** @param class-string $class */
             public function __construct(private readonly string $namespace, private readonly string $class) {}
 
             public function getNamespace(): string

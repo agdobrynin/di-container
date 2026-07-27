@@ -43,7 +43,7 @@ final class CallableEntry implements CompilableDefinitionInterface
         if (is_array($this->definition->getDefinition())) {
             /**
              * @var class-string|object $class
-             * @var non-empty-string    $method
+             * @var non-falsy-string    $method
              */
             [$class, $method] = $this->definition->getDefinition();
 
