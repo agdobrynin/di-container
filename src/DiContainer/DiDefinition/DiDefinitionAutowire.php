@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
+use Closure;
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
@@ -42,6 +43,8 @@ use function is_array;
 use function is_object;
 use function is_string;
 use function sprintf;
+
+use const PHP_VERSION_ID;
 
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
@@ -95,8 +98,11 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     /**
      * @param class-string|ReflectionClass $definition
      */
-    public function __construct(private readonly ReflectionClass|string $definition, private readonly ?bool $isSingleton = null)
-    {
+    public function __construct(
+        private readonly ReflectionClass|string $definition,
+        private readonly ?bool $isSingleton = null,
+        private readonly bool $isLazy = false,
+    ) {
         if ($this->definition instanceof ReflectionClass) {
             $this->reflectionClass = $this->definition;
         }
@@ -181,43 +187,21 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     public function resolve(DiContainerInterface $container, mixed $context = null): object
     {
-        $this->constructArgBuilder ??= ($this->exposeArgumentBuilder($container) ?? false);
-
-        /** @var object $object */
-        $object = (false === $this->constructArgBuilder)
-            ? $this->getDefinition()->newInstanceWithoutConstructor()
-            : $this->getDefinition()->newInstanceArgs(ArgumentResolver::resolve($this->constructArgBuilder, $container, $this));
-
-        $this->setupArgBuilders ??= $this->exposeSetupArgumentBuilders($container);
-
-        /** @var ArgumentBuilderInterface $argBuilder */
-        foreach ($this->setupArgBuilders as [$setupConfigureType, $argBuilder]) {
-            $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
-            $reflectionMethod = $argBuilder->getFunctionOrMethod();
-
-            /** @var callable $callable */
-            $callable = [$object, $reflectionMethod->name];
-
-            if (SetupConfigureMethod::Mutable === $setupConfigureType) {
-                call_user_func_array($callable, $resolvedArguments);
-
-                continue;
-            }
-
-            $result = call_user_func_array($callable, $resolvedArguments);
-
-            if (is_object($result) && get_class($result) === get_class($object)) {
-                /** @var object $object */
-                $object = $result;
-                unset($result);
-
-                continue;
-            }
-
-            throw new DiDefinitionException(sprintf('The immutable setter "%s" must return same class "%s". Got type: %s', Helper::functionName($reflectionMethod), $this->getDefinition()->getName(), get_debug_type($result)));
+        if (false === $this->isLazy) {
+            return $this->objectInitializer($container);
         }
 
-        return $object;
+        if (PHP_VERSION_ID < 80400) {
+            throw new DiDefinitionException(
+                sprintf('Lazy object require PHP 8.4 or higher. Current PHP version: %s.', PHP_VERSION_ID)
+            );
+        }
+
+        /** @var Closure(): object $initializerProxy */
+        $initializerProxy = fn (): object => $this->objectInitializer($container);
+
+        // @phpstan-ignore-next-line-until 8.4
+        return $this->getDefinition()->newLazyProxy($initializerProxy);
     }
 
     public function getDefinition(): ReflectionClass
@@ -315,6 +299,11 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->resetter;
     }
 
+    public function isLazy(): bool
+    {
+        return $this->isLazy;
+    }
+
     protected function readTagAttributes(): Generator
     {
         try {
@@ -344,6 +333,47 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
                 yield $argTag;
             }
         }
+    }
+
+    private function objectInitializer(DiContainerInterface $container): object
+    {
+        $this->constructArgBuilder ??= ($this->exposeArgumentBuilder($container) ?? false);
+
+        /** @var object $object */
+        $object = (false === $this->constructArgBuilder)
+            ? $this->getDefinition()->newInstanceWithoutConstructor()
+            : $this->getDefinition()->newInstanceArgs(ArgumentResolver::resolve($this->constructArgBuilder, $container, $this));
+
+        $this->setupArgBuilders ??= $this->exposeSetupArgumentBuilders($container);
+
+        /** @var ArgumentBuilderInterface $argBuilder */
+        foreach ($this->setupArgBuilders as [$setupConfigureType, $argBuilder]) {
+            $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
+            $reflectionMethod = $argBuilder->getFunctionOrMethod();
+
+            /** @var callable $callable */
+            $callable = [$object, $reflectionMethod->name];
+
+            if (SetupConfigureMethod::Mutable === $setupConfigureType) {
+                call_user_func_array($callable, $resolvedArguments);
+
+                continue;
+            }
+
+            $result = call_user_func_array($callable, $resolvedArguments);
+
+            if (is_object($result) && get_class($result) === get_class($object)) {
+                /** @var object $object */
+                $object = $result;
+                unset($result);
+
+                continue;
+            }
+
+            throw new DiDefinitionException(sprintf('The immutable setter "%s" must return same class "%s". Got type: %s', Helper::functionName($reflectionMethod), $this->getDefinition()->getName(), get_debug_type($result)));
+        }
+
+        return $object;
     }
 
     /**

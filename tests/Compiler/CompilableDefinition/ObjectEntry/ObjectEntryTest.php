@@ -21,6 +21,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -388,5 +389,42 @@ class ObjectEntryTest extends TestCase
   $this->get(\'Psr\\\Container\\\ContainerInterface\'),
 )',
         ], $compiledObject->getStatements());
+    }
+
+    #[RequiresPhp('< 8.4')]
+    public function testCompileLazyObjectForPhp83OrLess(): void
+    {
+        $this->expectException(DefinitionCompileExceptionInterface::class);
+        $this->expectExceptionMessage('Lazy object require PHP 8.4 or higher');
+
+        $this->mockDefinition->method('isLazy')
+            ->willReturn(true)
+        ;
+
+        (new ObjectEntry($this->mockDefinition, $this->mockDiContainerDefinitions, $this->mockTransformer))
+            ->compile('$this')
+        ;
+    }
+
+    #[RequiresPhp('>= 8.4')]
+    public function testCompileLazyObjectForPhp84OrHigher(): void
+    {
+        $this->mockDefinition->method('isLazy')
+            ->willReturn(true)
+        ;
+        $this->mockDefinition->method('getDefinition')
+            ->willReturn(new ReflectionClass(Foo::class))
+        ;
+
+        $compiledEntry = (new ObjectEntry($this->mockDefinition, $this->mockDiContainerDefinitions, $this->mockTransformer))
+            ->compile('$this')
+        ;
+
+        self::assertEquals([], $compiledEntry->getStatements());
+        self::assertEquals('\\'.Foo::class, $compiledEntry->getReturnType());
+        self::assertStringStartsWith(
+            'new \ReflectionClass(\\'.Foo::class.'::class)->newLazyProxy(function (): \\'.Foo::class.' {',
+            $compiledEntry->getExpression()
+        );
     }
 }

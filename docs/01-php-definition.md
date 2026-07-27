@@ -111,12 +111,14 @@ use function \Kaspi\DiContainer\diAutowire;
 
 diAutowire(
     string $definition,
-    ?bool $isSingleton = null
+    ?bool $isSingleton = null,
+    bool $isLazy = false,
 ): DiDefinitionSetupAutowireInterface & DiDefinitionTagArgumentInterface & DiDefinitionResetterSetterInterface
 ```
 Параметры:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$isLazy` – обозначение определения как «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](14-lazy-injection.md).
 
 > [!IMPORTANT]
 > Функция `diAutowire` возвращает объект реализующий интерфейсы

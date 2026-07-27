@@ -25,10 +25,11 @@ use function function_exists;
 if (!function_exists('Kaspi\DiContainer\diAutowire')) { // @codeCoverageIgnore
     /**
      * @param class-string $definition Fully Qualified Class Name
+     * @param bool         $isLazy     Lazy object for PHP 8.4 and later
      */
-    function diAutowire(string $definition, ?bool $isSingleton = null): DiDefinitionResetterSetterInterface&DiDefinitionSetupAutowireInterface&DiDefinitionTagArgumentInterface
+    function diAutowire(string $definition, ?bool $isSingleton = null, bool $isLazy = false): DiDefinitionResetterSetterInterface&DiDefinitionSetupAutowireInterface&DiDefinitionTagArgumentInterface
     {
-        return new DiDefinitionAutowire($definition, $isSingleton);
+        return new DiDefinitionAutowire($definition, $isSingleton, $isLazy);
     }
 } // @codeCoverageIgnore
 
