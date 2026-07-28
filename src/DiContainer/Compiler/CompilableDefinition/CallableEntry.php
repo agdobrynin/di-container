@@ -40,12 +40,14 @@ final class CallableEntry implements CompilableDefinitionInterface
 
     public function compile(string $containerVar, array $scopeVars = [], mixed $context = null): CompiledEntryInterface
     {
-        if (is_array($this->definition->getDefinition())) {
+        $definition = $this->definition->getDefinition();
+
+        if (is_array($definition)) {
             /**
              * @var class-string|object $class
-             * @var non-empty-string    $method
+             * @var non-falsy-string    $method
              */
-            [$class, $method] = $this->definition->getDefinition();
+            [$class, $method] = $definition;
 
             if (is_object($class)) {
                 throw new DefinitionCompileException(

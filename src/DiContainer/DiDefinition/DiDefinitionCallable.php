@@ -81,7 +81,7 @@ final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDef
     private function reflectionFunction(): ReflectionFunction|ReflectionMethod
     {
         return match (true) {
-            is_array($this->definition) => new ReflectionMethod(...$this->definition), // @phpstan-ignore argument.type
+            is_array($this->definition) => new ReflectionMethod(...$this->definition),
             is_string($this->definition) && (strpos($this->definition, '::') > 0) => new ReflectionMethod(...explode('::', $this->definition, 2)),
             default => new ReflectionFunction($this->definition) // @phpstan-ignore argument.type
         };

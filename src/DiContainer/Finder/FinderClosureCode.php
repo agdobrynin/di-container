@@ -401,10 +401,11 @@ final class FinderClosureCode implements FinderClosureCodeInterface
         $isUseStart = $isAlias = $isNamespace = $isNamespaceBrace = $isNamespaceDetected = false;
         $namespace = '';
 
-        /**
-         * @var ParsedNamespaces $namespaces
-         */
         $namespaces = [];
+
+        /**
+         * @phpstan-var ParsedNamespaces $namespaces
+         */
         $namespaces[$namespace] = [
             'startLine' => 0,
             'endLine' => PHP_INT_MAX,
