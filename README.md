@@ -10,6 +10,7 @@ composer require kaspi/di-container
 ### Особенности
 
 - **Autowire** – контейнер автоматически создаёт и внедряет зависимости.
+- **Lazy injection** – внедрение «ленивых» объектов контейнером.
 - **Zero configuration** – если класс не имеет зависимостей или зависит только от других конкретных классов, контейнеру не нужно указывать, как разрешить этот класс.
 - **Php-атрибуты** для конфигурирования сервисов в контейнере.
 - **Поддержка тегов** (_tags_) для определений и сервисов в контейнере.
@@ -239,6 +240,7 @@ var_dump($container->get(TestClass::class)->container instanceof ContainerInterf
 * 🗳️ [Внедрение экземпляра класса в рантайм контейнер](https://github.com/agdobrynin/di-container/blob/main/docs/10-runtime-definition.md).
 * 🧹 [Сброс контейнера зависимостей](https://github.com/agdobrynin/di-container/blob/main/docs/11-container-reset.md).
 * ♻️ [Сброс состояния объектов для долго-живущих процессов](https://github.com/agdobrynin/di-container/blob/main/docs/12-object-resetters.md).
+* 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](https://github.com/agdobrynin/di-container/blob/main/docs/14-lazy-injection.md)
 
 ## Тесты
 Запуск тестов без подсчёта покрытия кода

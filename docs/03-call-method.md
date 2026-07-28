@@ -1,9 +1,9 @@
-# 📦 Метод `call()`.
+# 📦 Метод `DiContainer::call()`.
 
 Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface`
 предоставляющий метод `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface::call()`.
 
-Получение результата `callable` типа или [преобразуеемого в callable тип](#класс-с-нестатическим-методом) значения, с разрешением зависимостей через контейнер:
+Получение результата `callable` типа или [преобразуемого в callable тип](#класс-с-нестатическим-методом) значения, с разрешением зависимостей через контейнер:
 ```php
 call(array|callable|string $definition, mixed ...$argument)
 ```
@@ -12,8 +12,9 @@ call(array|callable|string $definition, mixed ...$argument)
 - `$argument` - аргументы для подстановки в `callable` тип;
 
 > [!TIP]
-> Если часть параметров функции или метода может быть разрешена контейнером автоматически,
-> то для указания конкретного параметра можно использовать именованные аргументы в `$argument`.
+> Если часть параметров функции или метода **не может быть разрешена контейнером автоматически**,
+> то для указания конкретного параметра можно использовать именованные аргументы в параметре `$argument`.
+> 
 
 #### Поддерживаемые типы:
 - Функция
@@ -35,7 +36,7 @@ call(array|callable|string $definition, mixed ...$argument)
   }
   ```
   ```php
-  $container->call('\\App\\Services\\Foo::bar');
+  $container->call('\App\Services\Foo::bar');
   
   $container->call(\App\Services\Foo::class.'::bar');
   
@@ -93,7 +94,7 @@ call(array|callable|string $definition, mixed ...$argument)
   
   $container->call(\App\Services\Foo::class.'::qux');
   
-  $container->call('\\App\\Services\\Foo::qux');
+  $container->call('\App\Services\Foo::qux');
   ```
   метод `call()` выполнит следующие действия:
   ```php

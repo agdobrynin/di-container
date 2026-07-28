@@ -116,10 +116,10 @@ interface DiContainerBuilderInterface
     public function import(string $namespace, string $src, array $excludeFiles = [], array $availableExtensions = ['php']): static;
 
     /**
-     * @param non-empty-string                $outputDirectory     output directory for compiled container
-     * @param class-string                    $containerClass      fully qualified class name for compiler container
-     * @param bool                            $isExclusiveLockFile exclusive locking of the resulting file while the container compiler writes
-     * @param array{array-key, mixed}|array{} $options             compiler additional option
+     * @param non-empty-string $outputDirectory     output directory for compiled container
+     * @param class-string     $containerClass      fully qualified class name for compiler container
+     * @param bool             $isExclusiveLockFile exclusive locking of the resulting file while the container compiler writes
+     * @param array{}          $options             compiler additional option
      *
      * @return $this
      */

@@ -22,9 +22,11 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooMultiConfigSetup;
+use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetupConfigWithIdEmpty;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupByAttributeWithArgumentAsReference;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SetupClassByAttribute;
@@ -269,5 +271,28 @@ class SetupTest extends TestCase
         $definition->setContainerIdentifier('qux');
 
         $definition->exposeSetupArgumentBuilders($mockContainer);
+    }
+
+    #[TestWith([
+        FooSetupConfigWithIdEmpty::class,
+        'Lorem ipsum for service id as "Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetupConfigWithIdEmpty"',
+    ])]
+    #[TestWith([
+        'services.foo',
+        'Lorem ipsum for service id as "services.foo"',
+    ])]
+    public function testConfigureViaSetupWithSameContainerIdentifier(string $containerIdentifier, string $expectVal): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $definition = new DiDefinitionAutowire(FooSetupConfigWithIdEmpty::class);
+        $definition->setContainerIdentifier($containerIdentifier);
+
+        $object = $definition->resolve($mockContainer);
+
+        self::assertEquals($expectVal, $object->getVal());
     }
 }

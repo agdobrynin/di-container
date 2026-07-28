@@ -618,7 +618,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton))
+                $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton, $autowireAttr->isLazy))
                     ->bindArguments(...$autowireAttr->arguments)
                     ->setResetter($autowireAttr->getResetter())
                 ;

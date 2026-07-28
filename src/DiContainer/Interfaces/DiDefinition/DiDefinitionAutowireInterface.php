@@ -44,4 +44,9 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface, 
      * @throws DiDefinitionExceptionInterface
      */
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array;
+
+    /**
+     * Lazy object for PHP 8.4 and later.
+     */
+    public function isLazy(): bool;
 }

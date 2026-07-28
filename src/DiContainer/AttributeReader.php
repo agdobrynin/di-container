@@ -32,6 +32,8 @@ use function array_filter;
 use function sprintf;
 use function usort;
 
+use const PHP_VERSION_ID;
+
 final class AttributeReader
 {
     public static function isAutowireExclude(ReflectionClass $class): bool
@@ -112,6 +114,12 @@ final class AttributeReader
                 throw new AutowireAttributeException(
                     message: sprintf('Unable to create an instance of PHP attribute "%s". Reason by: %s', $attr->getName(), $e->getMessage()),
                     previous: $e
+                );
+            }
+
+            if (PHP_VERSION_ID < 80400 && true === $autowire->isLazy) {
+                throw new AutowireAttributeException(
+                    sprintf('Configuring the PHP class "%s" as a lazy object via PHP attribute "%s" requires PHP version 8.4 or higher. Current PHP version: %s.', $class->name, Autowire::class, PHP_VERSION_ID)
                 );
             }
 
