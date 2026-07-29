@@ -108,8 +108,9 @@ all: fix stat test
 test-supports-php:
 	@$(foreach php, $(php_all),\
 		$(docker-build) --build-arg PHP_IMAGE=$(php); \
-		$(docker-run) sh -c "$(CMD_TEST) && vendor/bin/phpunit --no-coverage"; \
+		$(docker-run) sh -c "$(composer-clean-prepare) && vendor/bin/phpunit --no-coverage"; \
 	)
 
-	@$(docker-build) #build container defined in .env file as PHP_IMAGE
-	$(docker-run) sh -c "$(composer-clean-prepare)"
+ 	#build container defined in .env file as PHP_IMAGE
+	@$(docker-build); \
+	$(docker-run) sh -c "$(composer-clean-prepare)";
