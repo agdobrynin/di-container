@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
@@ -18,11 +19,13 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
+use Kaspi\DiContainer\Traits\ResetterTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Tests\DefinitionsLoader\Fixtures\DefinitionsConfigurator\Bar;
 use Tests\DefinitionsLoader\Fixtures\DefinitionsConfigurator\Foo;
 use Tests\DefinitionsLoader\Fixtures\TaggedAttr\Bat;
@@ -51,6 +54,8 @@ use function Kaspi\DiContainer\diValue;
 #[CoversClass(NotFoundDefinition::class)]
 #[CoversClass(TagsTrait::class)]
 #[CoversClass(DiDefinitionValue::class)]
+#[CoversClass(Autowire::class)]
+#[CoversClass(ResetterTrait::class)]
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
 class DefinitionsLoaderWithConfiguratorTest extends TestCase
 {
@@ -329,5 +334,22 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
         self::assertArrayHasKey('tags.two', $res[Fixtures\Classes\Foo::class]->getBoundTags());
         self::assertTrue($res['service.magic_str']->hasTag('tags.two'));
         self::assertArrayNotHasKey('tags.two', $res[Fixtures\Classes\Bar::class]->getBoundTags());
+    }
+
+    public function testConfiguratorFindTaggedDefinitionViaAttributeWithTagNameAsInterface(): void
+    {
+        /*
+         * The PHP class \Tests\DefinitionsLoader\Fixtures\Classes\Baz
+         * has attribute with tag name \Psr\Container\ContainerInterface
+         */
+        $configurator = (new DefinitionsLoader())
+            ->useAttribute(true)
+            ->import('Tests\DefinitionsLoader\Fixtures\Classes\\', __DIR__.'/Fixtures/Classes/')
+            ->definitionsConfigurator()
+        ;
+        self::assertEquals(
+            [],
+            [...$configurator->findTaggedDefinition(ContainerInterface::class)]
+        );
     }
 }
