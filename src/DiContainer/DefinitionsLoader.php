@@ -106,7 +106,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function load(string ...$file): static
     {
         $this->loadFormFile(false, ...$file);
-        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
@@ -114,7 +113,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function loadOverride(string ...$file): static
     {
         $this->loadFormFile(true, ...$file);
-        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
