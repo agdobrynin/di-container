@@ -39,6 +39,7 @@ use ReflectionException;
 use RuntimeException;
 use UnitEnum;
 
+use function array_key_exists;
 use function array_map;
 use function class_exists;
 use function file_exists;
@@ -222,6 +223,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
         return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->configuratorContexts) implements DefinitionsConfiguratorInterface {
+            /**
+             * @var array<class-string|non-empty-string, mixed>
+             */
+            private array $cacheOfDefinitions;
+
             public function __construct(
                 private readonly DefinitionsLoaderInterface $definitionsLoader,
                 private readonly ArrayIterator $removedDefinitionIds,
@@ -231,6 +237,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function removeDefinition(string $id): void
             {
+                unset($this->cacheOfDefinitions[$id]);
                 $this->removedDefinitionIds->offsetSet($id, true);
             }
 
@@ -247,7 +254,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function getDefinition(string $id, ?callable $fallback = null): mixed
             {
+                if (isset($this->cacheOfDefinitions) && array_key_exists($id, $this->cacheOfDefinitions)) {
+                    return $this->cacheOfDefinitions[$id];
+                }
+
                 foreach ($this->getDefinitions() as $identifier => $definition) {
+                    $this->cacheOfDefinitions[$identifier] = $definition;
+
                     if ($id === $identifier) {
                         return $definition;
                     }
@@ -305,6 +318,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function loadOverride(string $file, string ...$_): void
             {
+                unset($this->cacheOfDefinitions);
                 $this->definitionsLoader->loadOverride($file, ...$_);
             }
 
