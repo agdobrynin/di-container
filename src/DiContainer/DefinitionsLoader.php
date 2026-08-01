@@ -40,6 +40,7 @@ use RuntimeException;
 use UnitEnum;
 
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function class_exists;
 use function file_exists;
@@ -105,6 +106,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function load(string ...$file): static
     {
         $this->loadFormFile(false, ...$file);
+        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
@@ -112,6 +114,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function loadOverride(string ...$file): static
     {
         $this->loadFormFile(true, ...$file);
+        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
@@ -142,6 +145,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             $this->removedDefinitionIds->offsetUnset($identifier);
             ++$itemCount;
         }
+
+        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
@@ -195,6 +200,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionsImported = false;
+        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
@@ -202,6 +208,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function useAttribute(bool $useAttribute): static
     {
         $this->useAttribute = $useAttribute;
+        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
@@ -228,6 +235,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
              */
             private array $cacheOfDefinitions;
 
+            /**
+             * @var array<non-empty-string, array<class-string|non-empty-string, DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface>>
+             */
+            private array $cacheOfTaggedDefinitions;
+
             public function __construct(
                 private readonly DefinitionsLoaderInterface $definitionsLoader,
                 private readonly ArrayIterator $removedDefinitionIds,
@@ -235,10 +247,15 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 private readonly ArrayIterator $configuratorContexts,
             ) {}
 
+            public function reset(): void
+            {
+                unset($this->cacheOfDefinitions, $this->cacheOfTaggedDefinitions);
+            }
+
             public function removeDefinition(string $id): void
             {
-                unset($this->cacheOfDefinitions[$id]);
                 $this->removedDefinitionIds->offsetSet($id, true);
+                unset($this->cacheOfDefinitions[$id], $this->cacheOfTaggedDefinitions);
             }
 
             public function getDefinitions(): iterable
@@ -250,6 +267,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             {
                 $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
                 $this->removedDefinitionIds->offsetUnset($id);
+                unset($this->cacheOfTaggedDefinitions);
             }
 
             public function getDefinition(string $id, ?callable $fallback = null): mixed
@@ -273,7 +291,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function findTaggedDefinition(string $tag): iterable
             {
-                $tagIsInterface = $useAttribute = null;
+                if (isset($this->cacheOfTaggedDefinitions[$tag])) {
+                    yield from $this->cacheOfTaggedDefinitions[$tag];
+                }
+
+                $useAttribute = null;
+
+                /** @var array<class-string, true> $flippedObjectInterfaceNames */
+                $flippedObjectInterfaceNames = [];
 
                 foreach ($this->getDefinitions() as $identifier => $definition) {
                     if (!$definition instanceof DiTaggedDefinitionInterface) {
@@ -281,34 +306,68 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     }
 
                     if ($definition instanceof DiTaggedObjectDefinitionInterface) {
-                        $tagIsInterface ??= interface_exists($tag);
-                        $useAttribute ??= $this->definitionsLoader->isUseAttribute();
-
-                        if ($tagIsInterface && $definition->isImplementInterface($tag)) {
-                            yield $identifier => $definition;
-
-                            continue;
+                        foreach ($definition->getInterfaceNames() as $interfaceName) {
+                            if (!isset($this->cacheOfTaggedDefinitions[$interfaceName][$identifier])) {
+                                $this->cacheOfTaggedDefinitions[$interfaceName][$identifier] = $definition;
+                                $flippedObjectInterfaceNames[$interfaceName] = true;
+                            }
                         }
+
+                        $useAttribute ??= $this->definitionsLoader->isUseAttribute();
 
                         /*
                          * Tag bound via php attribute.
-                         * The tag name, represented as a php interface, must be excluded from the valid tag name.
                          * 🚩 The documentation says that PHP attributes have higher priority than PHP definitions.
                          */
-                        if (!$tagIsInterface && $useAttribute && isset($definition->getTagsByAttribute()[$tag])) {
-                            yield $identifier => $definition;
+                        if ($useAttribute) {
+                            foreach (array_keys($definition->getTagsByAttribute()) as $tagName) {
+                                if (!isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
+                                    $isInterface = isset($flippedObjectInterfaceNames[$tagName]);
 
-                            continue;
+                                    if (!$isInterface && interface_exists($tagName)) {
+                                        $isInterface = true;
+                                        $flippedObjectInterfaceNames[$tagName] = true;
+                                    }
+
+                                    // The tag name, represented as a php interface, must be excluded from the valid tag name.
+                                    if (!$isInterface) {
+                                        $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
+                                    }
+                                }
+                            }
                         }
 
-                        // The tag name, represented as a php interface, must be excluded from the valid tag name.
-                        if (!$tagIsInterface && isset($definition->getBoundTags()[$tag])) {
-                            yield $identifier => $definition;
+                        foreach (array_keys($definition->getBoundTags()) as $tagName) {
+                            // The tag name, represented as a php interface, must be excluded from the valid tag name.
+                            $isInterface = isset($flippedObjectInterfaceNames[$tagName]);
+
+                            if ($isInterface || isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
+                                continue;
+                            }
+
+                            // The tag name, represented as a php interface, must be excluded from the valid tag name.
+                            if (interface_exists($tagName)) {
+                                $flippedObjectInterfaceNames[$tagName] = true;
+
+                                continue;
+                            }
+
+                            $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
                         }
-                    } elseif ($definition->hasTag($tag)) {
+                    } else {
+                        foreach (array_keys($definition->getTags()) as $tagName) {
+                            if (!isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
+                                $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
+                            }
+                        }
+                    }
+
+                    if (isset($this->cacheOfTaggedDefinitions[$tag][$identifier])) {
                         yield $identifier => $definition;
                     }
                 }
+
+                unset($flippedObjectInterfaceNames);
             }
 
             public function load(string $file, string ...$_): void
@@ -318,7 +377,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             public function loadOverride(string $file, string ...$_): void
             {
-                unset($this->cacheOfDefinitions);
                 $this->definitionsLoader->loadOverride($file, ...$_);
             }
 
@@ -457,6 +515,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionsImported = false;
         $this->circularLoadFromFileWatcher = [];
+        $this->definitionsConfigurator()->reset();
     }
 
     /**
