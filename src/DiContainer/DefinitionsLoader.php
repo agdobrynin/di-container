@@ -41,7 +41,6 @@ use RuntimeException;
 use UnitEnum;
 
 use function array_key_exists;
-use function array_keys;
 use function array_map;
 use function class_exists;
 use function file_exists;
@@ -334,7 +333,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                          * 🚩 The documentation says that PHP attributes have higher priority than PHP definitions.
                          */
                         if ($useAttribute) {
-                            foreach (array_keys($definition->getTagsByAttribute()) as $tagName) {
+                            foreach ($definition->getTagsByAttribute() as $tagName => $options) {
                                 if (!isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
                                     $isInterface = isset($flippedObjectInterfaceNames[$tagName]);
 
@@ -351,7 +350,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                             }
                         }
 
-                        foreach (array_keys($definition->getBoundTags()) as $tagName) {
+                        foreach ($definition->getBoundTags() as $tagName => $options) {
                             // The tag name, represented as a php interface, must be excluded from the valid tag name.
                             $isInterface = isset($flippedObjectInterfaceNames[$tagName]);
 
@@ -369,7 +368,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                             $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
                         }
                     } else {
-                        foreach (array_keys($definition->getTags()) as $tagName) {
+                        foreach ($definition->getTags() as $tagName => $options) {
                             if (!isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
                                 $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
                             }
