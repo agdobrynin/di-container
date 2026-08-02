@@ -18,6 +18,7 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
@@ -65,6 +66,7 @@ use function random_bytes;
 #[CoversClass(Helper::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(ParameterNotFoundException::class)]
+#[CoversClass(EventListener::class)]
 class SourceParametersOnCompiledContainerTest extends TestCase
 {
     private DiContainerBuilder $containerBuilder;

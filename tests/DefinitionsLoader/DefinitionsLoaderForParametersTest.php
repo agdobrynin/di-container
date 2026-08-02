@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use Kaspi\DiContainer\DefinitionsLoader;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -15,6 +16,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(DefinitionsLoader::class)]
+#[CoversClass(EventListener::class)]
 class DefinitionsLoaderForParametersTest extends TestCase
 {
     private $root;

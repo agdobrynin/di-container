@@ -8,6 +8,7 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -28,6 +29,7 @@ use Tests\DefinitionsLoader\Fixtures\AttributeIsLazyConfig\Foo;
 #[CoversClass(FinderFullyQualifiedNameCollection::class)]
 #[CoversClass(FinderFile::class)]
 #[CoversClass(FinderFullyQualifiedName::class)]
+#[CoversClass(EventListener::class)]
 class DefinitionsLoaderAutowireIsLazyTest extends TestCase
 {
     #[RequiresPhp('< 8.4')]

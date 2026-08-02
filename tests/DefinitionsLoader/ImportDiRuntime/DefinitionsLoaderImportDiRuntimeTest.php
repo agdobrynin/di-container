@@ -9,6 +9,7 @@ use Kaspi\DiContainer\Attributes\DiRuntime;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -38,6 +39,7 @@ use Tests\DefinitionsLoader\ImportDiRuntime\Fixtures\Success\Foo;
 #[CoversFunction('Kaspi\DiContainer\diRuntime')]
 #[CoversClass(Tag::class)]
 #[CoversClass(TagsTrait::class)]
+#[CoversClass(EventListener::class)]
 class DefinitionsLoaderImportDiRuntimeTest extends TestCase
 {
     public function testImportDiRuntimeSucceeds(): void

@@ -13,7 +13,7 @@ use UnitEnum;
 /**
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
  */
-interface DefinitionsConfiguratorInterface
+interface DefinitionsConfiguratorInterface extends ResetInterface
 {
     /**
      * Remove a definition from configuration files or from importing classes via container identifier.

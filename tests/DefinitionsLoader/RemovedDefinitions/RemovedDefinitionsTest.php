@@ -6,6 +6,7 @@ namespace Tests\DefinitionsLoader\RemovedDefinitions;
 
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -27,6 +28,7 @@ use function array_keys;
 #[CoversClass(FinderFile::class)]
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(EventListener::class)]
 class RemovedDefinitionsTest extends TestCase
 {
     public function testGetExcludedDefinitionsFromConfiguredImport(): void
