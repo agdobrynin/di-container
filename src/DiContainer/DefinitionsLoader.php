@@ -17,6 +17,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\Enum\EventNameEnum;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
@@ -87,6 +88,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime> */
     private array $importedDefinitions;
 
+    private readonly EventListener $definitionsConfiguratorEvent;
+
     /**
      * Circular watcher for load definitions from files.
      *
@@ -101,6 +104,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->removedDefinitionIds = new ArrayIterator();
         $this->parameters = new ArrayIterator();
         $this->configuratorContexts = new ArrayIterator();
+        $this->definitionsConfiguratorEvent = new EventListener();
     }
 
     public function load(string ...$file): static
@@ -141,10 +145,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             $this->configuredDefinitions->offsetSet($identifier, $definition);
             $this->removedDefinitionIds->offsetUnset($identifier);
+
+            if ($definition instanceof DiTaggedDefinitionInterface) {
+                $this->definitionsConfiguratorEvent->trigger(EventNameEnum::ResetCacheOfTaggedDefinitions);
+            }
+
             ++$itemCount;
         }
-
-        $this->definitionsConfigurator()->reset();
 
         return $this;
     }
@@ -198,7 +205,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionsImported = false;
-        $this->definitionsConfigurator()->reset();
+        $this->definitionsConfiguratorEvent->trigger(EventNameEnum::ResetCacheOfTaggedDefinitions);
 
         return $this;
     }
@@ -206,7 +213,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function useAttribute(bool $useAttribute): static
     {
         $this->useAttribute = $useAttribute;
-        $this->definitionsConfigurator()->reset();
+        $this->definitionsConfiguratorEvent->trigger(EventNameEnum::ResetCacheOfTaggedDefinitions);
 
         return $this;
     }
@@ -227,7 +234,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->configuratorContexts) implements DefinitionsConfiguratorInterface {
+        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->configuratorContexts, $this->definitionsConfiguratorEvent) implements DefinitionsConfiguratorInterface {
             /**
              * @var array<class-string|non-empty-string, mixed>
              */
@@ -243,7 +250,16 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 private readonly ArrayIterator $removedDefinitionIds,
                 private readonly ArrayIterator $parameters,
                 private readonly ArrayIterator $configuratorContexts,
-            ) {}
+                private readonly EventListener $definitionsConfiguratorEvent,
+            ) {
+                // Listeners for a specific event are triggered in `DefinitionsLoader`
+                $this->definitionsConfiguratorEvent->on(
+                    EventNameEnum::ResetCacheOfTaggedDefinitions,
+                    function (): void {
+                        unset($this->cacheOfTaggedDefinitions);
+                    },
+                );
+            }
 
             public function reset(): void
             {
@@ -514,6 +530,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->isRemovedDefinitionsImported = false;
         $this->circularLoadFromFileWatcher = [];
         $this->definitionsConfigurator()->reset();
+        $this->definitionsConfiguratorEvent->reset();
     }
 
     /**
