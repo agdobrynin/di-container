@@ -11,6 +11,7 @@ use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
@@ -57,6 +58,7 @@ use function Kaspi\DiContainer\diValue;
 #[CoversClass(Autowire::class)]
 #[CoversClass(ResetterTrait::class)]
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
+#[CoversClass(EventListener::class)]
 class DefinitionsLoaderWithConfiguratorTest extends TestCase
 {
     public function testCircularLoadFromFile(): void

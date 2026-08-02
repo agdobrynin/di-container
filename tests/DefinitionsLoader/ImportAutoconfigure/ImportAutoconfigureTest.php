@@ -15,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
@@ -59,6 +60,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(EventListener::class)]
 class ImportAutoconfigureTest extends TestCase
 {
     public function testAutoconfigure(): void
