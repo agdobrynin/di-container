@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Generator;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
@@ -112,6 +113,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected readonly array $objectResettersIds;
 
     /**
+     * @var array<class-string, true>
+     */
+    protected array $flippedObjectInterfaceNames;
+
+    /**
      * @var array<TagName, array<ContainerIdentifier, DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface>>
      */
     protected array $cacheOfTaggedDefinitions;
@@ -167,20 +173,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $srcDefinition = $this->definitions->get($id);
 
             if ($srcDefinition instanceof DiTaggedDefinitionInterface) {
-                if ($srcDefinition instanceof DiTaggedObjectDefinitionInterface) {
-                    $srcDefinition->setContainer($this);
-
-                    try {
-                        $tagNames = [...array_keys($srcDefinition->getTags()), ...$srcDefinition->getInterfaceNames()];
-                    } catch (DiDefinitionExceptionInterface) {
-                        $tagNames = [];
+                try {
+                    foreach ($this->getTagNamesFromDefinition($srcDefinition) as $tagName) {
+                        if (isset($this->cacheOfTaggedDefinitions[$tagName])) {
+                            $this->cacheOfTaggedDefinitions[$tagName][$id] = $srcDefinition;
+                        }
                     }
-                } else {
-                    $tagNames = array_keys($srcDefinition->getTags());
-                }
-
-                foreach ($tagNames as $tagName) {
-                    unset($this->cacheOfTaggedDefinitions[$tagName]);
+                } catch (DiDefinitionExceptionInterface) {
                 }
             }
         }
@@ -275,59 +274,17 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             return;
         }
 
-        /** @var array<class-string, true> $flippedObjectInterfaceNames */
-        $flippedObjectInterfaceNames = [];
-
         foreach ($this->definitions->getIterator() as $containerIdentifier => $definition) {
-            if (!$definition instanceof DiTaggedDefinitionInterface) {
-                continue;
-            }
-
-            if ($definition instanceof DiTaggedObjectDefinitionInterface) {
-                foreach ($definition->getInterfaceNames() as $interfaceName) {
-                    if (isset($this->cacheOfTaggedDefinitions[$interfaceName][$containerIdentifier])) {
-                        continue;
-                    }
-
-                    $this->cacheOfTaggedDefinitions[$interfaceName][$containerIdentifier] = $definition;
-                    $flippedObjectInterfaceNames[$interfaceName] = true;
-                }
-
-                // Pass container with configuration for determinate using php attribute or not.
-                $definition->setContainer($this);
-
-                foreach (array_keys($definition->getTags()) as $tagName) {
-                    if (isset($this->cacheOfTaggedDefinitions[$tagName][$containerIdentifier])) {
-                        continue;
-                    }
-
-                    $isInterface = isset($flippedObjectInterfaceNames[$tagName]);
-
-                    if (!$isInterface && interface_exists($tagName)) {
-                        $isInterface = true;
-                        $flippedObjectInterfaceNames[$tagName] = true;
-                    }
-
-                    if (!$isInterface) {
-                        $this->cacheOfTaggedDefinitions[$tagName][$containerIdentifier] = $definition;
-                    }
-                }
-            } else {
-                foreach (array_keys($definition->getTags()) as $tagName) {
-                    if (isset($this->cacheOfTaggedDefinitions[$tagName][$containerIdentifier])) {
-                        continue;
-                    }
-
+            if ($definition instanceof DiTaggedDefinitionInterface) {
+                foreach ($this->getTagNamesFromDefinition($definition) as $tagName) {
                     $this->cacheOfTaggedDefinitions[$tagName][$containerIdentifier] = $definition;
-                }
-            }
 
-            if (isset($this->cacheOfTaggedDefinitions[$tag][$containerIdentifier])) {
-                yield $containerIdentifier => $definition;
+                    if ($tagName === $tag) {
+                        yield $containerIdentifier => $definition;
+                    }
+                }
             }
         }
-
-        unset($flippedObjectInterfaceNames);
     }
 
     /**
@@ -364,7 +321,44 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->definitions->reset();
         $this->parameters->reset();
         $this->diResolvedDefinition = $this->resolved = $this->hasViaZeroConfig = [];
-        unset($this->cacheOfTaggedDefinitions);
+        unset($this->cacheOfTaggedDefinitions, $this->flippedObjectInterfaceNames);
+    }
+
+    /**
+     * @return Generator<TagName>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    protected function getTagNamesFromDefinition(DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface $definition): Generator
+    {
+        if ($definition instanceof DiTaggedObjectDefinitionInterface) {
+            // Pass container with configuration for determinate using php attribute or not.
+            $definition->setContainer($this);
+
+            foreach ($definition->getInterfaceNames() as $interfaceName) {
+                $this->flippedObjectInterfaceNames[$interfaceName] = true;
+
+                yield $interfaceName;
+            }
+
+            foreach ($definition->getTags() as $tagName => $options) {
+                if (isset($this->flippedObjectInterfaceNames[$tagName])) {
+                    continue;
+                }
+
+                if (interface_exists($tagName)) {
+                    $this->flippedObjectInterfaceNames[$tagName] = true;
+
+                    continue;
+                }
+
+                yield $tagName;
+            }
+        } else {
+            foreach ($definition->getTags() as $tagName => $options) {
+                yield $tagName;
+            }
+        }
     }
 
     /**
