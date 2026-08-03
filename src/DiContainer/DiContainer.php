@@ -172,20 +172,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             $srcDefinition = $this->definitions->get($id);
 
             if ($srcDefinition instanceof DiTaggedDefinitionInterface) {
-                if ($srcDefinition instanceof DiTaggedObjectDefinitionInterface) {
-                    $srcDefinition->setContainer($this);
-
-                    try {
-                        $tagNames = [...array_keys($srcDefinition->getTags()), ...$srcDefinition->getInterfaceNames()];
-                    } catch (DiDefinitionExceptionInterface) {
-                        $tagNames = [];
+                try {
+                    foreach ($this->getTagNamesFromDefinition($srcDefinition) as $tagName => $v) {
+                        unset($this->cacheOfTaggedDefinitions[$tagName]);
                     }
-                } else {
-                    $tagNames = array_keys($srcDefinition->getTags());
-                }
-
-                foreach ($tagNames as $tagName) {
-                    unset($this->cacheOfTaggedDefinitions[$tagName]);
+                } catch (DiDefinitionExceptionInterface) {
                 }
             }
         }
