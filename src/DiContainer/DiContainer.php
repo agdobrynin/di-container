@@ -175,7 +175,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if ($srcDefinition instanceof DiTaggedDefinitionInterface) {
                 try {
                     foreach ($this->getTagNamesFromDefinition($srcDefinition) as $tagName) {
-                        unset($this->cacheOfTaggedDefinitions[$tagName]);
+                        if (isset($this->cacheOfTaggedDefinitions[$tagName])) {
+                            $this->cacheOfTaggedDefinitions[$tagName][$id] = $srcDefinition;
+                        }
                     }
                 } catch (DiDefinitionExceptionInterface) {
                 }
