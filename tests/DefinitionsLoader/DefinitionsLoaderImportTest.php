@@ -8,6 +8,7 @@ use ArrayIterator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
@@ -76,6 +77,7 @@ use const T_TRAIT;
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversClass(FreezeTrait::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void

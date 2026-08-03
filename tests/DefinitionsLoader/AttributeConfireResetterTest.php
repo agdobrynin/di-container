@@ -8,6 +8,7 @@ use Closure;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiRuntime;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
@@ -39,6 +40,7 @@ use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\FooResetter;
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(BindArgumentsTrait::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class AttributeConfireResetterTest extends TestCase
 {
     public function testConfigureResetterViaAttribute(): void

@@ -7,6 +7,7 @@ namespace Tests\DefinitionsLoader;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\EventListener;
@@ -30,6 +31,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderResetTestTest extends TestCase
 {
     public function testReset(): void

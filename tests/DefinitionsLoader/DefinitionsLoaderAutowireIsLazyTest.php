@@ -6,6 +6,7 @@ namespace Tests\DefinitionsLoader;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\EventListener;
@@ -30,6 +31,7 @@ use Tests\DefinitionsLoader\Fixtures\AttributeIsLazyConfig\Foo;
 #[CoversClass(FinderFile::class)]
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderAutowireIsLazyTest extends TestCase
 {
     #[RequiresPhp('< 8.4')]

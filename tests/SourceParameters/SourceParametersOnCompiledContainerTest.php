@@ -13,6 +13,7 @@ use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
 use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Compiler\IdsIterator;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -67,6 +68,7 @@ use function random_bytes;
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(ParameterNotFoundException::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class SourceParametersOnCompiledContainerTest extends TestCase
 {
     private DiContainerBuilder $containerBuilder;

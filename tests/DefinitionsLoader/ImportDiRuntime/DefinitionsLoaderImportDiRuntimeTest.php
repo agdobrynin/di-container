@@ -7,6 +7,7 @@ namespace Tests\DefinitionsLoader\ImportDiRuntime;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiRuntime;
 use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\EventListener;
@@ -40,6 +41,7 @@ use Tests\DefinitionsLoader\ImportDiRuntime\Fixtures\Success\Foo;
 #[CoversClass(Tag::class)]
 #[CoversClass(TagsTrait::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderImportDiRuntimeTest extends TestCase
 {
     public function testImportDiRuntimeSucceeds(): void
