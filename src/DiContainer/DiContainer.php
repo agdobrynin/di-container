@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Generator;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
@@ -173,7 +174,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if ($srcDefinition instanceof DiTaggedDefinitionInterface) {
                 try {
-                    foreach ($this->getTagNamesFromDefinition($srcDefinition) as $tagName => $v) {
+                    foreach ($this->getTagNamesFromDefinition($srcDefinition) as $tagName) {
                         unset($this->cacheOfTaggedDefinitions[$tagName]);
                     }
                 } catch (DiDefinitionExceptionInterface) {
@@ -273,7 +274,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         foreach ($this->definitions->getIterator() as $containerIdentifier => $definition) {
             if ($definition instanceof DiTaggedDefinitionInterface) {
-                foreach ($this->getTagNamesFromDefinition($definition) as $tagName => $v) {
+                foreach ($this->getTagNamesFromDefinition($definition) as $tagName) {
                     $this->cacheOfTaggedDefinitions[$tagName][$containerIdentifier] = $definition;
 
                     if ($tagName === $tag) {
@@ -322,22 +323,20 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
-     * @return array<TagName, true>
+     * @return Generator<TagName>
      *
      * @throws DiDefinitionExceptionInterface
      */
-    protected function getTagNamesFromDefinition(DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface $definition): array
+    protected function getTagNamesFromDefinition(DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface $definition): Generator
     {
-        $tagNames = [];
-        $tagNamesAsInterface = [];
-
         if ($definition instanceof DiTaggedObjectDefinitionInterface) {
             // Pass container with configuration for determinate using php attribute or not.
             $definition->setContainer($this);
 
             foreach ($definition->getInterfaceNames() as $interfaceName) {
-                $tagNamesAsInterface[$interfaceName] = true;
                 $this->flippedObjectInterfaceNames[$interfaceName] = true;
+
+                yield $interfaceName;
             }
 
             foreach ($definition->getTags() as $tagName => $options) {
@@ -351,15 +350,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                     continue;
                 }
 
-                $tagNames[$tagName] = true;
+                yield $tagName;
             }
         } else {
             foreach ($definition->getTags() as $tagName => $options) {
-                $tagNames[$tagName] = true;
+                yield $tagName;
             }
         }
-
-        return $tagNamesAsInterface + $tagNames;
     }
 
     /**
