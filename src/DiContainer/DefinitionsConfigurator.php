@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer;
 
 use ArrayIterator;
+use Generator;
 use Kaspi\DiContainer\Enum\EventNameEnum;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\NotFoundDefinition;
@@ -12,6 +13,7 @@ use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use UnitEnum;
 
 use function array_key_exists;
@@ -34,6 +36,11 @@ final class DefinitionsConfigurator implements DefinitionsConfiguratorInterface
      */
     private array $cacheOfTaggedDefinitions;
 
+    /**
+     * @var array<class-string, true>
+     */
+    private array $flippedObjectInterfaceNames;
+
     public function __construct(
         private readonly DefinitionsLoaderInterface $definitionsLoader,
         private readonly ArrayIterator $removedDefinitionIds,
@@ -52,7 +59,7 @@ final class DefinitionsConfigurator implements DefinitionsConfiguratorInterface
 
     public function reset(): void
     {
-        unset($this->cacheOfDefinitions, $this->cacheOfTaggedDefinitions);
+        unset($this->cacheOfDefinitions, $this->cacheOfTaggedDefinitions, $this->flippedObjectInterfaceNames);
     }
 
     public function removeDefinition(string $id): void
@@ -98,79 +105,22 @@ final class DefinitionsConfigurator implements DefinitionsConfiguratorInterface
             yield from $this->cacheOfTaggedDefinitions[$tag];
         }
 
-        $useAttribute = null;
+        $useAttribute = $this->definitionsLoader->isUseAttribute();
+        $configuredDefinitions = $this->getDefinitions();
 
-        /** @var array<class-string, true> $flippedObjectInterfaceNames */
-        $flippedObjectInterfaceNames = [];
-
-        foreach ($this->getDefinitions() as $identifier => $definition) {
+        foreach ($configuredDefinitions as $id => $definition) {
             if (!$definition instanceof DiTaggedDefinitionInterface) {
                 continue;
             }
 
-            if ($definition instanceof DiTaggedObjectDefinitionInterface) {
-                foreach ($definition->getInterfaceNames() as $interfaceName) {
-                    if (!isset($this->cacheOfTaggedDefinitions[$interfaceName][$identifier])) {
-                        $this->cacheOfTaggedDefinitions[$interfaceName][$identifier] = $definition;
-                        $flippedObjectInterfaceNames[$interfaceName] = true;
-                    }
+            foreach ($this->getTagNamesFromDefinition($definition, $useAttribute) as $tagName) {
+                $this->cacheOfTaggedDefinitions[$tagName][$id] = $definition;
+
+                if ($tagName === $tag) {
+                    yield $id => $definition;
                 }
-
-                $useAttribute ??= $this->definitionsLoader->isUseAttribute();
-
-                /*
-                 * Tag bound via php attribute.
-                 * 🚩 The documentation says that PHP attributes have higher priority than PHP definitions.
-                 */
-                if ($useAttribute) {
-                    foreach ($definition->getTagsByAttribute() as $tagName => $options) {
-                        if (!isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
-                            $isInterface = isset($flippedObjectInterfaceNames[$tagName]);
-
-                            if (!$isInterface && interface_exists($tagName)) {
-                                $isInterface = true;
-                                $flippedObjectInterfaceNames[$tagName] = true;
-                            }
-
-                            // The tag name, represented as a php interface, must be excluded from the valid tag name.
-                            if (!$isInterface) {
-                                $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
-                            }
-                        }
-                    }
-                }
-
-                foreach ($definition->getBoundTags() as $tagName => $options) {
-                    // The tag name, represented as a php interface, must be excluded from the valid tag name.
-                    $isInterface = isset($flippedObjectInterfaceNames[$tagName]);
-
-                    if ($isInterface || isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
-                        continue;
-                    }
-
-                    // The tag name, represented as a php interface, must be excluded from the valid tag name.
-                    if (interface_exists($tagName)) {
-                        $flippedObjectInterfaceNames[$tagName] = true;
-
-                        continue;
-                    }
-
-                    $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
-                }
-            } else {
-                foreach ($definition->getTags() as $tagName => $options) {
-                    if (!isset($this->cacheOfTaggedDefinitions[$tagName][$identifier])) {
-                        $this->cacheOfTaggedDefinitions[$tagName][$identifier] = $definition;
-                    }
-                }
-            }
-
-            if (isset($this->cacheOfTaggedDefinitions[$tag][$identifier])) {
-                yield $identifier => $definition;
             }
         }
-
-        unset($flippedObjectInterfaceNames);
     }
 
     public function load(string $file, string ...$_): void
@@ -219,5 +169,70 @@ final class DefinitionsConfigurator implements DefinitionsConfiguratorInterface
         }
 
         throw new DefinitionsLoaderException(sprintf('The context name %s does not exist.', var_export($name, true)));
+    }
+
+    /**
+     * @return Generator<non-empty-string> return found tag name from definition
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    private function getTagNamesFromDefinition(DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface $definition, bool $useAttribute): Generator
+    {
+        if ($definition instanceof DiTaggedObjectDefinitionInterface) {
+            foreach ($definition->getInterfaceNames() as $interfaceName) {
+                $this->flippedObjectInterfaceNames[$interfaceName] = true;
+
+                yield $interfaceName;
+            }
+
+            /*
+             * Tag bound via php attribute.
+             * 🚩 The documentation says that PHP attributes have higher priority than PHP definitions.
+             */
+            /** @var array<non-empty-string, true> $flippedTagNamesViaAttribute */
+            $flippedTagNamesViaAttribute = [];
+
+            if ($useAttribute) {
+                foreach ($definition->getTagsByAttribute() as $tagName => $options) {
+                    if (isset($this->flippedObjectInterfaceNames[$tagName])) {
+                        continue;
+                    }
+
+                    if (interface_exists($tagName)) {
+                        $this->flippedObjectInterfaceNames[$tagName] = true;
+
+                        continue;
+                    }
+
+                    $flippedTagNamesViaAttribute[$tagName] = true;
+
+                    yield $tagName;
+                }
+            }
+
+            foreach ($definition->getBoundTags() as $tagName => $options) {
+                // The tag name, represented as a php interface, must be excluded from the valid tag name.
+                if (isset($this->flippedObjectInterfaceNames[$tagName])) {
+                    continue;
+                }
+
+                // The tag name, represented as a php interface, must be excluded from the valid tag name.
+                if (interface_exists($tagName)) {
+                    $this->flippedObjectInterfaceNames[$tagName] = true;
+
+                    continue;
+                }
+
+                if (isset($flippedTagNamesViaAttribute[$tagName])) {
+                    continue;
+                }
+
+                yield $tagName;
+            }
+        } else {
+            foreach ($definition->getTags() as $tagName => $options) {
+                yield $tagName;
+            }
+        }
     }
 }
