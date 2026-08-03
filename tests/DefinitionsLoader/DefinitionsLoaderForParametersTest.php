@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader;
 
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
@@ -17,6 +18,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(DefinitionsLoader::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderForParametersTest extends TestCase
 {
     private $root;

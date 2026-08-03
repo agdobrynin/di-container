@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\ContainerBuilder;
 
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -30,6 +31,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(SourceParameterItem::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DiContainerBuilderParametersTest extends TestCase
 {
     public function testUseConfiguratorForParameters(): void

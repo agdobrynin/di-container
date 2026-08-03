@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader\RemovedDefinitions;
 
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\EventListener;
@@ -29,6 +30,7 @@ use function array_keys;
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class RemovedDefinitionsTest extends TestCase
 {
     public function testGetExcludedDefinitionsFromConfiguredImport(): void

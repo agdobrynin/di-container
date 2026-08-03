@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DefinitionsLoader;
 
 use Generator;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
@@ -17,6 +18,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(DefinitionsLoader::class)]
 #[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderContextTest extends TestCase
 {
     #[DataProvider('dataSetContext')]
