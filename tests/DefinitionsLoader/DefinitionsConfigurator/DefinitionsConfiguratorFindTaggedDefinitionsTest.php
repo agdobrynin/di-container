@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\DefinitionsLoader\DefinitionsConfigurator;
 
-use ArrayIterator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Tag;
@@ -14,13 +13,11 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
 use Kaspi\DiContainer\EventListener;
-use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Traits\TagsOnObjectDefinitionTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
-use PHPUnit\Framework\TestCase;
 use Tests\DefinitionsLoader\DefinitionsConfigurator\Fixures\Bar;
 use Tests\DefinitionsLoader\DefinitionsConfigurator\Fixures\Bat;
 use Tests\DefinitionsLoader\DefinitionsConfigurator\Fixures\Baz;
@@ -52,33 +49,18 @@ use function Kaspi\DiContainer\diValue;
 #[CoversFunction('Kaspi\DiContainer\diGet')]
 #[CoversFunction('Kaspi\DiContainer\diCallable')]
 #[CoversFunction('Kaspi\DiContainer\diValue')]
-class DefinitionsConfiguratorFindTaggedDefinitionsTest extends TestCase
+class DefinitionsConfiguratorFindTaggedDefinitionsTest extends DefinitionsConfiguratorAbstract
 {
-    protected DefinitionsConfigurator $configurator;
-    protected DefinitionsLoaderInterface $definitionsLoaderMock;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->definitionsLoaderMock = $this->createMock(DefinitionsLoaderInterface::class);
-        $removedDefinitionsIds = new ArrayIterator();
-        $parameters = new ArrayIterator();
-        $configuratorContexts = new ArrayIterator();
-        $definitionsConfiguratorEvent = new EventListener();
-
         $this->configurator = new DefinitionsConfigurator(
             $this->definitionsLoaderMock,
-            $removedDefinitionsIds,
-            $parameters,
-            $configuratorContexts,
-            $definitionsConfiguratorEvent,
+            $this->removedDefinitionsIds,
+            $this->parameters,
+            $this->configuratorContexts,
+            $this->definitionsConfiguratorEvent
         );
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        unset($this->configurator, $this->definitionsLoaderMock);
     }
 
     public function testFindTaggedDefinitionsWithAttribute(): void
