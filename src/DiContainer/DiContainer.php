@@ -174,7 +174,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
             if ($srcDefinition instanceof DiTaggedDefinitionInterface) {
                 try {
-                    foreach ($this->getTagNamesFromDefinition($srcDefinition) as $tagName) {
+                    $tagNames = $this->getTagNamesFromDefinition($srcDefinition);
+
+                    foreach ($tagNames as $tagName) {
                         if (isset($this->cacheOfTaggedDefinitions[$tagName])) {
                             $this->cacheOfTaggedDefinitions[$tagName][$id] = $srcDefinition;
                         }
@@ -276,7 +278,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
         foreach ($this->definitions->getIterator() as $containerIdentifier => $definition) {
             if ($definition instanceof DiTaggedDefinitionInterface) {
-                foreach ($this->getTagNamesFromDefinition($definition) as $tagName) {
+                $tagNames = $this->getTagNamesFromDefinition($definition);
+
+                foreach ($tagNames as $tagName) {
                     $this->cacheOfTaggedDefinitions[$tagName][$containerIdentifier] = $definition;
 
                     if ($tagName === $tag) {
