@@ -8,6 +8,7 @@ use ArrayIterator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Service;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
@@ -17,6 +18,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Finder\FinderFile;
@@ -74,6 +76,8 @@ use const T_TRAIT;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderImportTest extends TestCase
 {
     public function testImportMany(): void

@@ -6,6 +6,7 @@ namespace Tests\Attributes;
 
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -14,6 +15,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -51,6 +53,8 @@ use Tests\Attributes\Fixtures\MultiAutowire;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class MultiAutowireTest extends TestCase
 {
     public function testMultiAutowireContainer(): void

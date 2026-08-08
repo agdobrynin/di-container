@@ -8,9 +8,11 @@ use Closure;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiRuntime;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -37,6 +39,8 @@ use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\FooResetter;
 #[CoversClass(FinderFile::class)]
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(BindArgumentsTrait::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class AttributeConfireResetterTest extends TestCase
 {
     public function testConfigureResetterViaAttribute(): void

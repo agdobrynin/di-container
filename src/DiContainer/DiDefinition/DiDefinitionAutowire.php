@@ -228,6 +228,11 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->getDefinition()->implementsInterface($interface);
     }
 
+    public function getInterfaceNames(): array
+    {
+        return $this->getDefinition()->getInterfaceNames();
+    }
+
     public function getDefinitionIdentifier(): string
     {
         return $this->getIdentifier();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer;
 
+use Generator;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
@@ -33,6 +34,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 use Kaspi\DiContainer\Interfaces\ResetInterface;
 use Kaspi\DiContainer\Interfaces\SourceDefinitionsMutableInterface;
@@ -64,6 +66,9 @@ use function var_export;
  * @phpstan-import-type ParsedCallable from DiContainerCallInterface
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
+ *
+ * @phpstan-type TagName non-empty-string
+ * @phpstan-type ContainerIdentifier non-empty-string
  */
 class DiContainer implements DiContainerInterface, DiContainerSetterInterface, DiContainerCallInterface, ResetInterface
 {
@@ -106,6 +111,16 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
      * @var array<class-string, true>
      */
     protected readonly array $objectResettersIds;
+
+    /**
+     * @var array<class-string, true>
+     */
+    protected array $flippedObjectInterfaceNames;
+
+    /**
+     * @var array<TagName, array<ContainerIdentifier, DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface>>
+     */
+    protected array $cacheOfTaggedDefinitions;
 
     /**
      * @param iterable<non-empty-string|non-negative-int, DiDefinitionIdentifierInterface|mixed> $definitions
@@ -153,6 +168,23 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         $this->definitions->set($id, $definition);
+
+        if (isset($this->cacheOfTaggedDefinitions)) {
+            $srcDefinition = $this->definitions->get($id);
+
+            if ($srcDefinition instanceof DiTaggedDefinitionInterface) {
+                try {
+                    $tagNames = $this->getTagNamesFromDefinition($srcDefinition);
+
+                    foreach ($tagNames as $tagName) {
+                        if (isset($this->cacheOfTaggedDefinitions[$tagName])) {
+                            $this->cacheOfTaggedDefinitions[$tagName][$id] = $srcDefinition;
+                        }
+                    }
+                } catch (DiDefinitionExceptionInterface) {
+                }
+            }
+        }
 
         return $this;
     }
@@ -238,24 +270,23 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
 
     public function findTaggedDefinitions(string $tag): iterable
     {
-        $tagIsInterface = null;
+        if (isset($this->cacheOfTaggedDefinitions[$tag])) {
+            yield from $this->cacheOfTaggedDefinitions[$tag];
+
+            return;
+        }
 
         foreach ($this->definitions->getIterator() as $containerIdentifier => $definition) {
-            if (!$definition instanceof DiTaggedDefinitionInterface) {
-                continue;
-            }
+            if ($definition instanceof DiTaggedDefinitionInterface) {
+                $tagNames = $this->getTagNamesFromDefinition($definition);
 
-            $hasTagAsInterface = false;
+                foreach ($tagNames as $tagName) {
+                    $this->cacheOfTaggedDefinitions[$tagName][$containerIdentifier] = $definition;
 
-            if ($definition instanceof DiTaggedObjectDefinitionInterface) {
-                $tagIsInterface ??= interface_exists($tag);
-                // Pass container with configuration for determinate using php attribute or not.
-                $definition->setContainer($this);
-                $hasTagAsInterface = $tagIsInterface && $definition->isImplementInterface($tag);
-            }
-
-            if ($hasTagAsInterface || (true !== $tagIsInterface && $definition->hasTag($tag))) {
-                yield $containerIdentifier => $definition;
+                    if ($tagName === $tag) {
+                        yield $containerIdentifier => $definition;
+                    }
+                }
             }
         }
     }
@@ -294,6 +325,44 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         $this->definitions->reset();
         $this->parameters->reset();
         $this->diResolvedDefinition = $this->resolved = $this->hasViaZeroConfig = [];
+        unset($this->cacheOfTaggedDefinitions, $this->flippedObjectInterfaceNames);
+    }
+
+    /**
+     * @return Generator<TagName>
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    protected function getTagNamesFromDefinition(DiTaggedDefinitionInterface|DiTaggedObjectDefinitionInterface $definition): Generator
+    {
+        if ($definition instanceof DiTaggedObjectDefinitionInterface) {
+            // Pass container with configuration for determinate using php attribute or not.
+            $definition->setContainer($this);
+
+            foreach ($definition->getInterfaceNames() as $interfaceName) {
+                $this->flippedObjectInterfaceNames[$interfaceName] = true;
+
+                yield $interfaceName;
+            }
+
+            foreach ($definition->getTags() as $tagName => $options) {
+                if (isset($this->flippedObjectInterfaceNames[$tagName])) {
+                    continue;
+                }
+
+                if (interface_exists($tagName)) {
+                    $this->flippedObjectInterfaceNames[$tagName] = true;
+
+                    continue;
+                }
+
+                yield $tagName;
+            }
+        } else {
+            foreach ($definition->getTags() as $tagName => $options) {
+                yield $tagName;
+            }
+        }
     }
 
     /**

@@ -7,8 +7,10 @@ namespace Tests\DefinitionsLoader\ImportDiRuntime;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiRuntime;
 use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -38,6 +40,8 @@ use Tests\DefinitionsLoader\ImportDiRuntime\Fixtures\Success\Foo;
 #[CoversFunction('Kaspi\DiContainer\diRuntime')]
 #[CoversClass(Tag::class)]
 #[CoversClass(TagsTrait::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DefinitionsLoaderImportDiRuntimeTest extends TestCase
 {
     public function testImportDiRuntimeSucceeds(): void
@@ -96,7 +100,7 @@ class DefinitionsLoaderImportDiRuntimeTest extends TestCase
         vfsStream::setup('root', structure: [
             'services.php' => '<?php
 return static function (\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface $configurator) {
-    foreach ($configurator->findTaggedDefinition("tags.bar_service") as $definition) {
+    foreach ($configurator->findTaggedDefinitions("tags.bar_service") as $definition) {
         $definition->bindTag("tags.config");
     }
 };',

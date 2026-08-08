@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
 use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Compiler\IdsIterator;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -24,6 +25,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
@@ -90,6 +92,8 @@ use function random_bytes;
 #[CoversClass(FreezeTrait::class)]
 #[CoversClass(ContainerParametersEntry::class)]
 #[CoversClass(AbstractSourceParameters::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class CompiledContainerWIthObjectResettersTest extends TestCase
 {
     public function testObjectResettersCompilation(): void

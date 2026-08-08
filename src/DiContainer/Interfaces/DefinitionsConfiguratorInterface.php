@@ -13,7 +13,7 @@ use UnitEnum;
 /**
  * @phpstan-import-type SourceParameterType from SourceParametersMutableInterface
  */
-interface DefinitionsConfiguratorInterface
+interface DefinitionsConfiguratorInterface extends ResetInterface
 {
     /**
      * Remove a definition from configuration files or from importing classes via container identifier.
@@ -47,9 +47,19 @@ interface DefinitionsConfiguratorInterface
     /**
      * @param non-empty-string $tag
      *
+     * @deprecated is deprecated since version 4.6 and will be removed since version 5.0.
+     * Use `\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::findTaggedDefinitions()`.
+     *
      * @return iterable<non-empty-string, DiTaggedDefinitionInterface>
      */
     public function findTaggedDefinition(string $tag): iterable;
+
+    /**
+     * @param non-empty-string $tag
+     *
+     * @return iterable<non-empty-string, DiTaggedDefinitionInterface>
+     */
+    public function findTaggedDefinitions(string $tag): iterable;
 
     /**
      * Loads definitions from configuration files.
