@@ -91,13 +91,13 @@ class DefinitionsConfiguratorFindTaggedDefinitionsTest extends DefinitionsConfig
         ;
 
         /** @var array<class-string, DiDefinitionAutowire> $definitions */
-        $definitions = [...$this->configurator->findTaggedDefinition(QuxInterface::class)];
+        $definitions = [...$this->configurator->findTaggedDefinitions(QuxInterface::class)];
 
         self::assertCount(2, $definitions);
         self::assertEquals(Bar::class, $definitions[Bar::class]->getDefinition()->getName());
         self::assertEquals(Baz::class, $definitions[Baz::class]->getDefinition()->getName());
 
-        $secondDefinitions = [...$this->configurator->findTaggedDefinition('tags.one')];
+        $secondDefinitions = [...$this->configurator->findTaggedDefinitions('tags.one')];
         self::assertCount(4, $secondDefinitions);
 
         // configured via attribute
@@ -138,11 +138,37 @@ class DefinitionsConfiguratorFindTaggedDefinitionsTest extends DefinitionsConfig
         ;
 
         /** @var array<class-string, DiDefinitionValue> $definitions */
-        $definitions = [...$this->configurator->findTaggedDefinition('tags.emails')];
+        $definitions = [...$this->configurator->findTaggedDefinitions('tags.emails')];
 
         self::assertCount(2, $definitions);
 
         self::assertEquals('admin@example.com', $definitions['email.admin']->getDefinition());
         self::assertEquals([Maker::class, 'managerEmail'], $definitions['email.manager']->getDefinition());
+    }
+
+    public function testDeprecatedFindTaggedDefinitions(): void
+    {
+        $this->definitionsLoaderMock->method('definitions')
+            ->willReturnCallback(function () {
+                yield 'foo.bar' => diValue('foo@bar')
+                    ->bindTag('tags.one')
+                ;
+
+                yield 'bar.baz' => diValue('bar@baz')
+                    ->bindTag('tags.two')
+                ;
+
+                yield 'qux.foo' => diValue('qux@foo')
+                    ->bindTag('tags.one')
+                ;
+            })
+        ;
+
+        $definitions = [...$this->configurator->findTaggedDefinition('tags.one')];
+
+        self::assertCount(2, $definitions);
+
+        self::assertEquals('foo@bar', $definitions['foo.bar']->getDefinition());
+        self::assertEquals('qux@foo', $definitions['qux.foo']->getDefinition());
     }
 }

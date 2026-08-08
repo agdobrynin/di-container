@@ -100,7 +100,7 @@ class DefinitionsLoaderImportDiRuntimeTest extends TestCase
         vfsStream::setup('root', structure: [
             'services.php' => '<?php
 return static function (\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface $configurator) {
-    foreach ($configurator->findTaggedDefinition("tags.bar_service") as $definition) {
+    foreach ($configurator->findTaggedDefinitions("tags.bar_service") as $definition) {
         $definition->bindTag("tags.config");
     }
 };',

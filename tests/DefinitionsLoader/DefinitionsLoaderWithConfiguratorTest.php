@@ -241,7 +241,7 @@ use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Tests\DefinitionsLoader\Fixtures\TaggedInterface\QuxInterface;
         
 return static function (DefinitionsConfiguratorInterface $configurator): void {
-    foreach ($configurator->findTaggedDefinition(QuxInterface::class) as $def) {
+    foreach ($configurator->findTaggedDefinitions(QuxInterface::class) as $def) {
         $def->bindTag("tags.as_interface");    
     }
 };',
@@ -275,7 +275,7 @@ use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     $collection = [];
 
-    foreach ($configurator->findTaggedDefinition("tags.one") as $id => $def) {
+    foreach ($configurator->findTaggedDefinitions("tags.one") as $id => $def) {
         $collection[$id] = $def;    
     }
     
@@ -313,7 +313,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
         
 return static function (DefinitionsConfiguratorInterface $configurator): void {
-    foreach ($configurator->findTaggedDefinition("tags.one") as $def) {
+    foreach ($configurator->findTaggedDefinitions("tags.one") as $def) {
         $def->bindTag("tags.two");
     }
 };',
@@ -353,7 +353,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
         ;
         self::assertEquals(
             [],
-            [...$configurator->findTaggedDefinition(ContainerInterface::class)]
+            [...$configurator->findTaggedDefinitions(ContainerInterface::class)]
         );
     }
 }
