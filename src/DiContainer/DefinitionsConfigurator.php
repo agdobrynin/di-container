@@ -101,6 +101,11 @@ final class DefinitionsConfigurator implements DefinitionsConfiguratorInterface
 
     public function findTaggedDefinition(string $tag): iterable
     {
+        yield from $this->findTaggedDefinitions($tag);
+    }
+
+    public function findTaggedDefinitions(string $tag): iterable
+    {
         if (isset($this->cacheOfTaggedDefinitions[$tag])) {
             yield from $this->cacheOfTaggedDefinitions[$tag];
         }
