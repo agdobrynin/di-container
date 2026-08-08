@@ -113,7 +113,9 @@ final class DefinitionsConfigurator implements DefinitionsConfiguratorInterface
                 continue;
             }
 
-            foreach ($this->getTagNamesFromDefinition($definition, $useAttribute) as $tagName) {
+            $foundTags = $this->getTagNamesFromDefinition($definition, $useAttribute);
+
+            foreach ($foundTags as $tagName) {
                 $this->cacheOfTaggedDefinitions[$tagName][$id] = $definition;
 
                 if ($tagName === $tag) {
