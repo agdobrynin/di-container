@@ -13,11 +13,13 @@ use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
 use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Compiler\IdsIterator;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Exception\ParameterNotFoundException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
@@ -65,6 +67,8 @@ use function random_bytes;
 #[CoversClass(Helper::class)]
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(ParameterNotFoundException::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class SourceParametersOnCompiledContainerTest extends TestCase
 {
     private DiContainerBuilder $containerBuilder;

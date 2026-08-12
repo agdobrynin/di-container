@@ -89,16 +89,12 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
 
     public function isImplementInterface(string $interface): bool
     {
-        try {
-            $this->classDefinitionReflection ??= new ReflectionClass($this->getDefinitionIdentifier());
-        } catch (ReflectionException $e) {
-            throw new DiDefinitionException(
-                sprintf('You should to be defined a php class through the parameters $containerIdentifierOrClass or $classDefinition. Current values: $containerIdentifierOrClass %s, $classDefinition %s', var_export($this->containerIdentifierOrClass, true), var_export($this->classDefinition, true)),
-                previous: $e,
-            );
-        }
+        return $this->getReflectionClass()->implementsInterface($interface);
+    }
 
-        return $this->classDefinitionReflection->implementsInterface($interface);
+    public function getInterfaceNames(): array
+    {
+        return $this->getReflectionClass()->getInterfaceNames();
     }
 
     public function getDefinitionIdentifier(): string
@@ -170,6 +166,21 @@ final class DiDefinitionRuntime implements DiDefinitionRuntimeInterface, DiDefin
             if ($argTag instanceof Tag) {
                 yield $argTag;
             }
+        }
+    }
+
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
+    private function getReflectionClass(): ReflectionClass
+    {
+        try {
+            return $this->classDefinitionReflection ??= new ReflectionClass($this->getDefinitionIdentifier());
+        } catch (ReflectionException $e) {
+            throw new DiDefinitionException(
+                sprintf('You should to be defined a php class through the parameters $containerIdentifierOrClass or $classDefinition. Current values: $containerIdentifierOrClass %s, $classDefinition %s', var_export($this->containerIdentifierOrClass, true), var_export($this->classDefinition, true)),
+                previous: $e,
+            );
         }
     }
 

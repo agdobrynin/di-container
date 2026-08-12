@@ -8,6 +8,7 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\FinderFullyQualifiedNameCollection;
@@ -31,6 +32,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(FinderFile::class)]
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(Helper::class)]
+#[CoversClass(EventListener::class)]
 #[CoversFunction('Kaspi\DiContainer\diAutowire')]
 class DefinitionsLoaderConflictDiFactoryTest extends TestCase
 {

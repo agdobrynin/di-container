@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\ContainerBuilder;
 
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerNullConfig;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface;
 use Kaspi\DiContainer\Parameters\AbstractSourceParameters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
@@ -28,6 +30,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(SourceParameterItem::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DiContainerBuilderParametersTest extends TestCase
 {
     public function testUseConfiguratorForParameters(): void

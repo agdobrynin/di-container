@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\ContainerBuilder;
 
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -11,6 +12,7 @@ use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -39,6 +41,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversFunction('Kaspi\DiContainer\diAutowire')]
 #[CoversClass(FreezeTrait::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DiContainerBuilderConfiguratorContextTest extends TestCase
 {
     public function testSetContexts(): void

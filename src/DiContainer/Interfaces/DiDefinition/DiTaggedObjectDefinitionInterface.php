@@ -48,6 +48,13 @@ interface DiTaggedObjectDefinitionInterface extends DiTaggedDefinitionInterface
     public function isImplementInterface(string $interface): bool;
 
     /**
+     * @return class-string[]
+     *
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function getInterfaceNames(): array;
+
+    /**
      * Gets bound tags without bound tags via php attributes.
      *
      * @see DiDefinitionTagArgumentInterface::bindTag()

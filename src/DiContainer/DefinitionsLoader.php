@@ -17,18 +17,17 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\Enum\EventNameEnum;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderInvalidArgumentException;
-use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Interfaces\DefinitionsLoaderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedDefinitionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiTaggedObjectDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderFullyQualifiedNameInterface;
@@ -37,12 +36,10 @@ use ParseError;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
-use UnitEnum;
 
 use function array_map;
 use function class_exists;
 use function file_exists;
-use function interface_exists;
 use function is_callable;
 use function is_iterable;
 use function is_readable;
@@ -85,6 +82,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     /** @var array<non-empty-string, DiDefinitionAutowire|DiDefinitionFactory|DiDefinitionGet|DiDefinitionRuntime> */
     private array $importedDefinitions;
 
+    private readonly EventListener $definitionsConfiguratorEvent;
+
     /**
      * Circular watcher for load definitions from files.
      *
@@ -99,6 +98,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         $this->removedDefinitionIds = new ArrayIterator();
         $this->parameters = new ArrayIterator();
         $this->configuratorContexts = new ArrayIterator();
+        $this->definitionsConfiguratorEvent = new EventListener();
     }
 
     public function load(string ...$file): static
@@ -139,6 +139,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
             $this->configuredDefinitions->offsetSet($identifier, $definition);
             $this->removedDefinitionIds->offsetUnset($identifier);
+
+            if ($definition instanceof DiTaggedDefinitionInterface) {
+                $this->definitionsConfiguratorEvent->trigger(EventNameEnum::ResetCacheOfTaggedDefinitions);
+            }
+
             ++$itemCount;
         }
 
@@ -194,6 +199,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionsImported = false;
+        $this->definitionsConfiguratorEvent->trigger(EventNameEnum::ResetCacheOfTaggedDefinitions);
 
         return $this;
     }
@@ -201,6 +207,7 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function useAttribute(bool $useAttribute): static
     {
         $this->useAttribute = $useAttribute;
+        $this->definitionsConfiguratorEvent->trigger(EventNameEnum::ResetCacheOfTaggedDefinitions);
 
         return $this;
     }
@@ -221,131 +228,13 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
 
     public function definitionsConfigurator(): DefinitionsConfiguratorInterface
     {
-        return $this->definitionsConfigurator ??= new class($this, $this->removedDefinitionIds, $this->parameters, $this->configuratorContexts) implements DefinitionsConfiguratorInterface {
-            public function __construct(
-                private readonly DefinitionsLoaderInterface $definitionsLoader,
-                private readonly ArrayIterator $removedDefinitionIds,
-                private readonly ArrayIterator $parameters,
-                private readonly ArrayIterator $configuratorContexts,
-            ) {}
-
-            public function removeDefinition(string $id): void
-            {
-                $this->removedDefinitionIds->offsetSet($id, true);
-            }
-
-            public function getDefinitions(): iterable
-            {
-                yield from $this->definitionsLoader->definitions();
-            }
-
-            public function setDefinition(string $id, mixed $definition): void
-            {
-                $this->definitionsLoader->addDefinitions(true, [$id => $definition]);
-                $this->removedDefinitionIds->offsetUnset($id);
-            }
-
-            public function getDefinition(string $id, ?callable $fallback = null): mixed
-            {
-                foreach ($this->getDefinitions() as $identifier => $definition) {
-                    if ($id === $identifier) {
-                        return $definition;
-                    }
-                }
-
-                return null !== $fallback
-                    ? $fallback($id)
-                    : throw new NotFoundDefinition(id: $id);
-            }
-
-            public function findTaggedDefinition(string $tag): iterable
-            {
-                $tagIsInterface = $useAttribute = null;
-
-                foreach ($this->getDefinitions() as $identifier => $definition) {
-                    if (!$definition instanceof DiTaggedDefinitionInterface) {
-                        continue;
-                    }
-
-                    if ($definition instanceof DiTaggedObjectDefinitionInterface) {
-                        $tagIsInterface ??= interface_exists($tag);
-                        $useAttribute ??= $this->definitionsLoader->isUseAttribute();
-
-                        if ($tagIsInterface && $definition->isImplementInterface($tag)) {
-                            yield $identifier => $definition;
-
-                            continue;
-                        }
-
-                        /*
-                         * Tag bound via php attribute.
-                         * The tag name, represented as a php interface, must be excluded from the valid tag name.
-                         * 🚩 The documentation says that PHP attributes have higher priority than PHP definitions.
-                         */
-                        if (!$tagIsInterface && $useAttribute && isset($definition->getTagsByAttribute()[$tag])) {
-                            yield $identifier => $definition;
-
-                            continue;
-                        }
-
-                        // The tag name, represented as a php interface, must be excluded from the valid tag name.
-                        if (!$tagIsInterface && isset($definition->getBoundTags()[$tag])) {
-                            yield $identifier => $definition;
-                        }
-                    } elseif ($definition->hasTag($tag)) {
-                        yield $identifier => $definition;
-                    }
-                }
-            }
-
-            public function load(string $file, string ...$_): void
-            {
-                $this->definitionsLoader->load($file, ...$_);
-            }
-
-            public function loadOverride(string $file, string ...$_): void
-            {
-                $this->definitionsLoader->loadOverride($file, ...$_);
-            }
-
-            public function loadParameters(string $file, string ...$_): void
-            {
-                $this->definitionsLoader->loadParameters($file, ...$_);
-            }
-
-            public function addParameters(iterable $parameters): void
-            {
-                $this->definitionsLoader->addParameters($parameters);
-            }
-
-            public function setParameter(string $name, array|bool|float|int|string|UnitEnum|null $value): void
-            {
-                $this->definitionsLoader->addParameters([$name => $value]);
-            }
-
-            public function removeParameter(string $name): void
-            {
-                $this->parameters->offsetUnset($name);
-            }
-
-            public function hasParameter(string $name): bool
-            {
-                return $this->parameters->offsetExists($name);
-            }
-
-            public function getContext(string $name, ?callable $fallback = null): mixed
-            {
-                if ($this->configuratorContexts->offsetExists($name)) {
-                    return $this->configuratorContexts->offsetGet($name);
-                }
-
-                if (null !== $fallback) {
-                    return ($fallback)($name);
-                }
-
-                throw new DefinitionsLoaderException(sprintf('The context name %s does not exist.', var_export($name, true)));
-            }
-        };
+        return $this->definitionsConfigurator ??= new DefinitionsConfigurator(
+            $this,
+            $this->removedDefinitionIds,
+            $this->parameters,
+            $this->configuratorContexts,
+            $this->definitionsConfiguratorEvent,
+        );
     }
 
     public function definitions(): iterable
@@ -443,6 +332,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         unset($this->importedDefinitions);
         $this->isRemovedDefinitionsImported = false;
         $this->circularLoadFromFileWatcher = [];
+        $this->definitionsConfigurator()->reset();
+        $this->definitionsConfiguratorEvent->reset();
     }
 
     /**

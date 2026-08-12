@@ -97,12 +97,12 @@ final class SomeClass {}
 > [!WARNING]
 > Для аргумента `$options` зарезервирован ключ массива `priority.method` – значение типа `string`.
 > ```php
-> ['priority.method' => 'someValue']
+> ['priority.method' => 'staticMethodName']
 > ```
 > Значение это метод класса возвращающий приоритет (_priority_) для тега если не определен `priority`.
 > Метод должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
-> В приведенном выше примере метод "someValue" принимает два аргумента:
+> В приведенном выше примере метод "staticMethodName" принимает два аргумента:
 >  - `string $tag` – имя тега;
 >  - `array $options` – метаданные тега;
 >
@@ -756,7 +756,7 @@ $container->get(App\Rules\Rules::class);
 Использование метаданных в аргументе `$options` – указав в массиве ключ `priority.method` [у метода `bindTag`](#-объявление-тега-в-стиле-php-определений)
 как указание приоритета:
 ```php
-['priority.method' => 'methodName']
+['priority.method' => 'staticMethodName']
 ```
 Пример использования значения `priority.method`:
 ```php

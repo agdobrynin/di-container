@@ -83,7 +83,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 ## Получить коллекцию определений по тегу.
 ```php
-DefinitionsConfiguratorInterface::findTaggedDefinition(
+DefinitionsConfiguratorInterface::findTaggedDefinitions(
     string $tag
 ): iterable
 ```
@@ -91,7 +91,7 @@ DefinitionsConfiguratorInterface::findTaggedDefinition(
 - `$tag` – имя тега.
 
 > [!NOTE]
-> Важно: определение будет получено если оно было добавлено раньше вызова метода `DefinitionsConfiguratorInterface::findTaggedDefinition()`.
+> Важно: определение будет получено если оно было добавлено раньше вызова метода `DefinitionsConfiguratorInterface::findTaggedDefinitions()`.
 
 
 > [!TIP]
@@ -108,7 +108,7 @@ use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     
-    foreach ($configurator->findTaggedDefinition(FooInterface::class) as $id => $definition) {
+    foreach ($configurator->findTaggedDefinitions(FooInterface::class) as $id => $definition) {
         $definition->setup('setClient', diAutowire(Client::class));
     }
 

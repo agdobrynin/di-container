@@ -18,6 +18,7 @@ use Kaspi\DiContainer\Compiler\DiContainerDefinitions;
 use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\Compiler\IdsIterator;
+use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -28,6 +29,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\ContainerIdentifierAlreadyRegisteredException;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
@@ -91,6 +93,8 @@ use function random_bytes;
 #[CoversClass(ContainerParametersEntry::class)]
 #[CoversClass(AbstractSourceParameters::class)]
 #[CoversClass(ContainerIdentifierAlreadyRegisteredException::class)]
+#[CoversClass(EventListener::class)]
+#[CoversClass(DefinitionsConfigurator::class)]
 class DiContainerBuilderTest extends TestCase
 {
     public function testDefinitionLoaderImportThrowException(): void
