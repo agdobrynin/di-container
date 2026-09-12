@@ -29,6 +29,7 @@ use ReflectionParameter;
 use TypeError;
 
 use function array_filter;
+use function is_array;
 use function sprintf;
 use function usort;
 
@@ -207,13 +208,14 @@ final class AttributeReader
     }
 
     /**
-     * @return Generator<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs>
+     * @return Generator<Autowire|DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs>
      *
      * @throws AutowireAttributeException
      */
     public static function getAttributeOnParameter(ReflectionParameter $param): Generator
     {
         $flipSupportAttrs = [
+            Autowire::class => true,
             DiFactory::class => true,
             Inject::class => true,
             InjectByCallable::class => true,
@@ -236,7 +238,7 @@ final class AttributeReader
         }
 
         /**
-         * @var ReflectionAttribute<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr
+         * @var ReflectionAttribute<Autowire|DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr
          */
         foreach ($attrs as $attr) {
             try {
@@ -246,6 +248,34 @@ final class AttributeReader
                     message: sprintf('Unable to create an instance of PHP attribute "%s". Reason by: %s', $attr->getName(), $e->getMessage()),
                     previous: $e
                 );
+            }
+        }
+    }
+
+    /**
+     * @return Generator<Setup|SetupImmutable>
+     *
+     * @throws AutowireAttributeException
+     */
+    public static function getSetupsFormAutowireAttribute(Autowire $autowireAttribute): Generator
+    {
+        if (null === $autowireAttribute->setups) {
+            return;
+        }
+
+        foreach ($autowireAttribute->setups as $method => $setups) {
+            if (is_array($setups)) {
+                foreach ($setups as $setup) {
+                    if ($setup instanceof Setup || $setup instanceof SetupImmutable) {
+                        $setup->setMethod($method);
+
+                        yield $setup;
+                    }
+                }
+            } elseif ($setups instanceof Setup || $setups instanceof SetupImmutable) {
+                $setups->setMethod($method);
+
+                yield $setups;
             }
         }
     }

@@ -38,7 +38,6 @@ use ReflectionException;
 use function call_user_func_array;
 use function get_class;
 use function get_debug_type;
-use function is_array;
 use function is_object;
 use function is_string;
 use function sprintf;
@@ -415,27 +414,9 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     {
         $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($class);
 
-        if (false === $autowireAttribute || null === $autowireAttribute->setups) {
-            yield from AttributeReader::getSetupAttribute($class);
-
-            return;
-        }
-
-        foreach ($autowireAttribute->setups as $method => $setups) {
-            if (is_array($setups)) {
-                foreach ($setups as $setup) {
-                    if ($setup instanceof Setup || $setup instanceof SetupImmutable) {
-                        $setup->setMethod($method);
-
-                        yield $setup;
-                    }
-                }
-            } elseif ($setups instanceof Setup || $setups instanceof SetupImmutable) {
-                $setups->setMethod($method);
-
-                yield $setups;
-            }
-        }
+        yield from false === $autowireAttribute || null === $autowireAttribute->setups
+            ? AttributeReader::getSetupAttribute($class)
+            : AttributeReader::getSetupsFormAutowireAttribute($autowireAttribute);
     }
 
     /**

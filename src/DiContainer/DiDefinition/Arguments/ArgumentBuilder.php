@@ -6,13 +6,16 @@ namespace Kaspi\DiContainer\DiDefinition\Arguments;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
+use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -21,7 +24,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
@@ -30,6 +32,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterWithContextInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
@@ -163,7 +166,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
                     continue;
                 }
-            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+            } catch (AutowireExceptionInterface $e) {
                 throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e
@@ -202,7 +205,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
                     continue;
                 }
-            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+            } catch (AutowireExceptionInterface $e) {
                 throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e
@@ -347,17 +350,23 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
-     * @throws AutowireAttributeException|AutowireParameterTypeException
+     * @throws AutowireExceptionInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        /** @var null|non-empty-string $paramType */
+        /** @var null|class-string $paramType */
         $paramType = null;
 
         foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
             yield match ($attr::class) {
+                Autowire::class => $this->configureDiDefinitionAutowire(
+                    '' !== $attr->id
+                        ? $attr->id
+                        : $paramType ??= Helper::getParameterTypeHint($param, $this->container),
+                    $attr,
+                ),
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
                 Inject::class => new DiDefinitionGet(
@@ -399,5 +408,30 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         } else {
             $definition->setContext($param->name);
         }
+    }
+
+    /**
+     * @throws AutowireExceptionInterface
+     */
+    private function configureDiDefinitionAutowire(string $paramType, Autowire $attr): DiDefinitionAutowire
+    {
+        // @phpstan-ignore argument.type
+        $definition = (new DiDefinitionAutowire($paramType, isLazy: $attr->isLazy))
+            ->bindArguments(...$attr->arguments)
+        ;
+
+        $setups = AttributeReader::getSetupsFormAutowireAttribute($attr);
+
+        foreach ($setups as $setup) {
+            if ($setup instanceof Setup) {
+                $definition->setup($setup->getMethod(), $setup->arguments);
+            } else {
+                $definition->setupImmutable($setup->getMethod(), $setup->arguments);
+            }
+        }
+
+        $definition->freeze();
+
+        return $definition;
     }
 }

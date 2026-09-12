@@ -6,6 +6,7 @@ namespace Tests\AttributeReader\AttributeOnParameter;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -29,6 +30,7 @@ use Tests\AttributeReader\AttributeOnParameter\Fixtures\FooFactory;
  */
 #[CoversClass(Helper::class)]
 #[CoversClass(AttributeReader::class)]
+#[CoversClass(Autowire::class)]
 #[CoversClass(DiFactory::class)]
 #[CoversClass(Inject::class)]
 #[CoversClass(InjectByCallable::class)]
@@ -69,6 +71,10 @@ class AttributeOnParameterTest extends TestCase
             (new ReflectionFunction(static fn (#[Inject('service.one'), Parameter('foo')] $param) => true))->getParameters()[0],
         ];
 
+        yield 'Inject and Autowire' => [
+            (new ReflectionFunction(static fn (#[Inject('service.one'), Autowire(Foo::class, isLazy: true)] $param) => true))->getParameters()[0],
+        ];
+
         yield 'DiFactory and ParameterRuntime' => [
             (new ReflectionFunction(static fn (#[DiFactory(FooFactory::class), ParameterRuntime('foo')] $param) => true))->getParameters()[0],
         ];
@@ -98,13 +104,14 @@ class AttributeOnParameterTest extends TestCase
             #[TaggedAs('tags.one')]
             #[Parameter('foo')]
             #[ParameterRuntime('bar')]
+            #[Autowire(Foo::class, isLazy: true)]
             mixed ...$a
         ) => '';
         $param = new ReflectionParameter($f, 0);
 
         $res = [...AttributeReader::getAttributeOnParameter($param)];
 
-        self::assertCount(7, $res);
+        self::assertCount(8, $res);
 
         self::assertEquals(FooFactory::class, $res[0]->definition);
         self::assertNull($res[0]->isSingleton);
@@ -123,5 +130,8 @@ class AttributeOnParameterTest extends TestCase
 
         self::assertEquals('bar', $res[6]->name);
         self::assertEquals(null, $res[6]->message);
+
+        self::assertEquals(Foo::class, $res[7]->id);
+        self::assertTrue($res[7]->isLazy);
     }
 }
