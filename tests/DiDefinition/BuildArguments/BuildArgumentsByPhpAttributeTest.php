@@ -6,8 +6,8 @@ namespace Tests\DiDefinition\BuildArguments;
 
 use ArrayIterator;
 use Closure;
-use DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -29,14 +30,20 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\FreezeTrait;
+use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
+use Tests\DiDefinition\BuildArguments\Fixtures\Bat;
 use Tests\DiDefinition\BuildArguments\Fixtures\BatFactory;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
+use Tests\DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
 use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependency;
 use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependencyTwo;
@@ -44,6 +51,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxTwo;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diParameterRuntime;
@@ -54,6 +62,7 @@ use function Kaspi\DiContainer\diTaggedAs;
  * @internal
  */
 #[CoversClass(DiContainerConfig::class)]
+#[CoversClass(Autowire::class)]
 #[CoversClass(TaggedAs::class)]
 #[CoversClass(ProxyClosure::class)]
 #[CoversClass(InjectByCallable::class)]
@@ -62,12 +71,14 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversFunction('\Kaspi\DiContainer\diGet')]
 #[CoversFunction('\Kaspi\DiContainer\diProxyClosure')]
 #[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
 #[CoversFunction('\Kaspi\DiContainer\diCallable')]
 #[CoversClass(Helper::class)]
 #[CoversClass(BindArgumentsTrait::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionProxyClosure::class)]
 #[CoversClass(DiFactory::class)]
@@ -78,6 +89,8 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionParameterRuntime::class)]
 #[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
+#[UsesClass(TagsTrait::class)]
+#[UsesClass(FreezeTrait::class)]
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;
@@ -494,5 +507,41 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $arg[3]);
         self::assertEquals('', $arg[3]->getDefinition());
         self::assertEquals('baz', $arg[3]->getContext());
+    }
+
+    public function testAttributeAutowireOnParameterIdEmptyAndIsLazy(): void
+    {
+        $fn = static fn (
+            #[Autowire(isLazy: true)]
+            Bat $bat,
+            #[Autowire(QuuxTwo::class, isLazy: true)]
+            QuuxInterface $quux,
+        ) => null;
+        $this->bindArguments(bat: diAutowire(Baz::class, isLazy: false));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
+
+        // @var list<DiDefinitionAutowire> $args
+        self::assertCount(2, $args = $ba->build());
+
+        self::assertTrue($args[0]->isLazy());
+        self::assertEquals(Bat::class, $args[0]->getIdentifier());
+
+        self::assertTrue($args[1]->isLazy());
+        self::assertEquals(QuuxTwo::class, $args[1]->getIdentifier());
+    }
+
+    public function testAttributeAutowireOnParameterFrozen(): void
+    {
+        $fn = static fn (#[Autowire(isLazy: true)] Bat $bat) => null;
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
+
+        /** @var DiDefinitionAutowire $autowire */
+        $autowire = $ba->build()[0];
+
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('on a frozen definition');
+
+        $autowire->setContainerIdentifier('services.bat');
     }
 }
