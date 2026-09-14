@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
@@ -20,7 +19,6 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooLazy;
  */
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 class ResolveLazyObjectTest extends TestCase
 {
     #[RequiresPhp('< 8.4')]

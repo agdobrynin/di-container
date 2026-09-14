@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionCallable;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -15,7 +14,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionCallable::class)]
 class ResetTest extends TestCase
 {

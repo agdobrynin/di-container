@@ -12,7 +12,6 @@ use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
@@ -154,7 +153,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         $this->checkIsInstantiable();
 
         return (null !== ($constructor = $this->getDefinition()->getConstructor()))
-            ? new ArgumentBuilder($this->bindArguments, $constructor, $container)
+            ? new ArgumentBuilder($this->bindArguments, $constructor, $container, false)
             : null;
     }
 
@@ -178,7 +177,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             }
 
             foreach ($calls as [$setupConfigureType, $callArguments]) {
-                $setupArgBuilders[] = [$setupConfigureType, new ArgumentBuilder($callArguments, $reflectionMethod, $container)];
+                $setupArgBuilders[] = [$setupConfigureType, new ArgumentBuilder($callArguments, $reflectionMethod, $container, true)];
             }
         }
 
@@ -347,13 +346,13 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         /** @var object $object */
         $object = (false === $this->constructArgBuilder)
             ? $this->getDefinition()->newInstanceWithoutConstructor()
-            : $this->getDefinition()->newInstanceArgs(ArgumentResolver::resolve($this->constructArgBuilder, $container, $this));
+            : $this->getDefinition()->newInstanceArgs($this->constructArgBuilder->resolve($this));
 
         $this->setupArgBuilders ??= $this->exposeSetupArgumentBuilders($container);
 
         /** @var ArgumentBuilderInterface $argBuilder */
         foreach ($this->setupArgBuilders as [$setupConfigureType, $argBuilder]) {
-            $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
+            $resolvedArguments = $argBuilder->resolve($this);
             $reflectionMethod = $argBuilder->getFunctionOrMethod();
 
             /** @var callable $callable */
