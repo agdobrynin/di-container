@@ -134,7 +134,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
              * @var ArgumentBuilderInterface $setupArgBuilder
              */
             foreach ($setupArgBuilders as [, $setupArgBuilder]) {
-                $setupArgs = $setupArgBuilder->buildByPriorityBindArguments();
+                $setupArgs = $setupArgBuilder->build();
                 $argumentResetters = reset($setupArgs);
 
                 if (!is_iterable($argumentResetters)) {
@@ -182,7 +182,7 @@ final class ObjectEntry implements CompilableDefinitionInterface
          */
         foreach ($setupArgBuilders as [$setupConfigureType, $setupArgBuilder]) {
             try {
-                $setupArgs = $setupArgBuilder->buildByPriorityBindArguments();
+                $setupArgs = $setupArgBuilder->build();
             } catch (ArgumentBuilderExceptionInterface $e) {
                 throw new DefinitionCompileException(
                     sprintf('Cannot build arguments for setter method in definition %s.', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod())),

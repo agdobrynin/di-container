@@ -259,7 +259,7 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Baz::class, 'setContainer'))
         ;
 
-        $mockSetupArgBuilderOne->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderOne->method('build')
             ->willThrowException(new ArgumentBuilderException())
         ;
 
@@ -292,7 +292,7 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Baz::class, 'setContainer'))
         ;
 
-        $mockSetupArgBuilderOne->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderOne->method('build')
             ->willReturn([
                 0 => new DiDefinitionGet('services.internal_container'),
             ])
@@ -335,7 +335,7 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Foo::class, 'setBaz'))
         ;
 
-        $mockSetupArgBuilderOne->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderOne->method('build')
             ->willReturn([
                 0 => new DiDefinitionGet('services.internal_container'),
             ])
@@ -346,7 +346,7 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Foo::class, 'withContainer'))
         ;
 
-        $mockSetupArgBuilderTwo->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderTwo->method('build')
             ->willReturn([
                 0 => new DiDefinitionGet(ContainerInterface::class),
             ])

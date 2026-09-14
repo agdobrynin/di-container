@@ -6,7 +6,6 @@ namespace Tests\DiDefinition\DiDefinitionFactory;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
@@ -34,7 +33,6 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(NotFoundException::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionValue::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(FreezeTrait::class)]
 class DiDefinitionFactoryTest extends TestCase

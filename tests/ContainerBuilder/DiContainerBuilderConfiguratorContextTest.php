@@ -10,7 +10,6 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\DiContainerNullConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Helper;
@@ -32,7 +31,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DefinitionsLoader::class)]
 #[CoversClass(DiContainer::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
