@@ -6,7 +6,6 @@ namespace Tests\DiDefinition\BuildArguments;
 
 use ArrayIterator;
 use Closure;
-use DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
@@ -37,6 +36,7 @@ use ReflectionFunction;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
 use Tests\DiDefinition\BuildArguments\Fixtures\BatFactory;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
+use Tests\DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
 use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependency;
 use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependencyTwo;
