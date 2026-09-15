@@ -82,10 +82,10 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-        $args = $ba->buildByPriorityBindArguments();
+        $args = $ba->build();
 
         self::assertEquals(
             [
@@ -101,11 +101,11 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
     {
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux, #[Inject(Baz::class), Inject('service.one')] Foo $foo) => $quux;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         try {
             // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-            $args = $ba->buildByPriorityBindArguments();
+            $args = $ba->build();
         } catch (ContainerExceptionInterface $e) {
             self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
             self::assertStringContainsString('Cannot build argument via php attribute for Parameter #1', $e->getMessage());
@@ -121,10 +121,10 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 
         $this->bindArguments(bar: diParameter('bar.two'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-        $args = $ba->buildByPriorityBindArguments();
+        $args = $ba->build();
 
         self::assertEquals(
             [
@@ -146,10 +146,10 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 
         $this->bindArguments(str: diParameterRuntime('qux'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-        $args = $ba->buildByPriorityBindArguments();
+        $args = $ba->build();
 
         self::assertCount(2, $args);
         self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $args[0]);

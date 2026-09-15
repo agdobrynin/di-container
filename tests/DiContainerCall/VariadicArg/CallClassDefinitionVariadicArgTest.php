@@ -11,7 +11,6 @@ use Kaspi\DiContainer\DefinitionDiCall;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
@@ -51,7 +50,6 @@ use function Kaspi\DiContainer\diGet;
     CoversClass(DiDefinitionFactory::class),
     CoversClass(DiDefinitionCallable::class),
     CoversClass(DiDefinitionAutowire::class),
-    CoversClass(ArgumentResolver::class),
     CoversClass(ArgumentBuilder::class),
     CoversClass(DiContainerConfig::class),
     CoversClass(DiContainer::class),

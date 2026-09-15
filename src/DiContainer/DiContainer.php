@@ -6,7 +6,6 @@ namespace Kaspi\DiContainer;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
@@ -196,11 +195,13 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         /**
          * @phpstan-var array<non-empty-string|non-negative-int, mixed> $argument
          */
+        $argBuilder = new ArgumentBuilder($argument, $reflectionDefinition, $this, false);
+
         if ($reflectionDefinition instanceof ReflectionMethod) {
             if ($reflectionDefinition->isStatic()) {
                 return call_user_func_array(
                     [$reflectionDefinition->class, $reflectionDefinition->name], // @phpstan-ignore argument.type
-                    ArgumentResolver::resolve(new ArgumentBuilder($argument, $reflectionDefinition, $this), $this)
+                    $argBuilder->resolve()
                 );
             }
 
@@ -221,15 +222,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 throw new DiDefinitionException(sprintf('Cannot create callable from %s.', var_export($callable, true)));
             }
 
-            return call_user_func_array(
-                $callable,
-                ArgumentResolver::resolve(new ArgumentBuilder($argument, $reflectionDefinition, $this), $this)
-            );
+            return call_user_func_array($callable, $argBuilder->resolve());
         }
 
         return call_user_func_array(
             $definition, // @phpstan-ignore argument.type
-            ArgumentResolver::resolve(new ArgumentBuilder($argument, $reflectionDefinition, $this), $this)
+            $argBuilder->resolve()
         );
     }
 

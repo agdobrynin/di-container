@@ -8,7 +8,6 @@ use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -39,7 +38,6 @@ use function Kaspi\DiContainer\diRuntime;
  * @internal
  */
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(DiDefinitionAutowire::class)]

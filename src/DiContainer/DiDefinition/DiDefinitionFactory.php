@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -64,7 +63,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         if (is_callable([$factoryConstructor, $factoryMethod])) {
             $reflectionMethod = new ReflectionMethod($factoryConstructor, $factoryMethod);
 
-            $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container);
+            $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container, false);
         }
 
         try {
@@ -97,7 +96,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
             );
         }
 
-        return $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container);
+        return $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container, false);
     }
 
     public function getDefinition(): array
@@ -138,7 +137,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
 
         /** @var ReflectionMethod $method */
         $method = $argBuilder->getFunctionOrMethod();
-        $resolvedArguments = ArgumentResolver::resolve($argBuilder, $container, $this);
+        $resolvedArguments = $argBuilder->resolve($this);
 
         if ($method->isStatic()) {
             return $method->invokeArgs(null, $resolvedArguments);

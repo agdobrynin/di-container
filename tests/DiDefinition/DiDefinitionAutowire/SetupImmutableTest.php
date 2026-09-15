@@ -8,7 +8,6 @@ use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
@@ -43,7 +42,6 @@ use function Kaspi\DiContainer\diGet;
 #[CoversClass(\Kaspi\DiContainer\Attributes\SetupImmutable::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]

@@ -28,7 +28,9 @@ use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterWithContextInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
@@ -54,11 +56,13 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     /**
      * @param BindArgumentsType $bindArguments
+     * @param bool              $forcePriorityByBingArguments binding arguments as highest priority, then Php attributes
      */
     public function __construct(
         private readonly array $bindArguments,
         private readonly ReflectionFunctionAbstract $functionOrMethod,
         private readonly DiContainerInterface $container,
+        private readonly bool $forcePriorityByBingArguments,
     ) {}
 
     public function getBindArguments(): array
@@ -78,16 +82,47 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     public function build(): array
     {
-        return $this->container->getConfig()->isUseAttribute()
-            ? $this->basedOnPhpAttributes()
-            : $this->basedOnBindArguments();
+        if (!$this->container->getConfig()->isUseAttribute()) {
+            return $this->basedOnBindArguments();
+        }
+
+        return $this->forcePriorityByBingArguments
+            ? $this->basedOnBindArgumentsAsPriorityAndPhpAttributes()
+            : $this->basedOnPhpAttributes();
     }
 
-    public function buildByPriorityBindArguments(): array
+    public function resolve(?DiDefinitionInterface $context = null): array
     {
-        return $this->container->getConfig()->isUseAttribute()
-            ? $this->basedOnBindArgumentsAsPriorityAndPhpAttributes()
-            : $this->basedOnBindArguments();
+        $resolvedArgs = [];
+        $args = $this->build();
+
+        foreach ($args as $argNameOrIndex => $arg) {
+            try {
+                $resolvedArgs[$argNameOrIndex] = $arg instanceof DiDefinitionInterface
+                    ? $arg->resolve($this->container, $context)
+                    : $arg;
+            } catch (ContainerExceptionInterface $e) {
+                if (is_int($argNameOrIndex)) {
+                    $param = $this->functionOrMethod->getParameters()[$argNameOrIndex] ?? null;
+                    $argPresentedBy = null !== $param && array_key_exists($param->getName(), $this->bindArguments)
+                        ? $param->getName()
+                        : $argNameOrIndex;
+                } else {
+                    $argPresentedBy = $argNameOrIndex;
+                }
+
+                $argMessage = is_int($argPresentedBy)
+                    ? sprintf('at position #%d', $argPresentedBy)
+                    : sprintf('by named argument $%s', $argPresentedBy);
+
+                throw new ArgumentBuilderException(
+                    message: sprintf('Cannot resolve parameter %s in %s.', $argMessage, Helper::functionName($this->functionOrMethod)),
+                    previous: $e
+                );
+            }
+        }
+
+        return $resolvedArgs;
     }
 
     /**
