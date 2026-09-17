@@ -12,13 +12,15 @@ use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\SetupArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterInterface;
@@ -45,12 +47,6 @@ use function sprintf;
 
 use const PHP_VERSION_ID;
 
-/**
- * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
- *
- * @phpstan-type SetupConfigureArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
- * @phpstan-type SetupConfigureItem array{0: SetupConfigureMethod, 1: SetupConfigureArgumentsType}
- */
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface, DiDefinitionResetterSetterInterface, DiDefinitionResetterInterface
 {
     use BindArgumentsTrait {
@@ -66,21 +62,21 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     private ArgumentBuilderInterface|false $constructArgBuilder;
 
     /**
-     * @var list<array{0: SetupConfigureMethod, 1: ArgumentBuilderInterface}>
+     * @var list<SetupArgumentBuilderInterface>
      */
     private array $setupArgBuilders;
 
     /**
      * Methods for setup service by PHP definition via setters (mutable or immutable).
      *
-     * @var array<non-empty-string, list<SetupConfigureItem>>
+     * @var array<non-empty-string, list<SetupTypeWithArguments>>
      */
     private array $setup = [];
 
     /**
      * Methods for setup service by PHP attribute via setters (mutable or immutable).
      *
-     * @var array<non-empty-string, list<SetupConfigureItem>>
+     * @var array<non-empty-string, list<SetupTypeWithArguments>>
      */
     private array $setupByAttributes;
 
@@ -115,7 +111,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             );
         }
 
-        $this->setup[$method][] = [SetupConfigureMethod::Mutable, $arguments];
+        $this->setup[$method][] = new SetupTypeWithArguments(SetupConfigureMethod::Mutable, $arguments);
         unset($this->setupArgBuilders);
 
         return $this;
@@ -129,7 +125,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             );
         }
 
-        $this->setup[$method][] = [SetupConfigureMethod::Immutable, $arguments];
+        $this->setup[$method][] = new SetupTypeWithArguments(SetupConfigureMethod::Immutable, $arguments);
         unset($this->setupArgBuilders);
 
         return $this;
@@ -160,9 +156,11 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
     {
         $this->checkIsInstantiable();
+
+        /** @var list<SetupArgumentBuilderInterface> $setupArgBuilders */
         $setupArgBuilders = [];
 
-        foreach ($this->getSetups($this->getDefinition(), $container) as $method => $calls) {
+        foreach ($this->getSetups($this->getDefinition(), $container) as $method => $callsSetupTypeWithArguments) {
             try {
                 $reflectionMethod = $this->getDefinition()->getMethod($method);
             } catch (ReflectionException $e) {
@@ -176,8 +174,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
                 throw new DiDefinitionException(sprintf('Cannot use "%s" as setter.', Helper::functionName($reflectionMethod)));
             }
 
-            foreach ($calls as [$setupConfigureType, $callArguments]) {
-                $setupArgBuilders[] = [$setupConfigureType, new ArgumentBuilder($callArguments, $reflectionMethod, $container, true)];
+            foreach ($callsSetupTypeWithArguments as $setupTypeWithArguments) {
+                $setupArgBuilders[] = new SetupArgumentBuilder(new ArgumentBuilder($setupTypeWithArguments->arguments, $reflectionMethod, $container, true), $setupTypeWithArguments->setupType);
             }
         }
 
@@ -348,17 +346,18 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             ? $this->getDefinition()->newInstanceWithoutConstructor()
             : $this->getDefinition()->newInstanceArgs($this->constructArgBuilder->resolve($this));
 
-        $this->setupArgBuilders ??= $this->exposeSetupArgumentBuilders($container);
+        if (!isset($this->setupArgBuilders)) {
+            $this->setupArgBuilders = $this->exposeSetupArgumentBuilders($container);
+        }
 
-        /** @var ArgumentBuilderInterface $argBuilder */
-        foreach ($this->setupArgBuilders as [$setupConfigureType, $argBuilder]) {
-            $resolvedArguments = $argBuilder->resolve($this);
-            $reflectionMethod = $argBuilder->getFunctionOrMethod();
+        foreach ($this->setupArgBuilders as $argBuilder) {
+            $resolvedArguments = $argBuilder->argumentBuilder()->resolve($this);
+            $reflectionMethod = $argBuilder->argumentBuilder()->getFunctionOrMethod();
 
             /** @var callable $callable */
             $callable = [$object, $reflectionMethod->name];
 
-            if (SetupConfigureMethod::Mutable === $setupConfigureType) {
+            if (SetupConfigureMethod::Mutable === $argBuilder->setupType()) {
                 call_user_func_array($callable, $resolvedArguments);
 
                 continue;
@@ -381,7 +380,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     }
 
     /**
-     * @return array<non-empty-string, list<SetupConfigureItem>>
+     * @return array<non-empty-string, list<SetupTypeWithArguments>>
      *
      * @throws AutowireExceptionInterface
      */
@@ -399,7 +398,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
                     ? SetupConfigureMethod::Mutable
                     : SetupConfigureMethod::Immutable;
 
-                $this->setupByAttributes[$setupAttr->getMethod()][] = [$setupType, $setupAttr->arguments];
+                $this->setupByAttributes[$setupAttr->getMethod()][] = new SetupTypeWithArguments($setupType, $setupAttr->arguments);
             }
         }
 

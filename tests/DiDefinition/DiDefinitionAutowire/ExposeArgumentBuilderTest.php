@@ -6,11 +6,13 @@ namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Generator;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooPrivateConstructor;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
@@ -20,6 +22,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
  */
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(Helper::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
 class ExposeArgumentBuilderTest extends TestCase
 {
     #[DataProvider('exposeArgumentBuilderExceptionProvider')]

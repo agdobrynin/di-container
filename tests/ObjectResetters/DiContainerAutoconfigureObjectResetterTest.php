@@ -13,6 +13,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
@@ -26,6 +28,7 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\TestWith;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\ObjectResetters\Fixtures\Foo;
@@ -57,6 +60,8 @@ use function Kaspi\DiContainer\diRuntime;
 #[CoversClass(NotFoundException::class)]
 #[CoversFunction('Kaspi\DiContainer\diAutowire')]
 #[CoversFunction('Kaspi\DiContainer\diRuntime')]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
 class DiContainerAutoconfigureObjectResetterTest extends TestCase
 {
     public function testManuallyConfigure(): void
