@@ -258,7 +258,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             unset($this->reflectionClass);
         }
 
-        $this->containerIdentifier = null;
+        $this->containerIdentifier = $this->context = null;
     }
 
     public function setContainerIdentifier(string $containerIdentifier): void
