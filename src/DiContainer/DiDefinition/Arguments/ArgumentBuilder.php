@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition\Arguments;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -13,6 +14,7 @@ use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -347,17 +349,26 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
      * @throws AutowireAttributeException|AutowireParameterTypeException
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        /** @var null|non-empty-string $paramType */
+        /** @var null|class-string $paramType */
         $paramType = null;
 
         foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
             yield match ($attr::class) {
+                Autowire::class => (new DiDefinitionAutowire(
+                    // @phpstan-ignore argument.type
+                    '' !== $attr->id
+                        ? $attr->id
+                        : $paramType ??= Helper::getParameterTypeHint($param, $this->container),
+                    $attr->isSingleton,
+                    $attr->isLazy,
+                ))
+                    ->setContext($attr),
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
                 Inject::class => new DiDefinitionGet(
