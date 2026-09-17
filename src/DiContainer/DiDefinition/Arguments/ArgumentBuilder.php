@@ -368,7 +368,8 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     $attr->isSingleton,
                     $attr->isLazy,
                 ))
-                    ->setContext($attr),
+                    ->setContext($attr)
+                    ->freeze(),
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
                 Inject::class => new DiDefinitionGet(
