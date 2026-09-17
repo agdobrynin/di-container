@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\BuildArguments;
 
+use ArrayAccess;
 use ArrayIterator;
 use Closure;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -16,6 +18,7 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -44,6 +47,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxTwo;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diParameterRuntime;
@@ -53,6 +57,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 /**
  * @internal
  */
+#[CoversClass(Autowire::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(TaggedAs::class)]
 #[CoversClass(ProxyClosure::class)]
@@ -62,6 +67,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversFunction('\Kaspi\DiContainer\diGet')]
 #[CoversFunction('\Kaspi\DiContainer\diProxyClosure')]
 #[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
@@ -70,6 +76,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(BindArgumentsTrait::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionProxyClosure::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiFactory::class)]
 #[CoversClass(DiDefinitionFactory::class)]
 #[CoversClass(Parameter::class)]
@@ -494,5 +501,26 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $arg[3]);
         self::assertEquals('', $arg[3]->getDefinition());
         self::assertEquals('baz', $arg[3]->getContext());
+    }
+
+    public function testAttributeAutowireOnParameter(): void
+    {
+        $fn = static fn (
+            #[Autowire(isLazy: true)]
+            ArrayIterator $a,
+            #[Autowire(ArrayAccess::class)]
+            mixed $b,
+        ) => null;
+
+        $this->bindArguments(a: diAutowire('qux'));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
+
+        /** @var list<DiDefinitionAutowire> $args */
+        $args = $ba->build();
+
+        self::assertCount(2, $args);
+        self::assertEquals('ArrayIterator', $args[0]->getDefinitionIdentifier());
+        self::assertEquals('ArrayAccess', $args[1]->getDefinitionIdentifier());
     }
 }

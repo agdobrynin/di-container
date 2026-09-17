@@ -120,4 +120,18 @@ class FreezeTest extends TestCase
 
         $this->definition->bindTag('tags.bar');
     }
+
+    public function testContext(): void
+    {
+        $this->definition->setContext('x');
+
+        self::assertEquals('x', $this->definition->getContext());
+
+        $this->definition->freeze();
+
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire::setContext() on a frozen definition.');
+
+        $this->definition->setContext('y');
+    }
 }
