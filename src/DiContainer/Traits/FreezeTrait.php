@@ -8,8 +8,10 @@ trait FreezeTrait
 {
     private bool $isFrozen = false;
 
-    public function freeze(): void
+    public function freeze(): static
     {
         $this->isFrozen = true;
+
+        return $this;
     }
 }
