@@ -90,6 +90,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     private $resetter = false;
 
+    private mixed $context = null;
+
     /**
      * @param class-string|ReflectionClass $definition
      */
@@ -306,6 +308,24 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->isLazy;
     }
 
+    public function setContext(mixed $context): static
+    {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call \%s::setContext() on a frozen definition.', __CLASS__)
+            );
+        }
+
+        $this->context = $context;
+
+        return $this;
+    }
+
+    public function getContext(): mixed
+    {
+        return $this->context;
+    }
+
     protected function readTagAttributes(): Generator
     {
         try {
@@ -412,7 +432,9 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     private function getSetupAttributes(ReflectionClass $class): Generator
     {
-        $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($class);
+        $autowireAttribute = $this->getContext() instanceof Autowire
+            ? $this->getContext()
+            : $this->getAutowireAttributeConfiguringDefinition($class);
 
         if (false === $autowireAttribute || null === $autowireAttribute->setups) {
             yield from AttributeReader::getSetupAttribute($class);
