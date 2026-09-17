@@ -23,7 +23,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
@@ -32,6 +31,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterWithContextInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
@@ -165,7 +165,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
                     continue;
                 }
-            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+            } catch (AutowireExceptionInterface $e) {
                 throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e
@@ -204,7 +204,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
                     continue;
                 }
-            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+            } catch (AutowireExceptionInterface $e) {
                 throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e
@@ -351,7 +351,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     /**
      * @return Generator<(DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
-     * @throws AutowireAttributeException|AutowireParameterTypeException
+     * @throws AutowireExceptionInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
