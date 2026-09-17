@@ -439,8 +439,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     private function getSetupAttributes(ReflectionClass $class): Generator
     {
-        $autowireAttribute = $this->getContext() instanceof Autowire
-            ? $this->getContext()
+        $autowireAttribute = $this->context instanceof Autowire
+            ? $this->context
             : $this->getAutowireAttributeConfiguringDefinition($class);
 
         if (false === $autowireAttribute || null === $autowireAttribute->setups) {
