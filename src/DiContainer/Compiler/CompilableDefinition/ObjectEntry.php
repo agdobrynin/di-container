@@ -15,7 +15,6 @@ use Kaspi\DiContainer\Interfaces\Compiler\CompiledEntryInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
@@ -130,20 +129,17 @@ final class ObjectEntry implements CompilableDefinitionInterface
         $objectCompiledEntry->addToStatements($objectCreateStatement);
 
         if ($this->definition->getDefinition()->implementsInterface(ObjectResettersInterface::class)) {
-            /**
-             * @var ArgumentBuilderInterface $setupArgBuilder
-             */
-            foreach ($setupArgBuilders as [, $setupArgBuilder]) {
-                $setupArgs = $setupArgBuilder->build();
+            foreach ($setupArgBuilders as $setupArgBuilder) {
+                $setupArgs = $setupArgBuilder->argumentBuilder()->build();
                 $argumentResetters = reset($setupArgs);
 
                 if (!is_iterable($argumentResetters)) {
                     throw new DefinitionCompileException(
-                        sprintf('The first argument for %s should be `iterable` type. Got argument type `%s`.', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod()), get_debug_type($argumentResetters))
+                        sprintf('The first argument for %s should be `iterable` type. Got argument type `%s`.', CommonHelper::functionName($setupArgBuilder->argumentBuilder()->getFunctionOrMethod()), get_debug_type($argumentResetters))
                     );
                 }
 
-                $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
+                $methodName = $setupArgBuilder->argumentBuilder()->getFunctionOrMethod()->name;
                 $serviceVar = $objectCompiledEntry->getScopeServiceVar();
 
                 $codeResetters = "[\n";
@@ -176,16 +172,12 @@ final class ObjectEntry implements CompilableDefinitionInterface
             return $objectCompiledEntry->setExpression($objectCompiledEntry->getScopeServiceVar());
         }
 
-        /**
-         * @var ArgumentBuilderInterface $setupArgBuilder
-         * @var SetupConfigureMethod     $setupConfigureType
-         */
-        foreach ($setupArgBuilders as [$setupConfigureType, $setupArgBuilder]) {
+        foreach ($setupArgBuilders as $setupArgBuilder) {
             try {
-                $setupArgs = $setupArgBuilder->build();
+                $setupArgs = $setupArgBuilder->argumentBuilder()->build();
             } catch (ArgumentBuilderExceptionInterface $e) {
                 throw new DefinitionCompileException(
-                    sprintf('Cannot build arguments for setter method in definition %s.', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod())),
+                    sprintf('Cannot build arguments for setter method in definition %s.', CommonHelper::functionName($setupArgBuilder->argumentBuilder()->getFunctionOrMethod())),
                     previous: $e
                 );
             }
@@ -201,15 +193,15 @@ final class ObjectEntry implements CompilableDefinitionInterface
                 );
             } catch (DefinitionCompileExceptionInterface $e) {
                 throw new DefinitionCompileException(
-                    sprintf('Cannot compile arguments for %s.', CommonHelper::functionName($setupArgBuilder->getFunctionOrMethod())),
+                    sprintf('Cannot compile arguments for %s.', CommonHelper::functionName($setupArgBuilder->argumentBuilder()->getFunctionOrMethod())),
                     previous: $e
                 );
             }
 
-            $methodName = $setupArgBuilder->getFunctionOrMethod()->name;
+            $methodName = $setupArgBuilder->argumentBuilder()->getFunctionOrMethod()->name;
             $serviceVar = $objectCompiledEntry->getScopeServiceVar();
 
-            $serviceSetupStatement = SetupConfigureMethod::Mutable === $setupConfigureType
+            $serviceSetupStatement = SetupConfigureMethod::Mutable === $setupArgBuilder->setupType()
                 ? sprintf('%s->%s%s', $serviceVar, $methodName, $argsSetupMethodExpression)
                 : sprintf('%s = %s->%s%s', $serviceVar, $serviceVar, $methodName, $argsSetupMethodExpression);
 

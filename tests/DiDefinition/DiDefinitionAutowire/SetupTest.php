@@ -14,6 +14,8 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -22,6 +24,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\ClassWithConstructDestruct;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooMultiConfigSetup;
@@ -48,6 +51,8 @@ use function Kaspi\DiContainer\diValue;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(SetupConfigureMethod::class)]
 #[CoversClass(Helper::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
 class SetupTest extends TestCase
 {
     public function testSetupSuccess(): void
@@ -194,9 +199,9 @@ class SetupTest extends TestCase
         $setups = $definition->exposeSetupArgumentBuilders($mockContainer);
 
         self::assertCount(1, $setups);
-        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0][0]);
-        self::assertEquals('doSetup', $setups[0][1]->getFunctionOrMethod()->name);
-        self::assertEquals([], $setups[0][1]->getBindArguments());
+        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0]->setupType());
+        self::assertEquals('doSetup', $setups[0]->argumentBuilder()->getFunctionOrMethod()->name);
+        self::assertEquals([], $setups[0]->argumentBuilder()->getBindArguments());
     }
 
     public function testSetupEmptyViaAutowire(): void
@@ -227,9 +232,9 @@ class SetupTest extends TestCase
         $setups = $definition->exposeSetupArgumentBuilders($mockContainer);
 
         self::assertCount(1, $setups);
-        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0][0]);
-        self::assertEquals('doSetupTwo', $setups[0][1]->getFunctionOrMethod()->name);
-        self::assertEquals([], $setups[0][1]->getBindArguments());
+        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0]->setupType());
+        self::assertEquals('doSetupTwo', $setups[0]->argumentBuilder()->getFunctionOrMethod()->name);
+        self::assertEquals([], $setups[0]->argumentBuilder()->getBindArguments());
     }
 
     public function testSetupManyViaAutowire(): void
@@ -246,13 +251,13 @@ class SetupTest extends TestCase
 
         self::assertCount(2, $setups);
 
-        self::assertEquals(SetupConfigureMethod::Immutable, $setups[0][0]);
-        self::assertEquals('doSetupImmutable', $setups[0][1]->getFunctionOrMethod()->name);
-        self::assertEquals(['bar'], $setups[0][1]->getBindArguments());
+        self::assertEquals(SetupConfigureMethod::Immutable, $setups[0]->setupType());
+        self::assertEquals('doSetupImmutable', $setups[0]->argumentBuilder()->getFunctionOrMethod()->name);
+        self::assertEquals(['bar'], $setups[0]->argumentBuilder()->getBindArguments());
 
-        self::assertEquals(SetupConfigureMethod::Mutable, $setups[1][0]);
-        self::assertEquals('doSetupThree', $setups[1][1]->getFunctionOrMethod()->name);
-        self::assertEquals(['foo'], $setups[1][1]->getBindArguments());
+        self::assertEquals(SetupConfigureMethod::Mutable, $setups[1]->setupType());
+        self::assertEquals('doSetupThree', $setups[1]->argumentBuilder()->getFunctionOrMethod()->name);
+        self::assertEquals(['foo'], $setups[1]->argumentBuilder()->getBindArguments());
     }
 
     public function testSetupNoneExistMethodViaAutowire(): void
