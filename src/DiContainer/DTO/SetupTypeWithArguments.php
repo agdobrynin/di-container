@@ -8,6 +8,8 @@ use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 /**
+ * @internal
+ *
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  *
  * @phpstan-type SetupConfigureArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
