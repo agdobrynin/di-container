@@ -149,10 +149,17 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
     {
         $this->checkIsInstantiable();
+        $constructor = $this->getDefinition()->getConstructor();
 
-        return (null !== ($constructor = $this->getDefinition()->getConstructor()))
-            ? new ArgumentBuilder($this->bindArguments, $constructor, $container, false)
-            : null;
+        if (null === $constructor) {
+            return null;
+        }
+
+        if ($this->context instanceof Autowire) {
+            return new ArgumentBuilder($this->context->arguments + $this->bindArguments, $constructor, $container, true);
+        }
+
+        return new ArgumentBuilder($this->bindArguments, $constructor, $container, false);
     }
 
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
