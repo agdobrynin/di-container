@@ -56,13 +56,13 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     /**
      * @param BindArgumentsType $bindArguments
-     * @param bool              $forcePriorityByBingArguments binding arguments as highest priority, then Php attributes
+     * @param bool              $forcingPriorityUsingBindingArguments binding arguments as highest priority, then Php attributes
      */
     public function __construct(
         private readonly array $bindArguments,
         private readonly ReflectionFunctionAbstract $functionOrMethod,
         private readonly DiContainerInterface $container,
-        private readonly bool $forcePriorityByBingArguments,
+        private readonly bool $forcingPriorityUsingBindingArguments,
     ) {}
 
     public function getBindArguments(): array
@@ -86,7 +86,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             return $this->basedOnBindArguments();
         }
 
-        return $this->forcePriorityByBingArguments
+        return $this->forcingPriorityUsingBindingArguments
             ? $this->basedOnBindArgumentsAsPriorityAndPhpAttributes()
             : $this->basedOnPhpAttributes();
     }
