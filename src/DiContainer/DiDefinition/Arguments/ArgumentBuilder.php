@@ -399,11 +399,11 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             ? $paramType ??= Helper::getParameterTypeHint($param, $this->container)
             : $autowire->id;
 
-        $def = new DiDefinitionAutowire($definition, $autowire->isSingleton, $autowire->isLazy);
-        $def->setContext($autowire);
-        $def->freeze();
+        $definitionAutowire = new DiDefinitionAutowire($definition, $autowire->isSingleton, $autowire->isLazy);
+        $definitionAutowire->setContext($autowire);
+        $definitionAutowire->freeze();
 
-        return $def;
+        return $definitionAutowire;
     }
 
     private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void
