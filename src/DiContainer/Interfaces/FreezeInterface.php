@@ -9,8 +9,5 @@ namespace Kaspi\DiContainer\Interfaces;
  */
 interface FreezeInterface
 {
-    /**
-     * @return $this
-     */
-    public function freeze(): static;
+    public function freeze(): void;
 }
