@@ -1040,6 +1040,11 @@ $classWithHeavyDependency->doHeavyDependency();
 > в момент обращения к этому свойству – в частности при вызове
 > метода `$classWithHeavyDependency->doHeavyDependency()`.
 
+> [!TIP]
+> Если используется PHP 8.4 и выше, то можно использовать [конфигурирование
+> «ленивых объектов»](14-lazy-injection.md) вместо атрибута `ProxyClosure`.
+
+
 ## Tag
 Применятся к классу для тегирования.
 ```php
