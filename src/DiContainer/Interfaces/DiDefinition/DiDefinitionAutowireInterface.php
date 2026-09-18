@@ -52,6 +52,8 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface, 
 
     /**
      * @return $this
+     *
+     * @throws DiDefinitionExceptionInterface
      */
     public function setContext(mixed $context): static;
 
