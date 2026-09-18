@@ -207,13 +207,14 @@ final class AttributeReader
     }
 
     /**
-     * @return Generator<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs>
+     * @return Generator<Autowire|DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs>
      *
      * @throws AutowireAttributeException
      */
     public static function getAttributeOnParameter(ReflectionParameter $param): Generator
     {
         $flipSupportAttrs = [
+            Autowire::class => true,
             DiFactory::class => true,
             Inject::class => true,
             InjectByCallable::class => true,
@@ -236,7 +237,7 @@ final class AttributeReader
         }
 
         /**
-         * @var ReflectionAttribute<DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr
+         * @var ReflectionAttribute<Autowire|DiFactory|Inject|InjectByCallable|Parameter|ParameterRuntime|ProxyClosure|TaggedAs> $attr
          */
         foreach ($attrs as $attr) {
             try {

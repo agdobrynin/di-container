@@ -49,4 +49,11 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface, 
      * Lazy object for PHP 8.4 and later.
      */
     public function isLazy(): bool;
+
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function setContext(mixed $context): void;
+
+    public function getContext(): mixed;
 }

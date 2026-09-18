@@ -11,7 +11,7 @@ use Kaspi\DiContainer\Traits\ResetterTrait;
 /**
  * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class Autowire
 {
     use ResetterTrait;

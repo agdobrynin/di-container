@@ -90,6 +90,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     private $resetter = false;
 
+    private mixed $context = null;
+
     /**
      * @param class-string|ReflectionClass $definition
      */
@@ -147,10 +149,17 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
     {
         $this->checkIsInstantiable();
+        $constructor = $this->getDefinition()->getConstructor();
 
-        return (null !== ($constructor = $this->getDefinition()->getConstructor()))
-            ? new ArgumentBuilder($this->bindArguments, $constructor, $container, false)
-            : null;
+        if (null === $constructor) {
+            return null;
+        }
+
+        if ($this->context instanceof Autowire) {
+            return new ArgumentBuilder($this->context->arguments + $this->bindArguments, $constructor, $container, true);
+        }
+
+        return new ArgumentBuilder($this->bindArguments, $constructor, $container, false);
     }
 
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
@@ -249,7 +258,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             unset($this->reflectionClass);
         }
 
-        $this->containerIdentifier = null;
+        $this->containerIdentifier = $this->context = null;
     }
 
     public function setContainerIdentifier(string $containerIdentifier): void
@@ -304,6 +313,22 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function isLazy(): bool
     {
         return $this->isLazy;
+    }
+
+    public function setContext(mixed $context): void
+    {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call \%s::setContext() on a frozen definition.', __CLASS__)
+            );
+        }
+
+        $this->context = $context;
+    }
+
+    public function getContext(): mixed
+    {
+        return $this->context;
     }
 
     protected function readTagAttributes(): Generator
@@ -412,7 +437,9 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     private function getSetupAttributes(ReflectionClass $class): Generator
     {
-        $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($class);
+        $autowireAttribute = $this->context instanceof Autowire
+            ? $this->context
+            : $this->getAutowireAttributeConfiguringDefinition($class);
 
         if (false === $autowireAttribute || null === $autowireAttribute->setups) {
             yield from AttributeReader::getSetupAttribute($class);

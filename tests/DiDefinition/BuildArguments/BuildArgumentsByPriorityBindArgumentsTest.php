@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\BuildArguments;
 
+use ArrayIterator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
@@ -31,6 +34,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
 use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diParameter;
 use function Kaspi\DiContainer\diParameterRuntime;
@@ -39,10 +43,12 @@ use function Kaspi\DiContainer\diParameterRuntime;
  * @internal
  */
 #[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Inject::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(BindArgumentsTrait::class)]
@@ -158,5 +164,19 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
         self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $args[1]);
         self::assertEquals('', $args[1]->getDefinition());
         self::assertEquals('bar', $args[1]->getContext());
+    }
+
+    public function testAttributeAutowireOnParameter(): void
+    {
+        $fn = static fn (#[Autowire('foo', isLazy: true)] ArrayIterator $a) => null;
+
+        $this->bindArguments(diAutowire('qux'));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
+
+        $args = $ba->build();
+
+        self::assertCount(1, $args);
+        self::assertEquals('qux', $args[0]->getIdentifier());
     }
 }

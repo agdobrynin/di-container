@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\DiDefinition\Arguments;
 
 use Generator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -13,6 +14,7 @@ use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -21,7 +23,6 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
-use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
@@ -30,6 +31,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterWithContextInterface;
+use Kaspi\DiContainer\Interfaces\Exceptions\AutowireExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionFunctionAbstract;
@@ -56,13 +58,13 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     /**
      * @param BindArgumentsType $bindArguments
-     * @param bool              $forcePriorityByBingArguments binding arguments as highest priority, then Php attributes
+     * @param bool              $forcingPriorityUsingBindingArguments binding arguments as highest priority, then Php attributes
      */
     public function __construct(
         private readonly array $bindArguments,
         private readonly ReflectionFunctionAbstract $functionOrMethod,
         private readonly DiContainerInterface $container,
-        private readonly bool $forcePriorityByBingArguments,
+        private readonly bool $forcingPriorityUsingBindingArguments,
     ) {}
 
     public function getBindArguments(): array
@@ -86,7 +88,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             return $this->basedOnBindArguments();
         }
 
-        return $this->forcePriorityByBingArguments
+        return $this->forcingPriorityUsingBindingArguments
             ? $this->basedOnBindArgumentsAsPriorityAndPhpAttributes()
             : $this->basedOnPhpAttributes();
     }
@@ -163,7 +165,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
                     continue;
                 }
-            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+            } catch (AutowireExceptionInterface $e) {
                 throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e
@@ -202,7 +204,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
                     continue;
                 }
-            } catch (AutowireAttributeException|AutowireParameterTypeException $e) {
+            } catch (AutowireExceptionInterface $e) {
                 throw new ArgumentBuilderException(
                     message: sprintf('Cannot build argument via php attribute for %s in %s.', $param, Helper::functionName($param->getDeclaringFunction())),
                     previous: $e
@@ -347,20 +349,22 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
      *
-     * @throws AutowireAttributeException|AutowireParameterTypeException
+     * @throws AutowireExceptionInterface
      */
     private function getDefinitionByAttributes(ReflectionParameter $param): Generator
     {
-        /** @var null|non-empty-string $paramType */
+        /** @var null|class-string $paramType */
         $paramType = null;
 
         foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
             yield match ($attr::class) {
+                Autowire::class => $this->configureAutowire($attr, $param, $paramType),
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
                 Inject::class => new DiDefinitionGet(
+                    // @phpstan-ignore argument.type
                     '' !== $attr->id
                         ? $attr->id
                         : $paramType ??= Helper::getParameterTypeHint($param, $this->container)
@@ -383,6 +387,23 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     ->setContext('' === $attr->name ? $param->name : null),
             };
         }
+    }
+
+    /**
+     * @throws AutowireParameterTypeException
+     */
+    private function configureAutowire(Autowire $autowire, ReflectionParameter $param, ?string &$paramType): DiDefinitionAutowire
+    {
+        /** @var class-string $definition */
+        $definition = '' === $autowire->id
+            ? $paramType ??= Helper::getParameterTypeHint($param, $this->container)
+            : $autowire->id;
+
+        $definitionAutowire = new DiDefinitionAutowire($definition, $autowire->isSingleton, $autowire->isLazy);
+        $definitionAutowire->setContext($autowire);
+        $definitionAutowire->freeze();
+
+        return $definitionAutowire;
     }
 
     private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void
