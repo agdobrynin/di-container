@@ -360,19 +360,11 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
         foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
             yield match ($attr::class) {
-                Autowire::class => (new DiDefinitionAutowire(
-                    // @phpstan-ignore argument.type
-                    '' !== $attr->id
-                        ? $attr->id
-                        : $paramType ??= Helper::getParameterTypeHint($param, $this->container),
-                    $attr->isSingleton,
-                    $attr->isLazy,
-                ))
-                    ->setContext($attr)
-                    ->freeze(),
+                Autowire::class => $this->configureAutowire($attr, $param, $paramType),
                 DiFactory::class => (new DiDefinitionFactory($attr->definition))
                     ->bindArguments(...$attr->arguments),
                 Inject::class => new DiDefinitionGet(
+                    // @phpstan-ignore argument.type
                     '' !== $attr->id
                         ? $attr->id
                         : $paramType ??= Helper::getParameterTypeHint($param, $this->container)
@@ -395,6 +387,23 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                     ->setContext('' === $attr->name ? $param->name : null),
             };
         }
+    }
+
+    /**
+     * @throws AutowireParameterTypeException
+     */
+    private function configureAutowire(Autowire $autowire, ReflectionParameter $param, ?string &$paramType): DiDefinitionAutowire
+    {
+        /** @var class-string $definition */
+        $definition = '' === $autowire->id
+            ? $paramType ??= Helper::getParameterTypeHint($param, $this->container)
+            : $autowire->id;
+
+        $def = new DiDefinitionAutowire($definition, $autowire->isSingleton, $autowire->isLazy);
+        $def->setContext($autowire);
+        $def->freeze();
+
+        return $def;
     }
 
     private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void

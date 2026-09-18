@@ -97,10 +97,10 @@ class ExposeArgumentBuilderTest extends TestCase
             public function __construct(ArrayIterator $iterator) {}
         };
 
-        $argBuilder = (new DiDefinitionAutowire($class::class))
-            ->setContext(new Autowire(arguments: ['foo', 'bar']))
-            ->exposeArgumentBuilder($this->createMock(DiContainerInterface::class))
-        ;
+        $def = new DiDefinitionAutowire($class::class);
+        $def->setContext(new Autowire(arguments: ['foo', 'bar']));
+
+        $argBuilder = $def->exposeArgumentBuilder($this->createMock(DiContainerInterface::class));
 
         self::assertEquals(['foo', 'bar'], $argBuilder->build());
     }
@@ -113,10 +113,10 @@ class ExposeArgumentBuilderTest extends TestCase
             ->willReturn(new DiContainerConfig(useAttribute: true))
         ;
 
-        $argBuilders = (new DiDefinitionAutowire($class))
-            ->setContext($context)
-            ->exposeSetupArgumentBuilders($mockContainer)
-        ;
+        $def = new DiDefinitionAutowire($class);
+        $def->setContext($context);
+
+        $argBuilders = $def->exposeSetupArgumentBuilders($mockContainer);
 
         self::assertCount($expectSetupCount, $argBuilders);
     }

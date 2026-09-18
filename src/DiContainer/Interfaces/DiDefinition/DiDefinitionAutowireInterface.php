@@ -51,11 +51,9 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface, 
     public function isLazy(): bool;
 
     /**
-     * @return $this
-     *
      * @throws DiDefinitionExceptionInterface
      */
-    public function setContext(mixed $context): static;
+    public function setContext(mixed $context): void;
 
     public function getContext(): mixed;
 }

@@ -315,7 +315,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         return $this->isLazy;
     }
 
-    public function setContext(mixed $context): static
+    public function setContext(mixed $context): void
     {
         if ($this->isFrozen) {
             throw new DiDefinitionException(
@@ -324,8 +324,6 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         }
 
         $this->context = $context;
-
-        return $this;
     }
 
     public function getContext(): mixed
