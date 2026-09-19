@@ -166,10 +166,14 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     {
         $this->checkIsInstantiable();
 
+        $setups = !$container->getConfig()->isUseAttribute()
+            ? $this->setup
+            : $this->getSetupFromAttribute($this->getDefinition()) + $this->setup;
+
         /** @var list<SetupArgumentBuilderInterface> $setupArgBuilders */
         $setupArgBuilders = [];
 
-        foreach ($this->getSetups($this->getDefinition(), $container) as $method => $callsSetupTypeWithArguments) {
+        foreach ($setups as $method => $callsSetupTypeWithArguments) {
             try {
                 $reflectionMethod = $this->getDefinition()->getMethod($method);
             } catch (ReflectionException $e) {
@@ -409,16 +413,13 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      *
      * @throws AutowireExceptionInterface
      */
-    private function getSetups(ReflectionClass $class, DiContainerInterface $container): array
+    private function getSetupFromAttribute(ReflectionClass $reflectionClass): array
     {
-        if (!$container->getConfig()->isUseAttribute()) {
-            return $this->setup;
-        }
-
         if (!isset($this->setupByAttributes)) {
+            $setupAttrs = $this->getSetupAttributes($reflectionClass);
             $this->setupByAttributes = [];
 
-            foreach ($this->getSetupAttributes($class) as $setupAttr) {
+            foreach ($setupAttrs as $setupAttr) {
                 $setupType = $setupAttr instanceof Setup
                     ? SetupConfigureMethod::Mutable
                     : SetupConfigureMethod::Immutable;
@@ -427,7 +428,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             }
         }
 
-        return $this->setupByAttributes + $this->setup;
+        return $this->setupByAttributes;
     }
 
     /**
@@ -435,14 +436,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      *
      * @throws AutowireAttributeException
      */
-    private function getSetupAttributes(ReflectionClass $class): Generator
+    private function getSetupAttributes(ReflectionClass $reflectionClass): Generator
     {
-        $autowireAttribute = $this->context instanceof Autowire
-            ? $this->context
-            : $this->getAutowireAttributeConfiguringDefinition($class);
+        $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($reflectionClass);
 
         if (false === $autowireAttribute || null === $autowireAttribute->setups) {
-            yield from AttributeReader::getSetupAttribute($class);
+            yield from AttributeReader::getSetupAttribute($reflectionClass);
 
             return;
         }
@@ -469,6 +468,10 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      */
     private function getAutowireAttributeConfiguringDefinition(ReflectionClass $class): Autowire|false
     {
+        if ($this->context instanceof Autowire) {
+            return $this->context;
+        }
+
         // We need to ensure that all attributes that have `Autowire::$id` are unique.
         /** @var list<Autowire> $attrs */
         $attrs = [...AttributeReader::getAutowireAttribute($class)];
