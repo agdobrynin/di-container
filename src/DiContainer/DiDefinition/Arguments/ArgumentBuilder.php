@@ -408,7 +408,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     private function configureDiFactory(DiFactory $factory): DiDefinitionFactory
     {
         $definitionFactory = new DiDefinitionFactory($factory->definition);
-        $definitionFactory->bindArguments(...$factory->arguments);
+        $definitionFactory->setContext($factory);
         $definitionFactory->freeze();
 
         return $definitionFactory;
