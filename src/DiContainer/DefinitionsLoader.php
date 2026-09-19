@@ -526,8 +526,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+            $diFactory->setContext($factory);
 
-            return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
+            return [$reflectionClass->name => $diFactory];
         }
 
         if (($diRuntimeAttrs = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
