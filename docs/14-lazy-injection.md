@@ -3,7 +3,7 @@
 > Механизм внедрения ленивых зависимостей доступен только для PHP 8.4 и выше.
 
 Ленивое внедрение зависимостей позволяет отложить создание зависимостей объекта
-до момента их фактического использования, а не раньше, для реализации этого
+до момента их фактического использования, а не раньше. Для реализации этого
 функционала контейнера используется [«Virtual Proxies» описанный в PHP документации](https://www.php.net/manual/ru/language.oop5.lazy-objects.php).
 
 ## Как использовать
@@ -49,7 +49,12 @@ final class Bar {
 }
 ```
 
-**⚠️ Необходимо правильно сконфигурировать `App\Services\Foo` чтобы внедрение зависимости было организовано как «ленивый объект».**
+Объявление внедряемого PHP класса в свойство `App\Services\Foo::$foo` как «ленивого объекта» может быть выполнена непосредственно через
+конфигурирование класса `App\Services\Foo` везде где он внедряется,
+или сконфигурировать «ленивым» внедрение конкретного аргумента.
+
+## 🌐 Объявление PHP класса как «ленивого объекта» – глобально.
+PHP класс будет внедряться как «ленивый объект» везде где запрошен как зависимость.
 
 🐘 Пример конфигурирования через хелпер функцию в файле конфигурации определений:
 ```php
@@ -60,9 +65,8 @@ use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
     // Объект будет внедряться как «ленивый» – указываем параметр $isLazy = true
-    yield diAutowire(Foo::class, isLazy: true);    
+    yield diAutowire(App\Services\Foo::class, isLazy: true);    
 };
-
 ```
 #️⃣ Пример конфигурирования `App\Services\Foo` через php атрибут:
 
@@ -77,8 +81,51 @@ final class Foo {
     public function __construct(private HeavyDependency $dependency) {}
     // ...
 }
+```
+
+## 📍 Конфигурация «ленивого внедрения» конкретного аргумента.
+
+PHP класс будет внедряться как «ленивый объект» только для указанного параметра метода.
+
+🐘 Пример конфигурирования через хелпер функцию в файле конфигурации определений:
+```php
+// src/config/services_lazy.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+    yield diAutowire(App\Services\Bar::class)
+        ->bindArguments(
+            // Объект будет внедряться как «ленивый» – указываем параметр $isLazy = true
+            foo: diAutowire(App\Services\Foo::class, isLazy: true)
+        );
+};
 
 ```
+#️⃣ Пример внедрения «ленивого объекта» в свойство `App\Services\Bar::$foo` через php атрибут:
+
+```php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Autowire;
+
+final class Bar {
+    public function __construct(
+        // Внедрить App\Services\Foo как ленивый объект.
+        #[Autowire(isLazy: true)]
+        private Foo $foo,
+
+        private Baz $baz,
+    ) {}
+    
+    // ...
+
+}
+```
+
+## Получение сервиса с внедренным «ленивым объектом».
+
 После сборки контейнера:
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;

@@ -4,13 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
+use ArrayIterator;
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\SetupAttributeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooPrivateConstructor;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
@@ -18,8 +28,15 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
 /**
  * @internal
  */
+#[CoversClass(Autowire::class)]
+#[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(Helper::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(DiContainerConfig::class)]
+#[UsesClass(AttributeReader::class)]
+#[UsesClass(SetupAttributeTrait::class)]
 class ExposeArgumentBuilderTest extends TestCase
 {
     #[DataProvider('exposeArgumentBuilderExceptionProvider')]
@@ -72,5 +89,57 @@ class ExposeArgumentBuilderTest extends TestCase
         yield 'method __destruct' => [FooSetup::class, '__destruct', '/Cannot use ".+FooSetup::__destruct\(\)" as setter/'];
 
         yield 'class not exist' => ['Foo', 'bar', '/Class "Foo" does not exist/'];
+    }
+
+    public function testExposeArgumentBuilderWithContext(): void
+    {
+        $class = new class(new ArrayIterator([])) {
+            public function __construct(ArrayIterator $iterator) {}
+        };
+
+        $def = new DiDefinitionAutowire($class::class);
+        $def->setContext(new Autowire(arguments: ['foo', 'bar']));
+
+        $argBuilder = $def->exposeArgumentBuilder($this->createMock(DiContainerInterface::class));
+
+        self::assertEquals(['foo', 'bar'], $argBuilder->build());
+    }
+
+    #[DataProvider('exposeArgumentBuilderWithContextProvider')]
+    public function testExposeSetupArgumentBuilderWithContext(string $class, ?Autowire $context, int $expectSetupCount): void
+    {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $def = new DiDefinitionAutowire($class);
+        $def->setContext($context);
+
+        $argBuilders = $def->exposeSetupArgumentBuilders($mockContainer);
+
+        self::assertCount($expectSetupCount, $argBuilders);
+    }
+
+    public static function exposeArgumentBuilderWithContextProvider(): Generator
+    {
+        $class = new class(new ArrayIterator([])) {
+            public function __construct(ArrayIterator $iterator) {}
+
+            #[Setup()]
+            public function doSetup(): void {}
+        };
+
+        yield [
+            $class::class,
+            new Autowire(arguments: ['foo', 'bar'], setups: []),
+            0,
+        ];
+
+        yield [
+            $class::class,
+            null,
+            1,
+        ];
     }
 }

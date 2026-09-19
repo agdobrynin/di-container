@@ -24,6 +24,8 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
@@ -41,6 +43,7 @@ use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use Kaspi\DiContainer\Traits\FreezeTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
 use Tests\DiContainer\RemovedDefinitionIds\Fixtures\Bar;
@@ -88,6 +91,8 @@ use function random_bytes;
 #[CoversClass(AbstractSourceParameters::class)]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
 class RemovedDefinitionIdsTest extends TestCase
 {
     public function testRemovedDefinitionIds(): void

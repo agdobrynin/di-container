@@ -10,6 +10,7 @@ use Kaspi\DiContainer\Compiler\CompiledEntry;
 use Kaspi\DiContainer\Compiler\DiDefinitionTransformer;
 use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
@@ -22,6 +23,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionLinkInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -40,6 +42,7 @@ use Tests\Compiler\CompilableDefinition\ObjectEntry\Fixtures\Foo;
 #[CoversClass(\Kaspi\DiContainer\Helper::class)]
 #[CoversClass(GetEntry::class)]
 #[CoversClass(DiDefinitionTransformer::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
 class ObjectEntryTest extends TestCase
 {
     private DiDefinitionAutowireInterface $mockDefinition;
@@ -259,13 +262,13 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Baz::class, 'setContainer'))
         ;
 
-        $mockSetupArgBuilderOne->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderOne->method('build')
             ->willThrowException(new ArgumentBuilderException())
         ;
 
         $this->mockDefinition->method('exposeSetupArgumentBuilders')
             ->willReturn([
-                0 => [SetupConfigureMethod::Mutable, $mockSetupArgBuilderOne],
+                0 => new SetupArgumentBuilder($mockSetupArgBuilderOne, SetupConfigureMethod::Mutable),
             ])
         ;
 
@@ -292,7 +295,7 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Baz::class, 'setContainer'))
         ;
 
-        $mockSetupArgBuilderOne->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderOne->method('build')
             ->willReturn([
                 0 => new DiDefinitionGet('services.internal_container'),
             ])
@@ -300,7 +303,7 @@ class ObjectEntryTest extends TestCase
 
         $this->mockDefinition->method('exposeSetupArgumentBuilders')
             ->willReturn([
-                0 => [SetupConfigureMethod::Mutable, $mockSetupArgBuilderOne],
+                0 => new SetupArgumentBuilder($mockSetupArgBuilderOne, SetupConfigureMethod::Mutable),
             ])
         ;
 
@@ -335,7 +338,7 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Foo::class, 'setBaz'))
         ;
 
-        $mockSetupArgBuilderOne->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderOne->method('build')
             ->willReturn([
                 0 => new DiDefinitionGet('services.internal_container'),
             ])
@@ -346,7 +349,7 @@ class ObjectEntryTest extends TestCase
             ->willReturn(new ReflectionMethod(Foo::class, 'withContainer'))
         ;
 
-        $mockSetupArgBuilderTwo->method('buildByPriorityBindArguments')
+        $mockSetupArgBuilderTwo->method('build')
             ->willReturn([
                 0 => new DiDefinitionGet(ContainerInterface::class),
             ])
@@ -354,8 +357,8 @@ class ObjectEntryTest extends TestCase
 
         $this->mockDefinition->method('exposeSetupArgumentBuilders')
             ->willReturn([
-                0 => [SetupConfigureMethod::Mutable, $mockSetupArgBuilderOne],
-                1 => [SetupConfigureMethod::Immutable, $mockSetupArgBuilderTwo],
+                0 => new SetupArgumentBuilder($mockSetupArgBuilderOne, SetupConfigureMethod::Mutable),
+                1 => new SetupArgumentBuilder($mockSetupArgBuilderTwo, SetupConfigureMethod::Immutable),
             ])
         ;
 

@@ -9,7 +9,6 @@ use Kaspi\DiContainer\Attributes\InjectByCallable;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\Helper;
@@ -32,7 +31,6 @@ use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceTwo;
 #[CoversClass(DiContainer::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(Helper::class)]

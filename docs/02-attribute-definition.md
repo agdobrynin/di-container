@@ -30,8 +30,11 @@
 - **[Параметр переменной длины](#параметр-переменной-длины)** – особенности применения атрибутов.
 
 ## Autowire
-Применятся к классу для конфигурирования сервиса в контейнере. Атрибут позволяет отдельно конфигурировать теги и сетер-методы PHP класса
-для настройки сервиса с учётом идентификатора контейнера.
+Атрибут позволяет конфигурировать PHP класс как определение для контейнера
+и может применяться к PHP классу или к параметру метода (функции).
+
+Атрибут позволяет конфигурировать теги и сетер-методы PHP класса
+для указания как должен быть разрешен PHP класс контейнером с учётом идентификатора контейнера.
 
 ```php
 #[Autowire(
@@ -54,10 +57,12 @@
 - `$isLazy` – обозначение определения как «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](14-lazy-injection.md).
 
 > [!NOTE]
-> Пустая строка в параметре `$id` будет представлена как полное имя класса – **fully qualified class name** которая является идентификатором контейнера для этого php класса.
+> Пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть интерпретирована контейнером как полное имя класса – **fully qualified class name**:
+> - для атрибута примененного к PHP классу сформированный `$id` будет являеться идентификатором контейнера для этого php класса.
+> - для атрибута примененного к параметру метода или функции значение `$id` будет сформировано из типа параметра (_type hint_).
 
 > [!NOTE]
-> Значение переданное параметру `$tags` определит как будет сконфигурирован сервис:
+> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$tags` определит как будет сконфигурирован сервис:
 > - значение по умолчанию `null` – конфигурировать через [атрибуты `\Kaspi\DiContainer\Attributes\Tag`](#tag) примененные к текущему классу.
 > - массив из атрибутов `\Kaspi\DiContainer\Attributes\Tag` или одиночный атрибут `\Kaspi\DiContainer\Attributes\Tag` – конфигурировать теги из указанных значений.
 >   - типизация параметра `list<Tag>|Tag`
@@ -65,7 +70,7 @@
 >
 
 > [!NOTE]
-> Значение переданное параметру `$setups` определит как и какие сетер-методы будут применены при конфигурировании сервиса:
+> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$setups` определит как и какие сетер-методы будут применены при конфигурировании сервиса:
 > - значение по умолчанию `null` – конфигурировать через [атрибут `\Kaspi\DiContainer\Attributes\Setup`](#setup) или [атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable`](#setupimmutable) примененные к методам в текущем классе.
 > - массив содержащий в качестве ключа имя сетер-метода и значения из атрибутов `\Kaspi\DiContainer\Attributes\Setup`, `\Kaspi\DiContainer\Attributes\SetupImmutable` – применить сетер-методы из указанных значений.
 >   - типизация параметра `array<none-empty-string, Setup|SetupImmutable|list<Setup|SetupImmutable>>`
@@ -75,7 +80,7 @@
 > [!TIP]
 > - Для передачи неполного списка аргументов используйте в качестве ключа в массиве `$arguments` имя параметра в конструкторе php класса.
 > - Для параметров не переданных через `$arguments` в php атрибуте, контейнер попытается разрешить зависимости самостоятельно на основе конфигурации.
-> - Атрибут `#[Autowire]` имеет признак `repetable` и может быть применен несколько раз для одного и того же класса.
+> - Атрибут `#[Autowire]` имеет признак `repetable` и может быть применен несколько раз для одного и того же класса или параметра метода (функции).
 > - При применении нескольких атрибутов `#[Autowire]` к php классу параметр `$id` у каждого атрибута должен быть уникальным, иначе выбрасывается исключение при разрешении класса контейнером.
 >
 
@@ -88,7 +93,6 @@
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
-
 
 ```php
 // src/Services/FooService.php
@@ -156,6 +160,36 @@ var_dump(
 > в параметр `App\Services\FooService::$adminEmail` будет получено значение `'admin@example.com'` из параметра контейнера `'adminEail'`.
 > 
 
+### Применение атрибута `Autowire` к параметрам метода или функции.
+
+При установке атрибута к параметру метода (функции) значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса или представлено как пустая строка.
+
+Если `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустой строкой, то контейнер попытается сформировать значение на основе типа параметра (_type hint_).
+
+```php
+// src/Services/BarService.php
+namespace App\Services;
+
+use App\Services\QuxService;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
+
+class BarService
+{
+    public function __construct(
+        #[Autowire(QuxService::class)]
+        public readonly QuxInterface $qux,
+
+        #[Autowire(arguments: [
+            new DiParameter('emails.for_service_bar')
+        ])]
+        // эквивалентно объявлению #[Autowire(Baz::class, arguments: ...)]
+        public readonly Baz $baz,
+    ) {}
+}
+```
+
+
 ## AutowireExclude
 Применятся к классу или интерфейсу для указания контейнеру о необходимости конфигурировать идентификатор (_fully qualified class name_)
 как удаленный, тем самым делая его недоступным для разрешения зависимости.
@@ -172,7 +206,8 @@ var_dump(
 ```php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Autowire;use Kaspi\DiContainer\Attributes\AutowireExclude;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\AutowireExclude;
 
 #[Autowire(isSingleton: true)]
 #[AutowireExclude]
@@ -1000,6 +1035,11 @@ $classWithHeavyDependency->doHeavyDependency();
 > Инициализация произойдёт (_разрешение зависимости_) только
 > в момент обращения к этому свойству – в частности при вызове
 > метода `$classWithHeavyDependency->doHeavyDependency()`.
+
+> [!TIP]
+> Если используется PHP 8.4 и выше, то можно использовать [конфигурирование
+> «ленивых объектов»](14-lazy-injection.md) вместо атрибута `ProxyClosure`.
+
 
 ## Tag
 Применятся к классу для тегирования.

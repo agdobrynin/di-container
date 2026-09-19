@@ -10,7 +10,6 @@ use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -47,7 +46,6 @@ use function Kaspi\DiContainer\diFactory;
 #[CoversClass(DiContainer::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionFactory::class)]
 #[CoversClass(DiDefinitionGet::class)]

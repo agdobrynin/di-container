@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\Interfaces\DiDefinition;
 
-use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\SetupArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -39,7 +39,7 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface, 
     public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface;
 
     /**
-     * @return list<array{0: SetupConfigureMethod, 1: ArgumentBuilderInterface}>
+     * @return list<SetupArgumentBuilderInterface>
      *
      * @throws DiDefinitionExceptionInterface
      */
@@ -49,4 +49,11 @@ interface DiDefinitionAutowireInterface extends DiDefinitionSingletonInterface, 
      * Lazy object for PHP 8.4 and later.
      */
     public function isLazy(): bool;
+
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function setContext(mixed $context): void;
+
+    public function getContext(): mixed;
 }
