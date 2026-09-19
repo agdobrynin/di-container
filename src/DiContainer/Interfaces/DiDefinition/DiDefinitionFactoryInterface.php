@@ -28,4 +28,11 @@ interface DiDefinitionFactoryInterface extends DiDefinitionSingletonInterface
      * @throws DiDefinitionExceptionInterface
      */
     public function exposeFactoryMethodArgumentBuilder(DiContainerInterface $container): ArgumentBuilderInterface;
+
+    /**
+     * @throws DiDefinitionExceptionInterface
+     */
+    public function setContext(mixed $context): void;
+
+    public function getContext(): mixed;
 }
