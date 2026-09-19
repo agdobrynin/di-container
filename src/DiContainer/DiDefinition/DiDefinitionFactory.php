@@ -63,7 +63,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         if (is_callable([$factoryConstructor, $factoryMethod])) {
             $reflectionMethod = new ReflectionMethod($factoryConstructor, $factoryMethod);
 
-            $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container, false);
+            return $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container, false);
         }
 
         try {
