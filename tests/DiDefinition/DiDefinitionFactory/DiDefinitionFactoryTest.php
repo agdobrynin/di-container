@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionFactory;
 
 use Generator;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
@@ -18,6 +19,7 @@ use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Baz;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooFactory;
@@ -35,6 +37,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(FreezeTrait::class)]
+#[UsesClass(DiFactory::class)]
 class DiDefinitionFactoryTest extends TestCase
 {
     #[DataProvider('dataProviderGetDefinitionSuccess')]
@@ -286,5 +289,19 @@ class DiDefinitionFactoryTest extends TestCase
         $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::bindArguments() on a frozen definition.');
 
         $factory->bindArguments('bar');
+    }
+
+    public function testFreezeWithContext(): void
+    {
+        $factory = new DiDefinitionFactory([Baz::class, 'create']);
+        $factory->setContext(new DiFactory([Baz::class, 'create'], arguments: ['foo']));
+        $factory->freeze();
+
+        self::assertEquals(['foo'], $factory->getContext()->arguments);
+
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::setContext() on a frozen definition.');
+
+        $factory->setContext(null);
     }
 }
