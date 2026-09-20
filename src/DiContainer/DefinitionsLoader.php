@@ -17,6 +17,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Enum\EventNameEnum;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
@@ -526,8 +527,11 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+            $diFactory->setContext(
+                new PriorityBoundArguments($factory->arguments)
+            );
 
-            return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
+            return [$reflectionClass->name => $diFactory];
         }
 
         if (($diRuntimeAttrs = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {

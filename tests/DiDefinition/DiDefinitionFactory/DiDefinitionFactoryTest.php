@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionFactory;
 
 use Generator;
+use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Exception\ContainerException;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
@@ -18,6 +20,7 @@ use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\Baz;
 use Tests\DiDefinition\DiDefinitionFactory\Fixtures\FooFactory;
@@ -35,6 +38,8 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(DiDefinitionValue::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(FreezeTrait::class)]
+#[UsesClass(DiFactory::class)]
+#[UsesClass(PriorityBoundArguments::class)]
 class DiDefinitionFactoryTest extends TestCase
 {
     #[DataProvider('dataProviderGetDefinitionSuccess')]
@@ -286,5 +291,20 @@ class DiDefinitionFactoryTest extends TestCase
         $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::bindArguments() on a frozen definition.');
 
         $factory->bindArguments('bar');
+    }
+
+    public function testFreezeWithContext(): void
+    {
+        $factory = new DiDefinitionFactory([Baz::class, 'create']);
+        $factory->setContext(new PriorityBoundArguments(['foo']));
+        $factory->freeze();
+
+        $result = $factory->resolve($this->createMock(DiContainerInterface::class));
+        self::assertEquals('foo', $result);
+
+        $this->expectException(DiDefinitionExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::setContext() on a frozen definition.');
+
+        $factory->setContext(null);
     }
 }

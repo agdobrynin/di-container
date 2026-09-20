@@ -14,6 +14,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\DefinitionsLoaderException;
 use Kaspi\DiContainer\Finder\FinderFile;
@@ -28,6 +29,7 @@ use Kaspi\DiContainer\SourceDefinitions\SourceDefinitionItem;
 use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 use function array_keys;
@@ -59,6 +61,7 @@ use function Kaspi\DiContainer\diAutowire;
 #[CoversClass(SourceDefinitionItem::class)]
 #[CoversClass(FreezeTrait::class)]
 #[CoversClass(EventListener::class)]
+#[UsesClass(PriorityBoundArguments::class)]
 class ImportAutoconfigureTest extends TestCase
 {
     public function testAutoconfigure(): void

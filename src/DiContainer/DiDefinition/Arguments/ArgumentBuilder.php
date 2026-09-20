@@ -22,6 +22,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
@@ -361,8 +362,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
             yield match ($attr::class) {
                 Autowire::class => $this->configureAutowire($attr, $param, $paramType),
-                DiFactory::class => (new DiDefinitionFactory($attr->definition))
-                    ->bindArguments(...$attr->arguments),
+                DiFactory::class => $this->configureDiFactory($attr),
                 Inject::class => new DiDefinitionGet(
                     // @phpstan-ignore argument.type
                     '' !== $attr->id
@@ -404,6 +404,17 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         $definitionAutowire->freeze();
 
         return $definitionAutowire;
+    }
+
+    private function configureDiFactory(DiFactory $factory): DiDefinitionFactory
+    {
+        $definitionFactory = new DiDefinitionFactory($factory->definition);
+        $definitionFactory->setContext(
+            new PriorityBoundArguments($factory->arguments)
+        );
+        $definitionFactory->freeze();
+
+        return $definitionFactory;
     }
 
     private function setContainerParameterContext(int|string $argKey, mixed $definition, ReflectionParameter $param): void

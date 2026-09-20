@@ -9,6 +9,7 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerException;
@@ -467,8 +468,11 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if ($this->config->isUseAttribute()) {
             if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
                 $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+                $diFactory->setContext(
+                    new PriorityBoundArguments($factory->arguments)
+                );
 
-                return $this->diResolvedDefinition[$id] = $diFactory->bindArguments(...$factory->arguments);
+                return $this->diResolvedDefinition[$id] = $diFactory;
             }
 
             if (($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {

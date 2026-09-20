@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -26,6 +27,9 @@ use function is_string;
 use function sprintf;
 use function strpos;
 
+/**
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ */
 final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionArgumentsInterface, ResetInterface, FreezeInterface
 {
     use BindArgumentsTrait {
@@ -38,6 +42,8 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
      * @var array{0: class-string|non-empty-string, 1: non-empty-string}
      */
     private array $verifiedDefinition;
+
+    private mixed $context = null;
 
     /**
      * @param array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string $definition
@@ -63,7 +69,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         if (is_callable([$factoryConstructor, $factoryMethod])) {
             $reflectionMethod = new ReflectionMethod($factoryConstructor, $factoryMethod);
 
-            $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container, false);
+            return $this->factoryMethodArgumentBuilder = $this->configureArgumentBuilder($reflectionMethod, $container);
         }
 
         try {
@@ -96,7 +102,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
             );
         }
 
-        return $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container, false);
+        return $this->factoryMethodArgumentBuilder = $this->configureArgumentBuilder($reflectionMethod, $container);
     }
 
     public function getDefinition(): array
@@ -169,5 +175,39 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
             $this->factoryMethodArgumentBuilder,
             $this->verifiedDefinition,
         );
+    }
+
+    /**
+     * Using context as `\Kaspi\Container\DTO\Priority Bound Arguments` to pass priority arguments to a factory method.
+     *
+     * @param mixed|PriorityBoundArguments $context
+     */
+    public function setContext(mixed $context): void
+    {
+        if ($this->isFrozen) {
+            throw new DiDefinitionException(
+                sprintf('Cannot call \%s::setContext() on a frozen definition.', __CLASS__)
+            );
+        }
+
+        $this->context = $context;
+    }
+
+    public function getContext(): mixed
+    {
+        return $this->context;
+    }
+
+    private function configureArgumentBuilder(ReflectionMethod $reflectionMethod, DiContainerInterface $container): ArgumentBuilder
+    {
+        if ($this->context instanceof PriorityBoundArguments && [] !== $this->context->arguments) {
+            $forcingPriorityUsingBindingArguments = true;
+            $args = $this->context->arguments + $this->getBindArguments();
+        } else {
+            $forcingPriorityUsingBindingArguments = false;
+            $args = $this->getBindArguments();
+        }
+
+        return new ArgumentBuilder($args, $reflectionMethod, $container, $forcingPriorityUsingBindingArguments);
     }
 }
