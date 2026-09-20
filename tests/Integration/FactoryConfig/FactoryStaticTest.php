@@ -109,7 +109,7 @@ class FactoryStaticTest extends TestCase
 
     public function testFactoryArgs(): void
     {
-        $config = static function () {
+        $definitionsConfig = static function () {
             yield diAutowire(Bar::class)
                 ->bindArguments('Lorem ipsum args')
             ;
@@ -123,7 +123,10 @@ class FactoryStaticTest extends TestCase
         };
 
         $container = (new DiContainerBuilder())
-            ->addDefinitions($config())
+            ->addDefinitions($definitionsConfig())
+            ->addParameters([
+                'params.str' => 'value from params',
+            ])
             ->build()
         ;
 

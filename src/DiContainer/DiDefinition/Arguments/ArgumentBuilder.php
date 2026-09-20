@@ -22,6 +22,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
@@ -408,7 +409,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     private function configureDiFactory(DiFactory $factory): DiDefinitionFactory
     {
         $definitionFactory = new DiDefinitionFactory($factory->definition);
-        $definitionFactory->setContext($factory);
+        $definitionFactory->setContext(
+            new PriorityBoundArguments($factory->arguments)
+        );
         $definitionFactory->freeze();
 
         return $definitionFactory;

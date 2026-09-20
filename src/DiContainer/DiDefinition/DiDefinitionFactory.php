@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition;
 
-use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -177,6 +177,11 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         );
     }
 
+    /**
+     * Using context as `\Kaspi\Container\DTO\Priority Bound Arguments` to pass priority arguments to a factory method.
+     *
+     * @param mixed|PriorityBoundArguments $context
+     */
     public function setContext(mixed $context): void
     {
         if ($this->isFrozen) {
@@ -195,7 +200,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
 
     private function configureArgumentBuilder(ReflectionMethod $reflectionMethod, DiContainerInterface $container): ArgumentBuilder
     {
-        if ($this->context instanceof DiFactory) {
+        if ($this->context instanceof PriorityBoundArguments && [] !== $this->context->arguments) {
             $forcingPriorityUsingBindingArguments = true;
             $args = $this->context->arguments + $this->getBindArguments();
         } else {
