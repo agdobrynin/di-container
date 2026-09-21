@@ -18,6 +18,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
 use Kaspi\DiContainer\DTO\PriorityBoundArguments;
+use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
 use Kaspi\DiContainer\Enum\EventNameEnum;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
@@ -510,8 +511,14 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton, $autowireAttr->isLazy))
-                    ->bindArguments(...$autowireAttr->arguments)
+                $autowireServices[$containerIdentifier] = (
+                    new DiDefinitionAutowire(
+                        $reflectionClass->name,
+                        $autowireAttr->isSingleton,
+                        $autowireAttr->isLazy,
+                        new PriorityBoundConfiguration($autowireAttr->arguments, $autowireAttr->setups, $autowireAttr->tags)
+                    )
+                )
                     ->setResetter($autowireAttr->getResetter())
                 ;
             }

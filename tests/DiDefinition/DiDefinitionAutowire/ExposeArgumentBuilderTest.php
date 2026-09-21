@@ -12,6 +12,7 @@ use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
 use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
 use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Helper;
@@ -37,6 +38,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
 #[UsesClass(DiContainerConfig::class)]
 #[UsesClass(AttributeReader::class)]
 #[UsesClass(SetupAttributeTrait::class)]
+#[UsesClass(PriorityBoundConfiguration::class)]
 class ExposeArgumentBuilderTest extends TestCase
 {
     #[DataProvider('exposeArgumentBuilderExceptionProvider')]
@@ -97,8 +99,8 @@ class ExposeArgumentBuilderTest extends TestCase
             public function __construct(ArrayIterator $iterator) {}
         };
 
-        $def = new DiDefinitionAutowire($class::class);
-        $def->setContext(new Autowire(arguments: ['foo', 'bar']));
+        $autowire = new Autowire(arguments: ['foo', 'bar']);
+        $def = new DiDefinitionAutowire($class::class, priorityBoundConfiguration: new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags));
 
         $argBuilder = $def->exposeArgumentBuilder($this->createMock(DiContainerInterface::class));
 
@@ -113,8 +115,10 @@ class ExposeArgumentBuilderTest extends TestCase
             ->willReturn(new DiContainerConfig(useAttribute: true))
         ;
 
-        $def = new DiDefinitionAutowire($class);
-        $def->setContext($context);
+        $priorityBoundConfiguration = null !== $context
+            ? new PriorityBoundConfiguration($context->arguments, $context->setups, $context->tags)
+            : null;
+        $def = new DiDefinitionAutowire($class, priorityBoundConfiguration: $priorityBoundConfiguration);
 
         $argBuilders = $def->exposeSetupArgumentBuilders($mockContainer);
 
@@ -126,7 +130,7 @@ class ExposeArgumentBuilderTest extends TestCase
         $class = new class(new ArrayIterator([])) {
             public function __construct(ArrayIterator $iterator) {}
 
-            #[Setup()]
+            #[Setup]
             public function doSetup(): void {}
         };
 

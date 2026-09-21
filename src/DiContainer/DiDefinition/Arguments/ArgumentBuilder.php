@@ -23,6 +23,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DTO\PriorityBoundArguments;
+use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
 use Kaspi\DiContainer\Exception\ArgumentBuilderException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
 use Kaspi\DiContainer\Exception\NotFoundException;
@@ -399,8 +400,13 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             ? $paramType ??= Helper::getParameterTypeHint($param, $this->container)
             : $autowire->id;
 
-        $definitionAutowire = new DiDefinitionAutowire($definition, $autowire->isSingleton, $autowire->isLazy);
-        $definitionAutowire->setContext($autowire);
+        $definitionAutowire = new DiDefinitionAutowire(
+            $definition,
+            $autowire->isSingleton,
+            $autowire->isLazy,
+            new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags),
+        );
+
         $definitionAutowire->freeze();
 
         return $definitionAutowire;
