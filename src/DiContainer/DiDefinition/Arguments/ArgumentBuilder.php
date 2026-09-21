@@ -400,13 +400,8 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             ? $paramType ??= Helper::getParameterTypeHint($param, $this->container)
             : $autowire->id;
 
-        $definitionAutowire = new DiDefinitionAutowire(
-            $definition,
-            $autowire->isSingleton,
-            $autowire->isLazy,
-            new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags),
-        );
-
+        $priorityBoundConfiguration = new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags);
+        $definitionAutowire = new DiDefinitionAutowire($definition, $autowire->isSingleton, $autowire->isLazy, $priorityBoundConfiguration);
         $definitionAutowire->freeze();
 
         return $definitionAutowire;
