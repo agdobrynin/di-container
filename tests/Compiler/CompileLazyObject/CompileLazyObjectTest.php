@@ -26,6 +26,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
 use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
 use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\EventListener;
@@ -102,6 +103,7 @@ use function random_bytes;
 #[CoversClass(DefinitionsConfigurator::class)]
 #[UsesClass(SetupArgumentBuilder::class)]
 #[UsesClass(SetupTypeWithArguments::class)]
+#[UsesClass(PriorityBoundConfiguration::class)]
 class CompileLazyObjectTest extends TestCase
 {
     public function testCompileLazyObject(): void
