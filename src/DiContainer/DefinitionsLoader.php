@@ -511,14 +511,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $autowireServices[$containerIdentifier] = (
-                    new DiDefinitionAutowire(
-                        $reflectionClass->name,
-                        $autowireAttr->isSingleton,
-                        $autowireAttr->isLazy,
-                        new PriorityBoundConfiguration($autowireAttr->arguments, $autowireAttr->setups, $autowireAttr->tags)
-                    )
-                )
+                $priorityBoundConfiguration = new PriorityBoundConfiguration($autowireAttr->arguments, $autowireAttr->setups, $autowireAttr->tags);
+
+                $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton, $autowireAttr->isLazy, $priorityBoundConfiguration))
                     ->setResetter($autowireAttr->getResetter())
                 ;
             }
