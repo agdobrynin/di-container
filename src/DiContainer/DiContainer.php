@@ -9,8 +9,8 @@ use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\DTO\PriorityBoundArguments;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
 use Kaspi\DiContainer\Exception\AutowireException;
 use Kaspi\DiContainer\Exception\CallCircularDependencyException;
 use Kaspi\DiContainer\Exception\ContainerException;
@@ -479,11 +479,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if (($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
                 foreach ($autowires as $autowire) {
                     if ('' === $autowire->id || $autowire->id === $reflectionClass->name) {
-                        $priorityBoundConfiguration = new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags);
+                        $priorityBoundConfiguration = new AutowirePriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags, $autowire->getResetter());
 
-                        return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton, $autowire->isLazy, $priorityBoundConfiguration))
-                            ->setResetter($autowire->getResetter())
-                        ;
+                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton, $autowire->isLazy, $priorityBoundConfiguration);
                     }
                 }
             }

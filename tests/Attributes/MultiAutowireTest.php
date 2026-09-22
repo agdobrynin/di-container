@@ -14,7 +14,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
@@ -55,7 +55,7 @@ use Tests\Attributes\Fixtures\MultiAutowire;
 #[CoversClass(FreezeTrait::class)]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
-#[UsesClass(PriorityBoundConfiguration::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class MultiAutowireTest extends TestCase
 {
     public function testMultiAutowireContainer(): void

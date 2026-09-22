@@ -12,7 +12,7 @@ use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use Kaspi\DiContainer\Finder\FinderFile;
@@ -63,7 +63,7 @@ use function Kaspi\DiContainer\diValue;
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
-#[UsesClass(PriorityBoundConfiguration::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class DefinitionsLoaderWithConfiguratorTest extends TestCase
 {
     public function testCircularLoadFromFile(): void

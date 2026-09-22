@@ -10,7 +10,7 @@ use Kaspi\DiContainer\Attributes\Service;
 use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
@@ -34,7 +34,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Helper::class)]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
-#[UsesClass(PriorityBoundConfiguration::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class DefinitionsLoaderResetTestTest extends TestCase
 {
     public function testReset(): void

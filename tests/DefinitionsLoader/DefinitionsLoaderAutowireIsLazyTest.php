@@ -9,7 +9,7 @@ use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
@@ -34,7 +34,7 @@ use Tests\DefinitionsLoader\Fixtures\AttributeIsLazyConfig\Foo;
 #[CoversClass(FinderFullyQualifiedName::class)]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
-#[UsesClass(PriorityBoundConfiguration::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class DefinitionsLoaderAutowireIsLazyTest extends TestCase
 {
     #[RequiresPhp('< 8.4')]

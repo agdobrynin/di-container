@@ -12,7 +12,7 @@ use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
 use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
@@ -105,7 +105,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         private readonly ReflectionClass|string $definition,
         private readonly ?bool $isSingleton = null,
         private readonly bool $isLazy = false,
-        private readonly ?PriorityBoundConfiguration $priorityBoundConfiguration = null,
+        private readonly ?AutowirePriorityBoundConfiguration $priorityBoundConfiguration = null,
     ) {
         if ($this->definition instanceof ReflectionClass) {
             $this->reflectionClass = $this->definition;
@@ -317,14 +317,18 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function getResetter(): callable|false|string
     {
         try {
-            if (false === $this->resetter && $this->isImplementInterface(ResetInterface::class)) {
+            $priorityResetter = null !== $this->priorityBoundConfiguration
+                ? $this->priorityBoundConfiguration->getResetter()
+                : $this->resetter;
+
+            if (false === $priorityResetter && $this->isImplementInterface(ResetInterface::class)) {
                 return 'reset';
             }
         } catch (DiDefinitionExceptionInterface) {
             return false;
         }
 
-        return $this->resetter;
+        return $priorityResetter;
     }
 
     public function isLazy(): bool

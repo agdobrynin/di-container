@@ -27,8 +27,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\DTO\PriorityBoundArguments;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
@@ -91,7 +91,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
 #[UsesClass(FreezeTrait::class)]
 #[UsesClass(PriorityBoundArguments::class)]
-#[UsesClass(PriorityBoundConfiguration::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;

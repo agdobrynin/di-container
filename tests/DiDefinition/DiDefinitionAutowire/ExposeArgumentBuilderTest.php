@@ -12,7 +12,7 @@ use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
 use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Helper;
@@ -38,7 +38,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
 #[UsesClass(DiContainerConfig::class)]
 #[UsesClass(AttributeReader::class)]
 #[UsesClass(SetupAttributeTrait::class)]
-#[UsesClass(PriorityBoundConfiguration::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class ExposeArgumentBuilderTest extends TestCase
 {
     #[DataProvider('exposeArgumentBuilderExceptionProvider')]
@@ -100,7 +100,7 @@ class ExposeArgumentBuilderTest extends TestCase
         };
 
         $autowire = new Autowire(arguments: ['foo', 'bar']);
-        $def = new DiDefinitionAutowire($class::class, priorityBoundConfiguration: new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags));
+        $def = new DiDefinitionAutowire($class::class, priorityBoundConfiguration: new AutowirePriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags, $autowire->getResetter()));
 
         $argBuilder = $def->exposeArgumentBuilder($this->createMock(DiContainerInterface::class));
 
@@ -116,7 +116,7 @@ class ExposeArgumentBuilderTest extends TestCase
         ;
 
         $priorityBoundConfiguration = null !== $context
-            ? new PriorityBoundConfiguration($context->arguments, $context->setups, $context->tags)
+            ? new AutowirePriorityBoundConfiguration($context->arguments, $context->setups, $context->tags, $context->getResetter())
             : null;
         $def = new DiDefinitionAutowire($class, priorityBoundConfiguration: $priorityBoundConfiguration);
 

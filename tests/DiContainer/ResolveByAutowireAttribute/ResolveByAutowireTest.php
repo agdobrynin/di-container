@@ -11,7 +11,7 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
-use Kaspi\DiContainer\DTO\PriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
@@ -44,7 +44,7 @@ use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Two;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionGet::class)]
-#[UsesClass(PriorityBoundConfiguration::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class ResolveByAutowireTest extends TestCase
 {
     public function testAutowireAttributeWithSingletonTrueButContainerSetDefaultSingletonFalse(): void
