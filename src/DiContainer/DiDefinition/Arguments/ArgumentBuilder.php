@@ -409,10 +409,8 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
     private function configureDiFactory(DiFactory $factory): DiDefinitionFactory
     {
-        $definitionFactory = new DiDefinitionFactory($factory->definition);
-        $definitionFactory->setContext(
-            new PriorityBoundArguments($factory->arguments)
-        );
+        $priorityBoundArguments = new PriorityBoundArguments($factory->arguments);
+        $definitionFactory = new DiDefinitionFactory($factory->definition, priorityBoundArguments: $priorityBoundArguments);
         $definitionFactory->freeze();
 
         return $definitionFactory;

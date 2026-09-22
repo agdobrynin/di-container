@@ -293,18 +293,14 @@ class DiDefinitionFactoryTest extends TestCase
         $factory->bindArguments('bar');
     }
 
-    public function testFreezeWithContext(): void
+    public function testPriorityArguments(): void
     {
-        $factory = new DiDefinitionFactory([Baz::class, 'create']);
-        $factory->setContext(new PriorityBoundArguments(['foo']));
-        $factory->freeze();
+        $priorityBoundArguments = new PriorityBoundArguments(['bat']);
+        $factory = new DiDefinitionFactory([Baz::class, 'create'], priorityBoundArguments: $priorityBoundArguments);
+        $factory->bindArguments('foo');
 
-        $result = $factory->resolve($this->createMock(DiContainerInterface::class));
-        self::assertEquals('foo', $result);
+        $builder = $factory->exposeFactoryMethodArgumentBuilder($this->createMock(DiContainerInterface::class));
 
-        $this->expectException(DiDefinitionExceptionInterface::class);
-        $this->expectExceptionMessage('Cannot call \Kaspi\DiContainer\DiDefinition\DiDefinitionFactory::setContext() on a frozen definition.');
-
-        $factory->setContext(null);
+        self::assertEquals(['bat'], $builder->build());
     }
 }
