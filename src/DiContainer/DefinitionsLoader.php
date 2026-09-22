@@ -526,10 +526,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
-            $diFactory->setContext(
-                new PriorityBoundArguments($factory->arguments)
-            );
+            $priorityBoundArguments = new PriorityBoundArguments($factory->arguments);
+            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton, $priorityBoundArguments);
 
             return [$reflectionClass->name => $diFactory];
         }

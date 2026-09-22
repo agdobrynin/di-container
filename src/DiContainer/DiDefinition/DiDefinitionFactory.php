@@ -43,12 +43,14 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
      */
     private array $verifiedDefinition;
 
-    private mixed $context = null;
-
     /**
      * @param array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string $definition
      */
-    public function __construct(private readonly array|string $definition, private readonly ?bool $isSingleton = null) {}
+    public function __construct(
+        private readonly array|string $definition,
+        private readonly ?bool $isSingleton = null,
+        private readonly ?PriorityBoundArguments $priorityBoundArguments = null,
+    ) {}
 
     public function bindArguments(mixed ...$argument): static
     {
@@ -177,32 +179,11 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         );
     }
 
-    /**
-     * Using context as `\Kaspi\Container\DTO\Priority Bound Arguments` to pass priority arguments to a factory method.
-     *
-     * @param mixed|PriorityBoundArguments $context
-     */
-    public function setContext(mixed $context): void
-    {
-        if ($this->isFrozen) {
-            throw new DiDefinitionException(
-                sprintf('Cannot call \%s::setContext() on a frozen definition.', __CLASS__)
-            );
-        }
-
-        $this->context = $context;
-    }
-
-    public function getContext(): mixed
-    {
-        return $this->context;
-    }
-
     private function configureArgumentBuilder(ReflectionMethod $reflectionMethod, DiContainerInterface $container): ArgumentBuilder
     {
-        if ($this->context instanceof PriorityBoundArguments && [] !== $this->context->arguments) {
+        if (null !== $this->priorityBoundArguments && [] !== $this->priorityBoundArguments->arguments) {
             $forcingPriorityUsingBindingArguments = true;
-            $args = $this->context->arguments + $this->getBindArguments();
+            $args = $this->priorityBoundArguments->arguments + $this->getBindArguments();
         } else {
             $forcingPriorityUsingBindingArguments = false;
             $args = $this->getBindArguments();
