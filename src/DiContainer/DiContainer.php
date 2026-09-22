@@ -479,14 +479,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if (($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
                 foreach ($autowires as $autowire) {
                     if ('' === $autowire->id || $autowire->id === $reflectionClass->name) {
-                        return $this->diResolvedDefinition[$id] = (
-                            new DiDefinitionAutowire(
-                                $reflectionClass,
-                                $autowire->isSingleton,
-                                $autowire->isLazy,
-                                new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags)
-                            )
-                        )
+                        $priorityBoundConfiguration = new PriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags);
+
+                        return $this->diResolvedDefinition[$id] = (new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton, $autowire->isLazy, $priorityBoundConfiguration))
                             ->setResetter($autowire->getResetter())
                         ;
                     }
