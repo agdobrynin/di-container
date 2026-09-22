@@ -364,12 +364,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             yield match ($attr::class) {
                 Autowire::class => $this->configureAutowire($attr, $param, $paramType),
                 DiFactory::class => $this->configureDiFactory($attr),
-                Inject::class => new DiDefinitionGet(
-                    // @phpstan-ignore argument.type
-                    '' !== $attr->id
-                        ? $attr->id
-                        : $paramType ??= Helper::getParameterTypeHint($param, $this->container)
-                ),
+                Inject::class => $this->configureInject($attr, $param, $paramType),
                 InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
                 ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
                 TaggedAs::class => new DiDefinitionTaggedAs(
@@ -405,6 +400,16 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         $definitionAutowire->freeze();
 
         return $definitionAutowire;
+    }
+
+    private function configureInject(Inject $inject, ReflectionParameter $param, ?string &$paramType): DiDefinitionGet
+    {
+        /** @var class-string|non-empty-string $containerIdentifier */
+        $containerIdentifier = '' !== $inject->id
+            ? $inject->id
+            : $paramType ??= Helper::getParameterTypeHint($param, $this->container);
+
+        return new DiDefinitionGet($containerIdentifier);
     }
 
     private function configureDiFactory(DiFactory $factory): DiDefinitionFactory
