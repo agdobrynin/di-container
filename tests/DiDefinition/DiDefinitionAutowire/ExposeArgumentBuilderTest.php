@@ -9,6 +9,7 @@ use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
@@ -17,14 +18,18 @@ use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
 use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\SetupArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\SetupAttributeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooPrivateConstructor;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
+
+use function array_map;
 
 /**
  * @internal
@@ -107,9 +112,12 @@ class ExposeArgumentBuilderTest extends TestCase
         self::assertEquals(['foo', 'bar'], $argBuilder->build());
     }
 
-    #[DataProvider('exposeArgumentBuilderWithContextProvider')]
-    public function testExposeSetupArgumentBuilderWithContext(string $class, ?Autowire $context, int $expectSetupCount): void
-    {
+    #[DataProvider('exposeSetupArgumentBuilderWithContextProvider')]
+    public function testExposeSetupArgumentBuilderWithContext(
+        string $class,
+        ?Autowire $context,
+        array $expectSetupMethodNames,
+    ): void {
         $mockContainer = $this->createMock(DiContainerInterface::class);
         $mockContainer->method('getConfig')
             ->willReturn(new DiContainerConfig(useAttribute: true))
@@ -122,28 +130,59 @@ class ExposeArgumentBuilderTest extends TestCase
 
         $argBuilders = $def->exposeSetupArgumentBuilders($mockContainer);
 
-        self::assertCount($expectSetupCount, $argBuilders);
+        $setupMethodNames = array_map(fn (SetupArgumentBuilderInterface $sArg) => $sArg->argumentBuilder()->getFunctionOrMethod()->getName(), $argBuilders);
+
+        self::assertEquals($expectSetupMethodNames, $setupMethodNames);
     }
 
-    public static function exposeArgumentBuilderWithContextProvider(): Generator
+    public static function exposeSetupArgumentBuilderWithContextProvider(): Generator
     {
         $class = new class(new ArrayIterator([])) {
             public function __construct(ArrayIterator $iterator) {}
 
             #[Setup]
             public function doSetup(): void {}
+
+            public function doSetupPriority(): void {}
+
+            public function doSetupPriorityImmutable(): self {}
         };
 
         yield [
             $class::class,
             new Autowire(arguments: ['foo', 'bar'], setups: []),
-            0,
+            [],
+        ];
+
+        yield [
+            $class::class,
+            new Autowire(setups: [
+                'doSetupPriority' => new Setup(),
+                'doSetupPriorityImmutable' => new SetupImmutable(),
+            ]),
+            [
+                'doSetupPriority',
+                'doSetupPriorityImmutable',
+            ],
+        ];
+
+        yield [
+            $class::class,
+            new Autowire(setups: [
+                'doSetupPriority' => new stdClass(),
+                'doSetupPriorityImmutable' => new stdClass(),
+            ]),
+            [
+                'doSetup',
+            ],
         ];
 
         yield [
             $class::class,
             null,
-            1,
+            [
+                'doSetup',
+            ],
         ];
     }
 }
