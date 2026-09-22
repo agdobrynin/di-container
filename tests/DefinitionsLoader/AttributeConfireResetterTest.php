@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DefinitionsConfigurator;
 use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderFile;
 use Kaspi\DiContainer\Finder\FinderFullyQualifiedName;
@@ -20,6 +21,7 @@ use Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\Bar;
 use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\Baz;
@@ -41,6 +43,7 @@ use Tests\DefinitionsLoader\Fixtures\AttributeResetterConfig\FooResetter;
 #[CoversClass(BindArgumentsTrait::class)]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class AttributeConfireResetterTest extends TestCase
 {
     public function testConfigureResetterViaAttribute(): void
