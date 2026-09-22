@@ -172,14 +172,14 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
     {
         $this->checkIsInstantiable();
-        $priorityBoundSetups = $this->getSetupFromPriorityBound();
+        $priorityBoundSetups = $this->getSetupsFromPriorityBound();
 
         if (false !== $priorityBoundSetups) {
             $setups = $priorityBoundSetups;
         } elseif (!$container->getConfig()->isUseAttribute()) {
             $setups = $this->setup;
         } else {
-            $setups = $this->getSetupAttributesFromClass($this->getDefinition()) + $this->setup;
+            $setups = $this->getSetupsFromClass($this->getDefinition()) + $this->setup;
         }
 
         /** @var list<SetupArgumentBuilderInterface> $setupArgBuilders */
@@ -428,7 +428,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      *
      * @throws AutowireExceptionInterface
      */
-    private function getSetupAttributesFromClass(ReflectionClass $reflectionClass): array
+    private function getSetupsFromClass(ReflectionClass $reflectionClass): array
     {
         if (!isset($this->setupByAttributes)) {
             $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($reflectionClass);
@@ -456,7 +456,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
      *
      * @throws AutowireExceptionInterface
      */
-    private function getSetupFromPriorityBound(): array|false
+    private function getSetupsFromPriorityBound(): array|false
     {
         if (!isset($this->priorityBoundSetups)) {
             if (null === $this->priorityBoundConfiguration || null === $this->priorityBoundConfiguration->setups) {
