@@ -36,13 +36,11 @@ final class SourceDefinitionItem
         };
 
         if ($this->diDefinition instanceof FreezeInterface && $this->diDefinition->isFrozen()) {
-            if ($this->diDefinition instanceof DiDefinitionContainerIdentifierInterface) {
-                $this->containerIdentifier = null !== $this->diDefinition->getContainerIdentifier()
-                    ? $this->diDefinition->getContainerIdentifier()
-                    : Helper::getContainerIdentifier($sourceContainerIdentifier, $definitionValue);
-            } else {
-                $this->containerIdentifier = Helper::getContainerIdentifier($sourceContainerIdentifier, $definitionValue);
-            }
+            $containerIdentifier = $this->diDefinition instanceof DiDefinitionContainerIdentifierInterface
+                ? $this->diDefinition->getContainerIdentifier()
+                : $sourceContainerIdentifier;
+
+            $this->containerIdentifier = Helper::getContainerIdentifier($containerIdentifier, $this->diDefinition);
 
             return;
         }
