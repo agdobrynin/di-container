@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\Reflection\ReflectionMethodByDefinition;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceFour;
@@ -38,6 +39,7 @@ use Tests\DiDefinition\DiDefinitionCallable\Fixtures\ServiceTwo;
 #[CoversClass(AbstractSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
+#[CoversClass(FreezeTrait::class)]
 class DiDefinitionTest extends TestCase
 {
     public function testGetDefinitionWhenDefinitionIsCallable(): void

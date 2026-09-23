@@ -29,13 +29,25 @@ final class SourceDefinitionItem
         public readonly bool $isMutable,
         public bool $isReplaceRemovedId = false,
     ) {
-        $this->containerIdentifier = Helper::getContainerIdentifier($sourceContainerIdentifier, $definitionValue);
-
         $this->diDefinition = match (true) {
             $definitionValue instanceof DiDefinitionInterface => $definitionValue,
             is_callable($definitionValue) => new DiDefinitionCallable($definitionValue),
             default => new DiDefinitionValue($definitionValue)
         };
+
+        if ($this->diDefinition instanceof FreezeInterface && $this->diDefinition->isFrozen()) {
+            if ($this->diDefinition instanceof DiDefinitionContainerIdentifierInterface) {
+                $this->containerIdentifier = null !== $this->diDefinition->getContainerIdentifier()
+                    ? $this->diDefinition->getContainerIdentifier()
+                    : Helper::getContainerIdentifier($sourceContainerIdentifier, $definitionValue);
+            } else {
+                $this->containerIdentifier = Helper::getContainerIdentifier($sourceContainerIdentifier, $definitionValue);
+            }
+
+            return;
+        }
+
+        $this->containerIdentifier = Helper::getContainerIdentifier($sourceContainerIdentifier, $definitionValue);
 
         if ($this->diDefinition instanceof DiDefinitionContainerIdentifierInterface) {
             $this->diDefinition->setContainerIdentifier($this->containerIdentifier);
