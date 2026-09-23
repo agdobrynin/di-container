@@ -504,6 +504,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
 
         $definitionAutowire = new DiDefinitionAutowire($reflectionClass, $this->config->isSingletonServiceDefault());
+        $definitionAutowire->setContainerIdentifier($reflectionClass->name);
         $definitionAutowire->freeze();
 
         return $this->diResolvedDefinition[$id] = $definitionAutowire;
