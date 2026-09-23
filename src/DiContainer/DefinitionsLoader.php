@@ -512,7 +512,6 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 }
 
                 $priorityBoundConfiguration = new AutowirePriorityBoundConfiguration($autowireAttr->arguments, $autowireAttr->setups, $autowireAttr->tags, $autowireAttr->getResetter());
-
                 $autowireServices[$containerIdentifier] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton, $autowireAttr->isLazy, $priorityBoundConfiguration);
             }
 
@@ -527,9 +526,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
             }
 
             $priorityBoundArguments = new PriorityBoundArguments($factory->arguments);
-            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton, $priorityBoundArguments);
 
-            return [$reflectionClass->name => $diFactory];
+            return [$reflectionClass->name => new DiDefinitionFactory($factory->definition, $factory->isSingleton, $priorityBoundArguments)];
         }
 
         if (($diRuntimeAttrs = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
