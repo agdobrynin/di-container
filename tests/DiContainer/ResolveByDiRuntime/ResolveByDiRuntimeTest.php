@@ -15,6 +15,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionRuntimeInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -33,6 +34,7 @@ use Tests\DiContainer\ResolveByDiRuntime\Fixtures\Foo;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiContainer::class)]
+#[CoversClass(FreezeTrait::class)]
 class ResolveByDiRuntimeTest extends TestCase
 {
     private DiContainer $diContainer;

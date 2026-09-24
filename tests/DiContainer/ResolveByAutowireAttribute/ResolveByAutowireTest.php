@@ -17,6 +17,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -44,6 +45,7 @@ use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Two;
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(FreezeTrait::class)]
 #[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class ResolveByAutowireTest extends TestCase
 {

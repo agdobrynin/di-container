@@ -109,7 +109,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     protected readonly array $containerIds;
 
     /**
-     * @var array<class-string, true>
+     * @var non-empty-array<class-string, true>
      */
     protected readonly array $objectResettersIds;
 
@@ -256,9 +256,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if ($needAutoconfigureObjectResetters) {
-                $diDefinitionAutowireObjectResetters = $this->autoconfigureObjectResettersDefinition();
+                $diDefinitionAutowireObjectResetters = $this->autoconfigureObjectResettersDefinition(ObjectResetters::class);
 
-                yield $diDefinitionAutowireObjectResetters->getIdentifier() => $diDefinitionAutowireObjectResetters;
+                yield ObjectResetters::class => $diDefinitionAutowireObjectResetters;
             }
         }
     }
@@ -429,7 +429,7 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
                 }
             }
 
-            $resetter = $this->autoconfigureObjectResettersDefinition();
+            $resetter = $this->autoconfigureObjectResettersDefinition($id);
             $this->definitions->set($id, $resetter);
 
             return $this->diResolvedDefinition[$id] = $resetter;
@@ -469,18 +469,21 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         if ($this->config->isUseAttribute()) {
             if (null !== ($factory = AttributeReader::getDiFactoryAttributeOnClass($reflectionClass))) {
                 $priorityBoundArguments = new PriorityBoundArguments($factory->arguments);
-                $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton, $priorityBoundArguments);
-                $diFactory->freeze();
+                $definitionFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton, $priorityBoundArguments);
+                $definitionFactory->freeze();
 
-                return $this->diResolvedDefinition[$id] = $diFactory;
+                return $this->diResolvedDefinition[$id] = $definitionFactory;
             }
 
             if (($autowires = AttributeReader::getAutowireAttribute($reflectionClass))->valid()) {
                 foreach ($autowires as $autowire) {
                     if ('' === $autowire->id || $autowire->id === $reflectionClass->name) {
                         $priorityBoundConfiguration = new AutowirePriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags, $autowire->getResetter());
+                        $definitionAutowire = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton, $autowire->isLazy, $priorityBoundConfiguration);
+                        $definitionAutowire->setContainerIdentifier($reflectionClass->name);
+                        $definitionAutowire->freeze();
 
-                        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $autowire->isSingleton, $autowire->isLazy, $priorityBoundConfiguration);
+                        return $this->diResolvedDefinition[$id] = $definitionAutowire;
                     }
                 }
             }
@@ -488,15 +491,21 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             if (($diRuntimes = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
                 foreach ($diRuntimes as $diRuntime) {
                     if ('' === $diRuntime->containerIdentifier || $diRuntime->containerIdentifier === $reflectionClass->name) {
-                        return $this->diResolvedDefinition[$id] = (new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message))
-                            ->setResetter($diRuntime->getResetter())
-                        ;
+                        $definitionRuntime = new DiDefinitionRuntime($reflectionClass->name, $diRuntime->message);
+                        $definitionRuntime->setResetter($diRuntime->getResetter());
+                        $definitionRuntime->freeze();
+
+                        return $this->diResolvedDefinition[$id] = $definitionRuntime;
                     }
                 }
             }
         }
 
-        return $this->diResolvedDefinition[$id] = new DiDefinitionAutowire($reflectionClass, $this->config->isSingletonServiceDefault());
+        $definitionAutowire = new DiDefinitionAutowire($reflectionClass, $this->config->isSingletonServiceDefault());
+        $definitionAutowire->setContainerIdentifier($reflectionClass->name);
+        $definitionAutowire->freeze();
+
+        return $this->diResolvedDefinition[$id] = $definitionAutowire;
     }
 
     protected function getMessageChainResolving(string $currentResolveId): string
@@ -546,7 +555,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
         }
     }
 
-    protected function autoconfigureObjectResettersDefinition(): DiDefinitionAutowire
+    /**
+     * Returns configured `DiDefinitionAutowire` for class.
+     *
+     * @param non-empty-string $id configure for container identifier
+     */
+    protected function autoconfigureObjectResettersDefinition(string $id): DiDefinitionAutowire
     {
         $resetters = [];
 
@@ -557,9 +571,12 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
         }
 
-        return (new DiDefinitionAutowire(ObjectResetters::class, true))
-            ->setup('setup', [$resetters])
-        ;
+        $definitionAutowireObjectResetter = new DiDefinitionAutowire(ObjectResetters::class, true);
+        $definitionAutowireObjectResetter->setup('setup', [$resetters]);
+        $definitionAutowireObjectResetter->setContainerIdentifier($id);
+        $definitionAutowireObjectResetter->freeze();
+
+        return $definitionAutowireObjectResetter;
     }
 
     private function getDiDefinitionWrapper(DiDefinitionAutowireInterface|DiDefinitionInterface $definition, ?bool $singleton): DiDefinitionSingletonInterface
