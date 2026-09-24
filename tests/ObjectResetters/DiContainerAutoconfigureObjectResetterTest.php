@@ -17,7 +17,6 @@ use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
 use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Exception\NotFoundException;
 use Kaspi\DiContainer\Helper;
-use Kaspi\DiContainer\Interfaces\ObjectResettersInterface;
 use Kaspi\DiContainer\ObjectResetters;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
@@ -27,7 +26,6 @@ use Kaspi\DiContainer\Traits\FreezeTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
-use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\NotFoundExceptionInterface;
@@ -81,9 +79,7 @@ class DiContainerAutoconfigureObjectResetterTest extends TestCase
         self::assertArrayHasKey(ObjectResetters::class, $definitions);
     }
 
-    #[TestWith([ObjectResettersInterface::class])]
-    #[TestWith([ObjectResetters::class])]
-    public function testAutoconfigureObjectResettersOff(string $entryId): void
+    public function testAutoconfigureObjectResettersOff(): void
     {
         $container = new DiContainer(
             [
@@ -97,15 +93,15 @@ class DiContainerAutoconfigureObjectResetterTest extends TestCase
         );
 
         self::assertTrue($container->has(Foo::class));
-        self::assertFalse($container->has($entryId));
+        self::assertFalse($container->has(ObjectResetters::class));
 
         $definitions = [...$container->getDefinitions()];
 
-        self::assertArrayNotHasKey($entryId, $definitions);
+        self::assertArrayNotHasKey(ObjectResetters::class, $definitions);
         self::assertArrayHasKey(Foo::class, $definitions);
 
         $this->expectException(NotFoundExceptionInterface::class);
-        $container->getDefinition($entryId);
+        $container->getDefinition(ObjectResetters::class);
     }
 
     public function testGetObjectResettersAutoconfiguredByDiContainerForDiAutowire(): void
@@ -122,16 +118,14 @@ class DiContainerAutoconfigureObjectResetterTest extends TestCase
 
         self::assertEquals('bar', $container->get(Foo::class)->foo);
 
-        foreach ([ObjectResetters::class, ObjectResettersInterface::class] as $objectResettersEntryId) {
-            $resetter = $container->get($objectResettersEntryId);
-            $resetter->reset();
+        $resetter = $container->get(ObjectResetters::class);
+        $resetter->reset();
 
-            self::assertEquals('null', $container->get(Foo::class)->foo);
+        self::assertEquals('null', $container->get(Foo::class)->foo);
 
-            $container->get(Foo::class)->foo = 'bar';
+        $container->get(Foo::class)->foo = 'bar';
 
-            self::assertEquals('bar', $container->get(Foo::class)->foo);
-        }
+        self::assertEquals('bar', $container->get(Foo::class)->foo);
     }
 
     public function testGetObjectResettersAutoconfiguredByDiContainerForDiRuntime(): void
