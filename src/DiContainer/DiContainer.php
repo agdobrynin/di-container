@@ -50,7 +50,6 @@ use ReflectionException;
 use ReflectionMethod;
 
 use function array_key_exists;
-use function array_key_first;
 use function array_keys;
 use function array_map;
 use function call_user_func_array;
@@ -257,10 +256,9 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
             }
 
             if ($needAutoconfigureObjectResetters) {
-                $id = array_key_first($this->objectResettersIds);
-                $diDefinitionAutowireObjectResetters = $this->autoconfigureObjectResettersDefinition($id);
+                $diDefinitionAutowireObjectResetters = $this->autoconfigureObjectResettersDefinition(ObjectResetters::class);
 
-                yield $id => $diDefinitionAutowireObjectResetters;
+                yield ObjectResetters::class => $diDefinitionAutowireObjectResetters;
             }
         }
     }
@@ -558,6 +556,8 @@ class DiContainer implements DiContainerInterface, DiContainerSetterInterface, D
     }
 
     /**
+     * Returns configured `DiDefinitionAutowire` for class.
+     *
      * @param non-empty-string $id configure for container identifier
      */
     protected function autoconfigureObjectResettersDefinition(string $id): DiDefinitionAutowire
