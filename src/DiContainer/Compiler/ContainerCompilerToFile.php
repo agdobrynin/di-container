@@ -91,7 +91,8 @@ final class ContainerCompilerToFile implements ContainerCompilerToFileInterface
 
     private function fileOperationException(string $message): RuntimeException
     {
-        $internalMessage = isset(error_get_last()['message']) ? ' '.error_get_last()['message'] : '';
+        $errors = error_get_last();
+        $internalMessage = isset($errors['message']) ? ' '.$errors['message'] : '';
 
         return new RuntimeException($message.$internalMessage);
     }

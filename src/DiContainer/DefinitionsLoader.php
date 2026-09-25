@@ -60,10 +60,10 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    /** @var ArrayIterator<non-empty-string, mixed> */
+    /** @var ArrayIterator<class-string|non-empty-string, mixed> */
     private readonly ArrayIterator $configuredDefinitions;
 
-    /** @var ArrayIterator<class-string|non-empty-string, true> */
+    /** @var ArrayIterator<class-string|non-empty-string, bool> */
     private readonly ArrayIterator $removedDefinitionIds;
 
     /** @var ArrayIterator<non-empty-string, mixed> */
@@ -96,10 +96,22 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
-        $this->configuredDefinitions = new ArrayIterator();
-        $this->removedDefinitionIds = new ArrayIterator();
-        $this->parameters = new ArrayIterator();
-        $this->configuratorContexts = new ArrayIterator();
+        /** @var ArrayIterator<class-string|non-empty-string, mixed> $configuredDefinitions */
+        $configuredDefinitions = new ArrayIterator([]);
+        $this->configuredDefinitions = $configuredDefinitions;
+
+        /** @var ArrayIterator<class-string|non-empty-string, bool> $removedDefinitionIds */
+        $removedDefinitionIds = new ArrayIterator([]);
+        $this->removedDefinitionIds = $removedDefinitionIds;
+
+        /** @var ArrayIterator<non-empty-string, mixed> $parameters */
+        $parameters = new ArrayIterator([]);
+        $this->parameters = $parameters;
+
+        /** @var ArrayIterator<non-empty-string, mixed> $configuratorContexts */
+        $configuratorContexts = new ArrayIterator([]);
+        $this->configuratorContexts = $configuratorContexts;
+
         $this->definitionsConfiguratorEvent = new EventListener();
     }
 
@@ -293,8 +305,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         while (null !== ($identifier = $this->removedDefinitionIds->key())) {
-            if (isset($this->configuredDefinitions[$identifier])) {
-                unset($this->removedDefinitionIds[$identifier]);
+            if ($this->configuredDefinitions->offsetExists($identifier)) {
+                $this->removedDefinitionIds->offsetUnset($identifier);
             }
 
             $this->removedDefinitionIds->next();
