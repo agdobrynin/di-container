@@ -14,7 +14,7 @@
 > Необходимо выбрать только один способ конфигурации сервиса или через php атрибуты или через файлы-определения.
 
 Доступные атрибуты:
-- **[Autowire](#autowire)** – конфигурирование PHP класса как сервиса или их набора в контейнере.
+- **[Autowire](#autowire)** – конфигурирование PHP класса или их набора в контейнере.
 - **[AutowireExclude](#autowireexclude)** – запретить разрешение PHP класса или интерфейса в контейнере.
 - **[Setup](#setup)** - вызов метода PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
 - **[SetupImmutable](#setupimmutable)** - вызов метода PHP класса для настройки сервиса с учёта возвращаемого значения, _immutable setter method_.
@@ -49,20 +49,20 @@
 ```
 Параметры:
 - `$id` – идентификатор контейнера для класса (_container identifier_).
-- `$isSingleton` – зарегистрировать как singleton сервис. Если `null`, то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 - `$arguments` – предать аргументы для конструктора php класса.
 - `$tags` – указание тегов к конкретному идентификатору контейнера указанному в параметре `$id`.
-- `$setups` – указание методов PHP класса для настройки сервиса к конкретному идентификатору контейнера указанному в параметре `$id`.
+- `$setups` – указание сеттер методов PHP класса для настройки PHP класса к конкретному идентификатору контейнера указанному в параметре `$id`.
 - `$resetter` – значение которое будет вызвано [для сброса состояния объекта](12-object-resetters.md).
 - `$isLazy` – обозначение определения как «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](14-lazy-injection.md).
 
 > [!NOTE]
 > Пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть интерпретирована контейнером как полное имя класса – **fully qualified class name**:
-> - для атрибута примененного к PHP классу сформированный `$id` будет являеться идентификатором контейнера для этого php класса.
-> - для атрибута примененного к параметру метода или функции значение `$id` будет сформировано из типа параметра (_type hint_).
+> - для атрибута примененного к PHP классу параметр `\Kaspi\DiContainer\Attributes\Autowire::$id` будет являться идентификатором контейнера для этого php класса.
+> - для атрибута примененного к параметру метода или функции значение параметр `\Kaspi\DiContainer\Attributes\Autowire::$id` будет сформировано из типа параметра (_type hint_).
 
 > [!NOTE]
-> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$tags` определит как будет сконфигурирован сервис:
+> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$tags` определит как будет сконфигурирован PHP класс:
 > - значение по умолчанию `null` – конфигурировать через [атрибуты `\Kaspi\DiContainer\Attributes\Tag`](#tag) примененные к текущему классу.
 > - массив из атрибутов `\Kaspi\DiContainer\Attributes\Tag` или одиночный атрибут `\Kaspi\DiContainer\Attributes\Tag` – конфигурировать теги из указанных значений.
 >   - типизация параметра `list<Tag>|Tag`
@@ -70,29 +70,27 @@
 >
 
 > [!NOTE]
-> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$setups` определит как и какие сетер-методы будут применены при конфигурировании сервиса:
+> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$setups` определит как и какие сеттер-методы будут применены при конфигурировании PHP класса:
 > - значение по умолчанию `null` – конфигурировать через [атрибут `\Kaspi\DiContainer\Attributes\Setup`](#setup) или [атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable`](#setupimmutable) примененные к методам в текущем классе.
-> - массив содержащий в качестве ключа имя сетер-метода и значения из атрибутов `\Kaspi\DiContainer\Attributes\Setup`, `\Kaspi\DiContainer\Attributes\SetupImmutable` – применить сетер-методы из указанных значений.
->   - типизация параметра `array<none-empty-string, Setup|SetupImmutable|list<Setup|SetupImmutable>>`
-> - значение пустой массив (`empty-array` aka `[]`) – не применять никаких сетер-методов.
->
+> - массив содержащий в качестве ключа имя сеттер-метода и значения из атрибутов `\Kaspi\DiContainer\Attributes\Setup`, `\Kaspi\DiContainer\Attributes\SetupImmutable` – применить сеттер-методы из указанных значений.
+>   - типизация параметра `array<none-empty-string, Setup|SetupImmutable|list<Setup|SetupImmutable>>`.
+> - значение пустой массив (`empty-array` aka `[]`) – не применять никаких сеттер-методов.
 
 > [!TIP]
-> - Для передачи неполного списка аргументов используйте в качестве ключа в массиве `$arguments` имя параметра в конструкторе php класса.
+> - Для передачи неполного списка аргументов используйте в качестве ключа в массиве `\Kaspi\DiContainer\Attributes\Autowire::$arguments` имя параметра в конструкторе php класса.
 > - Для параметров не переданных через `$arguments` в php атрибуте, контейнер попытается разрешить зависимости самостоятельно на основе конфигурации.
-> - Атрибут `#[Autowire]` имеет признак `repetable` и может быть применен несколько раз для одного и того же класса или параметра метода (функции).
-> - При применении нескольких атрибутов `#[Autowire]` к php классу параметр `$id` у каждого атрибута должен быть уникальным, иначе выбрасывается исключение при разрешении класса контейнером.
->
+> - Атрибут имеет признак `repetable` и может быть применен несколько раз для одного и того же класса или параметра метода (функции).
+> - При применении нескольких атрибутов к php классу параметр `\Kaspi\DiContainer\Attributes\Autowire:$id` у каждого атрибута должен быть уникальным, иначе выбрасывается исключение при разрешении класса контейнером.
 
-Для объектов передаваемых в качестве аргумента через параметр `$arguments` используются
+Для аргумента указанного в `\Kaspi\DiContainer\Attributes\Autowire::$arguments` используются
 классы описывающие определения контейнера:
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – `callable` тип
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – вызываемый тип (`callable`).
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера.
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – отложенная инициализация значения.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – коллекция по тегу.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера.
 
 ```php
 // src/Services/FooService.php
@@ -162,7 +160,7 @@ var_dump(
 
 ### Применение атрибута `Autowire` к параметрам метода или функции.
 
-При установке атрибута к параметру метода (функции) значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса или представлено как пустая строка.
+При применении атрибута к параметру метода (функции) значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса или представлено как пустая строка.
 
 Если `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустой строкой, то контейнер попытается сформировать значение на основе типа параметра (_type hint_).
 
@@ -183,12 +181,16 @@ class BarService
         #[Autowire(arguments: [
             new DiParameter('emails.for_service_bar')
         ])]
-        // эквивалентно объявлению #[Autowire(Baz::class, arguments: ...)]
+        // эквивалентно объявлению
+        // #[Autowire(
+        //  Baz::class,
+        //  arguments: [
+        //      new DiParameter('emails.for_service_bar')
+        //  ])]
         public readonly Baz $baz,
     ) {}
 }
 ```
-
 
 ## AutowireExclude
 Применятся к классу или интерфейсу для указания контейнеру о необходимости конфигурировать идентификатор (_fully qualified class name_)
@@ -229,7 +231,7 @@ var_dump($container->has(SomeService::class)); // false
 
 ## Setup
 
-Применяется к методам PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
+Применяется к методам PHP класса для настройки PHP класса без учёта возвращаемого значения, _mutable setter method_.
 
 ```php
 #[Setup(mixed ...$argument)]
@@ -242,18 +244,17 @@ var_dump($container->has(SomeService::class)); // false
 массивы (array) содержащие скалярные типы, специальный тип null и объекты,
 которые создают синтаксисом `new ClassName()`.
 
-Для объектов передаваемых в качестве аргумента используются
-классы описывающие определения контейнера:
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – `callable` тип
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера
+Для аргумента указанного в параметре `$arguments` используются классы описывающие определения контейнера:
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – вызываемый тип (`callable`).
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера.
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис с отложенной инициализацией.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – коллекция по тегу.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера.
 
 > [!TIP]
-> Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
+> Неуказанные аргументы в параметре `$argument` контейнер по попытается разрешить зависимости автоматически.
 
 > [!TIP]
 > Сеттер метод через PHP атрибут `#[Setup]` можно применять несколько раз, контейнер
@@ -323,10 +324,9 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 
 ## SetupImmutable
 
-Применяется к методам PHP класса для настройки сервиса с учётом, 
+Применяется к методам PHP класса для настройки PHP класса с учётом, 
 что вызванный сеттер метод возвращает новый объект (_immutable setter method_).
-Возвращаемое значение метода должно быть `self`, `static`
-или того же класса, что и сам сервис.
+Возвращаемое значение метода должно быть `self`, `static` или того же класса, что и сам сервис.
 
 ```php
 #[SetupImmutable(mixed ...$argument)]
@@ -341,16 +341,16 @@ var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 
 Для объектов передаваемых в качестве аргумента используются
 классы описывающие определения контейнера:
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – `callable` тип
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – вызываемый тип (`callable`).
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера.
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – сервис через вызов `\Closure`
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – тегированные определения
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – отложенная инициализация значения.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – коллекция по тегу.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера.
 
 > [!TIP]
-> Для неустановленных аргументов в методе через `$argument` контейнер по попытается разрешить зависимости автоматически.
+> Неуказанные аргументы в параметре `$argument` контейнер по попытается разрешить зависимости автоматически.
 
 > [!TIP]
 > Сеттер метод через PHP атрибут `#[SetupImmutable]` можно применять несколько раз, контейнер
@@ -445,9 +445,10 @@ class Foo {
 }
 ```
 для настройки класса `Foo` сначала будет вызван метод `Foo::baz()` и потом `Foo::bar()`.
+
 ## Inject
 
-Применяется к аргументам конструктора класса, метода или функции.
+Применяется к параметрам конструктора класса, метода или функции.
 
 ```php
 #[Inject(string $id = '')]
@@ -456,16 +457,16 @@ class Foo {
 - `$id` - определение зависимости (класс, интерфейс, идентификатор контейнера).
 
 > [!NOTE]
-> При пустом значении в `$id` контейнер попытается получить
-> результат исходя из типа аргумента.
+> При пустом значении в `\Kaspi\DiContainer\Attributes\Inject::$id` контейнер попытается получить
+> значение исходя из типа параметра (_type hint_).
 
 > [!WARNING]
 > При разрешении зависимости для составного типа (_union, intersection types_)
 > может быть выброшено исключение, [для исправления этой ошибки
-> необходима конкретизация типа](#разрешение-зависимости-объединенного-типа-через-inject).
+> необходима конкретизация типа](#разрешение-зависимости-объединенного-типа-через-атрибут-inject).
 
 
-### Атрибут #[Inject] для получения по идентификатору контейнера в конструкторе:
+### Атрибут `Inject` для получения по идентификатору контейнера в конструкторе:
 
 ```php
 // src/Databases/MyDb.php
@@ -532,7 +533,7 @@ $container = (new DiContainerBuilder())
 $myClass = $container->get(App\Databases\MyDb::class);
 ```
 
-### Атрибут #[Inject] для разрешения параметров переменной длины
+### Атрибут `Inject` для разрешения параметров переменной длины
 
 Атрибут имеет признак `repetable`
 
@@ -598,7 +599,7 @@ var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
-### Атрибут #[Inject] для параметра переменной длины по идентификатору контейнера
+### Атрибут `Inject` для параметра переменной длины по идентификатору контейнера
 
 > [!WARNING]
 > Параметр переменной длины является опциональным и если у него не задан
@@ -677,7 +678,7 @@ var_dump($ruleGenerator->getRules()[0] instanceof App\Rules\RuleB); // true
 var_dump($ruleGenerator->getRules()[1] instanceof App\Rules\RuleA); // true
 ```
 
-### Атрибут **#[Inject]** при внедрении класса для интерфейса.
+### Атрибут `Inject` при внедрении класса для интерфейса.
 ```php
 // src/Rules/RuleInterface.php
 namespace App\Rules;
@@ -718,17 +719,16 @@ var_dump($ruleGenerator->inputRule instanceof App\Rules\RuleA); // true
 
 ## InjectByCallable
 
-Применяется к параметрам конструктора класса, метода или функции через `callable` тип.
+Применяется к параметрам конструктора класса, метода или функции через вызываемый тип.
 
 ```php
 #[InjectByCallable(callable $callable)]
 ```
 Параметры:
-- `$callable` - выполнение `callable` типа для получения результата внедрения.
+- `$callable` - выполняемый тип для получения результата внедрения.
 
 > [!TIP]
-> Параметры указанные в `callable` вызове могут быть разрешены
-> контейнером автоматически.
+> Параметры описанные в вызываемом типе могут быть разрешены контейнером автоматически.
 
 Пример использования:
 ```php
@@ -822,7 +822,7 @@ $service = $container->get(App\Services\ServiceOne::class);
 ```
 Параметры:
 - `$id` - класс реализующий интерфейс (FQCN) или идентификатор контейнера.
-- `$isSingleton` - зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
+- `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 
 > [!NOTE]
 > **FQCN** – Fully Qualified Class Name. 
@@ -944,34 +944,33 @@ class CustomLogger implements CustomLoggerInterface {
 ```
 Параметры:
 - `$definition` – представление php класса и метода фабрики.
-- `$isSingleton` – зарегистрировать как singleton сервис. Если значение `null` то значение будет выбрано на основе [настройки контейнера](../README.md#конфигурирование-dicontainer).
+- `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
 - `$arguments` – предать аргументы для метода фабрики.
 
 > [!NOTE]
-> Параметр атрибута `$isSingleton` при применении к параметрам метода (функции) будет проигнорирован
+> Значение указанное в `\Kaspi\DiContainer\Attributes\DiFactory::$isSingleton` при применении к параметрам метода (функции) будет проигнорирован
 > и не используется при разрешении зависимостей.
->
 
 > [!NOTE]
 > Подробное [описание работы с фабриками](07-factory.md) для разрешения зависимостей в контейнере.
 
 ## ProxyClosure
 
-Реализация ленивой инициализации параметров класса (зависимости) через функцию обратного вызова.
+Реализация ленивой инициализации параметров класса (зависимости) через PHP класс `\Closure`.
 Применяется к параметрам конструктора класса, метода или функции.
 
 ```php
 #[ProxyClosure(string $containerIdentifier)]
 ```
 Параметры:
-- `$containerIdentifier` - идентификатора контейнера (php класс, интерфейс) реализующий сервис который необходимо разрешить отложено.
+- `$containerIdentifier` - идентификатора контейнера (php класс, интерфейс) возвращающий результат который необходимо получить отложено.
 
-Такое объявление сервиса пригодится для «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмких вычислений.
+Такое объявление пригодится для «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмких вычислений.
 
 > [!TIP]
 > Подробное объяснение использования [ProxyClosure](01-php-definition.md#diproxyclosure)
 
-Пример для отложенной инициализации сервиса через атрибут `#[ProxyClosure]`:
+Пример для отложенного получения результата через атрибут `#[ProxyClosure]`:
 
 ```php
 // src/Services/HeavyDependency.php
@@ -1037,7 +1036,7 @@ $classWithHeavyDependency->doHeavyDependency();
 > метода `$classWithHeavyDependency->doHeavyDependency()`.
 
 > [!TIP]
-> Если используется PHP 8.4 и выше, то можно использовать [конфигурирование
+> Если используется PHP 8.4 и выше, то предпочтительно использовать [конфигурирование
 > «ленивых объектов»](14-lazy-injection.md) вместо атрибута `ProxyClosure`.
 
 
@@ -1053,7 +1052,7 @@ $classWithHeavyDependency->doHeavyDependency();
 - `$priorityMethod` - метод класса для сортировки в коллекции тегов если неуказан `priority`.
 
 > [!IMPORTANT]
-> Метод указанный в аргументе `$priorityMethod` должен быть объявлен как `public static function`
+> Метод указанный в `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod` должен быть объявлен как `public static function`
 > и возвращать тип `int`, `string` или `null`.
 > В качестве аргументов метод принимает два необязательных параметра:
 >  - `string $tag` - имя тега;
@@ -1061,9 +1060,9 @@ $classWithHeavyDependency->doHeavyDependency();
 
 > [!TIP]
 > [Информация о сортировке по приоритету](05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
-> для аргументов `priority`, `priorityMethod`.
+> для параметров `\Kaspi\DiContainer\Attributes\Tag::$priority`, `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
 
-Можно указать несколько атрибутов для класса:
+Можно указать несколько атрибутов для PHP класса:
 ```php
 use Kaspi\DiContainer\Attributes\Tag; 
 namespace App\Any;
@@ -1133,7 +1132,7 @@ class SomeClass {}
 >  - `array $options` - метаданные тега;
 
 > [!IMPORTANT]
-> Метод `$keyDefaultMethod` должен быть объявлен как `public static function`
+> Метод указанный в `\Kaspi\DiContainer\Attributes\TaggedAs::$keyDefaultMethod` должен быть объявлен как `public static function`
 > и возвращать тип `string`.
 > В качестве аргументов метод принимает два необязательных параметра:
 >  - `string $tag` - имя тега;
@@ -1150,7 +1149,7 @@ class AnyClass {
 
     public function __construct(
         // будет получено как коллекция
-        // с ленивой инициализацией сервисов
+        // с ленивой инициализацией результатов
         #[TaggedAs(name: 'tags.services.group_two')]
         private iterable $services
     ) {}
@@ -1195,7 +1194,7 @@ class AnyService {
 }
 ```
 > [!WARNING]
-> Для аргумента с типом `array` необходимо указать `$isLazy` как `false`.
+> Для получения результат в параметр с типом `array` необходимо указать `\Kaspi\DiContainer\Attributes\TaggedAs::$isLazy = false`.
 
 > [!WARNING]
 > Параметр переменной длины является опциональным и если у него не задан
@@ -1304,13 +1303,13 @@ $container = (new DiContainerBuilder())->build();
 $foo = $container->get(\App\Services\Foo::class);
 ```
 > [!NOTE]
-> При разрешении параметров конструктора `App\Services\Foo::class` в свойстве `App\Services\Foo::$args`
+> При разрешении параметров конструктора `App\Services\Foo` в свойстве `App\Services\Foo::$args`
 > будут разрешены следующие зависимости:
 > - `App\Services\Foo::$args[0]` – получен сервис через метод контейнера `get('service.foo_bar')`;
 > - `App\Services\Foo::$args[1]` – получен результат выполнения класса-фабрики `\App\Factories\ServiceOneFactory`;
 > - `App\Services\Foo::$args[2]` – получен результат вызова `callable` типа: выполнение функции `\uniqid()`;
 
-## Разрешение зависимости объединенного типа через #[Inject].
+## Разрешение зависимости объединенного типа через атрибут `Inject`.
 
 Для объединенного типа (_union type_) контейнер попытается найти
 доступные определения, и если будет найдено несколько вариантов
@@ -1353,7 +1352,7 @@ $container->get(App\Service\Service::class);
 ```
 так как оба типа `App\Classes\One` и `App\Classes\Two` доступны для разрешения контейнером,
 то будет выброшено исключение `\Psr\Container\ContainerExceptionInterface`.
-В таком случае требуется конктретизировать тип:
+В таком случае требуется конкретизировать тип:
 ```php
 // src/Services/Service.php
 namespace App\Services;
@@ -1378,80 +1377,5 @@ $container = (new DiContainerBuilder())->build();
 $container->get(App\Services\Service::class);
 ```
 > [!NOTE]
-> При разрешении параметров конструктора `App\Services\Service::class` в свойстве `App\Services\Service::$dependency`
+> При разрешении параметров конструктора `App\Services\Service` в свойстве `App\Services\Service::$dependency`
 > содержится класс `App\Classes\Two`.
-
-## Пример #1
-Заполнение коллекции на основе callback функции:
-
-> 🚩 Похожий функционал лучше реализовать [через тегированные определения](05-tags.md).
-```php
-// src/Rules/RuleInterface.php
-namespace App\Rules;
-
-interface RuleInterface {}
-```
-```php
-// src/Rules/RuleA.php
-namespace App\Rules;
-
-class RuleA implements RuleInterface {}
-```
-```php
-// src/Rules/RuleB.php
-namespace App\Rules;
-
-class RuleB implements RuleInterface {}
-```
-```php
-// src/Services/IterableArg.php
-namespace App\Services;
-
-use App\Rules\RuleInterface;
-use Kaspi\DiContainer\Attributes\Inject;
-
-class IterableArg
-{
-    /**
-     * @param App\Rules\RuleInterface[] $rules
-     */
-    public function __construct(
-        #[Inject('services.rule-list')]
-        private iterable $rules
-    ) {}
-}
-```
-```php
-// config/services.php
-use App\Rules\{RuleA, RuleB};
-
-return static function (): \Generator {
-    yield 'services.rule-list' => static fn (RuleA $a, RuleB $b) => \func_get_args();  
-};
-```
-```php
-use App\Services\IterableArg;
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
-
-$class = $container->get(IterableArg::class);
-```
-
-> [!TIP]
-> Если требуется чтобы сервис `services.rule-list` был объявлен как `isSingleton`
-> необходимо использовать хелпер функцию `diCallable`
-> ```php
->   // config/services.php
->   use App\Rules\{RuleA, RuleB};
->   
->   return static function (): \Generator {
->       yield 'services.rule-list' => diCallable(
->           definition: static fn (RuleA $a, RuleB $b) => \func_get_args(),
->           isSingleton: true
->       );
->   };
-> ```
