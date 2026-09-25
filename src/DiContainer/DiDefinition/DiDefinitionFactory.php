@@ -121,11 +121,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
             return $this->verifiedDefinition = [$this->definition, '__invoke'];
         }
 
-        if (isset($this->definition[0], $this->definition[1])
-            // @phpstan-ignore notIdentical.alwaysTrue
-            && '' !== $this->definition[0]
-            // @phpstan-ignore notIdentical.alwaysTrue
-            && '' !== $this->definition[1]) {
+        if (isset($this->definition[0], $this->definition[1]) && '' !== $this->definition[0] && '' !== $this->definition[1]) {
             return $this->verifiedDefinition = [$this->definition[0], $this->definition[1]];
         }
 
