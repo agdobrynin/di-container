@@ -1,91 +1,26 @@
 # 🐘 DiContainer с конфигурированием в стиле php определений
 
-Получение существующего класса и разрешение параметров в конструкторе.
+Для указания контейнеру каким образом нужно разрешать зависимости в PHP классах или вызываемых типах используется
+механизм конфигурирования определений. 
 
-Класс где необходимо разрешить зависимость `$pdo` в конструкторе
-с помощью контейнера:
-```php
-// src/Classes/MyClass.php
-namespace App\Classes;
+Для создания настроенного контейнера используется [класс-строитель DiContainerBuilder](06-container-builder.md).
 
-class MyClass {
-    public function __construct(public \PDO $pdo) {}
-}
-```
-Конфигурационный файл для контейнера:
-```php
-// config/services.php
-use function Kaspi\DiContainer\diAutowire;
+## Объявления для определений контейнера.
+Определения конфигурируются через хелпер функции которые предоставляют простой и понятный
+набор методов для настройки разных типов определений контейнера. Хелпер функции позволяют передать аргументы для разных типов определений,
+указать дополнительное конфигурирование через сеттер методы или добавить теги.
 
-return static function (): \Generator {
-    // хелпер функция для объявления зависимости
-    yield diAutowire(
-        // получить класс \PDO 
-        definition: \PDO::class,
-        // всегда возвращать тот же объект
-        isSingleton: true
-        )
-            // передать аргумент в параметр $dsn в конструкторе.
-            ->bindArguments(
-                dsn: 'sqlite:/tmp/my.db'
-            )
-            // Вызвать сеттер метод "setAttribute" и предать список аргументов в него
-            ->setup('setAttribute', [\PDO::ATTR_CASE, \PDO::CASE_UPPER]),
-
-};
-```
-Создание контейнера зависимостей:
-
-```php
-use Kaspi\DiContainer\{DiContainerBuilder, DiContainerConfig};
-
-// конфигурирование контейнера.
-$config = new DiContainerConfig();
-
-// получение готового контейнера зависимостей.
-$container = (new DiContainerBuilder(containerConfig: $config))
-    // загрузить из файла конфигурацию для PHP классов
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
-
-// Получение данных из контейнера с автоматическим разрешением зависимостей
-$myClass = $container->get(App\Classes\MyClass::class); 
-
-$myClass->pdo->query('...');
-
-// получать один и тот же объект PDO::class
-// так как в определении указан isSingleton=true
-$myClassTwo = $container->get(App\MyClass::class);
-
-var_dump(
-    \spl_object_id($myClass->pdo) === \spl_object_id($myClassTwo->pdo)
-); // true
-```
-> [!NOTE]
-> Для примера выше фактически будет выполнен следующий php код:
-> ```php
-> $pdo = new \PDO(dns: 'sqlite:/tmp/my.db');
-> $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_UPPER);
-> $service = new App\MyClass($pdo);
-> $service->pdo->query('...') // готовый сервис для использования
-> ```
+Хелпер функции имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
 
 > [!TIP]
-> Для создания настроенного контейнера используется 
-> [класс-строитель `DiContainerBuilder`](06-container-builder.md).
+> ✅ **Можно не указывать** контейнеру как разрешить типизированный параметр метода php класса или параметр `callable` типа
+> при условии, что требуемый тип был ранее сконфигурирован в контейнере или не требует дополнительной конфигурации,
+> контейнер самостоятельно разрешит такой тип зависимости.
 
 > [!TIP]
 > ✅ Для параметра метода php класса или `callable` типа можно указывать [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar),
 `null`, перечисляемые типы, «как есть» – без указания как разрешить зависимость.
-> Для повторяющихся значений рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
-
-> [!TIP]
-> ✅ Можно не указывать контейнеру как разрешить параметр метода php класса или `callable` типа являющийся классом или интерфейсом
-> при условии, что требуемый тип был ранее сконфигурирован в контейнере
-> или не требует дополнительной конфигурации, контейнер самостоятельно разрешит такой тип зависимости.
-
-## Объявления для определений контейнера.
+> Для повторяющихся скалярных значений рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
 
 ### Объявления через хелпер функции:
 - хелпер функции:
@@ -98,9 +33,6 @@ var_dump(
   - [diFactory](#difactory) – фабрика для разрешения зависимости
   - [diParameter](#diparameter) – параметр контейнера
   - [diParameterRuntime](#diparameterruntime) – параметр контейнера времени исполнения
-
-> [!NOTE]
-> Хелпер функции имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
 
 #### diAutowire
 
@@ -199,7 +131,7 @@ setup(string $method, array $arguments = [])
 ```
  
 > [!NOTE]
-> [Пример использования метода `diAutowire(...)->setup`](#пример-4)
+> [Пример использования метода `diAutowire(...)->setup`](#пример-5)
 
 **Дополнительная настройка сервиса через сеттер методы класса возвращающие значение (immutable setters):**
 ```php 
@@ -223,7 +155,7 @@ setupImmutable(string $method, array $arguments = [])
 > Аргументы в `setupImmutable()` могут принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
 
 > [!NOTE]
-> [Пример использования метода `diAutowire(...)->setupImmutable`](#пример-5)
+> [Пример использования метода `diAutowire(...)->setupImmutable`](#пример-6)
 > 
 **Теги для определения:**
 ```php
@@ -1207,7 +1139,80 @@ $container->get(App\Services\Service::class);
 
 ## Примеры использования для конфигурирования:
 
-### Пример #1 
+### Пример #2
+
+Получение существующего класса и разрешение параметров в конструкторе.
+
+Класс где необходимо разрешить зависимость `$pdo` в конструкторе
+с помощью контейнера:
+```php
+// src/Classes/MyClass.php
+namespace App\Classes;
+
+class MyClass {
+    public function __construct(public \PDO $pdo) {}
+}
+```
+Конфигурационный файл для контейнера:
+```php
+// config/services.php
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): \Generator {
+    // хелпер функция для объявления зависимости
+    yield diAutowire(
+        // получить класс \PDO 
+        definition: \PDO::class,
+        // всегда возвращать тот же объект
+        isSingleton: true
+        )
+            // передать аргумент в параметр $dsn в конструкторе.
+            ->bindArguments(
+                dsn: 'sqlite:/tmp/my.db'
+            )
+            // Вызвать сеттер метод "setAttribute" и предать список аргументов в него
+            ->setup('setAttribute', [\PDO::ATTR_CASE, \PDO::CASE_UPPER]),
+
+};
+```
+Создание контейнера зависимостей:
+
+```php
+use Kaspi\DiContainer\{DiContainerBuilder, DiContainerConfig};
+
+// конфигурирование контейнера.
+$config = new DiContainerConfig();
+
+// получение готового контейнера зависимостей.
+$container = (new DiContainerBuilder(containerConfig: $config))
+    // загрузить из файла конфигурацию для PHP классов
+    ->load(__DIR__.'/config/services.php')
+    ->build()
+;
+
+// Получение данных из контейнера с автоматическим разрешением зависимостей
+$myClass = $container->get(App\Classes\MyClass::class); 
+
+$myClass->pdo->query('...');
+
+// получать один и тот же объект PDO::class
+// так как в определении указан isSingleton=true
+$myClassTwo = $container->get(App\MyClass::class);
+
+var_dump(
+    \spl_object_id($myClass->pdo) === \spl_object_id($myClassTwo->pdo)
+); // true
+```
+> [!NOTE]
+> Для примера выше фактически будет выполнен следующий php код:
+> ```php
+> $pdo = new \PDO(dns: 'sqlite:/tmp/my.db');
+> $pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_UPPER);
+> $service = new App\MyClass($pdo);
+> $service->pdo->query('...') // готовый сервис для использования
+> ```
+
+### Пример #2
 
 Один класс как самостояние определение со своими аргументами, и как реализация интерфейса, но со своими аргументами
 ```php
@@ -1259,7 +1264,7 @@ print $container->get(App\SumInterface::class)->getInit(); // 50
 print $container->get(App\Sum::class)->getInit(); // 10
 ```
 
-### Пример #2
+### Пример #3
 Создание объекта без сохранения результата в контейнере.
 ```php
 // src/Api/MyApiRequest.php
@@ -1306,7 +1311,7 @@ $apiV2->request(); // выполнить запрос
 - Такой вызов работает как `DiContainer::get()`, но будет каждый раз выполнять разрешение зависимостей и создание **нового объекта**;
 - Подстановка аргументов для создания объекта так же может быть каждый раз разной;
 
-### Пример #3
+### Пример #4
 Заполнение коллекции на основе callback функции.
 > [!NOTE]
 > Похожий функционал можно реализовать [через тегированные определения](05-tags.md).
@@ -1397,7 +1402,7 @@ $class = $container->get(App\Services\IterableArg::class);
 >  };
 > ```
 
-### Пример #4
+### Пример #5
 Использование дополнительной настройки сервиса через сеттер-методы (_mutable setter_):
 ```php
 // config/services.php
@@ -1421,7 +1426,7 @@ $container = (new DiContainerBuilder())
 
 $priorityQueue = $container->get('priority_queue.get_data');
 ```
-### Пример #5
+### Пример #6
 Использование дополнительной настройки сервиса через сеттер-методы возвращающие новый экземпляр сервиса (_immutable setter_):
 ```php
 // App\SomeClass.php
