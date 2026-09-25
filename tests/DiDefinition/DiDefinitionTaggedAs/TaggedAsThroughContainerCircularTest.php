@@ -11,7 +11,6 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
@@ -52,7 +51,6 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiContainerFactory::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]

@@ -3,27 +3,25 @@
 Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface`
 предоставляющий метод `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface::call()`.
 
-Получение результата `callable` типа или [преобразуемого в callable тип](#класс-с-нестатическим-методом) значения, с разрешением зависимостей через контейнер:
+Получение результата вызываемого типа или [преобразуемого в callable тип](#класс-с-нестатическим-методом) значения, с разрешением зависимостей через контейнер:
 ```php
 call(array|callable|string $definition, mixed ...$argument)
 ```
 Параметры:
-- `$definition` - `callable` тип или значение преобразуемое к `callable`;
-- `$argument` - аргументы для подстановки в `callable` тип;
+- `$definition` - вызываемый тип или значение преобразуемое к `callable`;
+- `$argument` - аргументы для подстановки в параметры вызываемого типа;
 
-> [!TIP]
-> Если часть параметров функции или метода **не может быть разрешена контейнером автоматически**,
-> то для указания конкретного параметра можно использовать именованные аргументы в параметре `$argument`.
-> 
+> [!WARNING]
+> Необходимо передать аргументы в `$argument` для параметров функции или метода которые **не могут быть разрешены контейнером автоматически**
 
 #### Поддерживаемые типы:
 - Функция
   ```php
-    function userFunc() { /*... do something ... */ }
+    function userFunc(\App\Services\Bar $bar) { /*... do something ... */ }
     // ...
     $container->call('userFunc');
   ```
-- Callback функция `\Closure`
+- анонимная функция через PHP класс `\Closure`
     ```php
     $container->call(static function() { /*... do something ... */ });
     ```
@@ -32,7 +30,10 @@ call(array|callable|string $definition, mixed ...$argument)
   namespace App\Services;
   
   class Foo {
-    public static function bar() {}
+    public static function bar(\App\Services\Bar $bar)
+    {
+        // ...
+    }
   }
   ```
   ```php
@@ -48,7 +49,11 @@ call(array|callable|string $definition, mixed ...$argument)
   
   class Foo {
     public function __construct() {}
-    public function qux() {}
+
+    public function qux(\App\Services\Bar $bar)
+    {
+        // ...
+    }
   }
   ```
   ```php
@@ -59,7 +64,7 @@ call(array|callable|string $definition, mixed ...$argument)
 
 #### Класс с нестатическим методом.
 
-Поддерживаемые преобразования в `callable` тип, через получение контейнером PHP класса
+Поддерживаемые преобразования в вызываемый тип, через получение контейнером PHP класса
 с разрешением зависимостей в конструкторе и вызовом указанного метода:
 
 - PHP класс реализующий метод `__invoke()`:
@@ -68,7 +73,7 @@ call(array|callable|string $definition, mixed ...$argument)
   
   class Foo {
     public function __construct() {}
-    public function __invoke() {}
+    public function __invoke(\App\Services\Bar $bar) {}
   }
   ```
   ```php
@@ -77,7 +82,9 @@ call(array|callable|string $definition, mixed ...$argument)
   метод `call()` выполнит следующие действия:
   ```php
     $object = new \App\Services\Foo();
-    $object->__invoke();
+    $object2 = new \App\Services\Bar();
+
+    $object->__invoke($object2);
   ```
 
 - PHP класс представленный через полное имя (fully qualified class name) и вызываемый метод:
@@ -86,7 +93,7 @@ call(array|callable|string $definition, mixed ...$argument)
   
   class Foo {
     public function __construct() {}
-    public function qux() {}
+    public function qux(\App\Services\Bar $bar) {}
   }
   ``` 
   ```php
@@ -99,7 +106,9 @@ call(array|callable|string $definition, mixed ...$argument)
   метод `call()` выполнит следующие действия:
   ```php
     $object = new \App\Services\Foo();
-    $object->qux();
+    $object2 = new \App\Services\Bar();
+
+    $object->qux($object2);
   ```
 
 ### Абстрактный пример с контроллером:

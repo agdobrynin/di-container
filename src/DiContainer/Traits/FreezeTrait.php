@@ -12,4 +12,9 @@ trait FreezeTrait
     {
         $this->isFrozen = true;
     }
+
+    public function isFrozen(): bool
+    {
+        return $this->isFrozen;
+    }
 }

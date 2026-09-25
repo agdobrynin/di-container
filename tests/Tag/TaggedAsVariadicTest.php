@@ -9,7 +9,6 @@ use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiContainerFactory;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\Helper;
@@ -35,7 +34,6 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiContainerFactory::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
 #[CoversClass(Helper::class)]

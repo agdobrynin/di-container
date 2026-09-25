@@ -12,6 +12,7 @@ use Kaspi\DiContainer\DefinitionsLoader;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionValue;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use Kaspi\DiContainer\Finder\FinderFile;
@@ -26,6 +27,7 @@ use Kaspi\DiContainer\Traits\TagsTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Tests\DefinitionsLoader\Fixtures\DefinitionsConfigurator\Bar;
@@ -61,6 +63,7 @@ use function Kaspi\DiContainer\diValue;
 #[CoversFunction('\Kaspi\DiContainer\diValue')]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class DefinitionsLoaderWithConfiguratorTest extends TestCase
 {
     public function testCircularLoadFromFile(): void

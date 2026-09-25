@@ -9,16 +9,18 @@ use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DiContainer;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Parameters\ImmediateSourceParameters;
 use Kaspi\DiContainer\SourceDefinitions\AbstractSourceDefinitionsMutable;
 use Kaspi\DiContainer\SourceDefinitions\ImmediateSourceDefinitionsMutable;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use ReflectionClass;
@@ -42,8 +44,9 @@ use Tests\DiContainer\ResolveByAutowireAttribute\Fixtures\Two;
 #[CoversClass(ImmediateSourceDefinitionsMutable::class)]
 #[CoversClass(ImmediateSourceParameters::class)]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(FreezeTrait::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class ResolveByAutowireTest extends TestCase
 {
     public function testAutowireAttributeWithSingletonTrueButContainerSetDefaultSingletonFalse(): void

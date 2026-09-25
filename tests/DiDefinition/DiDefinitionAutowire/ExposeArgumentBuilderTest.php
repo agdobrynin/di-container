@@ -4,22 +4,46 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
+use ArrayIterator;
 use Generator;
+use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\DiContainerConfig;
+use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\SetupArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\SetupAttributeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooPrivateConstructor;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\FooSetup;
+
+use function array_map;
 
 /**
  * @internal
  */
+#[CoversClass(Autowire::class)]
+#[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(Helper::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(DiContainerConfig::class)]
+#[UsesClass(AttributeReader::class)]
+#[UsesClass(SetupAttributeTrait::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class ExposeArgumentBuilderTest extends TestCase
 {
     #[DataProvider('exposeArgumentBuilderExceptionProvider')]
@@ -72,5 +96,93 @@ class ExposeArgumentBuilderTest extends TestCase
         yield 'method __destruct' => [FooSetup::class, '__destruct', '/Cannot use ".+FooSetup::__destruct\(\)" as setter/'];
 
         yield 'class not exist' => ['Foo', 'bar', '/Class "Foo" does not exist/'];
+    }
+
+    public function testExposeArgumentBuilderWithContext(): void
+    {
+        $class = new class(new ArrayIterator([])) {
+            public function __construct(ArrayIterator $iterator) {}
+        };
+
+        $autowire = new Autowire(arguments: ['foo', 'bar']);
+        $def = new DiDefinitionAutowire($class::class, priorityBoundConfiguration: new AutowirePriorityBoundConfiguration($autowire->arguments, $autowire->setups, $autowire->tags, $autowire->getResetter()));
+
+        $argBuilder = $def->exposeArgumentBuilder($this->createMock(DiContainerInterface::class));
+
+        self::assertEquals(['foo', 'bar'], $argBuilder->build());
+    }
+
+    #[DataProvider('exposeSetupArgumentBuilderWithContextProvider')]
+    public function testExposeSetupArgumentBuilderWithContext(
+        string $class,
+        ?Autowire $context,
+        array $expectSetupMethodNames,
+    ): void {
+        $mockContainer = $this->createMock(DiContainerInterface::class);
+        $mockContainer->method('getConfig')
+            ->willReturn(new DiContainerConfig(useAttribute: true))
+        ;
+
+        $priorityBoundConfiguration = null !== $context
+            ? new AutowirePriorityBoundConfiguration($context->arguments, $context->setups, $context->tags, $context->getResetter())
+            : null;
+        $def = new DiDefinitionAutowire($class, priorityBoundConfiguration: $priorityBoundConfiguration);
+
+        $argBuilders = $def->exposeSetupArgumentBuilders($mockContainer);
+
+        $setupMethodNames = array_map(fn (SetupArgumentBuilderInterface $sArg) => $sArg->argumentBuilder()->getFunctionOrMethod()->getName(), $argBuilders);
+
+        self::assertEquals($expectSetupMethodNames, $setupMethodNames);
+    }
+
+    public static function exposeSetupArgumentBuilderWithContextProvider(): Generator
+    {
+        $class = new class(new ArrayIterator([])) {
+            public function __construct(ArrayIterator $iterator) {}
+
+            #[Setup]
+            public function doSetup(): void {}
+
+            public function doSetupPriority(): void {}
+
+            public function doSetupPriorityImmutable(): self {}
+        };
+
+        yield [
+            $class::class,
+            new Autowire(arguments: ['foo', 'bar'], setups: []),
+            [],
+        ];
+
+        yield [
+            $class::class,
+            new Autowire(setups: [
+                'doSetupPriority' => new Setup(),
+                'doSetupPriorityImmutable' => new SetupImmutable(),
+            ]),
+            [
+                'doSetupPriority',
+                'doSetupPriorityImmutable',
+            ],
+        ];
+
+        yield [
+            $class::class,
+            new Autowire(setups: [
+                'doSetupPriority' => new stdClass(),
+                'doSetupPriorityImmutable' => new stdClass(),
+            ]),
+            [
+                'doSetup',
+            ],
+        ];
+
+        yield [
+            $class::class,
+            null,
+            [
+                'doSetup',
+            ],
+        ];
     }
 }

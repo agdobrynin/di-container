@@ -17,6 +17,8 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionRuntime;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Enum\EventNameEnum;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\AutowireParameterTypeException;
@@ -58,10 +60,10 @@ use const T_INTERFACE;
  */
 final class DefinitionsLoader implements DefinitionsLoaderInterface
 {
-    /** @var ArrayIterator<non-empty-string, mixed> */
+    /** @var ArrayIterator<class-string|non-empty-string, mixed> */
     private readonly ArrayIterator $configuredDefinitions;
 
-    /** @var ArrayIterator<class-string|non-empty-string, true> */
+    /** @var ArrayIterator<class-string|non-empty-string, bool> */
     private readonly ArrayIterator $removedDefinitionIds;
 
     /** @var ArrayIterator<non-empty-string, mixed> */
@@ -94,10 +96,22 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
     public function __construct(
         private ?FinderFullyQualifiedNameCollectionInterface $finderFullyQualifiedNameCollection = null,
     ) {
-        $this->configuredDefinitions = new ArrayIterator();
-        $this->removedDefinitionIds = new ArrayIterator();
-        $this->parameters = new ArrayIterator();
-        $this->configuratorContexts = new ArrayIterator();
+        /** @var ArrayIterator<class-string|non-empty-string, mixed> $configuredDefinitions */
+        $configuredDefinitions = new ArrayIterator([]);
+        $this->configuredDefinitions = $configuredDefinitions;
+
+        /** @var ArrayIterator<class-string|non-empty-string, bool> $removedDefinitionIds */
+        $removedDefinitionIds = new ArrayIterator([]);
+        $this->removedDefinitionIds = $removedDefinitionIds;
+
+        /** @var ArrayIterator<non-empty-string, mixed> $parameters */
+        $parameters = new ArrayIterator([]);
+        $this->parameters = $parameters;
+
+        /** @var ArrayIterator<non-empty-string, mixed> $configuratorContexts */
+        $configuratorContexts = new ArrayIterator([]);
+        $this->configuratorContexts = $configuratorContexts;
+
         $this->definitionsConfiguratorEvent = new EventListener();
     }
 
@@ -291,8 +305,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
         }
 
         while (null !== ($identifier = $this->removedDefinitionIds->key())) {
-            if (isset($this->configuredDefinitions[$identifier])) {
-                unset($this->removedDefinitionIds[$identifier]);
+            if ($this->configuredDefinitions->offsetExists($identifier)) {
+                $this->removedDefinitionIds->offsetUnset($identifier);
             }
 
             $this->removedDefinitionIds->next();
@@ -509,10 +523,8 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                     );
                 }
 
-                $autowireServices[$containerIdentifier] = (new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton, $autowireAttr->isLazy))
-                    ->bindArguments(...$autowireAttr->arguments)
-                    ->setResetter($autowireAttr->getResetter())
-                ;
+                $priorityBoundConfiguration = new AutowirePriorityBoundConfiguration($autowireAttr->arguments, $autowireAttr->setups, $autowireAttr->tags, $autowireAttr->getResetter());
+                $autowireServices[$containerIdentifier] = new DiDefinitionAutowire($reflectionClass->name, $autowireAttr->isSingleton, $autowireAttr->isLazy, $priorityBoundConfiguration);
             }
 
             return $autowireServices;
@@ -525,9 +537,9 @@ final class DefinitionsLoader implements DefinitionsLoaderInterface
                 );
             }
 
-            $diFactory = new DiDefinitionFactory($factory->definition, $factory->isSingleton);
+            $priorityBoundArguments = new PriorityBoundArguments($factory->arguments);
 
-            return [$reflectionClass->name => $diFactory->bindArguments(...$factory->arguments)];
+            return [$reflectionClass->name => new DiDefinitionFactory($factory->definition, $factory->isSingleton, $priorityBoundArguments)];
         }
 
         if (($diRuntimeAttrs = AttributeReader::getDiRuntimeAttribute($reflectionClass))->valid()) {
