@@ -10,8 +10,10 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\Interfaces\DiContainerConfigInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
@@ -22,6 +24,7 @@ use ReflectionClass;
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(Tag::class)]
 #[CoversClass(TagsTrait::class)]
+#[UsesClass(FreezeTrait::class)]
 class ResetTest extends TestCase
 {
     public function testResetClassWithAttributes(): void
@@ -69,6 +72,25 @@ class ResetTest extends TestCase
         $this->expectException(DiDefinitionExceptionInterface::class);
         // `$definition->reset()` reset container too.
         $definition->getTags();
+    }
+
+    public function testContainerIdentifierDoNotReset(): void
+    {
+        $definition = new DiDefinitionAutowire(new ReflectionClass(Bar::class));
+        $definition->setContainerIdentifier('service.foo');
+        self::assertEquals('service.foo', $definition->getContainerIdentifier());
+        $definition->reset();
+
+        self::assertNull($definition->getContainerIdentifier());
+
+        $definition->setContainerIdentifier('service.bar');
+
+        self::assertEquals('service.bar', $definition->getContainerIdentifier());
+
+        $definition->freeze();
+        $definition->reset();
+
+        self::assertEquals('service.bar', $definition->getContainerIdentifier());
     }
 }
 

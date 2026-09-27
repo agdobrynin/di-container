@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\DiDefinitionAutowire;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\FreezeTrait;
 use Kaspi\DiContainer\Traits\TagsTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperClass;
 
@@ -21,10 +22,11 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\SuperClass;
  * @internal
  */
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(FreezeTrait::class)]
 #[CoversClass(TagsTrait::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
 class FreezeTest extends TestCase
 {
     private DiContainerInterface $container;
@@ -71,12 +73,11 @@ class FreezeTest extends TestCase
     {
         $this->definition->setupImmutable('withDependency', ['bar']);
 
-        /** @var list<array{0: SetupConfigureMethod, 1: ArgumentBuilderInterface}> $setups */
         $setups = $this->definition->exposeSetupArgumentBuilders($this->container);
 
         self::assertCount(1, $setups);
-        self::assertEquals(SetupConfigureMethod::Immutable, $setups[0][0]);
-        self::assertEquals([0 => 'bar'], $setups[0][1]->getBindArguments());
+        self::assertEquals(SetupConfigureMethod::Immutable, $setups[0]->setupType());
+        self::assertEquals([0 => 'bar'], $setups[0]->argumentBuilder()->getBindArguments());
 
         $this->definition->freeze();
 
@@ -90,12 +91,11 @@ class FreezeTest extends TestCase
     {
         $this->definition->setup('setDependency', ['bar']);
 
-        /** @var list<array{0: SetupConfigureMethod, 1: ArgumentBuilderInterface}> $setups */
         $setups = $this->definition->exposeSetupArgumentBuilders($this->container);
 
         self::assertCount(1, $setups);
-        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0][0]);
-        self::assertEquals([0 => 'bar'], $setups[0][1]->getBindArguments());
+        self::assertEquals(SetupConfigureMethod::Mutable, $setups[0]->setupType());
+        self::assertEquals([0 => 'bar'], $setups[0]->argumentBuilder()->getBindArguments());
 
         $this->definition->freeze();
 

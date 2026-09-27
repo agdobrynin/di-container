@@ -8,7 +8,6 @@ use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\Exception\NotFoundException;
@@ -31,7 +30,6 @@ use function Kaspi\DiContainer\diParameter;
  */
 #[CoversFunction('Kaspi\DiContainer\diParameter')]
 #[CoversClass(ArgumentBuilder::class)]
-#[CoversClass(ArgumentResolver::class)]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(DiDefinitionParameter::class)]
 #[CoversClass(Parameter::class)]
@@ -80,8 +78,8 @@ class ResolveParameterTest extends TestCase
             0 => diParameter(),
         ];
 
-        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container);
-        $res = ArgumentResolver::resolve($ab, $this->container);
+        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container, false);
+        $res = $ab->resolve();
 
         self::assertEquals(['foo@example.com'], $res);
     }
@@ -116,8 +114,8 @@ class ResolveParameterTest extends TestCase
             'line_2' => diParameter('line_second'),
         ];
 
-        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container);
-        $res = ArgumentResolver::resolve($ab, $this->container);
+        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container, false);
+        $res = $ab->resolve();
 
         self::assertEquals(
             [
@@ -151,8 +149,8 @@ class ResolveParameterTest extends TestCase
 
         $this->container->method('parameters')->willReturn($sourceParams);
 
-        $ab = new ArgumentBuilder([], new ReflectionFunction($fn), $this->container);
-        $res = ArgumentResolver::resolve($ab, $this->container);
+        $ab = new ArgumentBuilder([], new ReflectionFunction($fn), $this->container, false);
+        $res = $ab->resolve();
 
         self::assertEquals(['foo@example.com'], $res);
     }
@@ -189,8 +187,8 @@ class ResolveParameterTest extends TestCase
             'emails_cc_email' => diParameter('emails.cc_email'),
         ];
 
-        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container);
-        $res = ArgumentResolver::resolve($ab, $this->container);
+        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container, false);
+        $res = $ab->resolve();
 
         self::assertEquals(
             [
@@ -234,8 +232,8 @@ class ResolveParameterTest extends TestCase
             ->willReturn($sourceParams)
         ;
 
-        $ab = new ArgumentBuilder([], new ReflectionFunction($fn), $this->container);
-        $res = ArgumentResolver::resolve($ab, $this->container);
+        $ab = new ArgumentBuilder([], new ReflectionFunction($fn), $this->container, false);
+        $res = $ab->resolve();
         self::assertEquals(
             [
                 0 => 'foo@example.com',
@@ -279,9 +277,8 @@ class ResolveParameterTest extends TestCase
             'foo_2' => diParameter(),
         ];
 
-        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container);
-
-        ArgumentResolver::resolve($ab, $this->container);
+        $ab = new ArgumentBuilder($bindArgs, new ReflectionFunction($fn), $this->container, false);
+        $ab->resolve();
     }
 
     #[DataProvider('provideResolveUsingOrderingNameAndContext')]

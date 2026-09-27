@@ -39,7 +39,7 @@ final class DiFactory
                 sprintf('Invalid parameter for attribute #[%s]. The array values must be provided as none empty string and numeric index. Got: "%s".', self::class, var_export($this->definition, true))
             );
         }
-        if ('' === $this->definition) { // @phpstan-ignore identical.alwaysFalse
+        if ('' === $this->definition) {
             throw new AutowireAttributeException(
                 sprintf('Invalid parameter for attribute #[%s]. The definition must be provided as none empty string.', self::class)
             );

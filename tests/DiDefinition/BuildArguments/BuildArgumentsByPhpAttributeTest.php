@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\BuildArguments;
 
+use ArrayAccess;
 use ArrayIterator;
 use Closure;
-use DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\InjectByCallable;
@@ -17,6 +18,7 @@ use Kaspi\DiContainer\Attributes\ProxyClosure;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionCallable;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionFactory;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
@@ -25,18 +27,23 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterWithContextAbstract;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionParameterRuntimeInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use Kaspi\DiContainer\Traits\BindArgumentsTrait;
+use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
 use Tests\DiDefinition\BuildArguments\Fixtures\BatFactory;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
+use Tests\DiDefinition\BuildArguments\Fixtures\BazInterface;
 use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
 use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependency;
 use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependencyTwo;
@@ -44,6 +51,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxTwo;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diCallable;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diParameterRuntime;
@@ -53,6 +61,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 /**
  * @internal
  */
+#[CoversClass(Autowire::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(TaggedAs::class)]
 #[CoversClass(ProxyClosure::class)]
@@ -62,6 +71,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionCallable::class)]
 #[CoversClass(DiDefinitionTaggedAs::class)]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversFunction('\Kaspi\DiContainer\diGet')]
 #[CoversFunction('\Kaspi\DiContainer\diProxyClosure')]
 #[CoversFunction('\Kaspi\DiContainer\diTaggedAs')]
@@ -70,6 +80,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(BindArgumentsTrait::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(DiDefinitionProxyClosure::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(DiFactory::class)]
 #[CoversClass(DiDefinitionFactory::class)]
 #[CoversClass(Parameter::class)]
@@ -78,6 +89,9 @@ use function Kaspi\DiContainer\diTaggedAs;
 #[CoversClass(DiDefinitionParameterRuntime::class)]
 #[CoversClass(DiDefinitionParameterWithContextAbstract::class)]
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
+#[UsesClass(FreezeTrait::class)]
+#[UsesClass(PriorityBoundArguments::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class BuildArgumentsByPhpAttributeTest extends TestCase
 {
     use BindArgumentsTrait;
@@ -103,7 +117,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(quux: diGet('services.quux'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -126,7 +140,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             other_two: diGet('services.bar'),
             other_three: diGet('services.baz'),
         );
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $ba->build();
     }
@@ -134,7 +148,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
     public function testInjectRegularParameters(): void
     {
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux) => $quux;
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -154,7 +168,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -180,7 +194,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -210,7 +224,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -237,7 +251,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -264,7 +278,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -291,7 +305,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -318,7 +332,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -344,7 +358,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(bar: diCallable([Baz::class, 'doMake']));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -363,7 +377,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             Baz ...$baz,                // parameter #2
         ) => true;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
@@ -376,7 +390,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
     {
         $fn = static fn (?Bar $bar = null, #[Inject] ?BazInterface $baz = null, Foo ...$foo) => $baz;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $arg = $ba->build();
 
@@ -398,7 +412,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $arg = $ba->build();
 
@@ -414,7 +428,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             mixed $bat,
         ) => $bat;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
         $arg = $ba->build();
 
         self::assertInstanceOf(DiDefinitionFactory::class, $arg[0]);
@@ -432,7 +446,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             mixed ...$foo,
         ) => $bat;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
         $arg = $ba->build();
 
         self::assertInstanceOf(DiDefinitionGet::class, $arg[0]);
@@ -458,7 +472,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
             mixed $foo
         ) => null;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
         $ba->build();
     }
 
@@ -476,7 +490,7 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
 
         $this->bindArguments(str: diParameterRuntime('qux'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
         $arg = $ba->build();
 
         self::assertCount(4, $arg);
@@ -494,5 +508,26 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $arg[3]);
         self::assertEquals('', $arg[3]->getDefinition());
         self::assertEquals('baz', $arg[3]->getContext());
+    }
+
+    public function testAttributeAutowireOnParameter(): void
+    {
+        $fn = static fn (
+            #[Autowire(isLazy: true)]
+            ArrayIterator $a,
+            #[Autowire(ArrayAccess::class)]
+            mixed $b,
+        ) => null;
+
+        $this->bindArguments(a: diAutowire('qux'));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
+
+        /** @var list<DiDefinitionAutowire> $args */
+        $args = $ba->build();
+
+        self::assertCount(2, $args);
+        self::assertEquals('ArrayIterator', $args[0]->getDefinitionIdentifier());
+        self::assertEquals('ArrayAccess', $args[1]->getDefinitionIdentifier());
     }
 }

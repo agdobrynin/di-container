@@ -23,7 +23,7 @@ use function sprintf;
 final class Helper
 {
     /**
-     * @return non-empty-string
+     * @return class-string
      *
      * @throws AutowireParameterTypeException
      */
@@ -36,12 +36,12 @@ final class Helper
         }
 
         if ($type instanceof ReflectionUnionType) {
-            /** @var non-empty-string[] $types */
+            /** @var list<class-string> $types */
             $types = [];
             foreach ($type->getTypes() as $t) {
                 /**
                  * @phpstan-var ReflectionNamedType $t
-                 * @phpstan-var non-empty-string $name
+                 * @phpstan-var class-string $name
                  */
                 $name = $t->getName();
 

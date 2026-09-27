@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\DiDefinition\BuildArguments;
 
+use ArrayIterator;
 use Kaspi\DiContainer\AttributeReader;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\Parameter;
 use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameterRuntime;
@@ -31,6 +34,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\Foo;
 use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 
+use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diParameter;
 use function Kaspi\DiContainer\diParameterRuntime;
@@ -39,10 +43,12 @@ use function Kaspi\DiContainer\diParameterRuntime;
  * @internal
  */
 #[CoversFunction('\Kaspi\DiContainer\diGet')]
+#[CoversFunction('\Kaspi\DiContainer\diAutowire')]
 #[CoversClass(AttributeReader::class)]
 #[CoversClass(Inject::class)]
 #[CoversClass(DiContainerConfig::class)]
 #[CoversClass(DiDefinitionGet::class)]
+#[CoversClass(DiDefinitionAutowire::class)]
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(Helper::class)]
 #[CoversClass(BindArgumentsTrait::class)]
@@ -82,10 +88,10 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
             ->willReturn(true)
         ;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-        $args = $ba->buildByPriorityBindArguments();
+        $args = $ba->build();
 
         self::assertEquals(
             [
@@ -101,11 +107,11 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
     {
         $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux, #[Inject(Baz::class), Inject('service.one')] Foo $foo) => $quux;
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         try {
             // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-            $args = $ba->buildByPriorityBindArguments();
+            $args = $ba->build();
         } catch (ContainerExceptionInterface $e) {
             self::assertInstanceOf(ArgumentBuilderExceptionInterface::class, $e);
             self::assertStringContainsString('Cannot build argument via php attribute for Parameter #1', $e->getMessage());
@@ -121,10 +127,10 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 
         $this->bindArguments(bar: diParameter('bar.two'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-        $args = $ba->buildByPriorityBindArguments();
+        $args = $ba->build();
 
         self::assertEquals(
             [
@@ -146,10 +152,10 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 
         $this->bindArguments(str: diParameterRuntime('qux'));
 
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
 
         // 🚩 Use Php attribute and bind arguments - bind arguments highest priority.
-        $args = $ba->buildByPriorityBindArguments();
+        $args = $ba->build();
 
         self::assertCount(2, $args);
         self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $args[0]);
@@ -158,5 +164,19 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
         self::assertInstanceOf(DiDefinitionParameterRuntimeInterface::class, $args[1]);
         self::assertEquals('', $args[1]->getDefinition());
         self::assertEquals('bar', $args[1]->getContext());
+    }
+
+    public function testAttributeAutowireOnParameter(): void
+    {
+        $fn = static fn (#[Autowire('foo', isLazy: true)] ArrayIterator $a) => null;
+
+        $this->bindArguments(diAutowire('qux'));
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
+
+        $args = $ba->build();
+
+        self::assertCount(1, $args);
+        self::assertEquals('qux', $args[0]->getIdentifier());
     }
 }

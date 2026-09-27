@@ -25,6 +25,9 @@ use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\EventListener;
 use Kaspi\DiContainer\Finder\FinderClosureCode;
 use Kaspi\DiContainer\Finder\FinderFile;
@@ -44,6 +47,7 @@ use Kaspi\DiContainer\Traits\ResetterTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Compiler\CompilableDefinition\ObjectEntry\FixturesForCompile\Bar;
 use Tests\Compiler\CompilableDefinition\ObjectEntry\FixturesForCompile\Baz;
@@ -94,6 +98,9 @@ use function random_bytes;
 #[CoversClass(AbstractSourceParameters::class)]
 #[CoversClass(EventListener::class)]
 #[CoversClass(DefinitionsConfigurator::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
+#[UsesClass(AutowirePriorityBoundConfiguration::class)]
 class CompiledContainerWIthObjectResettersTest extends TestCase
 {
     public function testObjectResettersCompilation(): void

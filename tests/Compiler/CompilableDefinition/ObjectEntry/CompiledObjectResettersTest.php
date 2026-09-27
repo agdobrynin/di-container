@@ -12,12 +12,15 @@ use Kaspi\DiContainer\Compiler\Helper;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Interfaces\Compiler\DiContainerDefinitionsInterface;
 use Kaspi\DiContainer\Interfaces\Compiler\Exception\DefinitionCompileExceptionInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Finder\FinderClosureCodeInterface;
 use Kaspi\DiContainer\ObjectResetters;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
@@ -36,6 +39,8 @@ use Tests\Compiler\CompilableDefinition\ObjectEntry\Fixtures\Foo;
 #[CoversClass(ArgumentBuilder::class)]
 #[CoversClass(DiDefinitionGet::class)]
 #[CoversClass(\Kaspi\DiContainer\Helper::class)]
+#[UsesClass(SetupArgumentBuilder::class)]
+#[UsesClass(SetupTypeWithArguments::class)]
 class CompiledObjectResettersTest extends TestCase
 {
     protected DiContainerDefinitionsInterface $diContainerDefinitionsMock;
