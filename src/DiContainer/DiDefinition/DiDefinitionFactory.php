@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DTO\PriorityBoundArguments;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -27,6 +27,9 @@ use function is_string;
 use function sprintf;
 use function strpos;
 
+/**
+ * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
+ */
 final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefinitionArgumentsInterface, ResetInterface, FreezeInterface
 {
     use BindArgumentsTrait {
@@ -43,7 +46,11 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
     /**
      * @param array{0: class-string|non-empty-string, 1: non-empty-string}|class-string|non-empty-string $definition
      */
-    public function __construct(private readonly array|string $definition, private readonly ?bool $isSingleton = null) {}
+    public function __construct(
+        private readonly array|string $definition,
+        private readonly ?bool $isSingleton = null,
+        private readonly ?PriorityBoundArguments $priorityBoundArguments = null,
+    ) {}
 
     public function bindArguments(mixed ...$argument): static
     {
@@ -64,7 +71,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
         if (is_callable([$factoryConstructor, $factoryMethod])) {
             $reflectionMethod = new ReflectionMethod($factoryConstructor, $factoryMethod);
 
-            $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container);
+            return $this->factoryMethodArgumentBuilder = $this->configureArgumentBuilder($reflectionMethod, $container);
         }
 
         try {
@@ -97,7 +104,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
             );
         }
 
-        return $this->factoryMethodArgumentBuilder = new ArgumentBuilder($this->getBindArguments(), $reflectionMethod, $container);
+        return $this->factoryMethodArgumentBuilder = $this->configureArgumentBuilder($reflectionMethod, $container);
     }
 
     public function getDefinition(): array
@@ -114,11 +121,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
             return $this->verifiedDefinition = [$this->definition, '__invoke'];
         }
 
-        if (isset($this->definition[0], $this->definition[1])
-            // @phpstan-ignore notIdentical.alwaysTrue
-            && '' !== $this->definition[0]
-            // @phpstan-ignore notIdentical.alwaysTrue
-            && '' !== $this->definition[1]) {
+        if (isset($this->definition[0], $this->definition[1]) && '' !== $this->definition[0] && '' !== $this->definition[1]) {
             return $this->verifiedDefinition = [$this->definition[0], $this->definition[1]];
         }
 
@@ -138,7 +141,7 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
 
         /** @var ReflectionMethod $method */
         $method = $argBuilder->getFunctionOrMethod();
-        $resolvedArguments = ArgumentResolver::resolve($argBuilder, $container, $this);
+        $resolvedArguments = $argBuilder->resolve($this);
 
         if ($method->isStatic()) {
             return $method->invokeArgs(null, $resolvedArguments);
@@ -170,5 +173,18 @@ final class DiDefinitionFactory implements DiDefinitionFactoryInterface, DiDefin
             $this->factoryMethodArgumentBuilder,
             $this->verifiedDefinition,
         );
+    }
+
+    private function configureArgumentBuilder(ReflectionMethod $reflectionMethod, DiContainerInterface $container): ArgumentBuilder
+    {
+        if (null !== $this->priorityBoundArguments && [] !== $this->priorityBoundArguments->arguments) {
+            $forcingPriorityUsingBindingArguments = true;
+            $args = $this->priorityBoundArguments->arguments + $this->getBindArguments();
+        } else {
+            $forcingPriorityUsingBindingArguments = false;
+            $args = $this->getBindArguments();
+        }
+
+        return new ArgumentBuilder($args, $reflectionMethod, $container, $forcingPriorityUsingBindingArguments);
     }
 }

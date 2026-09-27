@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-namespace DiDefinition\BuildArguments\Fixtures;
+namespace Tests\DiDefinition\BuildArguments\Fixtures;
 
 interface BazInterface {}

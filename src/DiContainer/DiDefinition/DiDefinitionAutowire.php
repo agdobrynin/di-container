@@ -12,14 +12,16 @@ use Kaspi\DiContainer\Attributes\Setup;
 use Kaspi\DiContainer\Attributes\SetupImmutable;
 use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
+use Kaspi\DiContainer\DTO\SetupArgumentBuilder;
+use Kaspi\DiContainer\DTO\SetupTypeWithArguments;
 use Kaspi\DiContainer\Enum\SetupConfigureMethod;
 use Kaspi\DiContainer\Exception\AutowireAttributeException;
 use Kaspi\DiContainer\Exception\DiDefinitionException;
 use Kaspi\DiContainer\Helper;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\SetupArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionAutowireInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionIdentifierInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterInterface;
@@ -46,12 +48,6 @@ use function sprintf;
 
 use const PHP_VERSION_ID;
 
-/**
- * @phpstan-import-type DiDefinitionType from DiDefinitionArgumentsInterface
- *
- * @phpstan-type SetupConfigureArgumentsType array<non-empty-string|non-negative-int, DiDefinitionType|mixed>
- * @phpstan-type SetupConfigureItem array{0: SetupConfigureMethod, 1: SetupConfigureArgumentsType}
- */
 final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDefinitionSetupAutowireInterface, DiDefinitionIdentifierInterface, DiDefinitionTagArgumentInterface, DiTaggedObjectDefinitionInterface, ResetInterface, FreezeInterface, DiDefinitionResetterSetterInterface, DiDefinitionResetterInterface
 {
     use BindArgumentsTrait {
@@ -67,23 +63,30 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     private ArgumentBuilderInterface|false $constructArgBuilder;
 
     /**
-     * @var list<array{0: SetupConfigureMethod, 1: ArgumentBuilderInterface}>
+     * @var list<SetupArgumentBuilderInterface>
      */
     private array $setupArgBuilders;
 
     /**
      * Methods for setup service by PHP definition via setters (mutable or immutable).
      *
-     * @var array<non-empty-string, list<SetupConfigureItem>>
+     * @var array<non-empty-string, list<SetupTypeWithArguments>>
      */
     private array $setup = [];
 
     /**
      * Methods for setup service by PHP attribute via setters (mutable or immutable).
      *
-     * @var array<non-empty-string, list<SetupConfigureItem>>
+     * @var array<non-empty-string, list<SetupTypeWithArguments>>
      */
     private array $setupByAttributes;
+
+    /**
+     * Priority methods for setup service by setters (mutable or immutable).
+     *
+     * @var array<non-empty-string, list<SetupTypeWithArguments>>|false
+     */
+    private array|false $priorityBoundSetups;
 
     /**
      * @var null|non-empty-string
@@ -102,6 +105,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         private readonly ReflectionClass|string $definition,
         private readonly ?bool $isSingleton = null,
         private readonly bool $isLazy = false,
+        private readonly ?AutowirePriorityBoundConfiguration $priorityBoundConfiguration = null,
     ) {
         if ($this->definition instanceof ReflectionClass) {
             $this->reflectionClass = $this->definition;
@@ -116,7 +120,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             );
         }
 
-        $this->setup[$method][] = [SetupConfigureMethod::Mutable, $arguments];
+        $this->setup[$method][] = new SetupTypeWithArguments(SetupConfigureMethod::Mutable, $arguments);
         unset($this->setupArgBuilders);
 
         return $this;
@@ -130,7 +134,7 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             );
         }
 
-        $this->setup[$method][] = [SetupConfigureMethod::Immutable, $arguments];
+        $this->setup[$method][] = new SetupTypeWithArguments(SetupConfigureMethod::Immutable, $arguments);
         unset($this->setupArgBuilders);
 
         return $this;
@@ -152,18 +156,36 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function exposeArgumentBuilder(DiContainerInterface $container): ?ArgumentBuilderInterface
     {
         $this->checkIsInstantiable();
+        $constructor = $this->getDefinition()->getConstructor();
 
-        return (null !== ($constructor = $this->getDefinition()->getConstructor()))
-            ? new ArgumentBuilder($this->bindArguments, $constructor, $container)
-            : null;
+        if (null === $constructor) {
+            return null;
+        }
+
+        if (null !== $this->priorityBoundConfiguration && [] !== $this->priorityBoundConfiguration->arguments) {
+            return new ArgumentBuilder($this->priorityBoundConfiguration->arguments + $this->bindArguments, $constructor, $container, true);
+        }
+
+        return new ArgumentBuilder($this->bindArguments, $constructor, $container, false);
     }
 
     public function exposeSetupArgumentBuilders(DiContainerInterface $container): array
     {
         $this->checkIsInstantiable();
+        $priorityBoundSetups = $this->getSetupsFromPriorityBound();
+
+        if (false !== $priorityBoundSetups) {
+            $setups = $priorityBoundSetups;
+        } elseif (!$container->getConfig()->isUseAttribute()) {
+            $setups = $this->setup;
+        } else {
+            $setups = $this->getSetupsFromClass($this->getDefinition()) + $this->setup;
+        }
+
+        /** @var list<SetupArgumentBuilderInterface> $setupArgBuilders */
         $setupArgBuilders = [];
 
-        foreach ($this->getSetups($this->getDefinition(), $container) as $method => $calls) {
+        foreach ($setups as $method => $callsSetupTypeWithArguments) {
             try {
                 $reflectionMethod = $this->getDefinition()->getMethod($method);
             } catch (ReflectionException $e) {
@@ -177,8 +199,8 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
                 throw new DiDefinitionException(sprintf('Cannot use "%s" as setter.', Helper::functionName($reflectionMethod)));
             }
 
-            foreach ($calls as [$setupConfigureType, $callArguments]) {
-                $setupArgBuilders[] = [$setupConfigureType, new ArgumentBuilder($callArguments, $reflectionMethod, $container)];
+            foreach ($callsSetupTypeWithArguments as $setupTypeWithArguments) {
+                $setupArgBuilders[] = new SetupArgumentBuilder(new ArgumentBuilder($setupTypeWithArguments->arguments, $reflectionMethod, $container, true), $setupTypeWithArguments->setupType);
             }
         }
 
@@ -246,13 +268,16 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             $this->constructArgBuilder,
             $this->setupArgBuilders,
             $this->setupByAttributes,
+            $this->priorityBoundSetups,
         );
 
         if (is_string($this->definition)) {
             unset($this->reflectionClass);
         }
 
-        $this->containerIdentifier = null;
+        if (!$this->isFrozen) {
+            $this->containerIdentifier = null;
+        }
     }
 
     public function setContainerIdentifier(string $containerIdentifier): void
@@ -294,14 +319,18 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     public function getResetter(): callable|false|string
     {
         try {
-            if (false === $this->resetter && $this->isImplementInterface(ResetInterface::class)) {
+            $priorityResetter = null !== $this->priorityBoundConfiguration
+                ? $this->priorityBoundConfiguration->getResetter()
+                : $this->resetter;
+
+            if (false === $priorityResetter && $this->isImplementInterface(ResetInterface::class)) {
                 return 'reset';
             }
         } catch (DiDefinitionExceptionInterface) {
             return false;
         }
 
-        return $this->resetter;
+        return $priorityResetter;
     }
 
     public function isLazy(): bool
@@ -311,6 +340,12 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
 
     protected function readTagAttributes(): Generator
     {
+        if (null !== $this->priorityBoundConfiguration?->tags) {
+            yield from $this->tagAttributeFilter($this->priorityBoundConfiguration->tags);
+
+            return;
+        }
+
         try {
             $reflectionClass = $this->getDefinition();
             $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($reflectionClass);
@@ -327,16 +362,24 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
             return;
         }
 
-        if ($autowireAttribute->tags instanceof Tag) {
-            yield $autowireAttribute->tags;
+        yield from $this->tagAttributeFilter($autowireAttribute->tags);
+    }
 
-            return;
-        }
-
-        foreach ($autowireAttribute->tags as $argTag) {
-            if ($argTag instanceof Tag) {
-                yield $argTag;
+    /**
+     * @param list<mixed>|Tag $tags
+     *
+     * @return Generator<Tag>
+     */
+    private function tagAttributeFilter(array|Tag $tags): Generator
+    {
+        if (is_array($tags)) {
+            foreach ($tags as $tag) {
+                if ($tag instanceof Tag) {
+                    yield $tag;
+                }
             }
+        } else {
+            yield $tags;
         }
     }
 
@@ -347,19 +390,20 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
         /** @var object $object */
         $object = (false === $this->constructArgBuilder)
             ? $this->getDefinition()->newInstanceWithoutConstructor()
-            : $this->getDefinition()->newInstanceArgs(ArgumentResolver::resolve($this->constructArgBuilder, $container, $this));
+            : $this->getDefinition()->newInstanceArgs($this->constructArgBuilder->resolve($this));
 
-        $this->setupArgBuilders ??= $this->exposeSetupArgumentBuilders($container);
+        if (!isset($this->setupArgBuilders)) {
+            $this->setupArgBuilders = $this->exposeSetupArgumentBuilders($container);
+        }
 
-        /** @var ArgumentBuilderInterface $argBuilder */
-        foreach ($this->setupArgBuilders as [$setupConfigureType, $argBuilder]) {
-            $resolvedArguments = ArgumentResolver::resolveByPriorityBindArguments($argBuilder, $container, $this);
-            $reflectionMethod = $argBuilder->getFunctionOrMethod();
+        foreach ($this->setupArgBuilders as $argBuilder) {
+            $resolvedArguments = $argBuilder->argumentBuilder()->resolve($this);
+            $reflectionMethod = $argBuilder->argumentBuilder()->getFunctionOrMethod();
 
             /** @var callable $callable */
             $callable = [$object, $reflectionMethod->name];
 
-            if (SetupConfigureMethod::Mutable === $setupConfigureType) {
+            if (SetupConfigureMethod::Mutable === $argBuilder->setupType()) {
                 call_user_func_array($callable, $resolvedArguments);
 
                 continue;
@@ -382,47 +426,79 @@ final class DiDefinitionAutowire implements DiDefinitionAutowireInterface, DiDef
     }
 
     /**
-     * @return array<non-empty-string, list<SetupConfigureItem>>
+     * @return array<non-empty-string, list<SetupTypeWithArguments>>
      *
      * @throws AutowireExceptionInterface
      */
-    private function getSetups(ReflectionClass $class, DiContainerInterface $container): array
+    private function getSetupsFromClass(ReflectionClass $reflectionClass): array
     {
-        if (!$container->getConfig()->isUseAttribute()) {
-            return $this->setup;
-        }
-
         if (!isset($this->setupByAttributes)) {
+            $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($reflectionClass);
+
+            $setupAttrs = false === $autowireAttribute || null === $autowireAttribute->setups
+                ? AttributeReader::getSetupAttribute($reflectionClass)
+                : $this->configureSetups($autowireAttribute->setups);
+
             $this->setupByAttributes = [];
 
-            foreach ($this->getSetupAttributes($class) as $setupAttr) {
+            foreach ($setupAttrs as $setupAttr) {
                 $setupType = $setupAttr instanceof Setup
                     ? SetupConfigureMethod::Mutable
                     : SetupConfigureMethod::Immutable;
 
-                $this->setupByAttributes[$setupAttr->getMethod()][] = [$setupType, $setupAttr->arguments];
+                $this->setupByAttributes[$setupAttr->getMethod()][] = new SetupTypeWithArguments($setupType, $setupAttr->arguments);
             }
         }
 
-        return $this->setupByAttributes + $this->setup;
+        return $this->setupByAttributes;
     }
 
     /**
+     * @return array<non-empty-string, list<SetupTypeWithArguments>>|false
+     *
+     * @throws AutowireExceptionInterface
+     */
+    private function getSetupsFromPriorityBound(): array|false
+    {
+        if (!isset($this->priorityBoundSetups)) {
+            if (null === $this->priorityBoundConfiguration || null === $this->priorityBoundConfiguration->setups) {
+                return $this->priorityBoundSetups = false;
+            }
+
+            if ([] === $this->priorityBoundConfiguration->setups) {
+                return $this->priorityBoundSetups = [];
+            }
+
+            $setups = $this->configureSetups($this->priorityBoundConfiguration->setups);
+
+            if (!$setups->valid()) {
+                return $this->priorityBoundSetups = false;
+            }
+
+            $this->priorityBoundSetups = [];
+
+            foreach ($setups as $setup) {
+                $setupType = $setup instanceof Setup
+                    ? SetupConfigureMethod::Mutable
+                    : SetupConfigureMethod::Immutable;
+
+                $this->priorityBoundSetups[$setup->getMethod()][] = new SetupTypeWithArguments($setupType, $setup->arguments);
+            }
+        }
+
+        return $this->priorityBoundSetups;
+    }
+
+    /**
+     * @param array<non-empty-string, mixed> $sourceSetups
+     *
      * @return Generator<Setup|SetupImmutable>
      *
      * @throws AutowireAttributeException
      */
-    private function getSetupAttributes(ReflectionClass $class): Generator
+    private function configureSetups(array $sourceSetups): Generator
     {
-        $autowireAttribute = $this->getAutowireAttributeConfiguringDefinition($class);
-
-        if (false === $autowireAttribute || null === $autowireAttribute->setups) {
-            yield from AttributeReader::getSetupAttribute($class);
-
-            return;
-        }
-
-        foreach ($autowireAttribute->setups as $method => $setups) {
+        foreach ($sourceSetups as $method => $setups) {
             if (is_array($setups)) {
                 foreach ($setups as $setup) {
                     if ($setup instanceof Setup || $setup instanceof SetupImmutable) {

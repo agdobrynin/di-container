@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kaspi\DiContainer\DiDefinition;
 
 use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentBuilder;
-use Kaspi\DiContainer\DiDefinition\Arguments\ArgumentResolver;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\Arguments\ArgumentBuilderInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -58,14 +57,14 @@ final class DiDefinitionCallable implements DiDefinitionCallableInterface, DiDef
 
     public function exposeArgumentBuilder(DiContainerInterface $container): ArgumentBuilderInterface
     {
-        return new ArgumentBuilder($this->bindArguments, $this->reflectionFunction(), $container);
+        return new ArgumentBuilder($this->bindArguments, $this->reflectionFunction(), $container, false);
     }
 
     public function resolve(DiContainerInterface $container, mixed $context = null): mixed
     {
         $this->argBuilder ??= $this->exposeArgumentBuilder($container);
 
-        return ($this->definition)(...ArgumentResolver::resolve($this->argBuilder, $container, $this));
+        return ($this->definition)(...$this->argBuilder->resolve($this));
     }
 
     public function getDefinition(): callable

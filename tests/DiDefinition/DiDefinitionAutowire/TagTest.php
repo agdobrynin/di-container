@@ -11,6 +11,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 use Kaspi\DiContainer\DiContainerConfig;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionGet;
+use Kaspi\DiContainer\DTO\AutowirePriorityBoundConfiguration;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\DiDefinitionExceptionInterface;
 use Kaspi\DiContainer\Traits\SetupAttributeTrait;
@@ -28,6 +29,7 @@ use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TaggedClassBindTagTwoDefaul
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Bar;
 use Tests\DiDefinition\DiDefinitionAutowire\Fixtures\TagWrongPriorityMethod\Foo;
 
+use function array_keys;
 use function preg_quote;
 
 /**
@@ -403,5 +405,77 @@ class TagTest extends TestCase
         ;
 
         $definition->getTags();
+    }
+
+    #[DataProvider('dataProviderReadTagPriorityBoundConfigurations')]
+    public function testReadTagPriorityBoundConfiguration(string $class, ?string $id, ?AutowirePriorityBoundConfiguration $priorityBoundConfig, array $expectTags): void
+    {
+        $def = new DiDefinitionAutowire($class, priorityBoundConfiguration: $priorityBoundConfig);
+
+        if (null !== $id) {
+            $def->setContainerIdentifier($id);
+        }
+
+        $tags = $def->getTagsByAttribute();
+
+        self::assertEquals($expectTags, array_keys($tags));
+    }
+
+    public static function dataProviderReadTagPriorityBoundConfigurations(): Generator
+    {
+        $class = new
+            #[Tag('tags.on_class.one')]
+            #[Tag('tags.on_class.two')]
+            #[Autowire('foo', tags: [new Tag('tags.foo.one'), new Tag('tags.foo.two')])]
+        class {};
+
+        yield [
+            $class::class,
+            null,
+            null,
+            ['tags.on_class.one', 'tags.on_class.two'],
+        ];
+
+        yield [
+            $class::class,
+            null,
+            new AutowirePriorityBoundConfiguration([], [], tags: null, resetter: false),
+            ['tags.on_class.one', 'tags.on_class.two'],
+        ];
+
+        yield [
+            $class::class,
+            null,
+            new AutowirePriorityBoundConfiguration([], [], tags: [], resetter: false),
+            [],
+        ];
+
+        yield [
+            $class::class,
+            'foo',
+            null,
+            ['tags.foo.one', 'tags.foo.two'],
+        ];
+
+        yield [
+            $class::class,
+            $class::class,
+            null,
+            ['tags.on_class.one', 'tags.on_class.two'],
+        ];
+
+        yield [
+            $class::class,
+            null,
+            null,
+            ['tags.on_class.one', 'tags.on_class.two'],
+        ];
+
+        yield [
+            $class::class,
+            null,
+            new AutowirePriorityBoundConfiguration([], [], tags: new Tag('tags.priority.one'), resetter: false),
+            ['tags.priority.one'],
+        ];
     }
 }

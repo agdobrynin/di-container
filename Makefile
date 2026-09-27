@@ -18,7 +18,7 @@ phpunit-no-coverage := ./vendor/bin/phpunit --no-coverage $(phpunit_params)
 phpunit-coverage := ./vendor/bin/phpunit $(phpunit_params)
 
 # analyzer command
-php-stan := ./vendor/bin/phpstan -vvv --memory-limit=256M
+php-stan := ./vendor/bin/phpstan
 
 # code style fixer
 php-cs-fixer := ./vendor/bin/php-cs-fixer fix

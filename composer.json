@@ -13,12 +13,12 @@
         "ext-tokenizer": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "10.5.64",
-        "friendsofphp/php-cs-fixer": "3.95.17",
-        "phpstan/phpstan": "2.2.6",
+        "phpunit/phpunit": "10.5.65",
+        "friendsofphp/php-cs-fixer": "3.95.27",
+        "phpstan/phpstan": "2.2.15",
         "phpstan/phpstan-strict-rules": "2.0.12",
         "mikey179/vfsstream": "1.6.12",
-        "rector/rector": "2.5.8"
+        "rector/rector": "2.6.7"
     },
     "license": "MIT",
     "autoload": {

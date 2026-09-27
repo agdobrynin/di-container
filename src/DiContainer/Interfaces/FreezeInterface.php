@@ -10,4 +10,6 @@ namespace Kaspi\DiContainer\Interfaces;
 interface FreezeInterface
 {
     public function freeze(): void;
+
+    public function isFrozen(): bool;
 }

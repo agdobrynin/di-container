@@ -6,6 +6,7 @@ namespace Kaspi\DiContainer\Interfaces\DiDefinition\Arguments;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
+use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionInterface;
 use Kaspi\DiContainer\Interfaces\Exceptions\ArgumentBuilderExceptionInterface;
 use ReflectionFunctionAbstract;
 
@@ -27,9 +28,7 @@ interface ArgumentBuilderInterface
     public function getContainer(): DiContainerInterface;
 
     /**
-     * Php attributes as highest priority, then binding arguments, then typed parameters.
-     *
-     * Php attributes for bind argument pass through container configuration.
+     * Returns arguments as definitions that the container can resolve.
      *
      * @return BindArgumentsType
      *
@@ -38,11 +37,9 @@ interface ArgumentBuilderInterface
     public function build(): array;
 
     /**
-     * Binding arguments as highest priority, then Php attributes, then typed parameters.
-     *
-     * @return BindArgumentsType
+     * @return mixed[]
      *
      * @throws ArgumentBuilderExceptionInterface
      */
-    public function buildByPriorityBindArguments(): array;
+    public function resolve(?DiDefinitionInterface $context = null): array;
 }

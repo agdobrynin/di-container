@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration\FactoryConfig\Fixtures;
 
 use Kaspi\DiContainer\Attributes\DiFactory;
+use Kaspi\DiContainer\Attributes\Parameter;
 
 #[DiFactory(
     [FactoryClassArgs::class, 'create'],
@@ -15,5 +16,8 @@ use Kaspi\DiContainer\Attributes\DiFactory;
 )]
 final class FooAttrArgs
 {
-    public function __construct(public readonly string $str) {}
+    public function __construct(
+        #[Parameter('params.str')]
+        public readonly string $str
+    ) {}
 }
