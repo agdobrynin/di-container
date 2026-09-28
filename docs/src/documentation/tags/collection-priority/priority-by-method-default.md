@@ -1,0 +1,201 @@
+---
+outline: [2, 4]
+title: «Метод-приоритета» по умолчанию
+---
+### «Метод-приоритета» по умолчанию { #priority-by-method-default }
+
+Для случаев когда определить приоритет элемента коллекции из тега не удается, используется **«метод-приоритета» по умолчанию**.
+
+При отсутствии в PHP-классе **«метода-приоритета» по умолчанию**, элемент коллекции получит приоритет со значением `null`.
+
+**«Метод-приоритета» по умолчанию** задаётся в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md) или в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+
+<!--@include: _include/method_note.md-->
+
+### Пример конфигурации { #example }
+
+PHP-классы:
+
+::: code-group
+
+<<< @/_code/Tags/src/Services/Foo.php
+
+<<< @/_code/Tags/src/Services/Bar.php
+
+<<< @/_code/Tags/src/Services/Baz.php
+
+<<< @/_code/Tags/src/Services/Qux.php
+
+:::
+
+Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр конструктора `$services` PHP-класса `\App\Services\Foo`.
+
+При этом первым элементом коллекции должен быть PHP-класс `\App\Services\Qux`, остальные элементы могут иметь неопределённую очерёдность. Для получения приоритета от элемента коллекции `\App\Services\Qux` воспользуемся возможностью объявить **«метод-приоритета» по умолчанию**, для этого реализуем метод `\App\Services\Qux::getPriority()`:
+
+<<< @/_code/Tags/src/Services/QuxPriorityMethod.php
+
+#### Объявление в файлах конфигураций { #php-definition }
+
+В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.ordered'` в параметр `$servies` конструктора PHP-класса `\App\Services\Foo` и задать **«метод-приоритета» по умолчанию** в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md).
+
+В файле конфигураций `tagged_services.php` объявить тег `'tags.ordered'` через метод `bindTag()` для PHP-классов.
+
+::: code-group
+
+<<< @/_code/Tags/container_build_ordered.php [container_build.php]
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php //[!code highlight]
+
+use App\Services\Foo;
+
+use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            servies: diTaggedAs(
+                'tags.ordered',//[!code highlight]
+                priorityDefaultMethod: 'getPriority',//[!code ++]
+            )
+    );
+};
+```
+
+```php [tagged_services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/tagged_services.php //[!code highlight]
+
+use App\Services\{Bar, Baz, Qux};
+
+use function \Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->bindTag('tags.ordered');//[!code highlight]
+        
+    yield diAutowire(Baz::class)
+        ->bindTag('tags.ordered');//[!code highlight]
+
+    yield diAutowire(Qux::class)
+        ->bindTag('tags.ordered');//[!code highlight]
+};
+```
+
+::: 
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Qux"
+string(16) "App\Services\Bar"
+string(16) "App\Services\Baz"
+```
+
+#### Объявление через атрибуты { #attributes }
+
+Для PHP-классов объявить тег `'tags.ordered'` через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
+
+Объявить внедрение коллекции элементов отмеченных тегом  `'tags.ordered'` в параметр `$services` конструктора класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) и задать **«метод-приоритета» по умолчанию** `'getPriority'` в параметре `$priorityDefaultMethod`.
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\TaggedAs;//[!code highlight]
+
+final class Foo
+{
+    public function __construct(
+        #[TaggedAs(//[!code highlight]
+            'tags.ordered',//[!code highlight]
+            priorityDefaultMethod: 'getPriority',// [!code ++]
+        )]//[!code highlight]
+        public readonly iterable $services
+    ) {}    
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;//[!code highlight]
+
+#[Tag('tags.ordered')]//[!code highlight]
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;//[!code highlight]
+
+#[Tag('tags.ordered')]//[!code highlight]
+final class Baz
+{
+    // …
+}
+```
+
+```php [Qux.php]
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;//[!code highlight]
+
+#[Tag('tags.ordered')]//[!code highlight]
+final class Qux
+{
+    // …
+    public static function getPriority(): int
+    {
+        return 100;
+    }
+}
+```
+
+:::
+
+::: code-group
+
+<<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
+
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Qux"
+string(16) "App\Services\Bar"
+string(16) "App\Services\Baz"
+```
+
+<!--@include: ../../php-definition/_include/bind_notes.md-->

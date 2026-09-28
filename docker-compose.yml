@@ -1,0 +1,18 @@
+services:
+  node:
+    container_name: ${NODE_IMAGE:-node:22-alpine}
+    build:
+      dockerfile: Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
+        APP_DIR: ${APP_DIR:-/var/app}
+    volumes:
+      - ".:${APP_DIR:-/var/app}"
+    ports:
+      - "${HOST_VITE_PORT:-5173}:${VITE_PORT:-5173}"
+      - "${HOST_VITE_PREVIEW_PORT:-4173}:${VITE_PREVIEW_PORT:-4173}"
+    networks:
+      - gw
+networks:
+  gw:
+    driver: bridge

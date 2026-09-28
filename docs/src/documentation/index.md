@@ -1,0 +1,123 @@
+---
+outline: [2,4]
+title: Руководство. Введение.
+---
+### Введение { #documentation }
+
+В этой документации описывается API контейнера из пакета [kaspi/di-container](https://packagist.org/packages/kaspi/di-container).
+
+### PSR-11
+
+Контейнер полностью совместим с рекомендациями [PSR-11](https://www.php-fig.org/psr/psr-11/):
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace Psr\Container;
+
+interface ContainerInterface
+{
+    public function get($id);
+ 
+    public function has($id);
+}
+```
+### `call()`
+
+Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface`
+который предоставляет метод `call()` для вызываемых типов или значений которые могут быть преобразованы контейнером к `callable` типу.
+
+```php
+<?php
+declare(strict_types=1);
+
+use App\Services\Foo;
+use Kaspi\DiContainer\DiContainerBuilder;
+
+use function var_export;
+
+$container = (new DiContainerBuilder())->build();
+
+$container->call(
+    static function(Foo $foo, string $name): void {
+        $foo->doSomethind($name);
+        sprintf('Call Foo::doSomething(%s)', var_export($name, true));
+    },
+    name: 'John'
+);
+// string(29) "Call Foo::doSomething('John')"
+```
+
+Подробнее о методе `call()` рассказано в разделе [«Метод контейнера для вызываемых типов»](call/index.md).
+
+### set()
+
+Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerSetterInterface` который предоставляет метод `set()`
+для прямой установки объекта (инстанцированный класс) в уже сформированный контейнер зависимостей.
+
+```php
+<?php
+declare(strict_types=1);
+
+use App\Services\Bar;
+
+$bar = new Bar(
+    // set some dependencies.
+);
+
+// идентификатор будет указан как 'App\Services\Bar'
+$container->set($bar::class, $bar);
+```
+
+Подробнее о методе `set()` рассказано в разделе [«Динамическое добавление определений в контейнер»](container-builder/set.md).
+
+### Особенности внедрения некоторых классов и интерфейсов { #resolve-class-interface }
+
+При внедрении зависимостей ниже перечисленных типов всегда будет получен текущий контейнер:
+- `\Psr\Container\ContainerInterface`
+- `\Kaspi\DiContainer\Interfaces\DiContainerInterface`
+- `\Kaspi\DiContainer\DiContainer`
+
+Пример:
+```php
+<?php
+declare(strict_types=1);
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use Psr\Container\ContainerInterface;
+
+class Foo
+{
+    public function __construct(
+        public readonly ContainerInterface $container//[!code warning]
+    ) {}
+}
+
+$container = (new DiContainerBuilder())->build();
+
+var_dump($container === $container->get(Foo::class)->container);
+// (bool) true
+```
+
+### Объявление внедрения зависимостей { #using }
+
+Объявить внедрение зависимостей можно в [файлах конфигураций](php-definition/index.md) или через [атрибуты](attribute-definition/index.md), так же можно совмещать оба типа объявления.
+
+Для сборки контейнера используйте [специальный класс `DiContainerBuilder`](container-builder/index.md).
+
+#### Содержание документации { #toc }
+
+* 👷‍♂️ [Сборка контейнера зависимостей](container-builder/index.md).
+* ⚙️ [Конфигурация для DiContainer](container-config/index.md).
+* 🐘 [Объявление в файлах конфигураций](php-definition/index.md).
+* #️⃣ [Объявление через атрибуты](attribute-definition/index.md).
+* 📦 [Метод контейнера `call()` для вызываемых типов](call/index.md).
+* 🔖 [Теги - метки определений контейнера](tags/index.md).
+* 📋 [Параметры контейнера](container-parameters/index.md).
+* 🗳️ [Объявление объекта в рантайм контейнере](runtime-definition/index.md).
+* 🏭 [Использование фабричных методов для внедрения зависимостей](factories/index.md).
+* 🧹 [Сброс контейнера зависимостей](container-reset/index.md).
+* ♻️ [Сброс состояния объектов для долго-живущих процессов](object-resetters/index.md).
+* 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](lazy-injection/index.md).
+

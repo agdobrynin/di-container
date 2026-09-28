@@ -1,0 +1,149 @@
+---
+outline: [2,4]
+title: Атрибут ProxyClosure
+---
+### Атрибут ProxyClosure
+
+Атрибут `\Kaspi\DiContainer\Attributes\ProxyClosure` внедряет «ленивую» зависимость через встроенный PHP-класс [`\Closure`](https://www.php.net/manual/ru/class.closure.php), откладывая инициализацию зависимости до момента фактического его использования.
+
+Такой приём объявления зависимости пригодится для внедрения «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмкий вычислений.
+
+> [!IMPORTANT]
+> Обязательно типизировать параметр[^TypeHints] как `\Closure` или `callable` для внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\ProxyClosure`.
+> ```php{2}
+>  public function __construct(
+>       private readonly \Closure $bar
+>  ) {}
+> ```
+
+> [!TIP]
+> Если используется PHP 8.4 и выше, то вместо атрибута `\Kaspi\DiContainer\Attributes\ProxyClosure` предпочтительнее внедрять зависимость через встроенный в PHP механизм [«ленивых объектов»](../lazy-injection/index.md).
+
+Конфигурация атрибута:
+- `\Attribute::TARGET_PARAMETER`
+- `\Attribute::IS_REPEATABLE`
+
+Сигнатура атрибута:
+
+```php
+\Kaspi\DiContainer\Attributes\ProxyClosure::__construct(
+    string $containerIdentifier
+)
+```
+
+Параметры:
+- `$containerIdentifier` – идентификатор контейнера [^ContainerId].
+
+### Пример внедрения параметра с отложенной инициализацией { #example }
+
+PHP-классы:
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(
+        private readonly bar $bar
+    ) {}
+
+    public function getBar(): Bar
+    {
+        return $this->bar;
+    }
+}
+```
+
+<<< @/_code/php-definition/di-proxy-closure/Bar.php
+
+:::
+
+
+PHP-класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления. Необходимо объявить внедрение PHP-класса `\App\Services\Bar` в конструктор класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP-класс `\Closure`.
+
+::: code-group
+
+```php {13-15} [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+use Closure;//[!code ++]
+use Kaspi\DiContainer\Attributes\ProxyClosure;//[!code ++]
+
+final class Foo
+{
+    /**
+     * @param Closure(): Bar $barProxy
+     */
+    public function __construct(
+        private readonly bar $bar//[!code --]
+        #[ProxyClosure(Bar::class)]//[!code ++]
+        private readonly Closure $barProxy//[!code ++]
+    ) {}
+
+    public function getBar(): Bar
+    {
+        return $this->bar;//[!code --]
+        return ($this->barProxy)();//[!code ++]
+    }
+}
+```
+
+:::
+
+::: code-group
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->getBar() instanceof Bar);
+```
+
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+bool(true)
+```
+
+> [!TIP]
+> Используйте [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) для подсказок и автодополнения в IDE:
+> ```php{1-3}
+>   /**
+>    * @param Closure(): Bar $barProxy
+>    */
+>  public function __construct(private readonly Closure $barProxy) {}
+> ```
+
+<!--@include: ../_include/term_notes.md-->
