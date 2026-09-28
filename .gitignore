@@ -1,12 +1,9 @@
 .idea
 .settings/
 /vendor
-/_vendor
-.bundle/
 *.cache
 .coverage-html/
 composer.lock
-Gemfile.lock
 !.gitkeep
 !/tests/_var/cache/link_to_file.php
 !/tests/_var/file.php
