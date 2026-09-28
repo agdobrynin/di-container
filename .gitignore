@@ -8,3 +8,4 @@ composer.lock
 !/tests/_var/cache/link_to_file.php
 !/tests/_var/file.php
 /tests/_var/
+node_modules/
