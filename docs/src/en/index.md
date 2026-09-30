@@ -5,14 +5,7 @@ layout: home
 hero:
   name: "My Awesome Project"
   text: "A VitePress Site"
-  tagline: My great project tagline
-  actions:
-    - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
-    - theme: alt
-      text: API Examples
-      link: /api-examples
+  tagline: Lightweight codebase with no external dependencies and zero bloat.
 
 features:
   - title: Feature A

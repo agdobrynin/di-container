@@ -124,7 +124,7 @@ $container->call(
 
 ```
 > [!TIP]
-> Больше информации о [методе `call()`](call-method.md)
+> Больше информации о [методе `call()`](03-call-method.md)
 
 ### Конфигурирование DiContainer
 

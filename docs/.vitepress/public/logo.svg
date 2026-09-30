@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#FFFFFF"/>
+  
+  <g transform="translate(400, 410)">
+    <!-- GLOW EFFECT (Center) -->
+    <circle cx="0" cy="-20" r="90" fill="url(#centerGlow)" opacity="0.8"/>
+    
+    <!-- DEFINITIONS -->
+    <defs>
+      <!-- Radial glow for the center -->
+      <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#00F0FF" stop-opacity="1"/>
+        <stop offset="50%" stop-color="#00F0FF" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#00F0FF" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- Flat Color Palettes (Isometric perspective simulation via flat shades) -->
+      <!-- Left Faces (Darker Blue) -->
+      <linearGradient id="leftDark" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0A4D8C"/>
+        <stop offset="100%" stop-color="#06396A"/>
+      </linearGradient>
+      <!-- Right Faces (Medium Blue/Turquoise) -->
+      <linearGradient id="rightMedium" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00A8CC"/>
+        <stop offset="100%" stop-color="#008BB0"/>
+      </linearGradient>
+      <!-- Top Faces (Bright Turquoise/Cyan) -->
+      <linearGradient id="topLight" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00F0FF"/>
+        <stop offset="100%" stop-color="#00C4D4"/>
+      </linearGradient>
+    </defs>
+
+    <!-- ISOMETRIC PUZZLE CUBE PIECES -->
+    <!-- Base Vector Math for Iso: 
+         Top Face projection: (x, y) -> (x - y) * cos(30), (x + y) * sin(30)
+         We build cleanly aligned flat paths with subtle spacing gap (4px) to emphasize puzzle structure.
+    -->
+
+    <!-- PIECE 1: LEFT BOTTOM PART -->
+    <!-- Left Face -->
+    <path d="M -160,40 L -60,90 L -60,210 L -160,160 Z" fill="#0A4D8C" />
+    <path d="M -60,90 L -10,65 L -10,120 L -60,145 Z" fill="#06396A" />
+    <!-- Top projection of left piece -->
+    <path d="M -160,40 L -110,15 L -10,65 L -60,90 Z" fill="#00A8CC" />
+
+    <!-- PIECE 2: RIGHT BOTTOM PART (Fitting In) -->
+    <!-- Right Face -->
+    <path d="M 60,90 L 160,40 L 160,160 L 60,210 Z" fill="#008BB0" />
+    <path d="M 10,65 L 60,90 L 60,145 L 10,120 Z" fill="#00A8CC" />
+    <!-- Top projection of right piece -->
+    <path d="M 10,65 L 110,15 L 160,40 L 60,90 Z" fill="#00E5FF" />
+
+    <!-- PIECE 3: TOP BACK PIECE (Hovering/Fitting down) -->
+    <g transform="translate(0, -60)">
+      <!-- Left Face -->
+      <path d="M -110,-105 L -10,-55 L -10,25 L -110,-25 Z" fill="#0D599E" />
+      <!-- Right Face -->
+      <path d="M -10,-55 L 90,-105 L 90,-25 L -10,25 Z" fill="#00BAD6" />
+      <!-- Top Face -->
+      <path d="M -110,-105 L 0,-160 L 90,-105 L -10,-55 Z" fill="#33F4FF" />
+    </g>
+
+    <!-- PIECE 4: FOREGROUND SEPARATE FLOATING PUZZLE ELEMENT (Showing Assembly) -->
+    <g transform="translate(0, 40)">
+      <!-- Left-facing inner cuts -->
+      <path d="M -50,-100 L 0,-75 L 0,-15 L -50,-40 Z" fill="#084278" />
+      <!-- Right-facing inner cuts -->
+      <path d="M 0,-75 L 50,-100 L 50,-40 L 0,-15 Z" fill="#0096B8" />
+      <!-- Top Face -->
+      <path d="M -50,-100 L 0,-125 L 50,-100 L 0,-75 Z" fill="#00F0FF" />
+    </g>
+
+    <!-- GLOWING CORE DETAILS (Inner Tech Lines) -->
+    <g opacity="0.9">
+      <line x1="-10" y1="5" x2="-10" y2="60" stroke="#00F0FF" stroke-width="3" stroke-linecap="round"/>
+      <line x1="10" y1="5" x2="10" y2="60" stroke="#00F0FF" stroke-width="3" stroke-linecap="round"/>
+      <line x1="-50" y1="-25" x2="-10" y2="-5" stroke="#33F4FF" stroke-width="2" />
+      <line x1="50" y1="-25" x2="10" y2="-5" stroke="#33F4FF" stroke-width="2" />
+    </g>
+
+  </g>
+</svg>
