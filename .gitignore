@@ -9,3 +9,5 @@ composer.lock
 !/tests/_var/file.php
 /tests/_var/
 node_modules/
+docs/.vitepress/dist
+docs/.vitepress/cache
