@@ -1,7 +1,9 @@
 // https://vitepress.dev/guide/custom-theme
 import { h } from 'vue'
 import DefaultTheme from 'vitepress/theme'
+import { VPButton } from 'vitepress/theme'
 import './style.css'
+import 'virtual:group-icons.css'
 
 /** @type {import('vitepress').Theme} */
 export default {
@@ -12,6 +14,6 @@ export default {
     })
   },
   enhanceApp({ app, router, siteData }) {
-    // ...
+    app.component('VPButton', VPButton);
   }
 }

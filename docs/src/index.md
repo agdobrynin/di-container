@@ -4,31 +4,41 @@ layout: home
 isHome: true
 
 hero:
-  name: kaspi/di-container
-  text: Контейнер внедрения зависимостей для PHP 8.1 - 8.5
-  tagline: Легковесная кодовая база без внешних зависимостей и лишнего «мусора».
-  image:
-    src: /logo2.svg
-    alt: kaspi/di-container
+    name: kaspi/di-container
+    text: Контейнер внедрения зависимостей для PHP 8.1 - 8.5
+    tagline: Легковесная кодовая база без внешних зависимостей и лишнего «мусора».
+    image:
+        src: /logo2.svg
+        alt: kaspi/di-container
+    actions:
+      - theme: brand
+        text: Руководство
+        link: /documentation
+      - theme: alt
+        text: Примеры
+        link: /examples
+      - theme: alt
+        text: GitHub
+        link: https://github.com/agdobrynin/di-container
 features:
-  - title: Autowire
-    details: Автоматическое разрешение зависимостей для конструктора класса или для параметров вызываемого тип.
-    icon: 🛠️
-  - title: Lazy injection
-    details: Отложенная инициализация внедряемых объектов.
-    icon: 💤
-  - title: Attribute-driven
-    details: Настройка без необходимости конфигурации, реализованная на базе нативных атрибутов PHP 8+.
-    icon:  #️⃣ 
-  - title: Zero configuration
-    details: Если класс не имеет зависимостей или зависит только от других конкретных классов, контейнеру не нужно указывать, как разрешить этот класс.
-    icon: 🧊
-  - title: Definition Tags
-    details: Получение коллекции определений и сервисов в контейнере по тегу.
-    icon: 🏷️
-  - title: Compiling the Container
-    details: Генерация настроенного контейнера в PHP-код оптимизированный специально для вашей конфигурации и ваших классов.
-    icon: 📦
+    - title: Autowire
+      details: Автоматическое разрешение зависимостей для конструктора класса или для параметров вызываемого тип.
+      icon: 🛠️
+    - title: Lazy injection
+      details: Отложенная инициализация внедряемых объектов.
+      icon: 💤
+    - title: Attribute-driven
+      details: Настройка без необходимости конфигурации, реализованная на базе нативных атрибутов PHP 8+.
+      icon:  #️⃣ 
+    - title: Zero configuration
+      details: Если класс не имеет зависимостей или зависит только от других конкретных классов, контейнеру не нужно указывать, как разрешить этот класс.
+      icon: 🧊
+    - title: Definition Tags
+      details: Получение коллекции определений и сервисов в контейнере по тегу.
+      icon: 🏷️
+    - title: Compiling the Container
+      details: Генерация настроенного контейнера в PHP-код оптимизированный специально для вашей конфигурации и ваших классов.
+      icon: 📦
 
 ---
 
@@ -143,3 +153,5 @@ class Post {
 ```
 
 :::
+
+<VPButton text="Изучите руководство" href="/documentation" theme="brand" />

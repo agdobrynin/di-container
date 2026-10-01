@@ -1,4 +1,6 @@
 import { defineConfig } from 'vitepress'
+import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
+
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -9,6 +11,9 @@ export default defineConfig({
   srcDir: './src',
   vite: {
     publicDir: '../public',
+    plugins: [
+      groupIconVitePlugin()
+    ],
   },
   locales: {
     root: {
@@ -21,6 +26,9 @@ export default defineConfig({
         },
       },
       markdown: {
+        config(md) {
+          md.use(groupIconMdPlugin)
+        },
         container: {
           noteLabel: 'Замечание',
           tipLabel: 'Подсказка',
@@ -37,6 +45,11 @@ export default defineConfig({
       label: 'English',
       lang: 'en',
       link: '/en/',
+      markdown: {
+        config(md) {
+          md.use(groupIconMdPlugin)
+        },
+      }
     },
   },
   themeConfig: {
