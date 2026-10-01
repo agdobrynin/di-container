@@ -26,7 +26,7 @@
 настроенного контейнера зависимостей.
 
 Собранный контейнер будет предоставлять стандартные методы `get()`, `has()` из спецификации [PSR-11](https://www.php-fig.org/psr/psr-11/),
-[метод `call()`](03-call-method.md) и дополнительный [метод `set()`](#динамическое-добавление-определений-в-контейнер) для динамического добавления определений в контейнер.
+[метод `call()`](04-call-method.md) и дополнительный [метод `set()`](#динамическое-добавление-определений-в-контейнер) для динамического добавления определений в контейнер.
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
@@ -64,7 +64,7 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
 
 
 ## Установка индивидуальной конфигурации контейнера.
-Для настройки поведения контейнера можно использовать индивидуальную [настройку конфигурации](00-container-config.md).
+Для настройки поведения контейнера можно использовать индивидуальную [настройку конфигурации](01-container-config.md).
 
 Конфигурация по умолчанию:
 ```php
@@ -158,7 +158,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 > [!TIP]
 > Для некоторых определений идентификатор контейнера может быть сформирован автоматически.
-> - [хелпер функция `diAutowire()`](01-php-definition.md#diautowire)
+> - [хелпер функция `diAutowire()`](03-php-definition.md#diautowire)
 > - [хелпер функция `diRuntime()`](10-runtime-definition.md#diruntime)
 > - [PHP атрибут `#[Autowire()]`](02-attribute-definition.md#autowire)
 >
@@ -369,7 +369,7 @@ DiContainerBuilder::setParameter(string $name, array|int|float|string|bool|null|
 
 ## Импорт классов в контейнер.
 Импорт обеспечивает доступность классов и их конфигурирование как определений
-в контейнере. Если [в конфигурации контейнера](00-container-config.md)
+в контейнере. Если [в конфигурации контейнера](01-container-config.md)
 указано использование PHP атрибутов (`$useAttribute = true`) то они будут также использованы для
 конфигурирования каждого определения.
 
@@ -377,7 +377,7 @@ DiContainerBuilder::setParameter(string $name, array|int|float|string|bool|null|
 
 Так же импорт будет полезен когда контейнер имеет настройку
 `$useZeroConfigurationDefinition = false` – [запрещено автоматически разрешать
-зависимости класса](00-container-config.md)
+зависимости класса](01-container-config.md)
 если он явно не объявлен в контейнере.
 
 **Импорт классов:**

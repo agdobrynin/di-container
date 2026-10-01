@@ -8,7 +8,7 @@
 
 ## Как использовать
 
-Определение контейнера создаваемое через [хелпер функцию `diAutowire()`](01-php-definition.md#diautowire) 
+Определение контейнера создаваемое через [хелпер функцию `diAutowire()`](03-php-definition.md#diautowire) 
 или PHP класс сконфигурированный через [атрибут `Autowire()`](02-attribute-definition.md#autowire) можно определить как «ленивый объект».
 Если определение контейнера внедряется как зависимость, то вместо него будет внедрен прокси-объект реализующий «отложенную» инициализацию объекта.
 
@@ -151,6 +151,6 @@ $result = $bar->doFoo();
 
 > [!TIP]
 > Если версия PHP ниже 8.4, то можно использовать варианты внедрения зависимостей через `\Closure` класс:
-> - [хелпер функция `diProxyClosure()`](01-php-definition.md#diproxyclosure)
+> - [хелпер функция `diProxyClosure()`](03-php-definition.md#diproxyclosure)
 > - [PHP атрибут `ProxyClosure()`](02-attribute-definition.md#proxyclosure)
 > 

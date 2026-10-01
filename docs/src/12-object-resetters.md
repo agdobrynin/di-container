@@ -108,7 +108,7 @@ while ($request = $app->getRequest()) {
 > будет автоматически сконфигурирован метод `setResetter('reset')`.
 
 ### Автоматическое конфигурирование сервиса сброса состояния объектов на основе установленных значений в определения контейнера.
-При [настойке определений контейнера](01-php-definition.md) через конфигурационные файлы, некоторые хелпер функции реализуют интерфейс
+При [настойке определений контейнера](03-php-definition.md) через конфигурационные файлы, некоторые хелпер функции реализуют интерфейс
 `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface` который предоставляет настройку сброса состояния объекта.
 
 Метод конфигурирования:
@@ -119,7 +119,7 @@ setResetter(callable|false|string $resetter)
 - `$resetter` – конфигурация сброса состояния объекта.
 
 Метод `setResetter()` применим к хелпер функциям:
-- [diAutowire](01-php-definition.md#diautowire).
+- [diAutowire](03-php-definition.md#diautowire).
 - [diRuntime](10-runtime-definition.md#хелпер-функция-diruntime).
 
 Установить конфигурацию сброса для нужного объекта так же можно через значение в PHP атрибутах:
@@ -245,7 +245,7 @@ while ($request = $app->getRequest()) {
 
 ### Ручная настройка сервиса сброса состояния объектов.
 
-Для настройки следует использовать [хелпер функцию `diAutowire`](01-php-definition.md#diautowire):
+Для настройки следует использовать [хелпер функцию `diAutowire`](03-php-definition.md#diautowire):
 ```php
 // /app/src/config/object_resetters.php
 declare(strict_types=1);

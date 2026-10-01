@@ -6,11 +6,11 @@
 
 **Определения устанавливаемые во время выполнения контейнера, называются «Runtime definition».**
 
-«Runtime definition» определения можно сконфигурировать через [файлы конфигураций](06-container-builder.md#загрузка-из-файлов-конфигураций)
+«Runtime definition» определения можно сконфигурировать через [файлы конфигураций](00-container-builder.md#загрузка-из-файлов-конфигураций)
 или указать через PHP атрибут на нужном классе.
 
 «Runtime definition» необходим чтобы контейнер знал о существовании такого определения
-во время [компиляции контейнера](06-container-builder.md#компиляция-контейнера)
+во время [компиляции контейнера](00-container-builder.md#компиляция-контейнера)
 (_в противном случае другие определения контейнера, зависящие от «runtime definition», получат ошибку так как не найдут его в конфигурации_).
 
 ## Хелпер функция diRuntime.
@@ -111,7 +111,7 @@ return static function (DefinitionsConfiguratorInterface $configurator) {
 > [!NOTE]
 > Другие определения в конфигурации могут «ссылаться»
 > на идентификаторы контейнера `'App\\Core\\Kernel'` и `'secure_string'`
-> - через [хелпер функцию `diGet()`](01-php-definition.md#diget):
+> - через [хелпер функцию `diGet()`](03-php-definition.md#diget):
 >   - `diGet(\App\Core\Kernel::class)`
 >   - `diGet('secure_string')`
 > - через [php атрибут `Inject`](02-attribute-definition.md#inject):

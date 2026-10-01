@@ -15,16 +15,16 @@
 одним или несколькими тегами.
 Каждый тег может содержать мета-данные переданные в виде массива.
 
-Тегирование сервисов можно произвести при объявлении в стиле [php определений](01-php-definition.md)
+Тегирование сервисов можно произвести при объявлении в стиле [php определений](03-php-definition.md)
 или используя [PHP атрибуты](02-attribute-definition.md).
 
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
-> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](00-container-builder.md).
 
 Для получения тегированных сервисов для параметров определений (_параметры – конструктора, метода или функции_) нужно использовать:
-- `diTaggedAs` – [хелпер функцию](01-php-definition.md#ditaggedas) в стиле php определений 
+- `diTaggedAs` – [хелпер функцию](03-php-definition.md#ditaggedas) в стиле php определений 
 - `#[TaggedAs]` – [php атрибут](02-attribute-definition.md#taggedas) 
 
 ### Ленивая коллекция
@@ -35,7 +35,7 @@
 ### Ключ элемента в коллекции.
 По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
 определений в контейнере (_container identifier – не пустая строка_). Это поведение можно изменить
-через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции diTaggedAs](03-php-definition.md#ditaggedas)
 или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
 от идентификаторов определений (_container identifier_) представленные не пустыми строками
 или целыми числами (_последовательные значения от нуля и больше_).
@@ -45,7 +45,7 @@
 ## 🐘 Объявление тега в стиле php определений.
 
 Для указания тегов используется метод `bindTag`
-который доступен через [хелпер функции](01-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
+который доступен через [хелпер функции](03-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
 реализующие интерфейс `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`
 
 ```php
@@ -299,7 +299,7 @@ class TaggedServices {
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
-> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](00-container-builder.md).
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -393,7 +393,7 @@ $class = $container->get(TaggedServices::class);
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
-> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](06-container-builder.md).
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](00-container-builder.md).
 
 ### 🐘 Использование в стиле php определений
 
@@ -747,7 +747,7 @@ $container->get(App\Rules\Rules::class);
 
 - `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
 - `priorityDefaultMethod` – метод указанный через
-[хелпер функцию `diTaggedAs`](01-php-definition.md#ditaggedas)
+[хелпер функцию `diTaggedAs`](03-php-definition.md#ditaggedas)
 или через [php атрибут #[TaggedAs]](02-attribute-definition.md#taggedas)
 который **может быть реализован** в тегированном php классе возвращающий `priority`.
  
@@ -1297,7 +1297,7 @@ class ClassTaggedAs {
 если у тегированного определения не указан ключ для коллекции в метаданных (_в `$options`_).
 
 Указать метод получения ключа по умолчанию можно через аргумент
-`$keyDefaultMethod` [в хелпер функции diTaggedAs](01-php-definition.md#ditaggedas)
+`$keyDefaultMethod` [в хелпер функции diTaggedAs](03-php-definition.md#ditaggedas)
 или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas).
 
 > [!IMPORTANT]

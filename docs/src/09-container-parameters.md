@@ -3,9 +3,9 @@
 При конфигурации параметров метода php-класса или callable типа можно указывать простые типы такие как,
 `int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или массив `array` состоящий их этих типов,
 напрямую (_как-есть_) в методе `bindArguments()` реализованный хелпер функциями
-[diAutowire()](01-php-definition.md#diautowire),
-[diCallable()](01-php-definition.md#dicallable) и
-[diFactory()](01-php-definition.md#difactory) без указания как разрешить зависимость:
+[diAutowire()](03-php-definition.md#diautowire),
+[diCallable()](03-php-definition.md#dicallable) и
+[diFactory()](03-php-definition.md#difactory) без указания как разрешить зависимость:
 
 ```php
 // /app/config/services_one.php
@@ -275,7 +275,7 @@ return [
 ## Конфигурирование параметров метода php-класса или callable типа.
 
 ### Хелпер функция diParameter.
-Хелпер функция `diParameter` используется при конфигурировании контейнера [как php определений](01-php-definition.md).
+Хелпер функция `diParameter` используется при конфигурировании контейнера [как php определений](03-php-definition.md).
 Указать параметр можно по индексу или через именованные аргументы:
 ```php
 // /app/config/services.php 
@@ -393,11 +393,11 @@ final class Foo {
 Некоторые параметры контейнера нельзя определить в конфигурационных файлах,
 поскольку значение параметра вычисляется во время выполнения с использованием зависимостей контейнера.
 
-Для [компилируемого контейнера](06-container-builder.md#компиляция-контейнера) важно дать знать о будущем существовании «параметра контейнера».
+Для [компилируемого контейнера](00-container-builder.md#компиляция-контейнера) важно дать знать о будущем существовании «параметра контейнера».
 Для таких случаев есть определение «параметра контейнера времени исполнения».
 
 ### Хелпер функция diParameterRuntime.
-Хелпер функция `diParameterRuntime` используется при [конфигурировании контейнера как php определений](01-php-definition.md#diparameterruntime).
+Хелпер функция `diParameterRuntime` используется при [конфигурировании контейнера как php определений](03-php-definition.md#diparameterruntime).
 
 ### PHP атрибут ParameterRuntime.
 Php атрибут `ParameterRuntime` необходимо использовать при [конфигурации определений через PHP атрибуты](02-attribute-definition.md#parameterruntime).
