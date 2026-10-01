@@ -1,10 +1,3 @@
----
-layout: default
-title: DiContainer with configuration as PHP definition
-permalink: /php-definition
-lang: en
----
-
 # 🐘 DiContainer with configuration as PHP definition
 
 Для указания контейнеру каким образом нужно разрешать зависимости в PHP классах или вызываемых типах используется

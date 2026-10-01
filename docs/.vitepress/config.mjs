@@ -3,14 +3,23 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   lang: 'ru-RU',
-  title: "Kaspi/DiContainer",
+  title: "kaspi/di-container",
+  titleTemplate: "Dependency injection container for PHP",
   description: "Dependency injection container for PHP",
   srcDir: './src',
+  vite: {
+    publicDir: '../public',
+  },
   locales: {
     root: {
       label: 'Русский',
       lang: 'ru',
       link: '/',
+      themeConfig: {
+        outline: {
+          label: 'На этой странице',
+        },
+      },
       markdown: {
         container: {
           noteLabel: 'Замечание',

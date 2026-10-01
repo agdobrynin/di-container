@@ -4,7 +4,7 @@ layout: home
 isHome: true
 
 hero:
-  name: Kaspi/DiContainer
+  name: kaspi/di-container
   text: Контейнер внедрения зависимостей для PHP
   tagline: Легковесная кодовая база без внешних зависимостей и лишнего «мусора».
   image:
