@@ -33,6 +33,7 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/logo.svg',
+    base: '/di-container/',
     socialLinks: [
       { icon: 'github', link: 'https://github.com/agdobrynin/di-container' }
     ],

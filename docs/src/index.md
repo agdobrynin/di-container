@@ -7,6 +7,9 @@ hero:
   name: Kaspi/DiContainer
   text: Контейнер внедрения зависимостей для PHP
   tagline: Легковесная кодовая база без внешних зависимостей и лишнего «мусора».
+  image:
+    src: /logo2.svg
+    alt: kaspi/di-container
 features:
   - title: Autowire
     details: Автоматическое разрешение зависимостей для конструктора класса или для параметров вызываемого тип.
