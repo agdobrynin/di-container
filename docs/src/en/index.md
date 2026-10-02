@@ -16,3 +16,14 @@ features:
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
 ---
 
+## Overview DiContainer
+
+Kaspi/di-container is a dependency container for PHP >= 8.1 that implements [PSR-11](https://www.php-fig.org/psr/psr-11/).
+
+## Install
+
+```shell
+composer require kaspi/di-container
+```
+
+## Quick start

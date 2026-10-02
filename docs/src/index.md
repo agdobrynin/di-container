@@ -8,7 +8,7 @@ hero:
     text: Контейнер внедрения зависимостей для PHP 8.1 - 8.5
     tagline: Легковесная кодовая база без внешних зависимостей и лишнего «мусора».
     image:
-        src: /logo2.svg
+        src: /logo_optimize.svg
         alt: kaspi/di-container
     actions:
       - theme: brand
@@ -41,6 +41,10 @@ features:
       icon: 📦
 
 ---
+
+## Обзор DiContainer
+
+Kaspi/di-container — это контейнер внедрения зависимостей для PHP >= 8.1 реализующий рекомендацию [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
 ## Установка
 

@@ -67,12 +67,15 @@ export default defineConfig({
   },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: '/logo.svg',
+    logo: '/logo_optimize.svg',
     base: '/di-container/',
     socialLinks: [
       { icon: 'github', link: 'https://github.com/agdobrynin/di-container', ariaLabel: 'Git Hub' },
       { icon: 'packagist', link: 'https://packagist.org/packages/kaspi/di-container', ariaLabel: 'Packagist' },
     ],
     outline: [2, 4],
+    head: [
+      ['link', { rel: 'icon', href: '/favicon.ico' }]
+    ]
   }
 })
