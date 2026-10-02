@@ -70,7 +70,8 @@ export default defineConfig({
     logo: '/logo.svg',
     base: '/di-container/',
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/agdobrynin/di-container' }
+      { icon: 'github', link: 'https://github.com/agdobrynin/di-container' },
+      { icon: 'packagist', link: 'https://packagist.org/packages/kaspi/di-container' },
     ],
     outline: [2, 4],
   }
