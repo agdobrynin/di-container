@@ -13,7 +13,7 @@ hero:
     actions:
       - theme: brand
         text: Руководство
-        link: /documentation
+        link: /documentation/
       - theme: alt
         text: Рецепты
         link: /cookbook/
@@ -57,7 +57,7 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
     ->build();
 ```
 > [!NOTE]
-> Раздел документации о [DiContainerBuilder](00-container-builder.md).
+> Раздел документации о [DiContainerBuilder](documentation/00-container-builder.md).
 
 #### Получить класс с внедренными зависимостями в стиле PSR-11:
 ```php
@@ -81,7 +81,7 @@ $post->title = 'Lorem ipsum';
 $container->call([\App\Controllers\PostController::class, 'send'], [$post]);
 ```
 > [!NOTE]
-> Раздел документации о методе контейнера [call()](04-call-method.md).
+> Раздел документации о методе контейнера [call()](documentation/04-call-method.md).
 
 #### Классы в проекте:
 
@@ -153,5 +153,3 @@ class Post {
 ```
 
 :::
-
-<VPButton text="Изучите руководство" href="/documentation" theme="brand" />

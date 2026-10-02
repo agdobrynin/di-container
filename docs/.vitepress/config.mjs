@@ -24,6 +24,10 @@ export default defineConfig({
         outline: {
           label: 'На этой странице',
         },
+        nav: [
+          { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
+          { text: 'Рецепты', link: '/cookbook/' },
+        ],
       },
       markdown: {
         config(md) {
@@ -48,6 +52,12 @@ export default defineConfig({
       label: 'English',
       lang: 'en',
       link: '/en/',
+      themeConfig: {
+        nav: [
+          { text: 'Documentation', link: '/en/documentation/' },
+          { text: 'Cookbook', link: '/en/cookbook/' },
+        ],
+      },
       markdown: {
         config(md) {
           md.use(groupIconMdPlugin)
