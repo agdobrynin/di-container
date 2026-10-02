@@ -34,6 +34,7 @@ export default defineConfig({
         container: {
           noteLabel: 'Замечание',
           tipLabel: 'Подсказка',
+          importantLabel: 'Важно',
           warningLabel: 'Предупреждение'
           // ...остальные метки, а также заголовки `customContainers`
         },

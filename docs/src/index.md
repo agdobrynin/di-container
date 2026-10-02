@@ -15,8 +15,8 @@ hero:
         text: Руководство
         link: /documentation
       - theme: alt
-        text: Примеры
-        link: /examples
+        text: Рецепты
+        link: /cookbook/
       - theme: alt
         text: GitHub
         link: https://github.com/agdobrynin/di-container
@@ -126,7 +126,7 @@ class Mail {
 }
 ```
 
-```php [Envelope.php] 
+```php [Envelope.php]
 // /var/www/app/src/Services/Envelope.php
 namespace App\Services;
 

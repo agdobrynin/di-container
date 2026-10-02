@@ -14,7 +14,7 @@ call(array|callable|string $definition, mixed ...$argument)
 > [!WARNING]
 > Необходимо передать аргументы в `$argument` для параметров функции или метода которые **не могут быть разрешены контейнером автоматически**
 
-#### Поддерживаемые типы:
+## Поддерживаемые типы
 - Функция
   ```php
     function userFunc(\App\Services\Bar $bar) { /*... do something ... */ }
@@ -62,7 +62,7 @@ call(array|callable|string $definition, mixed ...$argument)
   $container->call([$object, 'qux']);
   ```
 
-#### Класс с нестатическим методом.
+## Класс с нестатическим методом
 
 Поддерживаемые преобразования в вызываемый тип, через получение контейнером PHP класса
 с разрешением зависимостей в конструкторе и вызовом указанного метода:
@@ -111,7 +111,7 @@ call(array|callable|string $definition, mixed ...$argument)
     $object->qux($object2);
   ```
 
-### Абстрактный пример с контроллером:
+## Абстрактный пример с контроллером
 ```php
 // src/Controllers/PostController.php
 namespace App\Controllers;
@@ -156,7 +156,7 @@ print $container->call(
 >    ->post(name: 'Ivan')
 > ```
 
-### Абстрактный пример с функцией:
+## Абстрактный пример с вызываемым типом
 ```php
 namespace App\Functions;
 
