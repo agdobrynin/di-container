@@ -28,6 +28,34 @@ export default defineConfig({
           { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
           { text: 'Рецепты', link: '/cookbook/' },
         ],
+        sidebar: {
+          '/documentation/': [
+              {
+                base: '/documentation/',
+                text: 'Руководство',
+                link: '/',
+                items: [
+                  {
+                    base: '/documentation/container-builder/',
+                    text: 'Сборка контейнера зависимостей',
+                    activeMatch: '/container-builder',
+                    collapsed: true,
+                    items: [
+                      { text: 'Обзор', link: '/' },
+                      { text: 'Файлы конфигураций', link: 'configuration_files' },
+                    ]
+                  },
+                ]
+              }
+          ],
+          '/cookbook/': [{
+            base: '/cookbook/',
+            text: 'Рецепты',
+            items: [
+              { text: 'Описание', link: '/' },
+            ]
+          }],
+        }
       },
       markdown: {
         config(md) {
@@ -57,6 +85,23 @@ export default defineConfig({
           { text: 'Documentation', link: '/en/documentation/' },
           { text: 'Cookbook', link: '/en/cookbook/' },
         ],
+        sidebar: {
+          '/en/documentation/': [{
+            base: '/en/documentation/',
+            text: 'Building the dependency container',
+            items: [
+              { text: 'Overview', link: 'container-builder' },
+              { text: 'Configuration files', link: 'container-builder/configuration_files' },
+            ]
+          }],
+          '/cookbook/': [{
+            base: '/cookbook/',
+            text: 'Cookbook',
+            items: [
+              { text: 'Overview', link: '/' },
+            ]
+          }],
+        }
       },
       markdown: {
         config(md) {

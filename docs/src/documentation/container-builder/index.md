@@ -1,4 +1,5 @@
-# 👷‍♂️ DiContainerBuilder
+# Сборка контейнера зависимостей
+
 Комбинация методов класса `DiContainerBuilder` предоставляет гибкую настройку и сборку контейнера зависимостей.
 
 Цепочка вызовов настройки сборки должна заканчиваться методом `DiContainerBuilder::build()` для получения
@@ -19,6 +20,7 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
     ->build()
 ;
 ```
+
 > [!IMPORTANT]
 > Валидация конфигурации контейнера провидится в методе `DiContainerBuilder::build()`.
 > При некорректной конфигурации будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface`.
@@ -27,13 +29,13 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
 > Методы загрузки определений имеют следующий приоритет, чем раньше использован метод загрузки,
 > тем приоритетнее добавленные определения со своим идентификатором контейнера.
 > Идентификаторы контейнера для определения должны быть уникальными в рамках создаваемого контейнера.
-> 
+>
 > Для некоторых сценариев использования может понадобиться перезапись ранее добавленных определений.
 > Для перезаписи используйте методы `DiContainerBuilder::addDefinitionsOverride()`
 > и `DiContainerBuilder::loadOverride()`.
-> 
+>
 > Метод `DiContainerBuilder::import()` имеет самый низкий приорите загрузки определений в контейнер.
-> Если определение уже было загружено ранее через методы: 
+> Если определение уже было загружено ранее через методы:
 > - `DiContainerBuilder::load()`
 > - `DiContainerBuilder::loadOverride()`
 > - `DiContainerBuilder::addDefinitions()`
@@ -44,7 +46,7 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
 
 ## Установка индивидуальной конфигурации контейнера
 
-Для настройки поведения контейнера можно использовать индивидуальную [настройку конфигурации](01-container-config.md).
+Для настройки поведения контейнера можно использовать индивидуальную [настройку конфигурации](../container-config/index.md).
 
 Конфигурация по умолчанию:
 ```php
@@ -54,6 +56,7 @@ $diConfig = new DiContainerConfig(
     useZeroConfigurationDefinition: true,
     useAttribute: true,
     isSingletonServiceDefault: false,
+    isConfigureObjectResettersFromDefinitions: true,
 );
 ```
 
@@ -67,6 +70,7 @@ $diConfig = new DiContainerConfig(
     useZeroConfigurationDefinition: false,
     useAttribute: false,
     isSingletonServiceDefault: true,
+    isConfigureObjectResettersFromDefinitions: false,
 );
 
 // передать настройки в построитель контейнера
@@ -75,16 +79,16 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 ;
 ```
 
-## DiContainerBuilder::load
+## DiContainerBuilder::load()
 
-Метод загрузки из [файлов конфигураций]() с отслеживанием уникальности идентификаторов контейнера:
+Метод загрузки из [файлов конфигураций](configuration_files.md) с отслеживанием уникальности идентификаторов контейнера:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::load(string $file, string ...$_): static;
 ```
 Параметры:
-- `$file` – полный путь к файлу конфигурации определений;
-- `$_` – полный путь к файлу конфигурации определений;
+- `$file` – полный путь к файлу конфигурации определений.
+- `$_` – полный путь к файлу конфигурации определений.
 
 > [!IMPORTANT]
 > При сборке контейнера методом `DiContainerBuilder::build()` при совпадении идентификаторов контейнера будет выброшено исключение.
@@ -92,10 +96,14 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 
 В определённых сценариях требуется перезапись ранее добавленных определений при совпадении идентификаторов контейнера.
 
-#### Метод загрузки из файлов конфигураций с перезаписью:
+## DiContainerBuilder::loadOverride()
+
+Метод загрузки из файлов конфигураций с перезаписью:
+
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::loadOverride(string $file, string ...$_): static;
 ```
+
 Параметры:
 - `$file` – полный путь к файлу конфигурации определений;
 - `$_` – полный путь к файлу конфигурации определений;
@@ -393,7 +401,7 @@ $container = $builder->build();
 
 > [!IMPORTANT]
 > Имя файла для скомпилированного контейнера генерируется на основании параметров `$outputDirectory` и `$containerClass`.
-> Сформированное полное имя файла это директория назначения `$outputDirectory` плюс имя класс из `$containerClass` без учёта namespace указанного класса. 
+> Сформированное полное имя файла это директория назначения `$outputDirectory` плюс имя класс из `$containerClass` без учёта namespace указанного класса.
 
 #### Пример настройки компиляции контейнера:
 ```php
@@ -423,9 +431,9 @@ $container = $builder->build();
 1. `'invalid_behavior'` – принимает тип `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum`, значение по умолчанию
    `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum::ExceptionOnCompile`;
 2. `'di_definition_transformer'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`,
-значение по умолчанию пусто;
+   значение по умолчанию пусто;
 3. `'compiled_entries'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface`,
-значение по умолчанию пусто;
+   значение по умолчанию пусто;
 4. `'force_rebuild'` – принимает тип `bool`, значение по умолчанию `false`;
 
 ## Использование контейнера в разных окружениях приложения.
@@ -486,7 +494,7 @@ $container = $builder->build();
 - `$id` – идентификатор контейнера, непустая строка, FQCN класса или интерфейса;
 - `$definition` – определение соответствующее идентификатору `$id`;
 
-> [!WARNING] 
+> [!WARNING]
 > Если идентификатор контейнера не уникален в рамках текущего контейнера, то будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface`.
 
 > [!WARNING]
@@ -495,10 +503,10 @@ $container = $builder->build();
 > или [импортировать классы и интерфейсы](#импорт-классов-в-контейнер)
 > через класс-строитель `DiContainerBuilder`,
 > так как определения установленные напрямую в контейнер не будут [скомпилированы](#компиляция-контейнера).
-> 
+>
 > В некоторых сценариях при использовании метода `set()` необходимо отслеживать чтобы получение сервиса
 > через метод контейнера `get()` не вызывало ошибки из-за того что определение ещё необавлено в контейнер.
-> 
+>
 
 #### Пример использования:
 ```php
@@ -563,7 +571,7 @@ $container->set($others::class, $others);
 > в уже сформированный контейнер (_runtime_),
 > следует использовать [в конфигурационных файлах](#загрузка-из-файлов-конфигураций) хелпер функцию `diRuntime()` использование
 > которой описано в разделе «[Внедрение экземпляра класса в рантайм контейнер](10-runtime-definition.md)».
-> 
+>
 
 ## Передача контекста для конфигурационных файлов.
 В [конфигурационных файлах](#загрузка-из-файлов-конфигураций) можно использовать контекст для настройки и сборки контейнера.
