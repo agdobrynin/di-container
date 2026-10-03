@@ -1,3 +1,6 @@
+---
+outline: [2, 4]
+---
 # Сборка контейнера зависимостей
 
 Комбинация методов класса `DiContainerBuilder` предоставляет гибкую настройку и сборку контейнера зависимостей.
@@ -6,17 +9,18 @@
 настроенного контейнера зависимостей.
 
 Собранный контейнер будет предоставлять стандартные методы `get()`, `has()` из спецификации [PSR-11](https://www.php-fig.org/psr/psr-11/),
-[метод `call()`](04-call-method.md) и дополнительный [метод `set()`](#динамическое-добавление-определений-в-контейнер) для динамического добавления определений в контейнер.
+[метод `call()`](../04-call-method.md) и дополнительный [метод `set()`](set.md) для динамического добавления определений в контейнер.
 
 ```php
+use Kaspi\DiContainer\DiContainerBuilder;
 use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
 use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
 
 /**
- * @var DiContainerCallInterface & DiContainerInterface & DiContainerSetterInterface $container 
+ * @var DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface $container 
  */
-$container = (new \Kaspi\DiContainer\DiContainerBuilder())
+$container = (new DiContainerBuilder())
     ->build()
 ;
 ```
@@ -43,48 +47,15 @@ $container = (new \Kaspi\DiContainer\DiContainerBuilder())
 >
 > то импорт класса не будет выполнен. При возникновении конфликта конфигурации при импорте будет выброшено исключение.
 
-
-## Установка индивидуальной конфигурации контейнера
-
-Для настройки поведения контейнера можно использовать индивидуальную [настройку конфигурации](../container-config/index.md).
-
-Конфигурация по умолчанию:
-```php
-use Kaspi\DiContainer\DiContainerConfig;
-
-$diConfig = new DiContainerConfig(
-    useZeroConfigurationDefinition: true,
-    useAttribute: true,
-    isSingletonServiceDefault: false,
-    isConfigureObjectResettersFromDefinitions: true,
-);
-```
-
-При необходимости можно изменить настройки по умолчанию в `DiContainerConfig` и передать конфигурацию
-в `DiContainerBuilder`:
-
-```php
-use Kaspi\DiContainer\{DiContainerConfig, DiContainerBuilder};
-
-$diConfig = new DiContainerConfig(
-    useZeroConfigurationDefinition: false,
-    useAttribute: false,
-    isSingletonServiceDefault: true,
-    isConfigureObjectResettersFromDefinitions: false,
-);
-
-// передать настройки в построитель контейнера
-$container = (new DiContainerBuilder(containerConfig: $diConfig))
-    ->build()
-;
-```
-
 ## DiContainerBuilder::load()
 
 Метод загрузки из [файлов конфигураций](configuration_files.md) с отслеживанием уникальности идентификаторов контейнера:
 
 ```php
-\Kaspi\DiContainer\DiContainerBuilder::load(string $file, string ...$_): static;
+\Kaspi\DiContainer\DiContainerBuilder::load(
+    string $file,
+    string ...$_
+): static;
 ```
 Параметры:
 - `$file` – полный путь к файлу конфигурации определений.
@@ -94,98 +65,76 @@ $container = (new DiContainerBuilder(containerConfig: $diConfig))
 > При сборке контейнера методом `DiContainerBuilder::build()` при совпадении идентификаторов контейнера будет выброшено исключение.
 >
 
-В определённых сценариях требуется перезапись ранее добавленных определений при совпадении идентификаторов контейнера.
+Пример использования:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$builder = new DiContainerBuilder();
+// 🚩 Отслеживать уникальность определений
+$builder->load('/app/config/base_services.php');
+$container = $builder->build();
+
+$container->get(\App\Services\ReportMaker::class); // получение готового объекта
+```
+
+Файлы конфигураций:
+::: code-group
+
+```php [base_services.php]
+// /app/config/base_services.php
+use App\Services\ReportMaker;
+use App\Storages\ReportStorage;
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+return static function (): Generator {
+
+    diAutowire(ReportMaker::class)
+        ->bindArguments(
+            storage: diGet(ReportStorage::class)
+        ),
+
+    // other services
+
+};
+```
+
+:::
 
 ## DiContainerBuilder::loadOverride()
+
+В определённых сценариях требуется перезапись ранее добавленных определений при совпадении идентификаторов контейнера.
 
 Метод загрузки из файлов конфигураций с перезаписью:
 
 ```php
-\Kaspi\DiContainer\DiContainerBuilder::loadOverride(string $file, string ...$_): static;
+\Kaspi\DiContainer\DiContainerBuilder::loadOverride(
+    string $file,
+    string ...$_
+): static;
 ```
 
 Параметры:
-- `$file` – полный путь к файлу конфигурации определений;
-- `$_` – полный путь к файлу конфигурации определений;
+- `$file` – полный путь к файлу конфигурации определений.
+- `$_` – полный путь к файлу конфигурации определений.
 
-#### Пример использования.
+Пример использования:
 
-Файлы конфигураций:
-- /app/config/parameters.php
-    ```php
-    return [
-        'emails.report_from' => 'admin.repost@example.com',
-        'storage.report_dir' => '/var/reports/',
-    ];
-    ```
-- /app/config/base_services.php
-    ```php
-    use App\Services\ReportMaker;
-    use App\Storages\ReportStorage;
-    use function Kaspi\DiContainer\{diAutowire, diGet, diParameter};
-    
-    return static function (): Generator {
-  
-        diAutowire(ReportMaker::class)
-            ->bindArguments(
-                mailFrom: diParameter('emails.report_from'),
-                storage: diGet(ReportStorage::class)
-            ),
-  
-        // other services
-
-    };
-    ```
-- /app/config/prod_services.php
-    ```php
-    use App\Services\ResportGenerator;
-    use App\Storages\ReportStorage;
-    use function Kaspi\DiContainer\{diAutowire, diParameter};
-    
-    return static function (): Generator {
-  
-        yield diAutowire(ReportStorage::class)
-            ->bindArguments(dir: diParameter('storage.report_dir'));
-    
-        // ... many other services
-        yield diAutowire(ResportGenerator::class);
-  
-    };
-    ```
-- /app/config/dev_services.php
-    ```php
-    use App\Storages\ReportStorage;
-    use function Kaspi\DiContainer\diAutowire
-    
-    return static function (): Generator {
-  
-        yield diAutowire(ReportStorage::class)
-            ->bindArguments(dir: sys_get_temp_dir())
-        ;
-  
-        // ... many other services
-  
-    };
-    ```
-Сборка контейнера:
 ```php
-$builder = new \Kaspi\DiContainer\DiContainerBuilder();
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$builder = new DiContainerBuilder();
 
 // 🚩 Отслеживать уникальность определений
 $builder->load(
-
     '/app/config/base_services.php',
-
     '/app/config/prod_services.php',
-
 );
 
 if ('dev' === \getenv('APP_ENV')) {
     // 🚩 Перезаписать ранее загруженные определения
     $builder->loadOverride(
-    
         '/app/config/dev_services.php'
-    
     );
 }
 
@@ -194,54 +143,125 @@ $container = $builder->build();
 $container->get(\App\Services\ReportMaker::class); // получение готового объекта
 ```
 
-## Добавить определения через коллекцию.
-Добавляет коллекцию определений в контейнер. Предусмотрено два варианта:
-- отслеживать уникальные идентификаторы у добавляемых определений.
-- перезапись ранее добавленных определения с совпадающими идентификаторов контейнера.
+Файлы конфигураций:
+::: code-group
 
-#### Метод с отслеживанием уникальности идентификаторов контейнера:
+```php [base_services.php]
+// /app/config/base_services.php
+use App\Services\ReportMaker;
+use App\Storages\ReportStorage;
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+return static function (): Generator {
+
+    diAutowire(ReportMaker::class)
+        ->bindArguments(
+            storage: diGet(ReportStorage::class)
+        ),
+
+    // other services
+
+};
+```
+
+```php [prod_services.php]
+// /app/config/prod_services.php
+use App\Storages\ReportStorage;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+
+    yield diAutowire(ReportStorage::class)
+        ->bindArguments(dir: '/var/storage/');
+
+};
+```
+
+```php [dev_services.php]
+// /app/config/dev_services.php
+use App\Storages\ReportStorage;
+use function Kaspi\DiContainer\diAutowire
+
+return static function (): Generator {
+
+    yield diAutowire(ReportStorage::class)
+        ->bindArguments(dir: sys_get_temp_dir())
+    ;
+
+};
+```
+
+:::
+
+## DiContainerBuilder::addDefinitions()
+
+Добавляет коллекцию определений в контейнер с отслеживанием уникальности идентификаторов контейнера:
+
 ```php
-\Kaspi\DiContainer\DiContainerBuilder::addDefinitions(iterable $definitions): static;
+\Kaspi\DiContainer\DiContainerBuilder::addDefinitions(
+    iterable $definitions
+): static;
 ```
 Параметры:
-- `$definitions` – коллекция определений;
+- `$definitions` – коллекция определений.
 
 > [!IMPORTANT]
 > При сборке контейнера методом `DiContainerBuilder::build()` при совпадении идентификаторов контейнера будет выброшено исключение.
 >
 
-#### Добавить определения контейнера с перезаписью:
-В определённых сценариях требуется перезапись ранее добавленные определения при совпадении идентификаторов контейнера.
-```php
-\Kaspi\DiContainer\DiContainerBuilder::addDefinitionsOverride(iterable $definitions): static;
-```
-Параметры:
-- `$definitions` – коллекция определений;
-
 Пример использования:
 ```php
 use App\Services\Config\{Foo, Qux};
 use App\Services\Baz;
+use Kaspi\DiContainer\DiContainerBuilder;
+use function Kaspi\DiContainer\{diAutowire, diCallable};
 
-$builder = new \Kaspi\DiContainer\DiContainerBuilder()
+$builder = new DiContainerBuilder()
     ->load('/app/config/services.php');
 
-// ...
 
-    // использование callback функции в качестве коллекции определений
-    $builder->addDefinitions((static function () {
-        yield 'app.access_key' => \Kaspi\DiContainer\diCallable([Foo::class, 'accessKey']);  
-    })())
-;
+// использование callback функции в качестве коллекции определений
+$fnConfigAccessKey = static function (): \Generator {
+    yield 'app.access_key' => diCallable([Foo::class, 'accessKey']);  
+};
 
-// ...
+$builder->addDefinitions(($fnConfigAccessKey)()); 
 
-    // использование php массива в качестве коллекции определений
-    $builder->addDefinitions([
-        \Kaspi\DiContainer\diAutowire(Baz::class)
-            ->bindArguments('value'),
-    ])
-;
+// использование php массива в качестве коллекции определений
+$arrConfigBazClass = [
+    diAutowire(Baz::class)
+        ->bindArguments('value'),
+];
+
+$builder->addDefinitions($arrConfigBazClass);
+   
+$container = $builder->build();
+```
+
+
+## DiContainerBuilder::addDefinitionsOverride()
+
+В определённых сценариях требуется перезапись ранее добавленные определения при совпадении идентификаторов контейнера.
+
+Добавляет коллекцию определений в контейнер с перезаписью:
+
+```php
+\Kaspi\DiContainer\DiContainerBuilder::addDefinitionsOverride(
+    iterable $definitions
+): static;
+```
+Параметры:
+- `$definitions` – коллекция определений.
+
+Пример использования:
+```php
+use App\Services\Config\Qux;
+use App\Services\Baz;
+use Kaspi\DiContainer\DiContainerBuilder;
+use function Kaspi\DiContainer\diCallable;
+
+$builder = new DiContainerBuilder()
+    ->load('/app/config/services.php');
 
 // ...
 
@@ -249,7 +269,7 @@ if ('test' === \getenv('APP_ENV')) {
     // 🚩 Перезаписать ранее загруженные определения
     // с идентификатором 'app.access_key'
     $builder->addDefinitionsOverride([
-        'app.access_key' => \Kaspi\DiContainer\diCallable([Qux::class, 'accessKey']);
+        'app.access_key' => diCallable([Qux::class, 'accessKey']);
     ])
 }
    
@@ -258,47 +278,73 @@ $container = $builder->build();
 
 ## Регистрация параметров контейнера.
 Конфигурацию параметров контейнера можно представить в виде коллекции
-ключ-значение, где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](09-container-parameters.md#поддерживаемые-типы-значений-параметров-контейнера).
+ключ-значение, где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](../09-container-parameters.md#поддерживаемые-типы-значений-параметров-контейнера).
 
-Прочитайте главу «[параметры контейнера](09-container-parameters.md)».
+> [!NOTE]
+> Прочитайте главу «[параметры контейнера](../09-container-parameters.md)».
 
-### Регистрация параметров контейнера из файлов.
+> [!IMPORTANT]
+> Все добавленные ранее параметры в конфигурацию могут быть замены новыми значениями если имя параметра совпадает.
+
+
+### DiContainerBuilder::loadParameters() 
+
+Регистрация параметров контейнера из файлов:
+
 ```php
-DiContainerBuilder::loadParameters(string $file, string ...$_): static
+\Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::loadParameters(
+    string $file,
+    string ...$_
+): static
 ```
+
 Параметры:
 - `$file` – полный путь к файлу описывающий конфигурацию параметров.
 - `$_` – дополнительные файлы конфигураций параметров контейнера.
 
-### Регистрация параметров контейнера из коллекции.
+### DiContainerBuilder::addParameters() 
+
+Регистрация параметров контейнера из коллекции:
+
 ```php
-DiContainerBuilder::addParameters(iterable $params): static
+\Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::addParameters(
+    iterable $params
+): static
 ```
+
 Параметры:
 - `$params` – коллекция ключ-значение конфигурации параметров.
 
-### Регистрация параметра контейнера.
+### DiContainerBuilder::setParameter()
+
+Регистрация параметра контейнера:
+
 ```php
-DiContainerBuilder::setParameter(string $name, array|int|float|string|bool|null|\UnitEnum $value): static
+\Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::setParameter(
+    string $name,
+    array|int|float|string|bool|null|\UnitEnum $value
+): static
 ```
+
 Параметры:
 - `$name` – имя параметра.
 - `$value` – значение параметра.
 
-## Импорт классов в контейнер.
+## DiContainerBuilder::import()
+
 Импорт обеспечивает доступность классов и их конфигурирование как определений
-в контейнере. Если [в конфигурации контейнера](01-container-config.md)
-указано использование PHP атрибутов (`$useAttribute = true`) то они будут также использованы для
+в контейнере. Если [в конфигурации контейнера](../container-config/index.md)
+указано использование PHP атрибутов (`\Kaspi\DiContainer\DiContainerConfig::$useAttribute = true`) то они будут также использованы для
 конфигурирования каждого определения.
 
 Загрузка классов из указанных директорий происходит с учётом пространства имён (_namespace_).
 
 Так же импорт будет полезен когда контейнер имеет настройку
-`$useZeroConfigurationDefinition = false` – [запрещено автоматически разрешать
-зависимости класса](01-container-config.md)
+`\Kaspi\DiContainer\DiContainerConfig::$useZeroConfigurationDefinition = false` – [запрещено автоматически разрешать
+зависимости класса](../container-config/index.md)
 если он явно не объявлен в контейнере.
 
-**Импорт классов:**
+Импорт классов:
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::import(
     string $namespace,
@@ -309,10 +355,10 @@ DiContainerBuilder::setParameter(string $name, array|int|float|string|bool|null|
 ```
 Параметры:
 - `$namespace` – префикс пространства имён из которого следует
-  импортировать классы (_например: `'App\\'` – загружать если namespace класса начинается с префикса_)
-- `$src` – директория из которой импортировать классы;
-- `$excludeFiles` – исключить из загрузки файлы по шаблону;
-- `$availableExtensions` – указать расширения у файлов которые будут обработаны;
+  импортировать классы (_например: `'App\\'` – загружать если namespace класса начинается с префикса_).
+- `$src` – директория из которой импортировать классы.
+- `$excludeFiles` – исключить из загрузки файлы по шаблону.
+- `$availableExtensions` – указать расширения у файлов которые будут обработаны.
 
 > [!NOTE]
 > Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
@@ -321,22 +367,9 @@ DiContainerBuilder::setParameter(string $name, array|int|float|string|bool|null|
 > для контейнера недоступны для разрешения.
 
 > [!TIP]
-> **Удаляемы определения**. При необходимости можно удалить
-> из контейнера определение [через конфигуратор](08-definitions-configurator.md). Это полезно, например, для того, чтобы сделать сервис недоступным при определенных сценариях использования контейнера.
+> При необходимости можно удалить из контейнера определение [через конфигуратор](../08-definitions-configurator.md).
+> Это полезно, например, для того, чтобы сделать сервис недоступным при определенных сценариях использования контейнера.
 >
-
-> [!TIP]
-> Импорт может быть выполнен из нескольких директорий если это необходимо.
-> В случае импорта из нескольких источников следует помнить что параметр `$namespace`
-> должен быть уникальным:
-> ```php
-> use Kaspi\DiContainer\DiContainerBuilder;
-> 
-> $builder = (new DiContainerBuilder())
->   ->import(namespace: 'App\\Services\\', src: '/app/src/Services')
->   ->import(namespace: 'App\\Actions\\', src: '/app/src/Actions')
-> ;
-> ```
 
 Пример использования:
 
@@ -369,7 +402,20 @@ if ('dev' === \getenv('APP_ENV')) {
 $container = $builder->build();
 ```
 
-## Компиляция контейнера.
+
+Импорт может быть выполнен из нескольких директорий если это необходимо.
+В случае импорта из нескольких источников следует помнить что параметр `$namespace` должен быть уникальным:
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+ 
+$builder = (new DiContainerBuilder())
+  ->import(namespace: 'App\\Services\\', src: '/app/src/Services')
+  ->import(namespace: 'App\\Actions\\', src: '/app/src/Actions')
+;
+```
+
+## DiContainerBuilder::compileToFile() { #compile-to-file }
+
 Для повышения производительности контейнера зависимостей реализован компилятор который преобразует
 настроенный контейнер в готовый к использованию PHP-код сохраняемый в файл,
 чтобы при следующих запусках контейнер загружался мгновенно,
@@ -384,12 +430,13 @@ $container = $builder->build();
     array $options = []
 ): static;
 ```
+
 Параметры:
-- `$outputDirectory` – директория в файловой системе для скомпилированного контейнера;
-- `$containerClass` – имя класса для скомпилированного контейнера включая пространство имен класса (fully qualified class name);
-- `$permissionCompiledContainerFile` – права доступа к файлу в который будет сохранен скомпилированный PHP-код;
-- `$isExclusiveLockFile` – эксклюзивная блокировка файла во время записи PHP-кода в конечный файл;
-- `$options` – дополнительные [настройки компилятора](#дополнительные-настройки-компилятора);
+- `$outputDirectory` – директория в файловой системе для скомпилированного контейнера.
+- `$containerClass` – имя класса для скомпилированного контейнера включая пространство имен класса (fully qualified class name).
+- `$permissionCompiledContainerFile` – права доступа к файлу в который будет сохранен скомпилированный PHP-код.
+- `$isExclusiveLockFile` – эксклюзивная блокировка файла во время записи PHP-кода в конечный файл.
+- `$options` – дополнительные [настройки компилятора](#compile-options).
 
 > [!IMPORTANT]
 > Для обеспечения максимальной производительности компиляция контейнера происходит один раз если конечный файл
@@ -403,11 +450,14 @@ $container = $builder->build();
 > Имя файла для скомпилированного контейнера генерируется на основании параметров `$outputDirectory` и `$containerClass`.
 > Сформированное полное имя файла это директория назначения `$outputDirectory` плюс имя класс из `$containerClass` без учёта namespace указанного класса.
 
-#### Пример настройки компиляции контейнера:
-```php
-$builder = new \Kaspi\DiContainer\DiContainerBuilder();
+Пример настройки компиляции контейнера:
 
-  // ...
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$builder = new DiContainerBuilder();
+
+// ...
 
 $builder->compileToFile(
     outputDirectory: '/app/var/container',
@@ -426,29 +476,62 @@ $container = $builder->build();
 > Директория указанная в параметре `$outputDirectory` должна существовать и быть доступна для чтения и записи.
 >
 
-### Дополнительные настройки компилятора.
-Настройки передаются в виде ассоциативного массива со значениями:
-1. `'invalid_behavior'` – принимает тип `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum`, значение по умолчанию
-   `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum::ExceptionOnCompile`;
-2. `'di_definition_transformer'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`,
-   значение по умолчанию пусто;
-3. `'compiled_entries'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface`,
-   значение по умолчанию пусто;
-4. `'force_rebuild'` – принимает тип `bool`, значение по умолчанию `false`;
+### Дополнительные настройки компилятора { #compile-options }
 
-## Использование контейнера в разных окружениях приложения.
+Настройки передаются в виде ассоциативного массива со значениями:
+* `'invalid_behavior'` – принимает тип `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum`, значение по умолчанию
+   `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum::ExceptionOnCompile`.
+* `'di_definition_transformer'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`
+   значение по умолчанию пусто.
+* `'compiled_entries'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface`,
+   значение по умолчанию пусто.
+* `'force_rebuild'` – принимает тип `bool`, значение по умолчанию `false`.
+
+## Передача контекста для конфигурационных файлов
+
+В [конфигурационных файлах](#загрузка-из-файлов-конфигураций) можно использовать контекст для настройки и сборки контейнера.
+
+> [!TIP]
+> Подробное описание и примеры использования описаны в разделе «[Использование контекста для конфигурационных файлов](../08-definitions-configurator.md#использование-контекста-для-конфигурационных-файлов)».
+
+> [!WARNING]
+> Значение для ранее добавленных контекстов могут быть
+> заменены если имена контекста совпадают.
+
+### Передача коллекции контекста для конфигурационных файлов.
+```php
+\Kaspi\DiContainer\Interfaces\DiContainerBuilder::addConfiguratorContexts(iterable $contexts): static
+```
+Параметры:
+- `$contexts` – коллекция ключ-значение, где ключ коллекции это имя контекста;
+
+### Передача одиночного контекста в конфигурационный файл.
+```php
+\Kaspi\DiContainer\Interfaces\DiContainerBuilder::setConfiguratorContext(string $name, mixed $context): static
+```
+Параметры:
+- `$name` – имя контекста, непустая строка;
+- `$context` – значение контекста;
+
+## Использование контейнера в разных окружениях приложения
+
 Окружения для приложений называются в зависимости от их назначения:
 Локальное (**dev**) — для разработчика, Тестовое (**test**) — для QA,
 Продакшен (**prod**) — для конечных пользователей.
 
-Не используйте [компиляцию контейнера](#компиляция-контейнера) в среде разработки (_dev_),
+Не используйте [компиляцию контейнера](#compile-to-file) в среде разработки (_dev_),
 иначе все изменения, которые вы внесете в определения (атрибуты, файлы конфигурации и т.д.),
 не будут приняты во внимание. Компиляция конечного файла контейнера происходит только один раз и возвращается
 всегда экземпляр контейнера сформированного при первой компиляции.
 
-Как использовать компиляцию при разных средах приложения:
+### Как использовать компиляцию в разных средах приложения
+
+Пример изолирования настройки компиляции контейнера в разных средах разработки:
+
 ```php
-$builder = (new \Kaspi\DiContainer\DiContainerBuilder())
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$builder = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src/')
     // 🚩 Отслеживать уникальность определений
     ->load(
@@ -485,115 +568,3 @@ $container = $builder->build();
 > рекомендуется "прогреть" приложение чтобы при первом вызове произошла компиляция
 > контейнера. Последующие вызовы контейнера в коде будут на скомпилированном контейнере.
 
-## Динамическое добавление определений в контейнер.
-Прямая установка объекта (_инстанцированный класс_) в уже сформированный контейнер зависимостей:
-```php
-\Kaspi\DiContainer\Interfaces\DiContainerSetterInterface::set(string $id, mixed $definition): static;
-```
-Параметры:
-- `$id` – идентификатор контейнера, непустая строка, FQCN класса или интерфейса;
-- `$definition` – определение соответствующее идентификатору `$id`;
-
-> [!WARNING]
-> Если идентификатор контейнера не уникален в рамках текущего контейнера, то будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface`.
-
-> [!WARNING]
-> Рекомендуется использовать [файлы конфигурации](#загрузка-из-файлов-конфигураций),
-> [добавлять определения из коллекции](#добавить-определения-через-коллекцию)
-> или [импортировать классы и интерфейсы](#импорт-классов-в-контейнер)
-> через класс-строитель `DiContainerBuilder`,
-> так как определения установленные напрямую в контейнер не будут [скомпилированы](#компиляция-контейнера).
->
-> В некоторых сценариях при использовании метода `set()` необходимо отслеживать чтобы получение сервиса
-> через метод контейнера `get()` не вызывало ошибки из-за того что определение ещё необавлено в контейнер.
->
-
-#### Пример использования:
-```php
-// app/src/Services/Others.php
-// ⚠️ Класс который нужно конфигурировать отдельно.
-namespace App\Services;
-
-use App\Services\Others;
-
-final class Others {
-    public function __construct(
-        // some dependencies
-    ) {}
-}
-```
-```php
-// app/src/Services/Foo.php
-namespace App\Services;
-
-use App\Services\Others;
-
-final class Foo {
-    public function __construct(public readonly Others $others) {}
-}
-```
-```php
-// конфигурация и получение готового контейнера зависимостей
-$container = (new \Kaspi\DiContainer\DiContainerBuilder())
-    ->import(
-        namespace: 'App\\',
-        src: '/app/src/',
-        excludeFiles: [
-            // исключить из автоматической настройки
-            '*/src/Services/Others.php',
-        ]
-    )
-    
-    // другие настройки контейнера
-    
-    ->build()
-;
-```
-Вариант установки объекта в контейнер:
-```php
-use App\Services\Others;
-
-$others = new Others(
-    // set some dependencies.
-);
-
-// идентификатор будет указан как 'App\\Services\\Others'
-$container->set($others::class, $others);
-```
-> [!WARNING]
-> Установка в контейнер нового определения должно быть до вызова метода контейнера `get()`
-> который может разрешить зависимость `'App\\Services\\Others'`.
-
-> [!IMPORTANT]
-> #### 🚩 Важное замечание для компилируемого контейнера.
-> Для корректной компиляции контейнера с определениями использующими
-> «динамические определения» в своих зависимостях, которое может быть установлено только
-> в уже сформированный контейнер (_runtime_),
-> следует использовать [в конфигурационных файлах](#загрузка-из-файлов-конфигураций) хелпер функцию `diRuntime()` использование
-> которой описано в разделе «[Внедрение экземпляра класса в рантайм контейнер](10-runtime-definition.md)».
->
-
-## Передача контекста для конфигурационных файлов.
-В [конфигурационных файлах](#загрузка-из-файлов-конфигураций) можно использовать контекст для настройки и сборки контейнера.
-
-> [!TIP]
-> Подробное описание и примеры использования описаны в разделе «[Использование контекста для конфигурационных файлов](08-definitions-configurator.md#использование-контекста-для-конфигурационных-файлов)».
-
-> [!WARNING]
-> Значение для ранее добавленных контекстов могут быть
-> заменены если имена контекста совпадают.
-
-### Передача коллекции контекста для конфигурационных файлов.
-```php
-\Kaspi\DiContainer\Interfaces\DiContainerBuilder::addConfiguratorContexts(iterable $contexts): static
-```
-Параметры:
-- `$contexts` – коллекция ключ-значение, где ключ коллекции это имя контекста;
-
-### Передача одиночного контекста в конфигурационный файл.
-```php
-\Kaspi\DiContainer\Interfaces\DiContainerBuilder::setConfiguratorContext(string $name, mixed $context): static
-```
-Параметры:
-- `$name` – имя контекста, непустая строка;
-- `$context` – значение контекста;

@@ -33,16 +33,16 @@ export default defineConfig({
               {
                 base: '/documentation/',
                 text: 'Руководство',
-                link: '/',
                 items: [
                   {
                     base: '/documentation/container-builder/',
                     text: 'Сборка контейнера зависимостей',
-                    activeMatch: '/container-builder',
                     collapsed: true,
                     items: [
-                      { text: 'Обзор', link: '/' },
-                      { text: 'Файлы конфигураций', link: 'configuration_files' },
+                      { text: 'Обзор', link: 'index.md' },
+                      { text: 'Установка индивидуальной конфигурации контейнера', link: 'config.md' },
+                      { text: 'Файлы конфигураций', link: 'configuration_files.md' },
+                      { text: 'Динамическое добавление определений в контейнер', link: 'set.md' },
                     ]
                   },
                 ]
