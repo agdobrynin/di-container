@@ -57,11 +57,8 @@ composer require kaspi/di-container
 ```php
 // Создать контейнер
 $container = (new \Kaspi\DiContainer\DiContainerBuilder())
-    ->import('App\\', src: '/var/www/app/src')
     ->build();
 ```
-> [!NOTE]
-> Раздел документации о [DiContainerBuilder](documentation/00-container-builder.md).
 
 #### Получить класс с внедренными зависимостями в стиле PSR-11:
 ```php
@@ -82,8 +79,10 @@ if ($container->has(\App\Controllers\PostController::class)) {
 $post = new \App\Models\Post();
 $post->title = 'Lorem ipsum';
 
-$container->call([\App\Controllers\PostController::class, 'send'], [$post]);
+
+$container->call([\App\Controllers\PostController::class, 'send'], $post);
 ```
+
 > [!NOTE]
 > Раздел документации о методе контейнера [call()](documentation/04-call-method.md).
 
