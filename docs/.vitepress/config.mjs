@@ -33,10 +33,12 @@ export default defineConfig({
               {
                 base: '/documentation/',
                 text: 'Руководство',
+                link: 'index.md',
                 items: [
                   {
                     base: '/documentation/container-builder/',
                     text: 'Сборка контейнера зависимостей',
+                    link: 'index.md',
                     collapsed: true,
                     items: [
                       { text: 'Обзор', link: 'index.md' },
@@ -44,6 +46,11 @@ export default defineConfig({
                       { text: 'Файлы конфигураций', link: 'configuration_files.md' },
                       { text: 'Динамическое добавление определений в контейнер', link: 'set.md' },
                     ]
+                  },
+                  {
+                    base: '/documentation/container-config/',
+                    text: 'Конфигурация для DiContainer',
+                    link: 'index.md'
                   },
                 ]
               }
