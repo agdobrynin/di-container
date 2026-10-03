@@ -5,13 +5,18 @@
 Сигнатура функции:
 
 ```php
+use Kaspi\DiContainer\Interfaces\DiDefinition\{
+    DiDefinitionArgumentsInterface as Args,
+    DiDefinitionSetupAutowireInterface as Setup,
+    DiDefinitionTagArgumentInterface as Tag,
+    DiDefinitionResetterSetterInterface as Resetter
+};
+
 \Kaspi\DiContainer\diAutowire(
     string $definition,
     ?bool $isSingleton = null,
     bool $isLazy = false,
-): \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface
-    & \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface
-    & \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface
+): Args & Setup & Tag & Resetter
 ```
 Параметры:
 - `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
@@ -50,7 +55,10 @@ DiDefinitionArgumentsInterface::bindArguments(
 Для указания неполного списка аргументов можно использовать именованные аргументы параметров:
 
 ```php 
-diAutowire(App\Services\Bar::class)
+use App\Services\Bar;
+use function \Kaspi\DiContainer\diAutowire;
+
+diAutowire(Bar::class)
     ->bindArguments(name: 'Lorem ipsum');
 ```
 ::: code-group
@@ -103,18 +111,17 @@ DiDefinitionSetupAutowireInterface::setup(
 контейнер вернет экземпляр класса созданного через конструктор класса.
 
 > [!TIP]
-> Для аргументов не объявленных через метод `setup()` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
-
-> [!TIP]
-> Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
-
-> [!TIP]
-> Аргументы передаваемые в метод `setup()` могут принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
+> - Для аргументов не объявленных через метод `setup()` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
+> - Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+> - Аргументы передаваемые в метод `setup()` могут принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
 
 Если в сеттер методе нет параметров или они могут быть разрешены автоматически, то аргументы передавать не нужно:
 
 ```php
-diAutowire(App\Services\Bar::class)
+use App\Services\Bar;
+use function \Kaspi\DiContainer\diAutowire;
+
+diAutowire(Bar::class)
        ->bindArguments(name: 'Lorem ipsum')
        ->setup('doSetup');
 ```
@@ -152,14 +159,15 @@ final class Baz {
 
 :::
 
-Для указания неполного списка аргументов сеттер метода в качестве ключа в массиве аргументов имя параметра сеттер метода:
+Для неполного списка аргументов сеттер метода в качестве ключа в массиве аргументов
+можно указать имя параметра сеттер метода:
 
 ```php
-use function \Kaspi\DiContainer\diGet;
+use App\Services\{Bar, Baz};
+use function \Kaspi\DiContainer\{diAutowire, diGet};
 
-diAutowire(App\Services\Bar::class)
-    ->bindArguments(name: 'Lorem ipsum')
-    ->setup('doSetupWithName', ['service' => diGet(App\Services\Qux::class)]);
+diAutowire(Bar::class)
+    ->setup('doSetupWithName', ['service' => diGet(Baz::class)]);
 ```
 
 ::: code-group
@@ -168,12 +176,9 @@ diAutowire(App\Services\Bar::class)
 namespace App\Services;
 
 final class Bar {
-    public function __construct(
-        private Foo $foo,
-        string $name,
-    ) {}
+    public function __construct() {}
     
-    public function doSetupWithName(QuxInterface $qux) {}
+    public function doSetupWithName(Foo $foo, ServiceXInterface $service) {}
 }
 ```
 
@@ -188,15 +193,7 @@ final class Foo {
 ```php [src/Services/Baz.php]
 namespace App\Services;
 
-final class Baz {
-    public function __construct() {}
-}
-```
-
-```php [src/Services/Qux.php]
-namespace App\Services;
-
-final class  Qux {
+final class Baz implements ServiceXInterface {
     public function __construct() {}
 }
 ```
