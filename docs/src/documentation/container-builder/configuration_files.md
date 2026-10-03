@@ -3,12 +3,14 @@
 В `ContainerBuilder` используются загрузка из отдельных файлов для конфигурирований определений контейнера.
 
 Конфигурационный файл может возвращать настроенные определения для контейнера либо использовать
-вызов callback функции для конфигурирования через параметр [конфигуратор определений контейнера](08-definitions-configurator.md).
+вызов callback функции для конфигурирования через параметр [конфигуратор определений контейнера](../08-definitions-configurator.md).
 
 Файл конфигурации с возвращаемыми определениями:
 
-```php
-// /app/config/services.php
+::: code-group
+
+```php [/app/config/services.php]
+use App\Services\Foo;
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (): \Generator {
@@ -19,10 +21,17 @@ return static function (): \Generator {
 };
 ```
 
-Комбинирование возвращаемых определений и [конфигуратора](08-definitions-configurator.md):
+:::
 
-```php
-// /app/config/services.php
+> [!TIP]
+> Для определения `App\Services\Foo` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../03-php-definition.md#diautowire).
+
+Комбинирование возвращаемых определений и [конфигуратора](../08-definitions-configurator.md):
+
+::: code-group
+
+```php [/app/config/services.php]
+use App\Services\{Foo, Baz};
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use function Kaspi\DiContainer\diAutowire;
 
@@ -35,10 +44,17 @@ return static function (DefinitionsConfiguratorInterface $configurator): \Genera
 };
 ```
 
-Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](08-definitions-configurator.md):
+:::
 
-```php
-// /app/config/services.php
+> [!TIP]
+> Для определения `App\Services\Foo` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../03-php-definition.md#diautowire).
+
+Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](../08-definitions-configurator.md):
+
+::: code-group
+
+```php[/app/config/services.php]
+use App\Services\{Foo, Baz};
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use function Kaspi\DiContainer\diAutowire;
 
