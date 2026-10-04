@@ -64,6 +64,8 @@ export default defineConfig({
                       { text: 'diCallable', link: 'di-callable.md' },
                       { text: 'diGet', link: 'di-get.md' },
                       { text: 'diValue', link: 'di-value.md' },
+                      { text: 'diProxyClosure', link: 'di-proxy-closure.md' },
+                      { text: 'diTaggedAs', link: 'di-tagged-as.md' },
                     ]
                   },
                 ]

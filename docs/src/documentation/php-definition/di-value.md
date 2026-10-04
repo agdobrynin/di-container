@@ -14,6 +14,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 ): DiDefinitionTagArgumentInterface
 ```
 
+Параметры:
+- `$value` – переданное значение в контейнер.
+
 Функция `diValue()` возвращает объект предоставляющий методы:
 - `bindTag()` – добавляет тег с мета-данными для определения.
 

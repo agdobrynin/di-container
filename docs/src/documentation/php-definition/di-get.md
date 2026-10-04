@@ -14,7 +14,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 ): DiDefinitionNoArgumentsInterface
 ```
 
-Аргумент:
+Параметры:
 - `$containerIdentifier` – содержит указание на идентификатор контейнера, или указание на имя PHP класса который может быть получен контейнером.
 
 У хелпер функции нет дополнительных методов.
