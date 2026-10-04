@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Хелпер функция создает объект на основе PHP класса с автоматическим внедрением зависимостей.
+Хелпер функция для конфигурирования объекта на основе PHP класса с автоматическим внедрением зависимостей.
 
 Сигнатура функции:
 
@@ -37,25 +37,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ## bindArguments()
 
-Метод передачи аргументов для конструктора PHP класса
-описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`
+Передача аргументов для конструктора PHP класса.
 
-Сигнатура метода:
-
-```php
-DiDefinitionArgumentsInterface::bindArguments(
-    mixed ...$argument
-)
-```
-
-Параметры:
-- `$argument` – аргументы к параметрам конструктора класса.
-
-> [!TIP]
-> ✅ Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](../09-container-parameters.md)».
-
-> [!WARNING]
-> Метод `bindArguments()` перезаписывает ранее добавленные аргументы.
+<!--@include: ./_include/bind_arguments.md-->
 
 Для указания неполного списка аргументов можно использовать именованные аргументы параметров:
 
@@ -86,13 +70,6 @@ final class Foo {
 }
 ```
 :::
-
-> [!TIP]
-> Для параметров не объявленных через метод `bindArgument()` контейнер попытается разрешить зависимости самостоятельно.
-
-> [!TIP]
-> Параметр `$argument` в методе `bindArgument()` может принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
->
 
 ## Сеттер-методы внедрения зависимостей { #di-autowire-setter-method }
 
@@ -238,20 +215,7 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 ## bindTag()
 Теги позволяют отнести конфигурируемый PHP класс к коллекции сервисов.
 
-Метод `bindTag()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
-
-Сигнатура метода:
-
-```php
-DiDefinitionTagArgumentInterface::bindTag(
-    string $name,
-    array $options = [],
-    null|int|string $priority = null
-)
-```
-
-> [!TIP]
-> Более подробное [описание работы с тегами](../05-tags.md).
+<!--@include: ./_include/bind_tag.md-->
 
 ## setResetter()
 
@@ -268,7 +232,7 @@ DiDefinitionResetterSetterInterface::setResetter(
 > [!TIP]
 > Более подробное [описание конфигурации для сброса состояния объекта](../12-object-resetters.md).
 
-## Идентификатор контейнера для diAutowire { #documentation_php-definition_di-autowire-id }
+## Идентификатор контейнера для diAutowire { #container-id }
 
 При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**).
 

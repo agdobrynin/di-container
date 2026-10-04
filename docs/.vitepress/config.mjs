@@ -9,6 +9,7 @@ export default defineConfig({
   titleTemplate: "Dependency injection container for PHP",
   description: "Dependency injection container for PHP",
   srcDir: './src',
+  srcExclude: ['**/_include/'],
   vite: {
     publicDir: '../public',
     plugins: [
@@ -60,6 +61,7 @@ export default defineConfig({
                     items: [
                       { text: 'Обзор', link: 'index.md' },
                       { text: 'diAutowire', link: 'di-autowire.md' },
+                      { text: 'diCallable', link: 'di-callable.md' },
                     ]
                   },
                 ]
