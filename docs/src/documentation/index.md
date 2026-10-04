@@ -2,7 +2,7 @@
 
 * 👷‍♂️ [Инструмент для сборки контейнера зависимостей **DiContainerBuilder**](container-builder/index.md).
 * ⚙️ [Конфигурация для DiContainer](container-config/index.md).
-* 🐘 [DiContainer с конфигурированием **в стиле php определений**](03-php-definition.md).
+* 🐘 [DiContainer с конфигурированием **в стиле php определений**](php-definition/index.md).
 * #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](02-attribute-definition.md).
 * 📦 [Метод контейнера `call()`](04-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
 * 🔖 [Тэгирование определений и сервисов](05-tags.md).

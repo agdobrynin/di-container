@@ -52,6 +52,16 @@ export default defineConfig({
                     text: 'Конфигурация для DiContainer',
                     link: 'index.md'
                   },
+                  {
+                    base: '/documentation/php-definition/',
+                    text: 'Конфигурирование в стиле php определений',
+                    link: 'index.md',
+                    collapsed: true,
+                    items: [
+                      { text: 'Обзор', link: 'index.md' },
+                      { text: 'diAutowire', link: 'di-autowire.md' },
+                    ]
+                  },
                 ]
               }
           ],
