@@ -63,6 +63,7 @@ export default defineConfig({
                       { text: 'diAutowire', link: 'di-autowire.md' },
                       { text: 'diCallable', link: 'di-callable.md' },
                       { text: 'diGet', link: 'di-get.md' },
+                      { text: 'diValue', link: 'di-value.md' },
                     ]
                   },
                 ]
