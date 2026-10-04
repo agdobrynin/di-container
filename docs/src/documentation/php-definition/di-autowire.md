@@ -28,7 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$isLazy` – «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
 
-Функция `diAutowire` возвращает объект предоставляющий методы:
+Функция `diAutowire()` возвращает объект предоставляющий методы:
  - `bindArguments()` – передать аргументы для конструктора класса.
  - `setup()` – вызов сеттер метода класса с параметрами (_mutable setter method_) для настройки класса.
  - `setupImmutable()` – вызов сеттер метода класса с параметрами (_immutable setter method_) и возвращаемым значением.

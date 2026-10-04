@@ -58,7 +58,7 @@ $container = (new DiContainerBuilder())
 
 $foo = $container->get(Foo::class);
 
-var_dump($foo->bar instanceof Bar::class);
+var_dump($foo->bar instanceof Bar);
 // bool(true)
 ```
 
