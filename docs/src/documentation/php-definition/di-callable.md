@@ -144,7 +144,7 @@ class ServiceFoo {
 
 :::
 
-Разрешение зависимостей через контейнер:
+Контейнер зависимостей:
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;

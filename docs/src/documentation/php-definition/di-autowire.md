@@ -52,7 +52,9 @@ diAutowire(Bar::class)
 ```
 ::: code-group
 
-```php [src/Services/Bar.php]
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+
 namespace App\Services;
 
 final class Bar {
@@ -62,7 +64,9 @@ final class Bar {
     ) {} 
 }
 ```
-```php [src/Services/Foo.php]
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+
 namespace App\Services;
 
 final class Foo {
@@ -112,7 +116,9 @@ diAutowire(Bar::class)
 
 ::: code-group
 
-```php [src/Services/Bar.php]
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+
 namespace App\Services;
 
 final class Bar {
@@ -125,7 +131,9 @@ final class Bar {
 }
 ```
 
-```php [src/Services/Foo.php]
+```php [Foo.php]
+//file: /app/src/Services/Foo.php
+
 namespace App\Services;
 
 final class Foo {
@@ -133,7 +141,9 @@ final class Foo {
 }
 ```
 
-```php [src/Services/Baz.php]
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+
 namespace App\Services;
 
 final class Baz {
@@ -155,7 +165,9 @@ diAutowire(Bar::class)
 
 ::: code-group
 
-```php [src/Services/Bar.php]
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+
 namespace App\Services;
 
 final class Bar {
@@ -165,7 +177,9 @@ final class Bar {
 }
 ```
 
-```php [src/Services/Foo.php]
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+
 namespace App\Services;
 
 final class Foo {
@@ -173,7 +187,9 @@ final class Foo {
 }
 ```
 
-```php [src/Services/Baz.php]
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+
 namespace App\Services;
 
 final class Baz implements ServiceXInterface {

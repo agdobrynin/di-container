@@ -43,20 +43,25 @@ $priorityQueue = $container->get('priority_queue.get_data');
 
 ::: code-group
 
-```php [config/services/services.php]
+```php [services.php]
+// file: /app/config/services/services.php
+
+use App\SomeClass;
+use App\Servces\FileLogger;
 use function Kaspi\DiContainer\{diAutowire, diGet, diParameter};
 
 return static function(): \Generator {
-    yield diAutowire(App\Servces\FileLogger::class)
+    yield diAutowire(FileLogger::class)
         ->bindArguments(fileName: diParameter('app.logger_file'));
 
-    yield diAutowire(App\SomeClass::class)
+    yield diAutowire(SomeClass::class)
         // Будет возвращён объект из метода `withLogger`
-        ->setupImmutable('withLogger', [diGet(App\Servces\FileLogger::class)]);
+        ->setupImmutable('withLogger', [diGet(FileLogger::class)]);
 };
 ```
 
-```php [config/parameters/params.php]
+```php [params.php]
+// file: config/parameters/params.php
 return [
     'app.logger_file' => '/var/logs/application.log',
 ];
@@ -87,7 +92,9 @@ $logger = $container->get(App\SomeClass::class)->getLogger();
 
 ::: code-group
 
-```php [App\SomeClass.php]
+```php [SomeClass.php]
+// file: /app/src/SomeClass.php
+
 namespace App;
 
 use Psr\Log\LoggerInterface;
@@ -111,7 +118,9 @@ class SomeClass {
 }
 ```
 
-```php [App/Services/FileLogger.php]
+```php [FileLogger.php]
+// file: /app/src/Services/FileLogger.php
+
 namespace App\Services;
 
 use Psr\Log\LoggerInterface;
