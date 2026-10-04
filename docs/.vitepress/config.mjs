@@ -62,6 +62,7 @@ export default defineConfig({
                       { text: 'Обзор', link: 'index.md' },
                       { text: 'diAutowire', link: 'di-autowire.md' },
                       { text: 'diCallable', link: 'di-callable.md' },
+                      { text: 'diGet', link: 'di-get.md' },
                     ]
                   },
                 ]
