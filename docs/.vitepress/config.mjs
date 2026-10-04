@@ -66,6 +66,7 @@ export default defineConfig({
                       { text: 'diValue', link: 'di-value.md' },
                       { text: 'diProxyClosure', link: 'di-proxy-closure.md' },
                       { text: 'diTaggedAs', link: 'di-tagged-as.md' },
+                      { text: 'diFactory', link: 'di-factory.md' },
                     ]
                   },
                 ]
