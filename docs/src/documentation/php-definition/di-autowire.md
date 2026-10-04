@@ -1,4 +1,9 @@
+---
+outline: [2, 4]
+---
 # diAutowire
+
+## Обзор { #overview }
 
 Хелпер функция создает объект на основе PHP класса с автоматическим внедрением зависимостей.
 
@@ -89,9 +94,19 @@ final class Foo {
 > Параметр `$argument` в методе `bindArgument()` может принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
 >
 
-## setup()
+## Сеттер-методы внедрения зависимостей { #di-autowire-setter-method }
 
-Дополнительная настройка PHP класса через вызовы методов класса (mutable setters).
+Помимо внедрения зависимостей через конструктор PHP класса существует возможность внедрения зависимостей через сеттер методы PHP класса.
+
+> [!TIP]
+> - Для аргументов не объявленных для сеттер-метода контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
+> - Для указания как разрешать скалярные типы зависимостей рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+> - Аргументы передаваемые в сеттер-метод могут принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
+
+
+### setup()
+
+Внедрение зависимостей через вызов метода PHP класса без учёта возвращаемого значения метода (mutable setters).
 
 Метод `setup()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
@@ -104,18 +119,10 @@ DiDefinitionSetupAutowireInterface::setup(
 )
 ``` 
 Параметры:
-- `$method` – имя вызываемого метода в классе
-- `$arguments` – аргументы к параметрам метода класса
+- `$method` – имя вызываемого метода в классе.
+- `$arguments` – аргументы к параметрам метода класса.
 
-Возвращаемое значение из вызываемого метода не учитывается при настройке сервиса,
-контейнер вернет экземпляр класса созданного через конструктор класса.
-
-> [!TIP]
-> - Для аргументов не объявленных через метод `setup()` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
-> - Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
-> - Аргументы передаваемые в метод `setup()` могут принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
-
-Если в сеттер методе нет параметров или они могут быть разрешены автоматически, то аргументы передавать не нужно:
+Если в сеттер-методе нет параметров или они могут быть разрешены автоматически, то аргументы передавать не нужно:
 
 ```php
 use App\Services\Bar;
@@ -159,8 +166,7 @@ final class Baz {
 
 :::
 
-Для неполного списка аргументов сеттер метода в параметре `$arguments`
-в качестве ключа в массиве аргументов нужно указать имя параметра сеттер метода:
+Для неполного списка аргументов в параметре `$arguments` в качестве ключа в массиве нужно указать имя параметра сеттер-метода:
 
 ```php
 use App\Services\{Bar, Baz};
@@ -202,84 +208,93 @@ final class Baz implements ServiceXInterface {
 
 
 > [!NOTE]
-> [Пример использования метода `diAutowire(...)->setup`](#пример-5)
+> [Пример использования метода `setup()`](../../cookbook/php-definition/di-autowire-setup.md#diautowire-setup)
 
-## setupImmutable()
+### setupImmutable()
 
-Дополнительная настройка сервиса через сеттер методы класса возвращающие значение экземпляр PHP класса (immutable setters):
+Внедрение зависимостей через вызов метода PHP класса возвращающего измененное значение экземпляра PHP класса (mutable setters).
 
-```php 
-setupImmutable(string $method, array $arguments = [])
-``` 
-Параметры:
-- `$method` – имя вызываемого метода в классе
-- `$arguments` – аргументы к параметрам метода класса
-
-Возвращаемое значение метода должно быть `self`, `static`
-или того же класса, что и сам php класс.
+Типизированное значение сеттер-метода должно быть `self`, `static` или того же класса, что и сам PHP класс.
 Контейнер вернет экземпляр класса созданного через вызываемый метод.
 
-> [!TIP]
-> Для аргументов не объявленных через `setupImmutable()` контейнер по попытается разрешить зависимости автоматически на основе конфигурации.
 
-> [!TIP]
-> Для указания как разрешать скалярные типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](09-container-parameters.md)».
+Метод `setupImmutable()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
-> [!TIP]
-> Аргументы в `setupImmutable()` могут принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
+Сигнатура метода:
+
+```php 
+DiDefinitionSetupAutowireInterface::setupImmutable(
+    string $method,
+    array $arguments = []
+)
+``` 
+Параметры:
+- `$method` – имя вызываемого метода в классе.
+- `$arguments` – аргументы к параметрам метода класса.
 
 > [!NOTE]
-> [Пример использования метода `diAutowire(...)->setupImmutable`](#пример-6)
->
-**Теги для определения:**
-```php
-bindTag(string $name, array $options = [], null|int|string $priority = null)
-```
+> [Пример использования метода `setupImmutable()`](../../cookbook/php-definition/di-autowire-setup.md)
+
+## bindTag()
+Теги позволяют отнести конфигурируемый PHP класс к коллекции сервисов.
+
+Метод `bindTag()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+
+Сигнатура метода:
 
 ```php
-  diAutowire(...)
-      ->bindTag('tags.rules', priority: 100)
+DiDefinitionTagArgumentInterface::bindTag(
+    string $name,
+    array $options = [],
+    null|int|string $priority = null
+)
 ```
+
 > [!TIP]
-> Более подробное [описание работы с тегами](05-tags.md).
+> Более подробное [описание работы с тегами](../05-tags.md).
 
-**Конфигурация сброса состояния объекта:**
+## setResetter()
+
+Индивидуальная конфигурация для сброса состояния объекта.
+
+Метод `bindTag()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
+
 ```php
-setResetter(callable|false|string $resetter)
+DiDefinitionResetterSetterInterface::setResetter(
+    callable|false|string $resetter
+)
 ```
 
-> Более подробное [описание конфигурации для сброса состояния объекта](12-object-resetters.md).
+> [!TIP]
+> Более подробное [описание конфигурации для сброса состояния объекта](../12-object-resetters.md).
 
-##### Идентификатор контейнера для diAutowire.
-При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**)
+## Идентификатор контейнера для diAutowire { #documentation_php-definition_di-autowire-id }
+
+При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**).
+
+Конфигурирование с автоматическим формированием идентификатора контейнера:
 
 ```php
-// config/services_without_id.php
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (): \Generator {
     // идентификатор контейнера сформируется
-    // из имени класса включая пространство имен
+    // из имени класса, включая пространство имен
     yield diAutowire(\PDO::class)
         ->bindArguments(
             dsn: diParameter('db.dsn')
         ),
     );
+    /**
+     * ℹ️ Конфигурирование выше эквивалентно записи
+     * yield \PDO::class => diAutowire(\PDO::class)
+     */
 };
 ```
-```php
-// эквивалентно
-// config/services_with_id.php
-use function Kaspi\DiContainer\{diAutowire, diParameter};
 
-return static function (): \Generator {
-    yeild \PDO::class => diAutowire(\PDO::class)
-        ->bindArguments(
-            dsn: diParameter('db.dsn')
-        );
-};
-```
-Если необходим другой идентификатор контейнера, то можно указывать так:
+Идентификатор контейнера в [файлах конфигурации](../container-builder/configuration_files.md) может быть указан для
+нужных определений контейнера:
+
 ```php
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 

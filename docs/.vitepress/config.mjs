@@ -135,7 +135,6 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/agdobrynin/di-container', ariaLabel: 'Git Hub' },
       { icon: 'packagist', link: 'https://packagist.org/packages/kaspi/di-container', ariaLabel: 'Packagist' },
     ],
-    outline: [2, 4],
     head: [
       ['link', { rel: 'icon', href: '/favicon.ico' }]
     ]
