@@ -82,7 +82,9 @@ var_dump(is_object($object));
 
 Конфигурирование:
 
-```php
+::: code-group
+
+```php [services.php]
 // file: /app/config/services.php
 use App\Interfaces\ServiceInterface;
 use App\Services\Bar;
@@ -91,10 +93,22 @@ use function Kaspi\DiContainer\{diAutowire, diParameter};
 return static function (): \Generator {
 
     yield ServiceInterface::class => diAutowire(Bar::class)
-        ->bindArguments('Lorem ipsum');
+        ->bindArguments(
+            diParameter('params.lorem')
+        );
 
 };
 ```
+
+```php [parameters.php]
+// file: /app/config/parameters.php
+
+return [
+    'params.lorem' => 'Lorem ipsum',
+];
+```
+
+:::
 
 Контейнер зависимостей:
 
@@ -104,6 +118,7 @@ use App\Services\Foo;
 use App\Interfaces\ServiceInterface;
 
 $container = (new DiContainerBuilder())
+    ->loadParameters('/app/config/parameters.php')
     ->load('/app/config/services.php')
     ->build();
 
@@ -178,27 +193,40 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 
 ### `diGet()` { #helper-di-get }
 
-Можно использовать [хелпер функцию `diGet()`](../documentation/php-definition/di-get.md) как указатель на ранее сконфигурированный класс.
+Используем [хелпер функцию `diGet()`](../documentation/php-definition/di-get.md) как указатель на ранее сконфигурированный класс.
 
 
 Конфигурирование:
 
+::: code-group
+
 ```php [services.php]
 // file: /app/config/services.php
-use function Kaspi\DiContainer\{diAutowire, diGet};
+use function Kaspi\DiContainer\{diAutowire, diParameter, diGet};
 use App\Services\{Bar, Foo};
 use App\Interfaces\ServiceInterface;
 
 return static function (): \Generator {
 
     yield diAutowire(Bar::class)
-        ->bindArguments('Lorem ipsum');
+        ->bindArguments(
+            diParameter('params.lorem')
+        );
         
     // …
    
     yield ServiceInterface::class => diGet(Bar::class);
 };
 ```
+
+```php [parameters.php]
+// file: /app/config/parameters.php
+return [
+    'params.lorem' => 'Lorem ipsum',
+];
+```
+
+:::
 
 Контейнер зависимостей:
 
@@ -208,6 +236,7 @@ use App\Services\Foo;
 use App\Interfaces\ServiceInterface;
 
 $container = (new DiContainerBuilder())
+    ->loadParameters('/app/config/parameters.php')
     ->load('/app/config/services.php')
     ->build();
 
@@ -313,7 +342,7 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 
 ### InjectByCallable { #attribute-inject-by-callable }
 
-Указание в параметре `App\Services\Foo::$service` атрибута `\Kaspi\DiContainer\Attributes\InjectByCallable`.
+Конфигурация внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable`.
 
 ::: code-group
 
@@ -425,7 +454,7 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 
 ### Inject { #attribute-inject }
 
-Указание в параметре `App\Services\Foo::$service` атрибута `\Kaspi\DiContainer\Attributes\Inject`.
+Конфигурация внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\Inject`.
 
 ::: code-group
 
@@ -500,8 +529,8 @@ use App\Services\Foo;
 use App\Interfaces\ServiceInterface;
 
 $container = (new DiContainerBuilder())
-    ->loadParameters('/app/config/parameters.php')
     ->import('App\\', '/app/src')
+    ->loadParameters('/app/config/parameters.php')
     ->build();
 
 $foo = $container->get(Foo::class);
