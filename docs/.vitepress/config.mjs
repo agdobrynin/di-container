@@ -81,7 +81,7 @@ export default defineConfig({
                 collapsed: true,
                 items: [
                   { text: 'Внедрение зависимостей через сеттер-методы', link: 'autowire-setup.md' },
-                  { text: 'Получение класса по интерфейсу', link: 'resolve-interface.md' },
+                  { text: 'Внедрение зависимости по интерфейсу', link: 'resolve-interface.md' },
                 ],
               },
           ],

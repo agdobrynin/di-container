@@ -1,7 +1,7 @@
 ---
 outline: [2, 3]
 ---
-# Получение класса по интерфейсу
+# Внедрение зависимости по интерфейсу
 
 ## Обзор { #overview }
 
@@ -137,7 +137,7 @@ return static function (): \Generator {
         return $bar;    
     };
 
-    yield ServiceInterface::class => diCallable($fn, isSingleton: true)
+    yield ServiceInterface::class => diCallable($fn)
         ->bindArguments(
             diParameter('params.one'),
             diParameter('params.two'),
