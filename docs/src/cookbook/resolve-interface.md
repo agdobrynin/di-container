@@ -74,7 +74,9 @@ var_dump(is_object($object));
 // (bool) true
 ```
 
-## Конфигурирование в стиле PHP определений { #php-definition }
+## PHP определения { #php-definition }
+
+Конфигурирование в стиле PHP определений.
 
 ### `diAutowire()` { #helper-di-autowire }
 
@@ -246,8 +248,9 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 // (bool) true
 ```
 
-## Конфигурирование через PHP атрибуты { #php-attributes }
+## PHP атрибуты { #php-attributes }
 
+Конфигурирование через PHP атрибуты.
 
 ### Service { #attribute-service }
 

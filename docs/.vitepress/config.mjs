@@ -82,6 +82,7 @@ export default defineConfig({
                 items: [
                   { text: 'Внедрение зависимостей через сеттер-методы', link: 'autowire-setup.md' },
                   { text: 'Внедрение зависимости по интерфейсу', link: 'resolve-interface.md' },
+                  { text: 'Внедрение зависимостей в параметры переменной длины', link: 'resolve-variadic-params.md' },
                 ],
               },
           ],
