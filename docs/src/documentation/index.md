@@ -2,42 +2,28 @@
 
 ## Особенности разрешения некоторых классов и интерфейсов { #resolve-class-interface }
 
-Некоторые интерфейсы или классы всегда возвращают текущий контейнер зависимостей.
-При разрешении зависимости для интерфейсов и классов:
-- `Psr\Container\ContainerInterface::class`
-- `Kaspi\DiContainer\Interfaces\DiContainerInterface::class`
-- `Kaspi\DiContainer\DiContainer::class`
+При разрешении зависимостей ниже перечисленных типов всегда будет получен созданный контейнер:
+- `\Psr\Container\ContainerInterface`
+- `\Kaspi\DiContainer\Interfaces\DiContainerInterface`
+- `\Kaspi\DiContainer\DiContainer`
 
-будет получен текущий контейнер зависимостей.
-
+Для свойства PHP класса:
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use Psr\Container\ContainerInterface;
 
-function testFunc(ContainerInterface $c) {
-    return $c;
-}
-
-$container = (new DiContainerBuilder())->build();
-
-var_dump($container->call('testFunc') instanceof DiContainer); // true
-var_dump($container->call('testFunc') instanceof ContainerInterface); // true
-```
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use Psr\Container\ContainerInterface;
-
-class TestClass {
+class Foo {
     public function __construct(
-        public ContainerInterface $container
+        public readonly ContainerInterface $container
     ) {}
 }
 
 $container = (new DiContainerBuilder())->build();
 
-var_dump($container->get(TestClass::class)->container instanceof ContainerInterface); // true
+var_dump($container === $container->get(Foo::class)->container);
+// (bool) true
 ```
+
 ## Содержание { #toc }
 
 * 👷‍♂️ [Инструмент для сборки контейнера зависимостей **DiContainerBuilder**](container-builder/index.md).

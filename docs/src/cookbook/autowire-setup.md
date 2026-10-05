@@ -1,17 +1,20 @@
+---
+outline: [2, 4]
+---
 # Внедрение зависимостей через сеттер-методы
 
 ## Обзор
 
 Внедрение зависимостей в PHP класс может происходить так же через сеттер-методы. Для этого при настройке
-определения контейнера используются методы [хелпер функции](../../documentation/php-definition/di-autowire.md) `diAutowire::setup()` и  `diAutowire::setupImmutable()`.
+определения контейнера используются методы [хелпер функции](../documentation/php-definition/di-autowire.md) `diAutowire::setup()` и  `diAutowire::setupImmutable()`.
 
 ## diAutowire::setup()
 
-Внедрение зависимости через сеттер-метод PHP класса [без учёта возвращаемого значения методом](../../documentation/php-definition/di-autowire.md#setup) (_mutable setter_).
+Внедрение зависимости через сеттер-метод PHP класса [без учёта возвращаемого значения методом](../documentation/php-definition/di-autowire.md#setup) (_mutable setter_).
 
 Конфигурирование:
 ```php
-// config/services.php
+// file: /app/config/services.php
 use function Kaspi\DiContainer\diAutowire;
 
 return static function(): \Generator {
@@ -28,7 +31,7 @@ return static function(): \Generator {
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->load(...\glob(__DIR__.'/config/*.php'))
+    ->load(...\glob('/app/config/*.php'))
     ->build()
 ;
 
@@ -37,7 +40,7 @@ $priorityQueue = $container->get('priority_queue.get_data');
 
 ## diAutowire::setupImmutable()
 
-Внедрение зависимости через [сеттер-метод возвращающий экземпляр PHP класса](../../documentation/php-definition/di-autowire.md#setupimmutable) (_immutable setter_).
+Внедрение зависимости через [сеттер-метод возвращающий экземпляр PHP класса](../documentation/php-definition/di-autowire.md#setupimmutable) (_immutable setter_).
 
 Конфигурирование:
 
@@ -61,7 +64,7 @@ return static function(): \Generator {
 ```
 
 ```php [params.php]
-// file: config/parameters/params.php
+// file: /app/config/parameters/params.php
 return [
     'app.logger_file' => '/var/logs/application.log',
 ];
@@ -75,8 +78,8 @@ return [
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->loadParameters(...\glob(__DIR__.'/config/parameters/*.php'))
-    ->load(...\glob(__DIR__.'/config/services/*.php'))
+    ->loadParameters(...\glob('/app/config/parameters/*.php'))
+    ->load(...\glob('/app/config/services/*.php'))
     ->build()
 ;
 
@@ -85,7 +88,7 @@ $container = (new DiContainerBuilder())
 $logger = $container->get(App\SomeClass::class)->getLogger();
 
 \var_dump($logger instanceof Psr\Log\LoggerInterface::class);
-// true
+// (bool) true
 ```
 
 Классы для конфигурирования:

@@ -27,7 +27,7 @@ export default defineConfig({
         },
         nav: [
           { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
-          { text: 'Рецепты', link: '/cookbook/' },
+          { text: 'Рецепты', link: '/cookbook/', activeMatch: '/cookbook/' },
         ],
         sidebar: {
           '/documentation/': [
@@ -74,13 +74,17 @@ export default defineConfig({
                 ]
               }
           ],
-          '/cookbook/': [{
-            base: '/cookbook/',
-            text: 'Рецепты',
-            items: [
-              { text: 'Описание', link: '/' },
-            ]
-          }],
+          '/cookbook/': [
+              {
+                base: '/cookbook/',
+                text: 'Рецепты',
+                collapsed: true,
+                items: [
+                  { text: 'Внедрение зависимостей через сеттер-методы', link: 'autowire-setup.md' },
+                  { text: 'Получение класса по интерфейсу', link: 'resolve-interface.md' },
+                ],
+              },
+          ],
         }
       },
       markdown: {
@@ -124,7 +128,7 @@ export default defineConfig({
             base: '/cookbook/',
             text: 'Cookbook',
             items: [
-              { text: 'Overview', link: '/' },
+              { text: 'Overview', link: '/php-definition' },
             ]
           }],
         }

@@ -201,7 +201,7 @@ final class Baz implements ServiceXInterface {
 
 
 > [!NOTE]
-> [Пример использования метода `setup()`](../../cookbook/php-definition/di-autowire-setup.md#diautowire-setup)
+> [Пример использования метода `setup()`](../../cookbook/autowire-setup.md#diautowire-setup)
 
 ### setupImmutable()
 
@@ -226,7 +226,7 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 - `$arguments` – аргументы к параметрам метода класса.
 
 > [!NOTE]
-> [Пример использования метода `setupImmutable()`](../../cookbook/php-definition/di-autowire-setup.md)
+> [Пример использования метода `setupImmutable()`](../../cookbook/autowire-setup.md)
 
 ## bindTag()
 Теги позволяют отнести конфигурируемый PHP класс к коллекции сервисов.
