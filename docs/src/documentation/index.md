@@ -1,18 +1,6 @@
-# Руководство
+# Руководство { #overview }
 
-* 👷‍♂️ [Инструмент для сборки контейнера зависимостей **DiContainerBuilder**](container-builder/index.md).
-* ⚙️ [Конфигурация для DiContainer](container-config/index.md).
-* 🐘 [DiContainer с конфигурированием **в стиле php определений**](php-definition/index.md).
-* #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](02-attribute-definition.md).
-* 📦 [Метод контейнера `call()`](04-call-method.md) для вызова чистых `callable` типов и дополнительных определений.
-* 🔖 [Тэгирование определений и сервисов](05-tags.md).
-* 📋 [Параметры контейнера](09-container-parameters.md).
-* 🗳️ [Внедрение экземпляра класса в рантайм контейнер](10-runtime-definition.md).
-* 🧹 [Сброс контейнера зависимостей](11-container-reset.md).
-* ♻️ [Сброс состояния объектов для долго-живущих процессов](12-object-resetters.md).
-* 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](14-lazy-injection.md)
-
-## Особенности разрешения некоторых классов и интерфейсов.
+## Особенности разрешения некоторых классов и интерфейсов { #resolve-class-interface }
 
 Некоторые интерфейсы или классы всегда возвращают текущий контейнер зависимостей.
 При разрешении зависимости для интерфейсов и классов:
@@ -50,3 +38,17 @@ $container = (new DiContainerBuilder())->build();
 
 var_dump($container->get(TestClass::class)->container instanceof ContainerInterface); // true
 ```
+## Содержание { #toc }
+
+* 👷‍♂️ [Инструмент для сборки контейнера зависимостей **DiContainerBuilder**](container-builder/index.md).
+* ⚙️ [Конфигурация для DiContainer](container-config/index.md).
+* 🐘 [DiContainer с конфигурированием **в стиле php определений**](php-definition/index.md).
+* #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](02-attribute-definition.md).
+* 📦 [Метод контейнера `call()`](04-call-method.md) для вызова `callable` типов и дополнительных определений.
+* 🔖 [Тэгирование определений и сервисов](05-tags.md).
+* 📋 [Параметры контейнера](09-container-parameters.md).
+* 🗳️ [Внедрение экземпляра класса в рантайм контейнер](10-runtime-definition.md).
+* 🧹 [Сброс контейнера зависимостей](11-container-reset.md).
+* ♻️ [Сброс состояния объектов для долго-живущих процессов](12-object-resetters.md).
+* 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](14-lazy-injection.md)
+
