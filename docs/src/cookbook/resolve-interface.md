@@ -96,6 +96,8 @@ return static function (): \Generator {
 };
 ```
 
+Контейнер зависимостей:
+
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
@@ -207,6 +209,81 @@ use App\Interfaces\ServiceInterface;
 
 $container = (new DiContainerBuilder())
     ->load('/app/config/services.php')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($appLogger->service() instanceof ServiceInterface);
+// (bool) true
+```
+
+## Конфигурирование через PHP атрибуты { #php-attributes }
+
+### Autowire { #attribute-autowire }
+
+Указание в параметре `App\Services\Foo::$service` атрибута `\Kaspi\DiContainer\Attributes\Autowire`.
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+
+namespace App\Services;
+
+use App\Interfaces\ServiceInterface;
+use Kaspi\DiContainer\Attributes\Autowire;
+
+final class Foo
+{
+    public function __construct(
+        #[Autowire(Bar::class, arguments: ['Lorem ipsum'])]
+        private ServiceInterface $service
+    ) {}
+    
+    // …
+    
+    public function service(): ServiceInterface
+    {
+        return $this->service;
+    }
+}
+```
+
+```php [ServiceInterface.php]
+// file: /app/src/Interfaces/ServiceInterface.php
+
+namespace App\Interfaces;
+
+interface ServiceInterface
+{
+    
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+
+namespace App\Services;
+
+use App\Interfaces\ServiceInterface;
+
+final class Bar implements ServiceInterface
+{
+    public function __construct(private readonly string $param) {}
+}
+```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use App\Interfaces\ServiceInterface;
+
+$container = (new DiContainerBuilder())
+    ->import('App\', '/app/src')
     ->build();
 
 $foo = $container->get(Foo::class);
