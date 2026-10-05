@@ -219,9 +219,13 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 
 ## Конфигурирование через PHP атрибуты { #php-attributes }
 
-### Autowire { #attribute-autowire }
 
-Указание в параметре `App\Services\Foo::$service` атрибута `\Kaspi\DiContainer\Attributes\Autowire`.
+### Service { #attribute-service }
+
+В рамках контейнера для интерфейса `\App\Interfaces\ServiceInterface` можно
+определить как разрешать этот интерфейс через атрибут `\Kaspi\DiContainer\Attributes\Service`.
+При таком подходе конфигурирования любая зависимость с типом `\App\Interfaces\ServiceInterface`
+будет разрешена одинаково.
 
 ::: code-group
 
@@ -231,12 +235,10 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 namespace App\Services;
 
 use App\Interfaces\ServiceInterface;
-use Kaspi\DiContainer\Attributes\Autowire;
 
 final class Foo
 {
     public function __construct(
-        #[Autowire(Bar::class, arguments: ['Lorem ipsum'])]
         private ServiceInterface $service
     ) {}
     
@@ -245,6 +247,124 @@ final class Foo
     public function service(): ServiceInterface
     {
         return $this->service;
+    }
+}
+```
+
+```php [ServiceInterface.php]
+// file: /app/src/Interfaces/ServiceInterface.php
+
+namespace App\Interfaces;
+
+use App\Services\Bar;
+use Kaspi\DiContainer\Attributes\Service;
+
+#[Service(Bar::class)]
+interface ServiceInterface
+{
+    
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+
+namespace App\Services;
+
+use App\Interfaces\ServiceInterface;
+use Kaspi\DiContainer\Attributes\Parameter;
+
+final class Bar implements ServiceInterface
+{
+    public function __construct(
+        #[Parameter('params.lorem')]
+        private readonly string $param
+    ) {}
+}
+```
+
+:::
+
+Конфигурирование:
+```php
+// file: /app/config/parameters.php
+return [
+    'params.lorem' => 'Lorem ipsum',
+];
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use App\Interfaces\ServiceInterface;
+
+$container = (new DiContainerBuilder())
+    ->import('App\\', '/app/src')
+    ->loadParameters('/app/config/parameters.php')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($appLogger->service() instanceof ServiceInterface);
+// (bool) true
+```
+
+### InjectByCallable { #attribute-inject-by-callable }
+
+Указание в параметре `App\Services\Foo::$service` атрибута `\Kaspi\DiContainer\Attributes\InjectByCallable`.
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+
+namespace App\Services;
+
+use App\Interfaces\ServiceInterface;
+use App\Helpers\FactoryCreate;
+use Kaspi\DiContainer\Attributes\InjectByCallable;
+
+final class Foo
+{
+    public function __construct(
+        #[InjectByCallable([FactoryCreate::class, 'makeService'])]
+        private ServiceInterface $service
+    ) {}
+    
+    // …
+    
+    public function service(): ServiceInterface
+    {
+        return $this->service;
+    }
+}
+```
+
+```php [FactoryCreate.php]
+// file: /app/src/Helpers/FactoryCreate.php
+
+namespace App\Helpers;
+
+use App\Services\Bar;
+use Kaspi\DiContainer\Attributes\Parameter;
+
+final class FactoryCreate
+{
+    public static function makeService(
+        #[Parameter('params.one')]
+        string $paramOne,
+        #[Parameter('params.two')]
+        string $paramTwo,
+    ): Bar {
+        $calculatedParam = $paramOne . $paramTwo;
+        
+        $bar = new Bar($calculatedParam);
+        
+        // возможны дополнительные дейаствия с $bar
+        
+        return $bar;    
     }
 }
 ```
@@ -275,6 +395,16 @@ final class Bar implements ServiceInterface
 
 :::
 
+Конфигурирование:
+
+```php
+// file: /app/config/parameters.php
+return [
+    'params.one' => 'foo',
+    'params.two' => 'bar',
+];
+```
+
 Контейнер зависимостей:
 
 ```php
@@ -283,7 +413,95 @@ use App\Services\Foo;
 use App\Interfaces\ServiceInterface;
 
 $container = (new DiContainerBuilder())
-    ->import('App\', '/app/src')
+    ->import('App\\', '/app/src')
+    ->loadParameters('/app/config/parameters.php')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($appLogger->service() instanceof ServiceInterface);
+// (bool) true
+```
+
+### Inject { #attribute-inject }
+
+Указание в параметре `App\Services\Foo::$service` атрибута `\Kaspi\DiContainer\Attributes\Inject`.
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+
+namespace App\Services;
+
+use App\Interfaces\ServiceInterface;
+use Kaspi\DiContainer\Attributes\Inject;
+
+final class Foo
+{
+    public function __construct(
+        #[Inject(Bar::class)]
+        private ServiceInterface $service
+    ) {}
+    
+    // …
+    
+    public function service(): ServiceInterface
+    {
+        return $this->service;
+    }
+}
+```
+
+```php [ServiceInterface.php]
+// file: /app/src/Interfaces/ServiceInterface.php
+
+namespace App\Interfaces;
+
+interface ServiceInterface
+{
+    
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+
+namespace App\Services;
+
+use App\Interfaces\ServiceInterface;
+use Kaspi\DiContainer\Attributes\Parameter;
+
+final class Bar implements ServiceInterface
+{
+    public function __construct(
+        #[Parameter('params.lorem')]
+        private readonly string $param
+    ) {}
+}
+```
+
+:::
+
+Конфигурирование:
+
+```php
+// file: /app/config/parameters.php
+return [
+    'params.lorem' => 'Lorem ipsum',
+];
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use App\Interfaces\ServiceInterface;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters('/app/config/parameters.php')
+    ->import('App\\', '/app/src')
     ->build();
 
 $foo = $container->get(Foo::class);
