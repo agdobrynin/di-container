@@ -81,8 +81,9 @@ export default defineConfig({
                 collapsed: true,
                 items: [
                   { text: 'Внедрение зависимостей через сеттер-методы', link: 'autowire-setup.md' },
-                  { text: 'Внедрение зависимости по интерфейсу', link: 'resolve-interface.md' },
-                  { text: 'Внедрение зависимостей в параметры переменной длины', link: 'resolve-variadic-params.md' },
+                  { text: 'Внедрение зависимости по интерфейсу', link: 'inject-interface.md' },
+                  { text: 'Внедрение зависимостей в параметры переменной длины', link: 'inject-variadic-params.md' },
+                  { text: 'Внедрение зависимостей для параметров объединенного типа', link: 'inject-union-type-params.md' },
                 ],
               },
           ],
