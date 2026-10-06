@@ -5,107 +5,29 @@ outline: [2, 4]
 
 ## Обзор
 
-Внедрение зависимостей в PHP класс может происходить так же через сеттер-методы. Для этого при настройке
-определения контейнера используются методы [хелпер функции](../documentation/php-definition/di-autowire.md) `diAutowire::setup()` и  `diAutowire::setupImmutable()`.
+Внедрение зависимостей в PHP класс может происходить так же через **сеттер-методы**. Для этого при настройке
+определения контейнера используются методы [хелпер функции](../documentation/php-definition/di-autowire.md) `diAutowire::setup()` и  `diAutowire::setupImmutable()`,
+или PHP атрибуты `\Kaspi\DiContainer\Attributes\Setup` и `\Kaspi\DiContainer\Attributes\SetupImmutable`.
 
-## diAutowire::setup()
-
-Внедрение зависимости через сеттер-метод PHP класса [без учёта возвращаемого значения методом](../documentation/php-definition/di-autowire.md#setup) (_mutable setter_).
-
-Конфигурирование:
-```php
-// file: /app/config/services.php
-use function Kaspi\DiContainer\diAutowire;
-
-return static function(): \Generator {
-
-    yield 'priority_queue.get_data' => diAutowire(\SplPriorityQueue::class)
-        ->setup('setExtractFlags', [\SplPriorityQueue::EXTR_DATA]);
-
-};
-```
-
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->load(...\glob('/app/config/*.php'))
-    ->build()
-;
-
-$priorityQueue = $container->get('priority_queue.get_data');
-```
-
-## diAutowire::setupImmutable()
-
-Внедрение зависимости через [сеттер-метод возвращающий экземпляр PHP класса](../documentation/php-definition/di-autowire.md#setupimmutable) (_immutable setter_).
-
-Конфигурирование:
+<span id="src-class"/>Классы для конфигурирования:
 
 ::: code-group
 
-```php [services.php]
-// file: /app/config/services/services.php
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
 
-use App\SomeClass;
-use App\Servces\FileLogger;
-use function Kaspi\DiContainer\{diAutowire, diGet, diParameter};
-
-return static function(): \Generator {
-    yield diAutowire(FileLogger::class)
-        ->bindArguments(fileName: diParameter('app.logger_file'));
-
-    yield diAutowire(SomeClass::class)
-        // Будет возвращён объект из метода `withLogger`
-        ->setupImmutable('withLogger', [diGet(FileLogger::class)]);
-};
-```
-
-```php [params.php]
-// file: /app/config/parameters/params.php
-return [
-    'app.logger_file' => '/var/logs/application.log',
-];
-```
-
-:::
-
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters(...\glob('/app/config/parameters/*.php'))
-    ->load(...\glob('/app/config/services/*.php'))
-    ->build()
-;
-
-// ...
-
-$logger = $container->get(App\SomeClass::class)->getLogger();
-
-\var_dump($logger instanceof Psr\Log\LoggerInterface::class);
-// (bool) true
-```
-
-Классы для конфигурирования:
-
-::: code-group
-
-```php [SomeClass.php]
-// file: /app/src/SomeClass.php
-
-namespace App;
+namespace App\Services;
 
 use Psr\Log\LoggerInterface;
 
-class SomeClass {
+class Foo
+{
     private LoggerInterface $logger;
 
-    // other methods and properties.
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $new->logger = $logger;
+    }
 
     public function withLogger(LoggerInterface $logger): static
     {
@@ -115,7 +37,8 @@ class SomeClass {
         return $new;
     }
     
-    public function getLogger(): ?LoggerInterface {
+    public function getLogger(): ?LoggerInterface
+    {
         return $this->logger ?? null;
     }
 }
@@ -128,11 +51,303 @@ namespace App\Services;
 
 use Psr\Log\LoggerInterface;
 
-class FileLogger implements LoggerInterface {
-
+class FileLogger implements LoggerInterface
+{
     public function __construct(private string $fileName) {}
     // implement methods from LoggerInterface
 }
 ```
 
-::: 
+:::
+
+## PHP определения { #php-definition }
+
+Конфигурирование в стиле PHP определений.
+
+### diAutowire::setup()
+
+Внедрение зависимости через сеттер-метод PHP класса [без учёта возвращаемого значения методом](../documentation/php-definition/di-autowire.md#setup) (_mutable setter_).
+
+Конфигурирование [PHP классов](#src-class):
+
+::: code-group
+
+```php [services.php]
+// file: /app/config/services/services.php
+use function Kaspi\DiContainer\diAutowire;
+use App\Services\Foo;
+
+return static function(): \Generator {
+    yield diAutowire(Foo::class)
+        ->setup('setLogger');
+
+    yield 'priority_queue.get_data' => diAutowire(\SplPriorityQueue::class)
+        ->setup('setExtractFlags', [\SplPriorityQueue::EXTR_DATA]);
+};
+```
+
+```php [loggers.php]
+// file: /app/config/services/loggers.php
+use function Kaspi\DiContainer\{diAutowire, diParameter};
+use App\Services\FileLogger;
+
+return static function(): \Generator {
+    yield diAutowire(FileLogger::class)
+        ->bindArguments(
+            diParameter('files.logger_file')
+        );
+};
+```
+
+```php [parameters.php]
+// file: /app/config/parameters/logger.php
+return [
+    'files.logger_file' => '/var/logs/app_logger.log',
+];
+```
+
+:::
+
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use Psr\Log\LoggerInterface;
+use function glob;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters(...glob('/app/config/parameters/*.php'))
+    ->load(...glob('/app/config/services/*.php'))
+    ->build();
+
+$priorityQueue = $container->get('priority_queue.get_data');
+
+var_dump($priorityQueue instanceof \SplPriorityQueue);
+// (bool) true
+
+$foo = $container->get(Foo::class);
+var_dump($foo->getLogger() instanceof LoggerInterface);
+// (bool) true
+```
+
+### diAutowire::setupImmutable()
+
+Внедрение зависимости через [сеттер-метод возвращающий экземпляр PHP класса](../documentation/php-definition/di-autowire.md#setupimmutable) (_immutable setter_).
+
+Конфигурирование [PHP классов](#src-class):
+
+::: code-group
+
+```php [services.php]
+// file: /app/config/services/services.php
+use function Kaspi\DiContainer\diAutowire;
+use App\Services\Foo;
+
+return static function(): \Generator {
+    yield diAutowire(Foo::class)
+        ->setupImmutable('withLogger');
+};
+```
+
+```php [loggers.php]
+// file: /app/config/services/loggers.php
+use function Kaspi\DiContainer\{diAutowire, diParameter};
+use App\Services\FileLogger;
+
+return static function(): \Generator {
+    yield diAutowire(FileLogger::class)
+        ->bindArguments(
+            diParameter('files.logger_file')
+        );
+};
+```
+
+```php [parameters.php]
+// file: /app/config/parameters/logger.php
+return [
+    'files.logger_file' => '/var/logs/app_logger.log',
+];
+```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use Psr\Log\LoggerInterface;
+use function glob;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters(...glob('/app/config/parameters/*.php'))
+    ->load(...glob('/app/config/services/*.php'))
+    ->build();
+
+$foo = $container->get(Foo::class);
+var_dump($foo->getLogger() instanceof LoggerInterface);
+// (bool) true
+```
+
+## PHP атрибуты { #php-attributes }
+
+Конфигурирование внедрения через сеттер-методы PHP атрибутами `\Kaspi\DiContainer\Attributes\Setup` и `\Kaspi\DiContainer\Attributes\SetupImmutable`.
+
+### Setup { #attribute-setup }
+
+Конфигурация внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\Setup` примененный к методу PHP класса.
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+
+namespace App\Services;
+
+use Psr\Log\LoggerInterface;
+use Kaspi\DiContainer\Attributes\Setup;
+
+class Foo
+{
+    private LoggerInterface $logger;
+
+    #[Setup] // 🚩 конфигурирование сеттер-метода
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $new->logger = $logger;
+    }
+    
+    public function getLogger(): ?LoggerInterface
+    {
+        return $this->logger ?? null;
+    }
+}
+```
+
+```php [FileLogger.php]
+// file: /app/src/Services/FileLogger.php
+
+namespace App\Services;
+
+use Psr\Log\LoggerInterface;
+use Kaspi\DiContainer\Attributes\Paraneter;
+
+class FileLogger implements LoggerInterface
+{
+    public function __construct(
+        #[Paraneter('files.logger_file')]
+        private string $fileName
+    ) {}
+    // implement methods from LoggerInterface
+}
+```
+
+:::
+
+Конфигурация параметров контейнера:
+
+```php
+// file: /app/config/parameters/logger.php
+return [
+    'files.logger_file' => '/var/logs/app_logger.log',
+];
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use Psr\Log\LoggerInterface;
+use function glob;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters(...glob('/app/config/parameters/*.php'))
+    ->build();
+
+$foo = $container->get(Foo::class);
+var_dump($foo->getLogger() instanceof LoggerInterface);
+// (bool) true
+```
+
+### SetupImmutable { #attribute-setup-immutable }
+
+Конфигурация внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` примененный к методу PHP класса.
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+
+namespace App\Services;
+
+use Psr\Log\LoggerInterface;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
+
+class Foo
+{
+    private LoggerInterface $logger;
+
+    #[SetupImmutable] // 🚩 конфигурирование сеттер-метода
+    public function withLogger(LoggerInterface $logger): static
+    {
+        $new = clone $this;
+        $new->logger = $logger;
+    
+        return $new;
+    }
+    
+    public function getLogger(): ?LoggerInterface
+    {
+        return $this->logger ?? null;
+    }
+}
+```
+
+```php [FileLogger.php]
+// file: /app/src/Services/FileLogger.php
+
+namespace App\Services;
+
+use Psr\Log\LoggerInterface;
+use Kaspi\DiContainer\Attributes\Paraneter;
+
+class FileLogger implements LoggerInterface
+{
+    public function __construct(
+        #[Paraneter('files.logger_file')]
+        private string $fileName
+    ) {}
+    // implement methods from LoggerInterface
+}
+```
+
+:::
+
+Конфигурация параметров контейнера:
+
+```php
+// file: /app/config/parameters/logger.php
+return [
+    'files.logger_file' => '/var/logs/app_logger.log',
+];
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use Psr\Log\LoggerInterface;
+use function glob;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters(...glob('/app/config/parameters/*.php'))
+    ->build();
+
+$foo = $container->get(Foo::class);
+var_dump($foo->getLogger() instanceof LoggerInterface);
+// (bool) true
+```
