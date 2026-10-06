@@ -38,7 +38,7 @@ export default defineConfig({
                 items: [
                   {
                     base: '/documentation/container-builder/',
-                    text: 'Сборка контейнера зависимостей',
+                    text: '👷‍♂️ Сборка контейнера зависимостей',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -50,12 +50,12 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/container-config/',
-                    text: 'Конфигурация для DiContainer',
+                    text: '⚙️ Конфигурация для DiContainer',
                     link: 'index.md'
                   },
                   {
                     base: '/documentation/php-definition/',
-                    text: 'Конфигурирование в стиле php определений',
+                    text: '🐘 Конфигурирование в стиле php определений',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -73,20 +73,11 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/attribute-definition/',
-                    text: 'Конфигурирование через PHP атрибуты',
+                    text: '#️⃣  Конфигурирование через PHP атрибуты',
                     link: 'index.md',
                     collapsed: true,
                     items: [
                       { text: 'Обзор', link: 'index.md' },
-                      { text: 'diAutowire', link: 'di-autowire.md' },
-                      { text: 'diCallable', link: 'di-callable.md' },
-                      { text: 'diGet', link: 'di-get.md' },
-                      { text: 'diValue', link: 'di-value.md' },
-                      { text: 'diProxyClosure', link: 'di-proxy-closure.md' },
-                      { text: 'diTaggedAs', link: 'di-tagged-as.md' },
-                      { text: 'diFactory', link: 'di-factory.md' },
-                      { text: 'diParameter', link: 'di-parameter.md' },
-                      { text: 'diParameterRuntime', link: 'di-parameter-runtime.md' },
                     ]
                   },
                 ]
