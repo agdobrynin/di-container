@@ -23,12 +23,12 @@
 > Для повторяющихся скалярных значений рекомендуется использовать «[параметры контейнера](../09-container-parameters.md)».
 
 - доступные хелпер функции:
-    - [diAutowire](di-autowire.md) – php класс
-    - [diCallable](di-callable.md) – вызываемый тип `callable`
-    - [diGet](di-get.md) – ссылка на идентификатор контейнера
+    - [diAutowire](di-autowire.md) – php класс.
+    - [diCallable](di-callable.md) – вызываемый тип `callable`.
+    - [diGet](di-get.md) – ссылка на идентификатор контейнера.
     - [diValue](di-value.md) – определение «как есть».
-    - [diProxyClosure](di-proxy-closure.md) – сервис через вызов `\Closure`
-    - [diTaggedAs](di-tagged-as.md) – коллекция определений полученная по тегу
-    - [diFactory](di-factory.md) – фабрика для разрешения зависимости
-    - [diParameter](di-parameter.md) – параметр контейнера
-    - [diParameterRuntime](di-parameter-runtime.md) – параметр контейнера времени исполнения
+    - [diProxyClosure](di-proxy-closure.md) – внедрение зависимости через «ленивую загрузку».
+    - [diTaggedAs](di-tagged-as.md) – внедрение коллекции определений по тегу.
+    - [diFactory](di-factory.md) – фабрика для внедрения зависимости.
+    - [diParameter](di-parameter.md) – параметр контейнера.
+    - [diParameterRuntime](di-parameter-runtime.md) – параметр контейнера времени исполнения.
