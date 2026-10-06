@@ -2,6 +2,12 @@
 
 [В конфигурации контейнера](../container-config/index.md#use-attribute) по умолчанию параметр `$useAttribute` включён.
 
+Для указания контейнеру каким образом нужно внедрять зависимости в PHP классах или вызываемых типах используется механизм конфигурирования через PHP атрибуты.
+
+Для создания настроенного контейнера используется класс-строитель [DiContainerBuilder](../container-builder/index.md).
+
+PHP атрибуты содержат мета-данные для конфигурирования определений контейнера – передать аргументы для разных типов, указать дополнительное конфигурирование через сеттер методы или добавить теги.
+
 При конфигурировании контейнера можно совмещать PHP атрибуты и PHP определения.
 
 > [!WARNING]
@@ -9,192 +15,27 @@
 >
 
 > [!IMPORTANT]
-> ????
-> Если класс или интерфейс конфигурируется через php атрибуты
-> и одновременно через файлы конфигурации, то при одинаковых идентификаторах
-> контейнера будет выброшено исключение.
-> Необходимо выбрать только один способ конфигурации сервиса или через php атрибуты или через файлы-определения.
+> Для каждого идентификатора контейнера и его определения необходимо выбрать только один способ конфигурации – через php атрибуты или через [файлы-конфигураций](../container-builder/configuration_files.md). 
 
 Доступные атрибуты:
-- **[Autowire](#autowire)** – конфигурирование PHP класса или их набора в контейнере.
-- **[AutowireExclude](#autowireexclude)** – запретить разрешение PHP класса или интерфейса в контейнере.
-- **[Setup](#setup)** - вызов метода PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
-- **[SetupImmutable](#setupimmutable)** - вызов метода PHP класса для настройки сервиса с учёта возвращаемого значения, _immutable setter method_.
-- **[Inject](#inject)** – внедрение зависимости в параметры конструктора PHP класса, метода.
-- **[InjectByCallable](#injectbycallable)** – внедрение зависимости в параметры конструктора PHP класса, метода через `callable` тип.
-- **[Service](#service)** – определение для интерфейса какой PHP класс будет вызван и разрешен в контейнере.
-- **[DiFactory](#difactory)** – разрешение зависимости с помощью класса-фабрики.
-- **[ProxyClosure](#proxyclosure)** – внедрение зависимости в параметры конструктора PHP класса, метода или аргументов функции с отложенной инициализацией через класс `\Closure`, анонимную функцию.
-- **[Tag](#tag)** – определение тегов для класса.
-- **[TaggedAs](#taggedas)** – внедрение тегированных определений в параметры конструктора, метода PHP класса.
-- **[Parameter](#parameter)** – разрешение зависимости через «параметр контейнера».
-- **[ParameterRuntime](#parameterruntime)** – разрешение зависимости через «параметр контейнера времени исполнения».
-- **[Параметр переменной длины](#параметр-переменной-длины)** – особенности применения атрибутов.
+- [Autowire](autowire.md) – конфигурирование PHP класса или их набора в контейнере.
+- [AutowireExclude](#autowireexclude) – запретить разрешение PHP класса или интерфейса в контейнере.
+- [Setup](#setup) - вызов метода PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
+- [SetupImmutable](#setupimmutable) - вызов метода PHP класса для настройки сервиса с учёта возвращаемого значения, _immutable setter method_.
+- [Inject](#inject) – внедрение зависимости в параметры конструктора PHP класса, метода.
+- [InjectByCallable](#injectbycallable) – внедрение зависимости в параметры конструктора PHP класса, метода через `callable` тип.
+- [Service](#service) – определение для интерфейса какой PHP класс будет вызван и разрешен в контейнере.
+- [DiFactory](#difactory) – разрешение зависимости с помощью класса-фабрики.
+- [ProxyClosure](#proxyclosure) – внедрение зависимости в параметры конструктора PHP класса, метода или аргументов функции с отложенной инициализацией через класс `\Closure`, анонимную функцию.
+- [Tag](#tag) – определение тегов для класса.
+- [TaggedAs](#taggedas) – внедрение тегированных определений в параметры конструктора, метода PHP класса.
+- [Parameter](#parameter) – разрешение зависимости через «параметр контейнера».
+- [ParameterRuntime](#parameterruntime) – разрешение зависимости через «параметр контейнера времени исполнения».
+- [Параметр переменной длины](#параметр-переменной-длины) – особенности применения атрибутов.
 
 -----
 
-## Autowire
-Атрибут позволяет конфигурировать PHP класс как определение для контейнера
-и может применяться к PHP классу или к параметру метода (функции).
 
-Атрибут позволяет конфигурировать теги и сетер-методы PHP класса
-для указания как должен быть разрешен PHP класс контейнером с учётом идентификатора контейнера.
-
-```php
-#[Autowire(
-    string $id = '',
-    ?bool $isSingleton = null,
-    array $arguments = [],
-    array|\Kaspi\DiContainer\Attributes\Tag|null $tags = null,
-    ?array $setups = null,
-    callable|false|string $resetter = false,
-    bool $isLazy = false,
-)]
-```
-Параметры:
-- `$id` – идентификатор контейнера для класса (_container identifier_).
-- `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../README.md#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-dicontainer).
-- `$arguments` – предать аргументы для конструктора php класса.
-- `$tags` – указание тегов к конкретному идентификатору контейнера указанному в параметре `$id`.
-- `$setups` – указание сеттер методов PHP класса для настройки PHP класса к конкретному идентификатору контейнера указанному в параметре `$id`.
-- `$resetter` – значение которое будет вызвано [для сброса состояния объекта](12-object-resetters.md).
-- `$isLazy` – обозначение определения как «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](14-lazy-injection.md).
-
-> [!NOTE]
-> Пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть интерпретирована контейнером как полное имя класса – **fully qualified class name**:
-> - для атрибута примененного к PHP классу параметр `\Kaspi\DiContainer\Attributes\Autowire::$id` будет являться идентификатором контейнера для этого php класса.
-> - для атрибута примененного к параметру метода или функции значение параметр `\Kaspi\DiContainer\Attributes\Autowire::$id` будет сформировано из типа параметра (_type hint_).
-
-> [!NOTE]
-> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$tags` определит как будет сконфигурирован PHP класс:
-> - значение по умолчанию `null` – конфигурировать через [атрибуты `\Kaspi\DiContainer\Attributes\Tag`](#tag) примененные к текущему классу.
-> - массив из атрибутов `\Kaspi\DiContainer\Attributes\Tag` или одиночный атрибут `\Kaspi\DiContainer\Attributes\Tag` – конфигурировать теги из указанных значений.
->   - типизация параметра `list<Tag>|Tag`
-> - значение пустой массив (`empty-array` aka `[]`) – не применять никаких тегов к определению.
->
-
-> [!NOTE]
-> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$setups` определит как и какие сеттер-методы будут применены при конфигурировании PHP класса:
-> - значение по умолчанию `null` – конфигурировать через [атрибут `\Kaspi\DiContainer\Attributes\Setup`](#setup) или [атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable`](#setupimmutable) примененные к методам в текущем классе.
-> - массив содержащий в качестве ключа имя сеттер-метода и значения из атрибутов `\Kaspi\DiContainer\Attributes\Setup`, `\Kaspi\DiContainer\Attributes\SetupImmutable` – применить сеттер-методы из указанных значений.
->   - типизация параметра `array<none-empty-string, Setup|SetupImmutable|list<Setup|SetupImmutable>>`.
-> - значение пустой массив (`empty-array` aka `[]`) – не применять никаких сеттер-методов.
-
-> [!TIP]
-> - Для передачи неполного списка аргументов используйте в качестве ключа в массиве `\Kaspi\DiContainer\Attributes\Autowire::$arguments` имя параметра в конструкторе php класса.
-> - Для параметров не переданных через `$arguments` в php атрибуте, контейнер попытается разрешить зависимости самостоятельно на основе конфигурации.
-> - Атрибут имеет признак `repetable` и может быть применен несколько раз для одного и того же класса или параметра метода (функции).
-> - При применении нескольких атрибутов к php классу параметр `\Kaspi\DiContainer\Attributes\Autowire:$id` у каждого атрибута должен быть уникальным, иначе выбрасывается исключение при разрешении класса контейнером.
-
-Для аргумента указанного в `\Kaspi\DiContainer\Attributes\Autowire::$arguments` используются
-классы описывающие определения контейнера:
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс.
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – вызываемый тип (`callable`).
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера.
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionValue` – определение «как есть».
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionProxyClosure` – отложенная инициализация значения.
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionTaggedAs` – коллекция по тегу.
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionParameter` – параметр контейнера.
-
-```php
-// src/Services/FooService.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Autowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire as DiAutowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
-use App\Interfaces\QuxInterface;
-use App\Classes\{Foo, Bar};
-
-#[
-    Autowire(arguments: [
-        new DiGet(Foo::class),
-        new DiParameter('adminEmail'),       
-    ]),
-    Autowire(id: 'services.foo_baz', arguments: [
-        new DiAutowire(Bar::class),
-        new DiParameter('adminEmail'),
-    ]),
-]
-class FooService
-{
-    public function __construct(
-        public readonly QuxInterface $qux,
-        public readonly string $adminEmail
-    ) {}
-}
-```
-```php
-// config/parameters/params.php
-return [
-    'adminEmail' => 'admin@example.com',
-];
-```
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\FooService;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters(__DIR__.'/config/parameters/params.php')
-    ->import(namespace: 'App\\', src: __DIR__.'/src/')
-    ->build()
-;
-
-var_dump($container->has(FooService::class)); // true
-var_dump($container->has('services.foo_baz')); // true
-
-var_dump(
-    $container->get(FooService::class)->qux instanceof App\Classes\Foo
-); // true
-
-var_dump(
-    $container->get(FooService::class)->qux instanceof App\Classes\Bar
-); // true
-```
-> [!NOTE]
-> При получении из контейнера по идентификатору `'App\Services\FooService'`
-> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Foo`,
-> в параметр `App\Services\FooService::$adminEmail` будет получено значение `'admin@example.com'` из параметра контейнера `'adminEail'`.
->
-> При получении из контейнера по идентификатору `'services.foo_baz'`
-> в параметр `App\Services\FooService::$qux` разрешается объект `App\Classes\Bar`,
-> в параметр `App\Services\FooService::$adminEmail` будет получено значение `'admin@example.com'` из параметра контейнера `'adminEail'`.
->
-
-### Применение атрибута `Autowire` к параметрам метода или функции.
-
-При применении атрибута к параметру метода (функции) значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса или представлено как пустая строка.
-
-Если `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустой строкой, то контейнер попытается сформировать значение на основе типа параметра (_type hint_).
-
-```php
-// src/Services/BarService.php
-namespace App\Services;
-
-use App\Services\QuxService;
-use Kaspi\DiContainer\Attributes\Autowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
-
-class BarService
-{
-    public function __construct(
-        #[Autowire(QuxService::class)]
-        public readonly QuxInterface $qux,
-
-        #[Autowire(arguments: [
-            new DiParameter('emails.for_service_bar')
-        ])]
-        // эквивалентно объявлению
-        // #[Autowire(
-        //  Baz::class,
-        //  arguments: [
-        //      new DiParameter('emails.for_service_bar')
-        //  ])]
-        public readonly Baz $baz,
-    ) {}
-}
-```
 
 ## AutowireExclude
 Применятся к классу или интерфейсу для указания контейнеру о необходимости конфигурировать идентификатор (_fully qualified class name_)

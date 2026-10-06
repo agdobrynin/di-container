@@ -78,6 +78,7 @@ export default defineConfig({
                     collapsed: true,
                     items: [
                       { text: 'Обзор', link: 'index.md' },
+                      { text: 'Autowire', link: 'autowire.md' },
                     ]
                   },
                 ]
