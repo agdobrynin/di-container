@@ -6,87 +6,131 @@ outline: [2, 3]
 ## Обзор { #overview }
 
 Для объединенного типа (_union type_) контейнер попытается найти доступные определения, и если будет найдено несколько вариантов внедрения зависимости то будет выброшено исключение,
-которое сообщит о необходимости уточнить тип для аргумента.
+которое сообщит о необходимости уточнить тип внедряемого аргумента.
 
 <span id="src-class"/>PHP Классы:
 
 ::: code-group
 
-```php
-// file: /app/src/Classes/One.php
-namespace App\Classes;
-
-class One {}
-
-```
-
-:::
-
-----
-
-
-```php
-// src/Classes/One.php
-namespace App\Classes;
-
-class One {}
-```
-```php
-// src/Classes/Two.php
-namespace App\Classes;
-
-class Two {}
-```
-```php
-// src/Services/Two.php
+```php [Service.php]
+// file: /app/src/Services/Service.php
 namespace App\Services;
 
-use App\Classes\{One, Two};
-
-class Service {
- 
+class Service
+{ 
     public function __construct(
-        private One|Two $dependency
+        public readonly One | Two $dependency
     ) {}
 
 }
 ```
 
+```php [One.php]
+// file: /app/src/Services/One.php
+namespace App\Services;
+
+class One {}
+
+```
+
+```php [Two.php]
+// /app/src/Services/Two.php
+namespace App\Services;
+
+class Two {}
+```
+
+:::
+
+Контейнер зависимостей:
+
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Service;
 
 $container = (new DiContainerBuilder())->build();
 
-$container->get(App\Services\Service::class);
+$container->get(Service::class); // [!code error]
+// throw exception 
 ```
-> [!WARNING]
-> Будет выброшено исключение `\Psr\Container\ContainerExceptionInterface`.
->
 
-Для устранения ошибки необходимо конкретизировать тип для аргумента `$dependency`
-при конфигурировании контейнера:
+Будет выброшено исключение:
+
+> [!WARNING] PHP Fatal error:
+> Uncaught Kaspi\DiContainer\Exception\AutowireParameterTypeException:
+> Cannot automatically resolve dependency in App\Services\Service::__construct().
+> Please specify the Parameter #0 [ \<required\> App\Services\One | App\Services\Two $dependency ].
+
+Для устранения ошибки необходимо конкретизировать тип аргумента для параметра `$dependency`.
+
+## PHP определения { #php-definition }
+
+Конкретизирую тип для параметра `\App\Services\Service::$dependency` через [хелпер функцию `diGet()`](../documentation/php-definition/di-get.md).
+
+Конфигурирование:
+
 ```php
-// config/services.php
+// /app/config/services.php
+use App\Services\{Service, Two};
+
 return static function (): \Generator {
     
-    yield diAutowire(App\Services\Service::class)
+    yield diAutowire(Service::class)
         ->bindArguments(
-            dependency: diGet(App\Classes\Two::class)
+            dependency: diGet(Two::class)
         );
   
 };
 ```
 
+Контейнер зависимостей:
+
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Service, Two};
 
 $container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
+    ->load('/app/config/services.php')
+    ->build();
 
-$container->get(App\Services\Service::class);
+$service = $container->get(Service::class);
+
+var_dump($service->dependency instanceof Two);
+// (bool) true
 ```
-> [!NOTE]
-> При получении сервиса `App\Services\Service::class` в аргументе `App\Services\Service::$dependency`
-> содержится класс `App\Classes\Two`
+
+## PHP атрибуты { #php-attributes }
+
+Конкретизирую тип для параметра `\App\Services\Service::$dependency` через PHP атрибут `\Kaspi\DiContainer\Attributes\Inject`.
+
+```php
+// file: /app/src/Services/Service.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Inject;
+
+class Service
+{ 
+    public function __construct(
+        #[Inject(Two::class)]
+        public readonly One | Two $dependency
+    ) {}
+
+}
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Service, Two};
+
+$container = (new DiContainerBuilder())
+    ->import('App\\', '/app/src')
+    ->build();
+
+$service = $container->get(Service::class);
+
+var_dump($service->dependency instanceof Two);
+// (bool) true
+```
