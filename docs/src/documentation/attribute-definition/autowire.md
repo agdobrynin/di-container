@@ -33,7 +33,7 @@ outline: [2, 4]
 
 ## Идентификатор контейнера { #container-id }
 
-**Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` интерпретируется контейнером как имя класса FQCN [^1]:
+**Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` интерпретируется контейнером как имя класса FQCN[^FQCN]
 
 ```php
 // /app/src/Services/FooService.php
@@ -249,9 +249,9 @@ var_dump($fooServicesWithBar->baz instanceof Baz);
 ## Внедрения зависимости в параметр метода { #autowire-on-param }
 
 При конфигурировании внедрения зависимости через атрибут `Autowire` в параметр метода (функции),
-значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса (FQCN [^1]) или представлено как пустая строка.
+значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса FQCN [^FQCN] или представлено как пустая строка.
 
-Если в `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустая строка, то конфигуратор контейнера попытается сформировать значение на основе типа параметра (type hints [^2]).
+Если в `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустая строка, то конфигуратор контейнера попытается сформировать значение на основе Type hints [^TypeHints] параметра.
 
 ::: code-group
 
@@ -314,6 +314,4 @@ final class Baz
 
 :::
 
-
-[^1]: **F**ully **Q**ualified **C**lass **N**ame – полное имя класса, включая пространство имён.
-[^2]: Type hints – указание ожидаемого типа данных для параметров метода, например имя конкретного класса или интерфейса.
+<!--@include: ./_include/term_notes.md-->
