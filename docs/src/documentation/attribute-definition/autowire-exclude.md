@@ -28,7 +28,7 @@ namespace App\Services;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\AutowireExclude;
 
-#[Autowire(isSingleton: true)]
+#[Autowire(isSingleton: true)] // 🚩 Атрибут будет проигнорирован
 #[AutowireExclude]
 class Foo {}
 ```
