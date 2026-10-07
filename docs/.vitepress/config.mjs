@@ -79,6 +79,7 @@ export default defineConfig({
                     items: [
                       { text: 'Обзор', link: 'index.md' },
                       { text: 'Autowire', link: 'autowire.md' },
+                      { text: 'AutowireExclude', link: 'autowire-exclude.md' },
                     ]
                   },
                 ]

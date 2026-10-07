@@ -21,9 +21,9 @@ PHP атрибуты содержат мета-данные для конфиг�
 
 ### Доступные атрибуты { #attributes }
 - [Autowire](autowire.md) – конфигурирование PHP класса или их набора в контейнере.
-- [AutowireExclude](#autowireexclude) – запретить разрешение PHP класса или интерфейса в контейнере.
-- [Setup](#setup) - вызов метода PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
-- [SetupImmutable](#setupimmutable) - вызов метода PHP класса для настройки сервиса с учёта возвращаемого значения, _immutable setter method_.
+- [AutowireExclude](autowire-exclude.md) – исключить внедрение PHP класса или интерфейса.
+- [Setup](setup.md) - вызов метода PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
+- [SetupImmutable](setup-immutable.md) - вызов метода PHP класса для настройки сервиса с учёта возвращаемого значения, _immutable setter method_.
 - [Inject](#inject) – внедрение зависимости в параметры конструктора PHP класса, метода.
 - [InjectByCallable](#injectbycallable) – внедрение зависимости в параметры конструктора PHP класса, метода через `callable` тип.
 - [Service](#service) – определение для интерфейса какой PHP класс будет вызван и разрешен в контейнере.
@@ -36,45 +36,6 @@ PHP атрибуты содержат мета-данные для конфиг�
 - [Параметр переменной длины](#параметр-переменной-длины) – особенности применения атрибутов.
 
 -----
-
-
-
-## AutowireExclude
-Применятся к классу или интерфейсу для указания контейнеру о необходимости конфигурировать идентификатор (_fully qualified class name_)
-как удаленный, тем самым делая его недоступным для разрешения зависимости.
-
-```php
-#[AutowireExclude]
-```
-У атрибута нет аргументов.
-
-> [!WARNING]
-> Если `#[AutowireExclude]` применен к классу или интерфейсу то
-> любые другие атрибуты будут игнорированы.
-
-```php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Autowire;
-use Kaspi\DiContainer\Attributes\AutowireExclude;
-
-#[Autowire(isSingleton: true)]
-#[AutowireExclude]
-class SomeService {}
-```
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\SomeService;
-
-$container = (new DiContainerBuilder())
-    ->build()
-;
-
-var_dump($container->has(SomeService::class)); // false
-```
-> [!NOTE]
-> Так как класс `App\Services\SomeService::class` сконфигурирован атрибутом `AutowireExclude`
-> то атрибут `Autowire` указанный для класса будет проигнорирован.
 
 ## Setup
 
