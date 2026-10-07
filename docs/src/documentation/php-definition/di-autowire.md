@@ -87,7 +87,7 @@ final class Foo {
 
 ### setup()
 
-Внедрение зависимостей через вызов метода PHP класса без учёта возвращаемого значения метода (mutable setters).
+Метод позволяет внедрять зависимости в PHP класс через сеттер-методы и его следует **применять к мутабельным сеттер-методам PHP класса** [^SetterMethodMutable].
 
 Метод `setup()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
@@ -205,11 +205,9 @@ final class Baz implements ServiceXInterface {
 
 ### setupImmutable()
 
-Внедрение зависимостей через вызов метода PHP класса возвращающего измененное значение экземпляра PHP класса (mutable setters).
+Метод позволяет внедрять зависимости в PHP класс через сеттер-методы и его следует применять к иммутабельным сеттер-методам PHP класса [^SetterMethodImmutable].
 
 Типизированное значение сеттер-метода должно быть `self`, `static` или того же класса, что и сам PHP класс.
-Контейнер вернет экземпляр класса созданного через вызываемый метод.
-
 
 Метод `setupImmutable()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
@@ -250,7 +248,7 @@ DiDefinitionResetterSetterInterface::setResetter(
 
 ## Идентификатор контейнера для diAutowire { #container-id }
 
-При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN  (**Fully Qualified Class Name**).
+При конфигурировании идентификатор контейнера может быть сформирован на основе FQCN [^FQCN].
 
 Конфигурирование с автоматическим формированием идентификатора контейнера:
 
@@ -292,3 +290,5 @@ return static function (): \Generator {
         );
 };
 ```
+
+<!--@include: ../_include/term_notes.md-->

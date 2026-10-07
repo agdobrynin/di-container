@@ -47,4 +47,5 @@ var_dump($container->has(Foo::class));
 // (bool) false
 ```
 
-<!--@include: ./_include/term_notes.md-->
+<!--@include: ../_include/term_notes.md-->
+

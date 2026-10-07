@@ -80,6 +80,9 @@ export default defineConfig({
                       { text: 'Обзор', link: 'index.md' },
                       { text: 'Autowire', link: 'autowire.md' },
                       { text: 'AutowireExclude', link: 'autowire-exclude.md' },
+                      { text: 'Setup', link: 'setup.md' },
+                      { text: 'SetupImmutable', link: 'setup-immutable.md' },
+                      { text: 'SetupPriority', link: 'setup-priority.md' },
                     ]
                   },
                 ]

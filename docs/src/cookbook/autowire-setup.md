@@ -6,8 +6,8 @@ outline: [2, 4]
 ## Обзор
 
 Внедрение зависимостей в PHP класс может происходить так же через **сеттер-методы**. Для этого при настройке
-определения контейнера используются методы [хелпер функции](../documentation/php-definition/di-autowire.md) `diAutowire::setup()` и  `diAutowire::setupImmutable()`,
-или PHP атрибуты `\Kaspi\DiContainer\Attributes\Setup` и `\Kaspi\DiContainer\Attributes\SetupImmutable`.
+определения контейнера используются методы хелпер функции [`diAutowire::setup()`](../documentation/php-definition/di-autowire.md#setup) и  [`diAutowire::setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable),
+или PHP атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md) и [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
 
 <span id="src-class"/>Классы для конфигурирования:
 
@@ -351,3 +351,99 @@ $foo = $container->get(Foo::class);
 var_dump($foo->getLogger() instanceof LoggerInterface);
 // (bool) true
 ```
+
+### Настройка нескольких атрибутов Setup { #attribute-setup-multiple }
+
+Внедрение нескольких зависимостей через один сеттер-метод с использованием [атрибута `\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md).
+
+::: code-group
+
+```php [RuleGenerator.php]
+// file: /app/src/Services/RuleGenerator.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
+use App\Rules\{RuleA, RuleB};
+use App\Interfaces\RuleInterface;
+
+class RuleGenerator
+{
+
+    private array $rules = [];
+    
+    // …
+    
+    #[Setup(inputRule: new DiGet(RuleB::class))]
+    #[Setup(inputRule: new DiGet(RuleA::class))]
+    public function addRule(RuleInterface $inputRule): void
+    {
+        $this->rules[] = $inputRule;
+    }
+    
+    public function getRules(): array
+    {
+        return $this->rules;
+    }
+}
+```
+
+```php [RuleInterface.php]
+// file: /app/src/Interfaces/RuleInterface.php
+namespace App\Interfaces;
+
+interface RuleInterface
+{
+    // …
+}
+```
+
+```php [RuleA.php]
+// file: /app/src/Rules/RuleA.php
+namespace App\Rules;
+
+use App\Interfaces\RuleInterface;
+
+class RuleA implements RuleInterface
+{
+    // …
+}
+```
+
+```php [RuleB.php]
+// file: /app/src/Rules/RuleB.php
+namespace App\Rules;
+
+use App\Interfaces\RuleInterface;
+
+class RuleB implements RuleInterface
+{
+    // …
+}
+```
+
+:::
+
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\RuleGenerator;
+use App\Rules\{RuleA, RuleB};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src/')
+    ->build();
+
+$ruleGenerator = $container->get(RuleGenerator::class);
+$rules = $ruleGenerator->->getRules();
+
+var_dump($rules[0] instanceof App\Rules\RuleB);
+// (bool) true
+var_dump($rules[1] instanceof App\Rules\RuleA);
+// (bool) true
+```
+
+> [!NOTE]
+> Последовательность полученных объектов в переменную `$rules` обусловлен очередностью применения PHP атрибута `Kaspi\DiContainer\Attributes\Setup` к методу `RuleGenerator::addRule()`.

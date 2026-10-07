@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` позволяет конфигурировать PHP класс как определение для контейнера и может применяться к PHP классу или [к параметру метода (функции)](#autowire-on-param).
+Атрибут `\Kaspi\DiContainer\Attributes\Autowire` конфигурирует PHP класс как определение для контейнера и может применяться к PHP классу или [к параметру метода (функции)](#autowire-on-param).
 
 Сигнатура атрибута:
 
@@ -25,7 +25,7 @@ outline: [2, 4]
 
 - `$id` – идентификатор контейнера для класса (_container identifier_).
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
-- `$arguments` – предать аргументы для конструктора PHP класса.
+- `$arguments`<span id="constrcut-arguments"/> – предать аргументы для конструктора PHP класса.
 - `$tags` – указание тегов к конкретному идентификатору контейнера указанному в параметре `$id`.
 - `$setups` – указание сеттер методов PHP класса для настройки PHP класса к конкретному идентификатору контейнера указанному в параметре `$id`.
 - `$resetter` – значение которое будет вызвано [для сброса состояния объекта](../12-object-resetters.md).
@@ -90,11 +90,17 @@ var_dump($container->has('services.foo_service'));
 
 ## Аргументы конструктора PHP класса { #arguments }
 
-Параметр `\Kaspi\DiContainer\Attributes\Autowire:$arguments` передает необходимые аргументы конструктору PHP класса.
+[Параметр `\Kaspi\DiContainer\Attributes\Autowire:$arguments`](#constrcut-arguments) передает аргументы конструктору PHP класса.
 
-<!--@include: ./_include/arguments.md-->
+Для параметров конструктора PHP класса не переданных через аргументы контейнер внедрит зависимости самостоятельно, на основе конфигурации, включая [использование PHP атрибутов](index.md#attributes).
 
-Конфигурирование класса с передачей аргументов конструктору PHP класса:
+Для передачи неполного списка аргументов `$arguments` указывайте в качестве ключа массива имя параметра.
+
+<!--@include: ./_include/to_arguments.md-->
+
+### Передача аргументов конструктору { #example }
+
+Конфигурирование PHP класса:
 
 ::: code-group
 
@@ -314,4 +320,4 @@ final class Baz
 
 :::
 
-<!--@include: ./_include/term_notes.md-->
+<!--@include: ../_include/term_notes.md-->
