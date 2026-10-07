@@ -33,7 +33,7 @@ outline: [2, 4]
 
 ## Идентификатор контейнера { #container-id }
 
-**Для атрибута примененного к PHP классу** пустая строка в `\Kaspi\DiContainer\Attributes\Autowire::$id` будет интерпретирована контейнером как полное имя класса (_Fully Qualified Class Name_):
+**Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` интерпретируется контейнером как полное имя класса (_Fully Qualified Class Name_):
 
 ```php
 // /app/src/Services/FooService.php
@@ -52,7 +52,7 @@ final class FooService
 }
 ```
 
-### Несколько атрибутов для одного PHP класса { #container-id-multuple }
+### Множественная конфигурация PHP класса { #container-id-multuple }
 
 Атрибут `\Kaspi\DiContainer\Attributes\Autowire` можно применить несколько раз к одному PHP классу.
 Параметр `\Kaspi\DiContainer\Attributes\Autowire:$id` должен быть уникальным для каждого атрибута примененного к PHP классу:
@@ -63,8 +63,8 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Autowire;
 
-#[Autowire]
-#[Autowire(id: 'services.foo_service')]
+#[Autowire(arguments: [])]
+#[Autowire(id: 'services.foo_service', arguments: [])]
 final class FooService
 {
     // …
@@ -88,11 +88,13 @@ var_dump($container->has('services.foo_service'));
 // (bool) true
 ```
 
-## Аргументы для конструктора PHP класса { #arguments }
+## Аргументы конструктора PHP класса { #arguments }
+
+Параметр `\Kaspi\DiContainer\Attributes\Autowire:$arguments` передает необходимые аргументы конструктору PHP класса.
 
 <!--@include: ./_include/arguments.md-->
 
-Конфигурирование класса:
+Конфигурирование класса с передачей аргументов конструктору PHP класса:
 
 ::: code-group
 
@@ -216,11 +218,15 @@ var_dump($fooServicesWithBar->baz instanceof Baz);
 Атрибут `\Kaspi\DiContainer\Attributes\Autowire` предоставляет возможность указать внедрение зависимостей в PHP класс
 через сеттер-методы.
 
+Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$setups`:
+- `non-empty-array<none-empty-string, Setup|SetupImmutable>`
+- `non-empty-array<none-empty-string, list<Setup|SetupImmutable>`
+- `empty-array`
+- `null`
+
 Параметр `\Kaspi\DiContainer\Attributes\Autowire::$setups` определит как и какие сеттер-методы будут вызваны при конфигурировании PHP класса:
  - `null` значение по умолчанию.  Внедрять зависимости через [атрибут `Setup`](setup.md) и/или [атрибут `SetupImmutable`](setup-immutable.md) указанные у методов класса.
  - `array` (aka `non-empty-array`). Ключ массива – имя сеттер-метода, значение элемента атрибут [`Setup`](setup.md), [`SetupImmutable`](setup-immutable.md).
-   > [!NOTE] Типизация параметра:
-   > `array<none-empty-string, Setup|SetupImmutable|list<Setup|SetupImmutable>>`.
  - `array` пустой массив (aka `empty-array`). Не применять никаких сеттер-методов, даже если у методов класса указаны атрибуты `Setup`, `SetupImmutable`.
 
 

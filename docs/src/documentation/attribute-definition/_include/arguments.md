@@ -3,7 +3,7 @@
 Для передачи неполного списка аргументов `$arguments` указывайте в качестве ключа массива имя параметра.
 
 
-::: details Для аргументов в параметре `$arguments` можно использовать классы других определений.
+::: details В аргументах можно использовать классы других определений контейнера.
 
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс.
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – вызываемый тип `callable`.
