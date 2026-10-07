@@ -33,7 +33,7 @@ outline: [2, 4]
 
 ## Идентификатор контейнера { #container-id }
 
-**Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` интерпретируется контейнером как полное имя класса (_Fully Qualified Class Name_):
+**Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` интерпретируется контейнером как имя класса FQCN [^1]:
 
 ```php
 // /app/src/Services/FooService.php
@@ -210,7 +210,6 @@ var_dump($fooServicesWithBar->qux instanceof Bar);
 var_dump($fooServicesWithBar->baz instanceof Baz);
 // (bool) true
 
-
 ```
 
 ## Внедрение зависимостей через сеттер-методы { #setups }
@@ -219,27 +218,102 @@ var_dump($fooServicesWithBar->baz instanceof Baz);
 через сеттер-методы.
 
 Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$setups`:
-- `non-empty-array<none-empty-string, Setup|SetupImmutable>`
-- `non-empty-array<none-empty-string, list<Setup|SetupImmutable>`
+- `non-empty-array<none-empty-string, \Kaspi\DiContainer\Attributes\Setup | \Kaspi\DiContainer\Attributes\SetupImmutable>`
+- `non-empty-array<none-empty-string, list<\Kaspi\DiContainer\Attributes\Setup | \Kaspi\DiContainer\Attributes\SetupImmutable>>`
 - `empty-array`
 - `null`
 
 Параметр `\Kaspi\DiContainer\Attributes\Autowire::$setups` определит как и какие сеттер-методы будут вызваны при конфигурировании PHP класса:
- - `null` значение по умолчанию.  Внедрять зависимости через [атрибут `Setup`](setup.md) и/или [атрибут `SetupImmutable`](setup-immutable.md) указанные у методов класса.
- - `array` (aka `non-empty-array`). Ключ массива – имя сеттер-метода, значение элемента атрибут [`Setup`](setup.md), [`SetupImmutable`](setup-immutable.md).
- - `array` пустой массив (aka `empty-array`). Не применять никаких сеттер-методов, даже если у методов класса указаны атрибуты `Setup`, `SetupImmutable`.
+ - `array` (aka `non-empty-array`). Ключ массива – имя сеттер-метода, значение элемента атрибут [`Setup`](setup.md), [`SetupImmutable`](setup-immutable.md) или список из этих атрибутов.
+- `array` пустой массив (`empty-array` aka `[]`). Не применять никаких сеттер-методов, даже если у методов класса указаны атрибуты `Setup`, `SetupImmutable`.
+- `null` значение по умолчанию.  Внедрять зависимости через [атрибут `Setup`](setup.md) и/или [атрибут `SetupImmutable`](setup-immutable.md) указанные у методов класса.
 
 
 ## Указание тегов { #tags }
 
+Параметр `\Kaspi\DiContainer\Attributes\Autowire::$tags` атрибута примененного к PHP классу предоставляет возможность привязки тегов.
+Теги будут привязаны к определению контейнера с указанным [идентификатором](#container-id-multuple)
 
-> [!NOTE]
-> Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$tags` определит как будет сконфигурирован PHP класс:
-> - значение по умолчанию `null` – конфигурировать через [атрибуты `\Kaspi\DiContainer\Attributes\Tag`](#tag) примененные к текущему классу.
-> - массив из атрибутов `\Kaspi\DiContainer\Attributes\Tag` или одиночный атрибут `\Kaspi\DiContainer\Attributes\Tag` – конфигурировать теги из указанных значений.
->   - типизация параметра `list<Tag>|Tag`
-> - значение пустой массив (`empty-array` aka `[]`) – не применять никаких тегов к определению.
->
+Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$tags`:
+- `non-empty-list<\Kaspi\DiContainer\Attributes\Tag>`
+- `\Kaspi\DiContainer\Attributes\Tag`
+- `empty-list`
+- `null`
+
+Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$tags` определит как будет сконфигурированы теги:
+ - `array` – не пустой массив. Конфигурировать теги из элементов массива с типом `\Kaspi\DiContainer\Attributes\Tag`.
+- `\Kaspi\DiContainer\Attributes\Tag` - конфигурировать один тег.
+- `array` пустой массив (`empty-array` aka `[]`). Не конфигурировать никакие теги.
+- `null` – значение по умолчанию. Конфигурировать теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md) примененные к PHP классу.
+
+## Внедрения зависимости в параметр метода { #autowire-on-param }
+
+При конфигурировании внедрения зависимости через атрибут `Autowire` в параметр метода (функции),
+значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса (FQCN [^1]) или представлено как пустая строка.
+
+Если в `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустая строка, то конфигуратор контейнера попытается сформировать значение на основе типа параметра (type hints [^2]).
+
+::: code-group
+
+```php [BarService.php]
+// file: /app/src/Services/BarService.php
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
+
+class BarService
+{
+    public function __construct(
+        // 🚩 Указание FQCN 
+        #[Autowire(id: QuxService::class)]
+        public readonly QuxInterface $qux,
+
+        // Автоматическое формирование $id из типа параметра
+        #[Autowire(arguments: [
+            new DiParameter('emails.for_service_bar')
+        ])]
+        // ℹ️ эквивалентно объявлению
+        // #[Autowire(
+        //      id: Baz::class,
+        //      arguments: [
+        //          new DiParameter('emails.for_service_bar')
+        //      ]
+        // )]
+        public readonly Baz $baz,
+    ) {}
+}
+```
+
+```php [QuxService.php]
+// file: /app/src/Services/QuxService.php
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class QuxService implements QuxInterface 
+{
+    // …   
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Services;
+
+final class Baz
+{
+    public function __construct(
+        private string $notifyEmail,
+    ) {}
+    
+    // …
+}
+```
+
+:::
 
 
-## Применение `Autowire` к параметру метода { #autowire-on-param }
+[^1]: **F**ully **Q**ualified **C**lass **N**ame – полное имя класса, включая пространство имён.
+[^2]: Type hints – указание ожидаемого типа данных для параметров метода, например имя конкретного класса или интерфейса.
