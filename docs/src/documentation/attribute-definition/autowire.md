@@ -25,10 +25,10 @@ outline: [2, 4]
 
 - `$id` – идентификатор контейнера для класса (_container identifier_).
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
-- `$arguments`<span id="constrcut-arguments"/> – предать аргументы для конструктора PHP класса.
-- `$tags` – указание тегов к конкретному идентификатору контейнера указанному в параметре `$id`.
-- `$setups` – указание сеттер методов PHP класса для настройки PHP класса к конкретному идентификатору контейнера указанному в параметре `$id`.
-- `$resetter` – значение которое будет вызвано [для сброса состояния объекта](../12-object-resetters.md).
+- `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP класса.
+- `$tags` – тег с мета-данными.
+- `$setups` – внедрение зависимостей через сеттер-метод [^SetterMethodMutable] [^SetterMethodImmutable].
+- `$resetter` – конфигурация [для сброса состояния объекта](../12-object-resetters.md).
 - `$isLazy` – обозначение определения как «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
 
 ## Идентификатор контейнера { #container-id }
@@ -220,8 +220,11 @@ var_dump($fooServicesWithBar->baz instanceof Baz);
 
 ## Внедрение зависимостей через сеттер-методы { #setups }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` предоставляет возможность указать внедрение зависимостей в PHP класс
-через сеттер-методы.
+Параметр атрибута `\Kaspi\DiContainer\Attributes\Autowire::$setups` внедряет зависимости через сеттер-методы PHP класса.
+
+Атрибут `\Kaspi\DiContainer\Attributes\Setup` следует применять к **мутабельным сеттер-методам** [^SetterMethodMutable].
+
+Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` следует применять к **иммутабельным сеттер-методам** [^SetterMethodImmutable].
 
 Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$setups`:
 - `non-empty-array<none-empty-string, \Kaspi\DiContainer\Attributes\Setup | \Kaspi\DiContainer\Attributes\SetupImmutable>`
@@ -235,9 +238,9 @@ var_dump($fooServicesWithBar->baz instanceof Baz);
 - `null` значение по умолчанию.  Внедрять зависимости через [атрибут `Setup`](setup.md) и/или [атрибут `SetupImmutable`](setup-immutable.md) указанные у методов класса.
 
 
-## Указание тегов { #tags }
+## Теги { #tags }
 
-Параметр `\Kaspi\DiContainer\Attributes\Autowire::$tags` атрибута примененного к PHP классу предоставляет возможность привязки тегов.
+Теги с мета-данными устанавливаются через параметр `\Kaspi\DiContainer\Attributes\Autowire::$tags`.
 Теги будут привязаны к определению контейнера с указанным [идентификатором](#container-id-multuple)
 
 Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$tags`:
