@@ -26,6 +26,4 @@
 
 В разделе «[Рецепты](../../cookbook/inject-interface.md#attribute-inject)» представлен пример использования атрибута `\Kaspi\DiContainer\Attributes\Inject` для параметра с типом PHP интерфейс. 
 
-!!!!!!!!!!!!!! МОЖЕТ какой-то примерчик простой?
-
 <!--@include: ../_include/term_notes.md-->
