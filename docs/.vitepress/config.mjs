@@ -85,6 +85,7 @@ export default defineConfig({
                       { text: 'SetupPriority', link: 'setup-priority.md' },
                       { text: 'Inject', link: 'inject.md' },
                       { text: 'InjectByCallable', link: 'inject-by-callable.md' },
+                      { text: 'Service', link: 'service.md' },
                     ]
                   },
                 ]
