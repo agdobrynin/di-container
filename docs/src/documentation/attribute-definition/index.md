@@ -22,8 +22,9 @@ PHP атрибуты содержат мета-данные для конфиг�
 ### Доступные атрибуты { #attributes }
 - [Autowire](autowire.md) – конфигурирование PHP класса или их набора в контейнере.
 - [AutowireExclude](autowire-exclude.md) – исключить внедрение PHP класса или интерфейса.
-- [Setup](setup.md) - вызов метода PHP класса для настройки сервиса без учёта возвращаемого значения, _mutable setter method_.
-- [SetupImmutable](setup-immutable.md) - вызов метода PHP класса для настройки сервиса с учёта возвращаемого значения, _immutable setter method_.
+- [Setup](setup.md) – внедрение зависимости в PHP класс через мутабельный сеттер-метод.
+- [SetupImmutable](setup-immutable.md) – внедрение зависимости в PHP класс через иммутабельный сеттер-метод.
+- [SetupPriority](setup-priority.md) – приоритет сеттер-метода.
 - [Inject](#inject) – внедрение зависимости в параметры конструктора PHP класса, метода.
 - [InjectByCallable](#injectbycallable) – внедрение зависимости в параметры конструктора PHP класса, метода через `callable` тип.
 - [Service](#service) – определение для интерфейса какой PHP класс будет вызван и разрешен в контейнере.
