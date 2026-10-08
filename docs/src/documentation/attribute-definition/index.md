@@ -38,37 +38,6 @@ PHP атрибуты содержат мета-данные для конфиг�
 
 -----
 
-## Приоритет вызова методов настройки класса через SetupPriority.
-
-При необходимости изменить порядок вызова методов настройки класса указанных атрибутами `Setup` и `SetupImmutabel` можно применить атрибут `\Kaspi\DiContainer\Attributes\SetupPriority`
-с указанием приоритета – чем выше значение параметра `\Kaspi\DiContainer\Attributes\SetupPriority::$priority` тем выше приоритет вызова метода.
-
-```php
-#[SetupPriority(int $priority = 0)]
-```
-Параметры:
-- `$priority` - приоритет вызова.
-
-Атрибут применяется только один раз к методу класса и будет работать только в паре с одним из атрибутов
-`\Kaspi\DiContainer\Attributes\Setup` или `\Kaspi\DiContainer\Attributes\SetupImmutable`.
-
-```php
-use Kaspi\DiContainer\Attributes\Setup;
-use Kaspi\DiContainer\Attributes\SetupPriority;
-
-class Foo {
-    //...
-
-   #[Setup]
-   public function bar() {}
-
-   #[Setup]
-   #[SetupPriority(10)]
-   public function baz() {}
-}
-```
-для настройки класса `Foo` сначала будет вызван метод `Foo::baz()` и потом `Foo::bar()`.
-
 ## Inject
 
 Применяется к параметрам конструктора класса, метода или функции.
