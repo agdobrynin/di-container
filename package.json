@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "vitepress": "^2.0.0-alpha.20",
-    "vitepress-plugin-group-icons": "^1.7.6"
+    "vitepress-plugin-group-icons": "^1.7.7"
   },
   "scripts": {
     "docs:dev-host": "vitepress dev docs --host",
