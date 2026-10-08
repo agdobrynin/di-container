@@ -80,11 +80,15 @@ return static function (): \Generator {
 
     yield 'ruleC' => diAutowire(RuleC::class);
 
+    yield diAutowire(RuleB::class);
+
+    yield diAutowire(RuleA::class);
+
     yield diAutowire(RuleGenerator::class)
         ->bindArguments(
-            diAutowire(RuleB::class),
-            diAutowire(RuleA::class),
-            diGet('ruleC'), // <-- получение по ссылке
+            diGet(RuleB::class),
+            diGet(RuleA::class),
+            diGet('ruleC'), // <-- получение по идентификатору контейнера
         )
 };
 ```
@@ -103,8 +107,10 @@ $container = (new DiContainerBuilder())
 $ruleGenerator = $container->get(RuleGenerator::class);
 $rules = $ruleGenerator->getRules();
 
-// Порядок объектов определен
-// в конфигурационном файле 'services.php'
+/*
+ * Порядок объектов определен
+ * в конфигурационном файле 'services.php'
+ */ 
 
 var_dump($rules[0] instanceof RuleB);
 // (bool) true
@@ -128,13 +134,17 @@ var_dump($rules[2] instanceof RuleC);
 // file: /app/config/services.php
 
 use function Kaspi\DiContainer\{diAutowire, diGet};
-use App\Rules\RuleB;
+use App\Rules\{RuleA, RuleB};
 
 return static function (): \Generator {
+    yield diAutowire(RuleA::class);
+
+    yield diAutowire(RuleB::class);
 
     yield diAutowire(RuleGenerator::class)
         ->bindArguments(
-            inputRule_B: diAutowire(RuleB::class),
+            inputRule_B: diGet(RuleB::class),
+            inputRule_A: diGet(RuleA::class),
         )
 };
 ```
@@ -161,6 +171,8 @@ $ruleGenerator = $container->get(RuleGenerator::class);
 $rules = $ruleGenerator->getRules();
 
 var_dump($rules['inputRule_B'] instanceof RuleB);
+// (bool) true
+var_dump($rules['inputRule_A'] instanceof RuleA);
 // (bool) true
 ```
 
