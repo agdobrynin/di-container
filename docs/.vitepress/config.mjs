@@ -83,6 +83,7 @@ export default defineConfig({
                       { text: 'Setup', link: 'setup.md' },
                       { text: 'SetupImmutable', link: 'setup-immutable.md' },
                       { text: 'SetupPriority', link: 'setup-priority.md' },
+                      { text: 'Inject', link: 'inject.md' },
                     ]
                   },
                 ]
