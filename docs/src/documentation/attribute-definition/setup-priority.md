@@ -2,7 +2,8 @@
 
 ## Обзор { #overview }
 
-Для изменения приоритета внедрения зависимостей через сеттер-методы используется атрибут `\Kaspi\DiContainer\Attributes\SetupPriority` вместе с атрибутами [`Setup`](setup.md) и [`SetupImmutable`](setup-immutable.md).
+Атрибут `\Kaspi\DiContainer\Attributes\SetupPriority` изменяет приоритет внедрения зависимостей через сеттер-методы.
+Этот атрибут используется вместе с атрибутами [`Setup`](setup.md) и [`SetupImmutable`](setup-immutable.md).
 
 Сигнатура атрибута:
 
