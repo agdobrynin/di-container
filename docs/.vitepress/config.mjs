@@ -89,6 +89,7 @@ export default defineConfig({
                       { text: 'DiFactory', link: 'di-factory.md' },
                       { text: 'ProxyClosure', link: 'proxy-closure.md' },
                       { text: 'Tag', link: 'tag.md' },
+                      { text: 'TaggedAs', link: 'tagged-as.md' },
                     ]
                   },
                 ]
