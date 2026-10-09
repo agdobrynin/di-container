@@ -87,6 +87,7 @@ export default defineConfig({
                       { text: 'InjectByCallable', link: 'inject-by-callable.md' },
                       { text: 'Service', link: 'service.md' },
                       { text: 'DiFactory', link: 'di-factory.md' },
+                      { text: 'ProxyClosure', link: 'proxy-closure.md' },
                     ]
                   },
                 ]
