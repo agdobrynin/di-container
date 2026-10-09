@@ -25,15 +25,15 @@ PHP атрибуты содержат мета-данные для конфиг�
 - [Setup](setup.md) – внедрение зависимости в PHP класс через мутабельный сеттер-метод.
 - [SetupImmutable](setup-immutable.md) – внедрение зависимости в PHP класс через иммутабельный сеттер-метод.
 - [SetupPriority](setup-priority.md) – приоритет сеттер-метода.
-- [Inject](inject.md) – внедрение зависимости через идентификатор контейнера.
-- [InjectByCallable](inject-by-callable.md) – внедрение зависимости через вызываемый тип.
+- [Inject](inject.md) – внедрение зависимости по идентификатору контейнера.
+- [InjectByCallable](inject-by-callable.md) – внедрение зависимости через тип `callable`.
 - [Service](service.md) – указывает реализацию PHP интерфейса.
-- [DiFactory](di-factory.md) – внедрение зависимости через «фабрику».
+- [DiFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
 - [ProxyClosure](proxy-closure.md) – внедрение «ленивой» зависимости.
 - [Tag](tag.md) – тег для PHP класса.
-- [TaggedAs](#taggedas) – внедрение тегированных определений в параметры конструктора, метода PHP класса.
-- [Parameter](#parameter) – разрешение зависимости через «параметр контейнера».
-- [ParameterRuntime](#parameterruntime) – разрешение зависимости через «параметр контейнера времени исполнения».
+- [TaggedAs](tagged-as.md) – внедрение коллекции по тегу.
+- [Parameter](#parameter) – внедрение зависимости из «параметра контейнера».
+- [ParameterRuntime](#parameterruntime) – внедрение зависимости из «параметр контейнера времени исполнения».
 
 -----
 
