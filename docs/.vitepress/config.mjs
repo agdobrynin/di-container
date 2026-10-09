@@ -101,6 +101,7 @@ export default defineConfig({
                   { text: 'Внедрение зависимости по интерфейсу', link: 'inject-interface.md' },
                   { text: 'Внедрение зависимостей в параметры переменной длины', link: 'inject-variadic-params.md' },
                   { text: 'Внедрение зависимостей для параметров объединенного типа', link: 'inject-union-type-params.md' },
+                  { text: 'Внедрение по интерфейсу сторонних производителей', link: 'resolve-vendor-interface.md' },
                 ],
               },
           ],
