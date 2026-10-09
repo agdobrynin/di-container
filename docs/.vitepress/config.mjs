@@ -90,6 +90,7 @@ export default defineConfig({
                       { text: 'ProxyClosure', link: 'proxy-closure.md' },
                       { text: 'Tag', link: 'tag.md' },
                       { text: 'TaggedAs', link: 'tagged-as.md' },
+                      { text: 'Parameter', link: 'parameter.md' },
                     ]
                   },
                 ]

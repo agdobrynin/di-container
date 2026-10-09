@@ -32,42 +32,11 @@ PHP атрибуты содержат мета-данные для конфиг�
 - [ProxyClosure](proxy-closure.md) – внедрение «ленивой» зависимости.
 - [Tag](tag.md) – тег для PHP класса.
 - [TaggedAs](tagged-as.md) – внедрение коллекции по тегу.
-- [Parameter](#parameter) – внедрение зависимости из «параметра контейнера».
-- [ParameterRuntime](#parameterruntime) – внедрение зависимости из «параметр контейнера времени исполнения».
+- [Parameter](parameter.md) – внедрение зависимости из «параметров контейнера».
+- [ParameterRuntime](#parameterruntime) – внедрение зависимости из «параметров контейнера времени исполнения».
 
 -----
 
-## Parameter
-Атрибут может применяться к параметру функции, метода
-для указания как разрешить зависимость через «параметры контейнера».
-
-Сигнатура php атрибута:
-```php
-#[Parameter(string $name = '')]
-```
-Параметры:
-- `$name` – имя параметра контейнера.
-
-> [!NOTE]
-> Атрибут может быть применен несколько раз к параметрам переменной длины (_variadic parameter_).
-
-```php
-namespace App\Services;
-
-use App\Services\Qux;
-use Kaspi\DiContainer\Attributes\Parameter;
-
-final class Foo {
-    public function __construct(
-        private Qux $qux,
-        #[Parameter('adminEmail')]
-        private string $adminEmail,
-    ) {}
-}
-```
-
-> [!NOTE]
-> Подробное [описание работы с параметрами контейнера](09-container-parameters.md).
 
 ## ParameterRuntime
 Параметр контейнера времени исполнения. [Аналогичен PHP атрибуту `Parameter`](#parameter), но значение необходимо установить в контейнер
