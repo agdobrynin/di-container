@@ -91,6 +91,7 @@ export default defineConfig({
                       { text: 'Tag', link: 'tag.md' },
                       { text: 'TaggedAs', link: 'tagged-as.md' },
                       { text: 'Parameter', link: 'parameter.md' },
+                      { text: 'ParameterRuntime', link: 'parameter-runtime.md' },
                     ]
                   },
                 ]
