@@ -94,6 +94,11 @@ export default defineConfig({
                       { text: 'TaggedAs', link: 'tagged-as.md' },
                     ]
                   },
+                  {
+                    base: '/documentation/call/',
+                    text: '📦 Метод контейнера для вызываемых типов',
+                    link: 'index.md',
+                  },
                 ]
               }
           ],
