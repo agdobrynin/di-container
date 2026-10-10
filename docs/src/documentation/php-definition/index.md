@@ -21,13 +21,13 @@
 `null`, перечисляемые типы, «как есть» – без указания как разрешить зависимость.
 > Для повторяющихся скалярных значений рекомендуется использовать «[параметры контейнера](../09-container-parameters.md)».
 
-- доступные хелпер функции:
-    - [diAutowire](di-autowire.md) – php класс.
-    - [diCallable](di-callable.md) – внедрение зависимости через тип `callable`.
-    - [diGet](di-get.md) – внедрение зависимости по идентификатору контейнера.
-    - [diValue](di-value.md) – внедрение зависимости «как есть».
-    - [diProxyClosure](di-proxy-closure.md) – внедрение «ленивой» зависимости.
-    - [diTaggedAs](di-tagged-as.md) – внедрение коллекции по тегу.
-    - [diFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
-    - [diParameter](di-parameter.md) – внедрение зависимости из «параметра контейнера».
-    - [diParameterRuntime](di-parameter-runtime.md) – внедрение зависимости из «параметр контейнера времени исполнения».
+Доступные хелпер функции:
+  - [diAutowire](di-autowire.md) – php класс.
+  - [diCallable](di-callable.md) – внедрение зависимости через тип `callable`.
+  - [diFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
+  - [diGet](di-get.md) – внедрение зависимости по идентификатору контейнера.
+  - [diParameter](di-parameter.md) – внедрение зависимости из «параметра контейнера».
+  - [diParameterRuntime](di-parameter-runtime.md) – внедрение зависимости из «параметр контейнера времени исполнения».
+  - [diProxyClosure](di-proxy-closure.md) – внедрение «ленивой» зависимости.
+  - [diTaggedAs](di-tagged-as.md) – внедрение коллекции по тегу.
+  - [diValue](di-value.md) – внедрение зависимости «как есть».

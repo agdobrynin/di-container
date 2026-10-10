@@ -62,13 +62,13 @@ export default defineConfig({
                       { text: 'Обзор', link: 'index.md' },
                       { text: 'diAutowire', link: 'di-autowire.md' },
                       { text: 'diCallable', link: 'di-callable.md' },
-                      { text: 'diGet', link: 'di-get.md' },
-                      { text: 'diValue', link: 'di-value.md' },
-                      { text: 'diProxyClosure', link: 'di-proxy-closure.md' },
-                      { text: 'diTaggedAs', link: 'di-tagged-as.md' },
                       { text: 'diFactory', link: 'di-factory.md' },
+                      { text: 'diGet', link: 'di-get.md' },
                       { text: 'diParameter', link: 'di-parameter.md' },
                       { text: 'diParameterRuntime', link: 'di-parameter-runtime.md' },
+                      { text: 'diProxyClosure', link: 'di-proxy-closure.md' },
+                      { text: 'diTaggedAs', link: 'di-tagged-as.md' },
+                      { text: 'diValue', link: 'di-value.md' },
                     ]
                   },
                   {
