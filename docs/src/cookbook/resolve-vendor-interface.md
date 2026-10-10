@@ -51,7 +51,7 @@ final class Bar
 Для внедрения в параметр с типом `\Psr\Log\LoggerInterface` необходимо настроить PHP класс `\Monolog\Logger` в контейнере.
 Один из вариантов настроить конфигурацию `\Monolog\Logger` через «класс-фабрику»[^FactoryPattern] в файле конфигураций.
 
-Фабричный метод `\App\Helpers\Configurator::doConfigureMonolog()` создает и настраивает объект `\Monolog\Logger`:
+<span id="do-configure-monolog"/>Фабричный метод `\App\Helpers\Configurator::doConfigureMonolog()` создает и настраивает объект `\Monolog\Logger`:
 
 ```php
 //file: /app/Helpers/Configurator.php
@@ -152,10 +152,61 @@ var_dump($bar->$logger instanceof Logger);
 ```
 
 
-## Внедрение зависимости «по-месту» Конфигурация реализации интерфейса { #parameter-config }
+## Внедрение зависимости «по-месту» { #parameter-config }
 
-### Атрибут `Inject` { #inject }
+Если необходимо указать реализацию интерфейса `\Psr\Log\LoggerInterface` как PHP класс `\Monolog\Logger` только для параметра конструктора `\App\Services\Qux::$logger`,
+можно задействовать [фабрику `\App\Helpers\Configurator::doConfigureMonolog()`](#do-configure-monolog) для внедрения. 
 
-### Хелпер функция `diGet()` { #di-get }
+PHP класс:
+
+```php
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+use Psr\Log\LoggerInterface;
+
+final class Qux
+{
+    public function __construct(
+        public readonly LoggerInterface $logger
+    ) {}
+}
+```
+
+Конфигурирование:
+
+```php
+// file: /app/config/services/logger.php
+use Generator;
+use Psr\Log\LoggerInterface;
+use App\Helpers\Configurator;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+
+use function Kaspi\DiContainer\{diFactory, diParameter};
+
+return static function (): Generator {
+    yield 'factory.create_monolog' => diFactory(
+            [Configurator::class, 'doConfigureMonolog'],
+            isSingleton: true,
+        )
+            ->bindArguments(
+                // имя логгера
+                'logger_qux',
+                // Конфигурация хендлера
+                diAutowire(StreamHandler::class)
+                    // аргументы для конструктора `StreamHandler`
+                    ->bingArguments(
+                        '/var/logs/logger_qux.log',
+                        Level::Info,
+                )
+            );
+};
+```
+
+
+### Конфигурирование классов в файлах конфигураций { #parameter-config-attributes }
+
+### Конфигурирование классов через атрибуты { #parameter-config-configuration-files }
 
 <!--@include: ../documentation/_include/term_notes.md-->
