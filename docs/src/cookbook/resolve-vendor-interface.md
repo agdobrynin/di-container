@@ -1,3 +1,6 @@
+---
+outline: [2, 4]
+---
 # Внедрение по интерфейсу сторонних производителей { #title }
 
 ## Обзор { #overview }
@@ -7,8 +10,7 @@
 
 Для внедрения зависимости **только в параметр метода** можно использовать [атрибуты конфигурирования](../documentation/attribute-definition/index.md) или использовать хелпер функции для передачи аргументов в [файлах конфигураций](../documentation/container-builder/configuration_files.md).
 
-Рассмотрим ниже конфигурацию контейнера для `\Psr\Log\LoggerInterface` [PSR-3](https://www.php-fig.org/psr/psr-3/)
-и PHP пакета [Monolog](https://packagist.org/packages/monolog/monolog).
+Рассмотрим ниже конфигурацию контейнера для [PSR-3: Logger Interface](https://www.php-fig.org/psr/psr-3/) и PHP пакета [Monolog](https://packagist.org/packages/monolog/monolog).
 
 PHP класс:
 
@@ -96,14 +98,14 @@ return static function (): Generator {
             isSingleton: true,
         )
             ->bindArguments(
-                diParameter('logger.name')
+                loggerName: diParameter('logger.name')
             );
 
     // Конфигурация хендлера из "monolog/monolog"
     yield diAutowire(StreamHandler::class)
         ->bingArguments(
-            diParameter('logger.file'),
-            diParameter('logger.level'),
+            stream: diParameter('logger.file'),
+            level: diParameter('logger.level'),
         );
 };
 ```
@@ -121,6 +123,9 @@ return [
 
 :::
 
+> [!NOTE]
+> В методе `bingArguments()` для [конструктора `\Monolog\Handler\StreamHandler::__construct()`](https://github.com/Seldaek/monolog/blob/main/src/Monolog/Handler/StreamHandler.php) используем именованные аргументы.
+
 Контейнер зависимостей:
 
 ```php
@@ -137,25 +142,105 @@ $container = (new DiContainerBuilder())
 
 $foo = $container->get(Foo::class);
 
-var_dump($foo->$logger instanceof LoggerInterface);
+var_dump($foo->logger instanceof LoggerInterface);
 // bool (true)
-var_dump($foo->$logger instanceof Logger);
+var_dump($foo->logger instanceof Logger);
 // bool (true)
 
 
 $bar = $container->get(Bar::class);
 
-var_dump($bar->$logger instanceof LoggerInterface);
+var_dump($bar->logger instanceof LoggerInterface);
 // bool (true)
-var_dump($bar->$logger instanceof Logger);
+var_dump($bar->logger instanceof Logger);
 // bool (true)
 ```
 
 
-## Внедрение зависимости «по-месту» { #parameter-config }
+## Внедрение в параметр метода – «по-месту» { #parameter-config }
 
 Если необходимо указать реализацию интерфейса `\Psr\Log\LoggerInterface` как PHP класс `\Monolog\Logger` только для параметра конструктора `\App\Services\Qux::$logger`,
-можно задействовать [фабрику `\App\Helpers\Configurator::doConfigureMonolog()`](#do-configure-monolog) для внедрения. 
+можно конфигурировать PHP класс `\Monolog\Logger` отдельно, а для параметра `\App\Services\Qux::$logger` указать какой PHP класс будет реализацией интерфейса.
+
+
+Конфигурирование `\Monolog\Logger`:
+
+```php
+// file: /app/config/services/monolog.php
+use Generator;
+use Psr\Log\LoggerInterface;
+use App\Helpers\Configurator;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Monolog\Level;
+
+use function Kaspi\DiContainer\{diFactory, diParameter};
+
+return static function (): Generator {
+    yield diAutowire(Logger::class, isSingleton: true)
+        ->bindArguments(name: 'logger_qux')
+        ->setup('pushHandler', arguments: [
+            // Конфигурация хендлера
+            'handle' => diAutowire(StreamHandler::class)
+                    // аргументы для конструктора `StreamHandler`
+                    ->bingArguments(
+                        stream: '/var/logs/logger_qux.log',
+                        level: Level::Info,
+                )
+        ]);
+};
+```
+
+> [!NOTE]
+> В методе `bingArguments()` для [конструктора `\Monolog\Handler\StreamHandler::__construct()`](https://github.com/Seldaek/monolog/blob/main/src/Monolog/Handler/StreamHandler.php) используем именованные аргументы.
+
+### Атрибут `Inject` { #parameter-attribute-inject }
+
+Конфигурирование через [PHP атрибуты](../documentation/attribute-definition/index.md).
+
+PHP класс:
+
+```php
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Inject;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+
+final class Qux
+{
+    public function __construct(
+        #[Inject(Logger::class)]
+        public readonly LoggerInterface $logger
+    ) {}
+}
+```
+
+#### Контейнер зависимостей { #attribute-inject-by-container }
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Qux;
+use Psr\Log\LoggerInterface;
+use Monolog\Logger;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services/monolog.php')
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+$qux = $container->get(Qux::class);
+
+var_dump($qux->logger instanceof LoggerInterface);
+// bool (true)
+var_dump($qux->logger instanceof Logger);
+// bool (true)
+```
+
+### Хелпер функция `diGet()` { #parameter-helper-di-get }
+
+Конфигурирование без PHP атрибутов, в силе [php определений](../documentation/php-definition/index.md).
 
 PHP класс:
 
@@ -173,40 +258,46 @@ final class Qux
 }
 ```
 
-Конфигурирование:
+Конфигурация класса `\App\Services\Qux`:
 
 ```php
-// file: /app/config/services/logger.php
+// file: /app/config/services/qux_class.php
 use Generator;
-use Psr\Log\LoggerInterface;
-use App\Helpers\Configurator;
-use Monolog\Handler\StreamHandler;
-use Monolog\Level;
+use App\Services\Qux;
+use Monolog\Logger;
 
-use function Kaspi\DiContainer\{diFactory, diParameter};
+use function Kaspi\DiContainer\diGet;
 
 return static function (): Generator {
-    yield 'factory.create_monolog' => diFactory(
-            [Configurator::class, 'doConfigureMonolog'],
-            isSingleton: true,
-        )
-            ->bindArguments(
-                // имя логгера
-                'logger_qux',
-                // Конфигурация хендлера
-                diAutowire(StreamHandler::class)
-                    // аргументы для конструктора `StreamHandler`
-                    ->bingArguments(
-                        '/var/logs/logger_qux.log',
-                        Level::Info,
-                )
-            );
+    yield diAutowire(Qux::class)
+        ->bingArguments(
+            logger: diGet(Logger::class)
+        );
 };
 ```
 
+#### Контейнер зависимостей { #helper-di-get-by-container }
 
-### Конфигурирование классов в файлах конфигураций { #parameter-config-attributes }
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Qux;
+use Psr\Log\LoggerInterface;
+use Monolog\Logger;
 
-### Конфигурирование классов через атрибуты { #parameter-config-configuration-files }
+$container = (new DiContainerBuilder())
+    ->load(
+        '/app/config/services/monolog.php',
+        '/app/config/services/qux_class.php',
+    )
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+$qux = $container->get(Qux::class);
+
+var_dump($qux->logger instanceof LoggerInterface);
+// bool (true)
+var_dump($qux->logger instanceof Logger);
+// bool (true)
+```
 
 <!--@include: ../documentation/_include/term_notes.md-->
