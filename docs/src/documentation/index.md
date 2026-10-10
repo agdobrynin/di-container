@@ -1,4 +1,68 @@
-# Руководство { #overview }
+---
+outline: [2, 4]
+---
+# Руководство { #documentation }
+
+## Обзор { #overview }
+
+В этой документации описывается API контейнера из пакета [kaspi/di-container](https://packagist.org/packages/kaspi/di-container).
+
+### PSR-11
+
+Контейнер полностью совместим с рекомендациями [PSR-11](https://www.php-fig.org/psr/psr-11/):
+
+```php
+namespace Psr\Container;
+
+interface ContainerInterface
+{
+    public function get($id);
+ 
+    public function has($id);
+}
+```
+### `call()`
+
+Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface`
+который предоставляет метод `call()` для вызываемых типов или значений которые могут быть преобразованы контейнером к `callable` типу.
+
+```php
+use App\Services\Foo;
+use Kaspi\DiContainer\DiContainerBuilder;
+
+use function var_export;
+
+$container = (new DiContainerBuilder())->build();
+
+$container->call(
+    static function(Foo $foo, string $name): void {
+        $foo->doSomethind($name);
+        sprintf('Call Foo::doSomething(%s)', var_export($name, true));
+    },
+    name: 'John'
+);
+// string(29) "Call Foo::doSomething('John')"
+```
+
+Подробнее о методе `call()` рассказано в разделе [«Метод контейнера для вызываемых типов»](call/index.md).
+
+### set()
+
+Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerSetterInterface` который предоставляет метод `set()`
+для прямой установки объекта (инстанцированный класс) в уже сформированный контейнер зависимостей.
+
+```php
+use App\Services\Bar;
+
+$bar = new Bar(
+    // set some dependencies.
+);
+
+// идентификатор будет указан как 'App\Services\Bar'
+$container->set($bar::class, $bar);
+```
+
+Подробнее о методе `set()` рассказано в разделе [«Динамическое добавление определений в контейнер»](container-builder/set.md).
 
 ## Особенности разрешения некоторых классов и интерфейсов { #resolve-class-interface }
 
