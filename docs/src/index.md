@@ -84,7 +84,7 @@ $container->call([\App\Controllers\PostController::class, 'send'], $post);
 ```
 
 > [!NOTE]
-> Раздел документации о методе контейнера [call()](documentation/04-call-method.md).
+> Раздел документации о методе контейнера [call()](documentation/call/index.md).
 
 #### Классы в проекте:
 
