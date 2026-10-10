@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
 final class Foo
 {
     public function __construct(
-        private LoggerInterface $logger
+        public readonly LoggerInterface $logger
         // другие зависимости
     ) {}    
 }
@@ -38,7 +38,7 @@ use Psr\Log\LoggerInterface;
 final class Bar
 {
     public function __construct(
-        private LoggerInterface $logger
+        public readonly LoggerInterface $logger
         // другие зависимости
     ) {}    
 }
@@ -48,26 +48,109 @@ final class Bar
 
 ## Глобальная конфигурация реализации интерфейса { #global-config }
 
-Чтобы любой параметр с типом `\Psr\Log\LoggerInterface` внедрял настроенный PHP класс `\Monolog\Logger` сделаем конфигурационный файл.
-В конфигурационном файле укажем реализацию интерфейса через класс фабрику.
+Для внедрения в параметр с типом `\Psr\Log\LoggerInterface` необходимо настроить PHP класс `\Monolog\Logger` в контейнере.
+Один из вариантов настроить конфигурацию `\Monolog\Logger` через «класс-фабрику»[^FactoryPattern] в файле конфигураций.
+
+Фабричный метод `\App\Helpers\Configurator::doConfigureMonolog()` создает и настраивает объект `\Monolog\Logger`:
 
 ```php
-// file: /app/config/logger.php
+//file: /app/Helpers/Configurator.php
+namespace App\Helpers;
+
+use Psr\Log\LoggerInterface;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+final class Configurator
+{
+    // …
+    
+    public static function doConfigureMonolog(
+        string $loggerName,
+        StreamHandler $handler,
+    ): LoggerInterface {
+        $log = new Logger('name');
+        $log->pushHandler($handler);
+        
+        return $log;
+    }
+}
+```
+
+Конфигурирование:
+
+::: code-group
+
+```php [services/logger.php]
+// file: /app/config/services/logger.php
 use Generator;
 use Psr\Log\LoggerInterface;
 use App\Helpers\Configurator;
+use Monolog\Handler\StreamHandler;
 
-use function Kaspi\DiContainer\diFactory;
+use function Kaspi\DiContainer\{diFactory, diParameter};
 
 return static function (): Generator {
-    yield LoggerInterface::class => diFactory([Configurator::class, 'monolog'])
-        ->bindArguments(
-            diParameter('logger.name'),
-            diParameter('logger.to_file'),
+    yield LoggerInterface::class => diFactory(
+            [Configurator::class, 'doConfigureMonolog'],
+            isSingleton: true,
+        )
+            ->bindArguments(
+                diParameter('logger.name')
+            );
+
+    // Конфигурация хендлера из "monolog/monolog"
+    yield diAutowire(StreamHandler::class)
+        ->bingArguments(
+            diParameter('logger.file'),
             diParameter('logger.level'),
         );
 };
 ```
+
+```php [parameters/logger.php]
+// file: /app/config/parameters/logger.php
+use Monolog\Level;
+
+return [
+    'logger.name' => 'my-application',
+    'logger.file' => '/var/logs/app.log',
+    'logger.level' => Level::Warning,
+];
+```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar};
+use Psr\Log\LoggerInterface;
+use Monolog\Logger;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters('/app/config/parameters/logger.php')
+    ->load('/app/config/services/logger.php')
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->$logger instanceof LoggerInterface);
+// bool (true)
+var_dump($foo->$logger instanceof Logger);
+// bool (true)
+
+
+$bar = $container->get(Bar::class);
+
+var_dump($bar->$logger instanceof LoggerInterface);
+// bool (true)
+var_dump($bar->$logger instanceof Logger);
+// bool (true)
+```
+
 
 ## Внедрение зависимости «по-месту» Конфигурация реализации интерфейса { #parameter-config }
 
