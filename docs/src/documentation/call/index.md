@@ -1,23 +1,21 @@
 # 📦 Метод контейнера для вызываемых типов { #title }
 
-# Обзор { #overview }
+## Обзор { #overview }
 
+Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface` который предоставляет метод `call()` для вызываемых типов или значений которые могут быть преобразованы контейнером к `callable` типу.
 
-Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface`
-предоставляющий метод `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface::call()`.
+**Важная особенность метода `call()` – внедрение зависимостей в параметры вызываемых типов автоматически на основании конфигурации контейнера.**
 
+Метод `call()` может вызвать `callable` тип, что означает:
+- Анонимные функции.
+- Функции.
+- Методы объекта и статические методы PHP класса. 
+- Объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
+- Дополнительно **метод может преобразовать** к `callable` типу следующие значения:
+  - PHP класс с нестатическим методом.
+  - PHP класс реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
 
-Container::call() can call any callable, that means:
-
-- closures
-- functions
-- object methods and static methods
-- invokable objects (objects that implement __invoke())
-- Additionally you can call:
-  - name of invokable classes: $container->call('My\CallableClass')
-  - object methods (give the class name, not an object): $container->call(['MyClass', 'someMethod'])
-  - In both case, 'My\CallableClass' and 'MyClass' will be resolved by the container using $container->get().
-
+---
 
 Получение результата вызываемого типа или [преобразуемого в callable тип](#класс-с-нестатическим-методом) значения, с разрешением зависимостей через контейнер:
 ```php
