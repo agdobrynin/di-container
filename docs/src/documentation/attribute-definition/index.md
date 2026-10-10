@@ -22,15 +22,15 @@ PHP атрибуты содержат мета-данные для конфиг�
 ### Доступные атрибуты { #attributes }
 - [Autowire](autowire.md) – конфигурирование PHP класса или их набора в контейнере.
 - [AutowireExclude](autowire-exclude.md) – исключить внедрение PHP класса или интерфейса.
+- [DiFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
+- [Inject](inject.md) – внедрение зависимости по идентификатору контейнера.
+- [InjectByCallable](inject-by-callable.md) – внедрение зависимости через тип `callable`.
+- [Parameter](parameter.md) – внедрение зависимости из «параметров контейнера».
+- [ParameterRuntime](parameter-runtime.md) – внедрение зависимости из «параметров контейнера времени исполнения».
+- [ProxyClosure](proxy-closure.md) – внедрение «ленивой» зависимости.
+- [Service](service.md) – указывает реализацию PHP интерфейса.
 - [Setup](setup.md) – внедрение зависимости в PHP класс через мутабельный сеттер-метод.
 - [SetupImmutable](setup-immutable.md) – внедрение зависимости в PHP класс через иммутабельный сеттер-метод.
 - [SetupPriority](setup-priority.md) – приоритет сеттер-метода.
-- [Inject](inject.md) – внедрение зависимости по идентификатору контейнера.
-- [InjectByCallable](inject-by-callable.md) – внедрение зависимости через тип `callable`.
-- [Service](service.md) – указывает реализацию PHP интерфейса.
-- [DiFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
-- [ProxyClosure](proxy-closure.md) – внедрение «ленивой» зависимости.
 - [Tag](tag.md) – тег для PHP класса.
 - [TaggedAs](tagged-as.md) – внедрение коллекции по тегу.
-- [Parameter](parameter.md) – внедрение зависимости из «параметров контейнера».
-- [ParameterRuntime](parameter-runtime.md) – внедрение зависимости из «параметров контейнера времени исполнения».
