@@ -15,185 +15,220 @@
   - PHP класс с нестатическим методом.
   - PHP класс реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
 
----
+Сигнатура метода:
 
-Получение результата вызываемого типа или [преобразуемого в callable тип](#класс-с-нестатическим-методом) значения, с разрешением зависимостей через контейнер:
-```php
-call(array|callable|string $definition, mixed ...$argument)
-```
+```php 
+\Kaspi\DiContainer\Interfaces\DiContainerCallInterface::call(
+    array|callable|string $definition,
+     mixed ...$argument
+)
+``` 
+
 Параметры:
-- `$definition` - вызываемый тип или значение преобразуемое к `callable`;
-- `$argument` - аргументы для подстановки в параметры вызываемого типа;
+- `$definition` - вызываемый тип или значение преобразуемое к `callable` типу.
+- `$argument` - аргументы для подстановки в параметры вызываемого типа.
 
-> [!WARNING]
-> Необходимо передать аргументы в `$argument` для параметров функции или метода которые **не могут быть разрешены контейнером автоматически**
+> [!NOTE]
+> Передавать аргументы для параметров вызываемого типа нужно только если они не могут быть внедрены автоматически на основании конфигурации контейнера.
 
-## Поддерживаемые типы
-- Функция
-  ```php
-    function userFunc(\App\Services\Bar $bar) { /*... do something ... */ }
-    // ...
-    $container->call('userFunc');
-  ```
-- анонимная функция через PHP класс `\Closure`
-    ```php
-    $container->call(static function() { /*... do something ... */ });
-    ```
-- Статические методы класса
-  ```php
-  namespace App\Services;
-  
-  class Foo {
-    public static function bar(\App\Services\Bar $bar)
-    {
-        // ...
-    }
-  }
-  ```
-  ```php
-  $container->call('\App\Services\Foo::bar');
-  
-  $container->call(\App\Services\Foo::class.'::bar');
-  
-  $container->call([\App\Services\Foo::class, 'bar']);
-  ```
-- Созданный объект PHP класса и метод класса
-  ```php
-  namespace App\Services;
-  
-  class Foo {
-    public function __construct() {}
+## PHP класс преобразуемый в `callable` тип { #example-php-class }
 
-    public function qux(\App\Services\Bar $bar)
-    {
-        // ...
-    }
-  }
-  ```
-  ```php
-  $object = new \App\Services\Foo();
-  
-  $container->call([$object, 'qux']);
-  ```
+PHP классы:
 
-## Класс с нестатическим методом
+::: code-group
 
-Поддерживаемые преобразования в вызываемый тип, через получение контейнером PHP класса
-с разрешением зависимостей в конструкторе и вызовом указанного метода:
-
-- PHP класс реализующий метод `__invoke()`:
-  ```php
-  namespace App\Services;
-  
-  class Foo {
-    public function __construct() {}
-    public function __invoke(\App\Services\Bar $bar) {}
-  }
-  ```
-  ```php
-  $container->call(\App\Services\Foo::class);
-  ```
-  метод `call()` выполнит следующие действия:
-  ```php
-    $object = new \App\Services\Foo();
-    $object2 = new \App\Services\Bar();
-
-    $object->__invoke($object2);
-  ```
-
-- PHP класс представленный через полное имя (fully qualified class name) и вызываемый метод:
-  ```php
-  namespace App\Services;
-  
-  class Foo {
-    public function __construct() {}
-    public function qux(\App\Services\Bar $bar) {}
-  }
-  ``` 
-  ```php
-  $container->call([\App\Services\Foo::class, 'qux']);
-  
-  $container->call(\App\Services\Foo::class.'::qux');
-  
-  $container->call('\App\Services\Foo::qux');
-  ```
-  метод `call()` выполнит следующие действия:
-  ```php
-    $object = new \App\Services\Foo();
-    $object2 = new \App\Services\Bar();
-
-    $object->qux($object2);
-  ```
-
-## Абстрактный пример с контроллером
-```php
-// src/Controllers/PostController.php
+```php [PostController.php]
+// file: /app/src/Controllers/PostController.php
 namespace App\Controllers;
 
-use App\Service\ServiceOne;
+use App\Services\ServiceOne;
+use function {sprintf, var_export};
 
-class  PostController {
+final class PostController
+{
     public function __construct(private ServiceOne $serviceOne) {}
     
-    public function store(string $name) {
+    public function store(string $name)
+    {
         $this->serviceOne->save($name);
         
-        return 'The name '.$name.' saved!';
+        return sprintf('The name %s saved!', var_export($name, true));
     }
 }
 ```
 
+```php [ServiceOne.php]
+// file: /app/src/Services/ServiceOne.php
+namespace App\Services;
+
+final class ServiceOne
+{
+    // …
+    
+    public function save(string $name): void
+    {
+      // …
+    }
+}
+```
+
+:::
+
+Контейнер зависимостей:
+
 ```php
-// определение контейнера
 use App\Controllers\PostController;
 use Kaspi\DiContainer\DiContainerBuilder;
 
-$container = (new DiContainerBuilder())->build();
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
 
-// вызов контроллера с автоматическим разрешением зависимостей и передачей аргументов
+/*
+ * Вызов контроллера с автоматическим внедрением зависимостей
+ * и передачей аргументов
+ */
 print $container->call(
     [PostController::class, 'store'],
     // $_POST содержит ['name' => 'Ivan']
     // 'name' соответствует имени аргумента в методе store
     ...\array_filter($_POST,  static fn ($v, $k) => 'name' === $k, \ARRAY_FILTER_USE_BOTH)
 );
+
+// The name 'Ivan' saved!
 ```
-результат
-`The name Ivan saved!`
 
-> [!NOTE]
-> Фактически метод `call()` выполнит создание экземпляра класс `\App\Controllers\PostController` с внедрением зависимостей в конструктор
-> и вызовет метод `\App\Controllers\PostController::store()`
-> ```php
-> // будет выполнено
-> (new \App\Controllers\PostController(serviceOne: new ServiceOne()))
->    ->post(name: 'Ivan')
-> ```
+Фактически метод `call()` выполнит создание экземпляра класса `\App\Controllers\PostController` с внедрением зависимостей в конструктор и вызовет метод `\App\Controllers\PostController::store()`:
 
-## Абстрактный пример с вызываемым типом
 ```php
+// будет выполнено
+(new \App\Controllers\PostController(serviceOne: new ServiceOne()))
+    ->post(name: 'Ivan')
+```
+
+## PHP класс реализующий метод `__invoke()` преобразуемый в `callable` тип { #example-php-class-invoke }
+
+PHP классы:
+
+::: code-group
+
+```php [SavePostController.php]
+// file: /app/src/Controllers/SavePostController.php
+namespace App\Controllers;
+
+use App\Services\ServiceOne;
+use function {sprintf, var_export};
+
+final class SavePostController
+{
+    // …
+
+    public function __invoke(ServiceOne $serviceOne, string $name)
+    {
+        $serviceOne->save($name);
+        
+        return sprintf('The name %s saved!', var_export($name, true));
+    }
+}
+```
+
+```php [ServiceOne.php]
+// file: /app/src/Services/ServiceOne.php
+namespace App\Services;
+
+final class ServiceOne
+{
+    // …
+    
+    public function save(string $name): void
+    {
+      // …
+    }
+}
+```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use App\Controllers\SavePostController;
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+print $container->call(SavePostController::class, name: 'Ivan');
+
+// The name 'Ivan' saved!
+```
+
+Код выше эквивалентен этому код:
+
+```php
+$savePost = $container->get(SavePostController::class);
+print $container->call([$savePost, '__invoke'], name: 'Ivan');
+```
+
+## Функция { #example-function }
+
+::: code-group
+
+```php [functions.php]
+// file: /app/src/Functions/functions.php
 namespace App\Functions;
 
-function one_service(App\Service\ServiceOne $service, string $name) {
+use App\Services\ServiceOne;
+use function var_export;
+
+function one_service(ServiceOne $service, string $name) {
         $service->save($name);
-        
-        return 'The name '.$name.' saved!';
+
+        return sprintf('The name %s saved!', var_export($name, true));
 };
 ```
-```php
-// определение контейнера
-$container = (new \Kaspi\DiContainer\DiContainerBuilder())
-    ->build()
-;
 
-// вызов callback с autowiring и подстановкой именованного аргумента
-print $container->call('\App\Functions\one_service', name: 'Vasiliy'); 
+
+```php [ServiceOne.php]
+// file: /app/src/Services/ServiceOne.php
+namespace App\Services;
+
+final class ServiceOne
+{
+    // …
+    
+    public function save(string $name): void
+    {
+      // …
+    }
+}
 ```
-> [!NOTE]
-> будет выполнено
-> ```php
-> \App\Functions\one_service(
->     new App\Service\ServiceOne(),
->     name: 'Vasiliy',
-> );
-> ```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+// вызов функции и подстановкой именованного аргумента
+print $container->call('\App\Functions\one_service', name: 'Ivan'); 
+
+// The name 'Ivan' saved!
+```
+
+Фактически метод `call()` выполнит следующий код:
+
+```php
+\App\Functions\one_service(
+    new App\Service\ServiceOne(),
+    name: 'Ivan',
+);
+```
+
+<!--@include: ../_include/term_notes.md-->

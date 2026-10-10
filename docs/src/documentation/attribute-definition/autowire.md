@@ -36,7 +36,7 @@ outline: [2, 4]
 **Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` интерпретируется контейнером как имя класса FQCN[^FQCN]
 
 ```php
-// /app/src/Services/FooService.php
+// file: /app/src/Services/FooService.php
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Autowire;
