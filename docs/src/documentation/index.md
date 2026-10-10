@@ -94,7 +94,7 @@ var_dump($container === $container->get(Foo::class)->container);
 * ⚙️ [Конфигурация для DiContainer](container-config/index.md).
 * 🐘 [DiContainer с конфигурированием **в стиле php определений**](php-definition/index.md).
 * #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](attribute-definition/index.md).
-* 📦 [Метод контейнера `call()`](call/index.md) для вызова `callable` типов и выражений преобразуемых к `callable` типу.
+* 📦 [Метод контейнера `call()`](call/index.md).
 * 🔖 [Тэгирование определений и сервисов](05-tags.md).
 * 📋 [Параметры контейнера](09-container-parameters.md).
 * 🗳️ [Внедрение экземпляра класса в рантайм контейнер](10-runtime-definition.md).
