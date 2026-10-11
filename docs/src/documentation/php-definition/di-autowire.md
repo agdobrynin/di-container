@@ -32,7 +32,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
  - `bindArguments()` – аргументы конструктора PHP класса.
  - `setup()` – внедрение зависимостей через мутабельный сеттер-метод [^SetterMethodMutable].
  - `setupImmutable()` – внедрение зависимостей через иммутабельный сеттер-метод [^SetterMethodImmutable].
- - `bindTag()` – тег с мета-данными.
+ - `bindTag()` – тег с метаданными.
  - `setResetter()` - конфигурация для сброса состояния объекта.
 
 ## bindArguments()

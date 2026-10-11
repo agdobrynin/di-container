@@ -26,7 +26,7 @@ outline: [2, 4]
 - `$id` – идентификатор контейнера для класса (_container identifier_).
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP класса.
-- `$tags` – тег с мета-данными.
+- `$tags` – тег с метаданными.
 - `$setups` – внедрение зависимостей через сеттер-метод [^SetterMethodMutable] [^SetterMethodImmutable].
 - `$resetter` – конфигурация [для сброса состояния объекта](../12-object-resetters.md).
 - `$isLazy` – обозначение определения как «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
@@ -240,7 +240,7 @@ var_dump($fooServicesWithBar->baz instanceof Baz);
 
 ## Теги { #tags }
 
-Теги с мета-данными устанавливаются через параметр `\Kaspi\DiContainer\Attributes\Autowire::$tags`.
+Теги с метаданными устанавливаются через параметр `\Kaspi\DiContainer\Attributes\Autowire::$tags`.
 Теги будут привязаны к определению контейнера с указанным [идентификатором](#container-id-multuple)
 
 Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$tags`:

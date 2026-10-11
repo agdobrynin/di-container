@@ -28,7 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 Функция `diCallable()` возвращает объект предоставляющий методы:
 - `bindArguments()` – указать аргументы для параметров функции.
-- `bindTag()` – добавляет тег с мета-данными для определения.
+- `bindTag()` – добавляет тег с метаданными для определения.
 
 ## bindArguments()
 

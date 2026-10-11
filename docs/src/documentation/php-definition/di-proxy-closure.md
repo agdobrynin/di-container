@@ -32,7 +32,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 - `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 
 Функция `diProxyClosure()` возвращает объект предоставляющий методы:
-- `bindTag()` – добавляет тег с мета-данными для определения.
+- `bindTag()` – добавляет тег с метаданными для определения.
 
 
 ### Пример внедрения параметра с отложенной инициализацией { #example }
