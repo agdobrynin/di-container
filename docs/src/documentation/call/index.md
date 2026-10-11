@@ -4,16 +4,19 @@
 
 Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface` который предоставляет метод `call()` для вызываемых типов или значений которые могут быть преобразованы контейнером к `callable` типу.
 
-**Важная особенность метода `call()` – внедрение зависимостей в параметры вызываемых типов автоматически на основании конфигурации контейнера.**
+**Важная особенность метода `call()` – внедрение зависимостей в параметры вызываемых типов происходит автоматически на основании конфигурации контейнера.**
 
 Метод `call()` может вызвать `callable` тип, что означает:
-- Анонимные функции.
-- Функции.
-- Методы объекта и статические методы PHP класса. 
-- Объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
-- Дополнительно **метод может преобразовать** к `callable` типу следующие значения:
-  - PHP класс с нестатическим методом.
-  - PHP класс реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
+- Анонимная функция.
+- Функция.
+- Статический метод PHP класса.
+- Метод PHP объекта.
+- PHP объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke).
+- Дополнительно: **метод может преобразовать** к `callable` типу следующие значения:
+  - FQCN[^FQCN] PHP класса и имя нестатического метода.
+    - `$container->call([App\Services\Foo::class, 'methodName']);`
+  - FQCN[^FQCN] PHP класса реализующего [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke).
+    - `$container->call(App\Services\CallableService::class);`
 
 Сигнатура метода:
 
@@ -85,15 +88,10 @@ $container = (new DiContainerBuilder())
     ->build();
 
 /*
- * Вызов контроллера с автоматическим внедрением зависимостей
- * и передачей аргументов
- */
-print $container->call(
-    [PostController::class, 'store'],
-    // $_POST содержит ['name' => 'Ivan']
-    // 'name' соответствует имени аргумента в методе store
-    ...\array_filter($_POST,  static fn ($v, $k) => 'name' === $k, \ARRAY_FILTER_USE_BOTH)
-);
+ * Использую именованный аргумент 'name'
+ * соответствующий имени аргумента в методе `store()`
+ */ 
+print $container->call([PostController::class, 'store'], name: 'Ivan');
 
 // The name 'Ivan' saved!
 ```
@@ -159,6 +157,10 @@ $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')
     ->build();
 
+/*
+ * Использую именованный аргумент 'name'
+ * соответствующий имени аргумента в методе `__invoke()`
+ */ 
 print $container->call(SavePostController::class, name: 'Ivan');
 
 // The name 'Ivan' saved!
@@ -216,7 +218,10 @@ $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')
     ->build();
 
-// вызов функции и подстановкой именованного аргумента
+/*
+ * Использую именованный аргумент 'name'
+ * соответствующий имени аргумента в функции `\App\Functions\one_service()`
+ */
 print $container->call('\App\Functions\one_service', name: 'Ivan'); 
 
 // The name 'Ivan' saved!
