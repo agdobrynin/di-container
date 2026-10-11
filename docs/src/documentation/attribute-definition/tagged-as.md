@@ -38,11 +38,7 @@
 - `array` (_требуется передать аргумент `false` для параметра `$isLazy`_)
 - `\ArrayAccess & \Iterator & \Psr\Container\ContainerInterface`
 
-> [!IMPORTANT]
-> Явно не объявленные в контейнере PHP-классы будут проигнорированы при поиске тега, поэтому необходимо обеспечить доступность PHP классов в контейнере используя:
-> - импорт PHP-классов – [метод `DiContainerBuilder::import()`](../container-builder/index.md#dicontainerbuilder-import)
-> - файлы конфигураций - [метод `DiContainerBuilder::load()`](../container-builder/index.md#load-definitions-from-file)
->
+<!--@include: ../_include/need_import_php_class.md-->
 
 > [!IMPORTANT]
 > Метод-приоритета по-умолчанию в параметре `$priorityDefaultMethod` должен быть объявлен как `public static function` и возвращать тип `int`, `string` или `null`.

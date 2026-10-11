@@ -113,11 +113,7 @@ foreach ($baz->collection as $key => $item) {
 
 Порядок элементов в коллекции `$baz->collection` обусловлен значением `$priority` у каждого тега. Подробнее в разделе документации «[Приоритет элементов коллекции](collection-priority.md)»
 
-> [!IMPORTANT]
-> Явно не объявленные в контейнере PHP-классы будут проигнорированы при поиске тега, поэтому необходимо обеспечить доступность PHP классов в контейнере используя:
-> - импорт PHP-классов – [метод `DiContainerBuilder::import()`](../container-builder/index.md#dicontainerbuilder-import)
-> - файлы конфигураций - [метод `DiContainerBuilder::load()`](../container-builder/index.md#load-definitions-from-file)
->
+<!--@include: ../_include/need_import_php_class.md-->
 
 ## Внедрение коллекции для параметров переменной длины { #inject-by-attribute-tagged-as-variadic }
 
