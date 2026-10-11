@@ -4,16 +4,6 @@
 
 Хелпер функция `diTaggedAs()` внедряет коллекцию элементов из контейнера отмеченных тегом.
 
-Внедрение зависимости применяется для параметров с типом:
-- `iterable`
-    - `\Traversable`
-        - `\Iterator`
-- `\ArrayAccess`
-- `\Psr\Container\ContainerInterface`
-- `array` требуется использовать параметр `$isLazy = false`.
-- Составной тип (_intersection types_) для ленивых коллекций (`$isLazy = true`)
-    - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`.
-
 Сигнатура функции:
 
 ```php
@@ -42,6 +32,15 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 - `$selfExclude` – исключить PHP класс из коллекции если имя тега совпадает с именем тега коллекции.
 
 У хелпер функции нет дополнительных методов.
+
+Внедрение зависимости применяется для параметров с типом:
+- `iterable`
+    - `\Traversable`
+        - `\Iterator`
+- `\ArrayAccess`
+- `\Psr\Container\ContainerInterface`
+- `array` (_требуется передать аргумент `false` для параметра `$isLazy`_)
+- `\ArrayAccess & \Iterator & \Psr\Container\ContainerInterface`
 
 > [!NOTE]
 > Подробное описание работы с тегами в разделе «[Работа с тегами в контейнере](../tags/index.md)».

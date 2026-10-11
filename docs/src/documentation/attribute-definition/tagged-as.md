@@ -35,9 +35,8 @@
         - `\Iterator`
 - `\ArrayAccess`
 - `\Psr\Container\ContainerInterface`
-- `array` требуется использовать параметр `$isLazy = false`.
-- Составной тип (_intersection types) для ленивых коллекций (`$isLazy = true`)
-    - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`.
+- `array` (_требуется передать аргумент `false` для параметра `$isLazy`_)
+- `\ArrayAccess & \Iterator & \Psr\Container\ContainerInterface`
 
 > [!IMPORTANT]
 > Явно не объявленные в контейнере PHP-классы будут проигнорированы при поиске тега, поэтому необходимо обеспечить доступность PHP классов в контейнере используя:

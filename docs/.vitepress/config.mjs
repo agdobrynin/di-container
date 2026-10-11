@@ -103,6 +103,17 @@ export default defineConfig({
                     base: '/documentation/tags/',
                     text: '🔖 Работа с тегами в контейнере',
                     link: 'index.md',
+                    collapsed: true,
+                    items: [
+                      { text: 'Обзор', link: 'index.md' },
+                      { text: 'Конфигурирование тегов в стиле php определений', link: 'php-definition-tag.md' },
+                      { text: 'Конфигурирование тегов через php атрибут', link: 'attribute-definition-tag.md' },
+                      { text: 'PHP интерфейс как имя тега', link: 'interface-as-tag.md' },
+                      { text: 'Исключение элементов из коллекции', link: 'exclide-from-collection.md' },
+                      { text: 'Приоритет элементов коллекции', link: 'collection-priority.md' },
+                      { text: 'Использование ключей в коллекции', link: 'using-collecton-key.md' },
+                      { text: 'Соглашение по именованию тегов и мета-данных', link: 'naming-convention.md' },
+                    ],
                   },
                 ]
               }
