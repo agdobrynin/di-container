@@ -11,4 +11,4 @@ DiDefinitionTagArgumentInterface::bindTag(
 ```
 
 > [!TIP]
-> Более подробное [описание работы с тегами](../../05-tags.md).
+> Более подробное [описание работы с тегами](../../tags/index.md).

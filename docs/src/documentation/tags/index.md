@@ -1,7 +1,10 @@
-# 🔖 Работа с тегами в контейнере
-Теги позволяют расширить возможности работы с зарегистрированными сервисами,
-собирая сервисы в коллекции (_списки_).
-Результат выполнения может быть применен для параметров с типом:
+# 🔖 Работа с тегами в контейнере { #title }
+
+## Обзор { #overview }
+
+Теги позволяют расширить возможности внедрения коллекций в параметры методов и функций. В коллекцию собираются элементы из контейнера отмеченные тегом.
+
+Внедрение зависимости применяется для параметров с типом:
 - `iterable`
     - `\Traversable`
         - `\Iterator`
@@ -11,21 +14,27 @@
 - Составной тип (_intersection types_) для ленивых коллекций (`$isLazy = true`)
     - `\ArrayAccess&\Iterator&\Psr\Container\ContainerInterface`.
 
-Любое определение в контейнере может быть отмечено
-одним или несколькими тегами.
-Каждый тег может содержать мета-данные переданные в виде массива.
+Любое определение в контейнере может быть отмечено одним или несколькими тегами. Каждый тег может содержать мета-данные переданные в виде массива.
 
-Тегирование сервисов можно произвести при объявлении в стиле [php определений](03-php-definition.md)
-или используя [PHP атрибуты](02-attribute-definition.md).
+Добавить тег можно при конфигурировании в стиле **php определений** через хелпер-функции:
+- [diAutowire()](../php-definition/di-autowire.md#bindtag).
+- [diCallable()](../php-definition/di-callable.md#bindtag).
+- [diProxyClosure()](../php-definition/di-proxy-closure.md#bindtag).
+- [diValue()](../php-definition/di-value.md#bindtag).
+
+Добавить тег можно при конфигурировании через **PHP атрибуты**:
+- [Autowire](../attribute-definition/autowire.md#tags)
+- [Tag](../attribute-definition/tag.md)
+
 
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
-> класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
-> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](00-container-builder.md).
+> PHP класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](../00-container-builder.md).
 
 Для получения тегированных сервисов для параметров определений (_параметры – конструктора, метода или функции_) нужно использовать:
-- `diTaggedAs` – [хелпер функцию](03-php-definition.md#ditaggedas) в стиле php определений 
-- `#[TaggedAs]` – [php атрибут](02-attribute-definition.md#taggedas) 
+- `diTaggedAs` – [хелпер функцию](../03-php-definition.md#ditaggedas) в стиле php определений 
+- `#[TaggedAs]` – [php атрибут](../02-attribute-definition.md#taggedas) 
 
 ### Ленивая коллекция
 Особенности получения коллекции в том что по умолчанию
@@ -35,8 +44,8 @@
 ### Ключ элемента в коллекции.
 По умолчанию в качестве ключей элементов в коллекции используются идентификаторы
 определений в контейнере (_container identifier – не пустая строка_). Это поведение можно изменить
-через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции diTaggedAs](03-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
+через аргументы `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции diTaggedAs](../03-php-definition.md#ditaggedas)
+или у [php атрибута #[TaggedAs]](../02-attribute-definition.md#taggedas) чтобы ключи элементов в коллекции были отличными
 от идентификаторов определений (_container identifier_) представленные не пустыми строками
 или целыми числами (_последовательные значения от нуля и больше_).
 
@@ -45,7 +54,7 @@
 ## 🐘 Объявление тега в стиле php определений.
 
 Для указания тегов используется метод `bindTag`
-который доступен через [хелпер функции](03-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
+который доступен через [хелпер функции](../03-php-definition.md#%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%85%D1%8D%D0%BB%D0%BF%D0%B5%D1%80-%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8)
 реализующие интерфейс `Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`
 
 ```php
@@ -259,7 +268,7 @@ return static function (): \Generator
 
 
 ## #️⃣ Объявление тега через php атрибут.
-Для указания тегов для класса необходимо использовать php атрибут `#[Tag]` ([описание атрибута](02-attribute-definition.md#tag)):
+Для указания тегов для класса необходимо использовать php атрибут `#[Tag]` ([описание атрибута](../02-attribute-definition.md#tag)):
 
 ```php
 // src/Any/One.php
@@ -280,7 +289,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 #[Tag('tags.services.group_two', priority: 10)]
 class Two {}
 ```
-Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]` ([описание атрибута](02-attribute-definition.md#taggedas)):
+Для получения коллекции тегированных сервисов использовать php атрибут `#[TaggedAs]` ([описание атрибута](../02-attribute-definition.md#taggedas)):
 ```php
 // src/Services/TaggedServices.php
 namespace App\Services;
@@ -299,7 +308,7 @@ class TaggedServices {
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
-> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](00-container-builder.md).
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](../00-container-builder.md).
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -393,7 +402,7 @@ $class = $container->get(TaggedServices::class);
 > [!IMPORTANT]
 > #️⃣ При использовании тегирования через PHP атрибуты необходимо чтобы
 > класс был зарегистрирован в контейнере. Если сервис не зарегистрирован напрямую в контейнере
-> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](00-container-builder.md).
+> используйте [импорт классов из директорий проекта через `DiContainerBuilder::import()`](../00-container-builder.md).
 
 ### 🐘 Использование в стиле php определений
 
@@ -747,8 +756,8 @@ $container->get(App\Rules\Rules::class);
 
 - `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
 - `priorityDefaultMethod` – метод указанный через
-[хелпер функцию `diTaggedAs`](03-php-definition.md#ditaggedas)
-или через [php атрибут #[TaggedAs]](02-attribute-definition.md#taggedas)
+[хелпер функцию `diTaggedAs`](../03-php-definition.md#ditaggedas)
+или через [php атрибут #[TaggedAs]](../02-attribute-definition.md#taggedas)
 который **может быть реализован** в тегированном php классе возвращающий `priority`.
  
 #### 🐘 В стиле php определений
@@ -1297,8 +1306,8 @@ class ClassTaggedAs {
 если у тегированного определения не указан ключ для коллекции в метаданных (_в `$options`_).
 
 Указать метод получения ключа по умолчанию можно через аргумент
-`$keyDefaultMethod` [в хелпер функции diTaggedAs](03-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](02-attribute-definition.md#taggedas).
+`$keyDefaultMethod` [в хелпер функции diTaggedAs](../03-php-definition.md#ditaggedas)
+или у [php атрибута #[TaggedAs]](../02-attribute-definition.md#taggedas).
 
 > [!IMPORTANT]
 > Метод реализующий получение ключа должен быть объявлен как `public static function` и возвращать тип `string`.

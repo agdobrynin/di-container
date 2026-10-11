@@ -167,7 +167,7 @@ bindTag(string $name, array $options = [], null|int|string $priority = null)
       ->bindTag('tags.rules', priority: 100)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](05-tags.md).
+> Более подробное [описание работы с тегами](tags/index.md).
 
 **Конфигурация сброса состояния объекта:**
 ```php
@@ -280,7 +280,7 @@ bindArguments(mixed ...$argument)
 bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](05-tags.md).
+> Более подробное [описание работы с тегами](tags/index.md).
 
 ##### Идентификатор контейнера.
 Если нужно объявить определение в контейнере, то необходимо указать в конфигурации идентификатор контейнера.
@@ -439,7 +439,7 @@ diValue(mixed $value): DiDefinitionTagArgumentInterface
 bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](05-tags.md).
+> Более подробное [описание работы с тегами](tags/index.md).
 
 ##### Идентификатор контейнера для `diValue`.
 При объявлении зависимости через `diValue()` необходимо указать в конфигурации идентификатор контейнера.
@@ -480,7 +480,7 @@ diProxyClosure(string $containerIdentifier, ?bool $isSingleton = null): DiDefini
 bindTag(string $name, array $options = [], null|int|string $priority = null)
 ```
 > [!TIP]
-> Более подробное [описание работы с тегами](05-tags.md).
+> Более подробное [описание работы с тегами](tags/index.md).
 
 ##### Идентификатор контейнера.
 Если нужно объявить определение в контейнере, то необходимо указать в конфигурации идентификатор контейнера.
@@ -637,8 +637,8 @@ diTaggedAs(
   если он отмечен тем же тегом что и получаемая коллекция.
 
 
-1. Подробнее [о приоритизации в коллекции.](05-tags.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
-2. Подробнее [о ключах элементов в коллекции.](05-tags.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+1. Подробнее [о приоритизации в коллекции.](tags/index.md#%D0%BF%D1%80%D0%B8%D0%BE%D1%80%D0%B8%D1%82%D0%B5%D1%82-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
+2. Подробнее [о ключах элементов в коллекции.](tags/index.md#%D0%BA%D0%BB%D1%8E%D1%87-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%86%D0%B8%D0%B8)
 
 > [!IMPORTANT]
 > Метод объявленный в `$priorityDefaultMethod` должен быть `public static function`
@@ -703,7 +703,7 @@ $ruleCollection = $container->get(App\Services\RuleCollection::class);
 > тегом `'tags.lite-rules'`.
 
 > [!TIP]
-> Более подробное [описание работы с тегами](05-tags.md).
+> Более подробное [описание работы с тегами](tags/index.md).
 
 #### diFactory
 
@@ -1314,7 +1314,7 @@ $apiV2->request(); // выполнить запрос
 ### Пример #4
 Заполнение коллекции на основе callback функции.
 > [!NOTE]
-> Похожий функционал можно реализовать [через тегированные определения](05-tags.md).
+> Похожий функционал можно реализовать [через тегированные определения](tags/index.md).
 ```php
 // src/Rules/RuleInterface.php
 namespace App\Rules;

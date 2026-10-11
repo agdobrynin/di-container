@@ -99,6 +99,11 @@ export default defineConfig({
                     text: '📦 Метод контейнера для вызываемых типов',
                     link: 'index.md',
                   },
+                  {
+                    base: '/documentation/tags/',
+                    text: '🔖 Работа с тегами в контейнере',
+                    link: 'index.md',
+                  },
                 ]
               }
           ],
