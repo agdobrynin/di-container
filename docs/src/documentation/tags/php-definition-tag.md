@@ -25,21 +25,44 @@ DiDefinitionTagArgumentInterface::bindTag(
 > [!TIP]
 > Ознакомьтесь с разделом «[Рекомендации по именованию значений для имён тегов, и метаданных для тега](naming-convention.md)».
 
-<!--@include: _include/tag_options.md-->
-
 ## Внедрение коллекции { #inject-by-di-tagged-as }
 
 [Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом.
 
 [Ознакомьтесь с примером конфигурирования](../php-definition/di-tagged-as.md#example).
 
-> [!TIP]
-> Указывайте значение `false` для параметра `$isLazy` в хелпер функции `diTaggedAs()` при внедрении коллекции в параметр с типом `array`
-> ```php
->   use function Kaspi\DiContainer\diTaggedAs;
-> 
->   diTaggedAs(tag: 'tags.foo', isLazy: false)
-> ```
+
+Указывайте значение `false` для параметра `$isLazy` в хелпер функции `diTaggedAs()` при внедрении коллекции в параметр с типом `array`:
+
+:::code-group
+
+```php [tagged_services.php]
+// file: /app/config/tagged_services.php
+use Generator;
+use App\Services\Foo;
+
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            diTaggedAs('tags.group_1', isLazy: false)
+        );
+};
+```
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+namespace App\Services;
+
+class Foo
+{
+    public function __construct(public readonly array $collection) {}
+
+}
+```
+
+:::
 
 Внедрение коллекции также доступно для параметров переменной длины:
 
@@ -48,12 +71,12 @@ DiDefinitionTagArgumentInterface::bindTag(
 ```php [tagged_services.php]
 // file: /app/config/tagged_services.php
 use Generator;
-use App\Services\TaggedServices;
+use App\Services\Bar;
 
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
-    yield diAutowire(TaggedServices::class)
+    yield diAutowire(Bar::class)
         ->bindArguments(
             srvGroup_1: diTaggedAs('tags.group_1'),
             srvGroup_2: diTaggedAs('tags.group_2'),
@@ -61,12 +84,11 @@ return static function (): Generator {
 };
 ```
 
-```php
-[TaggedServices.php]
-// file: /app/src/Services/TaggedServices.php
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
 namespace App\Services;
 
-class TaggedServices
+class Bar
 {
     public function __construct(iterable ...$srvGroup) {}
 
