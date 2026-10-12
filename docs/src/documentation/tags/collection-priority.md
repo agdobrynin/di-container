@@ -32,9 +32,12 @@ outline: [2, 4]
 >
 > Эти параметры метода можно использовать построения логики выдачи приоритета тега.
 
-## Пример конфигурации приоритета по тегу { #priority-by-tag }
+## Приоритет тега { #priority-by-tag }
 
-Определить порядок во внедряемой коллекции можно непосредственно указав значение приоритета каждого тега через параметр тега `$priority`.
+При конфигурировании в стиле PHP определений приоритет тега задаётся в параметре `$priority` метода `bindTag()`[^BindTag],
+при конфигурировании через PHP атрибуты следует использовать параметр [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../attribute-definition/tag.md).
+
+### Пример конфигурации { #example-priority-by-tag }
 
 Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке:
 - `\App\Services\Qux`
@@ -87,7 +90,7 @@ final class Qux
 
 :::
 
-### Конфигурация в стиле php определений { #priority-by-tag-php-definition }
+#### Конфигурация в стиле php определений { #priority-by-tag-php-definition }
 
 Используем значение в параметре `$priority` метода `bindTag()`[^BindTag]
 
@@ -140,7 +143,7 @@ foreach ($foo->services as $service) {
 
 Порядок сортировки во внедрённой коллекции обусловлен значениями `$prioriy` для каждого тега.
 
-### Конфигурация через атрибуты { #priority-by-tag-attributes }
+#### Конфигурация через атрибуты { #priority-by-tag-attributes }
 
 Добавим к PHP классам [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md), для внедрения коллекции [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
@@ -226,6 +229,12 @@ foreach ($foo->services as $service) {
 ```
 
 Порядок сортировки во внедрённой коллекции обусловлен значениями в атрибутах `\Kaspi\DiContainer\Attributes\Tag::$prioriy` для каждого тега.
+
+## Приоритет через «методы-приоритета» { #priority-by-method }
+
+Для элементов внедряемой коллекции представленных PHP классом приоритет в коллекции может быть задан через «методы-приоритета».
+
+Существует два вида «методов-приоритета»
 
 ----------------
 
