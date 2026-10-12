@@ -277,6 +277,60 @@ final class Foo
 
 ### Пример конфигурации { #example-priority-by-method }
 
+Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке:
+- `\App\Services\Qux`
+- `\App\Services\Baz`
+- `\App\Services\Bar`
+
+🚧🚧🚧🚧🚧 задача указать метод-приоритета, подумать как использовать tagName и options.
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(public readonly iterable $services) {}    
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Services;
+
+final class Baz
+{
+    // …
+}
+```
+
+```php [Qux.php]
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+final class Qux
+{
+    // …
+}
+```
+
+:::
+
+
 #### Конфигурация в стиле php определений { #example-priority-by-method-php-definitions }
 
 #### Конфигурация через атрибуты { #example-priority-by-method-attributes }
