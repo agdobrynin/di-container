@@ -34,8 +34,9 @@ outline: [2, 4]
 
 ## Приоритет тега { #priority-by-tag }
 
-При конфигурировании в стиле PHP определений приоритет тега задаётся в параметре `$priority` метода `bindTag()`[^BindTag],
-при конфигурировании через PHP атрибуты следует использовать параметр [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../attribute-definition/tag.md).
+Приоритет тега в коллекции задаётся непосредственно в указанном теге.
+При конфигурировании в стиле PHP определений приоритет указываться в параметре `$priority` метода `bindTag()`[^BindTag],
+при конфигурировании через PHP атрибуты приоритет указывается в параметре [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../attribute-definition/tag.md).
 
 ### Пример конфигурации { #example-priority-by-tag }
 
@@ -230,24 +231,68 @@ foreach ($foo->services as $service) {
 
 Порядок сортировки во внедрённой коллекции обусловлен значениями в атрибутах `\Kaspi\DiContainer\Attributes\Tag::$prioriy` для каждого тега.
 
-## Приоритет через «методы-приоритета» { #priority-by-method }
+## «Метод-приоритета» { #priority-by-method }
 
-Для элементов внедряемой коллекции представленных PHP классом приоритет в коллекции может быть задан через «методы-приоритета».
+Для элементов внедряемой коллекции представленных PHP классом приоритет в коллекции может быть задан через «метод-приоритета».
 
-Существует два вида «методов-приоритета»
+«**Метод-приоритета**» задаётся непосредственно в теге элемента коллекции.
+
+При конфигурировании в стиле PHP определений «метод-приоритета» через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
+Имя ключа в метаданных должно быть представлено строкой `'priority.method'`, значение имя метода.
+```php
+use Generator;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindTag(
+            name: 'tags.tag_name',
+            options: [
+               'priority.method' => 'staticMethodName',
+            ]
+        );
+};
+```
+
+При конфигурировании через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
+
+```php
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[Tag(
+    name: 'tags.tag_name',
+    priorityMethod: 'getPriority',
+)]
+final class Foo
+{
+    // …
+    public static function getPriority(): int
+    {
+        return 100;
+    }  
+}
+```
+
+### Пример конфигурации { #example-priority-by-method }
+
+#### Конфигурация в стиле php определений { #example-priority-by-method-php-definitions }
+
+#### Конфигурация через атрибуты { #example-priority-by-method-attributes }
+
+## «Метод-приоритета» по-умолчанию { #priority-by-method-default }
+
+#### Конфигурация в стиле php определений { #example-priority-by-method-default-php-definitions }
+
+#### Конфигурация через атрибуты { #example-priority-by-method-default-attributes }
 
 ----------------
 
-### `priorityMethod` и `priorityDefaultMethod` для приоритизации в коллекции.
-Указать приоритет тега в коллекции `priority` можно альтернативным способами если определение в контейнере является php-классом:
+🚧🚧🚧🚧🚧🚧
 
-- `priorityMethod` – метод возвращающий `priority` у тегированного php класса указанный при объявлении тега;
-- `priorityDefaultMethod` – метод указанный через
-  [хелпер функцию `diTaggedAs`](../03-php-definition.md#ditaggedas)
-  или через [php атрибут #[TaggedAs]](../02-attribute-definition.md#taggedas)
-  который **может быть реализован** в тегированном php классе возвращающий `priority`.
+----------------
 
-#### 🐘 В стиле php определений
+## 🐘 В стиле php определений
 
 Использование метаданных в аргументе `$options` – указав в массиве ключ `priority.method` [у метода `bindTag`](#-объявление-тега-в-стиле-php-определений)
 как указание приоритета:
@@ -369,7 +414,7 @@ $container->get(App\Rules\Rules::class);
 > 2. `RuleA` – `RuleA::getPriority() === 10`
 > 3. `RuleB` – `RuleB::getPriority() === 0`
 
-### #️⃣ Через php атрибуты
+## #️⃣ Через php атрибуты
 
 Использование аргумент `$priorityMethod` у php атрибута `#[Tag]`
 как указание приоритета:
