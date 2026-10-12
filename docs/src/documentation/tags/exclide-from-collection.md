@@ -1,174 +1,252 @@
+---
+outline: [2, 4]
+---
 # 🚫 Исключение элементов из коллекции { #title }
 
 ## Обзор { #overview }
 
-Коллекции могу исключать собираемые элементы. Исключить из коллекции можно вызывающий PHP класс т.е. самого себя или по идентификатору контейнера элемента коллекции.
+Коллекции могу исключать собираемые элементы. Исключить из коллекции можно вызывающий PHP класс т.е. самого себя, или по идентификатору контейнера присвоенному элементу коллекции.
 
 ## Исключение вызывающего класса { #exclide-self }
 
 В коллекцию элементов может попадать PHP класс внедряющий эту же коллекцию. Для исключения такого поведения обратите внимание на параметр `$selfExclude`
-в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md). По умолчанию значение этого параметра `true`.
 
-🚧🚧🚧🚧🚧
+Если необходимо чтобы вызывающий PHP класс так же был добавлен в коллекцию необходимо указать в параметр `$selfExclude` значение `false`.
 
-При сборе коллекции по тегу исключается php вызывающий коллекцию,
-даже если он отмечен соответствующим тегом.
-```php
-// src/Classes/One.php
-namespace App\Classes;
+::: code-group
 
-use Kaspi\DiContainer\Attributes\Tag;
+```php [хелпер функция diTaggedAs()]
+// file: /app/config/services.php
+use App\Services\ClassTaggedAs;
 
-#[Tag(name: 'tags.aaa')]
-class One {}
-```
-```php
-// src/Classes/ClassTaggedAs.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\{Tag, TaggedAs}; 
-
-#[Tag('tags.aaa')]
-class ClassTaggedAs {
-
-    public function __construct(
-        #[TaggedAs('tags.aaa')]
-        public iterable $items
-    ) {}
-
-}
-```
-> [!NOTE]
-> При разрешении аргументов конструктора класса `ClassTaggedAs::class` в коллекции
-> `ClassTaggedAs::$items` будет отсутствовать класс `ClassTaggedAs`
-> даже если он отмечен запрашиваемым тегом `tags.aaa`.
-
-При необходимости изменить это поведение нужно указать аргумент
-`$selfExclude = false` чтобы вызывающий класс также попал в коллекцию.
-
-#️⃣ В стиле php атрибута:
-```php
-// src/Classes/ClassTaggedAs.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\TaggedAs; 
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
-// php атрибут
-public function __construct(
-        #[TaggedAs('tags.aaa', selfExclude: false)]
-        public iterable $items
-) {}
-```
-🐘 в стиле php определений:
-```php
-// config/services.php
 return static function ():\Generator {
 
     yield diAutowire(ClassTaggedAs::class)
-        ->bindTag('tags.aaa')
+        ->bindTag('tags.foo')
         ->bindArguments(
-            items: diTaggedAs('tags.aaa', selfExclude: false)
-        )
-
+            items: diTaggedAs('tags.foo', selfExclude: false)
+        );
 };
 ```
-### Исключение определений по идентификатору контейнера.
-Если по какой-то причине необходимо исключить некоторые определения
-из тегированной коллекции, воспользуйтесь
-аргументом `$containerIdExclude` который содержит массив
-идентификаторов контейнера (_container identifiers_).
 
-#️⃣ Исключение определений при объявлении через php атрибуты:
-```php
-// src/Classes/One.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\Tag; 
-
-#[Tag(name: 'tags.aaa')]
-class One {}
-```
-```php
-// src/Classes/Two.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\Tag; 
-
-#[Tag(name: 'tags.aaa')]
-class Two {}
-```
-```php
-// src/Classes/Three.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\Tag; 
-
-#[Tag(name: 'tags.aaa')]
-class Three {}
-```
-```php
-// src/Classes/ClassTaggedAs.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\TaggedAs; 
-
-class ClassTaggedAs {
-
-    public function __construct(
-        // исключить из коллекции идентификатор контейнера 
-        #[TaggedAs('tags.aaa', containerIdExclude: [App\Two::class])]
-        public iterable $items
-    ) {}
-
-}
-```
-> [!NOTE]
-> При разрешении аргументов конструктора класса `App\Classes\ClassTaggedAs::class` в коллекции
-> `App\Classes\ClassTaggedAs::$items` будет отсутствовать класс `App\Classes\Two`
-> даже если он отмечен запрашиваемым тегом `tags.aaa`.
-
-🐘 Исключение определений при объявлении в стиле php:
-```php
-// src/Services/EmailNotify.php
+```php [атрибут TaggedAs]
+// file: /app/src/Services/ClassTaggedAs.php
 namespace App\Services;
 
-class EmailNotify {
+use Kaspi\DiContainer\Attributes\{Tag, TaggedAs}; 
 
-    public function __construct(private array $emails) {}
-
+#[Tag('tags.foo')]
+final class ClassTaggedAs
+{
+    public function __construct(
+        #[TaggedAs('tags.foo', selfExclude: false)]
+        public readonly iterable $items
+    ) {}
 }
 ```
-```php
-// config/services.php
-use function Kaspi\DiContainer\{diValue, diAutowire, diTaggedAs};
 
-return [
-    'emails.admin' => diValue('admin@site.com')
-        ->bindTag('tags.site_email'),
+:::
 
-    'emails.order' => diValue('order@site.com')
-        ->bindTag('tags.site_email'),
+## Исключение из коллекции по идентификатору контейнера { #exclude-by-id }
 
-    'emails.manager' => diValue('manager@site.com')
-        ->bindTag('tags.site_email'),
+Для исключения элементов из коллекции используйте параметр `$containerIdExclude`
+в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
-    // ...
-    
-    diAutowire(App\Services\EmailNotify::class)
-        ->bindArguments(
-            emails: diTaggedAs(
-                'tags.site_email',
-                isLazy: false,
-                useKeys: false,
-                containerIdExclude: ['emails.order'] // исключить идентификатор контейнера
-            )
-        )   
-];
+Параметр `$containerIdExclude` должен быть представлен массивом содержащим идентификаторы контейнера для элементов коллекции которые необходимо исключить из коллекции.
+
+### Пример настройки исключений из коллекции элементов { #example-exclude-by-id }
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+namespace App\Service;
+
+final class Foo
+{
+    public function __construct(public readonly iterable $services) {}    
+}
 ```
-> [!NOTE]
-> При разрешении аргументов конструктора класса `App\Services\EmailNotify::class` в массиве
-> `EmailNotify::$emails` будет отсутствовать определение имеющее
-> идентификатор контейнера `emails.order` несмотря на то что
-> отмечено тегом `tags.site_email`, таким образом в `EmailNotify::$emails`
-> появится значение `['admin@site.com', 'manager@site.com']`.
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Service;
+
+final class Bar
+{
+    // …    
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Service;
+
+final class Baz
+{
+    // …    
+}
+```
+
+```php [Qux.php]
+// file: /app/src/Services/Qux.php
+namespace App\Service;
+
+final class Qux
+{
+    // …    
+}
+```
+
+:::
+
+PHP классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` при конфигурации получили имя тега `'tags.internal_service'`.
+
+В параметр `\App\Service\Foo::$services` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из полученной коллекции элемент у которого идентификатор контейнера является строка `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get('App\Services\Baz')`.  
+
+#### Настройки в стиле PHP определений { #example-exclude-by-id-php-definitions }
+
+Конфигурационный файл:
+
+```php
+// file: /app/config/services.php
+use Generator;
+use App\Services\{Foo, Bar, Baz, Qux};
+
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            services: diTaggedAs(
+                'tags.internal_service',
+                containerIdExclude: [Baz::class]
+            )
+        );
+        
+    yield diAutowire(Bar::class)
+        ->bindTag('tags.internal_service');
+        
+    yield diAutowire(Baz::class)
+        ->bindTag('tags.internal_service');
+        
+    yield diAutowire(Qux::class)
+        ->bindTag('tags.internal_service');
+};
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')
+    ->import(namespace: 'App\\', src: '/app/src/')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
+}
+
+// string(16) "App\Services\Bar"
+// string(16) "App\Services\Qux"
+```
+
+Класс `\App\Services\Baz` не попал в коллекцию так как его идентификатор контейнера `'App\Services\Baz'` исключен из коллекции
+в параметре `$containerIdExclude` хелпер функцией `diTaggedAs()`.
+
+#### Настройки через PHP атрибуты { #example-exclude-by-id-php-attributes }
+
+Конфигурация PHP классов атрибутами `\Kaspi\DiContainer\Attributes\Tag` и `\Kaspi\DiContainer\Attributes\TaggedAs`:
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+namespace App\Service;
+
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+final class Foo
+{
+    public function __construct(
+        #[TaggedAs(
+            name: 'tags.internal_service',
+            containerIdExclude: [Baz::class],
+        )]
+        public readonly iterable $services
+    ) {}    
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Service;
+
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[Tag(name: 'tags.internal_service')]
+final class Bar
+{
+    // …    
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Service;
+
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[Tag(name: 'tags.internal_service')]
+final class Baz
+{
+    // …    
+}
+```
+
+```php [Qux.php]
+// file: /app/src/Services/Qux.php
+namespace App\Service;
+
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[Tag(name: 'tags.internal_service')]
+final class Qux
+{
+    // …    
+}
+```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src/')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
+}
+
+// string(16) "App\Services\Bar"
+// string(16) "App\Services\Qux"
+```
+
+Класс `\App\Services\Baz` не попал в коллекцию так как его идентификатор контейнера `'App\Services\Baz'` исключен из коллекции в параметре атрибута `\Kaspi\DiContainer\Attributes\TaggedAs::$containerIdExclude`.
