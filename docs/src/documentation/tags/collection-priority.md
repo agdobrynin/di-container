@@ -12,19 +12,20 @@ outline: [2, 4]
 Сравнение может быть как целых чисел, так и строк. Сравнение строк происходит как последовательности байтов строк.
 
 Очерёдность получения приоритета у элемента коллекции в порядке возрастания значимости:
-1. **Параметр тега `$priority`** – значение отличное от `null`:
-   - при конфигурировании в стиле PHP определений – метод `bindTag()` [^BindTag]
-   - при конфигурировании через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
-2. «**Метод-приоритета**» для элемента коллекции PHP класс:
-   - при конфигурировании в стиле PHP определений – параметр `$options` метода `bindTag()` [^BindTag] как [метаданные](tag-metadata.md#reserved-keys) тега.
-   - при конфигурировании через [атрибут `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`](../attribute-definition/tag.md).
-3. «**Метода-приоритета по-умолчанию**» для элемента коллекции PHP класс:
-   - при конфигурировании в стиле PHP определений – параметр `$priorityDefaultMethod` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
-   - при конфигурировании через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs::$priorityDefaultMethod`](../attribute-definition/tagged-as.md).
+
+1. **Приоритет тега**, параметр `$priority`:
+   - в стиле PHP определений – метод `bindTag()` [^BindTag]
+   - через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
+2. «**Метод-приоритета**» тега для элемента коллекции PHP класс, если неустановлен приоритет тега:
+   - в стиле PHP определений через [метаданные](tag-metadata.md) тега в параметре `$options` метода `bindTag()` [^BindTag].
+   - через [атрибут `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`](../attribute-definition/tag.md).
+3. «**Метода-приоритета» по-умолчанию** тега для элемента коллекции PHP класс, если неустановлен «**метод-приоритета**» тега:
+   - в стиле PHP определений – параметр `$priorityDefaultMethod` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
+   - через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs::$priorityDefaultMethod`](../attribute-definition/tagged-as.md).
 
 
 > [!IMPORTANT]
-> «Метод-приоритета» и «метод-приоритета по-умолчанию» должен быть объявлен с модификаторами `public` и `static`. Возвращаемые значения метода – `int`, `string` или `null`.
+> «Метод-приоритета» и «метод-приоритета» по-умолчанию должен быть объявлен с модификаторами `public` и `static`. Возвращаемые значения метода – `int`, `string` или `null`.
 >
 > В качестве параметров метод принимает два аргумента передаваемые контейнером:
 >  - `string $tag` – имя тега.
@@ -35,8 +36,8 @@ outline: [2, 4]
 ## Приоритет тега { #priority-by-tag }
 
 Приоритет тега в коллекции задаётся непосредственно в указанном теге.
-При конфигурировании в стиле PHP определений приоритет указываться в параметре `$priority` метода `bindTag()`[^BindTag],
-при конфигурировании через PHP атрибуты приоритет указывается в параметре [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../attribute-definition/tag.md).
+В стиле PHP определений приоритет указываться в параметре `$priority` метода `bindTag()`[^BindTag],
+через PHP атрибуты приоритет указывается в параметре [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../attribute-definition/tag.md).
 
 ### Пример конфигурации { #example-priority-by-tag }
 
@@ -237,7 +238,7 @@ foreach ($foo->services as $service) {
 
 «**Метод-приоритета**» задаётся непосредственно в теге элемента коллекции.
 
-При конфигурировании в стиле PHP определений «метод-приоритета» через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
+В стиле PHP определений «метод-приоритета» через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
 Имя ключа в метаданных должно быть представлено строкой `'priority.method'`, значение имя метода.
 ```php
 use Generator;
@@ -255,7 +256,7 @@ return static function (): Generator {
 };
 ```
 
-При конфигурировании через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
+Через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
 
 ```php
 use Kaspi\DiContainer\Attributes\Tag;
