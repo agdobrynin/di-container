@@ -2,10 +2,7 @@
 
 ## Обзор { #overview }
 
-Для указания тегов используется метод `bindTag()` доступный в хелпер функциях [`diAutowire()`](../php-definition/di-autowire.md#bindtag),
-[`diAutowire()`](../php-definition/di-autowire.md#bindtag), [`diCallable()`](../php-definition/di-callable.md#bindtag), [`diProxyClosure()`](../php-definition/di-proxy-closure.md#bindtag), [`diValue()`](../php-definition/di-value.md#bindtag).
-
-Метод `bindTag()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+Для указания тегов используется метод `bindTag()` [^BindTag], описанный интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
 
 Сигнатура метода:
 
@@ -101,3 +98,5 @@ class Bar
 > При использовании [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)
 > и [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list)
 > действуют правила описанные в документации по PHP.
+
+<!--@include: ../php-definition/_include/bind-tag_notes.md-->
