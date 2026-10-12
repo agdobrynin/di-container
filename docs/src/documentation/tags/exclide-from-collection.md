@@ -55,9 +55,13 @@ final class ClassTaggedAs
 Для исключения элементов из коллекции используйте параметр `$containerIdExclude`
 в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
-Параметр `$containerIdExclude` должен быть представлен массивом содержащим идентификаторы контейнера для элементов коллекции которые необходимо исключить из коллекции.
+Параметр `$containerIdExclude` должен быть представлен массивом содержащим идентификаторы контейнера исключённых из коллекции.
 
 ### Пример настройки исключений из коллекции элементов { #example-exclude-by-id }
+
+PHP классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` при конфигурации получили имя тега `'tags.internal_service'`.
+
+В параметр `\App\Service\Foo::$services` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из полученной коллекции элемент у которого идентификатор контейнера является строка `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get('App\Services\Baz')`.  
 
 PHP классы:
 
@@ -105,10 +109,6 @@ final class Qux
 
 :::
 
-PHP классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` при конфигурации получили имя тега `'tags.internal_service'`.
-
-В параметр `\App\Service\Foo::$services` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из полученной коллекции элемент у которого идентификатор контейнера является строка `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get('App\Services\Baz')`.  
-
 #### Настройки в стиле PHP определений { #example-exclude-by-id-php-definitions }
 
 Конфигурационный файл:
@@ -148,7 +148,6 @@ use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
     ->load('/app/config/services.php')
-    ->import(namespace: 'App\\', src: '/app/src/')
     ->build();
 
 $foo = $container->get(Foo::class);
@@ -162,7 +161,7 @@ foreach ($foo->services as $service) {
 ```
 
 Класс `\App\Services\Baz` не попал в коллекцию так как его идентификатор контейнера `'App\Services\Baz'` исключен из коллекции
-в параметре `$containerIdExclude` хелпер функцией `diTaggedAs()`.
+хелпер функцией `diTaggedAs()` в параметре `$containerIdExclude`.
 
 #### Настройки через PHP атрибуты { #example-exclude-by-id-php-attributes }
 
