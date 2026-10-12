@@ -173,15 +173,15 @@ foreach ($foo->services as $service) {
 // file: /app/src/Services/Foo.php
 namespace App\Service;
 
-use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
 
 final class Foo
 {
     public function __construct(
-        #[TaggedAs(
-            name: 'tags.internal_service',
-            containerIdExclude: [Baz::class],
-        )]
+        #[TaggedAs(// [!code ++]
+            name: 'tags.internal_service',// [!code ++]
+            containerIdExclude: [Baz::class],// [!code ++]
+        )]// [!code ++]
         public readonly iterable $services
     ) {}    
 }
@@ -191,9 +191,9 @@ final class Foo
 // file: /app/src/Services/Bar.php
 namespace App\Service;
 
-use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.internal_service')]
+#[Tag(name: 'tags.internal_service')]// [!code ++]
 final class Bar
 {
     // …    
@@ -204,9 +204,9 @@ final class Bar
 // file: /app/src/Services/Baz.php
 namespace App\Service;
 
-use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.internal_service')]
+#[Tag(name: 'tags.internal_service')]// [!code ++]
 final class Baz
 {
     // …    
@@ -217,9 +217,9 @@ final class Baz
 // file: /app/src/Services/Qux.php
 namespace App\Service;
 
-use Kaspi\DiContainer\Attributes\Tag;
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.internal_service')]
+#[Tag(name: 'tags.internal_service')]// [!code ++]
 final class Qux
 {
     // …    
