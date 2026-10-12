@@ -240,51 +240,6 @@ foreach ($foo->services as $service) {
 
 В стиле PHP определений «метод-приоритета» через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
 Имя ключа в метаданных должно быть представлено строкой `'priority.method'`, значение имя метода.
-```php
-use Generator;
-
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (): Generator {
-    yield diAutowire(Foo::class)
-        ->bindTag(
-            name: 'tags.tag_name',
-            options: [
-               'priority.method' => 'staticMethodName',
-            ]
-        );
-};
-```
-
-Через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
-
-```php
-use Kaspi\DiContainer\Attributes\Tag;
-
-#[Tag(
-    name: 'tags.tag_name',
-    priorityMethod: 'getPriority',
-)]
-final class Foo
-{
-    // …
-    public static function getPriority(): int
-    {
-        return 100;
-    }  
-}
-```
-
-### Пример конфигурации { #example-priority-by-method }
-
-Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке:
-- `\App\Services\Qux`
-- `\App\Services\Baz`
-- `\App\Services\Bar`
-
-🚧🚧🚧🚧🚧 задача указать метод-приоритета, подумать как использовать tagName и options.
-
-PHP классы:
 
 ::: code-group
 
@@ -294,52 +249,59 @@ namespace App\Services;
 
 final class Foo
 {
-    public function __construct(public readonly iterable $services) {}    
+    // …
+    public static function getPriority(string $tagName, array $options): int
+    {
+        return 100;
+    }  
 }
 ```
 
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
+```php [файл конфигураций tagged_service.php]   
+// file: /app/config/tagged_service.php
+use Generator;
+use App\Services\Foo;
 
-final class Bar
-{
-    // …
-}
-```
+use function Kaspi\DiContainer\diAutowire;
 
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
-```php [Qux.php]
-// file: /app/src/Services/Qux.php
-namespace App\Services;
-
-final class Qux
-{
-    // …
-}
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindTag(
+            name: 'tags.tag_name',
+            options: [
+               'priority.method' => 'getPriority',
+            ]
+        );
+};
 ```
 
 :::
 
 
-#### Конфигурация в стиле php определений { #example-priority-by-method-php-definitions }
+Через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
 
-#### Конфигурация через атрибуты { #example-priority-by-method-attributes }
+```php
+// file: /app/src/Services/Foo.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag(// [!code ++]
+    name: 'tags.tag_name',// [!code ++]
+    priorityMethod: 'getPriority',// [!code ++]
+)]// [!code ++]
+final class Foo
+{
+    // …
+    public static function getPriority(string $tagName, array $options): int
+    {
+        return 100;
+    }  
+}
+```
 
 ## «Метод-приоритета» по-умолчанию { #priority-by-method-default }
 
-#### Конфигурация в стиле php определений { #example-priority-by-method-default-php-definitions }
-
-#### Конфигурация через атрибуты { #example-priority-by-method-default-attributes }
 
 ----------------
 
