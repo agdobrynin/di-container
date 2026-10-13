@@ -64,9 +64,9 @@ $container->set($bar::class, $bar);
 
 Подробнее о методе `set()` рассказано в разделе [«Динамическое добавление определений в контейнер»](container-builder/set.md).
 
-## Особенности разрешения некоторых классов и интерфейсов { #resolve-class-interface }
+## Особенности внедрения некоторых классов и интерфейсов { #resolve-class-interface }
 
-При разрешении зависимостей ниже перечисленных типов всегда будет получен созданный контейнер:
+При внедрении зависимостей ниже перечисленных типов всегда будет получен созданный контейнер:
 - `\Psr\Container\ContainerInterface`
 - `\Kaspi\DiContainer\Interfaces\DiContainerInterface`
 - `\Kaspi\DiContainer\DiContainer`
