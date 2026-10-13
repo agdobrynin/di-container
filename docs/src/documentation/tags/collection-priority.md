@@ -143,7 +143,7 @@ foreach ($foo->services as $service) {
 //string(16) "App\Services\Bar"
 ```
 
-Порядок сортировки во внедрённой коллекции обусловлен значениями `$prioriy` для каждого тега.
+Порядок сортировки внедрённой коллекции обусловлен значениями `$prioriy` для каждого тега.
 
 #### Конфигурация через атрибуты { #priority-by-tag-attributes }
 
@@ -230,7 +230,7 @@ foreach ($foo->services as $service) {
 //string(16) "App\Services\Bar"
 ```
 
-Порядок сортировки во внедрённой коллекции обусловлен значениями в атрибутах `\Kaspi\DiContainer\Attributes\Tag::$prioriy` для каждого тега.
+Порядок сортировки внедрённой коллекции обусловлен значениями в атрибутах `\Kaspi\DiContainer\Attributes\Tag::$prioriy` для каждого тега.
 
 ## «Метод-приоритета» { #priority-by-method }
 
@@ -238,41 +238,46 @@ foreach ($foo->services as $service) {
 
 «**Метод-приоритета**» задаётся непосредственно в теге элемента коллекции.
 
-В стиле PHP определений «метод-приоритета» через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
-Имя ключа в метаданных должно быть представлено строкой `'priority.method'`, значение имя метода.
+В стиле PHP определений «метод-приоритета» передаётся через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
+**Имя ключа в метаданных должно быть** `'priority.method'`, значение – имя метода.
 
 ::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-final class Foo
-{
-    // …
-    public static function getPriority(string $tagName, array $options): int
-    {
-        return 100;
-    }  
-}
-```
 
 ```php [файл конфигураций tagged_service.php]   
 // file: /app/config/tagged_service.php
 use Generator;
-use App\Services\Foo;
+use App\Services\{Foo, Bar};
 
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
-    yield diAutowire(Foo::class)
+   yield diAutowire(Foo::class)
+      ->bindArguments(
+         servies: diTaggedAs('tags.ordered')
+      );
+
+    yield diAutowire(Bar::class)
         ->bindTag(
-            name: 'tags.tag_name',
+            name: 'tags.ordered',
             options: [
-               'priority.method' => 'getPriority',
+               'priority.method' => 'getPriority',// [!code ++]
             ]
         );
 };
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
+
+final class Bar
+{
+    // …
+    public static function getPriority(string $tagName, array $options): int // [!code ++]
+    {// [!code ++]
+        return 100;// [!code ++]
+    }// [!code ++]
+}
 ```
 
 :::
@@ -281,248 +286,125 @@ return static function (): Generator {
 Через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
 
 ```php
-// file: /app/src/Services/Foo.php
+// file: /app/src/Services/Bar.php
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
 #[Tag(// [!code ++]
-    name: 'tags.tag_name',// [!code ++]
+    name: 'tags.ordered',// [!code ++]
     priorityMethod: 'getPriority',// [!code ++]
 )]// [!code ++]
-final class Foo
+final class Bar
 {
     // …
-    public static function getPriority(string $tagName, array $options): int
-    {
-        return 100;
-    }  
+    public static function getPriority(string $tagName, array $options): int // [!code ++]
+    {// [!code ++]
+        return 100;// [!code ++]
+    }// [!code ++]  
 }
 ```
 
 ## «Метод-приоритета» по-умолчанию { #priority-by-method-default }
 
+Для случаев когда определить приоритет элемента коллекции из тега не удается, используется «**метод-приоритета**» по-умолчанию.
+При отсутствии в PHP классе «**метода-приоритета**» по-умолчанию, элемент коллекции получит приоритет со значением `null`.  
 
-----------------
+В стиле PHP определений имя метода указывается в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
-🚧🚧🚧🚧🚧🚧
+::: code-group
 
-----------------
+```php [файл конфигураций tagged_service.php]   
+// file: /app/config/tagged_service.php
+use Generator;
+use App\Services\{Foo, Bar};
 
-## 🐘 В стиле php определений
+use function Kaspi\DiContainer\diAutowire;
 
-Использование метаданных в аргументе `$options` – указав в массиве ключ `priority.method` [у метода `bindTag`](#-объявление-тега-в-стиле-php-определений)
-как указание приоритета:
-```php
-['priority.method' => 'staticMethodName']
-```
-Пример использования значения `priority.method`:
-```php
-// src/Rules/RuleInterface.php
-namespace App\Rules;
+return static function (): Generator {
+   yield diAutowire(Foo::class)
+      ->bindArguments(
+         servies: diTaggedAs(
+            name: 'tags.ordered',// [!code ++]
+            priorityDefaultMethod: 'getPriorityForCollection'// [!code ++]
+         )
+      );
+      
 
-interface RuleInterface {
-    public static function getPriority(): int;
-}
-```
-```php
-// src/Rules/RuleA.php
-namespace App\Rules;
-
-class RuleA implements RuleInterface {
-
-    public static function getPriority(): int {
-        return 10;
-    }
-
-}
-```
-```php
-// src/Rules/RuleB.php
-namespace App\Rules;
-
-class RuleB implements RuleInterface {
-
-    public static function getPriority(): int {
-        return 0;
-    }
-
-}
-```
-```php
-// src/Rules/RuleC.php
-namespace App\Rules;
-
-class RuleC {
-
-    public static function getPriorityForCollection(string $tag): string|int|null {
-        return match ($tag) {
-            'tags.rules' => 100,
-            'tags.other-name' => 'GROUP100:0001',
-            default => null,
-        };
-    }
-
-}
-```
-```php
-// src/Rules/Rules.php
-namespace App\Rules;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;
-
-class Rules {
-
-    public function __construct(
-        private iterable $rules
-    ) {}
-
-}
-```
-```php
-// config/services.php
-use function \Kaspi\DiContainer\diAutowire;
-use function \Kaspi\DiContainer\diTaggedAs;
-
-return static function (): \Generator {
-    
-   yield diAutowire(App\Rules\RuleA::class) // реализует метод интерфейса RuleInterface::getPriority
-        ->bindTag(
-            name: 'tags.rules',
-            options: ['priority.method' => 'getPriority']
-        );
-
-   yield diAutowire(App\Rules\RuleB::class) // реализует метод интерфейса RuleInterface::getPriority
-        ->bindTag(
-            name: 'tags.rules',
-            options: ['priority.method' => 'getPriority']
-        );
-
-   yield diAutowire(App\Rules\RuleC::class)
-        ->bindTag(name: 'tags.rules'); // не указываем явно данные как получать `priority`
-                                       // метод по умолчанию будет указан в `diTaggedAs`.
-
-    yield diAutowire(App\Rules\Rules::class)
-        ->bindArguments(
-            rules: diTaggedAs(
-                'tags.rules',
-                // если нет `priority` и `priority.method`
-                // попробовать вызвать метод - className::getPriorityForCollection() 
-                priorityDefaultMethod: 'getPriorityForCollection'
-            )
-        );
+    yield diAutowire(Bar::class)
+        ->bindTag(name: 'tags.ordered');
 };
 ```
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
 
-$container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
 
-$container->get(App\Rules\Rules::class);
-```
-> [!NOTE]
-> При разрешении аргументов конструктора класса `App\Rules\Rules::class`
-> в свойстве `Rules::$rules` содержится итерируемая «ленивая» коллекция
-> отсортированные по приоритету:
-> 1. `RuleC` – `RuleC::getPriorityForCollection() === 100`
-> 2. `RuleA` – `RuleA::getPriority() === 10`
-> 3. `RuleB` – `RuleB::getPriority() === 0`
+final class Bar
+{
+   // …
 
-## #️⃣ Через php атрибуты
-
-Использование аргумент `$priorityMethod` у php атрибута `#[Tag]`
-как указание приоритета:
-```php
-// src/Rules/RuleA.php
-namespace App\Rules;
-
-use Kaspi\DiContainer\Attributes\Tag;
-
-#[Tag(name: 'tags.rules', priorityMethod: 'getPriority')]
-class RuleA {
-
-    public static function getPriority(): int {
-        return 10;
-    }
-
+   // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
+   // приоритет может быть получен через «метода-приоритета» по-умолчанию
+   public static function getPriorityForCollection(string $tag): string|int|null// [!code ++]
+   {// [!code ++]
+      return match ($tag) {// [!code ++]
+         'tags.internal' => 100,// [!code ++]
+         'tags.validator' => 'GROUP100:0001',// [!code ++]
+         default => null,// [!code ++]
+      };// [!code ++]
+   }// [!code ++]
 }
 ```
-```php
-// src/Rules/RuleB.php
-namespace App\Rules;
 
-use Kaspi\DiContainer\Attributes\Tag;
+:::
 
-#[Tag(name: 'tags.rules', priorityMethod: 'getPriority')]
-class RuleB {
 
-    public static function getPriority(): int {
-        return 0;
-    }
+Через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
 
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
+
+final class Foo
+{
+   public function __construct(
+      #[TaggedAs(// [!code ++]
+         name: 'tags.ordered',// [!code ++]
+         priorityDefaultMethod: 'getPriorityForCollection',// [!code ++]
+      )]// [!code ++]
+      public readonly iterable $services
+    ) {}    
 }
 ```
-```php
-// src/Rules/RuleC.php
-namespace App\Rules;
 
-use Kaspi\DiContainer\Attributes\Tag;
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
 
-// 🚩 без явного указания priority и priorityMethod
-// приоритет может быть получен через priorityDefaultMethod
-#[Tag(name: 'tags.rules')]
-class RuleC {
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-    public static function getPriorityForCollection(string $tag): string|int|null {
-        return match ($tag) {
-            'tags.rules' => 100,
-            'tags.other-name' => 'GROUP100:0001',
-            default => null,
-        };
-    }
-
+#[Tag(name: 'tags.ordered')]// [!code ++]
+final class Bar
+{
+    // …
+       // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
+   // приоритет может быть получен через «метода-приоритета» по-умолчанию
+   public static function getPriorityForCollection(string $tag): string|int|null// [!code ++]
+   {// [!code ++]
+      return match ($tag) {// [!code ++]
+         'tags.internal' => 100,// [!code ++]
+         'tags.validator' => 'GROUP100:0001',// [!code ++]
+         default => null,// [!code ++]
+      };// [!code ++]
+   }// [!code ++]
 }
 ```
-```php
-// src/Rules/Rules.php
-namespace App\Rules;
 
-use Kaspi\DiContainer\Attributes\TaggedAs;
-
-class Rules {
-
-    public function __construct(
-        #[TaggedAs(
-            'tags.rules',
-            // если не объявлен `priority` и `priorityMethod`
-            // то попытаться вызвать метод `getPriorityForCollection` у тегированного класса
-            priorityDefaultMethod: 'getPriorityForCollection'
-        )]
-        private iterable $rules
-    ) {}
-
-}
-```
-```php
-use App\Rules\Rules;
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\Rules\\', src: __DIR__.'/src/Rules/')
-    ->build()
-;
-
-$container->get(Rules::class);
-```
-> [!NOTE]
-> При разрешении аргументов конструктора класса `App\Rules\Rules::class`
-> в свойстве `Rules::$rules` содержится итерируемая «ленивая» коллекция
-> отсортированные по приоритету:
-> 1. `RuleC` – `RuleC::getPriorityForCollection() === 100`
-> 2. `RuleA` – `RuleA::getPriority() === 10`
-> 3. `RuleB` – `RuleB::getPriority() === 0`
+:::
 
 <!--@include: ../php-definition/_include/bind-tag_notes.md-->
