@@ -13,13 +13,17 @@ outline: [2, 4]
 - через [«Метод-ключа»](#key-in-method) для элемента коллекции PHP класс.
 - через [«Метод-ключа» по умолчанию](#key-in-method-default) для элемента коллекции PHP класс.
 
+> [!IMPORTANT]
+> Если в коллекции встречаются одинаковые ключи у элементов, то в коллекцию попадёт элемент с более высоким приоритетом, определения с таким же значением ключа будут игнорированы.
+> Изучите раздел «[Совпадение ключей элементов в коллекции](#keys-equals)».
+
 > [!WARNING]
-> Если в коллекции встречаются одинаковые ключи у элементов, то в коллекцию попадёт элемент с более [высоким приоритетом](collection-priority.md), определения с таким же значением ключа будут игнорированы.
+> При обращении к элементу коллекции по ключу может быть выброшено исключение с типом `Psr\Container\NotFoundExceptionInterface`, если элемент коллекции не найден по запрошенному ключу.
 
 ## Произвольный доступ к элементам коллекции { #key-access }
 
 При внедрении коллекции через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) параметр `$isLazy` по умолчанию имеет значение `true`,
-что означает внедряемый объект будет «[ленивой коллекцией](index.md#collection-is-lazy)».
+что означает – внедряемый объект будет «[ленивой коллекцией](index.md#collection-is-lazy)».
 
 «Ленивая коллекция» реализует интерфейсы:
 - `\Iterator`
@@ -27,8 +31,10 @@ outline: [2, 4]
 - `\ArrayAccess`
 - `\Countable`
 
-Реализация этих интерфейсов даёт возможность перебора элементов коллекции через [языковую конструкцию `foreach`](https://www.php.net/manual/en/control-structures.foreach.php),
-доступа к элементам коллекции по именам ключей в стиле PHP массивов или через методы `\Psr\Container\ContainerInterface::get()` и `\Psr\Container\ContainerInterface::has()`.
+Реализация этих интерфейсов даёт возможность:
+- Перебор элементов коллекции через [языковую конструкцию `foreach`](https://www.php.net/manual/en/control-structures.foreach.php).
+- Доступ к элементу по имени ключа в стиле PHP массивов – `$service['foo.name']`.
+- Доступ к элементу через методы `get()` и `has()` описанные в [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
 ### Пример внедрения коллекции { #example-inject-lazy-collection-with-key-assess }
 
@@ -357,46 +363,7 @@ class TaggedServices {
 > В стиле `ContainerInterface`
 > доступны методы `has` и `get`
 
-> [!IMPORTANT]
-> Если сервис не найден по запрошенному ключу
-> будет выброшено исключение реализующее
-> интерфейс `Psr\Container\NotFoundExceptionInterface`.
 
-### Ключ в коллекции как целое число.
-Для получения в качестве ключей коллекции целых чисел (_последовательные значения от нуля и больше_)
-нужно указать в аргументе `$useKeys=false`.
-
-Для хелпер функции `diTaggedAs`:
-
-```php
-// config/services.php
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-
-return static function (): \Generator {
-
-    yield diAutowire(App\Classes\ClassTaggedAs::class)
-        ->bindArguments(
-            diTaggedAs('tags.tag_one', useKeys: false) // ключи целые числа от 0 до n
-        );
-
-};
-```
-Для php атрибута `#[TaggedAs]`:
-```php
-// src/Classes/ClassTaggedAs.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;
-
-class ClassTaggedAs {
-
-    public function __construct(
-        #[TaggedAs('tags.tag_one', useKeys: false)] // ключи целые числа
-        private iterable $items
-    ) {}
-
-}
-```
 ### Ключ в коллекции из метаданных тега как непустая строка.
 При определении тега к нему можно добавить дополнительные данные (_метаданные_)
 через аргумент `$options`.
