@@ -74,6 +74,8 @@ final class Baz
 
 #### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
+Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md), добавим теги PHP классам через метод `bindTag()` [^BindTag].
+
 Конфигурационный файл:
 
 ```php
@@ -618,3 +620,4 @@ class ClassTaggedAs {
 > `ServiceTwo` с ключём `foo` полученный из метода `ServiceTwo::getServiceKey()`.
 
 <!--@include: ../_include/term_notes.md-->
+<!--@include: ../php-definition/_include/bind-tag_notes.md-->
