@@ -39,7 +39,7 @@ namespace App\Interfaces;
 
 interface ServiceInterface
 {
-    
+    // …
 }
 ```
 
@@ -58,7 +58,7 @@ final class Bar implements ServiceInterface
 
 :::
 
-Для реализации этой задачи необходимо чтобы имя интерфейса было указано как идентификатор контейнера, и сконфигурировано само определение контейнера.
+Для этой задачи необходимо чтобы имя интерфейса было указано как идентификатор контейнера, и сконфигурирован PHP класс реализующий этот интерфейс.
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -74,9 +74,9 @@ var_dump(is_object($object));
 // (bool) true
 ```
 
-## PHP определения { #php-definition }
+## Настройка в конфигурационных файлах определений { #php-definition }
 
-Конфигурирование в стиле PHP определений.
+Настройка внедрения зависимости по интерфейсу в [конфигурационном файле определений](../documentation/container-builder/configuration_files.md).
 
 ### `diAutowire()` { #helper-di-autowire }
 
@@ -254,12 +254,44 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 
 ### Service { #attribute-service }
 
-В рамках контейнера для интерфейса `\App\Interfaces\ServiceInterface` можно
-определить как разрешать этот интерфейс через атрибут `\Kaspi\DiContainer\Attributes\Service`.
+Атрибут `\Kaspi\DiContainer\Attributes\Service` устанавливает в контейнере какой PHP класс будет выступать реализацией интерфейса `\App\Interfaces\ServiceInterface`.
+
 При таком подходе конфигурирования любая зависимость с типом `\App\Interfaces\ServiceInterface`
-будет разрешена одинаково.
+будет внедрена с одинаковой реализацией этого интерфейса PHP классом `\App\Services\Bar`.
 
 ::: code-group
+
+```php [ServiceInterface.php]
+// file: /app/src/Interfaces/ServiceInterface.php
+
+namespace App\Interfaces;
+
+use App\Services\Bar;// [!code ++]
+use Kaspi\DiContainer\Attributes\Service;// [!code ++]
+
+#[Service(Bar::class)]// [!code ++]
+interface ServiceInterface
+{
+    // …
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+
+namespace App\Services;
+
+use App\Interfaces\ServiceInterface;
+use Kaspi\DiContainer\Attributes\Parameter;
+
+final class Bar implements ServiceInterface
+{
+    public function __construct(
+        #[Parameter('params.lorem')]
+        private readonly string $param
+    ) {}
+}
+```
 
 ```php [Foo.php]
 // file: /app/src/Services/Foo.php
@@ -283,41 +315,9 @@ final class Foo
 }
 ```
 
-```php [ServiceInterface.php]
-// file: /app/src/Interfaces/ServiceInterface.php
-
-namespace App\Interfaces;
-
-use App\Services\Bar;
-use Kaspi\DiContainer\Attributes\Service;
-
-#[Service(Bar::class)]
-interface ServiceInterface
-{
-    
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-
-namespace App\Services;
-
-use App\Interfaces\ServiceInterface;
-use Kaspi\DiContainer\Attributes\Parameter;
-
-final class Bar implements ServiceInterface
-{
-    public function __construct(
-        #[Parameter('params.lorem')]
-        private readonly string $param
-    ) {}
-}
-```
-
 :::
 
-Конфигурирование:
+Конфигурирование параметров контейнера:
 ```php
 // file: /app/config/parameters.php
 return [
@@ -355,13 +355,13 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 namespace App\Services;
 
 use App\Interfaces\ServiceInterface;
-use App\Helpers\FactoryCreate;
-use Kaspi\DiContainer\Attributes\InjectByCallable;
+use App\Helpers\FactoryCreate;// [!code ++]
+use Kaspi\DiContainer\Attributes\InjectByCallable;// [!code ++]
 
 final class Foo
 {
     public function __construct(
-        #[InjectByCallable([FactoryCreate::class, 'makeService'])]
+        #[InjectByCallable([FactoryCreate::class, 'makeService'])]// [!code ++]
         private ServiceInterface $service
     ) {}
     
@@ -408,7 +408,7 @@ namespace App\Interfaces;
 
 interface ServiceInterface
 {
-    
+    // …
 }
 ```
 
@@ -427,7 +427,7 @@ final class Bar implements ServiceInterface
 
 :::
 
-Конфигурирование:
+Конфигурирование параметров контейнера:
 
 ```php
 // file: /app/config/parameters.php
@@ -467,12 +467,12 @@ var_dump($appLogger->service() instanceof ServiceInterface);
 namespace App\Services;
 
 use App\Interfaces\ServiceInterface;
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\Inject;// [!code ++]
 
 final class Foo
 {
     public function __construct(
-        #[Inject(Bar::class)]
+        #[Inject(Bar::class)]// [!code ++]
         private ServiceInterface $service
     ) {}
     
@@ -492,7 +492,7 @@ namespace App\Interfaces;
 
 interface ServiceInterface
 {
-    
+    // …
 }
 ```
 
@@ -502,12 +502,12 @@ interface ServiceInterface
 namespace App\Services;
 
 use App\Interfaces\ServiceInterface;
-use Kaspi\DiContainer\Attributes\Parameter;
+use Kaspi\DiContainer\Attributes\Parameter;// [!code ++]
 
 final class Bar implements ServiceInterface
 {
     public function __construct(
-        #[Parameter('params.lorem')]
+        #[Parameter('params.lorem')]// [!code ++]
         private readonly string $param
     ) {}
 }
@@ -515,7 +515,7 @@ final class Bar implements ServiceInterface
 
 :::
 
-Конфигурирование:
+Конфигурирование параметров контейнера:
 
 ```php
 // file: /app/config/parameters.php

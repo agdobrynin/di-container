@@ -90,10 +90,10 @@ var_dump($container === $container->get(Foo::class)->container);
 
 ## Содержание { #toc }
 
-* 👷‍♂️ [Инструмент для сборки контейнера зависимостей **DiContainerBuilder**](container-builder/index.md).
+* 👷‍♂️ [Инструмент для сборки контейнера зависимостей DiContainerBuilder](container-builder/index.md).
 * ⚙️ [Конфигурация для DiContainer](container-config/index.md).
-* 🐘 [DiContainer с конфигурированием **в стиле php определений**](php-definition/index.md).
-* #️⃣ [DiContainer c конфигурированием **через PHP атрибуты**](attribute-definition/index.md).
+* 🐘 [Конфигурирование в файлах конфигураций](php-definition/index.md).
+* #️⃣ [Конфигурирование через PHP атрибуты](attribute-definition/index.md).
 * 📦 [Метод контейнера `call()`](call/index.md).
 * 🔖 [Тэгирование определений и сервисов](tags/index.md).
 * 📋 [Параметры контейнера](09-container-parameters.md).

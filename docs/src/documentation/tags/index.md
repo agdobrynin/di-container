@@ -46,8 +46,8 @@
 
 ## Содержание раздела { #toc }
 
-- 🐘 [Конфигурирование тегов в стиле php определений](php-definition-tag.md).
-- #️⃣  [Конфигурирование тегов через php атрибут](attribute-definition-tag.md).
+- 🐘 [Настройка тегов в файлах конфигураций](php-definition-tag.md).
+- #️⃣  [Настройка тегов через php атрибут](attribute-definition-tag.md).
 - 📑 [PHP интерфейс как имя тега](interface-as-tag.md).
 - 🚫 [Исключение элементов из коллекции](exclide-from-collection.md).
 - ⬆️ [Приоритет элементов коллекции](collection-priority.md).

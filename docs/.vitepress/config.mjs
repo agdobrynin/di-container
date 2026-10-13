@@ -44,7 +44,7 @@ export default defineConfig({
                     items: [
                       { text: 'Обзор', link: 'index.md' },
                       { text: 'Установка индивидуальной конфигурации контейнера', link: 'config.md' },
-                      { text: 'Файлы конфигураций', link: 'configuration_files.md' },
+                      { text: 'Файлы конфигураций определений контейнера', link: 'configuration_files.md' },
                       { text: 'Динамическое добавление определений в контейнер', link: 'set.md' },
                     ]
                   },
@@ -55,7 +55,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/php-definition/',
-                    text: '🐘 Конфигурирование в стиле php определений',
+                    text: '🐘 Настройка в конфигурационных файлах определений',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -73,7 +73,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/attribute-definition/',
-                    text: '#️⃣  Конфигурирование через PHP атрибуты',
+                    text: '#️⃣  Настройка определений через PHP атрибуты',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -106,8 +106,8 @@ export default defineConfig({
                     collapsed: true,
                     items: [
                       { text: 'Обзор', link: 'index.md' },
-                      { text: 'Конфигурирование тегов в стиле php определений', link: 'php-definition-tag.md' },
-                      { text: 'Конфигурирование тегов через php атрибут', link: 'attribute-definition-tag.md' },
+                      { text: 'Настройка тегов в файлах конфигураций', link: 'php-definition-tag.md' },
+                      { text: 'Настройка тегов через php атрибут', link: 'attribute-definition-tag.md' },
                       { text: 'PHP интерфейс как имя тега', link: 'interface-as-tag.md' },
                       { text: 'Исключение элементов из коллекции', link: 'exclide-from-collection.md' },
                       { text: 'Приоритет элементов коллекции', link: 'collection-priority.md' },

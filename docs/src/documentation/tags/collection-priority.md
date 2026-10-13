@@ -29,7 +29,7 @@ outline: [2, 4]
 ## Приоритет тега { #priority-by-tag }
 
 Приоритет тега задаётся в теге элемента коллекции.
-В стиле PHP определений приоритет указываться в параметре `$priority` метода `bindTag()`[^BindTag],
+[В файлах конфигураций](../container-builder/configuration_files.md) определений приоритет указываться в параметре `$priority` метода `bindTag()`[^BindTag],
 через PHP атрибуты приоритет указывается в параметре [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../attribute-definition/tag.md).
 
 ### Пример конфигурации { #example-priority-by-tag }
@@ -85,7 +85,7 @@ final class Qux
 
 :::
 
-#### Конфигурация в стиле php определений { #priority-by-tag-php-definition }
+#### Настройка в файлах конфигураций { #priority-by-tag-php-definition }
 
 Передаем значение приоритета в параметре `$priority` метода `bindTag()`[^BindTag]
 
@@ -232,7 +232,7 @@ foreach ($foo->services as $service) {
 
 «**Метод-приоритета**» задаётся в теге элемента коллекции.
 
-В стиле PHP определений «метод-приоритета» передаётся через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
+В [файлах конфигураций](../container-builder/configuration_files.md) определений «метод-приоритета» передаётся через [метаданные](tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
 **Имя ключа в метаданных должно быть** `'priority.method'`, значение – имя метода.
 
 ::: code-group
@@ -304,7 +304,7 @@ final class Bar
 Для случаев когда определить приоритет элемента коллекции из тега не удается, используется «**метод-приоритета**» по умолчанию.
 При отсутствии в PHP классе «**метода-приоритета**» по умолчанию, элемент коллекции получит приоритет со значением `null`.  
 
-В стиле PHP определений имя метода указывается в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
+В [файле конфигураций определений](../container-builder/configuration_files.md) имя метода указывается в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
 ::: code-group
 

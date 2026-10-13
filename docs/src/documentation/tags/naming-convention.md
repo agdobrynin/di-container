@@ -7,7 +7,7 @@
 
 ### Пример использования имён по соглашению { #example-naming-convention }
 
-Конфигурирование в стиле PHP определений:
+Настройка в файле конфигураций определений:
 
 ```php
 use function Kaspi\DiContainer\diAutowire;

@@ -6,7 +6,7 @@
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-## Использование в стиле php определений { #as-php-definition }
+## В файлах конфигураций определений { #as-php-definition }
 
 PHP классы:
 

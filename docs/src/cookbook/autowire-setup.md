@@ -60,9 +60,9 @@ class FileLogger implements LoggerInterface
 
 :::
 
-## PHP определения { #php-definition }
+## Настройка в конфигурационных файлах определений { #php-definition }
 
-Конфигурирование в стиле PHP определений.
+Вызов сеттер-метда в [конфигурационном файле определений](../documentation/container-builder/configuration_files.md).
 
 ### diAutowire::setup()
 

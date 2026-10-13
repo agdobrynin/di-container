@@ -65,9 +65,9 @@ class RuleC implements RuleInterface {}
 
 :::
 
-## PHP определения { #php-definition }
+## Настройка в конфигурационных файлах определений { #php-definition }
 
-Конфигурирование в стиле PHP определений.
+Настройка внедрения зависимостей для параметра переменной длины в [конфигурационном файле определений](../documentation/container-builder/configuration_files.md).
 
 Конфигурирование:
 
@@ -189,16 +189,16 @@ var_dump($rules['inputRule_A'] instanceof RuleA);
 
 namespace App\Rules;
 
-use Kaspi\DiContainer\Attributes\Inject;
+use Kaspi\DiContainer\Attributes\Inject;// [!code ++]
 
 class RuleGenerator {
 
     private array $rules;
 
     public function __construct(
-        #[Inject(RuleB::class)]
-        #[Inject(RuleA::class)]
-        #[Inject(RuleC::class)]
+        #[Inject(RuleB::class)]// [!code ++]
+        #[Inject(RuleA::class)]// [!code ++]
+        #[Inject(RuleC::class)]// [!code ++]
         RuleInterface ...$inputRule
     ) {
         $this->rules = $inputRule;
@@ -226,15 +226,15 @@ $container = (new DiContainerBuilder())
 
 $ruleGenerator = $container->get(RuleGenerator::class);
 
-$rules = $ruleGenerator->getRules();
+$rules = ;
 
-var_dump($rules[0] instanceof RuleB);
-// (bool) true
+foreach ($ruleGenerator->getRules() as $rule) {
+    var_dump($rule::class);
+}
 
-var_dump($rules[1] instanceof RuleA);
-// (bool) true
-
-var_dump($rules[2] instanceof RuleC);
-// (bool) true
+// вывод в консоли:
+// string (15) "App\Rules\RuleB"
+// string (15) "App\Rules\RuleA"
+// string (15) "App\Rules\RuleC"
 ```
-[Порядок элементов](#config-attr) определен последовательностью применения атрибута `Inject` к свойству `RuleGenerator::$inputRule`.
+Порядок элементов обусловлен последовательностью применения атрибута `Inject` к свойству `\App\Rules\RuleGenerator::$inputRule`.

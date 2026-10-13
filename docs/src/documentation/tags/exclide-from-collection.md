@@ -109,7 +109,7 @@ final class Qux
 
 :::
 
-#### Настройки в стиле PHP определений { #example-exclude-by-id-php-definitions }
+#### В файле конфигураций определений { #example-exclude-by-id-php-definitions }
 
 Конфигурационный файл:
 
