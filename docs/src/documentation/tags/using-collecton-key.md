@@ -1,8 +1,11 @@
+---
+outline: [2, 4]
+---
 # 🔑 Использование ключей коллекции { #title }
 
 ## Обзор { #overview }
 
-Внедряемая коллекция по умолчанию в качестве ключей элементов получает идентификатор контейнера [^ContainerId] этого элемента.
+Внедряемая коллекция по умолчанию в качестве ключей элементов получает идентификатор контейнера [^ContainerId] этого элемента, что позволяет обращаться к элементам коллекции в [произвольном порядке](#key-access).
 
 Это поведение можно изменить:
 - через [отключение строковых ключей в коллекции](#key-as-int).
@@ -14,6 +17,229 @@
 > Если в коллекции встречаются одинаковые ключи у элементов, то в коллекцию попадёт элемент с более [высоким приоритетом](collection-priority.md), определения с таким же значением ключа будут игнорированы.
 
 ## Произвольный доступ к элементам коллекции { #key-access }
+
+При внедрении коллекции через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) параметр `$isLazy` по умолчанию имеет значение `true`,
+что означает внедряемый объект будет «[ленивой коллекцией](index.md#collection-is-lazy)».
+
+«Ленивая коллекция» реализует интерфейсы:
+- `\Iterator`
+- `\Psr\Container\ContainerInterface`
+- `\ArrayAccess`
+- `\Countable`
+
+Реализация этих интерфейсов даёт возможность перебора элементов коллекции через [языковую конструкцию `foreach`](https://www.php.net/manual/en/control-structures.foreach.php),
+доступа к элементам коллекции по именам ключей в стиле PHP массивов или через методы `\Psr\Container\ContainerInterface::get()` и `\Psr\Container\ContainerInterface::has()`.
+
+### Пример внедрения коллекции { #example-inject-lazy-collection-with-key-assess }
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+//file: /app/src/Services/Foo.php
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(
+        public readonly iterable $services
+    ) {}    
+}
+```
+
+```php [Bar.php]
+//file: /app/src/Services/Bar.php
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+//file: /app/src/Services/Baz.php
+namespace App\Services;
+
+final class Baz
+{
+    // …
+}
+```
+
+:::
+
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию».
+
+#### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
+
+Конфигурационный файл:
+
+```php
+// file: /app/config/tagged_foo_service.php
+use Generator;
+use App\Services\{Foo, Bar, Baz};
+
+use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            servies: diTaggedAs('tags.access_by_key')
+        );
+
+    yield diAutowire(Bar::class)
+        ->bindTag(name: 'tags.access_by_key');
+   
+   yield diAutowire(Baz::class)
+        ->bindTag(name: 'tags.access_by_key');
+};
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar, Baz};
+use function is_a;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/tagged_foo_service.php')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+// перебор коллекции
+foreach ($foo->services as $id => $service) {
+    var_dump($id, is_object($service));
+}
+// вывод в консоли:
+//string(16) "App\Services\Bar"
+// bool(true)
+//string(16) "App\Services\Baz"
+// bool(true)
+
+
+// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+
+var_dump(
+    $foo->services->has(Bar::class),
+    $foo->services->get(Bar::class) instanceof Bar,
+);
+// bool(true)
+// bool(true)
+
+// доступ к элементу коллекции через методы `\ArrayAccess`
+var_dump(
+    isset($foo->services[Baz::class]),
+    $foo->services[Baz::class] instanceof Baz,
+);
+// bool(true)
+// bool(true)
+
+// подсчёт количества элементов коллекции через `\Countable`
+var_dump(count($foo->services));
+// int(2)
+```
+
+#### Конфигурация через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
+
+Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md),
+к элементам коллекции, PHP классам, [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+//file: /app/src/Services/Foo.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
+
+final class Foo
+{
+    public function __construct(
+        #[TaggedAs('tags.access_by_key')]// [!code ++]
+        public readonly iterable $services
+    ) {}    
+}
+```
+
+```php [Bar.php]
+//file: /app/src/Services/Bar.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag(name: 'tags.access_by_key')]// [!code ++]
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+//file: /app/src/Services/Baz.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag(name: 'tags.access_by_key')]// [!code ++]
+final class Baz
+{
+    // …
+}
+```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar, Baz};
+use function is_a;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+// перебор коллекции
+foreach ($foo->services as $id => $service) {
+    var_dump($id, is_object($service));
+}
+// вывод в консоли:
+//string(16) "App\Services\Bar"
+// bool(true)
+//string(16) "App\Services\Baz"
+// bool(true)
+
+
+// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+
+var_dump(
+    $foo->services->has(Bar::class),
+    $foo->services->get(Bar::class) instanceof Bar,
+);
+// bool(true)
+// bool(true)
+
+// доступ к элементу коллекции через методы `\ArrayAccess`
+var_dump(
+    isset($foo->services[Baz::class]),
+    $foo->services[Baz::class] instanceof Baz,
+);
+// bool(true)
+// bool(true)
+
+// подсчёт количества элементов коллекции через `\Countable`
+var_dump(count($foo->services));
+// int(2)
+```
 
 ## Ключ в коллекции как целое число { #key-as-int }
 
@@ -27,15 +253,7 @@
 
 🚧🚧🚧🚧🚧🚧🚧🚧
 
-"Ленивая" (`$isLazy = true`) коллекция реализует следующие интерфейсы:
 
-- `\Iterator`
-- `\Psr\Container\ContainerInterface`
-- `\ArrayAccess`
-- `\Countable`
-
-что даёт возможность доступа к элементам коллекции
-по именам ключей в стиле php массивов или в стиле `ContainerInterface`
 
 Пример объявления ключа через метаданные тега:
 ```php
