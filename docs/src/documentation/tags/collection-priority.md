@@ -141,7 +141,7 @@ foreach ($foo->services as $service) {
 #### Конфигурация через атрибуты { #priority-by-tag-attributes }
 
 Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md),
-к элементам коллекции, PHP классам, [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
+к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
 
 PHP классы:
 

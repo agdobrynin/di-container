@@ -70,7 +70,7 @@ final class Baz
 
 :::
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию».
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где ключами элементов будут выступать идентификатор контейнера [^ContainerId] элемента.
 
 #### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
@@ -147,7 +147,7 @@ var_dump(count($foo->services));
 #### Конфигурация через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
 
 Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md),
-к элементам коллекции, PHP классам, [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
+к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
 
 PHP классы:
 
