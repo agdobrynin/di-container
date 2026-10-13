@@ -319,7 +319,7 @@ return static function (): Generator {
    yield diAutowire(Foo::class)
       ->bindArguments(
          servies: diTaggedAs(
-            name: 'tags.ordered',// [!code ++]
+            'tags.ordered',// [!code ++]
             priorityDefaultMethod: 'getPriorityForCollection'// [!code ++]
          )
       );
