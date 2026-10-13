@@ -28,7 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 ## Идентификатор контейнера { #container-id }
 
-Хелпер функция `diValue()` не может автоматически сформировать идентификатор контейнера,
+Хелпер функция `diValue()` не может автоматически сформировать идентификатор контейнера [^ContainerId],
 поэтому необходимо указать идентификатор контейнера для определения конфигурируемого через эту хелпер функцию.
 
 ```php
@@ -43,4 +43,3 @@ return static function () {
 ```
 
 <!--@include: ../_include/term_notes.md-->
-

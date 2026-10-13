@@ -21,7 +21,7 @@
 ```
 
 Параметры:
-- `$containerIdentifier` – FQCN [^FQCN], или идентификатор контейнера.
+- `$containerIdentifier` – FQCN [^FQCN], или идентификатор контейнера [^ContainerId].
 
 ## Пример внедрения параметра с отложенной инициализацией { #example }
 

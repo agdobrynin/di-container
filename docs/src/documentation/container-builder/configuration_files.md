@@ -24,7 +24,7 @@ return static function (): \Generator {
 :::
 
 > [!TIP]
-> Для определения `App\Services\Foo` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../03-php-definition.md#diautowire).
+> Для определения `App\Services\Foo` идентификатор контейнера [^ContainerId] будет сформирован автоматически через [хелпер функцию `diAutowire()`](../03-php-definition.md#diautowire).
 
 Комбинирование возвращаемых определений и [конфигуратора](../08-definitions-configurator.md):
 
@@ -84,13 +84,15 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 > и рекомендован для конфигурирования контейнера.
 
 > [!TIP]
-> Для некоторых определений идентификатор контейнера может быть сформирован автоматически.
+> Для некоторых определений идентификатор [ContainerId] контейнера может быть сформирован автоматически.
 > - [хелпер функция `diAutowire()`](03-php-definition.md#diautowire)
 > - [хелпер функция `diRuntime()`](10-runtime-definition.md#diruntime)
 > - [PHP атрибут `#[Autowire()]`](02-attribute-definition.md#autowire)
 >
 
-В рамках создаваемого контейнера отслеживается уникальность идентификаторов определений.
+В рамках создаваемого контейнера отслеживается уникальность идентификаторов контейнера.
 Если вновь загружаемый идентификатор контейнера уже присутствует, то будет выброшено исключение
 `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` при вызове
 метода сборки контейнера `DiContainerBuilder::build()`.
+
+<!--@include: ../_include/term_notes.md-->

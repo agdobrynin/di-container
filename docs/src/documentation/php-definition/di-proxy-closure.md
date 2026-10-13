@@ -28,7 +28,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 ```
 
 Параметры:
-- `$containerIdentifier` – FQCN [^FQCN], или идентификатор контейнера.
+- `$containerIdentifier` – FQCN [^FQCN], или идентификатор контейнера [^ContainerId].
 - `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 
 Функция `diProxyClosure()` возвращает объект предоставляющий методы:

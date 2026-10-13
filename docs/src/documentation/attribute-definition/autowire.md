@@ -23,7 +23,7 @@ outline: [2, 4]
 
 Параметры:
 
-- `$id` – идентификатор контейнера для класса (_container identifier_).
+- `$id` – идентификатор контейнера [^ContainerId].
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP класса.
 - `$tags` – тег с метаданными.
