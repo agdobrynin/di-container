@@ -22,7 +22,7 @@
 Если значение в `\Kaspi\DiContainer\Attributes\Inject::$id` пустая строка, то контейнер попытается сформировать значение исходя из типа Type Hints [^TypeHints].
 
 > [!WARNING]
-> При разрешении зависимости для составного типа (_union, intersection types_) может быть выброшено исключение, [для исправления этой ошибки необходима конкретизация типа](../../cookbook/inject-union-type-params.md#php-attributes).
+> При внедрении зависимости для составного типа (_union, intersection types_) может быть выброшено исключение, [для исправления этой ошибки необходима конкретизация типа](../../cookbook/inject-union-type-params.md#php-attributes).
 
 В разделе «[Рецепты](../../cookbook/inject-interface.md#attribute-inject)» представлен пример использования атрибута `\Kaspi\DiContainer\Attributes\Inject` для параметра с типом PHP интерфейс. 
 
