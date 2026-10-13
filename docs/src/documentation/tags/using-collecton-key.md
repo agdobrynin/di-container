@@ -122,7 +122,6 @@ foreach ($foo->services as $id => $service) {
 
 
 // доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-
 var_dump(
     $foo->services->has(Bar::class),
     $foo->services->get(Bar::class) instanceof Bar,
@@ -220,7 +219,6 @@ foreach ($foo->services as $id => $service) {
 
 
 // доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-
 var_dump(
     $foo->services->has(Bar::class),
     $foo->services->get(Bar::class) instanceof Bar,
