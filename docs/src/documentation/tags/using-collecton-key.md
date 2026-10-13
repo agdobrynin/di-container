@@ -243,11 +243,58 @@ var_dump(count($foo->services));
 
 ## Ключ в коллекции как целое число { #key-as-int }
 
+Внедряемая коллекция может быть представлен простым списком, где ключи элементов представлены целыми числами от `0` до `n`.
+
+В [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) указать значение `false` в параметре `$useKeys`:
+
+```php
+// file: /app/config/tagged_foo_service.php
+use Generator;
+use App\Services\{Foo, Bar, Baz};
+
+use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            servies: diTaggedAs(
+                'tags.access_by_key',
+                useKeys: false,// [!code ++]
+            )
+        );
+
+    // ...
+};
+```
+
+Указать значение `false` в параметре [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs::$useKeys`](../attribute-definition/tagged-as.md):
+
+```php
+//file: /app/src/Services/Foo.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\TaggedAs;
+
+final class Foo
+{
+    public function __construct(
+        #[TaggedAs(
+            'tags.access_by_key',
+            useKeys: false,// [!code ++]
+        )]
+        public readonly iterable $services
+    ) {}    
+}
+```
+
 ## Ключ элемента коллекции в метаданных { #key-in-metadata }
 
 ## «Метод-ключа» { #key-in-method }
 
 ## «Метод-ключа» по умолчанию { #key-in-method-default }
+
+## Совпадение ключей элементов в коллекции { #keys-equals }
+
 
 ------------
 
