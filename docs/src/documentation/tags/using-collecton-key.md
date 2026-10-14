@@ -97,7 +97,9 @@ use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs('tags.access_by_key')
+            servies: diTaggedAs(
+                tag: 'tags.access_by_key'
+            )
         );
 
     yield diAutowire(Bar::class)
@@ -113,7 +115,6 @@ return static function (): Generator {
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\{Foo, Bar, Baz};
-use function is_a;
 
 $container = (new DiContainerBuilder())
     ->load('/app/config/tagged_foo_service.php')
@@ -210,7 +211,6 @@ final class Baz
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\{Foo, Bar, Baz};
-use function is_a;
 
 $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')
@@ -267,7 +267,7 @@ return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
             servies: diTaggedAs(
-                'tags.access_by_key',
+                tag: 'tags.access_by_key',
                 useKeys: false,// [!code ++]
             )
         );
@@ -288,7 +288,7 @@ final class Foo
 {
     public function __construct(
         #[TaggedAs(
-            'tags.access_by_key',
+            name: 'tags.access_by_key',
             useKeys: false,// [!code ++]
         )]
         public readonly iterable $services
@@ -304,7 +304,7 @@ final class Foo
 - **ключ** – произвольная непустая строка, одинаковая во всех тегах коллекции.
 - **значение** – не пустая строка уникальная в рамках коллекции.
 
-Указываем значение ключа из метаданных тегов в параметре `$key` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+Для внедрения коллекции указываем значение ключа из метаданных тегов в параметре `$key` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
 Указываем метаданные тегов через параметр `$options` в методе `bindTag()` [^BindTag] или [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
 
@@ -369,7 +369,7 @@ return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
             servies: diTaggedAs(
-                'tags.key_from_metadata',
+                tag: 'tags.key_from_metadata',
                 key: 'key_as',
             )
         );
@@ -397,7 +397,6 @@ return static function (): Generator {
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\{Foo, Bar, Baz};
-use function is_a;
 
 $container = (new DiContainerBuilder())
     ->load('/app/config/tagged_foo_service.php')
@@ -452,7 +451,7 @@ final class Foo
 {
     public function __construct(
         #[TaggedAs(// [!code ++]
-            'tags.key_from_metadata',// [!code ++]
+            name: 'tags.key_from_metadata',// [!code ++]
             key: 'key_as',// [!code ++]
         )]// [!code ++]
         public readonly iterable $services
@@ -546,7 +545,7 @@ var_dump(
 - **ключ** – произвольная непустая строка, одинаковая во всех тегах коллекции.
 - **значение** – имя «метода ключа» с префиксом `self::`.
 
-Указываем значение ключа из метаданных тегов в параметре `$key` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+Для внедрения коллекции указываем значение ключа из метаданных тегов в параметре `$key` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
 Указываем метаданные тегов через параметр `$options` в методе `bindTag()` [^BindTag] или [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
 
@@ -628,7 +627,7 @@ return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
             servies: diTaggedAs(
-                'tags.key_from_method',
+                tag: 'tags.key_from_method',
                 key: 'key_as',
             )
         );
@@ -657,7 +656,6 @@ return static function (): Generator {
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\{Foo, Bar, Baz};
-use function is_a;
 
 $container = (new DiContainerBuilder())
     ->load('/app/config/tagged_foo_service.php')
@@ -711,7 +709,7 @@ final class Foo
 {
     public function __construct(
         #[TaggedAs(// [!code ++]
-            'tags.key_from_method',// [!code ++]
+            name: 'tags.key_from_method',// [!code ++]
             key: 'key_as',// [!code ++]
         )]// [!code ++]
         public readonly iterable $services
@@ -817,6 +815,169 @@ var_dump(
 ```
 
 ## «Метод ключа» элемента коллекции по умолчанию { #key-from-method-default }
+
+Для элементов коллекции представленных PHP классом **«метод ключа» элемента коллекции по умолчанию** это резервный механизм получения ключа элемента коллекции если в [метаданных тега](tag-metadata.md) явно не установлено как получить ключ элемента коллекции. 
+
+Если **«метод ключа» элемента коллекции по умолчанию** не реализован в PHP классе, то значение ключа будет представлено идентификатором контейнера [^ContainerId] этого элемента. 
+
+Для внедрения коллекции с **«методом ключа» элемента коллекции по умолчанию** указать имя метода в параметре `$keyDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+
+<!--@include: _include/key_from_method.md-->
+
+### Пример использования «Метод ключа» элемента коллекции по умолчанию { #key-from-method-default-default }
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+//file: /app/src/Services/Foo.php
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(
+        public readonly iterable $services
+    ) {}
+}
+```
+
+```php [Bar.php]
+//file: /app/src/Services/Bar.php
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+//file: /app/src/Services/Baz.php
+namespace App\Services;
+
+final class Baz
+{
+    // …
+
+    public static function getCustomIndex()
+    {
+        return 'baz_custom_id';    
+    }
+}
+```
+
+```php [Qux.php]
+//file: /app/src/Services/Qux.php
+namespace App\Services;
+
+final class Baz
+{
+    // …
+}
+```
+
+:::
+
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где ключи элементов коллекции будут получены из метаданных тега с именем `'key_as'`,
+и предусмотреть резервный метод получения ключа элемента коллекции через **«метод ключа» элемента коллекции по умолчанию**. 
+
+#### Настройка в файлах конфигураций { #key-from-method-default-default-php-definition }
+
+Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md), добавим теги и метаданные PHP классам через метод `bindTag()` [^BindTag].
+
+Конфигурационный файл:
+
+```php
+// file: /app/config/tagged_foo_service.php
+use Generator;
+use App\Services\{Foo, Bar, Baz, Qux};
+
+use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            servies: diTaggedAs(
+                tag: 'tags.example_classes',
+                key: 'key_as',
+                keyDefaultMethod: 'getCustomIndex',
+            )
+        );
+
+    yield diAutowire(Bar::class)
+        ->bindTag(
+            name: 'tags.example_classes',
+            options: [
+                'key_as' => 'id_bar',
+            ],
+        );
+   
+    yield diAutowire(Baz::class)
+        // 🚩 не указываем метаданные тегу
+        ->bindTag('tags.example_classes');
+        
+    yield diAutowire(Qux::class)
+        // 🚩 не указываем метаданные тегу
+        ->bindTag('tags.example_classes');
+};
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar, Baz, Qux};
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/tagged_foo_service.php')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+// перебор коллекции
+foreach ($foo->services as $id => $service) {
+    var_dump($id, $service::class);
+}
+// вывод в консоли:
+//string(6) "id_bar"
+//string(16) "App\Services\Bar"
+
+//string(6) "baz_custom_id"
+//string(16) "App\Services\Baz"
+
+//string(16) "App\Services\Qux"
+//string(16) "App\Services\Qux"
+
+
+
+// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+var_dump(
+    $foo->services->has('id_bar'),
+    $foo->services->get('id_bar') instanceof Bar,
+);
+// bool(true)
+// bool(true)
+
+// доступ к элементу коллекции через методы `\ArrayAccess`
+var_dump(
+    isset($foo->services['baz_custom_id']),
+    $foo->services['baz_custom_id'] instanceof Baz,
+);
+// bool(true)
+// bool(true)
+
+// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+var_dump(
+    $foo->services->has(Qux::class),
+    $foo->services->get(Qux::class) instanceof Qux,
+);
+// bool(true)
+// bool(true)
+
+```
+
+#### Конфигурация через атрибуты { #key-from-method-default-default-attributes }
 
 ## Совпадение ключей элементов в коллекции { #keys-equals }
 
