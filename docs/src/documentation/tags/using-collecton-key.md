@@ -816,11 +816,12 @@ var_dump(
 
 ## «Метод ключа» элемента коллекции по умолчанию { #key-from-method-default }
 
-Для элементов коллекции представленных PHP классом **«метод ключа» элемента коллекции по умолчанию** это резервный механизм получения ключа элемента коллекции если в [метаданных тега](tag-metadata.md) явно не установлено как получить ключ элемента коллекции. 
+Для элементов коллекции представленных PHP классом **«метод ключа» элемента коллекции по умолчанию** это резервный механизм получения ключа элемента коллекции если отсутствует конфигурация в [метаданных тега](tag-metadata.md). 
 
 Если **«метод ключа» элемента коллекции по умолчанию** не реализован в PHP классе, то значение ключа будет представлено идентификатором контейнера [^ContainerId] этого элемента. 
 
-Для внедрения коллекции с **«методом ключа» элемента коллекции по умолчанию** указать имя метода в параметре `$keyDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+Внедрение коллекции через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md)
+с указанием в параметре `$keyDefaultMethod` имени метода.
 
 <!--@include: _include/key_from_method.md-->
 
@@ -974,122 +975,197 @@ var_dump(
 );
 // bool(true)
 // bool(true)
-
 ```
 
 #### Конфигурация через атрибуты { #key-from-method-default-default-attributes }
 
+
+Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) с параметром `$keyDefaultMethod`, к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) с метаданными.
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+//file: /app/src/Services/Foo.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
+
+final class Foo
+{
+    public function __construct(
+        #[TaggedAs(// [!code ++]
+            name: 'tags.example_classes',// [!code ++]
+            key: 'key_as',// [!code ++]
+            keyDefaultMethod: 'getCustomIndex',// [!code ++]
+        )]// [!code ++]
+        public readonly iterable $services
+    ) {}
+}
+```
+
+```php [Bar.php]
+//file: /app/src/Services/Bar.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag(// [!code ++]
+    name: 'tags.example_classes',// [!code ++]
+    options: [// [!code ++]
+        'key_as' => 'id_bar',// [!code ++]
+    ],// [!code ++]
+)]// [!code ++]
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+//file: /app/src/Services/Baz.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+// 🚩 не указываем метаданные тегу
+#[Tag(name: 'tags.example_classes')]// [!code ++]
+final class Baz
+{
+    // …
+
+    public static function getCustomIndex()
+    {
+        return 'baz_custom_id';    
+    }
+}
+```
+
+```php [Qux.php]
+//file: /app/src/Services/Qux.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+// 🚩 не указываем метаданные тегу
+#[Tag(name: 'tags.example_classes')]// [!code ++]
+final class Baz
+{
+    // …
+}
+```
+
+:::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar, Baz, Qux};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+// перебор коллекции
+foreach ($foo->services as $id => $service) {
+    var_dump($id, $service::class);
+}
+// вывод в консоли:
+//string(6) "id_bar"
+//string(16) "App\Services\Bar"
+
+//string(6) "baz_custom_id"
+//string(16) "App\Services\Baz"
+
+//string(16) "App\Services\Qux"
+//string(16) "App\Services\Qux"
+
+
+
+// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+var_dump(
+    $foo->services->has('id_bar'),
+    $foo->services->get('id_bar') instanceof Bar,
+);
+// bool(true)
+// bool(true)
+
+// доступ к элементу коллекции через методы `\ArrayAccess`
+var_dump(
+    isset($foo->services['baz_custom_id']),
+    $foo->services['baz_custom_id'] instanceof Baz,
+);
+// bool(true)
+// bool(true)
+
+// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+var_dump(
+    $foo->services->has(Qux::class),
+    $foo->services->get(Qux::class) instanceof Qux,
+);
+// bool(true)
+// bool(true)
+
+```
+
 ## Совпадение ключей элементов в коллекции { #keys-equals }
 
+Внедряемая коллекция по умолчанию в качестве ключей элементов получает идентификатор контейнера [^ContainerId] этого элемента,
+но через [метаданные тега](tag-metadata.md) можно указывать пользовательские ключи элементам коллекции.
 
-------------
+При совпадении ключей у элементов в коллекцию попадает элемент с более высоким [приоритетом](collection-priority.md), другие элементы с таким же ключом будут игнорированы.
 
-🚧🚧🚧🚧🚧🚧🚧🚧
+### Пример { #keys-equals-example }
 
-⚖ Пример поведения коллекции если значения ключей совпадают:
-```php
-// src/Classes/ServiceOne.php
-namespace App\Classes;
+PHP классы:
 
-use Kaspi\DiContainer\Attributes\Tag;
+::: code-group
 
-#[Tag('tags.tag_one', options: ['key_as' => 'foo'])]
-class ServiceOne {}
-```
-```php
-// src/Classes/ServiceTwo.php
-namespace App\Classes;
+```php [Foo.php]
+//file: /app/src/Services/Foo.php
+namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Tag;
-
-#[Tag('tags.tag_one', options: ['key_as' => 'foo'], priority: 100)]
-class ServiceTwo {}
-```
-```php
-// src/Classes/ClassTaggedAs.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;
-
-class ClassTaggedAs {
-
+final class Foo
+{
     public function __construct(
-        // ключ будет получен из метаданных тега - $options['key_as']
-        #[TaggedAs('tags.tag_one', key: 'key_as')]
-        private iterable $items
+        public readonly iterable $services
     ) {}
 }
 ```
-> [!NOTE]
-> Так как оба тегированных класса содержат в метаданных (в `$options`) одинаковые значения `'key_as' => 'foo'`,
-> то при получении коллекции в свойство `ClassTaggedAs::$items` по тегу будет учтён приоритет определения (`priority`). У класса `ServiceTwo`
-> приоритет `100`, а у класса `ServiceOne` приоритет не определен – таким образом при одинаковых ключах у определений
-> в коллекцию попадёт только `ServiceTwo` у которого приоритет `100`.
 
-### Ключ из метода класса по умолчанию.
-Так же предусмотрено объявление метода для php класса,
-через который будет произведена попытка получить ключ для коллекции
-если у тегированного определения не указан ключ для коллекции в метаданных (_в `$options`_).
+```php [Bar.php]
+//file: /app/src/Services/Bar.php
+namespace App\Services;
 
-Указать метод получения ключа по умолчанию можно через аргумент
-`$keyDefaultMethod` [в хелпер функции diTaggedAs](../03-php-definition.md#ditaggedas)
-или у [php атрибута #[TaggedAs]](../02-attribute-definition.md#taggedas).
-
-> [!IMPORTANT]
-> Метод реализующий получение ключа должен быть объявлен как `public static function` и возвращать тип `string`.
-> В качестве аргументов метод принимает два параметра:
-> - `string $tag` – имя тега;
-> - `array $options` – метаданные тега;
-
-Пример получения ключа коллекции по интерфейсу:
-```php
-// src/Classes/ServiceOne.php
-namespace App\Classes;
-
-use Kaspi\DiContainer\Attributes\Tag;
-
-class ServiceOne implements ServiceInterface {
-
-    public static function getServiceKey(): string {
-        return 'bar';
-    }
-
+final class Bar
+{
+    // …
 }
 ```
-```php
-// src/Classes/ServiceTwo.php
-namespace App\Classes;
 
-use Kaspi\DiContainer\Attributes\Tag;
+```php [Baz.php]
+//file: /app/src/Services/Baz.php
+namespace App\Services;
 
-class ServiceTwo implements ServiceInterface {
-
-    public static function getServiceKey(): string {
-        return 'foo';
-    }
-
+final class Baz
+{
+    // …
 }
 ```
-```php
-// src/Classes/ClassTaggedAs.php
-namespace App\Classes;
 
-use Kaspi\DiContainer\Attributes\TaggedAs;
+:::
 
-class ClassTaggedAs {
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где ключами элементов будут выступать значение из метаданных тегов.
 
-    public function __construct(
-        #[TaggedAs(ServiceInterface::class, keyDefaultMethod: 'getServiceKey')]
-        private iterable $items
-    ) {}
+#### Настройка в файлах конфигураций { #keys-equals-example-php-definition }
 
-}
-```
-> [!NOTE]
-> При разрешении аргументов конструктора класса `App\Rules\ClassTaggedAs::class` в свойстве `ClassTaggedAs::$items`
-> содержится итерируемая «ленивая» коллекция из
-> классов `ServiceOne` с ключём `bar` полученный из метода `ServiceOne::getServiceKey()`,
-> `ServiceTwo` с ключём `foo` полученный из метода `ServiceTwo::getServiceKey()`.
+
+#### Конфигурация через атрибуты { #keys-equals-example-attributes }
+
 
 <!--@include: ../_include/term_notes.md-->
 <!--@include: ../php-definition/_include/bind-tag_notes.md-->
