@@ -339,7 +339,7 @@ final class Baz
 :::
 
 Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где ключи элементов коллекции будут получены из метаданных каждого тега.
-Для получения ключа элемента из тега будем указывать значение `'key_as'`.
+Для получения ключа элемента из [метаданных тега](tag-metadata.md) будем указывать значение `'key_as'`.
 
 
 #### Настройка в файлах конфигураций { #example-key-in-metadata-php-definition }
@@ -358,7 +358,10 @@ use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs('tags.key_from_metadata')
+            servies: diTaggedAs(
+                'tags.key_from_metadata',
+                key: 'key_as',
+            )
         );
 
     yield diAutowire(Bar::class)
@@ -438,7 +441,10 @@ use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
 final class Foo
 {
     public function __construct(
-        #[TaggedAs('tags.key_from_metadata')]// [!code ++]
+        #[TaggedAs(// [!code ++]
+            'tags.key_from_metadata',// [!code ++]
+            key: 'key_as',// [!code ++]
+        )]// [!code ++]
         public readonly iterable $services
     ) {}    
 }
