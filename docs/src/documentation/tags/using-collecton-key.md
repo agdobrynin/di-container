@@ -546,11 +546,11 @@ var_dump(
 - **ключ** – произвольная непустая строка, одинаковая во всех тегах коллекции.
 - **значение** – имя «метода ключа» с префиксом `self::`.
 
-<!--@include: _include/key_from_method.md-->
-
 Указываем значение ключа из метаданных тегов в параметре `$key` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
 Указываем метаданные тегов через параметр `$options` в методе `bindTag()` [^BindTag] или [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
+
+<!--@include: _include/key_from_method.md-->
 
 ### Пример использования «Метод ключа» элемента коллекции { #example-key-from-method }
 
