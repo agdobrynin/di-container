@@ -549,6 +549,12 @@ var_dump(
 
 <!--@include: _include/key_from_method.md-->
 
+Для внедрения коллекции использовать параметр `$key` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md),
+который будет указывать имя ключа в метаданных тегов.
+
+Для метаданных тегов параметр `$options` в методе `bindTag()` [^BindTag] или [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
+
+
 ## «Метод ключа» элемента коллекции по умолчанию { #key-from-method-default }
 
 ## Совпадение ключей элементов в коллекции { #keys-equals }
