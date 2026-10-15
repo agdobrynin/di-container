@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Коллекции могу исключать собираемые элементы. Исключить из коллекции можно вызывающий PHP класс т.е. самого себя, или по идентификатору контейнера [^ContainerId] присвоенному элементу коллекции.
+Коллекции могу исключать собираемые элементы. Исключить из коллекции можно вызывающий PHP класс т.е. самого себя, или по идентификатору контейнера [^ContainerId] элемента коллекции.
 
 ## Исключение вызывающего класса { #exclide-self }
 
@@ -55,13 +55,13 @@ final class ClassTaggedAs
 Для исключения элементов из коллекции используйте параметр `$containerIdExclude`
 в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
-Параметр `$containerIdExclude` должен быть представлен массивом содержащим идентификаторы контейнера [^ContainerId] исключённых из коллекции.
+Параметр `$containerIdExclude` может содержать идентификаторы контейнера [^ContainerId] исключаемых из внедряемой коллекции.
 
-### Пример настройки исключений из коллекции элементов { #example-exclude-by-id }
+## Пример исключения из коллекции элементов { #example-exclude-by-id }
 
 PHP классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` при конфигурации получили имя тега `'tags.internal_service'`.
 
-В параметр `\App\Service\Foo::$services` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из полученной коллекции элемент у которого идентификатор контейнера является строка `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get('App\Services\Baz')`.  
+В параметр `\App\Service\Foo::$services` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из коллекции элемент с идентификатором контейнера `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get('App\Services\Baz')`.  
 
 PHP классы:
 
@@ -109,7 +109,7 @@ final class Qux
 
 :::
 
-#### В файле конфигураций определений { #example-exclude-by-id-php-definitions }
+### Настройка в файлах конфигураций { #example-exclude-by-id-php-definitions }
 
 Конфигурационный файл:
 
@@ -124,8 +124,10 @@ return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
             services: diTaggedAs(
-                'tags.internal_service',
-                containerIdExclude: [Baz::class]
+                tag: 'tags.internal_service',
+                containerIdExclude: [
+                    Baz::class,
+                ]
             )
         );
         
@@ -163,7 +165,7 @@ foreach ($foo->services as $service) {
 Класс `\App\Services\Baz` не попал в коллекцию так как его идентификатор контейнера `'App\Services\Baz'` исключен из коллекции
 хелпер функцией `diTaggedAs()` в параметре `$containerIdExclude`.
 
-#### Настройки через PHP атрибуты { #example-exclude-by-id-php-attributes }
+### Конфигурация через атрибуты { #example-exclude-by-id-php-attributes }
 
 Конфигурация PHP классов атрибутами `\Kaspi\DiContainer\Attributes\Tag` и `\Kaspi\DiContainer\Attributes\TaggedAs`:
 
@@ -193,7 +195,7 @@ namespace App\Service;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.internal_service')]// [!code ++]
+#[Tag('tags.internal_service')]// [!code ++]
 final class Bar
 {
     // …    
@@ -206,7 +208,7 @@ namespace App\Service;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.internal_service')]// [!code ++]
+#[Tag('tags.internal_service')]// [!code ++]
 final class Baz
 {
     // …    
@@ -219,7 +221,7 @@ namespace App\Service;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.internal_service')]// [!code ++]
+#[Tag('tags.internal_service')]// [!code ++]
 final class Qux
 {
     // …    
