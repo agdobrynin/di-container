@@ -2,8 +2,70 @@
 
 ## Обзор { #overview }
 
-Для случаев когда определить приоритет элемента коллекции из тега не удается, используется «**метод-приоритета**» по умолчанию.
-При отсутствии в PHP классе «**метода-приоритета**» по умолчанию, элемент коллекции получит приоритет со значением `null`.
+Для случаев когда определить приоритет элемента коллекции из тега не удается, используется **«метод-приоритета» по умолчанию**.
+
+При отсутствии в PHP классе **«метода-приоритета» по умолчанию**, элемент коллекции получит приоритет со значением `null`.
+
+**«Метод-приоритета» по умолчанию** задаётся в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md) или в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+
+<!--@include: _include/method_note.md-->
+
+## Пример конфигурации { #example }
+
+Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке:
+- `\App\Services\Qux`
+- `\App\Services\Baz`
+- `\App\Services\Bar`
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(public readonly iterable $services) {}    
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Services;
+
+final class Baz
+{
+    // …
+}
+```
+
+```php [Qux.php]
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+final class Qux
+{
+    // …
+}
+```
+
+:::
+
+Совместить конфигурирование через $priority и метод
+
+🚧🚧🚧🚧🚧🚧
 
 В [файле конфигураций определений](../../container-builder/configuration_files.md) имя метода указывается в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md).
 
@@ -37,10 +99,10 @@ namespace App\Services;
 
 final class Bar
 {
-   // …
+    // …
 
-   // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
-   // приоритет может быть получен через «метода-приоритета» по умолчанию
+    // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
+    // приоритет может быть получен через «метода-приоритета» по умолчанию
    public static function getPriorityForCollection(string $tag): string|int|null// [!code ++]
    {// [!code ++]
       return match ($tag) {// [!code ++]
@@ -87,7 +149,8 @@ use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 final class Bar
 {
     // …
-       // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
+    
+    // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
    // приоритет может быть получен через «метода-приоритета» по умолчанию
    public static function getPriorityForCollection(string $tag): string|int|null// [!code ++]
    {// [!code ++]
