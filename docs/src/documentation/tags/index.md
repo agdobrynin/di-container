@@ -41,7 +41,7 @@
 Это поведение можно изменить через параметры `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md)
 или у [атрибута `TaggedAs`](../attribute-definition/tagged-as.md) чтобы идентификаторы элементов в коллекции были представлены произвольной строкой или целыми числами.
 
-Больше информации в разделе документации [«Идентификаторы элементов коллекции»](using-collecton-key.md).
+Больше информации в разделе документации [«Идентификаторы элементов коллекции»](using-collecton-key/index.md).
 
 ## Содержание раздела { #toc }
 
@@ -50,6 +50,6 @@
 - 📑 [PHP интерфейс как имя тега](interface-as-tag.md).
 - 🚫 [Исключение элементов из коллекции](exclide-from-collection.md).
 - ⬆️ [Приоритет элементов коллекции](collection-priority.md).
-- 🔑 [Идентификаторы элементов коллекции](using-collecton-key.md).
+- 🔑 [Идентификаторы элементов коллекции](using-collecton-key/index.md).
 
 <!--@include: ../_include/term_notes.md-->
