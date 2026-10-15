@@ -140,20 +140,20 @@ foreach ($srvRules->rules as $rule) {
 Необходимо добавить статический метод в нужный PHP класс, который будет возвращать приоритет в коллекции:
 
 ```php
-public static function methodPriority(): int // [!code ++]
+public static function getPriority(): int // [!code ++]
 {// [!code ++]
     // Для каждого класса свой приоритет// [!code ++]
     return 100;// [!code ++]
 }// [!code ++]
 ```
 
-Указать в хелпер функции `diTaggedAs()` метод-приоритета `methodPriority` для PHP классов в коллекции: 
+Указать в хелпер функции `diTaggedAs()` метод-приоритета `getPriority` для PHP классов в коллекции: 
 
 ```php
 use App\Interfaces\RuleInterface;
 use function Kaspi\DiContainer\diTaggedAs;
 
-diTaggedAs(RuleInterface::class, priorityDefaultMethod: 'methodPriority')
+diTaggedAs(RuleInterface::class, priorityDefaultMethod: 'getPriority')
 ```
 
 ⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority.md).

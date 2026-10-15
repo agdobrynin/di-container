@@ -43,33 +43,19 @@ final class Bar
 
 ::: code-group
 
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;
-
-final class Baz
-{
-    public function __construct(
-        #[TaggedAs('tags.group_two', useKeys: false)]
-        public readonly iterable $collection
-    ) {}
-
-}
-```
-
 ```php [Foo.php]
 // file: /app/src/Services/Foo.php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Tag; 
+use Kaspi\DiContainer\Attributes\TaggedAs;
 
-#[Tag('tags.group_one')]
-#[Tag('tags.group_two', priority: 5)]
 final class Foo
 {
-    // …    
+    public function __construct(
+        #[TaggedAs('tags.group_two')]
+        public readonly iterable $collection
+    ) {}
+
 }
 ```
 
@@ -79,8 +65,22 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag; 
 
-#[Tag('tags.group_two', priority: 10)]
+#[Tag('tags.group_one')]
+#[Tag('tags.group_two', priority: 5)]
 final class Bar
+{
+    // …    
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag; 
+
+#[Tag('tags.group_two', priority: 10)]
+final class Baz
 {
     // …    
 }
@@ -92,26 +92,28 @@ final class Bar
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Baz;
+use App\Services\Foo;
+
+use function is_object;
 
 $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src/')
     ->build();
 
-$baz = $container->get(Baz::class);
+$foo = $container->get(Foo::class);
 
-foreach ($baz->collection as $key => $item) {
-    var_dump($key, $item::class);
+foreach ($foo->collection as $key => $item) {
+    var_dump($key, is_object($item));
 }
 // вывод в консоли:
-//int(0)
-//string(16) "App\Services\Bar"
-//int(1)
-//string(16) "App\Services\Foo"
+//string(16) "App\Services\Baz"
+// bool(true)
 
+//string(16) "App\Services\Bar"
+// bool(true)
 ```
 
-Порядок элементов в коллекции `$baz->collection` обусловлен значением `$priority` у каждого тега. Подробнее в разделе документации «[Приоритет элементов коллекции](collection-priority.md)»
+Порядок элементов в коллекции `$baz->collection` обусловлен значением `$priority` у каждого тега. Подробнее в разделе документации «[Приоритет элементов коллекции](collection-priority.md)».
 
 <!--@include: ../_include/need_import_php_class.md-->
 
@@ -123,11 +125,11 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
-final class Baz
+final class Qux
 {
     public function __construct(
-        #[TaggedAs('tags.group_one', useKeys: false)]
-        #[TaggedAs('tags.group_two', useKeys: false)]
+        #[TaggedAs('tags.group_one')]
+        #[TaggedAs('tags.group_two')]
         iterable ...$collection
     ) {}
 
