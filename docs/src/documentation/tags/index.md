@@ -13,14 +13,14 @@
 - `array` (_требуется передать аргумент `false` для параметра `$isLazy`_)
 - `\ArrayAccess & \Iterator & \Psr\Container\ContainerInterface`
 
-Любое определение в контейнере может быть отмечено одним или несколькими тегами. Каждый тег может содержать метаданные переданные в виде массива.
+Любое определение в контейнере может быть отмечено одним или несколькими тегами. Каждый тег может содержать [метаданные](tag-metadata.md).
 
-Чтобы добавить теги к определениям контейнера используйте:
+Добавить теги к определениям контейнера:
 - хелпер функции:  [`diAutowire()`](../php-definition/di-autowire.md#bindtag), [`diCallable()`](../php-definition/di-callable.md#bindtag), [`diProxyClosure()`](../php-definition/di-proxy-closure.md#bindtag), [`diValue()`](../php-definition/di-value.md#bindtag).
 - PHP атрибуты: [`Autowire`](../attribute-definition/autowire.md#tags), [`Tag`](../attribute-definition/tag.md).
 
-Внедрить зависимость из коллекции элементов по тегу можно через:
-- [Хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md).
+Внедрить зависимость из коллекции элементов по тегу:
+- [Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md).
 - [Атрибут `TaggedAs`](../attribute-definition/tagged-as.md).
 
 <!--@include: ../_include/need_import_php_class.md-->
@@ -38,8 +38,8 @@
 
 Внедряемая коллекция по умолчанию в качестве идентификаторов элементов получает идентификатор контейнера [^ContainerId] этого элемента.
 
-Это поведение можно изменить через параметры `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md)
-или у [атрибута `TaggedAs`](../attribute-definition/tagged-as.md) чтобы идентификаторы элементов в коллекции были представлены произвольной строкой или целыми числами.
+Это поведение можно изменить через параметры `$useKeys`, `$key`, `$keyDefaultMethod` [в хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или у [атрибута `TaggedAs`](../attribute-definition/tagged-as.md).
+Идентификаторы элементов в коллекции могут быть представлены произвольной строкой или целыми числами.
 
 Больше информации в разделе документации [«Идентификаторы элементов коллекции»](using-collecton-key/index.md).
 
