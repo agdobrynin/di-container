@@ -156,7 +156,7 @@ use function Kaspi\DiContainer\diTaggedAs;
 diTaggedAs(RuleInterface::class, priorityDefaultMethod: 'getPriority')
 ```
 
-⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority.md).
+⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority/index.md).
 
 ## Использование через php атрибуты { #as-php-attribute }
 
@@ -209,6 +209,6 @@ foreach ($srvRules->rules as $rule) {
 // string(15) "App\Rules\RuleB"
 ```
 
-⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority.md).
+⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority/index.md).
 
 <!--@include: ../_include/term_notes.md-->

@@ -17,7 +17,7 @@ DiDefinitionTagArgumentInterface::bindTag(
 Параметры:
 - `$name` – имя тега.
 - `$options` – [метаданные тега](tag-metadata.md).
-- `$priority` – [приоритет элемента в коллекции](collection-priority.md).
+- `$priority` – [приоритет элемента в коллекции](collection-priority/index.md).
 
 > [!TIP]
 > Ознакомьтесь с разделом «[Рекомендации по именованию значений для имён тегов, и метаданных для тега](naming-convention.md)».

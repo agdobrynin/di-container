@@ -113,7 +113,7 @@ foreach ($foo->collection as $key => $item) {
 // bool(true)
 ```
 
-Порядок элементов в коллекции `$baz->collection` обусловлен значением `$priority` у каждого тега. Подробнее в разделе документации «[Приоритет элементов коллекции](collection-priority.md)».
+Порядок элементов в коллекции `$baz->collection` обусловлен значением `$priority` у каждого тега. Подробнее в разделе документации «[Приоритет элементов коллекции](collection-priority/index.md)».
 
 <!--@include: ../_include/need_import_php_class.md-->
 

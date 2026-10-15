@@ -110,7 +110,18 @@ export default defineConfig({
                       { text: 'Настройка тегов через php атрибут', link: 'attribute-definition-tag.md' },
                       { text: 'PHP интерфейс как имя тега', link: 'interface-as-tag.md' },
                       { text: 'Исключение элементов из коллекции', link: 'exclide-from-collection.md' },
-                      { text: 'Приоритет элементов коллекции', link: 'collection-priority.md' },
+                      {
+                        base: '/documentation/tags/collection-priority/',
+                        text: 'Приоритет элементов коллекции',
+                        link: 'index.md',
+                        collapsed: true,
+                        items: [
+                          { text: 'Обзор', link: 'index.md' },
+                          { text: 'Приоритет тега', link: 'priority-by-tag.md' },
+                          { text: '«Метод-приоритета»', link: 'priority-by-method.md' },
+                          { text: '«Метод-приоритета» по умолчанию', link: 'priority-by-method-default.md' },
+                        ],
+                      },
                       {
                         base: '/documentation/tags/using-collecton-key/',
                         text: 'Идентификаторы элементов коллекции',

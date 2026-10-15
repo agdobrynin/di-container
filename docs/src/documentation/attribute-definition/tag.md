@@ -1,3 +1,6 @@
+---
+aside: false
+---
 # Tag
 
 ## Обзор { #overview }

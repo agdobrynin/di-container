@@ -49,7 +49,7 @@
 - #️⃣  [Настройка тегов через php атрибут](attribute-definition-tag.md).
 - 📑 [PHP интерфейс как имя тега](interface-as-tag.md).
 - 🚫 [Исключение элементов из коллекции](exclide-from-collection.md).
-- ⬆️ [Приоритет элементов коллекции](collection-priority.md).
+- ⬆️ [Приоритет элементов коллекции](collection-priority/index.md).
 - 🔑 [Идентификаторы элементов коллекции](using-collecton-key/index.md).
 
 <!--@include: ../_include/term_notes.md-->
