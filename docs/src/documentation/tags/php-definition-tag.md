@@ -26,7 +26,8 @@ DiDefinitionTagArgumentInterface::bindTag(
 
 [Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом.
 
-[Ознакомьтесь с примером конфигурирования](../php-definition/di-tagged-as.md#example).
+> [!TIP]
+> [Ознакомьтесь с примером конфигурирования](../php-definition/di-tagged-as.md#example).
 
 
 Указывайте значение `false` для параметра `$isLazy` в хелпер функции `diTaggedAs()` при внедрении коллекции в параметр с типом `array`:
@@ -43,7 +44,7 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            diTaggedAs('tags.group_1', isLazy: false)
+            diTaggedAs('tags.group_1')
         );
 };
 ```
@@ -54,7 +55,7 @@ namespace App\Services;
 
 class Foo
 {
-    public function __construct(public readonly array $collection) {}
+    public function __construct(public readonly iterable $collection) {}
 
 }
 ```
