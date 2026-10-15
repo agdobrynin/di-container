@@ -11,9 +11,10 @@ outline: [2, 4]
 - **ключ** – произвольная непустая строка, одинаковая во всех тегах коллекции.
 - **значение** – не пустая строка уникальная в рамках коллекции.
 
-Для внедрения коллекции указываем значение ключа из метаданных тегов в параметре `$key` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+Внедрение зависимости через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md),
+и передачей значения ключа из метаданных тегов параметре `$key`.
 
-Указываем метаданные тегов через параметр `$options` в методе `bindTag()` [^BindTag] или [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Метаданные тега передаются в параметре `$options` метода `bindTag()` [^BindTag] или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 <!--@include: _include/important_key_equals.md-->
 
@@ -58,12 +59,13 @@ final class Baz
 :::
 
 Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных каждого тега.
-Для получения идентификатора элемента из [метаданных тега](../tag-metadata.md) будем указывать значение `'key_as'`.
+В [метаданных тега](../tag-metadata.md) идентификатор элемента будет указан в ключе `'key_as'`.
 
 
 ### Настройка в файлах конфигураций { #example-key-in-metadata-php-definition }
 
-Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md), добавим теги и метаданные PHP классам через метод `bindTag()` [^BindTag].
+Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) и передачей имени метаданных тега в параметр `$key`.
+PHP классам добавим теги и метаданные через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 

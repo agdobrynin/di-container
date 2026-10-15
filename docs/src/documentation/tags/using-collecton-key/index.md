@@ -78,7 +78,7 @@ final class Baz
 
 ### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
-Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md), добавим теги PHP классам через метод `bindTag()` [^BindTag].
+Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md). PHP классам добавим теги через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 
@@ -92,16 +92,14 @@ use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs(
-                tag: 'tags.access_by_key'
-            )
+            servies: diTaggedAs('tags.access_by_key')
         );
 
     yield diAutowire(Bar::class)
-        ->bindTag(name: 'tags.access_by_key');
+        ->bindTag('tags.access_by_key');
    
    yield diAutowire(Baz::class)
-        ->bindTag(name: 'tags.access_by_key');
+        ->bindTag('tags.access_by_key');
 };
 ```
 
@@ -151,8 +149,8 @@ var_dump(count($foo->services));
 
 ### Конфигурация через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
 
-Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md),
-к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Внедрение в параметр `\App\Services\Foo::$services` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+Добавим PHP классам теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 PHP классы:
 
@@ -179,7 +177,7 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.access_by_key')]// [!code ++]
+#[Tag('tags.access_by_key')]// [!code ++]
 final class Bar
 {
     // …
@@ -192,7 +190,7 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.access_by_key')]// [!code ++]
+#[Tag('tags.access_by_key')]// [!code ++]
 final class Baz
 {
     // …

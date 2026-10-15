@@ -51,7 +51,7 @@ final class Baz
 
 ### Настройка в файлах конфигураций { #example-php-definition }
 
-Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$useKeys` равным `false`. Добавим теги PHP классам через метод `bindTag()` [^BindTag].
+Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$useKeys` равным `false`. PHP классам добавим теги через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 
@@ -103,7 +103,7 @@ foreach ($foo->services as $id => $service) {
 
 ### Конфигурация через атрибуты { #example-attributes }
 
-Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$useKeys` равным `false`. PHP классам добавим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Внедрение в параметр `\App\Services\Foo::$services` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$useKeys` равным `false`. Добавим PHP классам теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 PHP классы:
 
