@@ -221,8 +221,7 @@ namespace App\Service;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag('tags.internal_service')]// [!code ++]
-final class Qux
+#[Tag('tags.internal_service')]// [!code ++] final class Qux
 {
     // …    
 }
