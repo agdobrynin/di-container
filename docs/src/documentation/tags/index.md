@@ -50,6 +50,6 @@
 - 📑 [PHP интерфейс как имя тега](interface-as-tag.md).
 - 🚫 [Исключение элементов из коллекции](exclide-from-collection.md).
 - ⬆️ [Приоритет элементов коллекции](collection-priority.md).
-- 🔑 [Использование ключей коллекции](using-collecton-key.md).
+- 🔑 [Идентификаторы элементов коллекции](using-collecton-key.md).
 
 <!--@include: ../_include/term_notes.md-->

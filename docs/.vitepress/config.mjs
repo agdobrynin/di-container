@@ -111,7 +111,7 @@ export default defineConfig({
                       { text: 'PHP интерфейс как имя тега', link: 'interface-as-tag.md' },
                       { text: 'Исключение элементов из коллекции', link: 'exclide-from-collection.md' },
                       { text: 'Приоритет элементов коллекции', link: 'collection-priority.md' },
-                      { text: 'Использование ключей в коллекции', link: 'using-collecton-key.md' },
+                      { text: 'Идентификаторы элементов коллекции', link: 'using-collecton-key.md' },
                       { text: 'Соглашение по именованию тегов и мета-данных', link: 'naming-convention.md' },
                       { text: 'Метаданные тега', link: 'tag-metadata.md' },
                     ],
