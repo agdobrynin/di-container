@@ -13,12 +13,102 @@ outline: [2, 4]
 
 ## Пример конфигурации { #example }
 
-Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке:
+Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services`.
+Элемент коллекции `\App\Services\Qux` должен использовать «**метод-приоритета**», для остальных элементов приоритет определить через **приоритет тега**.
+
+Внедряемая коллекция должна получить следующий порядок элементов:
 - `\App\Services\Qux`
 - `\App\Services\Baz`
 - `\App\Services\Bar`
 
 PHP классы:
+
+<!--@include: _include/code-group-src.md-->
+
+### Настройка в файлах конфигураций { #php-definition }
+
+«Метод-приоритета» передаётся через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
+**Имя метаданных должно быть** представлено строкой `'priority.method'`, значение – имя метода.
+
+Добавим «метод-приоритета» `App\Services\Qux::getPriority()`. Метод возвращает значение приоритета `100`:
+
+```php
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+final class Qux
+{
+    // 🚩 Приоритет элемента в коллекции
+    public static function getPriority(): int // [!code ++]
+    {// [!code ++]
+        return 100;// [!code ++]
+    }// [!code ++]
+
+    // …
+}
+```
+
+Конфигурационный файл:
+
+```php {16-18}
+// file: /app/config/tagged_service.php
+use Generator;
+use App\Services\{Foo, Bar, Baz, Qux};
+
+use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            servies: diTaggedAs('tags.ordered')
+    );
+
+    yield diAutowire(Qux::class)
+        ->bindTag(
+            name: 'tags.ordered',
+            options: [
+               'priority.method' => 'getPriority',
+            ]
+        );
+        
+    yield diAutowire(Baz::class)
+        ->bindTag(
+            name: 'tags.ordered',
+            priority: 10,
+        );
+        
+    yield diAutowire(Bar::class)
+        // по умолчанию `$priority = null`
+        ->bindTag('tags.ordered');
+};
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/tagged_foo_service.php')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
+}
+// вывод консоли:
+//string(16) "App\Services\Qux"
+//string(16) "App\Services\Baz"
+//string(16) "App\Services\Bar"
+```
+
+### Конфигурация через атрибуты { #attributes }
+
+«Метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
+
+Внедрение коллекции через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
 
 ::: code-group
 
@@ -26,9 +116,14 @@ PHP классы:
 // file: /app/src/Services/Foo.php
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
+
 final class Foo
 {
-    public function __construct(public readonly iterable $services) {}    
+    public function __construct(
+        #[TaggedAs('tags.ordered')]// [!code ++]
+        public readonly iterable $services
+    ) {}    
 }
 ```
 
@@ -36,6 +131,9 @@ final class Foo
 // file: /app/src/Services/Bar.php
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag('tags.ordered')]// [!code ++]
 final class Bar
 {
     // …
@@ -46,6 +144,9 @@ final class Bar
 // file: /app/src/Services/Baz.php
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag('tags.ordered', priority: 10)]// [!code ++]
 final class Baz
 {
     // …
@@ -56,84 +157,42 @@ final class Baz
 // file: /app/src/Services/Qux.php
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag('tags.ordered', priorityMethod: 'getPriority')]// [!code ++]
 final class Qux
 {
-    // …
-}
-```
-
-:::
-
-Совместить конфигурирование через $priority и метод
-
-🚧🚧🚧🚧🚧🚧
-
-
-В [файлах конфигураций](../../container-builder/configuration_files.md) определений «метод-приоритета» передаётся через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
-**Имя метаданных должно быть** `'priority.method'`, значение – имя метода.
-
-::: code-group
-
-```php [файл конфигураций tagged_service.php]   
-// file: /app/config/tagged_service.php
-use Generator;
-use App\Services\{Foo, Bar};
-
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (): Generator {
-   yield diAutowire(Foo::class)
-      ->bindArguments(
-         servies: diTaggedAs('tags.ordered')
-      );
-
-    yield diAutowire(Bar::class)
-        ->bindTag(
-            name: 'tags.ordered',
-            options: [
-               'priority.method' => 'getPriority',// [!code ++]
-            ]
-        );
-};
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-final class Bar
-{
-    // …
-    public static function getPriority(string $tagName, array $options): int // [!code ++]
+    // 🚩 Приоритет элемента в коллекции
+    public static function getPriority(): int // [!code ++]
     {// [!code ++]
         return 100;// [!code ++]
     }// [!code ++]
+
+    // …
 }
 ```
 
 :::
 
-
-Через PHP атрибуты «метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
+Контейнер зависимостей:
 
 ```php
-// file: /app/src/Services/Bar.php
-namespace App\Services;
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
 
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
 
-#[Tag(// [!code ++]
-    name: 'tags.ordered',// [!code ++]
-    priorityMethod: 'getPriority',// [!code ++]
-)]// [!code ++]
-final class Bar
-{
-    // …
-    public static function getPriority(string $tagName, array $options): int // [!code ++]
-    {// [!code ++]
-        return 100;// [!code ++]
-    }// [!code ++]  
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
 }
+// вывод консоли:
+//string(16) "App\Services\Qux"
+//string(16) "App\Services\Baz"
+//string(16) "App\Services\Bar"
 ```
 
 <!--@include: ../../php-definition/_include/bind-tag_notes.md-->

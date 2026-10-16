@@ -6,61 +6,19 @@ outline: [2, 4]
 ## Обзор { #overview }
 
 Приоритет тега задаётся в теге элемента коллекции.
-[В файлах конфигураций](../../container-builder/configuration_files.md) определений приоритет указываться в параметре `$priority` метода `bindTag()`[^BindTag],
-через PHP атрибуты приоритет указывается в параметре [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../../attribute-definition/tag.md).
+[В файлах конфигураций](../../container-builder/configuration_files.md) приоритет элемента коллекции указываться в параметре `$priority` метода `bindTag()`[^BindTag],
+в PHP атрибутах приоритет указывается в параметре [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../../attribute-definition/tag.md).
 
 ## Пример конфигурации { #example-priority-by-tag }
 
-Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке:
+Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке используя **приоритет тега**:
 - `\App\Services\Qux`
 - `\App\Services\Baz`
 - `\App\Services\Bar`
 
 PHP классы:
 
-::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-final class Foo
-{
-    public function __construct(public readonly iterable $services) {}    
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
-```php [Qux.php]
-// file: /app/src/Services/Qux.php
-namespace App\Services;
-
-final class Qux
-{
-    // …
-}
-```
-
-:::
+<!--@include: _include/code-group-src.md-->
 
 ### Настройка в файлах конфигураций { #priority-by-tag-php-definition }
 
@@ -82,7 +40,7 @@ return static function (): Generator {
         );
 
     yield diAutowire(Bar::class)
-        ->bindTag(name: 'tags.ordered');
+        ->bindTag('tags.ordered');
    
    yield diAutowire(Baz::class)
         ->bindTag(
