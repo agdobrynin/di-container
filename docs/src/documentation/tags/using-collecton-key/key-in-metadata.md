@@ -7,18 +7,18 @@ outline: [2, 4]
 
 Пользовательские идентификаторы элементам коллекции можно установить через [метаданные](../tag-metadata.md) тега.
 
-Значение в метаданных тега указывается парой ключ-значение:
-- **ключ** – произвольная непустая строка, одинаковая во всех тегах коллекции.
-- **значение** – не пустая строка уникальная в рамках коллекции.
-
-Внедрение зависимости через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md),
-и передачей значения ключа из метаданных тегов параметре `$key`.
+Внедрение коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md)
+с передачей **имени метаданных** в параметре `$key`.
 
 Метаданные тега передаются в параметре `$options` метода `bindTag()` [^BindTag] или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 <!--@include: _include/important_key_equals.md-->
 
 ## Пример использования идентификатора элемента из метаданных { #example-key-in-metadata }
+
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных каждого тега.
+
+Установим имя метаданных – `'key_as'`.
 
 PHP классы:
 
@@ -58,18 +58,15 @@ final class Baz
 
 :::
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных каждого тега.
-В [метаданных тега](../tag-metadata.md) идентификатор элемента будет указан в ключе `'key_as'`.
-
-
 ### Настройка в файлах конфигураций { #example-key-in-metadata-php-definition }
 
-Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) и передачей имени метаданных тега в параметр `$key`.
-PHP классам добавим теги и метаданные через метод `bindTag()` [^BindTag].
+Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) и передачей имени метаданных в параметр `$key`.
+
+PHP классам добавим теги с метаданными через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 
-```php
+```php {12,19-21,27-29}
 // file: /app/config/tagged_foo_service.php
 use Generator;
 use App\Services\{Foo, Bar, Baz};
@@ -145,8 +142,9 @@ var_dump(
 
 ### Конфигурация через атрибуты { #example-key-in-metadata-attributes }
 
-Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md),
-к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+Внедрение коллекции через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) и передачей имени метаданных в параметр `$key`.
+
+К PHP классам которые будут элементам коллекции применим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
 
 PHP классы:
 

@@ -55,7 +55,7 @@ final class Baz
 
 Конфигурационный файл:
 
-```php
+```php {12}
 // file: /app/config/tagged_foo_service.php
 use Generator;
 use App\Services\{Foo, Bar, Baz};
