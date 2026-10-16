@@ -38,6 +38,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 > [!NOTE]
 > Подробное описание работы с тегами в разделе «[Работа с тегами в контейнере](../tags/index.md)».
 
+## Пример использования хелпер функции { #example-inject-by-helper-fn-di-tagged }
+
 <!--@include: _include/di-tagged-as-example.md-->
 
 <!--@include: ../_include/term_notes.md-->

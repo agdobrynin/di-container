@@ -8,44 +8,9 @@
 
 <!--@include: ../_include/need_import_php_class.md-->
 
+## Пример использования хелпер функции { #example-inject-by-helper-fn-di-tagged }
+
 <!--@include: ../php-definition/_include/di-tagged-as-example.md-->
-
-## Внедрение в коллекции параметр типа `array` { #inject-by-di-tagged-array-param }
-
-При внедрении коллекции элементов из контейнера отмеченных тегом в параметр типа `array` обязательно передать значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
-
-:::code-group
-
-```php [tagged_services.php]
-// file: /app/config/tagged_services.php
-use Generator;
-use App\Services\Foo;
-
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-
-return static function (): Generator {
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            diTaggedAs(
-                'tags.group_1',
-                isLazy: false,// [!code highlight]
-            )
-        );
-};
-```
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-class Foo
-{
-    public function __construct(public readonly array $collection) {}
-
-}
-```
-
-:::
 
 ## Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
 

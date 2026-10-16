@@ -1,5 +1,3 @@
-## Пример использования хелпер функции { #example }
-
 Необходимо внедрить в параметр `\App\Services\RuleCollection::$rules` «ленивую коллекцию» из PHP классов отмеченных тегом `'tags.lite-rules'`.
 
 PHP классы:
@@ -67,8 +65,8 @@ return static function (): Generator {
     yield diAutowire(RuleA::class)
         ->bindTag('tags.lite-rules');// [!code highlight]
 
-    // 🚩 класс не отмеченный тегом
-    yield diAutowire(RuleB::class);
+    yield diAutowire(RuleB::class)
+        ->bindTag('tags.other-rulers');// [!code warning]
 
     yield diAutowire(RuleC::class)
         ->bindTag('tags.lite-rules', priority: 100);// [!code highlight]
@@ -100,3 +98,43 @@ foreach ($ruleCollection->rules as $rule) {
 Свойство `\App\Services\RuleCollection::$rules` содержит коллекцию классов отсортированную по значению в параметре `$priority` метода `bindTag()`.
 
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как не отмечен тегом `'tags.lite-rules'`.
+
+## Внедрение зависимости в параметр с типом `array` { #inject-by-di-tagged-array-param }
+
+При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно передать значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
+
+:::code-group
+
+
+```php [tagged_services.php]
+// file: /app/config/tagged_services.php
+use Generator;
+use App\Services\Qux;
+
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(Qux::class)
+        ->bindArguments(
+            rules: diTaggedAs(
+                'tags.lite-rules',// [!code highlight]
+                isLazy: false,// [!code ++]
+            )
+        );
+};
+```
+
+```php [Qux.php]
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+class Qux
+{
+    public function __construct(
+        public readonly array $rules// [!code highlight]
+    ) {}
+
+}
+```
+
+:::
