@@ -17,6 +17,10 @@ outline: [2, 4]
 
 ## Пример использования «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default-default }
 
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных тега с именем `'key_as'`.
+
+Предусмотреть резервный метод `getCustomIndex()` для получения идентификатора элемента коллекции по умолчанию.
+
 PHP классы:
 
 ::: code-group
@@ -43,7 +47,7 @@ final class Bar
 }
 ```
 
-```php [Baz.php]
+```php [Baz.php] {8-11}
 //file: /app/src/Services/Baz.php
 namespace App\Services;
 
@@ -70,16 +74,15 @@ final class Baz
 
 :::
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных тега с именем `'key_as'`,
-и предусмотреть резервный метод получения идентификатора элемента коллекции через **«метод идентификатора» элемента коллекции по умолчанию**.
-
 ### Настройка в файлах конфигураций { #key-from-method-default-default-php-definition }
 
-Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md), добавим теги и метаданные PHP классам через метод `bindTag()` [^BindTag].
+«Метод идентификатора» элемента коллекции по умолчанию задаётся в параметре `$keyDefaultMethod` [хелпер функции diTaggedAs()](../../php-definition/di-tagged-as.md).
+
+Добавим теги и метаданные PHP классам через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 
-```php
+```php {13}
 // file: /app/config/tagged_foo_service.php
 use Generator;
 use App\Services\{Foo, Bar, Baz, Qux};
@@ -170,7 +173,9 @@ var_dump(
 ### Конфигурация через атрибуты { #key-from-method-default-default-attributes }
 
 
-Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$keyDefaultMethod`, к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$keyDefaultMethod`.
+
+К PHP классам которые будут элементам коллекции применим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
 
 PHP классы:
 
@@ -213,7 +218,7 @@ final class Bar
 }
 ```
 
-```php [Baz.php]
+```php [Baz.php] {12-15}
 //file: /app/src/Services/Baz.php
 namespace App\Services;
 
@@ -301,3 +306,6 @@ var_dump(
 // bool(true)
 
 ```
+
+<!--@include: ../../_include/term_notes.md-->
+<!--@include: ../../php-definition/_include/bind-tag_notes.md-->

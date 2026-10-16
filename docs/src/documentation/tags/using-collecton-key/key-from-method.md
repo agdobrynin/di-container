@@ -20,9 +20,9 @@ outline: [2, 4]
 
 ## Пример использования «Метод идентификатора» элемента коллекции { #example-key-from-method }
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из «**метода идентификатора**» каждого элемента коллекции.
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных тега с именем `'key_as'`.
 
-Установим имя метаданных – `'key_as'`.
+Элемент коллекции `\App\Services\Baz` должен использовать «метод идентификатора» `\App\Services\Baz::getKeyThroughOptions()`.
 
 PHP классы:
 
@@ -47,14 +47,6 @@ namespace App\Services;
 final class Bar
 {
     // …
-
-    public static function getKeyOrClassName(string $tag): string
-    {
-        return match ($tag) {
-            'tags.key_from_method' => 'id_bar',
-            default => self::class
-        };
-    }
 }
 ```
 
@@ -99,22 +91,22 @@ return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
             servies: diTaggedAs(
-                tag: 'tags.key_from_method',
+                tag: 'tags.qux',
                 key: 'key_as',
             )
         );
 
     yield diAutowire(Bar::class)
         ->bindTag(
-            name: 'tags.key_from_method',
+            name: 'tags.qux',
             options: [
-                'key_as' => 'self::getKeyOrClassName',
+                'key_as' => 'id_bar',
             ],
         );
         
    yield diAutowire(Baz::class)
         ->bindTag(
-            name: 'tags.key_from_method'
+            name: 'tags.qux'
             options: [
                 'key_as' => 'self::getKeyThroughOptions',
                 'app_staging' => true,
@@ -184,7 +176,7 @@ final class Foo
 {
     public function __construct(
         #[TaggedAs(// [!code ++]
-            name: 'tags.key_from_method',// [!code ++]
+            name: 'tags.qux',// [!code ++]
             key: 'key_as',// [!code ++]
         )]// [!code ++]
         public readonly iterable $services
@@ -199,22 +191,14 @@ namespace App\Services;
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
 #[Tag(// [!code ++]
-    name: 'tags.key_from_method',// [!code ++]
+    name: 'tags.qux',// [!code ++]
     options: [// [!code ++]
-        'key_as' => 'self::getKeyOrClassName',// [!code ++]
+        'key_as' => 'id_bar',// [!code ++]
     ],// [!code ++]
 )]// [!code ++]
 final class Bar
 {
     // …
-
-    public static function getKeyOrClassName(string $tag): string
-    {
-        return match ($tag) {
-            'tags.key_from_method' => 'id_bar',
-            default => self::class
-        };
-    }
 }
 ```
 
@@ -225,7 +209,7 @@ namespace App\Services;
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
 #[Tag(// [!code ++]
-    name: 'tags.key_from_method',// [!code ++]
+    name: 'tags.qux',// [!code ++]
     options: [// [!code ++]
         'key_as' => 'self::getKeyThroughOptions',// [!code ++]
     ],// [!code ++]
