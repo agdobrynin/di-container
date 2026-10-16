@@ -5,9 +5,9 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Приоритет тега задаётся в теге элемента коллекции.
-[В файлах конфигураций](../../container-builder/configuration_files.md) приоритет элемента коллекции указываться в параметре `$priority` метода `bindTag()`[^BindTag],
-в PHP атрибутах приоритет указывается в параметре [атрибута `\Kaspi\DiContainer\Attributes\Tag::$priority`](../../attribute-definition/tag.md).
+Приоритет задаётся в теге элемента коллекции.
+
+Приоритет тега указывается в параметре `$priority` метода `bindTag()`[^BindTag], или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 ## Пример конфигурации { #example-priority-by-tag }
 
@@ -71,7 +71,7 @@ $foo = $container->get(Foo::class);
 foreach ($foo->services as $service) {
     var_dump($service::class);
 }
-// вывод в консоли:
+// вывод консоли:
 //string(16) "App\Services\Qux"
 //string(16) "App\Services\Baz"
 //string(16) "App\Services\Bar"
@@ -81,8 +81,9 @@ foreach ($foo->services as $service) {
 
 ### Конфигурация через атрибуты { #priority-by-tag-attributes }
 
-Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md),
-к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Внедряем коллекцию в параметр `\App\Services\Foo::$services` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+
+Элементам коллекции, представленные PHP классами, добавим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с параметром `$priority`.
 
 PHP классы:
 
@@ -159,7 +160,7 @@ $foo = $container->get(Foo::class);
 foreach ($foo->services as $service) {
     var_dump($service::class);
 }
-// вывод в консоли:
+// вывод консоли:
 //string(16) "App\Services\Qux"
 //string(16) "App\Services\Baz"
 //string(16) "App\Services\Bar"
