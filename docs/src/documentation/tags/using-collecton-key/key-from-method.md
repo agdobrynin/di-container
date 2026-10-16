@@ -8,17 +8,21 @@ outline: [2, 4]
 Идентификатор элемента коллекции, представленного PHP классом, можно получить через специальный метод этого PHP класса – «метод идентификатора». Настройка производится через [метаданные тега](../tag-metadata.md).
 
 Значение в метаданных тега указывается парой ключ-значение:
-- **ключ** – произвольная непустая строка, одинаковая во всех тегах коллекции.
-- **значение** – имя «метода идентификатора» с префиксом `self::`.
+- **ключ** – имя метаданных, одинаковое во всех тегах коллекции.
+- **значение** – «метод идентификатора» с префиксом `self::`.
 
-Для внедрения коллекции указываем значение ключа из метаданных тегов в параметре `$key` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+Внедрение коллекции через [хелпер функцию diTaggedAs()](../../php-definition/di-tagged-as.md) или [атрибут \Kaspi\DiContainer\Attributes\TaggedAs](../../attribute-definition/tagged-as.md) с передачей имени метаданных в параметре `$key`.
 
-Указываем метаданные тегов через параметр `$options` в методе `bindTag()` [^BindTag] или [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Метаданные тега передаются в параметре `$options` метода `bindTag()` [^BindTag] или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 <!--@include: _include/key_from_method.md-->
 <!--@include: _include/important_key_equals.md-->
 
 ## Пример использования «Метод идентификатора» элемента коллекции { #example-key-from-method }
+
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из «**метода идентификатора**» каждого элемента коллекции.
+
+Установим имя метаданных – `'key_as'`.
 
 PHP классы:
 
@@ -77,13 +81,14 @@ final class Baz
 
 :::
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из «**метода идентификатора**» каждого элемента коллекции. Ключ в [метаданных тегов](../tag-metadata.md) указывающий какой метод вызвать – `'key_as'`.
-
 ### Настройка в файлах конфигураций { #example-key-from-method-php-definitions }
 
-Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md), добавим теги и метаданные PHP классам через метод `bindTag()` [^BindTag].
+Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) и передачей имени метаданных в параметр `$key`.
 
-```php
+PHP классам добавим теги с метаданными через метод `bindTag()` [^BindTag].
+
+
+```php {12,19-21,27-30}
 // file: /app/config/tagged_foo_service.php
 use Generator;
 use App\Services\{Foo, Bar, Baz};
@@ -160,7 +165,10 @@ var_dump(
 
 ### Конфигурация через атрибуты { #example-key-from-method-php-attributes }
 
-Для внедрения коллекции добавим [атрибут \Kaspi\DiContainer\Attributes\TaggedAs](../../attribute-definition/tagged-as.md), к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+Внедрение коллекции через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) и передачей имени метаданных в параметр `$key`.
+
+К PHP классам которые будут элементам коллекции применим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+
 
 PHP классы:
 
