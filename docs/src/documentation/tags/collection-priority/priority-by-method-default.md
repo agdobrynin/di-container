@@ -1,3 +1,6 @@
+---
+outline: [2, 4]
+---
 # «Метод-приоритета» по умолчанию { #priority-by-method-default }
 
 ## Обзор { #overview }
@@ -12,112 +15,96 @@
 
 ## Пример конфигурации { #example }
 
-Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services` в определенном порядке:
+Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services`.
+Элемент коллекции `\App\Services\Qux` должен использовать **«Метод-приоритета» по умолчанию**, для остальных элементов приоритет определить через **приоритет тега**.
+
+Внедряемая коллекция должна получить следующий порядок элементов:
 - `\App\Services\Qux`
 - `\App\Services\Baz`
 - `\App\Services\Bar`
 
 PHP классы:
 
-::: code-group
+<!--@include: _include/code-group-src.md-->
 
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
+Реализуем «метод-приоритета» по умолчанию в `App\Services\Qux::getPriorityForCollection()`. Метод возвращает значение приоритета `100`:
 
-final class Foo
-{
-    public function __construct(public readonly iterable $services) {}    
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
-```php [Qux.php]
+```php
 // file: /app/src/Services/Qux.php
 namespace App\Services;
 
 final class Qux
 {
+    public static function getPriorityForCollection(): int // [!code ++]
+    {// [!code ++]
+        return 100;// [!code ++]
+    }// [!code ++]
+
     // …
 }
 ```
 
-:::
 
-Совместить конфигурирование через $priority и метод
+### Настройка в файлах конфигураций { #php-definition }
 
-🚧🚧🚧🚧🚧🚧
+**«Метод-приоритета» по умолчанию** задаётся в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md).
 
-В [файле конфигураций определений](../../container-builder/configuration_files.md) имя метода указывается в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md).
+Конфигурационный файл:
 
-::: code-group
-
-```php [файл конфигураций tagged_service.php]   
+```php {12}
 // file: /app/config/tagged_service.php
 use Generator;
-use App\Services\{Foo, Bar};
+use App\Services\{Foo, Bar, Baz, Qux};
 
-use function Kaspi\DiContainer\diAutowire;
+use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
-   yield diAutowire(Foo::class)
-      ->bindArguments(
-         servies: diTaggedAs(
-            'tags.ordered',// [!code ++]
-            priorityDefaultMethod: 'getPriorityForCollection'// [!code ++]
-         )
-      );
-      
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            servies: diTaggedAs(
+                'tags.ordered',
+                priorityDefaultMethod: 'getPriorityForCollection',
+            )
+    );
 
     yield diAutowire(Bar::class)
-        ->bindTag(name: 'tags.ordered');
+        ->bindTag('tags.ordered');
+
+    yield diAutowire(Baz::class)
+        ->bindTag(
+            name: 'tags.ordered',
+            priority: 10,
+        );
+
+    yield diAutowire(Qux::class)
+        ->bindTag('tags.ordered');        
 };
 ```
 
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
+Контейнер зависимостей:
 
-final class Bar
-{
-    // …
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
 
-    // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
-    // приоритет может быть получен через «метода-приоритета» по умолчанию
-   public static function getPriorityForCollection(string $tag): string|int|null// [!code ++]
-   {// [!code ++]
-      return match ($tag) {// [!code ++]
-         'tags.internal' => 100,// [!code ++]
-         'tags.validator' => 'GROUP100:0001',// [!code ++]
-         default => null,// [!code ++]
-      };// [!code ++]
-   }// [!code ++]
+$container = (new DiContainerBuilder())
+    ->load('/app/config/tagged_foo_service.php')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
 }
+// вывод консоли:
+//string(16) "App\Services\Qux"
+//string(16) "App\Services\Baz"
+//string(16) "App\Services\Bar"
 ```
 
-:::
+### Конфигурация через атрибуты { #attributes }
 
-
-Через PHP атрибуты «метод-приоритета» по умолчанию указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
+**«Метод-приоритета» по умолчанию** задаётся в параметре [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs::$priorityDefaultMethod`](../../attribute-definition/tagged-as.md) через который внедряется зависимость.
 
 ::: code-group
 
@@ -129,12 +116,12 @@ use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
 
 final class Foo
 {
-   public function __construct(
-      #[TaggedAs(// [!code ++]
-         name: 'tags.ordered',// [!code ++]
-         priorityDefaultMethod: 'getPriorityForCollection',// [!code ++]
-      )]// [!code ++]
-      public readonly iterable $services
+    public function __construct(
+        #[TaggedAs(// [!code ++]
+            'tags.ordered',// [!code ++]
+            priorityDefaultMethod: 'getPriorityForCollection',// [!code ++]
+        )]// [!code ++]
+        public readonly iterable $services
     ) {}    
 }
 ```
@@ -145,24 +132,65 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.ordered')]// [!code ++]
+#[Tag('tags.ordered')]// [!code ++]
 final class Bar
 {
     // …
-    
-    // 🚩 без явного указания приоритета и «метода-приоритета» в теге,
-   // приоритет может быть получен через «метода-приоритета» по умолчанию
-   public static function getPriorityForCollection(string $tag): string|int|null// [!code ++]
-   {// [!code ++]
-      return match ($tag) {// [!code ++]
-         'tags.internal' => 100,// [!code ++]
-         'tags.validator' => 'GROUP100:0001',// [!code ++]
-         default => null,// [!code ++]
-      };// [!code ++]
-   }// [!code ++]
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag('tags.ordered', priority: 10)]// [!code ++]
+final class Baz
+{
+    // …
+}
+```
+
+```php [Qux.php]
+// file: /app/src/Services/Qux.php
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+
+#[Tag('tags.ordered')]// [!code ++]
+final class Qux
+{
+    public static function getPriorityForCollection(): int
+    {
+        return 100;
+    }
+
+    // …
 }
 ```
 
 :::
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
+}
+// вывод консоли:
+//string(16) "App\Services\Qux"
+//string(16) "App\Services\Baz"
+//string(16) "App\Services\Bar"
+```
 
 <!--@include: ../../php-definition/_include/bind-tag_notes.md-->

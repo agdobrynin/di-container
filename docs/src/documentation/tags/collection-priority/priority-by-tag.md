@@ -26,7 +26,7 @@ PHP классы:
 
 Конфигурационный файл:
 
-```php
+```php {19,25}
 // file: /app/config/tagged_foo_service.php
 use Generator;
 use App\Services\{Foo, Bar, Baz};
@@ -109,7 +109,7 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.ordered')]// [!code ++]
+#[Tag('tags.ordered')]// [!code ++]
 final class Bar
 {
     // …
@@ -122,7 +122,7 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.ordered', priority: 10)]// [!code ++]
+#[Tag('tags.ordered', priority: 10)]// [!code ++]
 final class Baz
 {
     // …
@@ -135,7 +135,7 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
-#[Tag(name: 'tags.ordered', priority: 100)]// [!code ++]
+#[Tag('tags.ordered', priority: 100)]// [!code ++]
 final class Qux
 {
     // …
