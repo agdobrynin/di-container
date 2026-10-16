@@ -2,42 +2,11 @@
 
 ## Обзор { #overview }
 
-[Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) указывает теги к PHP классу.
-
-::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag; 
-
-#[Tag('tags.group_one')]
-#[Tag('tags.group_two', priority: 5)]
-final class Foo
-{
-    // …    
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag; 
-
-#[Tag('tags.group_two', priority: 10)]
-final class Bar
-{
-    // …    
-}
-```
-
-:::
-
-## Внедрение коллекции { #inject-by-attribute-tagged-as }
+[Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) устанавливает тег и метаданные для PHP класса.
 
 [Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом.
+
+<!--@include: ../_include/need_import_php_class.md-->
 
 Конфигурирование внедрения коллекции:
 
@@ -113,11 +82,11 @@ foreach ($foo->collection as $key => $item) {
 // bool(true)
 ```
 
-Порядок элементов в коллекции `$baz->collection` обусловлен значением `$priority` у каждого тега. Подробнее в разделе документации «[Приоритет элементов коллекции](collection-priority/index.md)».
-
-<!--@include: ../_include/need_import_php_class.md-->
+Порядок элементов в коллекции `\App\Services\Foo::$collection` обусловлен значением `$priority` у каждого тега. Изучите раздел документации «[Приоритет элементов коллекции](collection-priority/index.md)».
 
 ## Внедрение коллекции для параметров переменной длины { #inject-by-attribute-tagged-as-variadic }
+
+Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
 
 ```php
 // file: /app/src/Services/Qux.php
@@ -135,3 +104,6 @@ final class Qux
 
 }
 ```
+
+> [!TIP]
+> <!--@include: ../_include/variadic_params.md-->

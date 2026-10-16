@@ -1,0 +1,3 @@
+При использовании [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)
+и [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list)
+действуют правила описанные в документации по PHP.

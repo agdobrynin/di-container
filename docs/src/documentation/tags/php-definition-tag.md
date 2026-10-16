@@ -2,35 +2,17 @@
 
 ## Обзор { #overview }
 
-Для указания тегов используется метод `bindTag()` [^BindTag], описанный интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
-
-Сигнатура метода:
-
-```php
-DiDefinitionTagArgumentInterface::bindTag(
-    string $name,
-    array $options = [],
-    null|int|string $priority = null
-)
-```
-
-Параметры:
-- `$name` – имя тега.
-- `$options` – [метаданные тега](tag-metadata.md).
-- `$priority` – [приоритет элемента в коллекции](collection-priority/index.md).
-
-> [!TIP]
-> Ознакомьтесь с разделом «[Рекомендации по именованию значений для имён тегов, и метаданных для тега](naming-convention.md)».
-
-## Внедрение коллекции { #inject-by-di-tagged-as }
+Для указания тегов и метаданных используйте метод `bindTag()` [^BindTag], описанный интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
 
 [Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом.
 
-> [!TIP]
-> [Ознакомьтесь с примером конфигурирования](../php-definition/di-tagged-as.md#example).
+<!--@include: ../_include/need_import_php_class.md-->
 
+<!--@include: ../php-definition/_include/di-tagged-as-example.md-->
 
-Указывайте значение `false` для параметра `$isLazy` в хелпер функции `diTaggedAs()` при внедрении коллекции в параметр с типом `array`:
+## Внедрение в коллекции параметр типа `array` { #inject-by-di-tagged-array-param }
+
+При внедрении коллекции элементов из контейнера отмеченных тегом в параметр типа `array` обязательно передать значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
 :::code-group
 
@@ -44,7 +26,10 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            diTaggedAs('tags.group_1')
+            diTaggedAs(
+                'tags.group_1',
+                isLazy: false,// [!code highlight]
+            )
         );
 };
 ```
@@ -55,7 +40,7 @@ namespace App\Services;
 
 class Foo
 {
-    public function __construct(public readonly iterable $collection) {}
+    public function __construct(public readonly array $collection) {}
 
 }
 ```
@@ -63,6 +48,8 @@ class Foo
 :::
 
 ## Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
+
+Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
 
 ::: code-group
 
@@ -96,8 +83,6 @@ class Bar
 :::
 
 > [!TIP]
-> При использовании [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)
-> и [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list)
-> действуют правила описанные в документации по PHP.
+> <!--@include: ../_include/variadic_params.md-->
 
 <!--@include: ../php-definition/_include/bind-tag_notes.md-->
