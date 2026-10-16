@@ -34,11 +34,10 @@ export default defineConfig({
               {
                 base: '/documentation/',
                 text: 'Руководство',
-                link: 'index.md',
                 items: [
                   {
                     base: '/documentation/container-builder/',
-                    text: '👷‍♂️ Сборка контейнера зависимостей',
+                    text: 'Сборка контейнера зависимостей',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -50,12 +49,12 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/container-config/',
-                    text: '⚙️ Конфигурация для DiContainer',
+                    text: 'Конфигурация для DiContainer',
                     link: 'index.md'
                   },
                   {
                     base: '/documentation/php-definition/',
-                    text: '🐘 Настройка в конфигурационных файлах определений',
+                    text: 'Настройка в конфигурационных файлах определений',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -73,7 +72,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/attribute-definition/',
-                    text: '#️⃣  Настройка определений через PHP атрибуты',
+                    text: 'Настройка определений через PHP атрибуты',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -96,12 +95,12 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/call/',
-                    text: '📦 Метод контейнера для вызываемых типов',
+                    text: 'Метод контейнера для вызываемых типов',
                     link: 'index.md',
                   },
                   {
                     base: '/documentation/tags/',
-                    text: '🔖 Работа с тегами в контейнере',
+                    text: 'Работа с тегами в контейнере',
                     link: 'index.md',
                     collapsed: true,
                     items: [
