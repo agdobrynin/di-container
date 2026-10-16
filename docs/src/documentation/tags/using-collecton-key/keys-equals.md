@@ -12,6 +12,8 @@ outline: [2, 4]
 
 ## Пример { #keys-equals-example }
 
+Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов будут получены из метаданных тегов.
+
 PHP классы:
 
 ::: code-group
@@ -50,8 +52,6 @@ final class Baz
 
 :::
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов будут получены из метаданных тегов.
-
 ### Настройка в файлах конфигураций { #keys-equals-example-php-definition }
 
 Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md), добавим теги и метаданные PHP классам через метод `bindTag()` [^BindTag].
@@ -78,7 +78,7 @@ return static function (): Generator {
         ->bindTag(
             name: 'tags.key_equals',
             options: [
-                'key_as' => 'id_foo',
+                'key_as' => 'id_foo',// [!code warning]
             ],
             // priority: null, значение по умолчанию
         );
@@ -87,9 +87,9 @@ return static function (): Generator {
         ->bindTag(
             name: 'tags.key_equals',
             options: [
-                'key_as' => 'id_foo',
+                'key_as' => 'id_foo',// [!code warning]
             ],
-            priority: 100,
+            priority: 100,// [!code warning]
         );
 };
 ```
@@ -182,6 +182,7 @@ use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
     options: [// [!code ++]
         'key_as' => 'id_foo',// [!code ++]
     ],// [!code ++]
+    priority: 100,// [!code ++]
 )]// [!code ++]
 final class Baz
 {

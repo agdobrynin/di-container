@@ -21,4 +21,4 @@ aside: false
 >   'priority.method' => 'staticMethodName' // [!code ++]
 > ]
 > ```
-> Подробнее о [приоритете в коллекции](collection-priority/index.md#priority-by-method).
+> Подробнее о [приоритете в коллекции](collection-priority/priority-by-method.md).
