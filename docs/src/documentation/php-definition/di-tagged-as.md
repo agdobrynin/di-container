@@ -24,57 +24,25 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 Параметры:
 - `$tag` – имя тега.
 - `$isLazy` – «[ленивая коллекция](../tags/index.md#collection-is-lazy)».
-- `$priorityDefaultMethod` – если получаемый элемент коллекции является PHP классом и у него не определен параметр `$priority` или `$priorityMethod`, то будет выполнена попытка получить значение приоритета через вызов указанного метода.
-- `$useKeys` – использовать именованные строковые ключи в коллекции. По умолчанию в качестве ключа элемента в коллекции используется идентификатор контейнера [^ContainerId] элемента коллекции.
-- `$key` – использовать ключ в коллекции для элемента из [метаданных тега](../tags/tag-metadata.md).
-- `$keyDefaultMethod` – если получаемый элемент коллекции является PHP классом и у него не определен `$key`, то будет выполнена попытка получить значение ключа тега через вызов указанного метода.
-- `$containerIdExclude` – исключить из коллекции элементы по идентификаторам контейнера [^ContainerId].
-- `$selfExclude` – исключить PHP класс из коллекции если имя тега совпадает с именем тега коллекции.
+- `$priorityDefaultMethod` – «[метод-приоритета](../tags/collection-priority/priority-by-method-default.md)» по умолчанию.
+- `$useKeys` – использовать [идентификаторы элементов коллекции](../tags/using-collecton-key/index.md).
+- `$key` – [имя метаданных](../tags/tag-metadata.md) для получения идентификатора элемента коллекции.
+- `$keyDefaultMethod` – «[метод идентификатора](../tags/using-collecton-key/key-from-method-default.md)» элемента коллекции по умолчанию.
+- `$containerIdExclude` – [исключить из коллекции](../tags/exclide-from-collection.md#exclude-by-id) элементы по идентификатору контейнера.
+- `$selfExclude` – [исключить из коллекции вызывающий PHP класс](../tags/exclide-from-collection.md#exclide-self).
 
 У хелпер функции нет дополнительных методов.
 
-Внедрение зависимости применяется для параметров с типом:
-- `iterable`
-    - `\Traversable`
-        - `\Iterator`
-- `\ArrayAccess`
-- `\Psr\Container\ContainerInterface`
-- `array` (_требуется передать аргумент `false` для параметра `$isLazy`_)
-- `\ArrayAccess & \Iterator & \Psr\Container\ContainerInterface`
+<!--@include: ../_include/need_import_php_class.md-->
 
 > [!NOTE]
 > Подробное описание работы с тегами в разделе «[Работа с тегами в контейнере](../tags/index.md)».
 
 ## Пример использования хелпер функции { #example }
 
-Конфигурирование:
+Необходимо внедрить в параметр `\App\Services\RuleCollection::$rules` «ленивую коллекцию» из PHP классов отмеченных тегом `'tags.lite-rules'`.
 
-```php
-// file: /app/config/services.php
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-use Generator;
-use App\Services\RuleCollection;
-use App\Rules\{RuleA, RuleB, RuleC};
-
-return static function (): Generator {
-
-    yield diAutowire(RuleCollection::class)
-        ->bindArguments(
-            rules: diTaggedAs('tags.lite-rules')
-        );
-
-    yield diAutowire(RuleA::class)
-        ->bindTag('tags.lite-rules');
-
-    // 🚩 класс не отмеченный тегом
-    yield diAutowire(RuleB::class);
-
-    yield diAutowire(RuleC::class)
-        ->bindTag('tags.lite-rules', priority: 100);
-};
-```
-
-Классы для конфигурирования:
+PHP классы:
 
 ::: code-group
 
@@ -120,6 +88,33 @@ final class RuleC
 
 :::
 
+Конфигурирование:
+
+```php
+// file: /app/config/services.php
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+use Generator;
+use App\Services\RuleCollection;
+use App\Rules\{RuleA, RuleB, RuleC};
+
+return static function (): Generator {
+
+    yield diAutowire(RuleCollection::class)
+        ->bindArguments(
+            rules: diTaggedAs('tags.lite-rules')// [!code highlight]
+        );
+
+    yield diAutowire(RuleA::class)
+        ->bindTag('tags.lite-rules');// [!code highlight]
+
+    // 🚩 класс не отмеченный тегом
+    yield diAutowire(RuleB::class);
+
+    yield diAutowire(RuleC::class)
+        ->bindTag('tags.lite-rules', priority: 100);// [!code highlight]
+};
+```
+
 Контейнер зависимостей:
 
 ```php
@@ -141,7 +136,8 @@ foreach ($ruleCollection->rules as $rule) {
 // string (15) "App\Rules\RuleA"
 ```
 
-Свойство `\App\Services\RuleCollection::$rules` содержит коллекцию классов отсортированную по `'priority'`.
+Свойство `\App\Services\RuleCollection::$rules` содержит коллекцию классов отсортированную по значению в параметре `$priority` метода `bindTag()`.
+
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как не отмечен тегом `'tags.lite-rules'`.
 
 <!--@include: ../_include/term_notes.md-->

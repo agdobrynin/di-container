@@ -21,44 +21,18 @@
 
 Параметры:
 - `$name` – имя тега или FQNC [^FQCN] PHP интерфейса по которому нужно собрать коллекцию из контейнера.
-- `$isLazy` – «ленивая коллекция».
-- `$priorityDefaultMethod` – метод-приоритета по-умолчанию.
-- `$useKeys` – использовать строковые ключи в коллекции.
-- `$key` – строковый ключ элемента коллекции в метаданных тега.
-- `$keyDefaultMethod` – метод-ключа по-умолчанию.
-- `$containerIdExclude` – исключить из коллекции элементы по идентификатору контейнера [^ContainerId].
-- `$selfExclude` – исключить из коллекции вызывающий PHP класс.
-
-Внедрение зависимости применяется для параметров с типом:
-- `iterable`
-    - `\Traversable`
-        - `\Iterator`
-- `\ArrayAccess`
-- `\Psr\Container\ContainerInterface`
-- `array` (_требуется передать аргумент `false` для параметра `$isLazy`_)
-- `\ArrayAccess & \Iterator & \Psr\Container\ContainerInterface`
+- `$isLazy` – «[ленивая коллекция](../tags/index.md#collection-is-lazy)».
+- `$priorityDefaultMethod` – «[метод-приоритета](../tags/collection-priority/priority-by-method-default.md)» по умолчанию.
+- `$useKeys` – использовать [идентификаторы элементов коллекции](../tags/using-collecton-key/index.md).
+- `$key` – [имя метаданных](../tags/tag-metadata.md) для получения идентификатора элемента коллекции.
+- `$keyDefaultMethod` – «[метод идентификатора](../tags/using-collecton-key/key-from-method-default.md)» элемента коллекции по умолчанию.
+- `$containerIdExclude` – [исключить из коллекции](../tags/exclide-from-collection.md#exclude-by-id) элементы по идентификатору контейнера.
+- `$selfExclude` – [исключить из коллекции вызывающий PHP класс](../tags/exclide-from-collection.md#exclide-self).
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-> [!IMPORTANT]
-> Метод-приоритета по-умолчанию в параметре `$priorityDefaultMethod` должен быть объявлен как `public static function` и возвращать тип `int`, `string` или `null`.
->
-> В качестве параметров метод-приоритета получает два параметра:
->  - `string $tag` - имя тега.
->  - `array $options` - [метаданные тега](../tags/tag-metadata.md).
-
-> [!IMPORTANT]
-> Метод-ключа по-умолчанию в параметре `\Kaspi\DiContainer\Attributes\TaggedAs::$keyDefaultMethod` должен быть объявлен как `public static function` и возвращать тип `string`.
->
-> В качестве параметров метод-ключа получает два параметра:
->  - `string $tag` - имя тега;
->  - `array $options` - [метаданные тега](../tags/tag-metadata.md).;
-
-> [!WARNING]
-> Для внедрения зависимости в параметр с типом `array` необходимо указать `\Kaspi\DiContainer\Attributes\TaggedAs::$isLazy = false`.
-
 > [!NOTE]
-> Для подробного ознакомления с механизмом формирования **приоритетов элементов коллекции и ключами элементов коллекции** изучите раздел документации «[Работа с тегами в контейнере](../tags/index.md)».
+> Для подробного ознакомления с механизмом формирования **приоритетов элементов коллекции, идентификаторов элементов коллекции** изучите раздел документации «[Работа с тегами в контейнере](../tags/index.md)».
 
 ## Внедрение коллекции по интерфейсу { #example-inject-collection-as-interface }
 
@@ -83,7 +57,7 @@ final class Foo
         /*
          * 🚩 Коллекция с ленивой инициализацией
          */
-        #[TaggedAs(name: QuxInterface::class)]
+        #[TaggedAs(QuxInterface::class)]
         public readonly iterable $services
     ) {}
 }

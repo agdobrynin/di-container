@@ -21,21 +21,13 @@ aside: false
 Параметры:
 - `$name` – имя тега.
 - `$options` – [метаданные тега](../tags/tag-metadata.md).
-- `$priority` – приоритет для сортировки в коллекции тегов.
-- `$priorityMethod` – метод-приоритета в PHP классе для сортировки в коллекции тегов, если явно не указано значение параметра `$priority`.
-
-> [!IMPORTANT]
-> Метод указанный в `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod` должен быть объявлен как `public static function`
-> и возвращать тип `int`, `string` или `null`.
->
-> В качестве параметров метод-приоритета получает два параметра:
->  - `string $tag` – имя тега.
->  - `array $options` – [метаданные тега](../tags/tag-metadata.md).
+- `$priority` – [приоритет тега](../tags/collection-priority/priority-by-tag.md) в коллекции.
+- `$priorityMethod` – «[метод приоритета](../tags/collection-priority/priority-by-method.md)» в PHP классе для сортировки в коллекции тегов, если явно не указано значение параметра `$priority`.
 
 > [!TIP]
 > Более подробное описание в разделе [«Работа с тегами в контейнере»](../tags/index.md).
 
-Указание несколько атрибутов для PHP класса:
+Можно указывать несколько атрибутов `Tag` для PHP класса:
 
 ```php
 use Kaspi\DiContainer\Attributes\Tag; 
