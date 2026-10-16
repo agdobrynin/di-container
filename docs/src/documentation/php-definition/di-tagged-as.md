@@ -22,7 +22,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 ```
 
 Параметры:
-- `$tag` – имя тега.
+- `$name` – имя тега или FQNC [^FQCN] PHP интерфейса по которому нужно собрать коллекцию из контейнера.
 - `$isLazy` – «[ленивая коллекция](../tags/index.md#collection-is-lazy)».
 - `$priorityDefaultMethod` – «[метод-приоритета](../tags/collection-priority/priority-by-method-default.md)» по умолчанию.
 - `$useKeys` – использовать [идентификаторы элементов коллекции](../tags/using-collecton-key/index.md).
@@ -36,10 +36,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 <!--@include: ../_include/need_import_php_class.md-->
 
 > [!NOTE]
-> Подробное описание работы с тегами в разделе «[Работа с тегами в контейнере](../tags/index.md)».
+> Раздел документации «[Настройка тегов в файлах конфигураций](../tags/php-definition-tag.md)».
+> 
+> Для подробного ознакомления с механизмом формирования **приоритетов элементов коллекции, идентификаторов элементов коллекции** изучите раздел документации «[Работа с тегами в контейнере](../tags/index.md)».
 
-## Пример использования хелпер функции { #example-inject-by-helper-fn-di-tagged }
-
-<!--@include: _include/di-tagged-as-example.md-->
 
 <!--@include: ../_include/term_notes.md-->
