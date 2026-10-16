@@ -25,12 +25,8 @@ PHP классы:
 
 <!--@include: _include/code-group-src.md-->
 
-### Настройка в файлах конфигураций { #php-definition }
-
-«Метод-приоритета» передаётся через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
-**Имя метаданных должно быть** представлено строкой `'priority.method'`, значение – имя метода.
-
 Реализуем «метод-приоритета» в `App\Services\Qux::getPriority()`. Метод возвращает значение приоритета `100`:
+
 
 ```php
 // file: /app/src/Services/Qux.php
@@ -46,6 +42,12 @@ final class Qux
     // …
 }
 ```
+
+### Настройка в файлах конфигураций { #php-definition }
+
+«Метод-приоритета» передаётся через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
+**Имя метаданных должно быть** представлено строкой `'priority.method'`, значение – имя метода.
+
 
 Конфигурационный файл:
 
@@ -161,10 +163,10 @@ use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 #[Tag('tags.ordered', priorityMethod: 'getPriority')]// [!code ++]
 final class Qux
 {
-    public static function getPriority(): int // [!code ++]
-    {// [!code ++]
-        return 100;// [!code ++]
-    }// [!code ++]
+    public static function getPriority(): int
+    {
+        return 100;
+    }
 
     // …
 }
