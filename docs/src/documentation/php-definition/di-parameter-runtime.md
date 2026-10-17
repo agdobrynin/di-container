@@ -20,6 +20,6 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 - `$message` – дополнительное сообщение, если параметр контейнера еще не определен.
 
 > [!NOTE]
-> Изучите отдельный раздел документации посвященный [параметрами контейнера](../container-parameters/index.md).
+> Изучите отдельный раздел документации посвященный [параметрами контейнера](../container-parameters/inject_runtime_params.md).
 
 <!--@include: ../_include/term_notes.md-->

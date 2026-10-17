@@ -149,7 +149,6 @@ $container = (new DiContainerBuilder())
 - значения из публичных констант у php классов и php интерфейсов со значениями из выше перечисленных типов.
 
 ```php
-// файл /app/config/parameters.php
 // конфигурация параметров контейнера.
 
 return [
@@ -182,75 +181,5 @@ return [
 - [Ссылки на имена других «параметров контейнера»](expression_in_params.md).
 - [Внедрение «параметров контейнера»](inject_params.md).
 - [«Параметры контейнера» времени выполнения](inject_runtime_params.md).
-
----------------------
-🚧🚧🚧🚧
-
-
-
-## Параметры контейнера определяемые во время выполнения { #parameter-runtime }
-Некоторые параметры контейнера нельзя определить в конфигурационных файлах,
-поскольку значение параметра вычисляется во время выполнения с использованием зависимостей контейнера.
-
-Для [компилируемого контейнера](../00-container-builder.md#компиляция-контейнера) важно дать знать о будущем существовании «параметра контейнера».
-Для таких случаев есть определение «параметра контейнера времени исполнения».
-
-### Хелпер функция diParameterRuntime.
-Хелпер функция `diParameterRuntime` используется при [конфигурировании контейнера как php определений](../03-php-definition.md#diparameterruntime).
-
-### PHP атрибут ParameterRuntime.
-Php атрибут `ParameterRuntime` необходимо использовать при [конфигурации определений через PHP атрибуты](../02-attribute-definition.md#parameterruntime).
-
-### Пример использования «параметра контейнера времени исполнения».
-```php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\ParameterRuntime;
-
-final class Foo {
-    public function __construct(private string $qux) {}
-}
-
-final class Bar {
-    public function __construct(
-        #[ParameterRuntime('baz')]
-        private string $qux
-    ) {}
-}
-```
-```php
-use App\Services\{Foo, Bar};
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->import('App\\', src: '/app/src/')
-    ->load('/app/config/services.php')
-    // компиляция контейнера
-    ->compileToFile('/app/var/cache/', 'App\AppContainer')
-    ->build()
-;
-
-// некая функция `doCalculate()` вычисляет значение
-// и возвращает строку `'random_string'`  
-$calculatedString = doCalcualte();
-
-// 🚩 Установка параметра контейнера 'foo' и его значения
-// в уже сформированный контейнер зависимостей (runtime container)
-$container->parameters()
-    ->set('baz', $calculatedString);
-
-$fooClass = $container->get(Foo::class);
-$barClass = $container->get(Bar::class);
-```
-> [!NOTE]
-> При разрешении параметров конструктора класса `App\Services\Foo`
-> в свойстве `App\Services\Foo::$qux` будет значение `'random_string'`
-> полученное на основе конфигурации через хелпер функцию `diParameterRuntime`.
-> 
-> При разрешении параметров конструктора класса `App\Services\Bar`
-> в свойстве `App\Services\Bar::$qux` будет значение `'random_string'`
-> полученное на основе конфигурации через PHP атрибут `ParameterRuntime`.
-
-
 
 <!--@include: ../php-definition/_include/bind_notes.md-->
