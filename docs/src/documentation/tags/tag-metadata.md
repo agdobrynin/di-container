@@ -17,8 +17,9 @@ aside: false
 > В метаданных зарезервировано имя `priority.method` для **метода-приоритета**.
 > ```php
 > $options = [
->   // …
->   'priority.method' => 'staticMethodName' // [!code ++]
+>   'foo' => 'bar',
+>   'baz' => true,
+>   'priority.method' => 'getPriority'// [!code focus]
 > ]
 > ```
 > Подробнее о [приоритете в коллекции](collection-priority/priority-by-method.md).
