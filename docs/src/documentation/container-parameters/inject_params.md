@@ -12,7 +12,8 @@ outline: [2, 4]
 
 Хелпер функция и атрибут принимают один аргумент в параметре `$name` – имя «параметра контейнера».
 
-Если в `$name` передается пустая строка, то контейнер попытается автоматически определить имя «параметра контейнера» исходя из имени параметра метода (функции) или имени именованного аргумента.
+> [!TIP]
+> Если в параметр `$name` передается пустая строка, то контейнер попытается автоматически определить имя «параметра контейнера» исходя из имени параметра метода (функции) или именованного аргумента.
 
 ## Пример внедрения «параметра контейнера» { #example }
 
@@ -182,9 +183,9 @@ final class Foo
     public function __construct(
         #[Inject(Bar::class)]// [!code ++]
         public readonly QuxInterface $qux,
-        #[Parameter] // Эквивалентно объявлению Parameter('setupType') // [!code ++]
+        #[Parameter] // Эквивалентно объявлению #[Parameter('setupType')] // [!code ++]
         public readonly Setup $setupType,
-        #[Parameter] // Эквивалентно объявлению Parameter('mailTo') // [!code ++]
+        #[Parameter] // Эквивалентно объявлению #[Parameter('mailTo')] // [!code ++]
         public readonly string $mailTo,
         #[Parameter('params.foo')]// [!code ++]
         public readonly bool $baz,

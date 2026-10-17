@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Некоторые «параметры контейнера» нельзя определить в конфигурационных файлах, поскольку значение параметра вычисляется во время выполнения контейнера с использованием зависимостей контейнера.
+Некоторые «параметры контейнера» нельзя объявить в конфигурационных файлах, поскольку значение параметра вычисляется во время выполнения контейнера с использованием зависимостей контейнера.
 
 Для [компилируемого контейнера](../container-builder/index.md#compile-to-file) важно дать знать о будущем существовании «параметра контейнера». Для таких случаев есть определение – **«параметр контейнера» времени исполнения**.
 
@@ -16,7 +16,8 @@ outline: [2, 4]
 
 Хелпер функция и атрибут принимают один аргумент в параметре `$name` – имя «параметра контейнера».
 
-Если в `$name` передается пустая строка, то контейнер попытается автоматически определить имя «параметра контейнера» исходя из имени параметра метода (функции) или имени именованного аргумента.
+> [!TIP]
+> Если в параметр `$name` передается пустая строка, то контейнер попытается автоматически определить имя «параметра контейнера» исходя из имени параметра метода (функции) или именованного аргумента.
 
 ## Пример внедрения «параметра контейнера» времени выполнения { #example }
 
@@ -112,10 +113,10 @@ return static function () {
              * Эквивалентно объявлению:
              * diParameterRuntime(
              *  'setupType',
-             *  'Вы забыли установить параметр контейнера \'setupType\'?'
+             *  'Забыли установить параметр контейнера \'setupType\'?'
              * )
              */
-            diParameterRuntime(message: 'Вы забыли установить параметр контейнера \'setupType\'?'),
+            diParameterRuntime(message: 'Забыли установить параметр контейнера \'setupType\'?'),
             /*
              * Эквивалентно объявлению
              * mailTo: diParameter('mailTo'),
@@ -140,9 +141,9 @@ $container = (new DiContainerBuilder())
     ->load('/app/config/services.php')
     ->build();
 
-// 🚩 объявить "параметр контейнера" с именем 'setupType'
-$container->parameters()
-    ->set('setupType', Setup::STAGES);
+// 🚩 объявить "параметр контейнера" с именем 'setupType'// [!code highlight]
+$container->parameters()// [!code highlight]
+    ->set('setupType', Setup::STAGES);// [!code highlight]
 
 $foo = $container->get(Foo::class);
 
@@ -164,62 +165,73 @@ var_dump($foo->baz);
 // bool(true)
 ```
 
---------
+### Атрибут `ParameterRuntime` { #attribute-parameter-runtime }
 
-🚧🚧🚧🚧🚧
+Конфигурирование через атрибуты:
 
-### Хелпер функция diParameterRuntime.
-Хелпер функция `diParameterRuntime` используется при [конфигурировании контейнера как php определений](../03-php-definition.md#diparameterruntime).
-
-### PHP атрибут ParameterRuntime.
-Php атрибут `ParameterRuntime` необходимо использовать при [конфигурации определений через PHP атрибуты](../02-attribute-definition.md#parameterruntime).
-
-### Пример использования «параметра контейнера времени исполнения».
 ```php
+// file: /app/src/Services/Foo.php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\ParameterRuntime;
+use App\Interfaces\QuxInterface;
+use App\Enums\Setup;
+use App\Services\Bar;// [!code ++]
+use Kaspi\DiContainer\Attributes\Inject;// [!code ++]
+use Kaspi\DiContainer\Attributes\Parameter;// [!code ++]
+use Kaspi\DiContainer\Attributes\ParameterRuntime;// [!code ++]
 
-final class Foo {
-    public function __construct(private string $qux) {}
-}
-
-final class Bar {
+final class Foo
+{
     public function __construct(
-        #[ParameterRuntime('baz')]
-        private string $qux
+        #[Inject(Bar::class)]// [!code ++]
+        public readonly QuxInterface $qux,
+        #[ParameterRuntime(// [!code ++]
+            message: 'Забыли установить параметр контейнера \'setupType\'?'// [!code ++]
+        )]// [!code ++]
+        // Эквивалентно объявлению #[ParameterRuntime('setupType', '...')]// [!code ++]
+        public readonly Setup $setupType,
+        #[Parameter] // Эквивалентно объявлению Parameter('mailTo') // [!code ++]
+        public readonly string $mailTo,
+        #[Parameter('params.foo')]// [!code ++]
+        public readonly bool $baz,
     ) {}
 }
 ```
+
+Контейнер зависимостей:
+
 ```php
+use App\Enums\Setup;
 use App\Services\{Foo, Bar};
+use App\Interfaces\QuxInterface
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->import('App\\', src: '/app/src/')
-    ->load('/app/config/services.php')
-    // компиляция контейнера
-    ->compileToFile('/app/var/cache/', 'App\AppContainer')
-    ->build()
-;
+    ->loadParameters('/app/config/parameters.php')
+    ->load('/app/config/services.php')// [!code --]
+    ->import(namespace: 'App\\', src: '/app/src')// [!code ++]
+    ->build();
 
-// некая функция `doCalculate()` вычисляет значение
-// и возвращает строку `'random_string'`  
-$calculatedString = doCalcualte();
+// 🚩 объявить "параметр контейнера" с именем 'setupType'// [!code highlight]
+$container->parameters()// [!code highlight]
+    ->set('setupType', Setup::STAGES);// [!code highlight]
 
-// 🚩 Установка параметра контейнера 'foo' и его значения
-// в уже сформированный контейнер зависимостей (runtime container)
-$container->parameters()
-    ->set('baz', $calculatedString);
+$foo = $container->get(Foo::class);
 
-$fooClass = $container->get(Foo::class);
-$barClass = $container->get(Bar::class);
+var_dump($foo->qux instanceof Bar);
+// bool(true)
+
+var_dump($foo->qux instanceof QuxInterface);
+// bool(true)
+
+var_dump($foo->setupType === Setup::LOCAL);
+// bool(false)
+var_dump($foo->setupType === Setup::STAGES);
+// bool(true)
+
+var_dump($foo->mailTo);
+// string(19) "manager@example.com"
+
+var_dump($foo->baz);
+// bool(true)
 ```
-> [!NOTE]
-> При разрешении параметров конструктора класса `App\Services\Foo`
-> в свойстве `App\Services\Foo::$qux` будет значение `'random_string'`
-> полученное на основе конфигурации через хелпер функцию `diParameterRuntime`.
->
-> При разрешении параметров конструктора класса `App\Services\Bar`
-> в свойстве `App\Services\Bar::$qux` будет значение `'random_string'`
-> полученное на основе конфигурации через PHP атрибут `ParameterRuntime`.
