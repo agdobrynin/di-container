@@ -2,104 +2,191 @@
 
 ## Обзор { #overview }
 
-При конфигурировании PHP класса или вызываемого типа `callable`, можно не указывать контейнеру как внедрять зависимости простых типов, указывая в методе `bindArguments()` [^BindArguments] значение «как-есть».
+При конфигурировании PHP класса или вызываемого типа `callable`, можно не указывать контейнеру как внедрять зависимости **простых типов**, указывая в методе `bindArguments()` [^BindArguments] значение «как-есть».
 
-К простым типам относятся значения `int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или тип `array` состоящий из этих типов.
+К **простым типам** относятся значения `int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или тип `array` состоящий из простых типов.
 
+Необходимо обеспечить внедрение зависимостей в PHP классы из простых типов, указывая значения зависимостей «как-есть» через метод `bindArguments()`.
 
-```php
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
 namespace App\Services;
 
 final class Foo {
-    public function __construct(private readonly string $adminEmail) {}
-}
-
-final class Bar {
     public function __construct(
-        private readonly QuxInterface $service,
-        private readonly string $adminEmail,
+        private readonly string $adminEmail
     ) {}
+
+    //…
 }
 ```
 
+```php [Configurator.php]
+// file: /app/src/Services/Configurator.php
+namespace App\Services;
+
+final class Configurator
+{
+    public function __construct(private readonly Bar $bar) {}
+
+    public static function __invoke(string $adminEmail): mixed
+    {
+        // …
+    }
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+:::
+
+Конфигурирование в файле:
+
 ```php
-// /app/config/services_one.php
-use App\Services\Foo;
+// file: /app/config/services.php
+use App\Services\{Foo, Configurator};
+use Generator;
 
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\{diAutowire, diFactory};
 
-return function () {
+return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            // передать строковое значение как-есть 
-            'admin@example.com'
+            // значение как-есть// [!code highlight]
+            adminEmail: 'admin@example.com'// [!code highlight]
         );
-};
-```
-```php
-// /app/config/services_two.php
-use App\Services\Configurator;
 
-use function Kaspi\DiContainer\{diCallable, diGet};
-
-return function () {
-    yield diCallable(Configurator::class)
+    yield 'services.do_something' => diFactory(Configurator::class)
         ->bindArguments(
-            diGet('qux.service'),
-            // передать строковое значение как-есть
-            'admin@example.com',
+            // значение как-есть// [!code highlight]
+            adminEmail: 'admin@example.com'// [!code highlight]
         );
 };
 ```
 
-Иногда одно и то же значение в параметре метода php-класса или callable типа
-используется в нескольких конфигурационных файлах.
-Повторяющиеся значение можно определить как «параметр контейнера», который представляет собой многократно
-используемое значение при конфигурировании определений контейнера (_сервисов_).
+Контейнер зависимостей:
 
-**Конфигурацию параметров контейнера можно представить в виде коллекции
-ключ-значение, где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](#поддерживаемые-типы-значений-параметров-контейнера).**
-
-Выше приведенный пример, где значение для параметра метода класса можно представить как параметр контейнера:
-```php
-// /app/config/parameters.php
-return [
-    'adminEmail' => 'admin@example.com',
-];
-```
-```php
-// /app/config/services.php
-use App\Services\Foo;
-use function Kaspi\DiContainer\{diAutowire, diParameter};
-
-return function () {
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            diParameter('adminEmail')
-        );
-        
-    yield diAutowire(Bar::class)
-        ->bindArguments(
-            diGet('qux.service'),
-            diParameter('adminEmail'),
-        );
-};
-```
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
-    ->loadParameters('/app/config/parameters.php')
-    ->load(
-        '/app/config/services_one.php',
-        '/app/config/services_two.php',
-    )
+    ->load('/app/config/services.php')
     ->import('App\\', src: '/app/src/')
-    ->build()
-;
+    ->build();
 ```
-> [!TIP]
-> Подробное описание [хелпер функции `diParameter()`](#хелпер-функция-diparameter)
+
+Как можно видеть в файле конфигурации используется одно и то же значение `'admin@example.com'` для внедрения.
+
+Иногда одно и то же значение внедряется в параметры методов PHP классов или вызываемых типов `callable`, в нескольких конфигурационных файлах. Повторяющиеся значение можно определить как «**параметр контейнера**», который представляет собой многократно используемое значение при конфигурировании внедрений в параметры.
+
+**Конфигурацию параметров контейнера можно представить в виде коллекции <nobr>ключ–значение</nobr>: где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](#parameter-support-types).**
+
+Выше приведенный пример, где значение для параметра метода класса можно представить как «параметр контейнера»:
+
+```php
+// file: /app/config/parameters.php
+return [
+    'adminEmail' => 'admin@example.com',
+];
+```
+
+[Хелпер функция `diParameter()`](../php-definition/di-parameter.md) внедряет зависимость из «параметров контейнера»:
+
+```php
+// file: /app/config/services.php
+use App\Services\{Foo, Configurator};
+use Generator;
+
+use function Kaspi\DiContainer\{diAutowire, diFactory, diParameter};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            adminEmail: 'admin@example.com'// [!code --]
+            adminEmail: diParameter('adminEmail')// [!code ++]
+        );
+        
+    yield 'services.do_something' => diFactory(Configurator::class)
+        ->bindArguments(
+            adminEmail: 'admin@example.com'// [!code --]
+            adminEmail: diParameter('adminEmail')// [!code ++]
+        );
+};
+```
+
+Используем метод `DiContainerBuilder::loadParameters()` для загрузки конфигурации «параметров контейнера»:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters('/app/config/parameters.php')// [!code ++]
+    ->load('/app/config/services.php')
+    ->import('App\\', src: '/app/src/')
+    ->build();
+```
+
+## Содержание раздела { #toc }
+
+- [Поддерживаемые типы значений параметров контейнера](#parameter-support-types).
+- [Объявление «параметров контейнера»](declare_params.md).
+- [Ссылки на имена других «параметров контейнера»](expression_in_params.md).
+- [Внедрение «параметров контейнера»](inject_params.md).
+- [«Параметры контейнера» времени выполнения](inject_runtime_params.md).
+
+## Поддерживаемые типы значений параметров контейнера { #parameter-support-types }
+
+В параметры контейнера можно установить следующие простые типы значений:
+- скалярные php типы `int|float|string|bool`
+- тип `null`
+- перечисляемые типы наследуемые от `\UnitEnum`
+- `array` из выше перечисленных типов
+- PHP константы из выше перечисленных типов определяемые через [`\define()`](https://www.php.net/manual/en/function.define.php)
+- значения из публичных констант у php классов и php интерфейсов со значениями из выше перечисленных типов.
+
+```php
+// файл /app/config/parameters.php
+// конфигурация параметров контейнера.
+
+return [
+    // строковое значение
+    'adminEmail' => 'admin@example.com',
+    // булевы тип
+    'services.enable_logging' => true,
+    // числовой тип - целое число, число с плавающей точкой
+    'logger.port' => 1_025,
+    // тип null
+    'smtp.context' => null,
+    // массив
+    'ui.locales' => [
+        'ru' => 'ru_RU.utf8',
+        'en' => 'en_US.utf8',
+        'fi' => 'fi_FI.utf8',
+    ],
+    // значение установленное из PHP константы определенное через `\define()`
+    'value.from_constat' => CONSTATN_NAME,
+    // значение установленное через публичную константу в классе
+    'value.from_class_constat' => Foo::MAX_SIZE,
+    // значение установленное через перечисления наследуемые от `\UnitEnum`
+    'value.from_enumerator' => FooEnum::Viewed,
+];
+```
+
+---------------------
+🚧🚧🚧🚧
+
 
 ## Регистрация параметров.
 Класс-строитель `\Kaspi\DiContainer\DiContainerBuilder` для сборки контейнера
@@ -177,44 +264,6 @@ return static function (DefinitionsConfiguratorInterface $configurator): \Genera
     ;
 
 };
-```
-
-## Поддерживаемые типы значений параметров контейнера.
-
-В параметры контейнера можно установить следующие простые типы значений:
-- скалярные php типы `int|float|string|bool`
-- тип `null`
-- перечисляемые типы наследуемые от `\UnitEnum`
-- `array` из выше перечисленных типов
-- PHP константы из выше перечисленных типов определяемые через [`\define()`](https://www.php.net/manual/en/function.define.php)
-- значения из публичных констант у php классов и php интерфейсов со значениями из выше перечисленных типов. 
-
-```php
-// файл /app/config/parameters.php
-// конфигурация параметров контейнера.
-
-return [
-    // строковое значение
-    'adminEmail' => 'admin@example.com',
-    // булевы тип
-    'services.enable_logging' => true,
-    // числовой тип - целое число, число с плавающей точкой
-    'logger.port' => 1_025,
-    // тип null
-    'smtp.context' => null,
-    // массив
-    'ui.locales' => [
-        'ru' => 'ru_RU.utf8',
-        'en' => 'en_US.utf8',
-        'fi' => 'fi_FI.utf8',
-    ],
-    // значение установленное из PHP константы определенное через `\define()`
-    'value.from_constat' => CONSTATN_NAME,
-    // значение установленное через публичную константу в классе
-    'value.from_class_constat' => Foo::MAX_SIZE,
-    // значение установленное через перечисления наследуемые от `\UnitEnum`
-    'value.from_enumerator' => FooEnum::Viewed,
-];
 ```
 
 ## Ссылки на другие параметры в конфигурации параметров контейнера.

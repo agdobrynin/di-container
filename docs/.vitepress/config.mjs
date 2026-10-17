@@ -143,6 +143,14 @@ export default defineConfig({
                     base: '/documentation/container-parameters/',
                     text: 'Параметры контейнера',
                     link: 'index.md',
+                    collapsed: true,
+                    items: [
+                      { text: 'Обзор', link: 'index.md' },
+                      { text: 'Объявление «параметров контейнера»', link: 'declare_params.md' },
+                      { text: 'Ссылки на имена «параметров контейнера»', link: 'expression_in_params.md' },
+                      { text: 'Внедрение «параметров контейнера»', link: 'inject_params.md' },
+                      { text: '«Параметры контейнера» времени выполнения', link: 'inject_runtime_params.md' },
+                    ],
                   }
                 ]
               }
