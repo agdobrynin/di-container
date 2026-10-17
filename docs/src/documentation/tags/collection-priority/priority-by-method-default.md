@@ -193,4 +193,4 @@ foreach ($foo->services as $service) {
 //string(16) "App\Services\Bar"
 ```
 
-<!--@include: ../../php-definition/_include/bind-tag_notes.md-->
+<!--@include: ../../php-definition/_include/bind_notes.md-->

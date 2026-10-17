@@ -218,4 +218,4 @@ foreach ($foo->services as $id => $service) {
 ```
 
 <!--@include: ../../_include/term_notes.md-->
-<!--@include: ../../php-definition/_include/bind-tag_notes.md-->
+<!--@include: ../../php-definition/_include/bind_notes.md-->

@@ -1,41 +1,12 @@
-# 📋 Параметры контейнера
+# Параметры контейнера
 
 ## Обзор { #overview }
 
-При конфигурации параметров метода php-класса или callable типа можно указывать простые типы такие как,
-`int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или массив `array` состоящий их этих типов,
-напрямую (_как-есть_) в методе `bindArguments()` реализованный хелпер функциями
-[diAutowire()](03-php-definition.md#diautowire),
-[diCallable()](03-php-definition.md#dicallable) и
-[diFactory()](03-php-definition.md#difactory) без указания как разрешить зависимость:
+При конфигурировании PHP класса или вызываемого типа `callable`, можно не указывать контейнеру как внедрять зависимости простых типов, указывая в методе `bindArguments()` [^BindArguments] значение «как-есть».
 
-```php
-// /app/config/services_one.php
-use App\Services\Foo;
-use function Kaspi\DiContainer\diAutowire;
+К простым типам относятся значения `int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или тип `array` состоящий из этих типов.
 
-return function () {
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            // передать строковое значение как-есть 
-            'admin@example.com'
-        );
-};
-```
-```php
-// /app/config/services_two.php
-use App\Services\Bar;
-use function Kaspi\DiContainer\{diAutowire, diGet};
 
-return function () {
-    yield diAutowire(Bar::class)
-        ->bindArguments(
-            diGet('qux.service'),
-            // передать строковое значение как-есть
-            'admin@example.com',
-        );
-};
-```
 ```php
 namespace App\Services;
 
@@ -50,6 +21,37 @@ final class Bar {
     ) {}
 }
 ```
+
+```php
+// /app/config/services_one.php
+use App\Services\Foo;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return function () {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            // передать строковое значение как-есть 
+            'admin@example.com'
+        );
+};
+```
+```php
+// /app/config/services_two.php
+use App\Services\Configurator;
+
+use function Kaspi\DiContainer\{diCallable, diGet};
+
+return function () {
+    yield diCallable(Configurator::class)
+        ->bindArguments(
+            diGet('qux.service'),
+            // передать строковое значение как-есть
+            'admin@example.com',
+        );
+};
+```
+
 Иногда одно и то же значение в параметре метода php-класса или callable типа
 используется в нескольких конфигурационных файлах.
 Повторяющиеся значение можно определить как «параметр контейнера», который представляет собой многократно
@@ -140,7 +142,7 @@ DiContainerBuilder::setParameter(string $name, array|int|float|string|bool|null|
 - `$value` – значение параметра.
 
 ### Управление параметрами контейнера в конфигураторе определений.
-Регистрировать и управлять параметрами контейнера так же можно в [файлах конфигурации](08-definitions-configurator.md) определений контейнера.
+Регистрировать и управлять параметрами контейнера так же можно в [файлах конфигурации](../08-definitions-configurator.md) определений контейнера.
 
 > [!IMPORTANT]
 > Все добавленные ранее параметры в конфигурацию могут быть замены новыми значениями если имя параметра совпадает.
@@ -277,7 +279,7 @@ return [
 ## Конфигурирование параметров метода php-класса или callable типа.
 
 ### Хелпер функция diParameter.
-Хелпер функция `diParameter` используется при конфигурировании контейнера [как php определений](03-php-definition.md).
+Хелпер функция `diParameter` используется при конфигурировании контейнера [как php определений](../03-php-definition.md).
 Указать параметр можно по индексу или через именованные аргументы:
 ```php
 // /app/config/services.php 
@@ -334,7 +336,7 @@ final class Baz {
 ```
 ### PHP атрибут Parameter.
 Php атрибут `Parameter` предназначен для указания параметру метода php класса или callable типу какой
-«параметр контейнера» необходимо использовать при [конфигурации определений через PHP атрибуты](02-attribute-definition.md).
+«параметр контейнера» необходимо использовать при [конфигурации определений через PHP атрибуты](../02-attribute-definition.md).
 ```php
 namespace App\Services;
 
@@ -395,14 +397,14 @@ final class Foo {
 Некоторые параметры контейнера нельзя определить в конфигурационных файлах,
 поскольку значение параметра вычисляется во время выполнения с использованием зависимостей контейнера.
 
-Для [компилируемого контейнера](00-container-builder.md#компиляция-контейнера) важно дать знать о будущем существовании «параметра контейнера».
+Для [компилируемого контейнера](../00-container-builder.md#компиляция-контейнера) важно дать знать о будущем существовании «параметра контейнера».
 Для таких случаев есть определение «параметра контейнера времени исполнения».
 
 ### Хелпер функция diParameterRuntime.
-Хелпер функция `diParameterRuntime` используется при [конфигурировании контейнера как php определений](03-php-definition.md#diparameterruntime).
+Хелпер функция `diParameterRuntime` используется при [конфигурировании контейнера как php определений](../03-php-definition.md#diparameterruntime).
 
 ### PHP атрибут ParameterRuntime.
-Php атрибут `ParameterRuntime` необходимо использовать при [конфигурации определений через PHP атрибуты](02-attribute-definition.md#parameterruntime).
+Php атрибут `ParameterRuntime` необходимо использовать при [конфигурации определений через PHP атрибуты](../02-attribute-definition.md#parameterruntime).
 
 ### Пример использования «параметра контейнера времени исполнения».
 ```php
@@ -453,3 +455,7 @@ $barClass = $container->get(Bar::class);
 > При разрешении параметров конструктора класса `App\Services\Bar`
 > в свойстве `App\Services\Bar::$qux` будет значение `'random_string'`
 > полученное на основе конфигурации через PHP атрибут `ParameterRuntime`.
+
+
+
+<!--@include: ../php-definition/_include/bind_notes.md-->

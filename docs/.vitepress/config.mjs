@@ -139,6 +139,11 @@ export default defineConfig({
                       { text: 'Метаданные тега', link: 'tag-metadata.md' },
                     ],
                   },
+                  {
+                    base: '/documentation/container-parameters/',
+                    text: 'Параметры контейнера',
+                    link: 'index.md',
+                  }
                 ]
               }
           ],

@@ -18,6 +18,6 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 - `$name` – имя параметра контейнера.
 
 > [!NOTE]
-> Изучите отдельный раздел документации посвященный [параметрами контейнера](../09-container-parameters.md).
+> Изучите отдельный раздел документации посвященный [параметрами контейнера](../container-parameters/index.md).
 
 <!--@include: ../_include/term_notes.md-->

@@ -178,4 +178,4 @@ foreach ($foo->services as $id => $service) {
 //string(16) "App\Services\Baz"
 ```
 
-<!--@include: ../../php-definition/_include/bind-tag_notes.md-->
+<!--@include: ../../php-definition/_include/bind_notes.md-->

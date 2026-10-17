@@ -248,4 +248,4 @@ var_dump(
 // bool(true)
 // bool(true)
 ```
-<!--@include: ../../php-definition/_include/bind-tag_notes.md-->
+<!--@include: ../../php-definition/_include/bind_notes.md-->

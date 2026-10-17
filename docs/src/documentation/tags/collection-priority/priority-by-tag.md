@@ -168,4 +168,4 @@ foreach ($foo->services as $service) {
 
 Порядок сортировки внедрённой коллекции обусловлен значениями в атрибутах `\Kaspi\DiContainer\Attributes\Tag::$prioriy` для каждого тега.
 
-<!--@include: ../../php-definition/_include/bind-tag_notes.md-->
+<!--@include: ../../php-definition/_include/bind_notes.md-->

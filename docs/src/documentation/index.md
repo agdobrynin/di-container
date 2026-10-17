@@ -96,7 +96,7 @@ var_dump($container === $container->get(Foo::class)->container);
 * #️⃣ [Конфигурирование через PHP атрибуты](attribute-definition/index.md).
 * 📦 [Метод контейнера `call()`](call/index.md).
 * 🔖 [Тэгирование определений и сервисов](tags/index.md).
-* 📋 [Параметры контейнера](09-container-parameters.md).
+* 📋 [Параметры контейнера](container-parameters/index.md).
 * 🗳️ [Внедрение экземпляра класса в рантайм контейнер](10-runtime-definition.md).
 * 🧹 [Сброс контейнера зависимостей](11-container-reset.md).
 * ♻️ [Сброс состояния объектов для долго-живущих процессов](12-object-resetters.md).
