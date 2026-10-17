@@ -120,7 +120,7 @@ class Qux
 
 ## Внедрение коллекции по интерфейсу { #example-inject-collection-as-interface }
 
-В качестве имени тега можно использовать FQCN [^FQCN] PHP интерфейса. Указав в качестве тега имя интерфейса контейнер найдет все доступные ему PHP классы реализующий указанный интерфейс и вернёт коллекцию.
+В качестве имени тега можно использовать FQCN [^FQCN] PHP интерфейса.
 
 Собрать коллекцию из PHP классов которые реализуют интерфейс `\App\Interfaces\QuxInterface`:
 
@@ -137,10 +137,13 @@ use App\Interfaces\QuxInterface;
 
 final class Foo
 {
+    /**
+     * 🚩 Коллекция с ленивой инициализацией
+     * из PHP классов реализующих интерфейс.
+     *
+     * @param iterable<QuxInterface> $services
+     */
     public function __construct(
-        /*
-         * 🚩 Коллекция с ленивой инициализацией
-         */
         #[TaggedAs(QuxInterface::class)]
         public readonly iterable $services
     ) {}

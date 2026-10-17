@@ -151,6 +151,121 @@ class Qux
 
 :::
 
+## Внедрение коллекции по интерфейсу { #example-inject-collection-as-interface }
+
+В качестве имени тега можно использовать FQCN [^FQCN] PHP интерфейса.
+
+Собрать коллекцию из PHP классов которые реализуют интерфейс `\App\Interfaces\QuxInterface`.
+
+::: code-group
+
+```php [Foo.php]
+// file: /app/src/Services/Foo.php
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Foo
+{
+    /**
+     * 🚩 Коллекция с ленивой инициализацией
+     * из PHP классов реализующих интерфейс.
+     * 
+     * @param iterable<QuxInterface> $services
+     */
+    public function __construct(
+        public readonly iterable $services
+    ) {}
+}
+```
+
+```php [QuxInterface.php]
+// file: /app/src/Interfaces/QuxInterface.php
+namespace App\Interfaces;
+
+interface  QuxInterface
+{    
+    // …
+}
+```
+
+```php [Bar.php]
+// file: /app/src/Services/Bar.php
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Bar implements QuxInterface
+{
+    // …
+}
+```
+
+```php [Baz.php]
+// file: /app/src/Services/Baz.php
+namespace App\Services;
+
+final class Baz
+{
+    // …
+}
+```
+
+```php [Bat.php]
+// file: /app/src/Services/Bat.php
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Bat implements QuxInterface
+{
+    // …
+}
+```
+
+:::
+
+Конфигурирование:
+
+```php
+// file: /app/config/services.php
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+use Generator;
+use App\Services\Foo;
+use App\Interfaces\QuxInterface;
+
+return static function (): Generator {
+
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            services: diTaggedAs(QuxInterface::class)
+        );
+};
+```
+
+Контейнер зависимостей:
+
+```php
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')
+    ->import(namespae: 'App\\', src: '/app/src')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
+}
+
+// string(16) "App\Services\Bar"
+// string(16) "App\Services\Bat"
+```
+
+PHP класс `\App\Services\Baz` не реализует интерфейс `\App\Interfaces\QuxInterface` поэтому его нет в коллекции `$foo->services`.
+
 ## Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
 
 Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
@@ -189,4 +304,5 @@ class Bar
 > [!TIP]
 > <!--@include: ../_include/variadic_params.md-->
 
+<!--@include: ../_include/term_notes.md-->
 <!--@include: ../php-definition/_include/bind-tag_notes.md-->

@@ -22,11 +22,11 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 ```
 
 Параметры:
-- `$name` – имя тега или FQNC [^FQCN] PHP интерфейса по которому нужно собрать коллекцию из контейнера.
+- `$name` – имя тега или FQNC [^FQCN] PHP интерфейса.
 - `$isLazy` – «[ленивая коллекция](../tags/index.md#collection-is-lazy)».
 - `$priorityDefaultMethod` – «[метод-приоритета](../tags/collection-priority/priority-by-method-default.md)» по умолчанию.
 - `$useKeys` – использовать [идентификаторы элементов коллекции](../tags/using-collecton-key/index.md).
-- `$key` – [имя метаданных](../tags/tag-metadata.md) для получения идентификатора элемента коллекции.
+- `$key` – [имя метаданных](../tags/using-collecton-key/key-in-metadata.md) получаемое из тега.
 - `$keyDefaultMethod` – «[метод идентификатора](../tags/using-collecton-key/key-from-method-default.md)» элемента коллекции по умолчанию.
 - `$containerIdExclude` – [исключить из коллекции](../tags/exclide-from-collection.md#exclude-by-id) элементы по идентификатору контейнера.
 - `$selfExclude` – [исключить из коллекции вызывающий PHP класс](../tags/exclide-from-collection.md#exclide-self).
@@ -36,7 +36,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 <!--@include: ../_include/need_import_php_class.md-->
 
 > [!NOTE]
-> Раздел документации «[Настройка тегов в файлах конфигураций](../tags/php-definition-tag.md)».
+> Изучите раздел документации «[Настройка тегов в файлах конфигураций](../tags/php-definition-tag.md)».
 > 
 > Для подробного ознакомления с механизмом формирования **приоритетов элементов коллекции, идентификаторов элементов коллекции** изучите раздел документации «[Работа с тегами в контейнере](../tags/index.md)».
 
