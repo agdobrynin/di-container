@@ -23,12 +23,13 @@
 
 ## Хелпер функции { #helper-fn }
 
-  - [diAutowire](di-autowire.md) – php класс.
-  - [diCallable](di-callable.md) – внедрение зависимости через тип `callable`.
-  - [diFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
-  - [diGet](di-get.md) – внедрение зависимости по идентификатору контейнера.
-  - [diParameter](di-parameter.md) – внедрение зависимости из «параметра контейнера».
-  - [diParameterRuntime](di-parameter-runtime.md) – внедрение зависимости из «параметр контейнера времени исполнения».
-  - [diProxyClosure](di-proxy-closure.md) – внедрение «ленивой» зависимости.
-  - [diTaggedAs](di-tagged-as.md) – внедрение коллекции по тегу.
-  - [diValue](di-value.md) – внедрение зависимости «как есть».
+  - [diAutowire()](di-autowire.md) – php класс.
+  - [diCallable()](di-callable.md) – внедрение зависимости через тип `callable`.
+  - [diFactory()](di-factory.md) – внедрение зависимости через паттерн «фабрика».
+  - [diGet()](di-get.md) – внедрение зависимости по идентификатору контейнера.
+  - [diParameter()](di-parameter.md) – внедрение зависимости из «параметра контейнера».
+  - [diParameterRuntime()](di-parameter-runtime.md) – внедрение зависимости из «параметр контейнера времени исполнения».
+  - [diProxyClosure()](di-proxy-closure.md) – внедрение «ленивой» зависимости.
+  - [diTaggedAs()](di-tagged-as.md) – внедрение коллекции по тегу.
+  - [diValue()](di-value.md) – внедрение зависимости «как есть».
+  - [diRuntime()](di-runtime.md) – внедрение «runtime definition».

@@ -68,6 +68,7 @@ export default defineConfig({
                       { text: 'diProxyClosure', link: 'di-proxy-closure.md' },
                       { text: 'diTaggedAs', link: 'di-tagged-as.md' },
                       { text: 'diValue', link: 'di-value.md' },
+                      { text: 'diRuntime', link: 'di-runtime.md' },
                     ]
                   },
                   {
@@ -91,6 +92,7 @@ export default defineConfig({
                       { text: 'SetupPriority', link: 'setup-priority.md' },
                       { text: 'Tag', link: 'tag.md' },
                       { text: 'TaggedAs', link: 'tagged-as.md' },
+                      { text: 'DiRuntime', link: 'di-runtime.md' },
                     ]
                   },
                   {

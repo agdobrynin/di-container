@@ -34,5 +34,6 @@ PHP атрибуты содержат метаданные для конфигу
 - [SetupPriority](setup-priority.md) – приоритет сеттер-метода.
 - [Tag](tag.md) – тег для PHP класса.
 - [TaggedAs](tagged-as.md) – внедрение коллекции по тегу.
+- [DiRuntime](di-runtime.md) – внедрение «runtime definition».
 
 <!--@include: ../_include/term_notes.md-->
