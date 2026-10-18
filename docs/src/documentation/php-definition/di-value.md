@@ -1,4 +1,4 @@
-# diValue
+# diValue()
 
 ## Обзор
 

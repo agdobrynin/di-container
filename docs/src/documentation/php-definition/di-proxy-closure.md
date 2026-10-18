@@ -1,7 +1,7 @@
 ---
 outline: [2, 4]
 ---
-# diProxyClosure
+# diProxyClosure()
 
 ## Обзор { #overview }
 

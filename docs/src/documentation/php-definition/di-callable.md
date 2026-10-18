@@ -1,8 +1,7 @@
 ---
 outline: [2, 4]
 ---
-
-# diCallable
+# diCallable()
 
 ## Обзор { #overview }
 

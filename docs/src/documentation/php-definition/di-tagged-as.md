@@ -1,4 +1,4 @@
-# diTaggedAs
+# diTaggedAs()
 
 ## Обзор { #overview }
 

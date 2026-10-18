@@ -1,7 +1,7 @@
 ---
 outline: [2, 4]
 ---
-# diAutowire
+# diAutowire()
 
 ## Обзор { #overview }
 
@@ -225,24 +225,13 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 > [Пример использования метода `setupImmutable()`](../../cookbook/autowire-setup.md)
 
 ## bindTag()
-Теги позволяют отнести конфигурируемый PHP класс к коллекции сервисов.
+Теги позволяют отнести конфигурируемый PHP класс к коллекции элементов отмеченных одним тегом.
 
-<!--@include: ./_include/bind_tag.md-->
+<!--@include: _include/bind_tag.md-->
 
 ## setResetter()
 
-Индивидуальная конфигурация для сброса состояния объекта.
-
-Метод `bindTag()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
-
-```php
-DiDefinitionResetterSetterInterface::setResetter(
-    callable|false|string $resetter
-)
-```
-
-> [!TIP]
-> Более подробное [описание конфигурации для сброса состояния объекта](../12-object-resetters.md).
+<!--@include: _include/set-resetter.md-->
 
 ## Идентификатор контейнера для diAutowire { #container-id }
 

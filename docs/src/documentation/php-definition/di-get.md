@@ -1,4 +1,4 @@
-# diGet
+# diGet()
 
 ## Обзор { #overview }
 

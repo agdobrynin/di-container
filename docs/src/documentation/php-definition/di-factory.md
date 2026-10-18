@@ -1,4 +1,4 @@
-# diFactory
+# diFactory()
 
 ## Обзор { #overview }
 
