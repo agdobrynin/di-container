@@ -1,8 +1,13 @@
-# diRuntime
+# diRuntime()
 
 ## Обзор { #overview }
 
-Хелпер функция `diRuntime()` внедряет «[runtime definition](../runtime-definition/index.md)».
+Хелпер функция `diRuntime()` конфигурирует PHP класс, реальное состояние которого будет инициализировано вне контейнера, и установлено в контейнер зависимостей только во время выполнения.
+
+Такой PHP класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
+
+> [!WARNING]
+> Хелпер функция не может быть применена к параметрам метода или функции.
 
 Сигнатура функции:
 
@@ -21,37 +26,67 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 Параметры:
 
-- `$containerIdentifierOrClass` – идентификатора контейнера[^ContainerId] или FQCN[^FQCN] «runtime definition».
-- `$message` – информационное сообщение при возникновении ошибки.
-- `$classDefinition` – указание FQCN[^FQCN] для «runtime definition» если параметр `$containerIdentifierOrClass` простое строковое значение.
+- `$containerIdentifierOrClass` – идентификатора контейнера[^ContainerId] для «runtime definition».
+- `$message` – сообщение при возникновении ошибки.
+- `$classDefinition` – резервное объявление FQCN[^FQCN] объекта.
 
-----
-🚧🚧🚧🚧
+Функция `diRuntime()` возвращает объект предоставляющий методы:
 
-> [!IMPORTANT]
-> Функция `diRuntime` возвращает объект реализующий интерфейсы:
-> - `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`,
-> - `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
+- `bindTag()` – тег с метаданными.
+- `setResetter()` - конфигурация для сброса состояния объекта.
 
->
-> Методы доступные при вызове хелпер функции:
->   - `bindTag` - добавляет тег с мета-данными для определения.
->   - `setResetter` - [конфигурация сброса состояния объекта](../12-object-resetters.md).
->
-> [Пример использования тегов](#пример-тегирования-runtime-definition).
+> [!TIP]
+> Изучите раздел документации «[Конфигурирование объекта в рантайм контейнер](../runtime-definition/index.md)».
 
-> [!WARNING]
-> Хелпер функция не может быть применена к параметрам метода класса или `callable` типа.
->
+## bindTag()
+
+Теги позволяют отнести конфигурируемый объект к коллекции элементов отмеченных одним тегом.
+
+<!--@include: ./_include/bind_tag.md-->
+
+## setResetter()
+
+<!--@include: _include/set-resetter.md-->
+
+## Идентификатор контейнера { #container-id }
+
+[В файлах конфигураций](../container-builder/configuration_files.md) хелпер функция `diRuntime()` может передавать контейнеру идентификатор контейнера [^ContainerId] из параметра `$containerIdentifierOrClass`:
+
+```php
+// file: /app/config/runtime_definitions.php
+use Generator;
+use App\Core\Kernel;
+
+use function Kaspi\DiContainer\diRuntime;
+
+return static function (): Generator {
+    yield diRuntime(Kernel::class);
+    /*
+     * 🚩 Эквивалентно объявлению// [!code highlight]
+     * Kernel::class => diRuntime(Kernel::class);// [!code warning]
+     */
+};
+```
 
 > [!NOTE]
-> `$containerIdentifierOrClass` может быть представлен любой не пустой строкой
-> чтобы сервис можно было получить через метод контейнера `get()`.
->
-> Хелпер функция `diRuntime()` не создает конфигурацию экземпляра класса, а только предоставляет идентификатор контейнера.
->
+> Доступ к объекту через метод контейнера `$container->get(\App\Core\Kernel::class)`.
+
+
+Так же доступно объявление объекта с произвольным строковым идентификатором контейнера[^ContainerId]:
+
+```php
+// file: /app/config/runtime_definitions.php
+use Generator;
+use App\Core\Kernel;
+
+use function Kaspi\DiContainer\diRuntime;
+
+return static function (): Generator {
+    yield 'services.core_kernel' => diRuntime(Kernel::class);
+};
+```
 
 > [!NOTE]
-> [Пример конфигурирования через хелпер функцию `diRuntime`](#пример-использования-хелпер-функции-diruntime-в-конфигурационных-файлах).
+> Доступ к объекту через метод контейнера `$container->get('services.core_kernel')`.
 
 <!--@include: ../_include/term_notes.md-->
