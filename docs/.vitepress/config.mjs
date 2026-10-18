@@ -151,6 +151,11 @@ export default defineConfig({
                       { text: 'Внедрение «параметров контейнера»', link: 'inject_params.md' },
                       { text: '«Параметры контейнера» времени выполнения', link: 'inject_runtime_params.md' },
                     ],
+                  },
+                  {
+                    base: '/documentation/runtime-definition/',
+                    text: 'Внедрение объекта в рантайм контейнер',
+                    link: 'index.md',
                   }
                 ]
               }

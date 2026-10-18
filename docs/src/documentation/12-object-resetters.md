@@ -120,15 +120,15 @@ setResetter(callable|false|string $resetter)
 
 Метод `setResetter()` применим к хелпер функциям:
 - [diAutowire](03-php-definition.md#diautowire).
-- [diRuntime](10-runtime-definition.md#хелпер-функция-diruntime).
+- [diRuntime](runtime-definition/index.md#хелпер-функция-diruntime).
 
 Установить конфигурацию сброса для нужного объекта так же можно через значение в PHP атрибутах:
 - [Autowire](02-attribute-definition.md#autowire).
-- [DiRuntime](10-runtime-definition.md#атрибут-diruntime).
+- [DiRuntime](runtime-definition/index.md#атрибут-diruntime).
 
 > [!TIP]
 > Для приложений использующих **PHP 8.5 и выше** параметр `$resetter`
-> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](10-runtime-definition.md#атрибут-diruntime)
+> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](runtime-definition/index.md#атрибут-diruntime)
 > может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
 > ```php
 >  use Kaspi\DiContainer\Attributes\Autowire;

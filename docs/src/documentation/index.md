@@ -97,7 +97,7 @@ var_dump($container === $container->get(Foo::class)->container);
 * 📦 [Метод контейнера `call()`](call/index.md).
 * 🔖 [Тэгирование определений и сервисов](tags/index.md).
 * 📋 [Параметры контейнера](container-parameters/index.md).
-* 🗳️ [Внедрение экземпляра класса в рантайм контейнер](10-runtime-definition.md).
+* 🗳️ [Внедрение экземпляра класса в рантайм контейнер](runtime-definition/index.md).
 * 🧹 [Сброс контейнера зависимостей](11-container-reset.md).
 * ♻️ [Сброс состояния объектов для долго-живущих процессов](12-object-resetters.md).
 * 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](14-lazy-injection.md)
