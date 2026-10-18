@@ -11,7 +11,7 @@ outline: [2, 4]
 
 Такой PHP класс в рамках контейнера зависимостей называется **«Runtime Definition»**.
 
-Объявление «**Runtime Definition**» необходимо для внедрения другими параметрами, зависящих от такого PHP класса. Во время [компиляции контейнера](../container-builder/index.md#compile-to-file) параметры должны знать о существовании PHP класса который будет установлен в контейнер зависимостей только во время выполнения.
+Во время [компиляции контейнера](../container-builder/index.md#compile-to-file) параметры зависящие от **«Runtime Definition»** должны знать о существовании PHP класса который будет установлен в контейнер зависимостей только во время выполнения.
 
 Объявление в контейнере «**Runtime Definition**» через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md) или [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
 
