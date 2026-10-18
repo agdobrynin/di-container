@@ -66,9 +66,9 @@ export default defineConfig({
                       { text: 'diParameter', link: 'di-parameter.md' },
                       { text: 'diParameterRuntime', link: 'di-parameter-runtime.md' },
                       { text: 'diProxyClosure', link: 'di-proxy-closure.md' },
+                      { text: 'diRuntime', link: 'di-runtime.md' },
                       { text: 'diTaggedAs', link: 'di-tagged-as.md' },
                       { text: 'diValue', link: 'di-value.md' },
-                      { text: 'diRuntime', link: 'di-runtime.md' },
                     ]
                   },
                   {
@@ -81,6 +81,7 @@ export default defineConfig({
                       { text: 'Autowire', link: 'autowire.md' },
                       { text: 'AutowireExclude', link: 'autowire-exclude.md' },
                       { text: 'DiFactory', link: 'di-factory.md' },
+                      { text: 'DiRuntime', link: 'di-runtime.md' },
                       { text: 'Inject', link: 'inject.md' },
                       { text: 'InjectByCallable', link: 'inject-by-callable.md' },
                       { text: 'Parameter', link: 'parameter.md' },
@@ -92,7 +93,6 @@ export default defineConfig({
                       { text: 'SetupPriority', link: 'setup-priority.md' },
                       { text: 'Tag', link: 'tag.md' },
                       { text: 'TaggedAs', link: 'tagged-as.md' },
-                      { text: 'DiRuntime', link: 'di-runtime.md' },
                     ]
                   },
                   {
@@ -156,7 +156,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/runtime-definition/',
-                    text: 'Внедрение объекта в рантайм контейнер',
+                    text: 'Конфигурирование объекта в рантайм контейнер',
                     link: 'index.md',
                   }
                 ]
