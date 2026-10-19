@@ -54,7 +54,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/php-definition/',
-                    text: 'Настройка в конфигурационных файлах определений',
+                    text: 'Объявление в конфигурационных файлах',
                     link: 'index.md',
                     collapsed: true,
                     items: [
@@ -73,7 +73,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/attribute-definition/',
-                    text: 'Настройка определений через PHP атрибуты',
+                    text: 'Объявление через атрибуты',
                     link: 'index.md',
                     collapsed: true,
                     items: [
