@@ -2,7 +2,7 @@
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` конфигурирует PHP класс, реальное состояние которого будет инициализировано вне контейнера, и установлено в контейнер зависимостей только во время выполнения.
+Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` объявляет PHP класс в контейнере, реальное состояние которого будет инициализировано вне контейнера, и его значение будет установлено только во время выполнения.
 
 Такой PHP класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
 
@@ -24,7 +24,7 @@
 
 ## Идентификатор контейнера { #container-id }
 
-**Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\DiRuntime::$containerIdentifier` интерпретируется контейнером как имя класса FQCN[^FQCN]
+Объявление PHP класса в контейнере через атрибут у которого значение в параметре `$containerIdentifier` пустая строка интерпретируется контейнером как имя класса FQCN[^FQCN]
 
 ```php
 // file: /app/src/Services/FooService.php
@@ -45,8 +45,7 @@ final class FooService
 
 ### Множественная конфигурация PHP класса { #container-id-multuple }
 
-Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` можно применить несколько раз к одному PHP классу.
-Параметр `\Kaspi\DiContainer\Attributes\DiRuntime:$containerIdentifier` должен быть уникальным для каждого атрибута примененного к PHP классу:
+Атрибут может объявлять один и тот же PHP класс в контейнере, но параметр `$containerIdentifier` должен быть уникальным для каждого атрибута.
 
 ```php
 // /app/src/Services/FooService.php
@@ -88,7 +87,7 @@ var_dump($container->has('services.foo_service'));
 ## Теги { #tags }
 
 Теги с метаданными устанавливаются через параметр `\Kaspi\DiContainer\Attributes\DiRuntime::$tags`.
-Теги будут привязаны к определению контейнера с указанным [идентификатором](#container-id-multuple)
+Теги будут привязаны к определению контейнера с указанным [идентификатором](#container-id-multuple).
 
 Типизация параметра `\Kaspi\DiContainer\Attributes\DiRuntime::$tags`:
 - `non-empty-list<\Kaspi\DiContainer\Attributes\Tag>`
