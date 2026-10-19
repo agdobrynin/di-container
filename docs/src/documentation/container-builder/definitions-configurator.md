@@ -1,36 +1,163 @@
+---
+outline: [2, 4]
+---
 # Конфигуратор определений { #title } 
 
 ## Обзор { #overview }
 
-[Файлы конфигураций определений](configuration_files.md) могут использовать **конфигуратор определений** передаваемый как параметр callback функции.
+[Файлы конфигураций](configuration_files.md) могут использовать **конфигуратор определений** передаваемый как параметр callback функции.
 
 Конфигуратор реализует интерфейс `\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface` и передается как первый параметр в файл конфигурации.
 
-----------
-
-🚧🚧🚧🚧🚧
-
-
 ```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->import('App\\', '/app/src')
-    ->load('/app/config/services/removed_services.php')
-    ->build();
-```
-```php
-// /app/config/services/removed_services.php
+// file: /app/config/services.php
+use Generator;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): Generator {
+    // …
+};
+```
+
+## Методы конфигуратора определений { #methods }
+
+Объявление и получение определений контейнера:
+- `getDefinitions()` – получает все объявленные определения.
+- `getDefinition()` – получить определение по идентификатору контейнера. 
+- `setDefinition()` – объявить определение контейнера.
+- `findTaggedDefinitions()` – получить определения контейнера по тегу.
+- `removeDefinition()` – удаляет объявление из контейнера.
+
+Объявление определений из файлов конфигураций:
+- `load()` – объявление определений контейнера из файлов конфигураций.
+- `loadOverride()` – объявление определений контейнера из файлов конфигураций с заменой.
+
+Управление параметрами контейнера:
+- `loadParameters()` – регистрация параметров контейнера из файлов.
+- `addParameters()` – регистрация параметров контейнера из коллекции.
+- `setParameter()` – регистрация параметра контейнера.
+- `removeParameter()` – удаление параметра контейнера.
+- `hasParameter()` – доступность параметра контейнера.
+
+Контекст для конфигурационных файлов:
+- `getContext()` – получить контекст.
+
+
+### Объявление и получение определений контейнера { #methods-container-definitions }
+
+При сборке контейнера через `\Kaspi\DiContainer\DiContainerBuilder` все объявленные определения будут доступны в конфигураторе определений, включая импортированные определения через [метод `DiContainerBuilder::import()`](index.md#dicontainerbuilder-import).
+
+#### `getDefinitions()`
+
+Метод `getDefinitions()` возвращает коллекцию всех объявленных определений при сборке контейнера, где ключ коллекции это идентификатор контейнера[^ContainerId].
+
+Метод может вернуть только те определения которые были объявлены раньше вызова метода `getDefinitions()`.
+
+Сигнатура метода:
+
+```php
+DefinitionsConfiguratorInterface::getDefinitions(): iterable
+```
+
+Пример использования:
+
+```php
+// file: /app/config/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
 
-    $configurator->removeDefinition(\App\Kernel::class);
-    $configurator->removeDefinition(\App\Core::class);
+    foreach ($configurator->getDefinitions() as $id => $definition) {
+        // do something.
+    }
 
 };
 ```
+
+#### `getDefinition()`
+
+Метод получает по идентификатору контейнера[^ContainerId] объявленное определение контейнера.
+
+Сигнатура метода:
+
+```php
+DefinitionsConfiguratorInterface::getDefinition(
+    string $id,
+    ?callable $fallback = null
+): mixed
+```
+
+Параметры:
+- `$id` – идентификатор контейнера определения.
+- `$fallback` – резервный обработчик для случая если определение не найдено. 
+
+> [!TIP]
+> Для параметра `$fallback` применяется типизация `callable(string $id): mixed`.
+> 
+> Если в параметр `$fallback` установлено значение `null` и определение не найдено, то будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`.
+
+
+Пример использования:
+
+```php
+// file: /app/config/foo_bar_services.php
+
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use Kaspi\DiContainer\Exception\NotFoundDefinition;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    // без указания $fallback
+    try {
+        $configurator->getDefinition('foo_bar');
+    } catch (NotFoundDefinition) {
+        $configurator->setDefinition(
+            'foo_bar',
+            diAutowire(FooBar::class)
+                ->bindArguments('foo', 'bar')
+        );
+    }
+
+    // Использовать $fallback
+    if (null === $configurator->getDefinition('qux', static fn () => null)) {
+        $configurator->setDefinition(
+            'qux',
+            diAutowire(Qux::class)
+                ->setup('doConfig')
+        );
+    }
+};
+```
+
+#### `setDefinition()`
+
+#### `findTaggedDefinitions()`
+
+#### `removeDefinition()`
+
+### Объявление определений из файлов конфигураций { #methods-load-from-files }
+
+#### `load()`
+
+#### `loadOverride()`
+
+### Управление параметрами контейнера { #methods-container-params }
+
+#### `loadParameters()`
+
+#### `addParameters()`
+
+#### `setParameter()`
+
+#### `removeParameter()`
+
+#### `hasParameter()`
+
+
+
+🚧🚧🚧🚧🚧
+
 
 ## Получить импортированное или добавленное определение.
 ```php
@@ -351,3 +478,6 @@ return static function (DefinitionsConfiguratorInterface $configurator): \Genera
 ## Конфигурирование параметров контейнера.
 В конфигурационных файлах поддерживается управление «параметрами контейнера».
 Подробное [описание доступных методов для параметров контейнера](../container-parameters/index.md#управление-параметрами-контейнера-в-конфигураторе-определений).
+
+
+<!--@include: ../_include/term_notes.md-->
