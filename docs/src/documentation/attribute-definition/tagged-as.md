@@ -4,6 +4,10 @@
 
 Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs` внедряет коллекцию элементов из контейнера отмеченных тегом.
 
+Конфигурация атрибута:
+- `\Attribute::TARGET_PARAMETER`
+- `\Attribute::IS_REPEATABLE`
+
 Сигнатура атрибута:
 
 ```php

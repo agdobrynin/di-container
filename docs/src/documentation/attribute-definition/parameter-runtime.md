@@ -4,6 +4,10 @@
 
 Атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime` внедрят зависимость из параметра контейнера времени исполнения[^ParameterRuntime].
 
+Конфигурация атрибута:
+- `\Attribute::TARGET_PARAMETER`
+- `\Attribute::IS_REPEATABLE`
+
 Сигнатура атрибута:
 
 ```php

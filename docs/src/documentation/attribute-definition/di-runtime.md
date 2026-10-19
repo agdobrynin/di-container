@@ -6,6 +6,10 @@
 
 Такой PHP класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
 
+Конфигурация атрибута:
+- `\Attribute::TARGET_CLASS`
+- `\Attribute::IS_REPEATABLE`
+
 Сигнатура атрибута:
 
 ```php
@@ -24,7 +28,7 @@
 
 ## Идентификатор контейнера { #container-id }
 
-Объявление PHP класса в контейнере через атрибут у которого значение в параметре `$containerIdentifier` пустая строка интерпретируется контейнером как имя класса FQCN[^FQCN]
+Объявление PHP класса в контейнере через атрибут у которого значение в параметре `$containerIdentifier` пустая строка интерпретируется контейнером как FQCN[^FQCN]
 
 ```php
 // file: /app/src/Services/FooService.php
@@ -43,7 +47,7 @@ final class FooService
 }
 ```
 
-### Множественная конфигурация PHP класса { #container-id-multuple }
+### Множественное объявление PHP класса { #container-id-multuple }
 
 Атрибут может объявлять один и тот же PHP класс в контейнере, но параметр `$containerIdentifier` должен быть уникальным для каждого атрибута.
 

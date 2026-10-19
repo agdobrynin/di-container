@@ -5,7 +5,11 @@ aside: false
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Tag` устанавливает тег и метаданные для PHP класса.
+Атрибут `\Kaspi\DiContainer\Attributes\Tag` объявляет тег и метаданные для PHP класса.
+
+Конфигурация атрибута:
+- `\Attribute::TARGET_CLASS`
+- `\Attribute::IS_REPEATABLE`
 
 Сигнатура атрибута:
 
@@ -21,29 +25,10 @@ aside: false
 Параметры:
 - `$name` – имя тега.
 - `$options` – [метаданные тега](../tags/tag-metadata.md).
-- `$priority` – [приоритет тега](../tags/collection-priority/priority-by-tag.md) в коллекции.
-- `$priorityMethod` – «[метод приоритета](../tags/collection-priority/priority-by-method.md)» в PHP классе для сортировки в коллекции, если явно не указано значение параметра `$priority`.
+- `$priority` – [приоритет тега](../tags/collection-priority/index.md) в коллекции.
+- `$priorityMethod` – «[метод приоритета](../tags/collection-priority/index.md)».
 
 > [!TIP]
 > Более подробное описание в разделе [«Работа с тегами в контейнере»](../tags/index.md).
-
-Атрибут можно указывать несколько раз:
-
-```php
-use Kaspi\DiContainer\Attributes\Tag; 
-namespace App\Services;
-
-#[Tag(name: 'tags.group-one', priorityMethod: 'getPriority')]
-#[Tag(name: 'tags.group-two', priority: 1000)]
-final class Foo
-{
-    // …
-    
-    public static function getPriority(): string
-    {
-        return 'group-one:1000';
-    }
-}
-```
 
 <!--@include: ../_include/term_notes.md-->

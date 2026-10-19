@@ -5,7 +5,12 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` конфигурирует PHP класс как определение для контейнера и может применяться к PHP классу или [к параметру метода (функции)](#autowire-on-param).
+Атрибут `\Kaspi\DiContainer\Attributes\Autowire` объявляет PHP класс в контейнере, или [внедряет зависимость](#autowire-on-param).
+
+Конфигурация атрибута:
+- `\Attribute::TARGET_CLASS`
+- `\Attribute::TARGET_PARAMETER`
+- `\Attribute::IS_REPEATABLE`
 
 Сигнатура атрибута:
 
@@ -33,7 +38,7 @@ outline: [2, 4]
 
 ## Идентификатор контейнера { #container-id }
 
-**Для атрибута примененного к PHP классу** пустая строка в параметре `\Kaspi\DiContainer\Attributes\Autowire::$id` интерпретируется контейнером как имя класса FQCN[^FQCN]
+Объявление PHP класса в контейнере через атрибут у которого значение в параметре `$id` пустая строка интерпретируется контейнером как FQCN[^FQCN].
 
 ```php
 // file: /app/src/Services/FooService.php
@@ -52,10 +57,9 @@ final class FooService
 }
 ```
 
-### Множественная конфигурация PHP класса { #container-id-multuple }
+### Множественное объявление PHP класса { #container-id-multuple }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` можно применить несколько раз к одному PHP классу.
-Параметр `\Kaspi\DiContainer\Attributes\Autowire:$id` должен быть уникальным для каждого атрибута примененного к PHP классу:
+Атрибут может объявлять один и тот же PHP класс в контейнере, но параметр `$id` должен быть уникальным для каждого атрибута.
 
 ```php
 // /app/src/Services/FooService.php
@@ -100,7 +104,7 @@ var_dump($container->has('services.foo_service'));
 
 ### Передача аргументов конструктору { #example }
 
-Конфигурирование PHP класса:
+Объявление PHP класса через атрибуты:
 
 ::: code-group
 
@@ -257,7 +261,7 @@ var_dump($fooServicesWithBar->baz instanceof Baz);
 
 ## Внедрения зависимости в параметр метода { #autowire-on-param }
 
-При конфигурировании внедрения зависимости через атрибут `Autowire` в параметр метода (функции),
+При внедрении зависимости через атрибут `Autowire` в параметр метода (функции),
 значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса FQCN [^FQCN] или представлено как пустая строка.
 
 Если в `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустая строка, то конфигуратор контейнера попытается сформировать значение на основе Type hints [^TypeHints] параметра.

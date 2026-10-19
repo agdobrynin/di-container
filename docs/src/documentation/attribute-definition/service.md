@@ -4,6 +4,9 @@
 
 Атрибут `\Kaspi\DiContainer\Attributes\Service` указывает PHP интерфейсу его реализацию.
 
+Конфигурация атрибута:
+- `\Attribute::TARGET_CLASS`
+
 Сигнатура атрибута:
 
 ```php
@@ -19,7 +22,7 @@
 
 ## Пример конфигурирования интерфейса { #example-interface-service }
 
-Конфигурирование PHP классов:
+Объявление через атрибуты:
 
 ::: code-group
 
@@ -91,7 +94,7 @@ var_dump($container->get(Foo::class)->qux instanceof Bar);
 
 Параметр `\Kaspi\DiContainer\Attributes\Service::$id` может быть ссылкой идентификатор контейнера.
 
-Конфигурирование PHP классов:
+Объявление через атрибуты:
 
 ::: code-group
 

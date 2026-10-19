@@ -2,10 +2,13 @@
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` конфигурирует внедрение зависимостей в PHP класс через сеттер-методы.
-Этот атрибут следует **применять к иммутабельным сеттер-методам PHP класса** [^SetterMethodImmutable].
+Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` внедряет зависимости в PHP класс через **иммутабельные сеттер-методам PHP класса** [^SetterMethodImmutable]. 
 
 Возвращаемое значение сеттер-метода должно быть `self`, `static` или того же PHP класса к которому принадлежит сеттер-метод.
+
+Конфигурация атрибута:
+- `\Attribute::TARGET_METHOD`
+- `\Attribute::IS_REPEATABLE`
 
 Сигнатура атрибута:
 
@@ -20,7 +23,7 @@
 
 ## Аргументы сеттер-метода { #arguments }
 
-Параметр `\Kaspi\DiContainer\Attributes\SetupImmutable:$argument` передает аргументы сеттер-методу.
+Параметр `$argument` передает аргументы сеттер-методу.
 
 <!--@include: _include/setter-method-args.md-->
 

@@ -4,6 +4,10 @@
 
 Атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` внедряет зависимость через вызываемый [тип `callable`](https://www.php.net/manual/en/language.types.callable.php).
 
+Конфигурация атрибута:
+- `\Attribute::TARGET_PARAMETER`
+- `\Attribute::IS_REPEATABLE`
+
 Сигнатура атрибута:
 
 ```php
@@ -18,7 +22,7 @@
 
 ## Пример внедрения { #example }
 
-Конфигурация классов:
+Объявление через атрибуты:
 
 ::: code-group
 
@@ -93,7 +97,7 @@ if (!function_exists('App\calculateStr')) {
 :::
 
 > [!NOTE]
-> В конфигурировании параметра `App\Helpers\Configurator::doConfigBar()` используется [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](parameter.md).
+> В параметре `App\Helpers\Configurator::doConfigBar()` используется внедрение через [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](parameter.md).
 
 Контейнер зависимостей:
 

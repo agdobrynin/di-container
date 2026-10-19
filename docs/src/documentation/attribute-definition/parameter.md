@@ -4,6 +4,10 @@
 
 Атрибут `\Kaspi\DiContainer\Attributes\Parameter` внедряет зависимость из «параметров контейнера».
 
+Конфигурация атрибута:
+- `\Attribute::TARGET_PARAMETER`
+- `\Attribute::IS_REPEATABLE`
+
 Сигнатура атрибута:
 
 ```php
