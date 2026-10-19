@@ -44,6 +44,7 @@ export default defineConfig({
                       { text: 'Обзор', link: 'index.md' },
                       { text: 'Установка индивидуальной конфигурации контейнера', link: 'config.md' },
                       { text: 'Файлы конфигураций определений контейнера', link: 'configuration_files.md' },
+                      { text: 'Конфигуратор определений', link: 'definitions-configurator.md' },
                       { text: 'Динамическое добавление определений в контейнер', link: 'set.md' },
                     ]
                   },

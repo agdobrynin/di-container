@@ -1,4 +1,7 @@
-# Файлы конфигураций определений контейнера
+---
+aside: false
+---
+# Файлы конфигураций определений контейнера { #title }
 
 В `\Kaspi\DiContainer\DiContainerBuilder` используются загрузка из отдельных файлов для объявления определений контейнера и их идентификаторов[^ContainerId].
 
@@ -23,7 +26,7 @@ return static function (): \Generator {
 > [!TIP]
 > Для определения `App\Services\Foo` идентификатор контейнера [^ContainerId] будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
 
-Комбинирование возвращаемых определений и [конфигуратора](../08-definitions-configurator.md):
+Комбинирование возвращаемых определений и [конфигуратора](definitions-configurator.md):
 
 ::: code-group
 
@@ -46,7 +49,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): \Genera
 > [!TIP]
 > Для определения `App\Services\Foo` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
 
-Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](../08-definitions-configurator.md):
+Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](definitions-configurator.md):
 
 ::: code-group
 
