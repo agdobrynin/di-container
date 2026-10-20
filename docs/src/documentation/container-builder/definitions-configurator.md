@@ -245,9 +245,54 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 ### Объявление определений из файлов конфигураций { #methods-load-from-files }
 
+В [файлах конфигураций](configuration_files.md) доступно объявление определений из других файлов конфигураций.
+
 #### `load()`
 
+Метод `load()` объявляет определения из файлов конфигураций с отслеживанием уникальности идентификаторов контейнера [^ContainerId].
+
+Сигнатура метода:
+
+```php
+DefinitionsConfiguratorInterface::load(
+    string $file,
+    string ...$_
+): void
+```
+
+Параметры:
+
+- `$file` – полный путь к файлу конфигураций определений.
+- `$_` – полный путь к файлу конфигураций определений.
+
+Пример использования:
+
+```php
+// file: /app/config/services/mix_services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    $configurator->load('/app/config/config_one.php');
+};
+```
+
 #### `loadOverride()`
+
+Метод `loadOverride()` объявляет определения из файлов конфигураций с возможностью переопределения ранее объявленных определений по тому же идентификатору контейнера [^ContainerId].
+
+Сигнатура метода:
+
+```php
+DefinitionsConfiguratorInterface::loadOverride(
+    string $file,
+    string ...$_
+): void
+```
+
+Параметры:
+
+- `$file` – полный путь к файлу конфигураций определений.
+- `$_` – полный путь к файлу конфигураций определений.
 
 ### Управление параметрами контейнера { #methods-container-params }
 
@@ -269,71 +314,6 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 
 
-## Загрузить определения из конфигурационных файлов.
-
-Работает так же как методы `DiContainerBuilder::load()` и `DiContainerBuilder::loadOverride()`.
-> [Подробнее о методах.](../00-container-builder.md#метод-загрузки-из-файлов-конфигураций-с-отслеживанием-уникальности-идентификаторов-контейнера)
-
-### Загрузить определения из конфигурационных файлов отслеживая уникальность идентификаторов контейнера.
-
-```php
-DefinitionsConfiguratorInterface::load(
-    string $file,
-    string ...$_
-): void
-```
-Параметры:
-- `$file` – полный путь к файлу конфигурации определений.
-- `$_` – полный путь к файлу конфигурации определений.
-
-```php
-// /app/config/services/mix_services.php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $configurator->load('/app/config/config_1.php');
-};
-```
-
-### Загрузить определения из конфигурационных файлов перезаписывая определения.
-
-```php
-DefinitionsConfiguratorInterface::loadOverride(
-    string $file,
-    string ...$_
-): void
-```
-Параметры:
-- `$file` – полный путь к файлу конфигурации определений.
-- `$_` – полный путь к файлу конфигурации определений.
-
-```php
-// /app/config/services/mix_services.php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $configurator->loadOverride('/app/config/config_1.php');
-};
-```
-> [!TIP]
-> При использовании конфигурационных файлов с возвращаемым значением рекомендуется использовать генераторы (`\Generator`) позволяющие оптимизировать создание определений в контейнере.
-> 
-> ```php
-> // /app/config/services/controllers_services.php
-> use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-> use App\Controllers\Post;
-> use App\Repositories\PostRepository;
-> use function Kaspi\DiContainer\{diAutowire, diGet};
-> 
-> return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
->       yield diAutowire(Post::class)
->           ->bindArguments(
->               postRepository: diGet(PostRepository::class),
->           )
->       ;
-> };
-> ```
-> 
 
 ## Использование контекста для конфигурационных файлов.
 При сборке и настройке контейнера можно определить дополнительный контекст для конфигурационных файлов.
