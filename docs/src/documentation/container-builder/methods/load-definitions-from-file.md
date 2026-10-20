@@ -31,7 +31,8 @@
 
 ::: code-group
 
-```php [container_build.php]
+```php
+[container_build.php]
 // file: /app/src/container_build.php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\ReportMaker;
@@ -44,6 +45,9 @@ $service = $container->get(ReportMaker::class);
 
 var_dump($service->storage->dir);
 // string (9) "/var/data"
+
+var_dump($service->lastDays);
+// int(10)
 ```
 
 <<< @/_code/config/report_services.php#snippet{1}
@@ -96,7 +100,7 @@ $builder = (new DiContainerBuilder())
     ->load('/app/config/report_services.php');
 
 if ('dev' === getenv('APP_ENV')) {//[!code ++]
-    $builder->loadOverride('/app/config/dev/report_services.php');//[!code ++]
+    $builder->loadOverride('/app/config/dev/services.php');//[!code ++]
 }//[!code ++]
 
 $container = $builder->build();
@@ -105,6 +109,9 @@ $service = $container->get(ReportMaker::class);
 
 var_dump($service->storage->dir);
 // string (4) "/tmp"
+
+var_dump($service->lastDays);
+// int(1)
 ```
 
 <<< @/_code/config/report_services.php#snippet{1}
@@ -112,10 +119,16 @@ var_dump($service->storage->dir);
 ```php [dev/services.php]
 // file: /app/config/dev/services.php
 use App\Storages\ReportStorage;
+use App\Services\ReportMaker;
 
-use function Kaspi\DiContainer\{diAutowire, diGet};
+use function Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
+    yield diAutowire(ReportMaker::class)
+        ->bindArguments(
+            lastDays: 1
+        );
+
     yield diAutowire(ReportStorage::class)
         ->bindArguments(
             dir: '/tmp'

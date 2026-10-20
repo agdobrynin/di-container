@@ -4,7 +4,7 @@
 use App\Services\ReportMaker;
 use App\Storages\ReportStorage;
 
-use function Kaspi\DiContainer\{diAutowire, diGet};
+use function Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
     yield diAutowire(ReportStorage::class)
@@ -14,7 +14,7 @@ return static function (): Generator {
 
     yield diAutowire(ReportMaker::class)
         ->bindArguments(
-            storage: diGet(ReportStorage::class)
+            lastDays: 10
         );
 
     // other services

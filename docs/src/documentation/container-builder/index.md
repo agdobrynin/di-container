@@ -48,100 +48,12 @@ $container = (new DiContainerBuilder())
 - `load()` – объявляет определения в контейнере из файлов конфигураций.
 - `loadOverride()` – объявляет определения в контейнере из файлов конфигураций с перезаписью.
 
+[Объявление определений контейнера через коллекцию](methods/load-definitions-from-collection.md):
+- `addDefinitions()` – объявляет определения в контейнере из коллекции.
+- `addDefinitionsOverride()` – объявляет определения в контейнере из коллекции с перезаписью.
 
 🚧🚧🚧🚧🚧🚧🚧🚧
 
-## Объявление определений контейнера через коллекцию { #load-definitions-from-collection }
-
-Объявить определения контейнера можно без использования файлов конфигураций – используя коллекцию. Коллекция должна быть представлена любым `iterable` типом.
-
-Коллекция предоставляет идентификатор контейнера [^ContainerId] как ключ коллекции, а значение объявление определения контейнера.
-
-### DiContainerBuilder::addDefinitions()
-
-Объявляет определения контейнера с отслеживанием уникальности идентификаторов контейнера [^ContainerId]:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder::addDefinitions(
-    iterable $definitions
-): static;
-```
-Параметры:
-- `$definitions` – коллекция определений.
-
-> [!IMPORTANT]
-> При сборке контейнера методом `DiContainerBuilder::build()` при совпадении идентификаторов контейнера будет выброшено исключение.
->
-
-Пример использования:
-```php
-use App\Services\Config\{Foo, Qux};
-use App\Services\Baz;
-use Kaspi\DiContainer\DiContainerBuilder;
-use function Kaspi\DiContainer\{diAutowire, diCallable};
-
-$builder = new DiContainerBuilder()
-    ->load('/app/config/services.php');
-
-
-// использование callback функции в качестве коллекции определений
-$fnConfigAccessKey = static function (): \Generator {
-    yield 'app.access_key' => diCallable([Foo::class, 'accessKey']);  
-};
-
-$builder->addDefinitions(($fnConfigAccessKey)()); 
-
-// использование php массива в качестве коллекции определений
-$arrConfigBazClass = [
-    diAutowire(Baz::class)
-        ->bindArguments('value'),
-];
-
-$builder->addDefinitions($arrConfigBazClass);
-   
-$container = $builder->build();
-```
-
-> [!TIP]
-> Для определения `App\Services\Baz` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../03-php-definition.md#diautowire).
-
-
-### DiContainerBuilder::addDefinitionsOverride()
-
-Для некоторых сценариев использования может понадобиться переопределение ранее объявленных определений по тому же идентификатору контейнера [^ContainerId].
-
-Добавляет коллекцию определений в контейнер с перезаписью:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder::addDefinitionsOverride(
-    iterable $definitions
-): static;
-```
-Параметры:
-- `$definitions` – коллекция определений.
-
-Пример использования:
-```php
-use App\Services\Config\Qux;
-use App\Services\Baz;
-use Kaspi\DiContainer\DiContainerBuilder;
-use function Kaspi\DiContainer\diCallable;
-
-$builder = new DiContainerBuilder()
-    ->load('/app/config/services.php');
-
-// ...
-
-if ('test' === \getenv('APP_ENV')) {
-    // 🚩 Перезаписать ранее загруженные определения
-    // с идентификатором 'app.access_key'
-    $builder->addDefinitionsOverride([
-        'app.access_key' => diCallable([Qux::class, 'accessKey']);
-    ])
-}
-   
-$container = $builder->build();
-```
 
 ## Регистрация параметров контейнера { #load-parameters }
 Конфигурацию параметров контейнера можно представить в виде коллекции

@@ -8,7 +8,8 @@ use App\Storages\ReportStorage;
 final class ReportMaker
 {
     public function __construct(
-        public readonly ReportStorage $storage
+        public readonly ReportStorage $storage,
+        public readonly int $lastDays,
     ) {}
 }
 #endregion snippet
