@@ -165,6 +165,11 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 #### `findTaggedDefinitions()`
 
+Метод `findTaggedDefinitions()` возвращает коллекцию всех объявленных определений отмеченных тегом, где ключ коллекции это идентификатор контейнера[^ContainerId].
+
+> [!NOTE]
+> Для получения коллекции объявленных PHP классов реализующих определенный интерфейс в качестве тега можно [использовать имя интерфейса](../tags/interface-as-tag.md).
+
 #### `removeDefinition()`
 
 ### Объявление определений из файлов конфигураций { #methods-load-from-files }
