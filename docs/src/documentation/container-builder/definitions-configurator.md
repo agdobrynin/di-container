@@ -14,7 +14,9 @@ outline: [2, 4]
 use Generator;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
-return static function (DefinitionsConfiguratorInterface $configurator): Generator {
+return static function (
+    DefinitionsConfiguratorInterface $configurator //[!code ++]
+): Generator {
     // …
 };
 ```
@@ -54,7 +56,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::getDefinitions(): iterable
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::getDefinitions(): iterable
 ```
 
 Пример использования:
@@ -65,9 +67,9 @@ use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
 
-    foreach ($configurator->getDefinitions() as $id => $definition) {
+    foreach ($configurator->getDefinitions() as $id => $definition) {// [!code highlight]
         // do something.
-    }
+    }// [!code highlight]
 
 };
 ```
@@ -79,7 +81,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::setDefinition(
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::setDefinition(
     string $id,
     mixed $definition
 ): void
@@ -92,7 +94,7 @@ DefinitionsConfiguratorInterface::setDefinition(
 
 Пример использования:
 
-```php
+```php {10-17}
 // file: /app/config/services.php
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use App\Services\Mail;
@@ -121,7 +123,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::getDefinition(
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::getDefinition(
     string $id,
     ?callable $fallback = null
 ): mixed
@@ -150,8 +152,8 @@ use function Kaspi\DiContainer\diAutowire;
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     // без указания $fallback
     try {
-        $configurator->getDefinition('foo_bar');
-    } catch (NotFoundDefinition) {
+        $configurator->getDefinition('foo_bar');// [!code highlight]
+    } catch (NotFoundDefinition) {// [!code warning]
         $configurator->setDefinition(
             'foo_bar',
             diAutowire(FooBar::class)
@@ -160,7 +162,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
     }
 
     // Использовать $fallback
-    if (null === $configurator->getDefinition('qux', static fn () => null)) {
+    $qux = $configurator->getDefinition('qux', static fn () => null);// [!code highlight]
+
+    if (null === $qux) {
         $configurator->setDefinition(
             'qux',
             diAutowire(Qux::class)
@@ -177,7 +181,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::findTaggedDefinitions(
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::findTaggedDefinitions(
     string $tag
 ): iterable
 ```
@@ -199,11 +203,11 @@ use App\Interfaces\FooInterface;
 use App\Services\Client;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $definitions = $configurator->findTaggedDefinitions(FooInterface::class);
+    $definitions = $configurator->findTaggedDefinitions(FooInterface::class);// [!code highlight]
     
-    foreach ($definitions as $id => $definition) {
+    foreach ($definitions as $id => $definition) {// [!code highlight]
         $definition->setup('setClient', diAutowire(Client::class));
-    }
+    }// [!code highlight]
 };
 ```
 
@@ -214,7 +218,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::removeDefinition(
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::removeDefinition(
     string $id,
 ): void
 ```
@@ -238,7 +242,7 @@ use function getenv;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     if ('STAGES' === getenv('APP_ENV') {
-        $configurator->removeDefinition(Qux::class);
+        $configurator->removeDefinition(Qux::class);// [!code highlight]
     }
 };
 ```
@@ -247,6 +251,20 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 В [файлах конфигураций](configuration_files.md) доступно объявление определений из других файлов конфигураций.
 
+
+```php
+// file: /app/config/services/mix_services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    $configurator->load('/app/config/config_one.php');// [!code highlight]
+    
+    if ('STAGES' === getenv('APP_ENV') {
+        $configurator->loadOverride('/app/config/services_for_stages.php');// [!code highlight]
+    }
+};
+```
+
 #### `load()`
 
 Метод `load()` объявляет определения из файлов конфигураций с отслеживанием уникальности идентификаторов контейнера [^ContainerId].
@@ -254,7 +272,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::load(
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::load(
     string $file,
     string ...$_
 ): void
@@ -265,17 +283,6 @@ DefinitionsConfiguratorInterface::load(
 - `$file` – полный путь к файлу конфигураций определений.
 - `$_` – полный путь к файлу конфигураций определений.
 
-Пример использования:
-
-```php
-// file: /app/config/services/mix_services.php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $configurator->load('/app/config/config_one.php');
-};
-```
-
 #### `loadOverride()`
 
 Метод `loadOverride()` объявляет определения из файлов конфигураций с возможностью переопределения ранее объявленных определений по тому же идентификатору контейнера [^ContainerId].
@@ -283,7 +290,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::loadOverride(
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::loadOverride(
     string $file,
     string ...$_
 ): void
@@ -296,90 +303,195 @@ DefinitionsConfiguratorInterface::loadOverride(
 
 ### Управление параметрами контейнера { #methods-container-params }
 
+В файлах конфигураций доступна регистрация и управление [параметрами контейнера](../container-parameters/index.md).
+
+```php
+// file: /app/config/services/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
+use function Kaspi\DiContainer\{diAutowire, diParameter};
+
+return static function (DefinitionsConfiguratorInterface $configurator): Generator {
+    $configurator->loadParameters('/app/config/parameters/app_params.php'); // [!code highlight]
+    $configurator->setParameter('params.baz', 'Lorem ipsum');// [!code highlight]
+
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            diParameter('params.foo')
+        );
+};
+```
+
 #### `loadParameters()`
+
+Метод `loadParameters()` регистрирует параметры контейнера через файлы конфигураций параметров.
+
+Сигнатура метода:
+
+```php
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::loadParameters(
+    string $file,
+    string ...$_
+): void
+```
+
+Параметры:
+
+- `$file` – полный путь к файлу описывающий конфигурацию параметров.
+- `$_` – дополнительные файлы конфигураций параметров контейнера.
 
 #### `addParameters()`
 
+Метод `addParameters()` регистрирует параметры контейнера из коллекции.
+
+Сигнатура метода:
+
+```php
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::addParameters(
+    iterable $params
+): void
+```
+
+Параметры:
+- `$params` – коллекция ключ-значение конфигурации параметров.
+
 #### `setParameter()`
+
+Метод `setParameter()` регистрирует имя параметра контейнера и его значение.
+
+Сигнатура метода:
+
+```php
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::setParameter(
+    string $name,
+    array|int|float|string|bool|null|\UnitEnum $value
+): void
+```
+
+Параметры:
+- `$name` – имя параметра.
+- `$value` – значение параметра.
 
 #### `removeParameter()`
 
+Метод `removeParameter()` удаляет параметр контейнера по имени из конфигурации.
+
+Сигнатура метода:
+
+```php
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::removeParameter(
+    string $name
+): void
+```
+
+Параметры:
+
+- `$name` – имя параметра.
+
 #### `hasParameter()`
 
-### Контекст для конфигурационных файлов { #context }
+Метод `hasParameter()` выполняет проверку наличия определенного параметра контейнера в конфигурации по имени параметра.
+
+Сигнатура метода:
+
+```php
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::removeParameter(
+    string $name
+): void
+```
+
+Параметры:
+
+- `$name` – имя параметра.
+
+### Контекст для файлов конфигураций { #context }
+
+При сборке и настройке контейнера можно определить дополнительный контекст для файлов конфигураций.
+
+Контекст определятся самим разработчиком как коллекция ключ-значение. Передать в коллекцию по ключу можно любой тип – `mixed`, например объект, массив значений или другой желаемый тип.
+
+Методы [`DiContainerBuilder::addConfiguratorContexts()`](index.md##dicontainerbuilder-addconfiguratorcontexts) и [`DiContainerBuilder::setConfiguratorContext()`](index.md#dicontainerbuilder-setconfiguratorcontext) устанавливают контекст для файлов конфигураций.
+
 
 #### `getContext()`
 
-🚧🚧🚧🚧🚧
+Метод `getContext()` получает значение контекста по имени.
 
+Сигнатура метода:
 
-
-
-## Использование контекста для конфигурационных файлов.
-При сборке и настройке контейнера можно определить дополнительный контекст для конфигурационных файлов.
-
-Контекст определятся самим разработчиком как коллекция ключ-значение.
-Передать в коллекцию по ключу можно любой тип – `mixed`, например объект, массив значений и т.д.
 ```php
-DefinitionsConfiguratorInterface::getContext(string $name, ?callable $fallback = null): mixed
+\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::getContext(
+    string $name,
+    ?callable $fallback = null
+): mixed
 ```
+
+Параметры:
+
 Параметры:
 - `$name` – имя контекста.
-- `$fallback`  – обработчик если контекст не найден по имени.
-
-> [!WARNING]
-> Метод `getContext()` выбросит исключение `\Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface`
-> если контекст не найден по имени.
-> 
-> Чтобы избежать выброса исключения можно использовать `callable` тип в параметре `$fallback` который принимает в качестве аргумента параметр `$name`:
-> ```php
->  callable(string $name): mixed
-> ```
+- `$fallback`  – резервный обработчик для случая если контекст не найден по имени.
 
 
-Передать значения можно через методы:
-- `\Kaspi\DiContainer\Interfaces\DiContainerBuilder::addConfiguratorContexts()`
-- `\Kaspi\DiContainer\Interfaces\DiContainerBuilder::setConfiguratorContext()`
+> [!TIP]
+> Для параметра `$fallback` применяется типизация `callable(string $name): mixed`.
+>
+> Если в параметр `$fallback` установлено значение `null` и контекст не найден, то будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface`.
 
-Описание методов доступно в разделе «[Передача контекста для конфигурационных файлов](../00-container-builder.md#передача-контекста-для-конфигурационных-файлов)»
+##### Пример использования контекста в файлах конфигураций { #example-context }
 
-### Пример использования контекста для конфигурационных файлов.
-```php
+В файле конфигураций `/app/app/config/foo_service.php` требуется контекст для объявления PHP класса – нужно значение для параметра `\App\Services\Foo::$dsn` для настройки базы данных, и требуется вычисляемое значение получаемое в методе PHP класса `\App\Core::calculateFoo()` для параметра для параметра `\App\Services\Foo::$foo`.
+
+Настройки подключения к базе хранятся в переменной окружения `DATABASE_DSN`.
+
+Сборка контейнера:
+
+::: code-group
+
+```php [build_container.php]
 use Kaspi\DiContainer\DiContainerBuilder;
 use Dotenv\Dotenv;
 
 $builder = (new DiContainerBuilder())
     ->import('App\\', '/app/src')
-    ->load('/app/config/services/services.php');
+    ->load(
+        '/app/config/services/services.php',
+        '/app/app/config/foo_service.php',// [!code ++]
+    );
 
-// ...
-$dotenv = Dotenv::createImmutable('/app/');
-$dotenv->required('DATABASE_DSN');
-$dotenv->load();
+// Использую стороннюю библиотеку для работы с `.env` файлами.
+$dotenv = Dotenv::createImmutable('/app/');// [!code highlight]
+$dotenv->required('DATABASE_DSN');// [!code highlight]
+$dotenv->load();// [!code highlight]
 
-$builder->setConfiguratorContext('DATABASE_DSN', $_ENV['DATABASE_DSN']);
+$builder->setConfiguratorContext('DATABASE_DSN', $_ENV['DATABASE_DSN']);// [!code ++]
 
 /*
  * объект содержащий нужные данные для конфигурирования контейнера
  * @var \App\Core $core
  */ 
-$builder->setConfiguratorContext($core::class, $core);
+$builder->setConfiguratorContext($core::class, $core);// [!code ++]
 
 // ...
 
 $container = $builder->build();
 ```
-```php
-// /app/config/services/services.php
+
+```php [foo_service.php]
+// file: /app/app/config/foo_service.php
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use Generator;
+use App\Core;
+use App\Services\Foo;
+
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+return static function (DefinitionsConfiguratorInterface $configurator): Generator {
 
     $dsn = $configurator->getContext('DATABASE_DSN');
-    $core = $configurator->getContext(\App\Core::class);
+    $core = $configurator->getContext(Core::class);
 
-    yield diAutowire(\App\Services\Foo::class)
+    yield diAutowire(Foo::class)
         ->bindArguments(
             dsn: $dsn,
             foo: $core->calculateFoo(),
@@ -387,9 +499,6 @@ return static function (DefinitionsConfiguratorInterface $configurator): \Genera
 };
 ```
 
-## Конфигурирование параметров контейнера.
-В конфигурационных файлах поддерживается управление «параметрами контейнера».
-Подробное [описание доступных методов для параметров контейнера](../container-parameters/index.md#управление-параметрами-контейнера-в-конфигураторе-определений).
-
+:::
 
 <!--@include: ../_include/term_notes.md-->

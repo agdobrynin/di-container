@@ -506,15 +506,14 @@ $container = $builder->build();
 В [конфигурационных файлах](#load-definitions-from-file) можно использовать контекст для настройки и сборки контейнера.
 
 > [!TIP]
-> Подробное описание и примеры использования описаны в разделе «[Использование контекста для конфигурационных файлов](definitions-configurator.md#использование-контекста-для-конфигурационных-файлов)».
+> Подробное описание и примеры использования описаны в разделе «[Контекст для файлов конфигураций](definitions-configurator.md#context)».
 
 > [!WARNING]
-> Значение для ранее добавленных контекстов могут быть
-> заменены если имена контекста совпадают.
+> Значение для ранее добавленных контекстов могут быть заменены если имена контекста совпадают.
 
 ### DiContainerBuilder::addConfiguratorContexts()
 
-Передача коллекции контекста для конфигурационных файлов:
+Передача коллекции контекста для файлов конфигураций:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DiContainerBuilder::addConfiguratorContexts(
@@ -526,7 +525,7 @@ $container = $builder->build();
 
 ### DiContainerBuilder::setConfiguratorContext()
 
-Передача одиночного контекста в конфигурационный файл:
+Передача одиночного контекста для файлов конфигураций:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DiContainerBuilder::setConfiguratorContext(
