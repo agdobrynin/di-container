@@ -26,7 +26,7 @@ return static function (): \Generator {
 > [!TIP]
 > Для определения `App\Services\Foo` идентификатор контейнера [^ContainerId] будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
 
-Комбинирование возвращаемых определений и [конфигуратора](definitions-configurator.md):
+Комбинирование возвращаемых определений и [конфигуратора](definitions-configurator/index.md):
 
 ::: code-group
 
@@ -51,7 +51,7 @@ return static function (
 > [!TIP]
 > Для определения `App\Services\Foo` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
 
-Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](definitions-configurator.md):
+Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](definitions-configurator/index.md):
 
 ::: code-group
 
