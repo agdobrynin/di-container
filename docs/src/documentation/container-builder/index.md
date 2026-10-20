@@ -14,12 +14,12 @@ outline: [2, 4]
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
-use Kaspi\DiContainer\Interfaces\DiContainerCallInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerInterface;
-use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface;
+use Kaspi\DiContainer\Interfaces\DiContainerCallInterface as Call;
+use Kaspi\DiContainer\Interfaces\DiContainerInterface as PsrContainer;
+use Kaspi\DiContainer\Interfaces\DiContainerSetterInterface as Setter;
 
 /**
- * @var DiContainerCallInterface&DiContainerInterface&DiContainerSetterInterface $container 
+ * @var Call&PsrContainer&Setter $container 
  */
 $container = (new DiContainerBuilder())
     ->build()
@@ -39,167 +39,10 @@ $container = (new DiContainerBuilder())
 >
 > При возникновении конфликта объявления определений контейнера будет выброшено исключение.
 
-## Объявление определений контейнера из файлов конфигураций { #load-definitions-from-file }
+ 
+Класс `\Kaspi\DiContainer\DiContainerBuilder` реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerBuilderInterface` и предоставляет методы для объявления определений контейнера, регистрации параметров контейнера, использования файлов конфигураций, формирования с контекстов для файлов конфигураций и компиляции контейнера в готовый к использованию PHP-код сохраняемый в файл.
 
-[Конфигурационный файл](configuration_files.md) может возвращать объявления определений для контейнера как любой `iterable` тип.
-
-Объявления определений также возможно через [конфигуратор определений контейнера](definitions-configurator/index.md) внутри конфигурационного файла.
-
-
-### DiContainerBuilder::load()
-
-Метод загрузки из [файлов конфигураций](configuration_files.md) с отслеживанием уникальности идентификаторов контейнера [^ContainerId]:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder::load(
-    string $file,
-    string ...$_
-): static;
-```
-Параметры:
-- `$file` – полный путь к файлу конфигурации определений.
-- `$_` – полный путь к файлу конфигурации определений.
-
-> [!IMPORTANT]
-> При сборке контейнера методом `DiContainerBuilder::build()` при совпадении идентификаторов контейнера будет выброшено исключение.
->
-
-Пример использования:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$builder = new DiContainerBuilder();
-// 🚩 Отслеживать уникальность определений
-$builder->load('/app/config/base_services.php');
-$container = $builder->build();
-
-$container->get(\App\Services\ReportMaker::class); // получение готового объекта
-```
-
-Файлы конфигураций:
-::: code-group
-
-```php [base_services.php]
-// /app/config/base_services.php
-use App\Services\ReportMaker;
-use App\Storages\ReportStorage;
-use function Kaspi\DiContainer\{diAutowire, diGet};
-
-return static function (): Generator {
-
-    yield diAutowire(ReportMaker::class)
-        ->bindArguments(
-            storage: diGet(ReportStorage::class)
-        ),
-
-    // other services
-
-};
-```
-
-:::
-
-
-> [!TIP]
-> Для определения `App\Services\ReportMaker` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../03-php-definition.md#diautowire).
-
-
-### DiContainerBuilder::loadOverride()
-
-Для некоторых сценариев использования может понадобиться переопределение ранее объявленных определений по тому же идентификатору контейнера [^ContainerId].
-
-Метод загрузки из файлов конфигураций с перезаписью:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder::loadOverride(
-    string $file,
-    string ...$_
-): static;
-```
-
-Параметры:
-- `$file` – полный путь к файлу конфигурации определений.
-- `$_` – полный путь к файлу конфигурации определений.
-
-Пример использования:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$builder = new DiContainerBuilder();
-
-// 🚩 Отслеживать уникальность определений
-$builder->load(
-    '/app/config/base_services.php',
-    '/app/config/prod_services.php',
-);
-
-if ('dev' === \getenv('APP_ENV')) {
-    // 🚩 Перезаписать ранее загруженные определения
-    $builder->loadOverride(
-        '/app/config/dev_services.php'
-    );
-}
-
-$container = $builder->build();
-
-$container->get(\App\Services\ReportMaker::class); // получение готового объекта
-```
-
-Файлы конфигураций:
-::: code-group
-
-```php [base_services.php]
-// /app/config/base_services.php
-use App\Services\ReportMaker;
-use App\Storages\ReportStorage;
-use function Kaspi\DiContainer\{diAutowire, diGet};
-
-return static function (): Generator {
-
-    diAutowire(ReportMaker::class)
-        ->bindArguments(
-            storage: diGet(ReportStorage::class)
-        ),
-
-    // other services
-
-};
-```
-
-```php [prod_services.php]
-// /app/config/prod_services.php
-use App\Storages\ReportStorage;
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (): Generator {
-
-    yield diAutowire(ReportStorage::class)
-        ->bindArguments(dir: '/var/storage/');
-
-};
-```
-
-```php [dev_services.php]
-// /app/config/dev_services.php
-use App\Storages\ReportStorage;
-use function Kaspi\DiContainer\diAutowire
-
-return static function (): Generator {
-
-    yield diAutowire(ReportStorage::class)
-        ->bindArguments(dir: sys_get_temp_dir())
-    ;
-
-};
-```
-
-:::
-
-> [!TIP]
-> Для определения `App\Services\ReportMaker` и `App\Storages\ReportStorage` идентификатор контейнера
-> будет сформирован автоматически через [хелпер функцию `diAutowire()`](../03-php-definition.md#diautowire).
+Объявление определений контейнера из файлов конфигураций:
 
 
 ## Объявление определений контейнера через коллекцию { #load-definitions-from-collection }
