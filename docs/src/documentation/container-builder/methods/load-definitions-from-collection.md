@@ -95,8 +95,7 @@ var_dump($service->lastDays);
 
 ::: code-group
 
-```php
-[container_build.php]
+```php [container_build.php]
 // file: /app/src/container_build.php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\ReportMaker;

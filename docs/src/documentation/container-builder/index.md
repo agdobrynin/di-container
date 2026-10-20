@@ -52,62 +52,13 @@ $container = (new DiContainerBuilder())
 - `addDefinitions()` – объявляет определения в контейнере из коллекции.
 - `addDefinitionsOverride()` – объявляет определения в контейнере из коллекции с перезаписью.
 
+[Регистрация параметров контейнера](methods/load-parameters.md):
+- `loadParameters()` – регистрация параметров контейнера из файлов.
+- `addParameters()` – регистрация параметров контейнера из коллекции.
+- `setParameter()` – регистрацию одного параметра контейнера и его значения.
+
 🚧🚧🚧🚧🚧🚧🚧🚧
 
-
-## Регистрация параметров контейнера { #load-parameters }
-Конфигурацию параметров контейнера можно представить в виде коллекции
-ключ-значение, где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](../container-parameters/index.md#parameter-support-types).
-
-> [!NOTE]
-> Прочитайте главу «[параметры контейнера](../container-parameters/index.md)».
-
-> [!IMPORTANT]
-> Все добавленные ранее параметры в конфигурацию могут быть замены новыми значениями если имя параметра совпадает.
-
-
-### DiContainerBuilder::loadParameters() 
-
-Регистрация параметров контейнера из файлов:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::loadParameters(
-    string $file,
-    string ...$_
-): static
-```
-
-Параметры:
-- `$file` – полный путь к файлу описывающий конфигурацию параметров.
-- `$_` – дополнительные файлы конфигураций параметров контейнера.
-
-### DiContainerBuilder::addParameters() 
-
-Регистрация параметров контейнера из коллекции:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::addParameters(
-    iterable $params
-): static
-```
-
-Параметры:
-- `$params` – коллекция ключ-значение конфигурации параметров.
-
-### DiContainerBuilder::setParameter()
-
-Регистрация параметра контейнера:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::setParameter(
-    string $name,
-    array|int|float|string|bool|null|\UnitEnum $value
-): static
-```
-
-Параметры:
-- `$name` – имя параметра.
-- `$value` – значение параметра.
 
 ## DiContainerBuilder::import()
 
