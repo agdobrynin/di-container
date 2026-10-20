@@ -41,13 +41,12 @@ export default defineConfig({
                     link: 'index.md',
                     collapsed: true,
                     items: [
-                      { text: 'Обзор', link: 'index.md' },
                       {
-                        base: '/documentation/container-builder/methods/',
                         text: 'DiContainerBuilder',
-                        collapsed: true,
+                        link: 'index.md',
+                        collapsed: false,
                         items: [
-                          { text: 'Объявление из файлов конфигураций', link: 'load-definitions-from-file.md' },
+                          { text: 'Объявление из файлов конфигураций', link: 'methods/load-definitions-from-file.md' },
                         ],
                       },
                       { text: 'Установка индивидуальной конфигурации контейнера', link: 'config.md' },

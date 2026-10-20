@@ -21,7 +21,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 };
 ```
 
-## `loadParameters()`
+## loadParameters()
 
 Метод `loadParameters()` регистрирует параметры контейнера через файлы конфигураций параметров.
 
@@ -54,7 +54,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 Параметры:
 - `$params` – коллекция ключ-значение конфигурации параметров.
 
-## `setParameter()`
+## setParameter()
 
 Метод `setParameter()` регистрирует имя параметра контейнера и его значение.
 
@@ -71,7 +71,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 - `$name` – имя параметра.
 - `$value` – значение параметра.
 
-## `removeParameter()`
+## removeParameter()
 
 Метод `removeParameter()` удаляет параметр контейнера по имени из конфигурации.
 
@@ -87,7 +87,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 
 - `$name` – имя параметра.
 
-## `hasParameter()`
+## hasParameter()
 
 Метод `hasParameter()` выполняет проверку наличия определенного параметра контейнера в конфигурации по имени параметра.
 

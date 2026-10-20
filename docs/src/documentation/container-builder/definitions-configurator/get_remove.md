@@ -4,7 +4,7 @@
 
 При сборке контейнера через `\Kaspi\DiContainer\DiContainerBuilder` все объявленные определения будут доступны в конфигураторе определений, включая импортированные определения через [метод `DiContainerBuilder::import()`](../index.md#dicontainerbuilder-import).
 
-## `getDefinitions()`
+## getDefinitions()
 
 Метод `getDefinitions()` возвращает коллекцию всех объявленных определений при сборке контейнера, где ключ коллекции это идентификатор контейнера[^ContainerId].
 
@@ -31,7 +31,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 
-## `setDefinition()`
+## setDefinition()
 
 Метод `setDefinition()` объявляет определение и его идентификатор контейнера[^ContainerId]. Метод заменит ранее объявленное определение контейнера если совпадают идентификаторы.
 
@@ -73,7 +73,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 
-## `getDefinition()`
+## getDefinition()
 
 Метод получает по идентификатору контейнера[^ContainerId] объявленное определение контейнера.
 
@@ -131,7 +131,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 
-## `findTaggedDefinitions()`
+## findTaggedDefinitions()
 
 Метод `findTaggedDefinitions()` возвращает коллекцию всех объявленных определений отмеченных тегом, где ключ коллекции это идентификатор контейнера[^ContainerId].
 
@@ -168,7 +168,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 
-## `removeDefinition()`
+## removeDefinition()
 
 Метод `removeDefinition()` исключает идентификатор[^ContainerId] из контейнера и удаляет объявление определения если оно было сделано ранее.
 

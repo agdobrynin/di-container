@@ -9,7 +9,7 @@
 Методы [`DiContainerBuilder::addConfiguratorContexts()`](../index.md##dicontainerbuilder-addconfiguratorcontexts) и [`DiContainerBuilder::setConfiguratorContext()`](../index.md#dicontainerbuilder-setconfiguratorcontext) устанавливают контекст для файлов конфигураций.
 
 
-## `getContext()`
+## getContext()
 
 Метод `getContext()` получает значение контекста по имени.
 

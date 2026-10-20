@@ -17,7 +17,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 
-## `load()`
+## load()
 
 Метод `load()` объявляет определения из файлов конфигураций с отслеживанием уникальности идентификаторов контейнера [^ContainerId].
 
@@ -35,7 +35,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 - `$file` – полный путь к файлу конфигураций определений.
 - `$_` – полный путь к файлу конфигураций определений.
 
-## `loadOverride()`
+## loadOverride()
 
 Метод `loadOverride()` объявляет определения из файлов конфигураций с возможностью переопределения ранее объявленных определений по тому же идентификатору контейнера [^ContainerId].
 
