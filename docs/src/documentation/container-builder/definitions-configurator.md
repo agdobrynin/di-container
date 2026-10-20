@@ -130,6 +130,39 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 #### `setDefinition()`
 
+Метод `setDefinition()` объявляет определение и его идентификатор контейнера[^ContainerId]. Метод заменит ранее объявленное определение контейнера если совпадают идентификаторы.
+
+Сигнатура метода:
+
+```php
+DefinitionsConfiguratorInterface::setDefinition(
+    string $id,
+    mixed $definition
+): void
+```
+
+Параметры:
+
+- `$id` – идентификатор контейнера.
+- `$definition` – определение контейнера.
+
+Пример использования:
+
+```php
+// file: /app/config/services_override_foo.php
+
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    $configurator->setDefinition(
+        Foo::class,
+        diAutowire(Foo::class)
+            ->bindArguments('foo', 'bar')
+    );
+};
+```
+
 #### `findTaggedDefinitions()`
 
 #### `removeDefinition()`
