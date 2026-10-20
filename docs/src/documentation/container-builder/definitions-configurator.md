@@ -25,8 +25,8 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 
 - Объявление и получение определений контейнера:
   - `getDefinitions()` – получает все объявленные определения.
-  - `getDefinition()` – получить определение по идентификатору контейнера. 
   - `setDefinition()` – объявить определение контейнера.
+  - `getDefinition()` – получить определение по идентификатору контейнера. 
   - `findTaggedDefinitions()` – получить определения контейнера по тегу.
   - `removeDefinition()` – удаляет объявление из контейнера.
 - Объявление определений из файлов конфигураций:
@@ -69,6 +69,48 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
         // do something.
     }
 
+};
+```
+
+#### `setDefinition()`
+
+Метод `setDefinition()` объявляет определение и его идентификатор контейнера[^ContainerId]. Метод заменит ранее объявленное определение контейнера если совпадают идентификаторы.
+
+Сигнатура метода:
+
+```php
+DefinitionsConfiguratorInterface::setDefinition(
+    string $id,
+    mixed $definition
+): void
+```
+
+Параметры:
+
+- `$id` – идентификатор контейнера.
+- `$definition` – определение контейнера.
+
+Пример использования:
+
+```php
+// file: /app/config/services.php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use App\Services\Mail;
+
+use function Kaspi\DiContainer\{diAutowire, diParameter};
+use function getenv;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    if ('STAGES' === getenv('APP_ENV')) {
+        $configurator->setDefinition(
+            Mail::class,
+            diAutowire(Mail::class)
+                ->bindArguments(
+                    host: diParameter('mail.host.local'),
+                    port: diParameter('mail.port.local'),
+                );
+        );
+    }
 };
 ```
 
@@ -128,49 +170,78 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 };
 ```
 
-#### `setDefinition()`
+#### `findTaggedDefinitions()`
 
-Метод `setDefinition()` объявляет определение и его идентификатор контейнера[^ContainerId]. Метод заменит ранее объявленное определение контейнера если совпадают идентификаторы.
+Метод `findTaggedDefinitions()` возвращает коллекцию всех объявленных определений отмеченных тегом, где ключ коллекции это идентификатор контейнера[^ContainerId].
 
 Сигнатура метода:
 
 ```php
-DefinitionsConfiguratorInterface::setDefinition(
+DefinitionsConfiguratorInterface::findTaggedDefinitions(
+    string $tag
+): iterable
+```
+
+Параметры:
+- `$tag` – имя тега, FQCN[^FQCN] интерфейса.
+
+> [!TIP]
+> В параметре `$tag` можно указывать [FQCN интерфейса](../tags/interface-as-tag.md).
+
+Пример использования:
+
+```php
+// file: /app/config/services_tagged.php
+
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use function Kaspi\DiContainer\diAutowire;
+use App\Interfaces\FooInterface;
+use App\Services\Client;
+
+return static function (DefinitionsConfiguratorInterface $configurator): void {
+    $definitions = $configurator->findTaggedDefinitions(FooInterface::class);
+    
+    foreach ($definitions as $id => $definition) {
+        $definition->setup('setClient', diAutowire(Client::class));
+    }
+};
+```
+
+#### `removeDefinition()`
+
+Метод `removeDefinition()` исключает идентификатор[^ContainerId] из контейнера и удаляет объявление определения если оно было сделано ранее.
+
+Сигнатура метода:
+
+```php
+DefinitionsConfiguratorInterface::removeDefinition(
     string $id,
-    mixed $definition
 ): void
 ```
 
 Параметры:
 
 - `$id` – идентификатор контейнера.
-- `$definition` – определение контейнера.
+
+Все исключенные идентификаторы контейнера будут недоступны для внедрения в параметры.
+
+При получении через метод контейнера `has()` будет возвращаться `false`, а при попытке получить исключенный идентификатор через метод контейнера `get()` будет выброшено исключение реализующее интерфейс `\Psr\Container\NotFoundExceptionInterface`.
 
 Пример использования:
 
 ```php
-// file: /app/config/services_override_foo.php
-
+// file: /app/config/services_removed.php
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use function Kaspi\DiContainer\diAutowire;
+use App\Services\Qux;
+
+use function getenv;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $configurator->setDefinition(
-        Foo::class,
-        diAutowire(Foo::class)
-            ->bindArguments('foo', 'bar')
-    );
+    if ('STAGES' === getenv('APP_ENV') {
+        $configurator->removeDefinition(Qux::class);
+    }
 };
 ```
-
-#### `findTaggedDefinitions()`
-
-Метод `findTaggedDefinitions()` возвращает коллекцию всех объявленных определений отмеченных тегом, где ключ коллекции это идентификатор контейнера[^ContainerId].
-
-> [!NOTE]
-> Для получения коллекции объявленных PHP классов реализующих определенный интерфейс в качестве тега можно [использовать имя интерфейса](../tags/interface-as-tag.md).
-
-#### `removeDefinition()`
 
 ### Объявление определений из файлов конфигураций { #methods-load-from-files }
 
@@ -190,188 +261,13 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 #### `hasParameter()`
 
+### Контекст для конфигурационных файлов { #context }
 
+#### `getContext()`
 
 🚧🚧🚧🚧🚧
 
 
-## Получить импортированное или добавленное определение.
-```php
-DefinitionsConfiguratorInterface::getDefinition(
-    string $id,
-    ?callable $fallback = null
-): mixed
-```
-Параметры:
-- `$id` – идентификатор контейнера.
-  - `$fallback` – `callable` тип для обработки когда не найдено определение. Если передано значение `null`, то метод может выкинуть исключение.
-
-> [!WARNING]
-> В случае если определение не найдено: 
-> - параметр `$fallback` установлен `null` – будет выброшено
-> исключение `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`.
-> - параметр `$fallback` установлен `callable` тип – будет выполнено указанное значение вместо выброса исключения.
-> 
-> `Callable` тип `$fallback` принимает в качестве аргумента параметр `$id`:
-> ```php
->  callable(string $id): mixed
-> ```
-
-> [!NOTE]
-> Важно: определение будет получено если оно было добавлено раньше вызова метода `DefinitionsConfiguratorInterface::getDefinition()`.
-
-Пример:
-
-```php
-// /app/config/config_tags.php
-
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
-use Kaspi\DiContainer\Exception\NotFoundDefinition;
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $foo = $configurator->getDefinition(Foo::class);
-
-    if ($foo instanceof DiDefinitionTagArgumentInterface) {
-        $foo->bindTag('tags.foo')
-    }
-    
-    // Идентификатор `'foo_bar'` не задан, и неустановлен параметр `$fallback`.
-    try {
-        $configurator->getDefinition('foo_bar');
-    } catch (NotFoundDefinition) {
-        $configurator->setDefinition('foo_bar', 100_000);
-    }
-
-    // Идентификатор `'qux'` не задан, вызов `$fallback` вернёт `null`.
-    if (null === $configurator->getDefinition('qux', static fn () => null)) {
-        $configurator->setDefinition('qux', diAutowire(Foo::class));
-    }
-};
-```
-
-## Получить коллекцию определений по тегу.
-```php
-DefinitionsConfiguratorInterface::findTaggedDefinitions(
-    string $tag
-): iterable
-```
-Параметры:
-- `$tag` – имя тега.
-
-> [!NOTE]
-> Важно: определение будет получено если оно было добавлено раньше вызова метода `DefinitionsConfiguratorInterface::findTaggedDefinitions()`.
-
-
-> [!TIP]
-> В качестве тега можно использовать [полное имя интерфейса](../tags/index.md#interface-как-имя-тега).
-
-Пример – добавить вызова настройки к классам реализующим интерфейс:
-```php
-// /app/config/api_test.php
-
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use App\Interfaces\FooInterface;
-use App\Tests\Client;
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-    
-    foreach ($configurator->findTaggedDefinitions(FooInterface::class) as $id => $definition) {
-        $definition->setup('setClient', diAutowire(Client::class));
-    }
-
-};
-```
-
-## Добавить или заменить определение.
-```php
-DefinitionsConfiguratorInterface::setDefinition(
-    string $id,
-    mixed $definition
-): void
-```
-Параметры:
-- `$id` – идентификатор контейнера.
-- `$definition`  – определение контейнера.
-
-> [!NOTE]
-> Если в конфигурации уже существую определение с таким же идентификатором контейнера,
-> то оно будет перезаписано.
->
-
-Пример – заменить определение при условии:
-```php
-// /app/config/services_transport.php
-
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use App\Transport\Mail;
-use function Kaspi\DiContainer\{diAutowire, diParameter};
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-    
-    if ('dev' === \getenv('APP_ENV')) {
-        $configurator->setDefinition(
-            Mail::class,
-            diAutowire(Mail::class)
-                ->bindArguments(
-                    host: diParameter('mail.host.local'),
-                    port: diParameter('mail.port.local'),
-                );
-        );
-    }
-};
-```
-## Удаляемые определения.
-
-Удаляет определение из контейнера, и запрещает разрешение зависимости.
-
-```php
-DefinitionsConfiguratorInterface::removeDefinition(
-    string $id,
-): void
-```
-Параметры:
-- `$id` – идентификатор контейнера.
-
-```php
-// /app/config/services/removed_services.php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-
-    $configurator->removeDefinition(\App\Kernel::class);
-    $configurator->removeDefinition(\App\Core::class);
-
-};
-```
-
-## Получение коллекции.
-
-Получение коллекции всех ранее импортированных или добавленных определений.
-
-```php
-DefinitionsConfiguratorInterface::getDefinitions(): iterable
-```
-
-> [!NOTE]
-> Важно: будут получены только те определения которые были добавлены раньше вызова метода `DefinitionsConfiguratorInterface::getDefinitions()`.
->
-
-```php
-// /app/config/services/do_something_services.php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-
-return static function (DefinitionsConfiguratorInterface $configurator): void {
-
-    foreach ($configurator->getDefinitions() as $id => $definition) {
-        // do something.
-    }
-
-};
-```
 
 ## Загрузить определения из конфигурационных файлов.
 
