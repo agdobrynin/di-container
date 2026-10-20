@@ -35,7 +35,9 @@ use App\Services\{Foo, Baz};
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
+return static function (
+    DefinitionsConfiguratorInterface $configurator// [!code ++]
+): \Generator {
     $configurator->removeDefinition(Baz::class);
 
     yield diAutowire(Foo::class)
@@ -58,7 +60,10 @@ use App\Services\{Foo, Baz};
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (DefinitionsConfiguratorInterface $configurator): void {
+return static function (
+    DefinitionsConfiguratorInterface $configurator
+): \Generator {//[!code --]
+): void {//[!code ++]
     $configurator->removeDefinition(Baz::class);
     $configurator->setParameter('adminEmail', 'admin@example.com');
     
