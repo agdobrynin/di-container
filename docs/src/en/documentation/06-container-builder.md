@@ -202,9 +202,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
     ```
 - /app/config/base_services.php
     ```php
-    use App\Services\ReportMaker;
-    use App\Storages\ReportStorage;
-    use function Kaspi\DiContainer\{diAutowire, diGet, diParameter};
+    use src\Services\ReportMaker;use src\Storages\ReportStorage;use function Kaspi\DiContainer\{diAutowire,diGet,diParameter};
     
     return static function (): Generator {
   
@@ -220,9 +218,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
     ```
 - /app/config/prod_services.php
     ```php
-    use App\Services\ResportGenerator;
-    use App\Storages\ReportStorage;
-    use function Kaspi\DiContainer\{diAutowire, diParameter};
+    use App\Services\ResportGenerator;use src\Storages\ReportStorage;use function Kaspi\DiContainer\{diAutowire,diParameter};
     
     return static function (): Generator {
   
@@ -236,8 +232,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
     ```
 - /app/config/dev_services.php
     ```php
-    use App\Storages\ReportStorage;
-    use function Kaspi\DiContainer\diAutowire
+    use src\Storages\ReportStorage;use function Kaspi\DiContainer\diAutowire;
     
     return static function (): Generator {
   
@@ -250,6 +245,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
     };
     ```
 Сборка контейнера:
+
 ```php
 $builder = new \Kaspi\DiContainer\DiContainerBuilder();
 
@@ -273,7 +269,7 @@ if ('dev' === \getenv('APP_ENV')) {
 
 $container = $builder->build();
 
-$container->get(\App\Services\ReportMaker::class); // получение готового объекта
+$container->get(\src\Services\ReportMaker::class); // получение готового объекта
 ```
 
 ## Добавить определения через коллекцию.

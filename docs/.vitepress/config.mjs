@@ -9,7 +9,7 @@ export default defineConfig({
   titleTemplate: "Dependency injection container for PHP",
   description: "Dependency injection container for PHP",
   srcDir: './src',
-  srcExclude: ['**/_include/'],
+  srcExclude: ['**/_include/', '**/_code/'],
   vite: {
     publicDir: '../public',
     plugins: [

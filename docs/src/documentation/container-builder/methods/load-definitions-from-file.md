@@ -37,7 +37,7 @@ use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\ReportMaker;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')//[!code ++]
+    ->load('/app/config/report_services.php')//[!code ++]
     ->build();
 
 $service = $container->get(ReportMaker::class);
@@ -46,11 +46,11 @@ var_dump($service->storage->dir);
 // string (9) "/var/data"
 ```
 
-<<< _code/services.php#snippet{1}
+<<< @/_code/config/report_services.php#snippet{1}
 
-<<< _code/ReportMaker.php#snippet{1}
+<<< @/_code/src/Services/ReportMaker.php#snippet{1}
 
-<<< _code/ReportStorage.php#snippet{1}
+<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
 
 :::
 
@@ -93,10 +93,10 @@ use function {getenv, putenv};
 putenv('APP_ENV=DEV');//[!code ++]
 
 $builder = (new DiContainerBuilder())
-    ->load('/app/config/services.php');
+    ->load('/app/config/report_services.php');
 
 if ('dev' === getenv('APP_ENV')) {//[!code ++]
-    $builder->loadOverride('/app/config/dev/services.php');//[!code ++]
+    $builder->loadOverride('/app/config/dev/report_services.php');//[!code ++]
 }//[!code ++]
 
 $container = $builder->build();
@@ -107,11 +107,10 @@ var_dump($service->storage->dir);
 // string (4) "/tmp"
 ```
 
-<<< _code/services.php#snippet{1}
+<<< @/_code/config/report_services.php#snippet{1}
 
 ```php [dev/services.php]
 // file: /app/config/dev/services.php
-use App\Services\ReportMaker;
 use App\Storages\ReportStorage;
 
 use function Kaspi\DiContainer\{diAutowire, diGet};
@@ -124,9 +123,9 @@ return static function (): Generator {
 };
 ```
 
-<<< _code/ReportMaker.php#snippet{1}
+<<< @/_code/src/Services/ReportMaker.php#snippet{1}
 
-<<< _code/ReportStorage.php#snippet{1}
+<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
 
 :::
 

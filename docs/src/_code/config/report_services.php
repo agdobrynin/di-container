@@ -1,6 +1,6 @@
 <?php
 #region snippet
-// file: /app/config/services.php
+// file: /app/config/report_services.php
 use App\Services\ReportMaker;
 use App\Storages\ReportStorage;
 
