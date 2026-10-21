@@ -36,8 +36,7 @@ use Kaspi\DiContainer\DiContainerBuilder;
  
 $builder = (new DiContainerBuilder())
   ->import(namespace: 'App\Services\\', src: '/app/src/Services')
-  ->import(namespace: 'App\Actions\\', src: '/app/src/Actions')
-;
+  ->import(namespace: 'App\Actions\\', src: '/app/src/Actions');
 ```
 
 PHP классы найденные в исключенных файлах, параметр `$excludeFiles`, будут недоступны контейнеру через метод `get()`, а следовательно нельзя будет внедрить такой PHP класс.
