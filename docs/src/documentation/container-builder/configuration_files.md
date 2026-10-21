@@ -1,100 +1,88 @@
----
-aside: false
----
-# Файлы конфигураций определений контейнера { #title }
+# Файлы конфигураций { #title }
 
-В `\Kaspi\DiContainer\DiContainerBuilder` используются загрузка из отдельных файлов для объявления определений контейнера и их идентификаторов[^ContainerId].
+## Обзор { #overview }
 
-Файл конфигурации с возвращаемыми определениями:
+Для объявления определений контейнера можно использовать **файлы конфигураций**. Класс `\Kaspi\DiContainer\DiContainerBuilder` предоставляет методы [`load()`](methods/load-definitions-from-file.md#load) и [`loadOverride()`](methods/load-definitions-from-file.md#loadoverride) для объявления определений контейнера и их идентификаторов[^ContainerId] из файлов конфигураций.
 
-::: code-group
+Файл **должен использовать ключевое слово `return`** и возвращать любой [`iterable`](https://www.php.net/manual/en/language.types.iterable.php) или `callable` тип.
 
-```php [/app/config/services.php]
+В PHP `iterable` – это специальный псевдотип, который включает в себя любые массивы и объекты классов, реализующих [интерфейс `\Traversable`](https://www.php.net/manual/en/class.traversable.php).
+
+В **файлах конфигураций** рекомендуется использование анонимных функций с [генератором](https://www.php.net/manual/en/language.generators.overview.php) (функции с ключевым словом `yield`), они позволяют отложить объявление определений до момента их фактического конфигурирования.
+
+В конфигурации контейнера отслеживается уникальность идентификаторов контейнера[^ContainerId]. При вызове метода сборки контейнера `DiContainerBuilder::build()` будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` если в файлах конфигураций будут обнаружены не уникальные идентификаторы определений контейнера.
+
+## Анонимная функция и генератор { #example-generator-simple }
+
+```php
+// file: /app/config/as_generator_simple.php
+use Generator;
 use App\Services\Foo;
+
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (): \Generator {
-
+return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments('baz val');
-
 };
 ```
 
-:::
-
 > [!TIP]
-> Для определения `App\Services\Foo` идентификатор контейнера [^ContainerId] будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
+> Для PHP класса `App\Services\Foo` идентификатор контейнера [^ContainerId] будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
 
-Комбинирование возвращаемых определений и [конфигуратора](definitions-configurator/index.md):
+## Анонимная функция с конфигуратором и генератором { #example-generator-configurator }
 
-::: code-group
-
-```php [/app/config/services.php]
-use App\Services\{Foo, Baz};
+```php
+// file: /app/config/as_generator_with_configurator.php
+use Generator;
+use App\Services\Foo;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (
-    DefinitionsConfiguratorInterface $configurator// [!code ++]
-): \Generator {
-    $configurator->removeDefinition(Baz::class);
+return static function (): Generator {//[!code --]
+return static function (DefinitionsConfiguratorInterface $configurator): Generator {//[!code ++]
+    $configurator->removeDefinition(Baz::class);// [!code highlight]
+    $configurator->setParameter('params.baz', 'Lorem ipsum');// [!code highlight]
 
     yield diAutowire(Foo::class)
         ->bindArguments('baz val');
-
 };
 ```
 
-:::
+## Вызываемый тип с конфигуратором  { #example-callable-configurator }
 
-> [!TIP]
-> Для определения `App\Services\Foo` идентификатор контейнера будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
-
-Конфигурационный файл без возвращаемого типа с использованием только [конфигуратора определений](definitions-configurator/index.md):
-
-::: code-group
-
-```php[/app/config/services.php]
-use App\Services\{Foo, Baz};
+```php
+// file: /app/config/callable_with_configurator.php
+use Generator;
+use App\Services\Foo;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (
-    DefinitionsConfiguratorInterface $configurator
-): \Generator {//[!code --]
-): void {//[!code ++]
+return static function (DefinitionsConfiguratorInterface $configurator): Generator {//[!code --]
+return static function (DefinitionsConfiguratorInterface $configurator): void {//[!code ++]
     $configurator->removeDefinition(Baz::class);
-    $configurator->setParameter('adminEmail', 'admin@example.com');
-    
+    $configurator->setParameter('params.baz', 'Lorem ipsum');
     $configurator->setDefinition(
         Foo::class,
         diAutowire(Foo::class)
-            ->bindTag('tags.foo_app');
+            ->bindArguments('baz val')
     );
 };
 ```
 
-> [!IMPORTANT]
-> Файл конфигурации должен использовать ключевое слово `return`.
+## PHP массив { #example-array }
 
-> [!NOTE]
-> Файл конфигурации может возвращать любой итерируемый тип. Например:
-> - Функцию с возвращаемым типом `\Generator`.
-> - простой php массив `[]`.
-> - любой `callable` тип с возвращаемым типом `iterable`.
+```php
+// file: /app/config/as_array.php
+use App\Services\Foo;
+use function Kaspi\DiContainer\diAutowire;
 
-> [!TIP]
-> Использование для конфигурационных файлов возвращаемого типа `\Generator` позволяет оптимизировать создание определений в контейнере
-> и рекомендован для конфигурирования контейнера.
-
-> [!TIP]
-> Для некоторых определений контейнера идентификатор [^ContainerId] может быть сформирован автоматически.
-> - [хелпер функция `diAutowire()`](../php-definition/di-autowire.md)
-> - [хелпер функция `diRuntime()`](../php-definition/di-runtime.md)
-> - [PHP атрибут `#[Autowire()]`](../attribute-definition/autowire.md)
->
-
-В рамках контейнера отслеживается уникальность идентификаторов контейнера. Если вновь загружаемый идентификатор контейнера уже присутствует, то будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` при вызове метода сборки контейнера `DiContainerBuilder::build()`.
+return [
+    diAutowire(Foo::class)
+        ->bindArguments('baz val')
+];
+```
 
 <!--@include: ../_include/term_notes.md-->
