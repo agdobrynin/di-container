@@ -45,6 +45,9 @@
 ::: code-group
 
 ```php [build_container.php]
+// file: /app/src/build_container.php
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
 use Dotenv\Dotenv;
 

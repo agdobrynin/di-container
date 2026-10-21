@@ -48,6 +48,9 @@ $container->set($others::class, $others);
 ::: code-group
 
 ```php [container_builder.php]
+// file: /app/src/container_builder.php
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
 
 // конфигурация и получение готового контейнера зависимостей
@@ -67,12 +70,12 @@ $container = (new DiContainerBuilder())
 ;
 ```
 ```php [Others.php]
-// app/src/Services/Others.php
-// ⚠️ Класс который нужно конфигурировать отдельно.
+// file: /app/src/Services/Others.php
 namespace App\Services;
 
 use App\Services\Others;
 
+// ⚠️ Класс который нужно конфигурировать отдельно.
 final class Others {
     public function __construct(
         // some dependencies

@@ -30,6 +30,8 @@
 
 ```php {10-15,18-23} [container_build.php]
 // file: /app/src/container_build.php
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Generator;
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\ReportMaker;

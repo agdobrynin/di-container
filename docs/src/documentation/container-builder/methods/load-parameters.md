@@ -16,6 +16,8 @@
 
 ```php [container_build.php]
 // file: /app/src/container_build.php
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\ReportMaker;
 

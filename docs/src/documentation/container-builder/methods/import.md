@@ -46,19 +46,52 @@ PHP классы найденные в исключенных файлах, па
 
 Необходимо объявить PHP классы из директории проекта `'/app/src'`. PHP классы в директории `''/app/src/Various/'` необходимо исключить из контейнера.  
 
-```php
+::: code-group
+
+```php [container_build.php]
+// file: /app/src/container_build.php
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\ReportBuilder;
+use App\Various\Qux;
 
 $container = (new DiContainerBuilder())
-    ->import(
-        namespace: 'App\\',
-        src: '/app/src/',
-        excludeFiles: [
-            '/app/src/Various/*.php',
-        ]
-    )
-    ->loadParameters('/app/config/report_parameters.php')
+    ->loadParameters('/app/config/report_parameters.php')//[!code highlight]
+    ->import(// [!code ++]
+        namespace: 'App\\',// [!code ++]
+        src: '/app/src/',// [!code ++]
+        excludeFiles: [// [!code ++]
+            '/app/src/Various/*.php',// [!code ++]
+        ]// [!code ++]
+    )// [!code ++]
     ->build();
+
+$reportBuilder = $container->get(ReportBuilder::class);
+
+var_dump($reportBuilder->storage->dir);
+// string (9) "/var/data"
+
+var_dump($reportBuilder->lastDays);
+// int(10)
+
+var_dump($container->has(Qux::class));
+// bool(false)
+
+$container->get(Qux::class); //[!code error]
+// throw exception: `\Kaspi\DiContainer\Exception\NotFoundException`
 ```
+<<< @/_code/config/report_parameters.php#snippet{1}
+
+<<< @/_code/src/Services/ReportBuilder.php#snippet{1}
+
+<<< @/_code/src/Interfaces/ReportsStorageInterface.php#snippet{1}
+
+<<< @/_code/src/Storages/ReportsStorage.php#snippet{1}
+
+<<< @/_code/src/Various/Qux.php#snippet{1}
+
+:::
+
 
 <!--@include: ../../_include/term_notes.md-->
