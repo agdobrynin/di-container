@@ -2,10 +2,7 @@
 
 ## Обзор { #overview }
 
-[Файл конфигураций](../configuration_files.md) может возвращать объявления определений для контейнера как любой `iterable` тип.
-
-Объявления определений также возможно через [конфигуратор определений контейнера](../definitions-configurator/index.md) внутри файла конфигураций.
-
+[Файл конфигураций](../configuration_files.md) **должен использовать ключевое слово `return`** и возвращать любой [`iterable`](https://www.php.net/manual/en/language.types.iterable.php) или `callable` тип.
 
 ## load()
 

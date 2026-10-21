@@ -12,6 +12,21 @@
 
 В конфигурации контейнера отслеживается уникальность идентификаторов контейнера[^ContainerId]. При вызове метода сборки контейнера `DiContainerBuilder::build()` будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` если в файлах конфигураций будут обнаружены не уникальные идентификаторы определений контейнера.
 
+## Конфигуратор определений в вызываемом типе { #definition-configurator-argument }
+
+Файл конфигураций может быть представлен `callable` типом, для такого файла первым параметром контейнер передаёт аргумент [конфигуратор определений контейнера](definitions-configurator/index.md).
+
+```php
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+
+return static function (
+    DefinitionsConfiguratorInterface $configurator//[!code warning]
+) {
+    // …
+};
+```
+
+
 ## Анонимная функция и генератор { #example-generator-simple }
 
 ```php
