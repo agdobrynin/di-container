@@ -27,22 +27,21 @@ $container = (new DiContainerBuilder())
 ```
 
 > [!IMPORTANT]
-> Валидация конфигурации контейнера провидится в методе `DiContainerBuilder::build()`.
-> При некорректной конфигурации будет выброшено исключение `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface`.
+> Валидация конфигурации контейнера провидится в методе `DiContainerBuilder::build()`. При некорректной конфигурации будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface`.
 
 > [!IMPORTANT]
-> Методы загрузки [файлов конфигураций](configuration_files.md) имеют следующий приоритет, чем раньше использован метод загрузки, тем приоритетнее объявления сделанные в этом файле. Идентификаторы контейнера[^ContainerId] для определений должны быть уникальными в рамках создаваемого контейнера.
+> [Методы загрузки из файлов конфигураций](methods/load-definitions-from-file.md) имеют следующий приоритет, чем раньше использован метод загрузки, тем приоритетнее объявления сделанные в этом файле. Идентификаторы контейнера[^ContainerId] для определений должны быть уникальными в рамках создаваемого контейнера.
 >
 > Для некоторых сценариев использования может понадобиться переопределение ранее объявленных определений.
-> Для переопределения используйте методы `DiContainerBuilder::addDefinitionsOverride()`
-> и `DiContainerBuilder::loadOverride()`.
+> Для переопределения используйте методы [`DiContainerBuilder::addDefinitionsOverride()`](methods/load-definitions-from-collection.md#adddefinitionsoverride)
+> и [`DiContainerBuilder::loadOverride()`](methods/load-definitions-from-file.md#loadoverride).
 >
 > При возникновении конфликта объявления определений контейнера будет выброшено исключение.
 
 
 ## Методы сборки контейнера { #methods }
  
-Класс `\Kaspi\DiContainer\DiContainerBuilder` реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerBuilderInterface` и предоставляет методы для объявления определений контейнера, регистрации параметров контейнера, использования файлов конфигураций, формирования с контекстов для файлов конфигураций и компиляции контейнера в готовый к использованию PHP-код сохраняемый в файл.
+Класс `\Kaspi\DiContainer\DiContainerBuilder` реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerBuilderInterface` и предоставляет методы для объявления определений контейнера, регистрации параметров контейнера, формирования с контекстов для файлов конфигураций и компиляции контейнера в готовый к использованию PHP-код сохраняемый в файл.
 
 [Объявление определений контейнера из файлов конфигураций](methods/load-definitions-from-file.md):
 - `load()` – объявляет определения в контейнере из файлов конфигураций.
@@ -55,7 +54,7 @@ $container = (new DiContainerBuilder())
 [Регистрация параметров контейнера](methods/load-parameters.md):
 - `loadParameters()` – регистрация параметров контейнера из файлов.
 - `addParameters()` – регистрация параметров контейнера из коллекции.
-- `setParameter()` – регистрацию одного параметра контейнера и его значения.
+- `setParameter()` – регистрация параметра контейнера и его значения.
 
 [Объявление PHP классов в контейнере из файловой системы](methods/import.md):
 - `import()` – объявляет PHP классы через сканирование файловой системы.
@@ -73,7 +72,7 @@ $container = (new DiContainerBuilder())
 Локальное (**dev**) — для разработчика, Тестовое (**test**) — для QA,
 Продакшен (**prod**) — для конечных пользователей.
 
-Не используйте [компиляцию контейнера](#compile-to-file) в среде разработки (_dev_), иначе все изменения, которые вы внесете в определения (атрибуты, файлы конфигурации и т.д.), не будут приняты во внимание. Компиляция конечного файла контейнера происходит только один раз и возвращается всегда экземпляр контейнера сформированного при первой компиляции.
+Не используйте [компиляцию контейнера](methods/compile-to-file.md) в среде разработки (_dev_), иначе все изменения, которые вы внесете конфигурацию контейнера в процессе изменения кода приложения через атрибуты, файлы конфигураций и т.п., не будут приняты во внимание. Компиляция контейнера в PHP код происходит только один раз при первом вызове сборки контейнера.
 
 ### Как использовать компиляцию в разных средах приложения { #how-to-build-container-env }
 
@@ -82,9 +81,10 @@ $container = (new DiContainerBuilder())
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 
+use function getenv;
+
 $builder = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src/')
-    // 🚩 Отслеживать уникальность определений
     ->load(
         '/app/config/base_services.php',
         '/app/config/prod_services.php'
@@ -92,18 +92,13 @@ $builder = (new DiContainerBuilder())
 ;
 
 // 🚩 окружение для локальной разработки приложения
-if ('dev' === \getenv('APP_ENV')) {
-
+if ('dev' === getenv('APP_ENV')) {
     $builder->loadOverride('/app/config/dev_services.php');
-
 }
 
-// 🚩 Компилировать контейнер в файл
-// если приложение работает в продуктивной среде 
-if ('prod' === \getenv('APP_ENV')) {
-
+// 🚩 Компилировать контейнер только когда APP_ENV === 'prod' окружении 
+if ('prod' === getenv('APP_ENV')) {
     $builder->compileToFile('/app/var/container', 'App\\Core\\FooContainer');
-
 }
 
 $container = $builder->build();

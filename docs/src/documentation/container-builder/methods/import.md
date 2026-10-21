@@ -29,6 +29,8 @@
 > [!NOTE]
 > Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
 
+PHP классы найденные в исключенных файлах, параметр `$excludeFiles`, будут недоступны контейнеру через метод `get()`, а следовательно нельзя будет внедрить такой PHP класс.
+
 Объявить PHP классы можно из нескольких директорий вызывая последовательно метод `import()` с указанием уникального значения в параметре `$namespace`:
 
 ```php
@@ -38,9 +40,6 @@ $builder = (new DiContainerBuilder())
   ->import(namespace: 'App\Services\\', src: '/app/src/Services')
   ->import(namespace: 'App\Actions\\', src: '/app/src/Actions');
 ```
-
-PHP классы найденные в исключенных файлах, параметр `$excludeFiles`, будут недоступны контейнеру через метод `get()`, а следовательно нельзя будет внедрить такой PHP класс.
-
 
 ## Пример объявления PHP классов из файловой системы { #example }
 
