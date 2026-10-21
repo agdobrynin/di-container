@@ -50,6 +50,7 @@ export default defineConfig({
                           { text: 'Объявление через коллекцию', link: 'methods/load-definitions-from-collection.md' },
                           { text: 'Регистрация параметров контейнера', link: 'methods/load-parameters.md' },
                           { text: 'Объявление через сканирование файловой системы', link: 'methods/import.md' },
+                          { text: 'Компиляция контейнера', link: 'methods/compile-to-file.md' },
                         ],
                       },
                       { text: 'Установка индивидуальной конфигурации контейнера', link: 'config.md' },

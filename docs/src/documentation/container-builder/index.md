@@ -60,82 +60,10 @@ $container = (new DiContainerBuilder())
 [Объявление PHP классов в контейнере из файловой системы](methods/import.md):
 - `import()` – объявляет PHP классы через сканирование файловой системы.
 
+[Компиляция контейнера](methods/compile-to-file.md):
+- `compileToFile()` – объявляет параметры компиляции контейнера в PHP-код.
+
 🚧🚧🚧🚧🚧🚧🚧🚧
-
-
-
-## DiContainerBuilder::compileToFile() { #compile-to-file }
-
-Для повышения производительности контейнера зависимостей реализован компилятор который преобразует
-настроенный контейнер в готовый к использованию PHP-код сохраняемый в файл,
-чтобы при следующих запусках контейнер загружался мгновенно,
-минуя этап парсинга конфигурации, что значительно повышает производительность.
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder::compileToFile(
-    string $outputDirectory,
-    string $containerClass,
-    int $permissionCompiledContainerFile = 0666,
-    bool $isExclusiveLockFile = true,
-    array $options = []
-): static;
-```
-
-Параметры:
-- `$outputDirectory` – директория в файловой системе для скомпилированного контейнера.
-- `$containerClass` – имя класса для скомпилированного контейнера включая пространство имен класса (fully qualified class name).
-- `$permissionCompiledContainerFile` – права доступа к файлу в который будет сохранен скомпилированный PHP-код.
-- `$isExclusiveLockFile` – эксклюзивная блокировка файла во время записи PHP-кода в конечный файл.
-- `$options` – дополнительные [настройки компилятора](#compile-options).
-
-> [!IMPORTANT]
-> Для обеспечения максимальной производительности компиляция контейнера происходит один раз если конечный файл
-> содержащий PHP-код не найден.
-> При повторном вызове сборки контейнера с компиляцией если будет найден ранее сгенерированный файл,
-> то повторная компиляция будет пропущена.
-> При развёртывании новых версий контейнера (измененных) в продуктивной среде (_prod env_)
-> вы должны удалить сгенерированный файл (или каталог, который его содержит), чтобы обеспечить повторную компиляцию контейнера.
-
-> [!TIP]
-> Имя файла для скомпилированного контейнера генерируется на основании параметров `$outputDirectory` и `$containerClass`.
-> Сформированное полное имя файла это директория назначения `$outputDirectory` плюс имя класс из `$containerClass` без учёта namespace указанного класса.
-
-Пример настройки компиляции контейнера:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$builder = new DiContainerBuilder();
-
-// ...
-
-$builder->compileToFile(
-    outputDirectory: '/app/var/container',
-    // Имя класса с указанием пространства имен для компилируемого контейнера
-    containerClass: 'App\\Core\\FooContainer',
-);
-
-$container = $builder->build();
-```
-
-> [!TIP]
-> Будет сформирован файл `/app/var/container/FooContainer.php`.
->
-
-> [!WARNING]
-> Директория указанная в параметре `$outputDirectory` должна существовать и быть доступна для чтения и записи.
->
-
-### Дополнительные настройки компилятора { #compile-options }
-
-Настройки передаются в виде ассоциативного массива со значениями:
-* `'invalid_behavior'` – принимает тип `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum`, значение по умолчанию
-   `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum::ExceptionOnCompile`.
-* `'di_definition_transformer'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`
-   значение по умолчанию пусто.
-* `'compiled_entries'` – принимает тип `\Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface`,
-   значение по умолчанию пусто.
-* `'force_rebuild'` – принимает тип `bool`, значение по умолчанию `false`.
 
 ## Передача контекста для конфигурационных файлов { #configuration-context }
 
