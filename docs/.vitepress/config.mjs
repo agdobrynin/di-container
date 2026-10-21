@@ -49,6 +49,7 @@ export default defineConfig({
                           { text: 'Объявление из файлов конфигураций', link: 'methods/load-definitions-from-file.md' },
                           { text: 'Объявление через коллекцию', link: 'methods/load-definitions-from-collection.md' },
                           { text: 'Регистрация параметров контейнера', link: 'methods/load-parameters.md' },
+                          { text: 'Объявление через сканирование файловой системы', link: 'methods/import.md' },
                         ],
                       },
                       { text: 'Установка индивидуальной конфигурации контейнера', link: 'config.md' },

@@ -57,88 +57,12 @@ $container = (new DiContainerBuilder())
 - `addParameters()` – регистрация параметров контейнера из коллекции.
 - `setParameter()` – регистрацию одного параметра контейнера и его значения.
 
+[Объявление PHP классов в контейнере из файловой системы](methods/import.md):
+- `import()` – объявляет PHP классы через сканирование файловой системы.
+
 🚧🚧🚧🚧🚧🚧🚧🚧
 
 
-## DiContainerBuilder::import()
-
-Импорт обеспечивает объявление PHP классов в контейнере. Если в конфигурации контейнера указано [использование PHP атрибутов](../container-config/index.md#use-attribute), то они будут также использованы объявления PHP классов.
-
-Загрузка PHP классов из указанных директорий происходит с учётом пространства имён (_namespace_).
-
-Так же импорт будет полезен когда контейнер имеет настройку – [запрещено автоматически внедрять зависимости класса](../container-config/index.md#use-zero-configuration-definition) если он явно не объявлен в контейнере.
-
-Импорт классов:
-
-```php
-\Kaspi\DiContainer\DiContainerBuilder::import(
-    string $namespace,
-    string $src,
-    array $excludeFiles = [],
-    array $availableExtensions = ['php'],
-): static;
-```
-
-Параметры:
-
-- `$namespace` – префикс пространства имён из которого следует
-  импортировать классы (_например: `'App\\'` – загружать если namespace класса начинается с префикса_).
-- `$src` – директория из которой импортировать классы.
-- `$excludeFiles` – исключить из загрузки файлы по шаблону.
-- `$availableExtensions` – указать расширения у файлов которые будут обработаны.
-
-> [!NOTE]
-> Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
->
-> FQCN [^FQCN] которые будут найдены в исключённых файлах для контейнера недоступны при внедрении зависимостей.
-
-> [!TIP]
-> При необходимости можно удалить из контейнера определение [через конфигуратор](definitions-configurator/index.md).
-> Это полезно, например, для того, чтобы сделать сервис недоступным при определенных сценариях использования контейнера.
->
-
-Пример использования:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$builder = (new DiContainerBuilder())
-    ->import(
-        namespace: 'App\\',
-        src: '/app/src/',
-        excludeFiles: [
-            '/app/src/Events/*',
-            '/app/src/*Kernel.php',
-            '/app/src/Container.php',
-        ]
-    )
-    // 🚩 Отслеживать уникальность определений
-    ->load(
-        '/app/config/base_services.php',
-        '/app/config/prod_services.php',
-    )
-;
-
-if ('dev' === \getenv('APP_ENV')) {
-
-    $builder->loadOverride('/app/config/dev_services.php');
-
-}
-
-$container = $builder->build();
-```
-
-
-Импорт может быть выполнен из нескольких директорий если это необходимо.
-В случае импорта из нескольких источников следует помнить что параметр `$namespace` должен быть уникальным:
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
- 
-$builder = (new DiContainerBuilder())
-  ->import(namespace: 'App\\Services\\', src: '/app/src/Services')
-  ->import(namespace: 'App\\Actions\\', src: '/app/src/Actions')
-;
-```
 
 ## DiContainerBuilder::compileToFile() { #compile-to-file }
 
