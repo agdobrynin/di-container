@@ -51,6 +51,7 @@ export default defineConfig({
                           { text: 'Регистрация параметров контейнера', link: 'methods/load-parameters.md' },
                           { text: 'Объявление через сканирование файловой системы', link: 'methods/import.md' },
                           { text: 'Компиляция контейнера', link: 'methods/compile-to-file.md' },
+                          { text: 'Контекст для конфигурационных файлов', link: 'methods/configuration-context.md' },
                         ],
                       },
                       { text: 'Установка индивидуальной конфигурации контейнера', link: 'config.md' },

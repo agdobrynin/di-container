@@ -63,43 +63,9 @@ $container = (new DiContainerBuilder())
 [Компиляция контейнера](methods/compile-to-file.md):
 - `compileToFile()` – объявляет параметры компиляции контейнера в PHP-код.
 
-🚧🚧🚧🚧🚧🚧🚧🚧
-
-## Передача контекста для конфигурационных файлов { #configuration-context }
-
-В [конфигурационных файлах](#load-definitions-from-file) можно использовать контекст для настройки и сборки контейнера.
-
-> [!TIP]
-> Подробное описание и примеры использования описаны в разделе «[Контекст для файлов конфигураций](definitions-configurator/context.md)».
-
-> [!WARNING]
-> Значение для ранее добавленных контекстов могут быть заменены если имена контекста совпадают.
-
-### DiContainerBuilder::addConfiguratorContexts()
-
-Передача коллекции контекста для файлов конфигураций:
-
-```php
-\Kaspi\DiContainer\Interfaces\DiContainerBuilder::addConfiguratorContexts(
-    iterable $contexts
-): static
-```
-Параметры:
-- `$contexts` – коллекция ключ-значение, где ключ коллекции это имя контекста;
-
-### DiContainerBuilder::setConfiguratorContext()
-
-Передача одиночного контекста для файлов конфигураций:
-
-```php
-\Kaspi\DiContainer\Interfaces\DiContainerBuilder::setConfiguratorContext(
-    string $name,
-    mixed $context
-): static
-```
-Параметры:
-- `$name` – имя контекста, непустая строка;
-- `$context` – значение контекста;
+[Передача контекста для конфигурационных файлов](methods/configuration-context.md):
+- `addConfiguratorContexts()` – коллекция контекста для файлов конфигураций.
+- `setConfiguratorContext()` – именованный контекст для файлов конфигураций.
 
 ## Использование контейнера в разных окружениях приложения { #build-container-env }
 

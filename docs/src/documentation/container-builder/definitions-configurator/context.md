@@ -6,7 +6,7 @@
 
 Контекст определятся самим разработчиком как коллекция ключ-значение. Передать в коллекцию по ключу можно любой тип – `mixed`, например объект, массив значений или другой желаемый тип.
 
-Методы [`DiContainerBuilder::addConfiguratorContexts()`](../index.md##dicontainerbuilder-addconfiguratorcontexts) и [`DiContainerBuilder::setConfiguratorContext()`](../index.md#dicontainerbuilder-setconfiguratorcontext) устанавливают контекст для файлов конфигураций.
+Методы [`DiContainerBuilder::addConfiguratorContexts()`](../methods/configuration-context.md#addconfiguratorcontexts) и [`DiContainerBuilder::setConfiguratorContext()`](../methods/configuration-context.md#setconfiguratorcontext) устанавливают контекст для файлов конфигураций.
 
 
 ## getContext()
