@@ -136,7 +136,29 @@ return static function (): Generator {
 };
 ```
 
-<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
+```php [ReportStorage.php]
+// file: /app/src/Storages/ReportStorage.php
+namespace App\Storages;
+
+final class ReportStorage
+{
+    private int $permission = 0777;
+
+    public function __construct(
+        public readonly string $dir
+    ) {}
+
+    public function setPermission(int $permission): void
+    {
+        $this->permission = $permission;
+    }
+
+    public function getPermission(): int
+    {
+        return $this->permission;
+    }
+}
+```
 
 :::
 
@@ -175,18 +197,17 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 
 <!--@include: _include/set-resetter.md-->
 
-## Идентификатор контейнера для diAutowire { #container-id }
+## Идентификатор контейнера для diAutowire() { #container-id }
 
-При конфигурировании идентификатор контейнера [^ContainerId] может быть сформирован на основе FQCN [^FQCN].
+При объявлении PHP класса идентификатор контейнера [^ContainerId] может быть сформирован на основе FQCN [^FQCN].
 
-Конфигурирование с автоматическим формированием идентификатора контейнера:
+Файл конфигураций с автоматическим формированием идентификатора контейнера:
 
 ```php
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (): \Generator {
-    // идентификатор контейнера сформируется
-    // из имени класса, включая пространство имен
+    // $container->get(\PDO::class)//[!code warning]
     yield diAutowire(\PDO::class)
         ->bindArguments(
             dsn: diParameter('db.dsn')
@@ -199,21 +220,21 @@ return static function (): \Generator {
 };
 ```
 
-Идентификатор контейнера в [файлах конфигурации](../container-builder/configuration_files.md) может быть указан для
-нужных определений контейнера:
+Идентификатор контейнера для объявляемого PHP класса может быть указан произвольной строкой.
 
 ```php
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (): \Generator {
-    // $container->get('pdo-in-tmp-file')
-    yield 'pdo-in-tmp-file' => diAutowire(\PDO::class)
+    // $container->get('pdo-in-tmp-file')//[!code warning]
+    yield diAutowire(\PDO::class)//[!code --]
+    yield 'pdo-in-tmp-file' => diAutowire(\PDO::class)//[!code ++]
         ->bindArguments(
             dsn: diParameter('db.dsn_file')
         );
 
-    // $container->get('pdo-in-memory')
-    yield 'pdo-in-memory' => diAutowire(\PDO::class)
+    // $container->get('pdo-in-memory')//[!code warning]
+    yield 'pdo-in-memory' => diAutowire(\PDO::class)//[!code ++]
         ->bindArguments(
             dsn: diParameter('db.dsn_memory')
         );

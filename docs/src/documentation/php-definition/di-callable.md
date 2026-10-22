@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Хелпер функция `diCallable()` внедряет зависимость через [вызываемый тип callable](https://www.php.net/manual/en/language.types.callable.php).
+Хелпер функция `diCallable()` внедряет зависимость через [вызываемый тип `callable`](https://www.php.net/manual/en/language.types.callable.php).
 
 Сигнатура функции:
 
