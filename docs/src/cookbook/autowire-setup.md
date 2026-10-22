@@ -5,60 +5,9 @@ outline: [2, 4]
 
 ## Обзор
 
-Внедрение зависимостей в PHP класс может происходить так же через **сеттер-методы**. Для этого при настройке
-определения контейнера используются методы хелпер функции [`diAutowire::setup()`](../documentation/php-definition/di-autowire.md#setup) и  [`diAutowire::setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable),
-или PHP атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md) и [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
+Внедрение зависимостей в PHP класс может происходить так же через **сеттер-методы**.
 
-<span id="src-class"/>Классы для конфигурирования:
-
-::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-
-namespace App\Services;
-
-use Psr\Log\LoggerInterface;
-
-class Foo
-{
-    private LoggerInterface $logger;
-
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $new->logger = $logger;
-    }
-
-    public function withLogger(LoggerInterface $logger): static
-    {
-        $new = clone $this;
-        $new->logger = $logger;
-    
-        return $new;
-    }
-    
-    public function getLogger(): ?LoggerInterface
-    {
-        return $this->logger ?? null;
-    }
-}
-```
-
-```php [FileLogger.php]
-// file: /app/src/Services/FileLogger.php
-
-namespace App\Services;
-
-use Psr\Log\LoggerInterface;
-
-class FileLogger implements LoggerInterface
-{
-    public function __construct(private string $fileName) {}
-    // implement methods from LoggerInterface
-}
-```
-
-:::
+При объявлении PHP класса используются методы [`setup()`](../documentation/php-definition/di-autowire.md#setup), [`setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable) хелпер функции `diAutowire()` или атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md), [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
 
 ## Объявление PHP классов в файлах конфигураций { #php-definition }
 
@@ -66,130 +15,72 @@ class FileLogger implements LoggerInterface
 
 ### diAutowire::setup()
 
-Внедрение зависимости через мутабельный сеттер-метод [^SetterMethodMutable].
-
-Объявление [PHP классов](#src-class):
+Внедрение зависимости через мутабельный сеттер-метод [^SetterMethodMutable] `\App\Services\FooLogger::setLogger()`.
 
 ::: code-group
 
+<<< @/_code/scripts/cookbook/autowire-setup/container_build.php
+
 ```php [services.php]
+<?php
 // file: /app/config/services/services.php
-use function Kaspi\DiContainer\diAutowire;
-use App\Services\Foo;
+use App\Services\{FooLogger, FileLogger};
+
+use function Kaspi\DiContainer\{diAutowire, diGet};
 
 return static function(): \Generator {
-    yield diAutowire(Foo::class)
-        ->setup('setLogger');
-
-    yield 'priority_queue.get_data' => diAutowire(\SplPriorityQueue::class)
-        ->setup('setExtractFlags', [\SplPriorityQueue::EXTR_DATA]);
+    yield diAutowire(FooLogger::class)
+        ->setup(// [!code ++]
+            'setLogger',// [!code ++]
+            [diGet(FileLogger::class)]// [!code ++]
+        );// [!code ++]
 };
 ```
 
-```php [loggers.php]
-// file: /app/config/services/loggers.php
-use function Kaspi\DiContainer\{diAutowire, diParameter};
-use App\Services\FileLogger;
+<<< @/_code/scripts/cookbook/autowire-setup/service_logger.php
 
-return static function(): \Generator {
-    yield diAutowire(FileLogger::class)
-        ->bindArguments(
-            diParameter('files.logger_file')
-        );
-};
-```
+<<< @/_code/scripts/cookbook/autowire-setup/params_logger.php
 
-```php [parameters.php]
-// file: /app/config/parameters/logger.php
-return [
-    'files.logger_file' => '/var/logs/app_logger.log',
-];
-```
+<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FooLogger.php
+
+<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FileLogger.php
 
 :::
-
-
-Контейнер зависимостей:
-
-```php {7-8}
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-use Psr\Log\LoggerInterface;
-use function glob;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters(...glob('/app/config/parameters/*.php'))
-    ->load(...glob('/app/config/services/*.php'))
-    ->build();
-
-$priorityQueue = $container->get('priority_queue.get_data');
-
-var_dump($priorityQueue instanceof \SplPriorityQueue);
-// (bool) true
-
-$foo = $container->get(Foo::class);
-var_dump($foo->getLogger() instanceof LoggerInterface);
-// (bool) true
-```
 
 ### diAutowire::setupImmutable()
 
-Внедрение зависимости через иммутабельный сеттер-метод [^SetterMethodImmutable].
-
-Объявление [PHP классов](#src-class):
+Внедрение зависимости через иммутабельный сеттер-метод [^SetterMethodImmutable] `\App\Services\FooLogger::withLogger()`.
 
 ::: code-group
 
+<<< @/_code/scripts/cookbook/autowire-setup/container_build.php
+
 ```php [services.php]
+<?php
 // file: /app/config/services/services.php
-use function Kaspi\DiContainer\diAutowire;
-use App\Services\Foo;
+use App\Services\{FooLogger, FileLogger};
+
+use function Kaspi\DiContainer\{diAutowire, diGet};
 
 return static function(): \Generator {
-    yield diAutowire(Foo::class)
-        ->setupImmutable('withLogger');
+    yield diAutowire(FooLogger::class)
+        ->setupImmutable(// [!code ++]
+            'withLogger',// [!code ++]
+            [diGet(FileLogger::class)]// [!code ++]
+        );// [!code ++]
 };
 ```
+<<< @/_code/scripts/cookbook/autowire-setup/service_logger.php
 
-```php [loggers.php]
-// file: /app/config/services/loggers.php
-use function Kaspi\DiContainer\{diAutowire, diParameter};
-use App\Services\FileLogger;
+<<< @/_code/scripts/cookbook/autowire-setup/service_logger.php
 
-return static function(): \Generator {
-    yield diAutowire(FileLogger::class)
-        ->bindArguments(
-            diParameter('files.logger_file')
-        );
-};
-```
+<<< @/_code/scripts/cookbook/autowire-setup/params_logger.php
 
-```php [parameters.php]
-// file: /app/config/parameters/logger.php
-return [
-    'files.logger_file' => '/var/logs/app_logger.log',
-];
-```
+<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FooLogger.php
+
+<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FileLogger.php
 
 :::
-
-Контейнер зависимостей:
-
-```php {7-8}
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-use Psr\Log\LoggerInterface;
-use function glob;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters(...glob('/app/config/parameters/*.php'))
-    ->load(...glob('/app/config/services/*.php'))
-    ->build();
-
-$foo = $container->get(Foo::class);
-var_dump($foo->getLogger() instanceof LoggerInterface);
-// (bool) true
-```
 
 ## PHP атрибуты { #php-attributes }
 
@@ -197,7 +88,9 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 
 ### Setup { #attribute-setup }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Setup` применяется к мутабельному сеттер-методу[^SetterMethodMutable].
+Атрибут `\Kaspi\DiContainer\Attributes\Setup` применяется к мутабельному сеттер-методу[^SetterMethodMutable] `\App\Services\FooLogger::setLogger()`.
+
+## 🚧🚧🚧🚧
 
 ::: code-group
 
@@ -274,7 +167,7 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 
 ### SetupImmutable { #attribute-setup-immutable }
 
-Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` применяется к иммутабельному сеттер-методу[^SetterMethodImmutable].
+Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` применяется к иммутабельному сеттер-методу[^SetterMethodImmutable] `\App\Services\FooLogger::withLogger()`.
 
 ::: code-group
 
@@ -354,7 +247,7 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 
 ### Внедрение нескольких параметров { #attribute-setup-multiple }
 
-Внедрение нескольких зависимостей через один сеттер-метод с использованием [атрибута `\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md).
+Внедрение нескольких зависимостей через один мутабельный сеттер-метод `\App\Services\RuleGenerator::addRule()`.
 
 ::: code-group
 
