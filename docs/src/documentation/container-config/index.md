@@ -1,27 +1,24 @@
 ---
 aside: false
 ---
-# Конфигурация для DiContainer
+# Конфигурация для DiContainer { #title }
 
-Для конфигурации контейнера используется класс
-`\Kaspi\DiContainer\DiContainerConfig`
-который реализует интерфейс
-`\Kaspi\DiContainer\Interfaces\DiContainerConfigInterface`.
+Для конфигурации контейнера используется класс `\Kaspi\DiContainer\DiContainerConfig`.
 
-Настройки по умолчанию предоставляют оптимальную конфигурацию для работы контейнера зависимостей в большинстве случаев.
+Настройки по умолчанию предоставляют оптимальную конфигурацию для работы контейнера в большинстве случаев.
+
+Сигнатура конструктора конфигурации:
 
 ```php
-use Kaspi\DiContainer\DiContainerConfig;
-
-$containerConfig = new DiContainerConfig(
+\Kaspi\DiContainer\DiContainerConfig::__construct(
     useZeroConfigurationDefinition: true,
     useAttribute: true,
     isSingletonServiceDefault: false,
     isConfigureObjectResettersFromDefinitions: true,
-);
+)
 ```
-Параметры конфигурации:
 
+Параметры:
 
 * `$useZeroConfigurationDefinition`<span id="use-zero-configuration-definition"/> – нулевая конфигурация для внедрения зависимостей.
   > Не нужно указывать контейнеру, как внедрять конкретный PHP-класс если класс не имеет зависимостей,
@@ -41,7 +38,7 @@ $containerConfig = new DiContainerConfig(
 Для сброса состояния таких сервисов может быть использован механизм автоматического конфигурирования
 сервиса на основе конфигурации определений контейнера. Подробности в разделе [«Сброс состояния объектов для долго-живущих процессов».](../12-object-resetters.md)
 
-Пример конфигурации контейнера:
+Измененная конфигурация контейнера передается через параметр `$containerConfig` конструктора класса `\Kaspi\DiContainer\DiContainerBuilder`.
 
 ```php
 use Kaspi\DiContainer\{DiContainerConfig, DiContainerBuilder};
