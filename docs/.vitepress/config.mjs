@@ -54,7 +54,6 @@ export default defineConfig({
                           { text: 'Контекст для файлов конфигураций', link: 'methods/configuration-context.md' },
                         ],
                       },
-                      { text: 'Конфигурация контейнера', link: 'config.md' },
                       { text: 'Файлы конфигураций', link: 'configuration_files.md' },
                       {
                         base: '/documentation/container-builder/definitions-configurator/',

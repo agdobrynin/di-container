@@ -90,14 +90,14 @@ var_dump($container === $container->get(Foo::class)->container);
 
 ## Содержание { #toc }
 
-* 👷‍♂️ [Инструмент для сборки контейнера зависимостей DiContainerBuilder](container-builder/index.md).
+* 👷‍♂️ [Сборка контейнера зависимостей](container-builder/index.md).
 * ⚙️ [Конфигурация для DiContainer](container-config/index.md).
-* 🐘 [Конфигурирование в файлах конфигураций](php-definition/index.md).
-* #️⃣ [Конфигурирование через PHP атрибуты](attribute-definition/index.md).
-* 📦 [Метод контейнера `call()`](call/index.md).
-* 🔖 [Тэгирование определений и сервисов](tags/index.md).
+* 🐘 [Объявление в файлах конфигураций](php-definition/index.md).
+* #️⃣ [Объявление через атрибуты](attribute-definition/index.md).
+* 📦 [Метод контейнера `call()` для вызываемых типов](call/index.md).
+* 🔖 [Работа с тегами в контейнере](tags/index.md).
 * 📋 [Параметры контейнера](container-parameters/index.md).
-* 🗳️ [Внедрение экземпляра класса в рантайм контейнер](runtime-definition/index.md).
+* 🗳️ [Объявление объекта в рантайм контейнере](runtime-definition/index.md).
 * 🧹 [Сброс контейнера зависимостей](11-container-reset.md).
 * ♻️ [Сброс состояния объектов для долго-живущих процессов](12-object-resetters.md).
 * 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](14-lazy-injection.md)
