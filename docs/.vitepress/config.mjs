@@ -46,6 +46,7 @@ export default defineConfig({
                         link: 'index.md',
                         collapsed: false,
                         items: [
+                          { text: 'Обзор', link: 'index.md' },
                           { text: 'Объявление из файлов конфигураций', link: 'methods/load-definitions-from-file.md' },
                           { text: 'Объявление через коллекцию', link: 'methods/load-definitions-from-collection.md' },
                           { text: 'Регистрация параметров контейнера', link: 'methods/load-parameters.md' },
