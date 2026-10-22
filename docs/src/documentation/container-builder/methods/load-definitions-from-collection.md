@@ -20,7 +20,7 @@
 Параметры:
 - `$definitions` – коллекция определений.
 
-> [!IMPORTANT]
+> [!WARNING]
 > <!--@include: ../_include/build_id_equals.md-->
 
 Пример использования:

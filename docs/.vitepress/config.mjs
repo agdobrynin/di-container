@@ -79,7 +79,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/php-definition/',
-                    text: 'Объявление в конфигурационных файлах',
+                    text: 'Объявление в файлах конфигураций',
                     link: 'index.md',
                     collapsed: true,
                     items: [

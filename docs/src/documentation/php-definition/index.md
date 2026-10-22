@@ -1,8 +1,8 @@
-# Объявление в конфигурационных файлах { #overview }
+# Объявление в файлах конфигураций { #overview }
 
 Для указания контейнеру каким образом нужно внедрять зависимости в PHP классах или вызываемых типах используется
 механизм конфигурирования определений в [файлах конфигураций](../container-builder/configuration_files.md) или
-в [коллекциях конфигураций](../container-builder/index.md#load-definitions-from-collection).
+в [коллекциях конфигураций](../container-builder/methods/load-definitions-from-collection.md).
 
 Для создания настроенного контейнера используется [класс-строитель DiContainerBuilder](../container-builder/index.md).
 

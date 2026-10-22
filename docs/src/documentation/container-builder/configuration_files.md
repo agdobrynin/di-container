@@ -12,22 +12,9 @@
 
 В конфигурации контейнера отслеживается уникальность идентификаторов контейнера[^ContainerId]. При вызове метода сборки контейнера `DiContainerBuilder::build()` будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` если в файлах конфигураций будут обнаружены не уникальные идентификаторы определений контейнера.
 
-## Конфигуратор определений в вызываемом типе { #definition-configurator-argument }
-
-Файл конфигураций может быть представлен `callable` типом, для такого файла первым параметром контейнер передаёт аргумент [конфигуратор определений контейнера](definitions-configurator/index.md).
-
-```php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-
-return static function (
-    DefinitionsConfiguratorInterface $configurator//[!code warning]
-) {
-    // …
-};
-```
-
-
 ## Анонимная функция и генератор { #example-generator-simple }
+
+Файл конфигураций возвращающий `iterable` тип может быть представлен например **анонимной функцией**. Результат выполнения такой функции генератор (`\Generator`) возвращающий объявления PHP классов через ключевое слово `yield`.
 
 ```php
 // file: /app/config/as_generator_simple.php
@@ -47,11 +34,15 @@ return static function (): Generator {
 
 ## Анонимная функция с конфигуратором и генератором { #example-generator-configurator }
 
+Файл конфигураций может быть представлен `callable` типом, для такого файла первым параметром контейнер передаёт аргумент [конфигуратор определений контейнера](definitions-configurator/index.md).
+
+В качестве `callable` типа можно использовать **анонимную функцию**.
+
 ```php
 // file: /app/config/as_generator_with_configurator.php
 use Generator;
 use App\Services\Foo;
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;//[!code ++]
 
 use function Kaspi\DiContainer\diAutowire;
 
@@ -66,6 +57,8 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 ```
 
 ## Вызываемый тип с конфигуратором  { #example-callable-configurator }
+
+Файл конфигураций может быть представлен `callable` типом результат вызова которого тип `void`.
 
 ```php
 // file: /app/config/callable_with_configurator.php
@@ -88,6 +81,8 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {/
 ```
 
 ## PHP массив { #example-array }
+
+Файл конфигураций может быть представлен PHP массивом.
 
 ```php
 // file: /app/config/as_array.php
