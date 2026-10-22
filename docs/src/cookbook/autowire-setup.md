@@ -60,15 +60,15 @@ class FileLogger implements LoggerInterface
 
 :::
 
-## Настройка в конфигурационных файлах определений { #php-definition }
+## Объявление PHP классов в файлах конфигураций { #php-definition }
 
-Вызов сеттер-метда в [конфигурационном файле определений](../documentation/container-builder/configuration_files.md).
+Внедрение зависимости через сеттер-метод в [файле конфигураций](../documentation/container-builder/configuration_files.md).
 
 ### diAutowire::setup()
 
-Внедрение зависимости через сеттер-метод PHP класса [без учёта возвращаемого значения методом](../documentation/php-definition/di-autowire.md#setup) (_mutable setter_).
+Внедрение зависимости через мутабельный сеттер-метод [^SetterMethodMutable].
 
-Конфигурирование [PHP классов](#src-class):
+Объявление [PHP классов](#src-class):
 
 ::: code-group
 
@@ -111,7 +111,7 @@ return [
 
 Контейнер зависимостей:
 
-```php
+```php {7-8}
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 use Psr\Log\LoggerInterface;
@@ -134,9 +134,9 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 
 ### diAutowire::setupImmutable()
 
-Внедрение зависимости через [сеттер-метод возвращающий экземпляр PHP класса](../documentation/php-definition/di-autowire.md#setupimmutable) (_immutable setter_).
+Внедрение зависимости через иммутабельный сеттер-метод [^SetterMethodImmutable].
 
-Конфигурирование [PHP классов](#src-class):
+Объявление [PHP классов](#src-class):
 
 ::: code-group
 
@@ -175,7 +175,7 @@ return [
 
 Контейнер зависимостей:
 
-```php
+```php {7-8}
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 use Psr\Log\LoggerInterface;
@@ -193,11 +193,11 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 
 ## PHP атрибуты { #php-attributes }
 
-Конфигурирование внедрения через сеттер-методы PHP атрибутами `\Kaspi\DiContainer\Attributes\Setup` и `\Kaspi\DiContainer\Attributes\SetupImmutable`.
+Внедрение зависимостей через сеттер-методы атрибутами `\Kaspi\DiContainer\Attributes\Setup` и `\Kaspi\DiContainer\Attributes\SetupImmutable`.
 
 ### Setup { #attribute-setup }
 
-Конфигурация внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\Setup` примененный к методу PHP класса.
+Атрибут `\Kaspi\DiContainer\Attributes\Setup` применяется к мутабельному сеттер-методу[^SetterMethodMutable].
 
 ::: code-group
 
@@ -207,13 +207,13 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 namespace App\Services;
 
 use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\Setup;//[!code ++]
 
 class Foo
 {
     private LoggerInterface $logger;
 
-    #[Setup] // 🚩 конфигурирование сеттер-метода
+    #[Setup]//[!code ++]
     public function setLogger(LoggerInterface $logger): void
     {
         $new->logger = $logger;
@@ -232,12 +232,12 @@ class Foo
 namespace App\Services;
 
 use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\Paraneter;
+use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
 
 class FileLogger implements LoggerInterface
 {
     public function __construct(
-        #[Paraneter('files.logger_file')]
+        #[Parameter('files.logger_file')]//[!code ++]
         private string $fileName
     ) {}
     // implement methods from LoggerInterface
@@ -257,7 +257,7 @@ return [
 
 Контейнер зависимостей:
 
-```php
+```php {7}
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 use Psr\Log\LoggerInterface;
@@ -274,7 +274,7 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 
 ### SetupImmutable { #attribute-setup-immutable }
 
-Конфигурация внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` примененный к методу PHP класса.
+Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` применяется к иммутабельному сеттер-методу[^SetterMethodImmutable].
 
 ::: code-group
 
@@ -284,13 +284,13 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 namespace App\Services;
 
 use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\Attributes\SetupImmutable;//[!code ++]
 
 class Foo
 {
     private LoggerInterface $logger;
 
-    #[SetupImmutable] // 🚩 конфигурирование сеттер-метода
+    #[SetupImmutable]//[!code ++]
     public function withLogger(LoggerInterface $logger): static
     {
         $new = clone $this;
@@ -312,12 +312,12 @@ class Foo
 namespace App\Services;
 
 use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\Paraneter;
+use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
 
 class FileLogger implements LoggerInterface
 {
     public function __construct(
-        #[Paraneter('files.logger_file')]
+        #[Parameter('files.logger_file')]//[!code ++]
         private string $fileName
     ) {}
     // implement methods from LoggerInterface
@@ -337,7 +337,7 @@ return [
 
 Контейнер зависимостей:
 
-```php
+```php {7}
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 use Psr\Log\LoggerInterface;
@@ -352,7 +352,7 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 // (bool) true
 ```
 
-### Настройка нескольких атрибутов Setup { #attribute-setup-multiple }
+### Внедрение нескольких параметров { #attribute-setup-multiple }
 
 Внедрение нескольких зависимостей через один сеттер-метод с использованием [атрибута `\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md).
 
@@ -362,8 +362,8 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 // file: /app/src/Services/RuleGenerator.php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Setup;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
+use Kaspi\DiContainer\Attributes\Setup;//[!code ++]
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;//[!code ++]
 use App\Rules\{RuleA, RuleB};
 use App\Interfaces\RuleInterface;
 
@@ -374,8 +374,12 @@ class RuleGenerator
     
     // …
     
-    #[Setup(inputRule: new DiGet(RuleB::class))]
-    #[Setup(inputRule: new DiGet(RuleA::class))]
+    #[Setup(//[!code ++]
+        new DiGet(RuleB::class)//[!code ++]
+    )]//[!code ++]
+    #[Setup(//[!code ++]
+        new DiGet(RuleA::class)//[!code ++]
+    )]//[!code ++]
     public function addRule(RuleInterface $inputRule): void
     {
         $this->rules[] = $inputRule;
@@ -447,3 +451,5 @@ var_dump($rules[1] instanceof App\Rules\RuleA);
 
 > [!NOTE]
 > Последовательность полученных объектов в переменную `$rules` обусловлен очередностью применения PHP атрибута `Kaspi\DiContainer\Attributes\Setup` к методу `RuleGenerator::addRule()`.
+
+<!--@include: ../documentation/_include/term_notes.md-->
