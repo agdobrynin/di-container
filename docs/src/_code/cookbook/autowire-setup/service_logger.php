@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
+
 // file: /app/config/services/service_logger.php
 use App\Services\FileLogger;
-use Generator;
 
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 

@@ -19,10 +19,14 @@ outline: [2, 4]
 
 ::: code-group
 
-<<< @/_code/scripts/cookbook/autowire-setup/container_build.php
+<<< @/_code/cookbook/autowire-setup/container_build.php
+
+<<< @/_code/cookbook/autowire-setup/params_logger.php
 
 ```php [services.php]
 <?php
+declare(strict_types=1);
+
 // file: /app/config/services/services.php
 use App\Services\{FooLogger, FileLogger};
 
@@ -37,13 +41,34 @@ return static function(): \Generator {
 };
 ```
 
-<<< @/_code/scripts/cookbook/autowire-setup/service_logger.php
+<<< @/_code/cookbook/autowire-setup/service_logger.php
 
-<<< @/_code/scripts/cookbook/autowire-setup/params_logger.php
+```php [FooLogger.php]
+<?php
+declare(strict_types=1);
 
-<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FooLogger.php
+// file: /app/src/Services/FooLogger.php
+namespace App\Services;
 
-<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FileLogger.php
+use Psr\Log\LoggerInterface;
+
+final class FooLogger
+{
+    private LoggerInterface $logger;
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    public function getLogger(): ?LoggerInterface
+    {
+        return $this->logger ?? null;
+    }
+}
+```
+
+<<< @/_code/cookbook/autowire-setup/FileLogger.php
 
 :::
 
@@ -53,10 +78,14 @@ return static function(): \Generator {
 
 ::: code-group
 
-<<< @/_code/scripts/cookbook/autowire-setup/container_build.php
+<<< @/_code/cookbook/autowire-setup/container_build.php
+
+<<< @/_code/cookbook/autowire-setup/params_logger.php
 
 ```php [services.php]
 <?php
+declare(strict_types=1);
+
 // file: /app/config/services/services.php
 use App\Services\{FooLogger, FileLogger};
 
@@ -70,15 +99,38 @@ return static function(): \Generator {
         );// [!code ++]
 };
 ```
-<<< @/_code/scripts/cookbook/autowire-setup/service_logger.php
 
-<<< @/_code/scripts/cookbook/autowire-setup/service_logger.php
+<<< @/_code/cookbook/autowire-setup/service_logger.php
 
-<<< @/_code/scripts/cookbook/autowire-setup/params_logger.php
+```php [FooLogger.php]
+<?php
+declare(strict_types=1);
 
-<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FooLogger.php
+// file: /app/src/Services/FooLogger.php
+namespace App\Services;
 
-<<< @/_code/scripts/cookbook/autowire-setup/src/Services/FileLogger.php
+use Psr\Log\LoggerInterface;
+
+final class FooLogger
+{
+    private LoggerInterface $logger;
+
+    public function withLogger(LoggerInterface $logger): static
+    {
+        $new = clone $this;
+        $new->logger = $logger;
+
+        return $new;
+    }
+
+    public function getLogger(): ?LoggerInterface
+    {
+        return $this->logger ?? null;
+    }
+}
+```
+
+<<< @/_code/cookbook/autowire-setup/FileLogger.php
 
 :::
 
@@ -90,28 +142,35 @@ return static function(): \Generator {
 
 Атрибут `\Kaspi\DiContainer\Attributes\Setup` применяется к мутабельному сеттер-методу[^SetterMethodMutable] `\App\Services\FooLogger::setLogger()`.
 
-## 🚧🚧🚧🚧
-
 ::: code-group
 
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<<< @/_code/cookbook/autowire-setup/container_build_attr.php
 
+<<< @/_code/cookbook/autowire-setup/params_logger.php
+
+```php [FooLogger.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/FooLogger.php
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\Setup;// [!code ++]
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;// [!code ++]
 use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\Setup;//[!code ++]
 
-class Foo
+final class FooLogger
 {
     private LoggerInterface $logger;
 
-    #[Setup]//[!code ++]
+    #[Setup(// [!code ++]
+        new DiGet(FileLogger::class)// [!code ++]
+    )]// [!code ++]
     public function setLogger(LoggerInterface $logger): void
     {
-        $new->logger = $logger;
+        $this->logger = $logger;
     }
-    
+
     public function getLogger(): ?LoggerInterface
     {
         return $this->logger ?? null;
@@ -119,51 +178,9 @@ class Foo
 }
 ```
 
-```php [FileLogger.php]
-// file: /app/src/Services/FileLogger.php
-
-namespace App\Services;
-
-use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
-
-class FileLogger implements LoggerInterface
-{
-    public function __construct(
-        #[Parameter('files.logger_file')]//[!code ++]
-        private string $fileName
-    ) {}
-    // implement methods from LoggerInterface
-}
-```
+<<< @/_code/cookbook/autowire-setup/FileLoggerAttr.php [FileLogger.php]
 
 :::
-
-Конфигурация параметров контейнера:
-
-```php
-// file: /app/config/parameters/logger.php
-return [
-    'files.logger_file' => '/var/logs/app_logger.log',
-];
-```
-
-Контейнер зависимостей:
-
-```php {7}
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-use Psr\Log\LoggerInterface;
-use function glob;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters(...glob('/app/config/parameters/*.php'))
-    ->build();
-
-$foo = $container->get(Foo::class);
-var_dump($foo->getLogger() instanceof LoggerInterface);
-// (bool) true
-```
 
 ### SetupImmutable { #attribute-setup-immutable }
 
@@ -171,27 +188,36 @@ var_dump($foo->getLogger() instanceof LoggerInterface);
 
 ::: code-group
 
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<<< @/_code/cookbook/autowire-setup/container_build_attr.php
 
+<<< @/_code/cookbook/autowire-setup/params_logger.php
+
+```php [FooLogger.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/FooLogger.php
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\SetupImmutable;// [!code ++]
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;// [!code ++]
 use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\SetupImmutable;//[!code ++]
 
-class Foo
+final class FooLogger
 {
     private LoggerInterface $logger;
 
-    #[SetupImmutable]//[!code ++]
+    #[SetupImmutable(// [!code ++]
+        new DiGet(FileLogger::class)// [!code ++]
+    )]// [!code ++]
     public function withLogger(LoggerInterface $logger): static
     {
         $new = clone $this;
         $new->logger = $logger;
-    
+
         return $new;
     }
-    
+
     public function getLogger(): ?LoggerInterface
     {
         return $this->logger ?? null;
@@ -199,57 +225,39 @@ class Foo
 }
 ```
 
-```php [FileLogger.php]
-// file: /app/src/Services/FileLogger.php
-
-namespace App\Services;
-
-use Psr\Log\LoggerInterface;
-use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
-
-class FileLogger implements LoggerInterface
-{
-    public function __construct(
-        #[Parameter('files.logger_file')]//[!code ++]
-        private string $fileName
-    ) {}
-    // implement methods from LoggerInterface
-}
-```
+<<< @/_code/cookbook/autowire-setup/FileLoggerAttr.php [FileLogger.php]
 
 :::
-
-Конфигурация параметров контейнера:
-
-```php
-// file: /app/config/parameters/logger.php
-return [
-    'files.logger_file' => '/var/logs/app_logger.log',
-];
-```
-
-Контейнер зависимостей:
-
-```php {7}
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-use Psr\Log\LoggerInterface;
-use function glob;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters(...glob('/app/config/parameters/*.php'))
-    ->build();
-
-$foo = $container->get(Foo::class);
-var_dump($foo->getLogger() instanceof LoggerInterface);
-// (bool) true
-```
 
 ### Внедрение нескольких параметров { #attribute-setup-multiple }
 
 Внедрение нескольких зависимостей через один мутабельный сеттер-метод `\App\Services\RuleGenerator::addRule()`.
 
 ::: code-group
+
+```php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\RuleGenerator;
+use App\Rules\{RuleA, RuleB};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src/')
+    ->build();
+
+$ruleGenerator = $container->get(RuleGenerator::class);
+$rules = $ruleGenerator->->getRules();
+
+var_dump($rules[0] instanceof App\Rules\RuleB);
+// (bool) true
+var_dump($rules[1] instanceof App\Rules\RuleA);
+// (bool) true
+```
 
 ```php [RuleGenerator.php]
 // file: /app/src/Services/RuleGenerator.php
@@ -322,27 +330,7 @@ class RuleB implements RuleInterface
 :::
 
 
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\RuleGenerator;
-use App\Rules\{RuleA, RuleB};
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src/')
-    ->build();
-
-$ruleGenerator = $container->get(RuleGenerator::class);
-$rules = $ruleGenerator->->getRules();
-
-var_dump($rules[0] instanceof App\Rules\RuleB);
-// (bool) true
-var_dump($rules[1] instanceof App\Rules\RuleA);
-// (bool) true
-```
-
 > [!NOTE]
-> Последовательность полученных объектов в переменную `$rules` обусловлен очередностью применения PHP атрибута `Kaspi\DiContainer\Attributes\Setup` к методу `RuleGenerator::addRule()`.
+> Последовательность полученных объектов в свойство `\App\Services\RuleGenerator::$rules` обусловлен очередностью применения PHP атрибута `\Kaspi\DiContainer\Attributes\Setup` к методу `\App\Services\RuleGenerator::addRule()`.
 
 <!--@include: ../documentation/_include/term_notes.md-->

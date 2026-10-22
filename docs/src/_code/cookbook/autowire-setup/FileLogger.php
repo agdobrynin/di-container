@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 // file: /app/src/Services/FileLogger.php
 namespace App\Services;
 
