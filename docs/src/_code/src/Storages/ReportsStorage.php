@@ -1,6 +1,8 @@
 <?php
-#region snippet
-// file: /app/src/Storages/ReportsStorage.php
+declare(strict_types=1);
+
+// file: /app/src/Storages/ReportsStorage.php // [!code highlight]
+
 namespace App\Storages;
 
 use App\Interfaces\ReportsStorageInterface;
@@ -18,4 +20,3 @@ final class ReportsStorage implements ReportsStorageInterface
         // …
     }
 }
-#endregion snippet

@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 
-// file: /app/src/Services/FileLogger.php
+// file: /app/src/Services/FileLogger.php // [!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Parameter;// [!code ++]

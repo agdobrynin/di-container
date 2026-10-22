@@ -1,6 +1,8 @@
 <?php
-#region snippet
-// file: /app/src/Storages/ReportStorage.php
+declare(strict_types=1);
+
+// file: /app/src/Storages/ReportStorage.php // [!code highlight]
+
 namespace App\Storages;
 
 final class ReportStorage
@@ -9,4 +11,3 @@ final class ReportStorage
         public readonly string $dir
     ) {}
 }
-#endregion snippet
