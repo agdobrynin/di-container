@@ -180,7 +180,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/runtime-definition/',
-                    text: 'Конфигурирование объекта в рантайм контейнер',
+                    text: 'Объявление объекта в рантайм контейнере',
                     link: 'index.md',
                   }
                 ]
