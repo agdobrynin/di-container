@@ -24,7 +24,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 ): Args & Setup & Tag & Resetter
 ```
 Параметры:
-- `$definition` – имя класса с пространством имен представленный строкой. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
+- `$definition` – FQCN [^FQCN] объявляемого PHP класса. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$isLazy` – «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
 
@@ -41,38 +41,31 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: ./_include/bind_arguments.md-->
 
-Для передачи неполного списка аргументов можно использовать именованные аргументы параметров:
+Для передачи неполного списка аргументов можно использовать именованные аргументы.
 
-```php 
-use App\Services\Bar;
-use function \Kaspi\DiContainer\diAutowire;
-
-diAutowire(Bar::class)
-    ->bindArguments(name: 'Lorem ipsum');
-```
 ::: code-group
 
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
+```php
+// file: /app/src/container_build.php
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-namespace App\Services;
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\ReportMaker;
 
-final class Bar {
-    public function __construct(
-        private Foo $foo,
-        string $name,
-    ) {} 
-}
+$container = (new DiContainerBuilder())
+    ->load('/app/config/report_services.php')
+    ->build();
+
+$report = $container->get(ReportMaker::class);
+var_dump($report->lastDays);
+// int(10)
 ```
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<<< @/_code/config/report_services.php#snippet{1}
 
-namespace App\Services;
+<<< @/_code/src/Services/ReportMaker.php#snippet{1}
 
-final class Foo {
-    public function __construct() {} 
-}
-```
+<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
+
 :::
 
 ## Сеттер-методы внедрения зависимостей { #di-autowire-setter-method }
@@ -103,100 +96,49 @@ DiDefinitionSetupAutowireInterface::setup(
 - `$method` – имя вызываемого метода в классе.
 - `$arguments` – аргументы к параметрам метода класса.
 
-```php
-use App\Services\Bar;
-use function \Kaspi\DiContainer\diAutowire;
-
-diAutowire(Bar::class)
-       ->bindArguments(name: 'Lorem ipsum')
-       ->setup('doSetup');
-```
+> [!TIP]
+Для неполного списка аргументов в параметре `$arguments` в качестве ключа в массиве нужно указать имя параметра сеттер-метода.
 
 ::: code-group
 
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-
-namespace App\Services;
-
-final class Bar {
-    public function __construct(
-        private Foo $foo,
-        string $name,
-    ) {}
-    
-    public function doSetup(Baz $baz) {}
-}
-```
-
-```php [Foo.php]
-//file: /app/src/Services/Foo.php
-
-namespace App\Services;
-
-final class Foo {
-    public function __construct() {} 
-}
-```
-
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-
-namespace App\Services;
-
-final class Baz {
-    public function __construct() {} 
-}
-```
-
-:::
-
-Для неполного списка аргументов в параметре `$arguments` в качестве ключа в массиве нужно указать имя параметра сеттер-метода:
-
 ```php
-use App\Services\{Bar, Baz};
-use function \Kaspi\DiContainer\{diAutowire, diGet};
+// file: /app/src/container_build.php
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-diAutowire(Bar::class)
-    ->setup('doSetupWithName', ['service' => diGet(Baz::class)]);
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Storages\ReportsStorage;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/storage_service.php')//[!code highlight]
+    ->build();
+
+$storage = $container->get(ReportsStorage::class);
+var_dump($storage->getPermission());
+// int(384)
 ```
 
-::: code-group
+```php [storage_service.php]
+// file: /app/config/storage_service.php
+use Generator;
+use App\Storages\ReportsStorage;
 
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
+use function Kaspi\DiContainer\diAutowire;
 
-namespace App\Services;
-
-final class Bar {
-    public function __construct() {}
-    
-    public function doSetupWithName(Foo $foo, ServiceXInterface $service) {}
-}
+return static function (): Generator {
+    yield diAutowire(ReportsStorage::class)
+        ->bindArguments(
+            dir: '/var/data'
+        )
+        ->setup(//[!code ++]
+            'setPermission',//[!code ++]
+            [0600]//[!code ++]
+        );//[!code ++]
+};
 ```
 
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-
-namespace App\Services;
-
-final class Foo {
-    public function __construct() {}
-}
-```
-
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-
-namespace App\Services;
-
-final class Baz implements ServiceXInterface {
-    public function __construct() {}
-}
-```
+<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
 
 :::
-
 
 > [!NOTE]
 > [Пример использования метода `setup()`](../../cookbook/autowire-setup.md#diautowire-setup)
