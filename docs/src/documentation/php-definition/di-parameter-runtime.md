@@ -1,8 +1,11 @@
+---
+aside: false
+---
 # diParameterRuntime()
 
 ## Обзор { #overview }
 
-Хелпер функция `diParameterRuntime()` внедрят зависимость из параметра контейнера времени исполнения[^ParameterRuntime].
+Хелпер функция `diParameterRuntime()` внедрят зависимость из параметров контейнера времени исполнения[^ParameterRuntime].
 
 Сигнатура функции:
 
