@@ -41,7 +41,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: ./_include/bind_arguments.md-->
 
-Для передачи неполного списка аргументов можно использовать именованные аргументы.
+Для передачи неполного списка аргументов можно использовать именованные аргументы в методе `bindArguments()`.
 
 ::: code-group
 

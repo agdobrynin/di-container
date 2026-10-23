@@ -35,15 +35,29 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: ./_include/bind_arguments.md-->
 
-Для указания неполного списка аргументов можно использовать именованные аргументы параметров:
+Для указания неполного списка аргументов можно использовать именованные аргументы параметров в методе `bindArguments()`.
 
-```php
+::: code-group
+
+```php [callable_entries.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/callable_entries.php
+
 use App\Services\Foo;
 use function Kaspi\DiContainer\diCallable;
 
-diCallable([Foo::class, 'factoryMethod'])
-    ->bindArguments(name: 'Lorem ipsum');
+return static function(): Generator {
+    yield 'foo.factory_method' => diCallable([Foo::class, 'factoryMethod'])
+        ->bindArguments(name: 'Lorem ipsum');
+};
+
 ```
+
+:::
+
+## 🚧🚧🚧🚧
 
 ::: code-group
 
