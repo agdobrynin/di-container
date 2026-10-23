@@ -45,7 +45,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ::: code-group
 
-```php
+```php [container_build.php]
 <?php
 declare(strict_types=1);
 
@@ -84,9 +84,7 @@ var_dump($report->lastDays);
 
 ### setup()
 
-Метод внедряет зависимости в PHP класс через сеттер-методы и его следует **применять к мутабельным сеттер-методам PHP класса** [^SetterMethodMutable].
-
-Метод `setup()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+Метод `setup()` внедряет зависимость в PHP класс через **мутабельный сеттер-метод** [^SetterMethodMutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
 Сигнатура метода:
 
@@ -97,16 +95,20 @@ DiDefinitionSetupAutowireInterface::setup(
 )
 ``` 
 Параметры:
-- `$method` – имя вызываемого метода в классе.
-- `$arguments` – аргументы к параметрам метода класса.
+- `$method` – имя сеттер-метода в классе.
+- `$arguments` – аргументы к параметрам сеттер-метода.
 
 > [!TIP]
 Для неполного списка аргументов в параметре `$arguments` в качестве ключа в массиве нужно указать имя параметра сеттер-метода.
 
 ::: code-group
 
-```php
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
 // file: /app/src/container_build.php
+
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -122,8 +124,11 @@ var_dump($storage->getPermission());
 ```
 
 ```php [storage_service.php]
-// file: /app/config/storage_service.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/storage_service.php//[!code highlight]
+
 use App\Storages\ReportsStorage;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -141,7 +146,11 @@ return static function (): Generator {
 ```
 
 ```php [ReportStorage.php]
-// file: /app/src/Storages/ReportStorage.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Storages/ReportStorage.php//[!code highlight]
+
 namespace App\Storages;
 
 final class ReportStorage
@@ -171,11 +180,9 @@ final class ReportStorage
 
 ### setupImmutable()
 
-Метод позволяет внедрять зависимости в PHP класс через сеттер-методы и его следует применять к иммутабельным сеттер-методам PHP класса [^SetterMethodImmutable].
+Метод `setupImmutable()` внедряет зависимость в PHP класс через **иммутабельный сеттер-метод**[^SetterMethodImmutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
-Типизированное значение сеттер-метода должно быть `self`, `static` или того же класса, что и сам PHP класс.
-
-Метод `setupImmutable()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+Сеттер-метод должен возвращать тип `self`, `static` или тип объявляемого PHP класса в хелпер функции `diAutowire()`.
 
 Сигнатура метода:
 
@@ -186,14 +193,14 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 )
 ``` 
 Параметры:
-- `$method` – имя вызываемого метода в классе.
-- `$arguments` – аргументы к параметрам метода класса.
+- `$method` – имя сеттер-метода в классе.
+- `$arguments` – аргументы к параметрам сеттер-метода.
 
 > [!NOTE]
 > [Пример использования метода `setupImmutable()`](../../cookbook/autowire-setup.md)
 
 ## bindTag()
-Теги позволяют отнести конфигурируемый PHP класс к коллекции элементов отмеченных одним тегом.
+Теги позволяют отнести объявляемый PHP класс к коллекции элементов отмеченных одним тегом.
 
 <!--@include: _include/bind_tag.md-->
 
@@ -203,23 +210,29 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 
 ## Идентификатор контейнера для diAutowire() { #container-id }
 
-При объявлении PHP класса идентификатор контейнера [^ContainerId] может быть сформирован на основе FQCN [^FQCN].
+[В файлах конфигураций](../container-builder/configuration_files.md) при объявлении PHP класса идентификатор контейнера [^ContainerId] может быть сформирован на основе FQCN [^FQCN] указанного в хелпер функции `diAutowier()`.
 
 Файл конфигураций с автоматическим формированием идентификатора контейнера:
 
 ```php
+<?php
+declare(strict_types=1);
+
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
-return static function (): \Generator {
-    // $container->get(\PDO::class)//[!code warning]
-    yield diAutowire(\PDO::class)
+return static function (): Generator {
+    /**
+     * Доступ через метод контейнера// [!code highlight]
+     * $container->get(PDO::class)// [!code highlight]
+     */
+    yield diAutowire(PDO::class)
         ->bindArguments(
             dsn: diParameter('db.dsn')
         ),
     );
     /**
-     * ℹ️ Конфигурирование выше эквивалентно записи
-     * yield \PDO::class => diAutowire(\PDO::class)
+     * ℹ️ Конфигурирование выше эквивалентно записи // [!code highlight]
+     * yield PDO::class => diAutowire(PDO::class) // [!code highlight]
      */
 };
 ```
@@ -227,17 +240,26 @@ return static function (): \Generator {
 Идентификатор контейнера для объявляемого PHP класса может быть указан произвольной строкой.
 
 ```php
+<?php
+declare(strict_types=1);
+
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
-return static function (): \Generator {
-    // $container->get('pdo-in-tmp-file')//[!code warning]
-    yield diAutowire(\PDO::class)//[!code --]
-    yield 'pdo-in-tmp-file' => diAutowire(\PDO::class)//[!code ++]
+return static function (): Generator {
+    /**
+     * Доступ через метод контейнера// [!code highlight]
+     * $container->get('pdo-in-tmp-file')// [!code highlight]
+     */
+    yield diAutowire(PDO::class)//[!code --]
+    yield 'pdo-in-tmp-file' => diAutowire(PDO::class)//[!code ++]
         ->bindArguments(
             dsn: diParameter('db.dsn_file')
         );
 
-    // $container->get('pdo-in-memory')//[!code warning]
+    /**
+     * Доступ через метод контейнера// [!code highlight]
+     * $container->get('pdo-in-memory')// [!code highlight]
+     */
     yield 'pdo-in-memory' => diAutowire(\PDO::class)//[!code ++]
         ->bindArguments(
             dsn: diParameter('db.dsn_memory')
