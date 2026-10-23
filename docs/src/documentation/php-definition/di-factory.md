@@ -41,7 +41,7 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 <?php
 declare(strict_types=1);
 
-// file: /app/src/container.php// [!code highlight]
+// file: /app/src/container.php // [!code highlight]
 
 require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
 

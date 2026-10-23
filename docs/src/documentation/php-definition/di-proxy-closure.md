@@ -11,10 +11,15 @@ outline: [2, 4]
 Такой приём объявления зависимости пригодится для внедрения «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмкий вычислений.
 
 > [!IMPORTANT]
-> Внедряя зависимость через хелпер функцию `diProxyClosure()` в параметр метода или вызываемого типа необходимо указать type hints [^TypeHints] параметра как `\Closure` или `callable`.
+> Обязательно типизировать параметр[^TypeHints] как `\Closure` или `callable` для внедрения зависимости через хелпер функцию `diProxyClosure()`.
+> ```php{2}
+>  public function __construct(
+>       private readonly \Closure $bar
+>  ) {}
+> ```
 
 > [!TIP]
-> Если используется PHP 8.4 и выше, то предпочтительнее использовать [конфигурирование «ленивых объектов»](../14-lazy-injection.md) вместо хелпер функции `diProxyClosure()`.
+> Если используется PHP 8.4 и выше, то вместо хелпер функции `diProxyClosure()` предпочтительнее внедрять зависимость через встроенный в PHP механизм [«ленивых объектов»](../14-lazy-injection.md).
 
 Сигнатура функции:
 
@@ -34,118 +39,122 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 Функция `diProxyClosure()` возвращает объект предоставляющий методы:
 - `bindTag()` – добавляет тег с метаданными для определения.
 
-
-### Пример внедрения параметра с отложенной инициализацией { #example }
-
-Конфигурирование:
-
-```php
-// /app/config/services.php
-
-use App\Services\{Foo, Bar};
-use function Kaspi\DiContainer\{diAutowire, diProxyClosure};
-
-return static function(): \Generator {
-
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            barProxy: diProxyClosure(Bar::class),
-        );
-
-};
-```
-
-Контейнер зависимостей:
-
-```php
-use App\Services\{Foo, Bar};
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')
-    ->build()
-;
-
-$foo = $container->get(Foo::class);
-
-// PHP класс App\Services\Bar еще не инициализирован контейнером,
-// ресурсы – память и процессорное время не затрачены
-// для инициализации PHP класса
-
-var_dump($foo instanceof Foo);
-// bool(true)
-
-// Контейнер зависимостей начал выполнять
-// инициализацию PHP класса App\Services\Bar
-// затрачивая память и процессорное время. 
-$bar = $foo->getBar();
-
-var_dump($bar instanceof Bar);
-// bool(true)
-```
-
-Классы для конфигурирования:
-
-::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-
-namespace App\Services;
-
-use Closure;
-
-class Foo
-{
-    /**
-    * 🚩 Подсказка для IDE при авто-дополении (autocomplete).
-    * 
-    * @param Closure(): Bar $barProxy
-    */
-    public function __construct(private readonly Closure $barProxy) {}
-
-    public function getBar(): Bar
-    {
-        // Выполнить замыкание
-        return ($this->barProxy)();
-    }
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-
-namespace App\Services;
-
-class Bar {
-    // Класс требующий длительного времени инициализации
-    // и ресурсоёмкий вычислений
-}
-```
-
-:::
-
 ## bindTag()
 
-Теги позволяют отнести конфигурируемый вызываемый тип к коллекции сервисов.
+Теги позволяют отнести «ленивое» определение к коллекции элементов отмеченных одним тегом.
 
 <!--@include: ./_include/bind_tag.md-->
 
-## Идентификатор контейнера для `diProxyClosure()` { #container-id }
+## Идентификатор контейнера { #container-id }
 
-Хелпер функция `diProxyClosure()` не может автоматически сформировать идентификатор контейнера,
-поэтому необходимо указать идентификатор контейнера для определения конфигурируемого через эту хелпер функцию.
+Чтобы обеспечить доступность «ленивого» определения через метод контейнера `get()` и `has()` необходимо указать в [файле конфигураций](../container-builder/configuration_files.md) идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
 
-```php
-// config/services.php
+::: code-group
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Bar;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/lazy_entries.php')//[!code highlight]
+    ->build();
+
+$barLazy = $container->get('services.bar_lazy');
+
+var_dump($barLazy instanceof Closure);
+// bool(true)
+
+var_dump(($barLazy)() instanceof Bar);
+// bool(true)
+```
+
+```php [lazy_entries.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/lazy_entries.php // [!code highlight]
+
+use App\Services\Bar;
+
 use function Kaspi\DiContainer\diProxyClosure;
 
-return static function(): \Generator {
-
-    yield 'services.bar' => diProxyClosure(Bar::class, isSingleton: true)
-
+return static function(): Generator {
+    yield 'services.bar_lazy' => diProxyClosure(// [!code ++]
+        Bar::class,// [!code ++]
+        isSingleton: true// [!code ++]
+    );// [!code ++]
 };
 ```
+
+<<< @/_code/php-definition/di-proxy-closure/Bar.php
+
+:::
+
+## Пример внедрения параметра с отложенной инициализацией { #example }
+
+PHP класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления. Необходимо внедрить `\App\Services\Bar` в конструктор класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP класс `\Closure`.
+
+::: code-group 
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar};
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')//[!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->getBar() instanceof Bar);
+// bool(true)
+```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
+use App\Services\{Foo, Bar};
+
+use function Kaspi\DiContainer\diProxyClosure;
+
+return static function(): Generator {
+    yield \Kaspi\DiContainer\diAutowire(Foo::class)
+        ->bindArguments(// [!code ++]
+            barProxy: diProxyClosure(Bar::class)// [!code ++]
+        );// [!code ++]
+};
+```
+
+<<< @/_code/php-definition/di-proxy-closure/Foo.php
+
+<<< @/_code/php-definition/di-proxy-closure/Bar.php
+
+:::
+
+> [!TIP]
+> Используйте [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) для подсказок и автодополнения в IDE:
+> ```php{1-3}
+>   /**
+>    * @param Closure(): Bar $barProxy
+>    */
+>  public function __construct(private readonly Closure $barProxy) {}
+> ```
 
 <!--@include: ../_include/term_notes.md-->
