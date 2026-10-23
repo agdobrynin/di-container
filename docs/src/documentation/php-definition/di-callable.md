@@ -75,7 +75,7 @@ use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/factories.php')// [!code highlight]
+    ->load('/app/config/callable_services.php')// [!code highlight]
     ->build();
 
 $result = $container->get('baz.factory_method');// [!code highlight]
@@ -85,11 +85,11 @@ var_dump($foo->value);
 // string(26) "Lorem ipsum dolor sit amet"
 ```
 
-```php [factories.php]
+```php [callable_services.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/config/factories.php// [!code highlight]
+// file: /app/config/callable_services.php// [!code highlight]
 
 use App\Services\Baz;
 
@@ -99,7 +99,7 @@ return static function(): Generator {
     yield 'baz.factory_method' => diCallable([Baz::class, 'factoryMethod'])//[!code ++]
         ->bindArguments(//[!code ++]
             name: 'Lorem ipsum'//[!code ++]
-    )//[!code ++]
+    );//[!code ++]
 };
 ```
 

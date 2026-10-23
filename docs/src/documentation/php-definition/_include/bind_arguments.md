@@ -1,4 +1,4 @@
-Метод передачи аргументов для параметров описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`.
+Метод передачи аргументов `bindArguments()` для параметров описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`.
 
 Сигнатура метода:
 

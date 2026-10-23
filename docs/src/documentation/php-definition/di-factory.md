@@ -33,79 +33,88 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 ## Идентификатор контейнера { #container-id }
 
-Хелпер функция `diFactory()` не может автоматически сформировать идентификатор контейнера [^ContainerId],
-поэтому необходимо указать идентификатор контейнера для определения конфигурируемого через эту хелпер функцию.
-
-Конфигурирование:
-
-```php
-// file: /app/config/services.php
-use function Kaspi\DiContainer\diFactory;
-use Generator;
-use App\Services\Foo;
-
-return static function (): Generator {
-    yield 'factories.foo_factory' => diFactory([Foo::class, 'doConfigure'])
-        ->bindArguments(['bar', 'baz', 'qux']);
-};
-```
-
-Классы для конфигурирования:
+Чтобы обеспечить доступность «фабрики» через метод контейнера `get()` и `has()` необходимо указать в [файле конфигураций](../container-builder/configuration_files.md) соответствующий идентификатор контейнера[^ContainerId].
 
 ::: code-group
 
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php// [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/factories.php')// [!code highlight]
+    ->build();
+
+$result = $container->get('services.foo_factory');// [!code highlight]
+
+var_dump($result);
+// string(26) "Lorem ipsum dolor sit amet"
+```
+
+```php [factories.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/factories.php// [!code highlight]
+
+use App\Services\Foo;
+
+use function Kaspi\DiContainer\diFactory;
+
+return static function(): Generator {
+    yield 'services.foo_factory' => diFactory([Foo::class, 'createValue'])//[!code ++]
+        ->bindArguments(//[!code ++]
+           prefixValue: 'Lorem ipsum'//[!code ++]
+        );//[!code ++]
+};
+```
+
 ```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+//file: /app/src/Services/Foo.php// [!code highlight]
+
 namespace App\Services;
 
 final class Foo
 {
-    public function __construct(private Bar $bar) {}
-
-    public function doConfigure(array $input): Bar
+    public function __construct(private readonly Bar $bar) {}
+    
+    public function createValue(string $prefixValue): string
     {
-        // Дополнительная конфигурация класса `Bar`.
-        $this->bar->addTokens(...$input);
-        
-        return $this->bar;
+        return $prefixValue.' '.$this->bar->doSomething();
     }
 }
+
 ```
 
 ```php [Bar.php]
-// file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+//file: /app/src/Services/Bar.php
+
 namespace App\Services;
 
 final class Bar
 {
     // …
 
-    public function addTokens(string $token, string ...$_token): void
+    public function doSomething(): string
     {
-        $this->tokens[] = $token;
-        
-        foreach ($_token as $_) {
-            $this->tokens[] = $_;
-        }
+        return 'dolor sit amet';
     }
 }
 ```
 
 :::
 
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Bar;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')
-    ->build();
-
-$bar = $container->get('factories.foo_factory');
-
-var_dump($bar instanceof Bar);
-// bool(true)
-```
 <!--@include: ../_include/term_notes.md-->
