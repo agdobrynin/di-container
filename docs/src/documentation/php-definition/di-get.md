@@ -24,51 +24,74 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
 Пример с указанием на идентификатор контейнера.
 
-Конфигурирование:
-
-```php
-// file: /app/config/services.php
-
-use function Kaspi\DiContainer\{
-    diAutowire, diCallable, diGet
-};
-use App\Service\{Foo, Bar};
-
-return static function (): \Generator {
-
-    yield 'services.bar_custom' => diAutowire(Bar::class)
-        ->setup('doSetupOne') // внедрение параметров через сеттер-методы
-        ->setup('doSetupTwo') // внедрение параметров через сеттер-методы
-        ;
-
-    yield diAutowire(Foo::class)
-        ->bindArguments(bar: diGet('services.bar_custom'));
-};
-```
-
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Service\{Foo, Bar};
-
-$container = (new DiContainerBuilder())
-    ->load(...\glob('/app/config/*.php'))
-    ->build()
-;
-
-$foo = $container->get(Foo::class);
-
-var_dump($foo->bar instanceof Bar);
-// bool(true)
-```
-
-Классы для конфигурирования:
-
 ::: code-group
 
-```php[Foo.php]
-// file: /app/src/Services/Foo.php
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php// [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')// [!code highlight]
+    ->load('/app/config/custom_services.php')// [!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);// [!code highlight]
+
+var_dump($foo->bar->getValues());
+// string(7) "One Two"
+```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php// [!code highlight]
+
+use App\Service\Foo;
+
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            bar: diGet('services.bar_custom')// [!code ++]
+        );
+};
+```
+
+```php [custom_services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/custom_services.php// [!code highlight]
+
+use App\Service\Bar;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+
+    yield 'services.bar_custom' => diAutowire(Bar::class)
+        ->setup('doSetupOne')
+        ->setup('doSetupTwo');
+    
+    // …
+};
+```
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+//file: /app/src/Services/Foo.php// [!code highlight]
 
 namespace App\Services;
 
@@ -78,27 +101,38 @@ final class Foo
 }
 ```
 
-```php[Bar.php]
-// file: /app/src/Services/Bar.php
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+//file: /app/src/Services/Bar.php// [!code highlight]
 
 namespace App\Services;
 
+use function implode;
+
 final class Bar
 {
-    // …
+    /**
+     * @var list<non-empty-string> 
+     */
+    private array $values = [];
     
     public function doSetupOne(): void
     {
-        // …
+        $this->values[] = 'One';
     }
 
     public function doSetupTwo(): void
     {
-        // …
+        $this->values[] = 'Two';
+    }
+    
+    public function getValues(): string
+    {
+        return implode(' ', $this->values);
     }
 }
 ```
-
-:::
 
 <!--@include: ../_include/term_notes.md-->
