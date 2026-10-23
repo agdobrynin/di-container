@@ -7,7 +7,7 @@
 Такой PHP класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
 
 > [!WARNING]
-> Хелпер функция не может быть применена к параметрам метода или функции.
+> Хелпер функция не может быть применена к параметрам метода или функции. Для внедрения в параметры методов или вызываемых типов используйте [хелпер функцию `diGet()`](di-get.md)
 
 Сигнатура функции:
 
@@ -40,7 +40,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ## bindTag()
 
-Теги позволяют отнести конфигурируемый объект к коллекции элементов отмеченных одним тегом.
+Теги позволяют отнести «runtime definition» к коллекции элементов отмеченных одним тегом.
 
 <!--@include: ./_include/bind_tag.md-->
 
@@ -50,11 +50,14 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ## Идентификатор контейнера { #container-id }
 
-[В файлах конфигураций](../container-builder/configuration_files.md) хелпер функция `diRuntime()` может передавать контейнеру идентификатор контейнера [^ContainerId] из параметра `$containerIdentifierOrClass`:
+Хелпер функция `diRuntime()` может передавать контейнеру идентификатор [^ContainerId] из параметра `$containerIdentifierOrClass`, что обеспечивает доступ к нему через методы контейнера `get()` и `has()`.
 
 ```php
-// file: /app/config/runtime_definitions.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/runtime_definitions.php // [!code highlight]
+
 use App\Core\Kernel;
 
 use function Kaspi\DiContainer\diRuntime;
@@ -62,8 +65,8 @@ use function Kaspi\DiContainer\diRuntime;
 return static function (): Generator {
     yield diRuntime(Kernel::class);
     /*
-     * 🚩 Эквивалентно объявлению// [!code highlight]
-     * Kernel::class => diRuntime(Kernel::class);// [!code warning]
+     * 🚩 Эквивалентно объявлению // [!code highlight]
+     * Kernel::class => diRuntime(Kernel::class); // [!code warning]
      */
 };
 ```
@@ -75,8 +78,11 @@ return static function (): Generator {
 Так же доступно объявление объекта с произвольным строковым идентификатором контейнера[^ContainerId]:
 
 ```php
-// file: /app/config/runtime_definitions.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/runtime_definitions.php // [!code highlight]
+
 use App\Core\Kernel;
 
 use function Kaspi\DiContainer\diRuntime;
