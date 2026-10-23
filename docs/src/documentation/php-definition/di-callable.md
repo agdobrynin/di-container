@@ -35,223 +35,157 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: ./_include/bind_arguments.md-->
 
-Для указания неполного списка аргументов можно использовать именованные аргументы параметров в методе `bindArguments()`.
+Объявление вызываемого типа в [файле конфигураций](../container-builder/configuration_files.md) с передачей неполного списка аргументов в методе `bindArguments()` может быть представлена через именованные аргументы.
 
 ::: code-group
 
-```php [callable_entries.php]
-<?php
-declare(strict_types=1);
+<<< @/_code/php-definition/di-callable/container.php
 
-// file: /app/config/callable_entries.php
+<<< @/_code/php-definition/di-callable/callable_entries.php
 
-use App\Services\Foo;
-use function Kaspi\DiContainer\diCallable;
+<<< @/_code/php-definition/di-callable/Baz.php
 
-return static function(): Generator {
-    yield 'foo.factory_method' => diCallable([Foo::class, 'factoryMethod'])
-        ->bindArguments(name: 'Lorem ipsum');
-};
+<<< @/_code/php-definition/di-callable/Bar.php
 
-```
-
-:::
-
-## 🚧🚧🚧🚧
-
-::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-
-namespace App\Services;
-
-final class Foo {
-    // …
-    
-    public static function factoryMethod(Bar $bar, string $name) {}
-}
-```
-
-```php [Bar.php]
-//file: /app/src/Services/Bar.php
-
-namespace App\Services;
-
-final class Bar {
-    // …
-}
-```
+<<< @/_code/php-definition/di-callable/Foo.php
 
 :::
 
 ## bindTag()
 
-Теги позволяют отнести конфигурируемый вызываемый тип к коллекции сервисов.
+Теги позволяют отнести объявляемый вызываемый тип к коллекции элементов отмеченных одним тегом.
 
-<!--@include: ./_include/bind_tag.md-->
+<!--@include: _include/bind_tag.md-->
 
 ## Идентификатор контейнера { #container-id }
 
-Хелпер функция `diCallable()` не может автоматически сформировать идентификатор контейнера [^ContainerId],
-поэтому необходимо указать идентификатор контейнера для определения конфигурируемого через эту хелпер функцию.
-
-Конфигурирование контейнера и PHP классы:
+Чтобы обеспечить доступность вызываемого типа через метод контейнера `get()` и `has()` необходимо указать в [файле конфигураций](../container-builder/configuration_files.md) соответствующий идентификатор контейнера[^ContainerId].
 
 ::: code-group
 
-```php [services.php]
-// file: /app/config/services.php
+```php [container.php]
+<?php
+declare(strict_types=1);
 
-use App\Services\ServiceFoo;
-use function \Kaspi\DiContainer\{diCallable, diParameter};
+// file: /app/src/container.php// [!code highlight]
 
-return static function (): \Generator {
-    
-    // callable тип – анонимная функция с параметром
-    $fn = static fn (string $apiKey) => new ServiceFoo($apiKey, false);
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
 
-    // Указываем идентификатор контейнера 'services.foo.one'
-    yield 'services.foo.one' => diCallable($fn)
-        // Аргумент для анонимной функции $fn($apiKey)
-        ->bindArguments(
-            diParameter('api_key')
-        );
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
 
-    // Указываем идентификатор контейнера 'services.foo.two'
-    yield 'services.foo.two' => diCallable([ServiceFoo::class, 'makeWithDebug'])
-        // Аргумент для параметра ServiceFoo::makeWithDebug($apiKey)
-        ->bindArguments(
-            apiKey: diParameter('api_key.for_debug')
-        );
+$container = (new DiContainerBuilder())
+    ->load('/app/config/factories.php')// [!code highlight]
+    ->build();
+
+$result = $container->get('baz.factory_method');// [!code highlight]
+$foo = new Foo($result);
+
+var_dump($foo->value);
+// string(26) "Lorem ipsum dolor sit amet"
+```
+
+```php [factories.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/factories.php// [!code highlight]
+
+use App\Services\Baz;
+
+use function Kaspi\DiContainer\diCallable;
+
+return static function(): Generator {
+    yield 'baz.factory_method' => diCallable([Baz::class, 'factoryMethod'])//[!code ++]
+        ->bindArguments(//[!code ++]
+            name: 'Lorem ipsum'//[!code ++]
+    )//[!code ++]
 };
 ```
 
-```php [api_keys.php]
-// file: /app/config/params/api_keys.php
+<<< @/_code/php-definition/di-callable/Baz.php
 
-return [
-    'api_key' => 'value_api_key',
-    'api_key.for_debug' => 'other_value_api_key',    
-];
-```
+<<< @/_code/php-definition/di-callable/Bar.php
 
-```php [ServiceFoo.php]
-// file: /app/src/Services/ServiceFoo.php
-
-namespace App\Services;
-
-class ServiceFoo {
-
-    public function __construct(
-        public readonly string $apiKey,
-        public readonly bool $debug
-    ) {}
-
-    // `callable` [ServiceFoo::class, 'makeWithDebug'] 
-    public static function makeWithDebug(string $apiKey): self {
-        return new self($apiKey, true)
-    }
-}
-```
+<<< @/_code/php-definition/di-callable/Foo.php
 
 :::
 
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\ServiceFoo;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters('/app/config/params/api_keys.php')
-    ->load('/app/config/services.php')
-    ->build()
-;
-
-// ...
-$serviceOne = $container->get('services.foo.one');
-
-var_dump($serviceOne instanceof ServiceFoo);
-// bool(true)
-
-var_dump($serviceOne->apiKey, $serviceOne->debug);
-// string(13) "value_api_key"
-// bool(false)
-
-$serviceTwo = $container->get('services.foo.two');
-
-var_dump($serviceTwo instanceof ServiceFoo);
-// bool(true)
-
-var_dump($serviceTwo->apiKey, $serviceTwo->debug);
-// string(19) "other_value_api_key"
-// bool(true)
-
-```
-
 ## Преобразуемые объявления { #convert-to-di-callable } 
 
-Если нет необходимости указывать аргументы или теги для определения контейнера,
-то в [конфигурационном файле](../container-builder/configuration_files.md) можно указать вызываемый тип «как-есть»,
-без применения хелпер функции.
+В файлах конфигураций можно указать вызываемый тип «как-есть», при условии что контейнер сможет самостоятельно внедрить требуемые зависимости на основе конфигурации контейнера.
 
 ::: code-group
 
 ```php [services.php]
-// file: /app/config/services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/callable_as_is.php// [!code highlight]
 
 use App\Services\ServiceFoo;
 
-return static function (): \Generator {
+return static function (): Generator {
    // 1️⃣ анонимная функция
-   yield 'services.foo.one' => static fn () => new ServiceFoo(apiKey: 'value_api_key', debug: false);
+   yield 'services.foo.one' => static fn () => new ServiceFoo(
+        apiKey: 'qwerty-value',
+        debug: false
+    );
 
    // 2️⃣ статический метод класса
-   yield 'services.foo.two' =>  [ServiceFoo::class, 'makeForTest'];
+   yield 'services.foo.two' => [ServiceFoo::class, 'makeWithDebug'];
    
    // 3️⃣ функция
-   yield 'services.foo.three' =>  'App\Functions\staging_service';
+   yield 'services.foo.three' => 'App\Functions\staging_service';
 };
 ```
 
 ```php [ServiceFoo.php]
-// file: /app/src/Services/ServiceFoo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/ServiceFoo.php// [!code highlight]
 
 namespace App\Services;
 
-class ServiceFoo {
+class ServiceFoo
+{
 
     public function __construct(
         public readonly string $apiKey,
         public readonly bool $debug
     ) {}
 
-    // `callable` [ServiceFoo::class, 'makeWithDebug'] 
-    public static function makeWithDebug(string $apiKey): self {
+
+    public static function makeWithDebug(string $apiKey): self
+    {
         return new self($apiKey, true)
     }
 }
 ```
 
 ```php [functions.php]
-// file: /app/src/Functions/functions.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Functions/functions.php// [!code highlight]
 
 namespace App\Functions;
 
-use App\Services\ServiceOne;
+use App\Services\ServiceFoo;
+
+use function getenv;
 
 function staging_service(bool $debug = true): ServiceOne {
-    $apiKey = \getenv('APP_API_KEY_STAGING');
+    $apiKey = getenv('APP_API_KEY_STAGING');
 
-    return new ServiceOne($apiKey, $debug);
+    return new ServiceFoo($apiKey, $debug);
 }
 
 ```
 
 :::
 
-Определения указанные в конфигурационном файле `config/services.php` будут 
-автоматически объявлены так как будто их сделали через хелпер функцию `diCallable()`.
+Объявления `callable` типов в файле конфигураций `/app/config/callable_as_is.php` будут автоматически конвертированы в хелпер функцию `diCallable()`.
 
 <!--@include: ../_include/term_notes.md-->

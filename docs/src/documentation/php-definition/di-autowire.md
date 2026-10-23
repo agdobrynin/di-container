@@ -41,7 +41,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: ./_include/bind_arguments.md-->
 
-Для передачи неполного списка аргументов можно использовать именованные аргументы в методе `bindArguments()`.
+Объявление PHP класса в [файле конфигураций](../container-builder/configuration_files.md) с передачей конструктору класса неполного списка аргументов в методе `bindArguments()` может быть представлена через именованные аргументы.
 
 ::: code-group
 
