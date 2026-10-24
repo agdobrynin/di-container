@@ -21,23 +21,18 @@
 
 ## Пример исключения PHP класса { #example }
 
-Объявление исключающее PHP класс:
+Исключить из контейнера PHP класс `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude`.
 
-```php
-// file: /app/src/Services/Foo.php
-namespace App\Services;
+::: code-group
 
-use Kaspi\DiContainer\Attributes\Autowire;
-use Kaspi\DiContainer\Attributes\AutowireExclude;
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-#[Autowire(isSingleton: true)] // 🚩 Атрибут будет проигнорирован
-#[AutowireExclude]
-class Foo {}
-```
+// file: /app/src/container_build.php // [!code highlight]
 
-Контейнер зависимостей:
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 
@@ -48,6 +43,26 @@ $container = (new DiContainerBuilder())
 var_dump($container->has(Foo::class));
 // (bool) false
 ```
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\AutowireExclude;
+
+#[AutowireExclude]// [!code ++]
+final class Foo
+{
+    // …
+}
+```
+
+:::
+
 
 <!--@include: ../_include/term_notes.md-->
 
