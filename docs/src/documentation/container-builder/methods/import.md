@@ -34,6 +34,9 @@ PHP классы найденные в исключенных файлах, па
 Объявить PHP классы можно из нескольких директорий вызывая последовательно метод `import()` с указанием уникального значения в параметре `$namespace`:
 
 ```php
+<?php
+declare(strict_types=1);
+
 use Kaspi\DiContainer\DiContainerBuilder;
  
 $builder = (new DiContainerBuilder())
@@ -48,7 +51,11 @@ $builder = (new DiContainerBuilder())
 ::: code-group
 
 ```php [container_build.php]
-// file: /app/src/container_build.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php //[!code highlight]
+
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -80,15 +87,15 @@ var_dump($container->has(Qux::class));
 $container->get(Qux::class); //[!code error]
 // throw exception: `\Kaspi\DiContainer\Exception\NotFoundException`
 ```
-<<< @/_code/config/report_parameters.php#snippet{1}
+<<< @/_code/config/report_parameters.php
 
-<<< @/_code/src/Services/ReportBuilder.php#snippet{1}
+<<< @/_code/src/Services/ReportBuilder.php
 
-<<< @/_code/src/Interfaces/ReportsStorageInterface.php#snippet{1}
+<<< @/_code/src/Interfaces/ReportsStorageInterface.php
 
-<<< @/_code/src/Storages/ReportsStorage.php#snippet{1}
+<<< @/_code/src/Storages/ReportsStorage.php
 
-<<< @/_code/src/Various/Qux.php#snippet{1}
+<<< @/_code/src/Various/Qux.php
 
 :::
 

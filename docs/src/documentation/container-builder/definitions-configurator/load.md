@@ -5,14 +5,18 @@
 В [файлах конфигураций](../configuration_files.md) доступно объявление определений из других файлов конфигураций.
 
 ```php
-// file: /app/config/services/mix_services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services/mix_services.php // [!code highlight]
+
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $configurator->load('/app/config/config_one.php');// [!code highlight]
+    $configurator->load('/app/config/config_one.php');// [!code ++]
     
     if ('STAGES' === getenv('APP_ENV') {
-        $configurator->loadOverride('/app/config/services_for_stages.php');// [!code highlight]
+        $configurator->loadOverride('/app/config/services_for_stages.php');// [!code ++]
     }
 };
 ```

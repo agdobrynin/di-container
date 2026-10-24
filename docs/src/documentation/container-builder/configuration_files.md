@@ -17,8 +17,10 @@
 Файл конфигураций возвращающий `iterable` тип может быть представлен например **анонимной функцией**. Результат выполнения такой функции генератор (`\Generator`) возвращающий объявления PHP классов через ключевое слово `yield`.
 
 ```php
-// file: /app/config/as_generator_simple.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/as_generator_simple.php //[!code highlight]
 use App\Services\Foo;
 
 use function Kaspi\DiContainer\diAutowire;
@@ -39,8 +41,11 @@ return static function (): Generator {
 В качестве `callable` типа можно использовать **анонимную функцию**.
 
 ```php
-// file: /app/config/as_generator_with_configurator.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/as_generator_with_configurator.php // [!code highlight]
+
 use App\Services\Foo;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;//[!code ++]
 
@@ -61,8 +66,11 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 Файл конфигураций может быть представлен `callable` типом результат вызова которого тип `void`.
 
 ```php
-// file: /app/config/callable_with_configurator.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/callable_with_configurator.php // [!code highlight]
+
 use App\Services\Foo;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
@@ -85,8 +93,12 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {/
 Файл конфигураций может быть представлен PHP массивом.
 
 ```php
-// file: /app/config/as_array.php
+<?php
+
+// file: /app/config/as_array.php // [!code highlight]
+
 use App\Services\Foo;
+
 use function Kaspi\DiContainer\diAutowire;
 
 return [

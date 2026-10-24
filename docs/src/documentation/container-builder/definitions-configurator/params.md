@@ -5,14 +5,18 @@
 В файлах конфигураций доступна регистрация и управление [параметрами контейнера](../../container-parameters/index.md).
 
 ```php
-// file: /app/config/services/services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services/services.php // [!code highlight]
+
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-    $configurator->loadParameters('/app/config/parameters/app_params.php'); // [!code highlight]
-    $configurator->setParameter('params.baz', 'Lorem ipsum');// [!code highlight]
+    $configurator->loadParameters('/app/config/parameters/app_params.php'); // [!code ++]
+    $configurator->setParameter('params.baz', 'Lorem ipsum');// [!code ++]
 
     yield diAutowire(Foo::class)
         ->bindArguments(

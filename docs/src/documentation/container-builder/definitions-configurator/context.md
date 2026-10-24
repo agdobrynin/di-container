@@ -45,7 +45,11 @@
 ::: code-group
 
 ```php [build_container.php]
-// file: /app/src/build_container.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/build_container.php // [!code highlight]
+
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -55,7 +59,7 @@ $builder = (new DiContainerBuilder())
     ->import('App\\', '/app/src')
     ->load(
         '/app/config/services/services.php',
-        '/app/app/config/foo_service.php',// [!code ++]
+        '/app/app/config/foo_service.php',// [!code highlight]
     );
 
 // Использую стороннюю библиотеку для работы с `.env` файлами.
@@ -65,7 +69,7 @@ $dotenv->load();// [!code highlight]
 
 $builder->setConfiguratorContext('DATABASE_DSN', $_ENV['DATABASE_DSN']);// [!code ++]
 
-/*
+/**
  * объект содержащий нужные данные для конфигурирования контейнера
  * @var \App\Core $core
  */ 
@@ -77,9 +81,12 @@ $container = $builder->build();
 ```
 
 ```php [foo_service.php]
-// file: /app/app/config/foo_service.php
+<?php
+declare(strict_types=1);
+
+// file: /app/app/config/foo_service.php // [!code highlight]
+
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use Generator;
 use App\Core;
 use App\Services\Foo;
 
@@ -87,8 +94,11 @@ use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): Generator {
 
-    $dsn = $configurator->getContext('DATABASE_DSN');
-    $core = $configurator->getContext(Core::class);
+    $dsn = $configurator->getContext('DATABASE_DSN');// [!code ++]
+    /**
+     * @var \App\Core $core
+    */ 
+    $core = $configurator->getContext(Core::class);// [!code ++]
 
     yield diAutowire(Foo::class)
         ->bindArguments(

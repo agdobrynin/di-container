@@ -1,6 +1,8 @@
 <?php
-#region snippet
-// file: /app/src/Services/ReportMaker.php
+declare(strict_types=1);
+
+// file: /app/src/Services/ReportMaker.php // [!code highlight]
+
 namespace App\Services;
 
 use App\Interfaces\ReportsStorageInterface;
@@ -17,4 +19,3 @@ final class ReportBuilder
         public readonly int $lastDays,
     ) {}
 }
-#endregion snippet

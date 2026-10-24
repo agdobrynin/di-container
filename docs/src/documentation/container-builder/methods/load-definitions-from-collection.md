@@ -27,11 +27,14 @@
 
 ::: code-group
 
-```php {10-15,18-23} [container_build.php]
-// file: /app/src/container_build.php
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-use Generator;
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\ReportMaker;
 use App\Storages\ReportStorage;
@@ -39,20 +42,20 @@ use App\Storages\ReportStorage;
 use function Kaspi\DiContainer\diAutowire;
 
 // Анонимная функция в качестве коллекции
-$fn = static function (): Generator {
-    yield diAutowire(ReportStorage::class)
-        ->bindArguments(
-            dir: '/var/data'
-        );
-};
+$fn = static function (): Generator {// [!code highlight]
+    yield diAutowire(ReportStorage::class)// [!code highlight]
+        ->bindArguments(// [!code highlight]
+            dir: '/var/data'// [!code highlight]
+        );// [!code highlight]
+};// [!code highlight]
 
 // PHP массив в качестве коллекции
-$services = [
-    diAutowire(ReportMaker::class)
-        ->bindArguments(
-            lastDays: 10
-        )
-];
+$services = [// [!code highlight]
+    diAutowire(ReportMaker::class)// [!code highlight]
+        ->bindArguments(// [!code highlight]
+            lastDays: 10// [!code highlight]
+        )// [!code highlight]
+];// [!code highlight]
 
 $container = (new DiContainerBuilder())
     ->addDefinitions(($fn)())// [!code ++]
@@ -69,9 +72,8 @@ var_dump($service->lastDays);
 // int(10)
 ```
 
-<<< @/_code/src/Services/ReportMaker.php#snippet{1}
-
-<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
+<<< @/_code/src/Services/ReportMaker.php
+<<< @/_code/src/Storages/ReportStorage.php
 
 ::: 
 
@@ -97,7 +99,13 @@ var_dump($service->lastDays);
 ::: code-group
 
 ```php [container_build.php]
-// file: /app/src/container_build.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\ReportMaker;
 use App\Storages\ReportStorage;
@@ -129,11 +137,11 @@ var_dump($service->storage->dir);
 var_dump($service->lastDays);
 // int(10)
 ```
-<<< @/_code/config/report_services.php#snippet{1}
+<<< @/_code/config/report_services.php
 
-<<< @/_code/src/Services/ReportMaker.php#snippet{1}
+<<< @/_code/src/Services/ReportMaker.php
 
-<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
+<<< @/_code/src/Storages/ReportStorage.php
 
 :::
 

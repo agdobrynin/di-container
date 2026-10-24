@@ -19,7 +19,11 @@
 Пример использования:
 
 ```php
-// file: /app/config/services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
@@ -51,8 +55,12 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 Пример использования:
 
-```php {10-17}
-// file: /app/config/services.php
+```php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use App\Services\Mail;
 
@@ -61,14 +69,14 @@ use function getenv;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     if ('STAGES' === getenv('APP_ENV')) {
-        $configurator->setDefinition(
-            Mail::class,
-            diAutowire(Mail::class)
-                ->bindArguments(
-                    host: diParameter('mail.host.local'),
-                    port: diParameter('mail.port.local'),
-                );
-        );
+        $configurator->setDefinition(// [!code ++]
+            Mail::class,// [!code ++]
+            diAutowire(Mail::class)// [!code ++]
+                ->bindArguments(// [!code ++]
+                    host: diParameter('mail.host.local'),// [!code ++]
+                    port: diParameter('mail.port.local'),// [!code ++]
+                );// [!code ++]
+        );// [!code ++]
     }
 };
 ```
@@ -99,7 +107,10 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Пример использования:
 
 ```php
-// file: /app/config/foo_bar_services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/foo_bar_services.php // [!code highlight]
 
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use Kaspi\DiContainer\Exception\NotFoundDefinition;
@@ -109,24 +120,24 @@ use function Kaspi\DiContainer\diAutowire;
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     // без указания $fallback
     try {
-        $configurator->getDefinition('foo_bar');// [!code highlight]
+        $configurator->getDefinition('foo_bar');// [!code ++]
     } catch (NotFoundDefinition) {// [!code warning]
-        $configurator->setDefinition(
-            'foo_bar',
-            diAutowire(FooBar::class)
-                ->bindArguments('foo', 'bar')
-        );
+        $configurator->setDefinition(// [!code highlight]
+            'foo_bar',// [!code highlight]
+            diAutowire(FooBar::class)// [!code highlight]
+                ->bindArguments('foo', 'bar')// [!code highlight]
+        );// [!code highlight]
     }
 
     // Использовать $fallback
-    $qux = $configurator->getDefinition('qux', static fn () => null);// [!code highlight]
+    $qux = $configurator->getDefinition('qux', static fn () => null);// [!code ++]
 
     if (null === $qux) {
-        $configurator->setDefinition(
-            'qux',
-            diAutowire(Qux::class)
-                ->setup('doConfig')
-        );
+        $configurator->setDefinition(// [!code highlight]
+            'qux',// [!code highlight]
+            diAutowire(Qux::class)// [!code highlight]
+                ->setup('doConfig')// [!code highlight]
+        );// [!code highlight]
     }
 };
 ```
@@ -152,7 +163,10 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Пример использования:
 
 ```php
-// file: /app/config/services_tagged.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services_tagged.php // [!code highlight]
 
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use function Kaspi\DiContainer\diAutowire;
@@ -160,7 +174,7 @@ use App\Interfaces\FooInterface;
 use App\Services\Client;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
-    $definitions = $configurator->findTaggedDefinitions(FooInterface::class);// [!code highlight]
+    $definitions = $configurator->findTaggedDefinitions(FooInterface::class);// [!code ++]
     
     foreach ($definitions as $id => $definition) {// [!code highlight]
         $definition->setup('setClient', diAutowire(Client::class));
@@ -191,7 +205,11 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 Пример использования:
 
 ```php
-// file: /app/config/services_removed.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services_removed.php // [!code highlight]
+
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 use App\Services\Qux;
 
@@ -199,7 +217,7 @@ use function getenv;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
     if ('STAGES' === getenv('APP_ENV') {
-        $configurator->removeDefinition(Qux::class);// [!code highlight]
+        $configurator->removeDefinition(Qux::class);// [!code ++]
     }
 };
 ```

@@ -42,6 +42,9 @@ outline: [2, 4]
 Пример настройки компиляции контейнера:
 
 ```php
+<?php
+declare(strict_types=1);
+
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $builder = new DiContainerBuilder();

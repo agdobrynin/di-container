@@ -15,7 +15,11 @@
 
 
 ```php [container_build.php]
-// file: /app/src/container_build.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -37,13 +41,13 @@ var_dump($service->lastDays);
 // int(15)
 ```
 
-<<< @/_code/config/report_parameters.php#snippet{1}
+<<< @/_code/config/report_parameters.php
 
-<<< @/_code/config/report_services_with_params.php#snippet{1}
+<<< @/_code/config/report_services_with_params.php
 
-<<< @/_code/src/Services/ReportMaker.php#snippet{1}
+<<< @/_code/src/Services/ReportMaker.php
 
-<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
+<<< @/_code/src/Storages/ReportStorage.php
 
 :::
 

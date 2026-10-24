@@ -28,7 +28,11 @@
 ::: code-group
 
 ```php [container_build.php]
-// file: /app/src/container_build.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -47,11 +51,11 @@ var_dump($service->lastDays);
 // int(10)
 ```
 
-<<< @/_code/config/report_services.php#snippet{1}
+<<< @/_code/config/report_services.php
 
-<<< @/_code/src/Services/ReportMaker.php#snippet{1}
+<<< @/_code/src/Services/ReportMaker.php
 
-<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
+<<< @/_code/src/Storages/ReportStorage.php
 
 :::
 
@@ -84,7 +88,11 @@ var_dump($service->lastDays);
 ::: code-group
 
 ```php [container_build.php]
-// file: /app/src/container_build.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -113,10 +121,14 @@ var_dump($service->lastDays);
 // int(1)
 ```
 
-<<< @/_code/config/report_services.php#snippet{1}
+<<< @/_code/config/report_services.php
 
 ```php [dev/services.php]
-// file: /app/config/dev/services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/dev/services.php // [!code highlight]
+
 use App\Storages\ReportStorage;
 use App\Services\ReportMaker;
 
@@ -135,9 +147,9 @@ return static function (): Generator {
 };
 ```
 
-<<< @/_code/src/Services/ReportMaker.php#snippet{1}
+<<< @/_code/src/Services/ReportMaker.php
 
-<<< @/_code/src/Storages/ReportStorage.php#snippet{1}
+<<< @/_code/src/Storages/ReportStorage.php
 
 :::
 

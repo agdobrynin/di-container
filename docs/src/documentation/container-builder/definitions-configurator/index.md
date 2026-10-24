@@ -7,8 +7,11 @@
 Конфигуратор передается в анонимную функцию первым параметром для [файлов конфигураций](../configuration_files.md).
 
 ```php
-// file: /app/config/services.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
 return static function (

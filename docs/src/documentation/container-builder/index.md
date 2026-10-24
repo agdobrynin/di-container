@@ -79,6 +79,9 @@ $container = (new DiContainerBuilder())
 Пример изолирования настройки компиляции контейнера в разных средах разработки:
 
 ```php
+<?php
+declare(strict_types=1);
+
 use Kaspi\DiContainer\DiContainerBuilder;
 
 use function getenv;
@@ -93,12 +96,12 @@ $builder = (new DiContainerBuilder())
 
 // 🚩 окружение для локальной разработки приложения
 if ('dev' === getenv('APP_ENV')) {
-    $builder->loadOverride('/app/config/dev_services.php');
+    $builder->loadOverride('/app/config/dev_services.php');// [!code highlight]
 }
 
 // 🚩 Компилировать контейнер только когда APP_ENV === 'prod' окружении 
 if ('prod' === getenv('APP_ENV')) {
-    $builder->compileToFile('/app/var/container', 'App\\Core\\FooContainer');
+    $builder->compileToFile('/app/var/container', 'App\\Core\\FooContainer');// [!code highlight]
 }
 
 $container = $builder->build();
