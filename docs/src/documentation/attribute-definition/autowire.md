@@ -28,7 +28,7 @@ outline: [2, 4]
 
 Параметры:
 
-- `$id` – идентификатор контейнера [^ContainerId].
+- `$id` – идентификатор контейнера [^ContainerId], или пустая строка.
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP класса.
 - `$tags` – тег с метаданными.
@@ -38,69 +38,86 @@ outline: [2, 4]
 
 ## Идентификатор контейнера { #container-id }
 
-Объявление PHP класса в контейнере через атрибут у которого значение в параметре `$id` пустая строка интерпретируется контейнером как FQCN[^FQCN].
+Значение пустая строка в параметре `$id` интерпретируется контейнером в идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP класса.
 
-```php
-// file: /app/src/Services/FooService.php
-namespace App\Services;
+::: code-group
 
-use Kaspi\DiContainer\Attributes\Autowire;
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-#[Autowire(arguments: [])]
-/**
- * 🚩 Эквивалентно объявлению
- * #[Autowire(id: FooService::class, arguments: [])] 
- */
-final class FooService
-{
-    // …
-}
-```
+// file: /app/src/container_build.php // [!code highlight]
 
-### Множественное объявление PHP класса { #container-id-multuple }
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-Атрибут может объявлять один и тот же PHP класс в контейнере, но параметр `$id` должен быть уникальным для каждого атрибута.
-
-```php
-// /app/src/Services/FooService.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Autowire;
-
-#[Autowire(arguments: [])]
-#[Autowire(id: 'services.foo_service', arguments: [])]
-final class FooService
-{
-    // …
-}
-```
-
-Доступность PHP класса по идентификаторам контейнера:
-
-```php
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\FooService;
+use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src/')
-    ->build()
-;
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->build();
 
-var_dump($container->has(FooService::class));
-// (bool) true
-var_dump($container->has('services.foo_service'));
-// (bool) true
+$foo = $container->get(Foo::class);
+
+var_dump($foo->value);
+// string(11) "Lorem ipsum"
 ```
+<<< @/_code/attribute-definition/autowire/Foo.php
+
+:::
+
+### Объявление PHP класса с несколькими идентификаторами { #container-id-multuple }
+
+Атрибут может объявлять один и тот же PHP класс в контейнере с разными идентификаторами[^ContainerId].
+
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Bar;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->build();
+
+var_dump($container->has(Bar::class));//[!code highlight]
+// bool(true)
+
+$bar = $container->get(Bar::class);
+
+var_dump($bar->value);
+// int(10)
+
+var_dump($container->has('services.bar_20'));//[!code highlight]
+// bool(true)
+
+$bar20 = $container->get('services.bar_20');
+
+var_dump($bar20->value);
+// int(20)
+```
+<<< @/_code/attribute-definition/autowire/Bar.php
+
+:::
 
 ## Аргументы конструктора PHP класса { #arguments }
 
-[Параметр `\Kaspi\DiContainer\Attributes\Autowire:$arguments`](#constrcut-arguments) передает аргументы конструктору PHP класса.
+Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\Autowire` передает аргументы конструктору PHP класса.
 
-Для параметров конструктора PHP класса не переданных через аргументы контейнер внедрит зависимости самостоятельно, на основе конфигурации, включая [использование PHP атрибутов](index.md#attributes).
+При частичном указании как внедрять зависимость в конкретный параметр, указывайте в качестве ключа массива в `$arguments` имя параметра этого атрибута.
 
-Для передачи неполного списка аргументов `$arguments` указывайте в качестве ключа массива имя параметра.
+Контейнер внедрит зависимости самостоятельно, на основе конфигурации, включая [использование PHP атрибутов](index.md#attributes) если в аргументах не указано как внедрять конкретный параметр.
 
 <!--@include: ./_include/to_arguments.md-->
+
+## 🚧🚧🚧🚧
 
 ### Передача аргументов конструктору { #example }
 
