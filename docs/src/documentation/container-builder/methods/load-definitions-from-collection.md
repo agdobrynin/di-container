@@ -1,10 +1,12 @@
+---
+outline: [2, 3]
+---
+
 # Объявление определений контейнера через коллекцию { #title }
 
 ## Обзор { #overview }
 
-Объявить определения контейнера можно без использования файлов конфигураций – используя коллекцию. Коллекция должна быть представлена любым `iterable` типом.
-
-Коллекция предоставляет идентификатор контейнера [^ContainerId] как ключ коллекции и значение – объявление определения контейнера.
+Объявить определения контейнера можно используя коллекцию. Коллекция должна быть представлена любым `iterable` типом. Элементы коллекции должны быть представлены парой ключ-значение, где ключ коллекции это идентификатор контейнера [^ContainerId], а значение – объявление определения.
 
 ## addDefinitions()
 
@@ -23,7 +25,12 @@
 > [!WARNING]
 > <!--@include: ../_include/build_id_equals.md-->
 
-Пример использования:
+### Пример использования метода addDefinitions() { #example-add-definitions }
+
+Объявить в контейнере через коллекцию PHP классы `\App\Storages\ReportStorage` и `App\Services\ReportMaker`. 
+
+> [!TIP]
+> Для объявления PHP классов используем [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md#container-id) которая может представить в конфигурацию идентификатор контейнера.
 
 ::: code-group
 
@@ -77,9 +84,6 @@ var_dump($service->lastDays);
 
 ::: 
 
-> [!TIP]
-> Для объявления PHP классов используем [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md).
-
 
 ## addDefinitionsOverride()
 
@@ -95,6 +99,10 @@ var_dump($service->lastDays);
 Параметры:
 - `$definitions` – коллекция определений.
 
+
+### Пример использования метода addDefinitionsOverride() { #example-add-definitions-override }
+
+Если значение переменной среды `APP_ENV` равно `'dev'`, то необходимо заменить объявление PHP класса `\App\Storages\ReportStorage` с другим аргументом. Для переопределения ранее объявленного PHP класса использовать метод `addDefinitionsOverride()`.
 
 ::: code-group
 
@@ -116,7 +124,7 @@ use function {getenv, putenv};
 putenv('APP_ENV=dev');//[!code ++]
 
 $builder = (new DiContainerBuilder())
-    ->load('/app/config/report_services.php');
+    ->load('/app/config/report_services.php');// [!code highlight]
 
 if ('dev' === getenv('APP_ENV')) {
     $devServices = [//[!code ++]
