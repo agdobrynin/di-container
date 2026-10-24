@@ -107,7 +107,7 @@ DiDefinitionSetupAutowireInterface::setup(
 <?php
 declare(strict_types=1);
 
-// file: /app/src/container_build.php
+// file: /app/src/container_build.php // [!code highlight]
 
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
@@ -210,9 +210,9 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 
 ## Идентификатор контейнера для diAutowire() { #container-id }
 
-[В файлах конфигураций](../container-builder/configuration_files.md) при объявлении PHP класса идентификатор контейнера [^ContainerId] может быть сформирован на основе FQCN [^FQCN] указанного в хелпер функции `diAutowier()`.
+Хелпер функция `diAutowier()` может передавать контейнеру идентификатор [^ContainerId] из параметра `$definition`, что обеспечивает доступ к нему через методы контейнера `get()` и `has()`.
 
-Файл конфигураций с автоматическим формированием идентификатора контейнера:
+[Файл конфигураций](../container-builder/configuration_files.md) с автоматическим формированием идентификатора контейнера:
 
 ```php
 <?php
