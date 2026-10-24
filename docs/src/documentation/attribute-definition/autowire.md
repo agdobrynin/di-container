@@ -175,6 +175,8 @@ var_dump($fooServiceWithBaz->adminEmail);
 
 <<< @/_code/attribute-definition/autowire/BatService.php
 
+<<< @/_code/attribute-definition/autowire/Interfaces/QuxInterface.php
+
 :::
 
 ## Внедрение зависимостей через сеттер-методы { #setups }
@@ -265,62 +267,100 @@ final class Foo
 
 ::: code-group
 
-```php [BarService.php]
-// file: /app/src/Services/BarService.php
+```php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar, Baz};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->addParameters([
+        'emails.bar' => 'manager@example.com',//[!code highlight]
+        'emails.baz' => 'admin@example.com',//[!code highlight]
+    ])
+    ->build();
+
+$foo = $container->get(Foo::class);//[!code warning]
+
+var_dump($foo->qux->notifyEmail);
+// string(19) "manager@example.com"
+
+var_dump($foo->baz->email);
+// string(16) "admin@example.com
+```
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
 namespace App\Services;
 
 use App\Interfaces\QuxInterface;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
 
-class BarService
+class Foo
 {
     public function __construct(
-        // 🚩 Указание FQCN 
-        #[Autowire(id: QuxService::class)]
+        #[Autowire(
+            id: Bar::class,// [!code ++]
+            arguments: [// [!code ++]
+                new DiParameter('emails.bar')// [!code ++]
+            ]// [!code ++]
+        )]
         public readonly QuxInterface $qux,
 
-        // Автоматическое формирование $id из типа параметра
-        #[Autowire(arguments: [
-            new DiParameter('emails.for_service_bar')
-        ])]
-        // ℹ️ эквивалентно объявлению
-        // #[Autowire(
-        //      id: Baz::class,
-        //      arguments: [
-        //          new DiParameter('emails.for_service_bar')
-        //      ]
-        // )]
+        #[Autowire(
+            arguments: [// [!code ++]
+                new DiParameter('emails.baz')// [!code ++]
+            ]// [!code ++]
+        )]
         public readonly Baz $baz,
     ) {}
 }
 ```
 
-```php [QuxService.php]
-// file: /app/src/Services/QuxService.php
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
 namespace App\Services;
 
 use App\Interfaces\QuxInterface;
 
-final class QuxService implements QuxInterface 
+final class Bar implements QuxInterface 
 {
-    // …   
+    public function __construct(public readonly string $notifyEmail) {}
 }
 ```
 
 ```php [Baz.php]
-// file: /app/src/Services/Baz.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php //[!code highlight]
+
 namespace App\Services;
 
 final class Baz
 {
     public function __construct(
-        private string $notifyEmail,
+        public readonly string $email = 'baz@localhost'
     ) {}
-    
-    // …
 }
 ```
+
+<<< @/_code/attribute-definition/autowire/Interfaces/QuxInterface.php
 
 :::
 
