@@ -34,7 +34,7 @@ declare(strict_types=1);
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
+use App\Services\{Foo, Bar};
 
 $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')
@@ -42,6 +42,9 @@ $container = (new DiContainerBuilder())
 
 var_dump($container->has(Foo::class));
 // (bool) false
+
+var_dump($container->has(Bar::class));
+// (bool) true
 ```
 
 ```php [Foo.php]
@@ -56,6 +59,20 @@ use Kaspi\DiContainer\Attributes\AutowireExclude;
 
 #[AutowireExclude]// [!code ++]
 final class Foo
+{
+    // …
+}
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php // [!code highlight]
+
+namespace App\Services;
+
+final class Bar
 {
     // …
 }
