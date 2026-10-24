@@ -1,3 +1,6 @@
+---
+aside: false
+---
 # diTaggedAs()
 
 ## Обзор { #overview }

@@ -35,7 +35,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: ./_include/bind_arguments.md-->
 
-Объявление вызываемого типа в [файле конфигураций](../container-builder/configuration_files.md) с передачей неполного списка аргументов в методе `bindArguments()` может быть представлена через именованные аргументы.
+### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
+
+Необходимо через метод `bindArguments()` указать вызываемому методу `\App\Services\Baz::factoryMethod()` как внедрят зависимость в параметр `$name`.
 
 ::: code-group
 

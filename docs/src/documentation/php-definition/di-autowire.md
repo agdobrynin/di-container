@@ -41,7 +41,11 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: ./_include/bind_arguments.md-->
 
-Объявление PHP класса в [файле конфигураций](../container-builder/configuration_files.md) с передачей конструктору класса неполного списка аргументов в методе `bindArguments()` может быть представлена через именованные аргументы.
+### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
+
+Необходимо через метод `bindArguments()` указать конструктору как внедрят зависимость в конкретный параметр:
+- в параметр `$lastDays` класса `\App\Services\ReportMaker`.
+- в параметр `$dir` класса `\App\Storages\ReportStorage`.
 
 ::: code-group
 
@@ -63,6 +67,9 @@ $container = (new DiContainerBuilder())
 $report = $container->get(ReportMaker::class);
 var_dump($report->lastDays);
 // int(10)
+
+var_dump($report->storage->dir);
+// string(9) "/var/data"
 ```
 <<< @/_code/config/report_services.php
 
