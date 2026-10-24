@@ -1,3 +1,6 @@
+---
+aside: false
+---
 # Объявление в файлах конфигураций { #overview }
 
 Для указания контейнеру каким образом нужно внедрять зависимости в PHP классах или вызываемых типах используется механизм объявления определений в [файлах конфигураций](../container-builder/configuration_files.md) или в [коллекциях конфигураций](../container-builder/methods/load-definitions-from-collection.md).

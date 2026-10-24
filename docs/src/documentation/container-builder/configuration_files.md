@@ -2,7 +2,9 @@
 
 ## Обзор { #overview }
 
-Для объявления определений контейнера можно использовать **файлы конфигураций**. Класс `\Kaspi\DiContainer\DiContainerBuilder` предоставляет методы [`load()`](methods/load-definitions-from-file.md#load) и [`loadOverride()`](methods/load-definitions-from-file.md#loadoverride) для объявления определений контейнера и их идентификаторов[^ContainerId] из файлов конфигураций.
+Для объявления определений контейнера можно использовать файлы конфигураций и [хелпер функции для объявления определений контейнера](../php-definition/index.md#helper-fn).
+
+Класс `\Kaspi\DiContainer\DiContainerBuilder` предоставляет методы [`load()`](methods/load-definitions-from-file.md#load) и [`loadOverride()`](methods/load-definitions-from-file.md#loadoverride) для объявления определений контейнера и их идентификаторов[^ContainerId] из файлов конфигураций.
 
 Файл **должен использовать ключевое слово `return`** и возвращать любой [`iterable`](https://www.php.net/manual/en/language.types.iterable.php) или `callable` тип.
 
