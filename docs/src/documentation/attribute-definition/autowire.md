@@ -177,51 +177,91 @@ var_dump($fooServiceWithBaz->adminEmail);
 
 :::
 
-## 🚧🚧🚧🚧
-
 ## Внедрение зависимостей через сеттер-методы { #setups }
 
-Параметр атрибута `\Kaspi\DiContainer\Attributes\Autowire::$setups` внедряет зависимости через сеттер-методы PHP класса.
+Параметр `$setups` атрибута `\Kaspi\DiContainer\Attributes\Autowire` объявляет внедрение зависимости через сеттер-методы PHP класса, используя атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](setup.md) и [`\Kaspi\DiContainer\Attributes\SetupImmutable`](setup-immutable.md).
 
-Атрибут `\Kaspi\DiContainer\Attributes\Setup` следует применять к **мутабельным сеттер-методам** [^SetterMethodMutable].
+Значение `null` в параметре `$setups` указывает контейнеру на необходимость внедрять зависимости через атрибут `Setup` и/или атрибут `SetupImmutable` указанные у методов класса.
 
-Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` следует применять к **иммутабельным сеттер-методам** [^SetterMethodImmutable].
+Значение `[]` (пустой массив) в параметре `$setups` указывает контейнеру не внедрять зависимости через сеттер-методы, даже если у методов класса указаны атрибуты `Setup` и `SetupImmutable`.
 
-Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$setups`:
-- `non-empty-array<none-empty-string, \Kaspi\DiContainer\Attributes\Setup | \Kaspi\DiContainer\Attributes\SetupImmutable>`
-- `non-empty-array<none-empty-string, list<\Kaspi\DiContainer\Attributes\Setup | \Kaspi\DiContainer\Attributes\SetupImmutable>>`
-- `empty-array`
-- `null`
+```php
+<?php
+declare(strict_types=1);
 
-Параметр `\Kaspi\DiContainer\Attributes\Autowire::$setups` определит как и какие сеттер-методы будут вызваны при конфигурировании PHP класса:
- - `array` (aka `non-empty-array`). Ключ массива – имя сеттер-метода, значение элемента атрибут [`Setup`](setup.md), [`SetupImmutable`](setup-immutable.md) или список из этих атрибутов.
-- `array` пустой массив (`empty-array` aka `[]`). Не применять никаких сеттер-методов, даже если у методов класса указаны атрибуты `Setup`, `SetupImmutable`.
-- `null` значение по умолчанию.  Внедрять зависимости через [атрибут `Setup`](setup.md) и/или [атрибут `SetupImmutable`](setup-immutable.md) указанные у методов класса.
+namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Setup;
+use Kaspi\DiContainer\Attributes\SetupImmutable;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as Parameter;
+
+#[Autowire(
+    setups: [//[!code highlight]
+        'bar' => new Setup(//[!code ++]
+            new Parameter('params.api_key')//[!code ++]
+       ),//[!code ++]
+
+        'baz' => new SetupImmutable(//[!code ++]
+            new DiGet(Baz::class)//[!code ++]
+        ),//[!code ++]
+    ]//[!code highlight]
+)]
+final class Foo
+{
+    // …
+    
+    public function bar(string $apiKey): void
+    {
+        // …
+    }
+    
+    public function baz(QuxInterface $qux): void
+    {
+        // …
+    }
+}
+```
 
 ## Теги { #tags }
 
-Теги с метаданными устанавливаются через параметр `\Kaspi\DiContainer\Attributes\Autowire::$tags`.
-Теги будут привязаны к определению контейнера с указанным [идентификатором](#container-id-multuple)
+Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\Autowire` устанавливает тег и метаданные для объявляемого PHP класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
 
-Типизация параметра `\Kaspi\DiContainer\Attributes\Autowire::$tags`:
-- `non-empty-list<\Kaspi\DiContainer\Attributes\Tag>`
-- `\Kaspi\DiContainer\Attributes\Tag`
-- `empty-list`
-- `null`
+Значение `null` в параметре `$tags` указывает контейнеру на необходимость установить тег из атрибута `Tag` указанного в объявляемом PHP классе.
 
-Значение переданное параметру `\Kaspi\DiContainer\Attributes\Autowire::$tags` определит как будет сконфигурированы теги:
- - `array` – не пустой массив. Конфигурировать теги из элементов массива с типом `\Kaspi\DiContainer\Attributes\Tag`.
-- `\Kaspi\DiContainer\Attributes\Tag` - конфигурировать один тег.
-- `array` пустой массив (`empty-array` aka `[]`). Не конфигурировать никакие теги.
-- `null` – значение по умолчанию. Конфигурировать теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md) примененные к PHP классу.
+Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру не устанавливать тег к объявляемому PHP классу, даже если у класса указан атрибут `Tag`.
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[Autowire(
+    tags: [//[!code highlight]
+        new Tag('tags.fuze'),//[!code ++]
+        new Tag('tags.interbal_service'),//[!code ++]
+    ]//[!code highlight]
+)]
+final class Foo
+{
+    // …
+}
+```
 
 ## Внедрения зависимости в параметр метода { #autowire-on-param }
 
-При внедрении зависимости через атрибут `Autowire` в параметр метода (функции),
-значение в `\Kaspi\DiContainer\Attributes\Autowire::$id` может быть указано как полное имя класса FQCN [^FQCN] или представлено как пустая строка.
+Объявить внедрение PHP класса в параметр метода или `callable` типа можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire`.
 
-Если в `\Kaspi\DiContainer\Attributes\Autowire::$id` будет пустая строка, то конфигуратор контейнера попытается сформировать значение на основе Type hints [^TypeHints] параметра.
+Значение в параметре `$id` атрибута `Autowire` может быть указано пустой строкой или строкой FQCN [^FQCN].
+
+Пустая строка в параметре `$id` атрибута `Autowire` интерпретируется контейнером как объявление внедрения PHP класса исходя из типа параметра[^TypeHints] для которого применяется атрибут. 
+
+🚧🚧🚧🚧
 
 ::: code-group
 
