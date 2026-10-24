@@ -115,127 +115,69 @@ var_dump($bar20->value);
 
 <!--@include: _include/to_arguments.md-->
 
-## 🚧🚧🚧🚧
+### Пример объявления аргументов конструктору { #example }
 
-### Передача аргументов конструктору { #example }
+Необходимо объявить PHP класс `\App\Services\FooService` с разными аргументами. 
 
-Объявление PHP класса через атрибуты:
+Для идентификатора `'App\Services\FooService'` в параметр `$qux` необходимо внедрять класс `\App\Services\BarService`, в параметр `$adminEmail` – `'manager@example.com'`. 
+
+Так как идентификатор контейнера должен быть уникальным в рамках контейнера, объявить PHP класс `\App\Services\FooService` через идентификатор контейнера `'services.foo_service.with_baz'`, в параметр `$qux` необходимо внедрять класс `\App\Services\BazService`, в параметр `$adminEmail` – `'admin@example.com'`.
 
 ::: code-group
 
-```php [FooService.php]
-// file: /app/src/Services/FooService.php
-namespace App\Services;
+```php
+<?php
+declare(strict_types=1);
 
-use Kaspi\DiContainer\Attributes\Autowire;
-use Kaspi\DiContainer\DiDefinition\{
-    DiDefinitionAutowire as DiAutowire,
-    DiDefinitionGet as DiGet,
-    DiDefinitionParameter as DiParameter
-};
-use App\Interfaces\QuxInterface;
+// file: /app/src/container_build.php // [!code highlight]
 
-#[Autowire(arguments: [
-    'qux' => new DiGet(Foo::class),
-    'adminEmail' => new DiParameter('adminEmail'),       
-])]
-#[Autowire(id: 'services.foo_service.with_bar', arguments: [
-    'qux' => new DiAutowire(Bar::class),
-    'adminEmail' => new DiParameter('adminEmail'),
-])]
-class FooService
-{
-    public function __construct(
-        public readonly Baz $baz,
-        public readonly QuxInterface $qux,
-        public readonly string $adminEmail
-    ) {}
-}
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{FooService, BarService, BazService, BatService};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->addParameters([
+        'emails.bar' => 'manager@example.com',//[!code highlight]
+        'emails.baz' => 'admin@example.com',//[!code highlight]
+    ])
+    ->build();
+
+$fooService = $container->get(FooService::class);//[!code warning]
+
+var_dump($fooService->bat instanceof BatService);
+// bool(true)
+
+var_dump($fooService->qux instanceof BarService);
+// bool(true)
+
+var_dump($fooService->adminEmail);
+// string(19) "manager@example.com"
+
+$fooServiceWithBaz = $container->get('services.foo_service.with_baz');//[!code warning]
+
+var_dump($fooServiceWithBaz->bat instanceof BatService);
+// bool(true)
+
+var_dump($fooServiceWithBaz->qux instanceof BazService);
+// bool(true)
+
+var_dump($fooServiceWithBaz->adminEmail);
+// string(16) "admin@example.com
 ```
 
-```php [QuxInterface.php]
-// file: /app/src/Interfaces/QuxInterface.php
-namespace App\Interfaces;
+<<< @/_code/attribute-definition/autowire/FooService.php
 
-interface QuxInterface {}
-```
+<<< @/_code/attribute-definition/autowire/BarService.php
 
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
+<<< @/_code/attribute-definition/autowire/BazService.php
 
-use App\Interfaces\QuxInterface;
-
-final class Foo implements QuxInterface
-{
-    // …
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Bar implements QuxInterface
-{
-    // …
-}
-```
-
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
+<<< @/_code/attribute-definition/autowire/BatService.php
 
 :::
 
-Параметры контейнера:
-
-```php
-// file: /app/config/parameters/params.php
-return [
-    'adminEmail' => 'admin@example.com',
-];
-```
-
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{FooService, Foo, Bar, Baz};
-
-$container = (new DiContainerBuilder())
-    ->loadParameters('/app/config/parameters/params.php')
-    ->import(namespace: 'App\\', src: '/app/src/')
-    ->build();
-
-var_dump($container->has(FooService::class));
-// (bool) true
-
-var_dump($container->has('services.foo_service.with_bar'));
-// (bool) true
-
-$fooService = $container->get(FooService::class);
-$fooServicesWithBar = $container->get('services.foo_service.with_bar');
-
-var_dump($fooService->qux instanceof Foo);
-// (bool) true
-var_dump($fooService->baz instanceof Baz);
-// (bool) true
-
-var_dump($fooServicesWithBar->qux instanceof Bar);
-// (bool) true
-var_dump($fooServicesWithBar->baz instanceof Baz);
-// (bool) true
-
-```
+## 🚧🚧🚧🚧
 
 ## Внедрение зависимостей через сеттер-методы { #setups }
 
