@@ -20,37 +20,66 @@
 ```
 
 Параметры:
-- `$definition` – php класс и метод фабрика.
+- `$definition` – FQCN[^FQCN] и имя метода.
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$arguments` – аргументы метода фабрики.
 
-Подробное описание в разделе документации [«Использование фабричных методов для внедрения зависимостей»](../07-factory.md).
+> [!TIP]
+> Изучите раздел документации [«Использование фабричных методов для внедрения зависимостей»](../07-factory.md).
 
 ## Пример использования фабрики { #example-di-factory }
 
-Использование не статического фабричного метода для внедрения зависимости.
+Необходимо внедрить зависимость через конструктор в параметр `$bar` PHP класса `\App\Services\Foo` используя фабрику `\App\Helpers\Configurator::barDoConfig()`.
 
-Объявление через атрибуты:
 
 ::: code-group
 
 ```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
 namespace App\Services;
 
+use Kaspi\DiContainer\Attributes\DiFactory;
 use App\Helpers\Configurator;
 
 final class Foo
 {
     public function __construct(
-        #[DiFactory([Configurator::class, 'barDoConfig'])]
+        #[DiFactory([Configurator::class, 'barDoConfig'])]//[!code ++]
         public readonly Bar $bar
     ) {}    
 }
 ```
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar, Baz};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->bar->baz instanceof Baz);
+// (bool) true
+```
 
 ```php [Configurator.php]
-// file: /app/src/Helpers/Configurator.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Helpers/Configurator.php // [!code highlight]
+
 namespace App\Helpers;
 
 use App\Services\Bar;
@@ -70,7 +99,11 @@ final class Configurator
 ```
 
 ```php [Bar.php]
-// file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php // [!code highlight]
+
 namespace App\Services;
 
 final class Bar
@@ -88,7 +121,11 @@ final class Bar
 ```
 
 ```php [Baz.php]
-// file: /app/src/Services/Baz.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php // [!code highlight]
+
 namespace App\Services;
 
 final class Baz
@@ -103,25 +140,6 @@ final class Baz
 ```
 
 :::
-
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz};
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
-    ->build();
-
-$foo = $container->get(Foo::class);
-
-var_dump($foo->bar instanceof Bar);
-// (bool) true
-
-var_dump($foo->bar->baz instanceof Baz);
-// (bool) true
-```
 
 
 <!--@include: ../_include/term_notes.md-->
