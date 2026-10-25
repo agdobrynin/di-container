@@ -25,6 +25,23 @@
 
 ::: code-group
 
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\AutowireExclude;
+
+#[AutowireExclude]// [!code ++]
+final class Foo
+{
+    // …
+}
+```
+
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -45,23 +62,6 @@ var_dump($container->has(Foo::class));
 
 var_dump($container->has(Bar::class));
 // (bool) true
-```
-
-```php [Foo.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Foo.php // [!code highlight]
-
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\AutowireExclude;
-
-#[AutowireExclude]// [!code ++]
-final class Foo
-{
-    // …
-}
 ```
 
 ```php [Bar.php]

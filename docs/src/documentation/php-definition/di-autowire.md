@@ -24,9 +24,15 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 ): Args & Setup & Tag & Resetter
 ```
 Параметры:
-- `$definition` – FQCN [^FQCN] объявляемого PHP класса. Можно использовать безопасное объявление через магическую константу `::class` - `MyClass::class`
+- `$definition` – FQCN [^FQCN] объявляемого PHP класса.
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
-- `$isLazy` – «ленивый объект». Подробнее в разделе – [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
+- `$isLazy` – объявить «ленивый объект».
+
+> [!TIP]
+> Изучите разделы документации:
+> - [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
+> - [Сброс состояния объектов](../12-object-resetters.md).
+
 
 Функция `diAutowire()` возвращает объект предоставляющий методы:
  - `bindArguments()` – аргументы конструктора PHP класса.
