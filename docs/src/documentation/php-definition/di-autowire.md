@@ -55,6 +55,8 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ::: code-group
 
+<<< @/_code/config/report_services.php
+
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -77,7 +79,6 @@ var_dump($report->lastDays);
 var_dump($report->storage->dir);
 // string(9) "/var/data"
 ```
-<<< @/_code/config/report_services.php
 
 <<< @/_code/src/Services/ReportMaker.php
 
@@ -113,26 +114,6 @@ DiDefinitionSetupAutowireInterface::setup(
 
 ::: code-group
 
-```php [container_build.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container_build.php // [!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Storages\ReportsStorage;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/storage_service.php')//[!code highlight]
-    ->build();
-
-$storage = $container->get(ReportsStorage::class);
-var_dump($storage->getPermission());
-// int(384)
-```
-
 ```php [storage_service.php]
 <?php
 declare(strict_types=1);
@@ -153,6 +134,26 @@ return static function (): Generator {
             [0600]//[!code ++]
         );//[!code ++]
 };
+```
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Storages\ReportsStorage;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/storage_service.php')//[!code highlight]
+    ->build();
+
+$storage = $container->get(ReportsStorage::class);
+var_dump($storage->getPermission());
+// int(384)
 ```
 
 ```php [ReportStorage.php]

@@ -33,9 +33,27 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 ## Идентификатор контейнера { #container-id }
 
-Чтобы обеспечить доступность «фабрики» через метод контейнера `get()` и `has()` необходимо указать в [файле конфигураций](../container-builder/configuration_files.md) соответствующий идентификатор контейнера[^ContainerId].
+Чтобы обеспечить доступность «фабрики» через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций соответствующий идентификатор контейнера[^ContainerId].
 
 ::: code-group
+
+```php [factories.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/factories.php// [!code highlight]
+
+use App\Services\Foo;
+
+use function Kaspi\DiContainer\diFactory;
+
+return static function(): Generator {
+    yield 'services.foo_factory' => diFactory([Foo::class, 'createValue'])//[!code ++]
+        ->bindArguments(//[!code ++]
+           prefixValue: 'Lorem ipsum'//[!code ++]
+        );//[!code ++]
+};
+```
 
 ```php [container.php]
 <?php
@@ -56,24 +74,6 @@ $result = $container->get('services.foo_factory');// [!code highlight]
 
 var_dump($result);
 // string(26) "Lorem ipsum dolor sit amet"
-```
-
-```php [factories.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/factories.php// [!code highlight]
-
-use App\Services\Foo;
-
-use function Kaspi\DiContainer\diFactory;
-
-return static function(): Generator {
-    yield 'services.foo_factory' => diFactory([Foo::class, 'createValue'])//[!code ++]
-        ->bindArguments(//[!code ++]
-           prefixValue: 'Lorem ipsum'//[!code ++]
-        );//[!code ++]
-};
 ```
 
 ```php [Foo.php]

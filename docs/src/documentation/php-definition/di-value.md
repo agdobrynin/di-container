@@ -28,9 +28,22 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 ## Идентификатор контейнера { #container-id }
 
-Чтобы обеспечить доступность объявляемого определения через метод контейнера `get()` и `has()` необходимо указать в [файле конфигураций](../container-builder/configuration_files.md) идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
+Чтобы обеспечить доступность объявляемого определения через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
 
 ::: code-group
+
+```php [emails.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/emails.php // [!code highlight]
+
+use function Kaspi\DiContainer\diValue;
+
+return static function(): Generator {
+     yield 'admin.email.tasks' => diValue('runner@company.inc'); // [!code ++]
+};
+```
 
 ```php [container.php]
 <?php
@@ -51,19 +64,6 @@ $email = $container->get('admin.email.tasks');//[!code highlight]
 
 var_dump($email);
 // string(18) "runner@company.inc"
-```
-
-```php [emails.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/emails.php // [!code highlight]
-
-use function Kaspi\DiContainer\diValue;
-
-return static function(): Generator {
-     yield 'admin.email.tasks' => diValue('runner@company.inc'); // [!code ++]
-};
 ```
 
 ::: 

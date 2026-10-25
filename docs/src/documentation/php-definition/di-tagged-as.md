@@ -38,7 +38,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-> [!NOTE]
+> [!TIP]
 > Изучите раздел документации «[Настройка тегов в файлах конфигураций](../tags/php-definition-tag.md)».
 > 
 > Для подробного ознакомления с механизмом формирования **приоритетов элементов коллекции, идентификаторов элементов коллекции** изучите раздел документации «[Работа с тегами в контейнере](../tags/index.md)».

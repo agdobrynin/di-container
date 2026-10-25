@@ -47,9 +47,27 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 ## Идентификатор контейнера { #container-id }
 
-Чтобы обеспечить доступность «ленивого» определения через метод контейнера `get()` и `has()` необходимо указать в [файле конфигураций](../container-builder/configuration_files.md) идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
+Чтобы обеспечить доступность «ленивого» определения через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
 
 ::: code-group
+
+```php [lazy_entries.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/lazy_entries.php // [!code highlight]
+
+use App\Services\Bar;
+
+use function Kaspi\DiContainer\diProxyClosure;
+
+return static function(): Generator {
+    yield 'services.bar_lazy' => diProxyClosure(// [!code ++]
+        Bar::class,// [!code ++]
+        isSingleton: true// [!code ++]
+    );// [!code ++]
+};
+```
 
 ```php [container.php]
 <?php
@@ -75,24 +93,6 @@ var_dump(($barLazy)() instanceof Bar);
 // bool(true)
 ```
 
-```php [lazy_entries.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/lazy_entries.php // [!code highlight]
-
-use App\Services\Bar;
-
-use function Kaspi\DiContainer\diProxyClosure;
-
-return static function(): Generator {
-    yield 'services.bar_lazy' => diProxyClosure(// [!code ++]
-        Bar::class,// [!code ++]
-        isSingleton: true// [!code ++]
-    );// [!code ++]
-};
-```
-
 <<< @/_code/php-definition/di-proxy-closure/Bar.php
 
 :::
@@ -102,6 +102,24 @@ return static function(): Generator {
 PHP класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления. Необходимо внедрить `\App\Services\Bar` в конструктор класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP класс `\Closure`.
 
 ::: code-group 
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
+use App\Services\{Foo, Bar};
+
+use function Kaspi\DiContainer\{diAutowire, diProxyClosure};
+
+return static function(): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(// [!code ++]
+            barProxy: diProxyClosure(Bar::class)// [!code ++]
+        );// [!code ++]
+};
+```
 
 ```php [container.php]
 <?php
@@ -122,24 +140,6 @@ $foo = $container->get(Foo::class);
 
 var_dump($foo->getBar() instanceof Bar);
 // bool(true)
-```
-
-```php [services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/services.php // [!code highlight]
-
-use App\Services\{Foo, Bar};
-
-use function Kaspi\DiContainer\diProxyClosure;
-
-return static function(): Generator {
-    yield \Kaspi\DiContainer\diAutowire(Foo::class)
-        ->bindArguments(// [!code ++]
-            barProxy: diProxyClosure(Bar::class)// [!code ++]
-        );// [!code ++]
-};
 ```
 
 <<< @/_code/php-definition/di-proxy-closure/Foo.php

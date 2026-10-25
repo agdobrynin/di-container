@@ -26,28 +26,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
 ::: code-group
 
-```php [container.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container.php// [!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')// [!code highlight]
-    ->load('/app/config/custom_services.php')// [!code highlight]
-    ->build();
-
-$foo = $container->get(Foo::class);// [!code highlight]
-
-var_dump($foo->bar->getValues());
-// string(7) "One Two"
-```
-
 ```php [services.php]
 <?php
 declare(strict_types=1);
@@ -85,6 +63,28 @@ return static function (): Generator {
     
     // …
 };
+```
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php// [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')// [!code highlight]
+    ->load('/app/config/custom_services.php')// [!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);// [!code highlight]
+
+var_dump($foo->bar->getValues());
+// string(7) "One Two"
 ```
 
 ```php [Foo.php]

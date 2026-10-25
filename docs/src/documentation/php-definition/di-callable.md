@@ -41,9 +41,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ::: code-group
 
-<<< @/_code/php-definition/di-callable/container.php
-
 <<< @/_code/php-definition/di-callable/callable_entries.php
+
+<<< @/_code/php-definition/di-callable/container.php
 
 <<< @/_code/php-definition/di-callable/Baz.php
 
@@ -61,9 +61,27 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ## Идентификатор контейнера { #container-id }
 
-Чтобы обеспечить доступность вызываемого типа через метод контейнера `get()` и `has()` необходимо указать в [файле конфигураций](../container-builder/configuration_files.md) соответствующий идентификатор контейнера[^ContainerId].
+Чтобы обеспечить доступность вызываемого типа через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций соответствующий идентификатор контейнера[^ContainerId].
 
 ::: code-group
+
+```php [callable_services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/callable_services.php// [!code highlight]
+
+use App\Services\Baz;
+
+use function Kaspi\DiContainer\diCallable;
+
+return static function(): Generator {
+    yield 'baz.factory_method' => diCallable([Baz::class, 'factoryMethod'])//[!code ++]
+        ->bindArguments(//[!code ++]
+            name: 'Lorem ipsum'//[!code ++]
+    );//[!code ++]
+};
+```
 
 ```php [container.php]
 <?php
@@ -85,24 +103,6 @@ $foo = new Foo($result);
 
 var_dump($foo->value);
 // string(26) "Lorem ipsum dolor sit amet"
-```
-
-```php [callable_services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/callable_services.php// [!code highlight]
-
-use App\Services\Baz;
-
-use function Kaspi\DiContainer\diCallable;
-
-return static function(): Generator {
-    yield 'baz.factory_method' => diCallable([Baz::class, 'factoryMethod'])//[!code ++]
-        ->bindArguments(//[!code ++]
-            name: 'Lorem ipsum'//[!code ++]
-    );//[!code ++]
-};
 ```
 
 <<< @/_code/php-definition/di-callable/Baz.php
