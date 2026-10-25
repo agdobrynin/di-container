@@ -53,6 +53,7 @@ final class Foo
     ) {}    
 }
 ```
+
 ```php [container_build.php]
 <?php
 declare(strict_types=1);

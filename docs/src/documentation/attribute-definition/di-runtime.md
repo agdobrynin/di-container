@@ -1,3 +1,6 @@
+---
+outline: [2, 3]
+---
 # DiRuntime
 
 ## Обзор { #overview }
@@ -24,85 +27,108 @@
 - `$containerIdentifierOrClass` – идентификатора контейнера[^ContainerId] для «runtime definition».
 - `$message` – сообщение при возникновении ошибки.
 - `$tags` – тег с метаданными.
-- `$resetter` – конфигурация для [сброса состояния объекта](../12-object-resetters.md).
+- `$resetter` – конфигурация для сброса состояния объекта.
+
+> [!TIP]
+> Изучите разделы документации:
+> - [Сброс состояния объектов](../12-object-resetters.md).
+
 
 ## Идентификатор контейнера { #container-id }
 
-Объявление PHP класса в контейнере через атрибут у которого значение в параметре `$containerIdentifier` пустая строка интерпретируется контейнером как FQCN[^FQCN]
+При объявлении PHP класса через атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` пустая строка в параметре `$containerIdentifier` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP класса.
 
-```php
-// file: /app/src/Services/FooService.php
+PHP класс объявленный ниже будет доступен через идентификатор контейнера `'App\Services\FooServices'`:
+
+::: code-group
+
+```php [FooService.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/FooService.php // [!code highlight]
+
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\DiRuntime;
+use Kaspi\DiContainer\Attributes\DiRuntime;//[!code ++]
 
-#[DiRuntime]
-/**
- * 🚩 Эквивалентно объявлению
- * #[DiRuntime(\App\Services\FooService::class)] 
- */
+#[DiRuntime]//[!code ++]
 final class FooService
 {
     // …
 }
 ```
 
-### Множественное объявление PHP класса { #container-id-multuple }
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-Атрибут может объявлять один и тот же PHP класс в контейнере, но параметр `$containerIdentifier` должен быть уникальным для каждого атрибута.
+// file: /app/src/container_build.php // [!code highlight]
 
-```php
-// /app/src/Services/FooService.php
-namespace App\Services;
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-use Kaspi\DiContainer\Attributes\DiRuntime;
-
-#[DiRuntime]
-#[DiRuntime('services.foo_service')]
-final class FooService
-{
-    // …
-}
-```
-
-Доступность PHP класса по идентификаторам контейнера:
-
-```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\FooService;
 
 $container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src/')
-    ->build()
-;
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
 
-$fooService = new FooService();
-
-$container->set(FooService::class, $fooService);
-$container->set('services.foo_service', $fooService);
-
-var_dump($container->has(FooService::class));
+$container->has(FooService::class);// [!code highlight]
 // (bool) true
+```
 
-var_dump($container->has('services.foo_service'));
-// (bool) true
+:::
+
+### Объявление с несколькими идентификаторами { #container-id-multuple }
+
+Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` может объявлять один и тот же PHP класс в контейнере с разными идентификаторами[^ContainerId].
+
+```php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/FooService.php // [!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\DiRuntime;//[!code ++]
+
+#[DiRuntime]//[!code ++]
+#[DiRuntime('services.foo_service')]//[!code ++]
+final class FooService
+{
+    // …
+}
 ```
 
 ## Теги { #tags }
 
-Теги с метаданными устанавливаются через параметр `\Kaspi\DiContainer\Attributes\DiRuntime::$tags`.
-Теги будут привязаны к определению контейнера с указанным [идентификатором](#container-id-multuple).
+Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\DiRuntime` устанавливает тег и метаданные для объявляемого PHP класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
 
-Типизация параметра `\Kaspi\DiContainer\Attributes\DiRuntime::$tags`:
-- `non-empty-list<\Kaspi\DiContainer\Attributes\Tag>`
-- `\Kaspi\DiContainer\Attributes\Tag`
-- `empty-list`
-- `null`
+Значение `null` в параметре `$tags` указывает контейнеру на необходимость **установить тег через атрибут `Tag` указанный в объявляемом PHP классе**.
 
-Значение переданное параметру `\Kaspi\DiContainer\Attributes\DiRuntime::$tags` определит как будет сконфигурированы теги:
-- `array` – не пустой массив. Конфигурировать теги из элементов массива с типом `\Kaspi\DiContainer\Attributes\Tag`.
-- `\Kaspi\DiContainer\Attributes\Tag` - конфигурировать один тег.
-- `array` пустой массив (`empty-array` aka `[]`). Не конфигурировать никакие теги.
-- `null` – значение по умолчанию. Конфигурировать теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md) примененные к PHP классу.
+Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP классу**, даже если у класса указан атрибут `Tag`.
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\DiRuntime;
+use Kaspi\DiContainer\Attributes\Tag;
+
+#[DiRuntime(
+    tags: [//[!code highlight]
+        new Tag('tags.fuze'),//[!code ++]
+        new Tag('tags.runtime_service'),//[!code ++]
+    ]//[!code highlight]
+)]
+final class FooService
+{
+    // …
+}
+```
 
 <!--@include: ../_include/term_notes.md-->
