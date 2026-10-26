@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Хелпер функция `diProxyClosure()` внедряет зависимость как «ленивую» через встроенный PHP класс `\Closure`,
+Хелпер функция `diProxyClosure()` внедряет «ленивую» зависимость через встроенный PHP класс `\Closure`,
 откладывая инициализацию зависимости до момента фактического его использования.
 
 Такой приём объявления зависимости пригодится для внедрения «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмкий вычислений.
@@ -33,7 +33,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 ```
 
 Параметры:
-- `$containerIdentifier` – FQCN [^FQCN], или идентификатор контейнера [^ContainerId].
+- `$containerIdentifier` – идентификатор контейнера [^ContainerId].
 - `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 
 Функция `diProxyClosure()` возвращает объект предоставляющий методы:

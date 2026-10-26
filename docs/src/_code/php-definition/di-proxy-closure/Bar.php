@@ -7,6 +7,8 @@ namespace App\Services;
 
 final class Bar
 {
-    // Класс требующий длительного времени инициализации
-    // и ресурсоёмкий вычислений
+    /*
+     * A class that requires a long initialization time
+     * and involves resource-intensive computations.
+     */
 }
