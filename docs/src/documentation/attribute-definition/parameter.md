@@ -1,3 +1,6 @@
+---
+aside: false
+---
 # Parameter
 
 ## Обзор { #overview }
