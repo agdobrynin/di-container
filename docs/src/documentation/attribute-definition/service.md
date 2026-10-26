@@ -17,17 +17,63 @@
 ```
 
 Параметры:
-- `$id` – FQCN [^FQCN] PHP класса реализующего интерфейс или идентификатор контейнера [^ContainerId].
+- `$id` – идентификатор контейнера [^ContainerId] реализующий интерфейс.
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 
 ## Пример конфигурирования интерфейса { #example-interface-service }
 
-Объявление через атрибуты:
-
 ::: code-group
 
+
+```php [QuxInterface.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/QuxInterface.php // [!code highlight]
+
+namespace App\Interfaces;
+
+use Kaspi\DiContainer\Attributes\Service;//[!code ++]
+use App\Services\Bar;
+
+#[Service(Bar::class)]//[!code ++]
+interface QuxInterface
+{
+    // …
+} 
+```
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar};
+use App\Interfaces\QuxInterface;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->qux instanceof QuxInterface);
+// bool(true)
+
+var_dump($foo->qux instanceof Bar);
+// bool(true)
+```
+
 ```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
 namespace App\Services;
 
 use App\Interfaces\QuxInterface;
@@ -38,23 +84,12 @@ final class Foo
 }
 ```
 
-```php [QuxInterface.php]
-// file: /app/src/Interfaces/QuxInterface.php
-namespace App\Interfaces;
-
-use Kaspi\DiContainer\Attributes\Service;
-use App\Services\Bar;
-
-// класс реализующий данный интерфейс.
-#[Service(Bar::class)]
-interface QuxInterface
-{
-    // …
-} 
-```
-
 ```php [Bar.php]
-// file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
 namespace App\Services;
 
 use App\Interfaces\QuxInterface;
@@ -67,78 +102,26 @@ final class Bar implements QuxInterface
 
 :::
 
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar};
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
-    ->build();
-
-var_dump($container->get(Foo::class)->qux instanceof Bar);
-// (bool) true
-```
-
-Конфигурация интерфейса `\App\Interfaces\QuxInterface` является глобальной. При внедрении зависимости с типом `\App\Interfaces\QuxInterface`
-контейнер всегда будет внедрять реализацию интерфейса указанную в атрибуте `\Kaspi\DiContainer\Attributes\Service::$id` – `\App\Services\Bar`.
+Объявление реализации интерфейса `\App\Interfaces\QuxInterface` PHP классом `\App\Services\Bar` является глобальным. При внедрении зависимости с типом `\App\Interfaces\QuxInterface` контейнер всегда будет внедрять реализацию указанную в параметре `$id` атрибута `\Kaspi\DiContainer\Attributes\Service`.
 
 ## Конфигурация интерфейсов сторонних производителей { #inject-vendor-interface }
 
-При внедрении по интерфейсу от сторонних производителей, например из других PHP пакетов, нужно использовать [файлы конфигурации](../container-builder/index.md#load-definitions-from-file) или [конфигурацию через коллекцию](../container-builder/index.md#load-definitions-from-collection) при сборке контейнера.
-
-Пример конфигурирования для внедрения по интерфейсу доступен в разделе «[Рецепты](../../cookbook/resolve-vendor-interface.md)».
-
-## Ссылка на идентификатор контейнера { #service-container-id }
-
-Параметр `\Kaspi\DiContainer\Attributes\Service::$id` может быть ссылкой идентификатор контейнера.
-
-Объявление через атрибуты:
-
-::: code-group
-
-```php [BazInterface.php]
-// file: /app/src/Interfaces/BazInterface.php
-namespace App\Interfaces;
-
-use Kaspi\DiContainer\Attributes\Service;
-
-#[Service('services.foo')]
-interface BazInterface
-{
-    // …
-} 
-```
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-use App\Interfaces\BazInterface;
-use Kaspi\DiContainer\Attributes\Autowire;
-
-#[Autowire(id: 'services.foo')]
-final class Foo implements BazInterface
-{
-    // …
-}
-```
-
-:::
-
-Контейнер зависимостей:
+При внедрении через интерфейс от сторонних производителей, например из других PHP пакетов, нужно объявлять реализацию интерфейса через [файлы конфигураций](../container-builder/methods/load-definitions-from-file.md) или через [коллекцию](../container-builder/methods/load-definitions-from-collection.md) при сборке контейнера.
 
 ```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
+<?php
+declare(strict_types=1);
 
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
-    ->build();
+use Psr\Log\LoggerInterface;
+use App\Services\MyLogger;
 
-var_dump($container->get('services.foo') instanceof Foo);
-// (bool) true
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    LoggerInterface::class => diAutowire(MyLogger::class);
+};
 ```
+
+Пример объявления внедрения по интерфейсу стороннего производителя доступен в разделе «[Рецепты](../../cookbook/resolve-vendor-interface.md)».
 
 <!--@include: ../_include/term_notes.md-->
