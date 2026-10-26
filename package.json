@@ -1,7 +1,10 @@
 {
+  "name": "di-container-documentation",
+  "description": "Documentation of kaspi/di-container - Dependency Injection Container for PHP",
+  "version": "4.7.0",
   "devDependencies": {
     "vitepress": "^2.0.0-alpha.20",
-    "vitepress-plugin-group-icons": "^1.7.7"
+    "vitepress-plugin-group-icons": "^1.8.1"
   },
   "scripts": {
     "docs:dev-host": "vitepress dev docs --host",

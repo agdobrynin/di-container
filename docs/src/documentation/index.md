@@ -12,6 +12,9 @@ outline: [2, 4]
 Контейнер полностью совместим с рекомендациями [PSR-11](https://www.php-fig.org/psr/psr-11/):
 
 ```php
+<?php
+declare(strict_types=1);
+
 namespace Psr\Container;
 
 interface ContainerInterface
@@ -27,6 +30,9 @@ interface ContainerInterface
 который предоставляет метод `call()` для вызываемых типов или значений которые могут быть преобразованы контейнером к `callable` типу.
 
 ```php
+<?php
+declare(strict_types=1);
+
 use App\Services\Foo;
 use Kaspi\DiContainer\DiContainerBuilder;
 
@@ -52,6 +58,9 @@ $container->call(
 для прямой установки объекта (инстанцированный класс) в уже сформированный контейнер зависимостей.
 
 ```php
+<?php
+declare(strict_types=1);
+
 use App\Services\Bar;
 
 $bar = new Bar(
@@ -73,10 +82,14 @@ $container->set($bar::class, $bar);
 
 Для свойства PHP класса:
 ```php
+<?php
+declare(strict_types=1);
+
 use Kaspi\DiContainer\DiContainerBuilder;
 use Psr\Container\ContainerInterface;
 
-class Foo {
+class Foo
+{
     public function __construct(
         public readonly ContainerInterface $container
     ) {}
