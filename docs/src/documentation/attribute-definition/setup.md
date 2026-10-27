@@ -21,8 +21,6 @@
 
 ## Аргументы сеттер-метода { #arguments }
 
-Параметр `$argument` передает аргументы сеттер-методу.
-
 <!--@include: _include/setter-method-args.md-->
 
 ## Приоритет { #priority }
