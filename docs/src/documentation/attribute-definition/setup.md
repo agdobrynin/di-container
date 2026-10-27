@@ -27,8 +27,6 @@
 
 ## Приоритет { #priority }
 
-Порядок вызова сеттер-метода будет определен порядком применения атрибута `\Kaspi\DiContainer\Attributes\Setup` к методу PHP-класса.
-
-При необходимости можно изменить порядок вызова методов настройки класса [через атрибут `Kaspi\DiContainer\Attributes\SetupPriority`](setup-priority.md).
+<!--@include: _include/setter-method-priority.md-->
 
 <!--@include: ../_include/term_notes.md-->
