@@ -24,9 +24,9 @@ aside: false
 
 Параметры:
 - `$name` – имя тега.
-- `$options` – [метаданные тега](../tags/tag-metadata.md).
-- `$priority` – [приоритет тега](../tags/collection-priority/index.md) в коллекции.
-- `$priorityMethod` – «[метод приоритета](../tags/collection-priority/index.md)».
+- `$options` – метаданные тега.
+- `$priority` – приоритет тега.
+- `$priorityMethod` – «метод приоритета».
 
 > [!TIP]
 > Более подробное описание в разделе [«Работа с тегами в контейнере»](../tags/index.md).
