@@ -10,93 +10,62 @@
 
 ## Пример использования хелпер функции { #example-inject-by-helper-fn-di-tagged }
 
-## 🚧🚧🚧
+Объявить внедрение коллекции отмеченных тегом `'tags.lite-rules'` в параметр конструктора `$rules` класса `\App\Services\RuleCollection` через хелпер функцию `diTaggedAs()` в [файле конфигураций](../container-builder/configuration_files.md).
 
-Необходимо внедрить в параметр `\App\Services\RuleCollection::$rules` «ленивую коллекцию» из PHP классов отмеченных тегом `'tags.lite-rules'`.
+Элементы коллекции должны быть отсортированы в следующем порядке:
+- `App\Rules\RuleC`
+- `App\Rules\RuleA`
 
-PHP классы:
+[Для сортировки](collection-priority/index.md) элементов коллекции использовать параметр `$priority` метода `bindTag()`.
 
 ::: code-group
 
-```php [RuleCollection.php]
-// file: /app/src/Services/RuleCollection.php
-namespace App\Services;
+```php [services.php]
+<?php
+declare(strict_types=1);
 
-final class RuleCollection
-{
-    public function __construct(public readonly iterable $rules) {}
-}
-```
+// file: /app/config/services.php //[!code highlight]
 
-```php [RuleA.php]
-// file: /app/src/Rules/RuleA.php
-namespace App\Rules;
-
-final class RuleA
-{
-    // …
-}
-```
-
-```php [RuleB.php]
-// file: /app/src/Rules/RuleB.php
-namespace App\Rules;
-
-final class RuleB
-{
-    // …
-}
-```
-
-```php [RuleC.php]
-// file: /app/src/Rules/RuleC.php
-namespace App\Rules;
-
-final class RuleC
-{
-    // …
-}
-```
-
-:::
-
-Конфигурирование:
-
-```php
-// file: /app/config/services.php
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-use Generator;
 use App\Services\RuleCollection;
 use App\Rules\{RuleA, RuleB, RuleC};
+
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
 
     yield diAutowire(RuleCollection::class)
         ->bindArguments(
-            rules: diTaggedAs('tags.lite-rules')// [!code highlight]
+            rules: diTaggedAs('tags.lite-rules')// [!code ++]
         );
 
     yield diAutowire(RuleA::class)
-        ->bindTag('tags.lite-rules');// [!code highlight]
+        ->bindTag('tags.lite-rules');// [!code ++]
 
     yield diAutowire(RuleB::class)
-        ->bindTag('tags.other-rulers');// [!code warning]
+        ->bindTag('tags.other-rulers');//[!code highlight]
 
     yield diAutowire(RuleC::class)
-        ->bindTag('tags.lite-rules', priority: 100);// [!code highlight]
+        ->bindTag(// [!code ++]
+            'tags.lite-rules',// [!code ++]
+            priority: 100// [!code ++]
+        );// [!code ++]
 };
 ```
 
-Контейнер зависимостей:
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-```php
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\RuleCollection;
 
 $container = (new DiContainerBuilder())
     ->load('/app/config/services.php')
-    ->build()
-;
+    ->build();
 
 $ruleCollection = $container->get(RuleCollection::class);
 
@@ -104,16 +73,38 @@ foreach ($ruleCollection->rules as $rule) {
     var_dump($rule::class);
 }
 
-// вывод консоли:
+// console output:
 // string (15) "App\Rules\RuleC"
 // string (15) "App\Rules\RuleA"
 ```
 
-Свойство `\App\Services\RuleCollection::$rules` содержит коллекцию классов отсортированную по значению в параметре `$priority` метода `bindTag()`.
+```php [RuleCollection.php]
+<?php
+
+declare(strict_types=1);
+
+// file: /app/src/Services/RuleCollection.php // [!code highlight]
+
+namespace App\Services;
+
+final class RuleCollection
+{
+    public function __construct(public readonly iterable $rules) {}
+}
+```
+<<< @/_code/src/Rules/RuleA.php
+
+<<< @/_code/src/Rules/RuleB.php
+
+<<< @/_code/src/Rules/RuleC.php
+
+:::
 
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как не отмечен тегом `'tags.lite-rules'`.
 
 ## Внедрение зависимости в параметр с типом `array` { #inject-by-di-tagged-array-param }
+
+## 🚧🚧🚧
 
 При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно передать значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
