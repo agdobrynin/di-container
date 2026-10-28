@@ -11,7 +11,7 @@ final class Configurator
 {
     public function __construct(public readonly Bar $bar) {}
 
-    public function quxDoConfig(): Qux
+    public function doConfigQux(): Qux
     {
         $calculatedValue = $this->bar->calculateSomething();
 

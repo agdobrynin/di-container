@@ -59,7 +59,7 @@ namespace App\Services;
 use Kaspi\DiContainer\Attributes\DiFactory;//[!code ++]
 use App\Helpers\Configurator;
 
-#[DiFactory([Configurator::class, 'quxDoConfig'])]//[!code ++]
+#[DiFactory([Configurator::class, 'doConfigQux'])]//[!code ++]
 final class Qux
 {
     public function __construct(public readonly string $value) {}
@@ -121,7 +121,7 @@ use App\Helpers\Configurator;
 final class Foo
 {
     public function __construct(
-        #[DiFactory([Configurator::class, 'quxDoConfig'])]//[!code ++]
+        #[DiFactory([Configurator::class, 'doConfigQux'])]//[!code ++]
         public readonly Qux $qux
     ) {}    
 }
