@@ -2,9 +2,9 @@
 
 ## Обзор { #overview }
 
-Для указания тегов и метаданных используйте метод `bindTag()` [^BindTag], описанный интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+Метод `bindTag()`[^BindTag], описанный интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`, объявляет тег и метаданные.
 
-[Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом.
+[Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом с одинаковым именем.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
