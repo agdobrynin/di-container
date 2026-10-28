@@ -102,11 +102,11 @@ final class RuleCollection
 
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как не отмечен тегом `'tags.lite-rules'`.
 
-## Внедрение зависимости в параметр с типом `array` { #inject-by-di-tagged-array-param }
+## Внедрение зависимости в параметр с типом array { #inject-by-di-tagged-array-param }
+
+При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
 ## 🚧🚧🚧
-
-При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно передать значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
 :::code-group
 
