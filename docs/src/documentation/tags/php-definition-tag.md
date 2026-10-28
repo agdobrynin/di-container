@@ -16,7 +16,7 @@
 - `App\Rules\RuleC`
 - `App\Rules\RuleA`
 
-[Для сортировки](collection-priority/index.md) элементов коллекции использовать параметр `$priority` метода `bindTag()`.
+[Для сортировки](collection-priority/priority-by-tag.md) элементов коллекции использовать параметр `$priority` метода `bindTag()`.
 
 ::: code-group
 
