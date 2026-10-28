@@ -10,6 +10,8 @@
 
 ## Пример использования хелпер функции { #example-inject-by-helper-fn-di-tagged }
 
+## 🚧🚧🚧
+
 Необходимо внедрить в параметр `\App\Services\RuleCollection::$rules` «ленивую коллекцию» из PHP классов отмеченных тегом `'tags.lite-rules'`.
 
 PHP классы:
