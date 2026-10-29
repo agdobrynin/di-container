@@ -88,6 +88,13 @@ foreach ($validator->rules as $rule) {
 // string (22) "App\ValidateRules\RuleA"
 // string (22) "App\ValidateRules\RuleC"
 ```
+<<< @/_code/src/Services/FooValidator.php
+
+<<< @/_code/src/ValidateRules/RuleA.php
+
+<<< @/_code/src/ValidateRules/RuleB.php
+
+<<< @/_code/src/ValidateRules/RuleC.php
 
 ::: 
 
@@ -98,6 +105,47 @@ foreach ($validator->rules as $rule) {
 
 ### Объявление через атрибуты { #as-php-attribute }
 
+В атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs` необходимо указать в параметре `$name` FQCN интерфейса – `\App\Interfaces\RuleInterface`.
+
+::: code-group
+
+<<< @/_code/src/Services/FooValidatorAttr.php
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\FooValidator;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
+    ->build();
+
+$validator = $container->get(FooValidator::class);
+
+foreach ($validator->rules as $rule) {
+    var_dump($rule::class);
+}
+
+// console output:
+// string (22) "App\ValidateRules\RuleA"
+// string (22) "App\ValidateRules\RuleC"
+```
+
+<<< @/_code/src/ValidateRules/RuleA.php
+
+<<< @/_code/src/ValidateRules/RuleB.php
+
+<<< @/_code/src/ValidateRules/RuleC.php
+
+::: 
+
+Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
 
 > [!NOTE]
 > Очерёдность элементов в коллекции не определена при такой конфигурации, и может быть любой.
@@ -106,7 +154,7 @@ foreach ($validator->rules as $rule) {
 
 При использовании FQCN[^FQCN] интерфейса в качестве имени тега внедряемая коллекция имеет неопределённую очередность элементов (сортировка элементов). 
 
-Для изменения очерёдности элементов такой коллекции можно воспользоваться параметром `$priorityDefaultMethod` хелпер функции `diTaggedAs()` или атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`.
+Для изменения очерёдности элементов такой коллекции можно воспользоваться параметром `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md), указав «метод-приоритета» по умолчанию.
 
 Необходимо добавить статический метод в нужный PHP класс, который будет возвращать приоритет в коллекции:
 
@@ -117,6 +165,8 @@ public static function getPriority(): int // [!code ++]
     return 100;// [!code ++]
 }// [!code ++]
 ```
+
+Если «метод-приоритета» по умолчанию не определен в PHP классе, который является элементом коллекции, то значение приорита будет значение `null`.
 
 Для хелпер функции `diTaggedAs()` указать метод-приоритета `getPriority` :
 
