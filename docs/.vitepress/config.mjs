@@ -132,7 +132,7 @@ export default defineConfig({
                     collapsed: true,
                     items: [
                       { text: 'Обзор', link: 'index.md' },
-                      { text: 'Настройка тегов в файлах конфигураций', link: 'php-definition-tag.md' },
+                      { text: 'Объявление тегов в файлах конфигураций', link: 'php-definition-tag.md' },
                       { text: 'Настройка тегов через php атрибут', link: 'attribute-definition-tag.md' },
                       { text: 'PHP интерфейс как имя тега', link: 'interface-as-tag.md' },
                       { text: 'Исключение элементов из коллекции', link: 'exclide-from-collection.md' },
