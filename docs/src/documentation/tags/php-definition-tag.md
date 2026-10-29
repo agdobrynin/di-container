@@ -69,7 +69,6 @@ foreach ($ruleCollection->rules as $rule) {
 
 ```php [RuleCollection.php]
 <?php
-
 declare(strict_types=1);
 
 // file: /app/src/Services/RuleCollection.php // [!code highlight]
@@ -89,13 +88,20 @@ final class RuleCollection
 
 :::
 
-Класс `\App\Rules\RuleB` не попадает в коллекцию так как не отмечен тегом `'tags.lite-rules'`.
+Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
 
 ## Внедрение зависимости в параметр с типом array { #inject-by-di-tagged-array-param }
 
 При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
-Параметр `$rules` конструктора класса `\App\Services\RuleCollection` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций.
+Параметр `$rules` конструктора класса `\App\Services\Rules` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций.
+
+Элементы коллекции должны быть отсортированы в следующем порядке:
+
+- `App\Rules\RuleC`
+- `App\Rules\RuleA`
+
+Для сортировки элементов коллекции использовать параметр `$priority` метода `bindTag()`.
 
 ::: code-group
 
@@ -151,7 +157,6 @@ foreach ($rules->rules as $rule) {
 
 ```php [Rules.php]
 <?php
-
 declare(strict_types=1);
 
 // file: /app/src/Services/Rules.php // [!code highlight]
@@ -173,147 +178,7 @@ final class Rules
 
 :::
 
-## Внедрение коллекции по интерфейсу { #example-inject-collection-as-interface }
-
-В качестве имени тега можно использовать FQCN[^FQCN] интерфейса.
-
-Объявить внедрение коллекции из PHP классов реализующих интерфейс `\App\Interfaces\QuxInterface`
-в параметр `$services` конструктора класса `\App\Services\Foo` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций.
-
-Для поиска PHP классов реализующих нужный интерфейс необходимо обеспечить их доступность в контейнере используя импорт PHP-классов – [метод `DiContainerBuilder::import()`](../container-builder/methods/import.md).
-
-::: code-group
-
-```php [tagged_services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/tagged_services.php //[!code highlight]
-
-use App\Services\Foo;
-use App\Interfaces\QuxInterface;
-
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-
-return static function (): Generator {
-
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            services: diTaggedAs(QuxInterface::class)//[!code ++]
-        );
-};
-```
-
-```php [container_build.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container_build.php // [!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/tagged_services.php')// [!code highlight]
-    ->import(namespae: 'App\\', src: '/app/src')// [!code highlight]
-    ->build();
-
-$foo = $container->get(Foo::class);
-
-foreach ($foo->services as $service) {
-    var_dump($service::class);
-}
-
-// console output:
-// string(16) "App\Services\Bar"
-// string(16) "App\Services\Bat"
-```
-
-```php [Foo.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Foo.php // [!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Foo
-{
-    /**
-     * @param iterable<QuxInterface> $services
-     */
-    public function __construct(
-        public readonly iterable $services
-    ) {}
-}
-```
-
-```php [QuxInterface.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Interfaces/QuxInterface.php // [!code highlight]
-namespace App\Interfaces;
-
-interface  QuxInterface
-{    
-    // …
-}
-```
-
-```php [Bar.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Bar.php // [!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Bar implements QuxInterface
-{
-    // …
-}
-```
-
-```php [Baz.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Baz.php // [!code highlight]
-
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
-```php [Bat.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Bat.php // [!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Bat implements QuxInterface
-{
-    // …
-}
-```
-
-:::
-
-PHP класс `\App\Services\Baz` не реализует интерфейс `\App\Interfaces\QuxInterface` поэтому его нет в коллекции `$foo->services`.
+Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
 
 ## Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
 
@@ -334,8 +199,8 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Bar::class)
         ->bindArguments(
-            srvGroup_1: diTaggedAs('tags.group_1'),
-            srvGroup_2: diTaggedAs('tags.group_2'),
+            srvGroup_1: diTaggedAs('tags.group_1'),//[!code ++]
+            srvGroup_2: diTaggedAs('tags.group_2'),//[!code ++]
         );
 };
 ```

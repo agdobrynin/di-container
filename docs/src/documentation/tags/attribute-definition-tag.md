@@ -2,82 +2,56 @@
 
 ## Обзор { #overview }
 
-[Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) устанавливает тег и метаданные для PHP класса.
+[Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) объявляет тег и метаданные для PHP класса.
 
-[Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом.
+[Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом с одинаковым именем.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
 ## Пример конфигурирования через атрибут { #example-inject-by-attribute-tagged-as }
 
-Необходимо внедрить в параметр `\App\Services\RuleCollection::$rules` «ленивую коллекцию» из PHP классов отмеченных тегом `'tags.lite-rules'`.
+Объявить внедрение коллекции из элементов контейнера отмеченных тегом `'tags.lite-rules'` в параметр `$rules` конструктора класса `\App\Services\RuleCollection` через атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`.
+
+Элементы коллекции должны быть отсортированы в следующем порядке:
+- `App\Rules\RuleC`
+- `App\Rules\RuleA`
+
+[Для сортировки](collection-priority/priority-by-tag.md) элементов коллекции использовать параметр `$priority` атрибута `\Kaspi\DiContainer\Attributes\Tag`.
 
 ::: code-group
+
 ```php [RuleCollection.php]
-// file: /app/src/Services/RuleCollection.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/RuleCollection.php // [!code highlight]
+
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\TaggedAs;//[!code ++]
 
 final class RuleCollection
 {
     public function __construct(
-        #[TaggedAs('tags.lite-rules')]
+        #[TaggedAs('tags.lite-rules')]//[!code ++]
         public readonly iterable $rules
     ) {}
 }
 ```
 
-```php [RuleA.php]
-// file: /app/src/Rules/RuleA.php
-namespace App\Rules;
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-use Kaspi\DiContainer\Attributes\Tag;
+// file: /app/src/container_build.php // [!code highlight]
 
-#[Tag('tags.lite-rules')]
-final class RuleA
-{
-    // …
-}
-```
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-```php [RuleB.php]
-// file: /app/src/Rules/RuleB.php
-namespace App\Rules;
-
-use Kaspi\DiContainer\Attributes\Tag;
-
-#[Tag('tags.other-rulers')]// [!code warning]
-final class RuleB
-{
-    // …
-}
-```
-
-```php [RuleC.php]
-// file: /app/src/Rules/RuleC.php
-namespace App\Rules;
-
-use Kaspi\DiContainer\Attributes\Tag;
-
-#[Tag('tags.lite-rules', priority: 100)]
-final class RuleC
-{
-    // …
-}
-```
-
-:::
-
-Контейнер зависимостей:
-
-```php
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\RuleCollection;
 
-
 $container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src/')
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
     ->build();
 
 $ruleCollection = $container->get(RuleCollection::class);
@@ -86,155 +60,112 @@ foreach ($ruleCollection->rules as $rule) {
     var_dump($rule::class);
 }
 
-// вывод консоли:
+// console output:
 // string (15) "App\Rules\RuleC"
 // string (15) "App\Rules\RuleA"
 ```
 
-Свойство `\App\Services\RuleCollection::$rules` содержит коллекцию классов отсортированную по значению в параметре `\Kaspi\DiContainer\Attributes\Tag::$priority`.
+<<< @/_code/src/Rules/RuleA_Attr.php [RuleA.php]
 
-Класс `\App\Rules\RuleB` не попадает в коллекцию, так как не отмечен тегом `'tags.lite-rules'`.
+<<< @/_code/src/Rules/RuleB_Attr.php [RuleB.php]
 
-## Внедрение зависимости в параметр с типом `array` { #inject-by-attribute-tagged-as-array-param }
-
-При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно передать значение `false` для параметра `$isLazy` в [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
-
-```php [Qux.php]
-// file: /app/src/Services/Qux.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;
-
-class Qux
-{
-    public function __construct(
-        #[TaggedAs(
-            'tags.lite-rules',
-            isLazy: false,// [!code ++]
-        )]
-        public readonly array $collection// [!code highlight]
-    ) {}
-
-}
-```
-
-## Внедрение коллекции по интерфейсу { #example-inject-collection-as-interface }
-
-В качестве имени тега можно использовать FQCN [^FQCN] PHP интерфейса.
-
-Собрать коллекцию из PHP классов которые реализуют интерфейс `\App\Interfaces\QuxInterface`:
-
-Конфигурация PHP классов:
-
-::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;
-use App\Interfaces\QuxInterface;
-
-final class Foo
-{
-    /**
-     * 🚩 Коллекция с ленивой инициализацией
-     * из PHP классов реализующих интерфейс.
-     *
-     * @param iterable<QuxInterface> $services
-     */
-    public function __construct(
-        #[TaggedAs(QuxInterface::class)]
-        public readonly iterable $services
-    ) {}
-}
-```
-
-```php [QuxInterface.php]
-// file: /app/src/Interfaces/QuxInterface.php
-namespace App\Interfaces;
-
-interface  QuxInterface
-{    
-    // …
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Bar implements QuxInterface
-{
-    // …
-}
-```
-
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
-```php [Bat.php]
-// file: /app/src/Services/Bat.php
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Bat implements QuxInterface
-{
-    // …
-}
-```
+<<< @/_code/src/Rules/RuleC_Attr.php [RuleC.php]
 
 :::
 
-Контейнер зависимостей:
+Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
+## Внедрение зависимости в параметр с типом array { #inject-by-attribute-tagged-as-array-param }
 
-$container = (new DiContainerBuilder())
-    ->import(namespae: 'App\\', src: '/app/src')
-    ->build();
+При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
-$foo = $container->get(Foo::class);
+Параметр `$rules` конструктора класса `\App\Services\Rules` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`.
 
-foreach ($foo->services as $service) {
-    var_dump($service::class);
+Элементы коллекции должны быть отсортированы в следующем порядке:
+- `App\Rules\RuleC`
+- `App\Rules\RuleA`
+
+[Для сортировки](collection-priority/priority-by-tag.md) элементов коллекции использовать параметр `$priority` атрибута `\Kaspi\DiContainer\Attributes\Tag`.
+
+::: code-group
+
+```php [Rules.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Rules.php // [!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\TaggedAs;//[!code ++]
+
+final class Rules
+{
+    public function __construct(
+        #[TaggedAs(//[!code ++]
+            'tags.lite-rules',//[!code ++]
+            isLazy: false,//[!code ++]
+        )]//[!code ++]
+        public readonly array $rules
+    ) {}
 }
-
-// string(16) "App\Services\Bar"
-// string(16) "App\Services\Bat"
 ```
 
-PHP класс `\App\Services\Baz` не реализует интерфейс `\App\Interfaces\QuxInterface` поэтому его нет в коллекции `$foo->services`.
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-<!--@include: ../_include/term_notes.md-->
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Rules;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
+    ->build();
+
+$rules = $container->get(Rules::class);
+
+foreach ($rules->rules as $rule) {
+    var_dump($rule::class);
+}
+
+// console output:
+// string (15) "App\Rules\RuleC"
+// string (15) "App\Rules\RuleA"
+```
+
+<<< @/_code/src/Rules/RuleA_Attr.php [RuleA.php]
+
+<<< @/_code/src/Rules/RuleB_Attr.php [RuleB.php]
+
+<<< @/_code/src/Rules/RuleC_Attr.php [RuleC.php]
+
+:::
+
+Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
 
 ## Внедрение коллекции для параметров переменной длины { #inject-by-attribute-tagged-as-variadic }
 
 Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
 
 ```php
-// file: /app/src/Services/Qux.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Qux.php // [!code highlight]
+
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\TaggedAs;
+use Kaspi\DiContainer\Attributes\TaggedAs;//[!code ++]
 
 final class Qux
 {
     public function __construct(
-        #[TaggedAs('tags.group_one')]
-        #[TaggedAs('tags.group_two')]
+        #[TaggedAs('tags.group_one')]//[!code ++]
+        #[TaggedAs('tags.group_two')]//[!code ++]
         iterable ...$collection
     ) {}
 
@@ -243,3 +174,5 @@ final class Qux
 
 > [!TIP]
 > <!--@include: ../_include/variadic_params.md-->
+
+<!--@include: ../_include/term_notes.md-->
