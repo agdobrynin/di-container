@@ -1,142 +1,113 @@
+---
+outline: [2, 4]
+---
 # PHP интерфейс как имя тега { #title }
 
 ## Обзор { #overview }
 
-В качестве имени тега можно использовать FQCN [^FQCN] интерфейса реализуемого классами.
+В качестве имени тега можно использовать FQCN[^FQCN] интерфейса реализуемого классами.
+
+Объявление внедрения коллекции делается через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-## В файлах конфигураций определений { #as-php-definition }
-
-PHP классы:
+В качестве примера рассмотрим класс `\App\Services\FooValidator`:
 
 ::: code-group
 
-```php [SrvRules.php]
-// file: /app/src/Services/SrvRules.php
-namespace App\Services;
+<<< @/_code/src/Services/FooValidator.php
 
-use App\Interfaces\RuleInterface;
-
-final class SrvRules
-{
-    /**
-    * @param iterable<RuleInterface> $rules
-    */
-    public function __construct(public readonly iterable $rules) {}
-
-    public function validate(mixed $input): mixed
-    {
-        foreach ($this->rules as $rule) {
-            $input = $rule->validate($input);
-        }
-        
-        return $input;
-    }
-}
-```
-
-```php [RuleInterface.php]
-// file: /app/src/Interfaces/RuleInterface.php
-namespace App\Interfaces;
-
-interface RuleInterface
-{
-    public function validate(mixed $input): mixed;
-}
-```
-
-```php [RuleA.php]
-// file: /app/src/Rules/RuleA.php
-namespace App\Rules;
-
-use App\Interfaces\RuleInterface;
-
-final class RuleA implements RuleInterface
-{
-    public function validate(mixed $input): mixed
-    {
-        // …
-    }
-}
-```
-
-```php [RuleB.php]
-// file: /app/src/Rules/RuleB.php
-namespace App\Rules;
-
-use App\Interfaces\RuleInterface;
-
-final class RuleB implements RuleInterface
-{
-    public function validate(mixed $input): mixed
-    {
-        // …
-    }
-}
-```
-
-```php [RuleC.php]
-// file: /app/src/Rules/RuleC.php
-namespace App\Rules;
-
-final class RuleC
-{
-    public function validate(mixed $input): mixed
-    {
-        // …
-    }
-}
-```
+<<< @/_code/src/Interfaces/RuleInterface.php
 
 :::
 
-[Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md) внедряет коллекцию из PHP классов реализующих указанный интерфейс:
+Необходимо объявить внедрение коллекции из PHP классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора класс `$rules`.
 
-```php
-// file: /app/config/services.php
-use Generator;
+Представлены PHP классы выполняющие некую валидацию данных:
+
+::: code-group
+
+<<< @/_code/src/ValidateRules/RuleA.php
+
+<<< @/_code/src/ValidateRules/RuleB.php
+
+<<< @/_code/src/ValidateRules/RuleC.php
+
+:::
+
+Важное замечание – PHP класс `\App\ValidateRules\RuleB` не реализует интерфейс `\App\Interfaces\RuleInterface` через ключевое слово `implements`.
+
+### Объявление в файлах конфигураций  { #as-php-definition }
+
+В [файлах конфигураций](../container-builder/configuration_files.md) необходимо указать в параметре `$tag` хелпер функции `diTaggedAs()` FQCN[^FQCN] интерфейса – `\App\Interfaces\RuleInterface`.
+
+::: code-group
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
 use App\Interfaces\RuleInterface;
-use App\Services\SrvRules;
+use App\Services\FooValidator;
 
 use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
-    yield diAutowire(SrvRules::class)
+    yield diAutowire(FooValidator::class)
         ->bindArguments(
-            // собрать объявленные классы реализующие интерфейс.
-            rules: diTaggedAs(RuleInterface::class)
+            rules: diTaggedAs(RuleInterface::class)//[!code ++]
         );
 };
-
 ```
 
-Контейнер зависимостей:
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-```php
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\FooValidator;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')
-    ->import(namespace: 'App\\', src: '/app/src/')
+    ->load('/app/config/services.php')// [!code highlight]
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
     ->build();
 
-$srvRules = $container->get(SrvRules::class);
+$validator = $container->get(FooValidator::class);
 
-foreach ($srvRules->rules as $rule) {
+foreach ($validator->rules as $rule) {
     var_dump($rule::class);
 }
 
-// string(15) "App\Rules\RuleA"
-// string(15) "App\Rules\RuleB"
+// console output:
+// string (22) "App\ValidateRules\RuleA"
+// string (22) "App\ValidateRules\RuleC"
 ```
 
-Класс `\App\Rules\RuleC` не попал в коллекцию так как не реализовывает интерфейс `App\Interfaces\RuleInterface`.
+::: 
+
+Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
 
 > [!NOTE]
-> Порядок элементов в коллекции не определен при такой конфигурации и может быть любым.
+> Очерёдность элементов в коллекции не определена при такой конфигурации, и может быть любой.
 
-Для изменения порядка элементов в коллекции можно воспользоваться параметром `$priorityDefaultMethod` хелпер функции `diTaggedAs()`.
+### Объявление через атрибуты { #as-php-attribute }
+
+
+> [!NOTE]
+> Очерёдность элементов в коллекции не определена при такой конфигурации, и может быть любой.
+
+## Очерёдности элементов коллекции { #priority-by-method-default }
+
+При использовании FQCN[^FQCN] интерфейса в качестве имени тега внедряемая коллекция имеет неопределённую очередность элементов (сортировка элементов). 
+
+Для изменения очерёдности элементов такой коллекции можно воспользоваться параметром `$priorityDefaultMethod` хелпер функции `diTaggedAs()` или атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`.
+
 Необходимо добавить статический метод в нужный PHP класс, который будет возвращать приоритет в коллекции:
 
 ```php
@@ -147,35 +118,53 @@ public static function getPriority(): int // [!code ++]
 }// [!code ++]
 ```
 
-Указать в хелпер функции `diTaggedAs()` метод-приоритета `getPriority` для PHP классов в коллекции: 
+Для хелпер функции `diTaggedAs()` указать метод-приоритета `getPriority` :
 
 ```php
-use App\Interfaces\RuleInterface;
-use function Kaspi\DiContainer\diTaggedAs;
+<?php
+declare(strict_types=1);
 
-diTaggedAs(RuleInterface::class, priorityDefaultMethod: 'getPriority')
+// file: /app/config/services.php
+
+use App\Interfaces\RuleInterface;
+use App\Services\FooValidator;
+
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(FooValidator::class)
+        ->bindArguments(
+            rules: diTaggedAs(
+                RuleInterface::class,
+                priorityDefaultMethod: 'getPriority',//[!code ++]
+            )
+        );
+};
 ```
 
-⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority/index.md).
-
-## Использование через php атрибуты { #as-php-attribute }
-
-[Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) внедряет коллекцию из PHP классов реализующих указанный интерфейс.
+Для атрибута `\Kaspi\DiContainer\Attributes\TaggedAs` указать метод-приоритета `getPriority`:
 
 ```php
-// file: /app/src/Services/SrvRules.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/FooValidator.php //[!code highlight]
+
 namespace App\Services;
 
 use App\Interfaces\RuleInterface;
 use Kaspi\DiContainer\Attributes\TaggedAs;
 
-final class SrvRules
+final class FooValidator
 {
     /**
-    * @param iterable<RuleInterface> $rules
-    */
+     * @param iterable<RuleInterface> $rules
+     */
     public function __construct(
-        #[TaggedAs(RuleInterface::class)]
+        #[TaggedAs(
+            RuleInterface::class,
+            priorityDefaultMethod: 'getPriority',//[!code ++]
+        )]
         public readonly iterable $rules
     ) {}
 
@@ -184,29 +173,10 @@ final class SrvRules
         foreach ($this->rules as $rule) {
             $input = $rule->validate($input);
         }
-        
+
         return $input;
     }
 }
-```
-
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src/')
-    ->build();
-
-$srvRules = $container->get(SrvRules::class);
-
-foreach ($srvRules->rules as $rule) {
-    var_dump($rule::class);
-}
-
-// string(15) "App\Rules\RuleA"
-// string(15) "App\Rules\RuleB"
 ```
 
 ⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority/index.md).
