@@ -109,7 +109,7 @@ foreach ($validator->rules as $rule) {
 
 ::: code-group
 
-<<< @/_code/src/Services/FooValidatorAttr.php
+<<< @/_code/src/Services/FooValidatorAttr.php [FooValidator.php]
 
 ```php [container_build.php]
 <?php
@@ -166,7 +166,7 @@ public static function getPriority(): int // [!code ++]
 }// [!code ++]
 ```
 
-Если «метод-приоритета» по умолчанию не определен в PHP классе, который является элементом коллекции, то значение приорита будет значение `null`.
+Если «метод-приоритета» по умолчанию не определен в PHP классе, который является элементом коллекции, то значение приорита будет `null`.
 
 Для хелпер функции `diTaggedAs()` указать метод-приоритета `getPriority` :
 
