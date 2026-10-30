@@ -5,63 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Коллекции могу исключать элементы. Исключить из коллекции можно вызывающий PHP класс т.е. самого себя, или по идентификатору контейнера [^ContainerId] элемента коллекции.
-
-## Исключение вызывающего класса { #exclide-self }
-
-В коллекции элементов может содержаться PHP класс внедряющий эту же коллекцию. Для исключения такого поведения обратите внимание на параметр `$selfExclude`
-в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md). По умолчанию значение этого параметра `true`.
-
-Если вызывающий PHP класс должен быть в коллекции, то необходимо указать в параметр `$selfExclude` значение `false`.
-
-::: code-group
-
-```php [хелпер функция diTaggedAs()]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/services.php //[!code highlight]
-
-use App\Services\ClassTaggedAs;
-
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-
-return static function (): Generator {
-    yield diAutowire(ClassTaggedAs::class)
-        ->bindTag('tags.foo')//[!code highlight]
-        ->bindArguments(
-            items: diTaggedAs(
-                'tags.foo',//[!code highlight]
-                selfExclude: false,//[!code ++]
-            )
-        );
-};
-```
-
-```php [атрибут TaggedAs]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/ClassTaggedAs.php //[!code highlight]
-
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\{Tag, TaggedAs}; 
-
-#[Tag('tags.foo')]//[!code highlight]
-final class ClassTaggedAs
-{
-    public function __construct(
-        #[TaggedAs(
-            'tags.foo',//[!code highlight]
-            selfExclude: false,//[!code ++]
-        )]
-        public readonly iterable $items
-    ) {}
-}
-```
-
-:::
+Коллекции могу исключать элементы. Исключить из коллекции можно по идентификатору контейнера [^ContainerId] элемента коллекции или вызывающий PHP класс, т.е. самого себя.
 
 ## Исключение из коллекции по идентификатору контейнера { #exclude-by-id }
 
@@ -193,6 +137,62 @@ foreach ($foo->services as $service) {
 <<< @/_code/Tags/src/Services/BazAttr.php [Baz.php]
 
 <<< @/_code/Tags/src/Services/QuxAttr.php [Qux.php]
+
+:::
+
+## Исключение вызывающего класса { #exclide-self }
+
+В коллекции элементов может содержаться PHP класс внедряющий эту же коллекцию. Для исключения такого поведения обратите внимание на параметр `$selfExclude`
+в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md). По умолчанию значение этого параметра `true`.
+
+Если вызывающий PHP класс должен быть в коллекции, то необходимо указать в параметр `$selfExclude` значение `false`.
+
+::: code-group
+
+```php [хелпер функция diTaggedAs()]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php //[!code highlight]
+
+use App\Services\ClassTaggedAs;
+
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(ClassTaggedAs::class)
+        ->bindTag('tags.foo')//[!code highlight]
+        ->bindArguments(
+            items: diTaggedAs(
+                'tags.foo',//[!code highlight]
+                selfExclude: false,//[!code ++]
+            )
+        );
+};
+```
+
+```php [атрибут TaggedAs]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/ClassTaggedAs.php //[!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\{Tag, TaggedAs}; 
+
+#[Tag('tags.foo')]//[!code highlight]
+final class ClassTaggedAs
+{
+    public function __construct(
+        #[TaggedAs(
+            'tags.foo',//[!code highlight]
+            selfExclude: false,//[!code ++]
+        )]
+        public readonly iterable $items
+    ) {}
+}
+```
 
 :::
 
