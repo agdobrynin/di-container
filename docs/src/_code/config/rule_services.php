@@ -15,8 +15,5 @@ return static function (): Generator {
         ->bindTag('tags.other-rulers');//[!code highlight]
 
     yield diAutowire(RuleC::class)
-        ->bindTag(// [!code ++]
-            'tags.lite-rules',// [!code ++]
-            priority: 100// [!code ++]
-        );// [!code ++]
+        ->bindTag('tags.lite-rules');// [!code ++]
 };

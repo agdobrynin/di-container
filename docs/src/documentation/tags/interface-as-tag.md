@@ -101,7 +101,7 @@ foreach ($validator->rules as $rule) {
 Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
 
 > [!NOTE]
-> Очерёдность элементов в коллекции не определена при такой конфигурации, и может быть любой.
+> <!--@include: _include/random_order_tag.md-->
 
 ### Объявление через атрибуты { #as-php-attribute }
 
@@ -148,11 +148,11 @@ foreach ($validator->rules as $rule) {
 Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
 
 > [!NOTE]
-> Очерёдность элементов в коллекции не определена при такой конфигурации, и может быть любой.
+> <!--@include: _include/random_order_tag.md-->
 
 ## Очерёдности элементов коллекции { #priority-by-method-default }
 
-При использовании FQCN[^FQCN] интерфейса в качестве имени тега внедряемая коллекция имеет неопределённую очередность элементов (сортировка элементов). 
+При использовании FQCN[^FQCN] интерфейса в качестве имени тега внедряемая коллекция имеет не определённую очередность элементов (сортировка элементов). 
 
 Для изменения очерёдности элементов такой коллекции можно воспользоваться параметром `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md), указав «метод-приоритета» по умолчанию.
 

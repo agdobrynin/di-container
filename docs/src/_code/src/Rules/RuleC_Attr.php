@@ -7,10 +7,7 @@ namespace App\Rules;
 
 use Kaspi\DiContainer\Attributes\Tag;//[!code ++]
 
-#[Tag(//[!code ++]
-    'tags.lite-rules',//[!code ++]
-    priority: 100//[!code ++]
-)]//[!code ++]
+#[Tag('tags.lite-rules')]//[!code ++]
 final class RuleC
 {
     // …

@@ -10,21 +10,19 @@
 
 ## Пример использования хелпер функции { #example-inject-by-helper-fn-di-tagged }
 
-Объявить внедрение коллекции из элементов контейнера отмеченных тегом `'tags.lite-rules'` в параметр `$rules` конструктора класса `\App\Services\RuleCollection` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в [файле конфигураций](../container-builder/configuration_files.md).
+Объявить тег `'tags.lite-rules'` для каждого класса через метод `bindTag()`[^BindTag] в [файле конфигураций](../container-builder/configuration_files.md) `rule_services.php`.
 
-Элементы коллекции должны быть отсортированы в следующем порядке:
-- `App\Rules\RuleC`
-- `App\Rules\RuleA`
-
-[Для сортировки](collection-priority/priority-by-tag.md) элементов коллекции использовать параметр `$priority` метода `bindTag()`.
+Объявить внедрение коллекции из элементов контейнера отмеченных тегом `'tags.lite-rules'` в параметр `$rules` конструктора класса `\App\Services\RuleCollection` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций `services.php`.
 
 ::: code-group
 
-```php [tagged_services.php]
+<<< @/_code/config/rule_services.php
+
+```php [services.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/config/tagged_services.php //[!code highlight]
+// file: /app/config/services.php //[!code highlight]
 
 use App\Services\RuleCollection;
 
@@ -38,8 +36,6 @@ return static function (): Generator {
 };
 ```
 
-<<< @/_code/config/rule_services.php
-
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -52,7 +48,7 @@ use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\RuleCollection;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/tagged_services.php')// [!code highlight]
+    ->load('/app/config/services.php')// [!code highlight]
     ->load('/app/config/rule_services.php')// [!code highlight]
     ->build();
 
@@ -63,8 +59,8 @@ foreach ($ruleCollection->rules as $rule) {
 }
 
 // console output:
-// string (15) "App\Rules\RuleC"
 // string (15) "App\Rules\RuleA"
+// string (15) "App\Rules\RuleC"
 ```
 
 ```php [RuleCollection.php]
@@ -90,26 +86,22 @@ final class RuleCollection
 
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
 
+> [!NOTE]
+> <!--@include: _include/random_order_tag.md-->
+
 ## Внедрение зависимости в параметр с типом array { #inject-by-di-tagged-array-param }
 
 При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
-Параметр `$rules` конструктора класса `\App\Services\Rules` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций.
-
-Элементы коллекции должны быть отсортированы в следующем порядке:
-
-- `App\Rules\RuleC`
-- `App\Rules\RuleA`
-
-Для сортировки элементов коллекции использовать параметр `$priority` метода `bindTag()`.
+Параметр `$rules` конструктора класса `\App\Services\Rules` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций `services.php`.
 
 ::: code-group
 
-```php [tagged_services.php]
+```php [services.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/config/tagged_services.php //[!code highlight]
+// file: /app/config/services.php //[!code highlight]
 
 use App\Services\Rules;
 
@@ -118,10 +110,10 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Rules::class)
         ->bindArguments(
-            rules: diTaggedAs(// [!code ++]
-                'tags.lite-rules',// [!code ++]
+            rules: diTaggedAs(// [!code highlight]
+                'tags.lite-rules',// [!code highlight]
                 isLazy: false,// [!code ++]
-            )// [!code ++]
+            )// [!code highlight]
         );
 };
 ```
@@ -140,19 +132,22 @@ use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Rules;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/tagged_services.php')// [!code highlight]
+    ->load('/app/config/services.php')// [!code highlight]
     ->load('/app/config/rule_services.php')// [!code highlight]
     ->build();
 
 $rules = $container->get(Rules::class);
+
+var_dump(is_array($rules->rules));
+// bool(true)
 
 foreach ($rules->rules as $rule) {
     var_dump($rule::class);
 }
 
 // console output:
-// string (15) "App\Rules\RuleC"
 // string (15) "App\Rules\RuleA"
+// string (15) "App\Rules\RuleC"
 ```
 
 ```php [Rules.php]
@@ -179,6 +174,9 @@ final class Rules
 :::
 
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
+
+> [!NOTE]
+> <!--@include: _include/random_order_tag.md-->
 
 ## Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
 
