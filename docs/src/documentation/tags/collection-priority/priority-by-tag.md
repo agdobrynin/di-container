@@ -9,10 +9,14 @@ outline: [2, 4]
 
 ## Пример конфигурации { #example-priority-by-tag }
 
-Необходимо внедрить коллекцию в определенном порядке в параметр `$services` через конструктор класса `\App\Services\Foo` используя **приоритет тега**:
+Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
+
+Внедряемая коллекция должна получить следующую очерёдность элементов:
 - `\App\Services\Qux`
 - `\App\Services\Baz`
 - `\App\Services\Bar`
+
+Для объявления очерёдности в коллекции использовать **приоритет тега**.
 
 ::: code-group
 
@@ -29,27 +33,9 @@ outline: [2, 4]
 
 ### Объявление в файлах конфигураций { #priority-by-tag-php-definition }
 
-В [файлах конфигураций](../../container-builder/configuration_files.md) необходимо указать приоритет каждого тега в параметре `$priority` метода `bindTag()`[^BindTag].
+В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` необходимо указать приоритет каждого тега `'tags.ordered'` в параметре `$priority` метода `bindTag()`[^BindTag].
 
 ::: code-group
-
-```php [services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/services.php //[!code highlight]
-
-use App\Services\Foo;
-
-use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
-
-return static function (): Generator {
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            servies: diTaggedAs('tags.ordered')//[!code highlight]
-        );
-};
-```
 
 ```php [tagged_services.php]
 <?php
@@ -79,33 +65,26 @@ return static function (): Generator {
 };
 ```
 
-```php [container_build.php]
+```php [services.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/src/container_build.php // [!code highlight]
+// file: /app/config/services.php //[!code highlight]
 
-require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')// [!code highlight]
-    ->load('/app/config/tagged_services.php')// [!code highlight]
-    ->build();
+use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
-$foo = $container->get(Foo::class);
-
-foreach ($foo->services as $service) {
-    var_dump($service::class);
-}
-
-// console output:
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Baz"
-//string(16) "App\Services\Bar"
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            servies: diTaggedAs('tags.ordered')//[!code highlight]
+        );
+};
 ```
+
+<<< @/_code/Tags/container_build_ordered.php [container_build.php]
+
 <<< @/_code/Tags/src/Services/Foo.php
 
 <<< @/_code/Tags/src/Services/Bar.php
@@ -124,42 +103,9 @@ foreach ($foo->services as $service) {
 
 ::: code-group
 
-```php [Bar.php]
-<?php
-declare(strict_types=1);
+<<< @/_code/Tags/src/Services/BarOrderedAttr.php [Bar.php]
 
-// file: /app/src/Services/Bar.php // [!code highlight]
-
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code highlight]
-
-#[Tag('tags.ordered')]// [!code highlight]
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Baz.php // [!code highlight]
-
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code highlight]
-
-#[Tag(// [!code highlight]
-    'tags.ordered',// [!code highlight]
-    priority: 10,// [!code ++]
-)]// [!code highlight]
-final class Baz
-{
-    // …
-}
-```
+<<< @/_code/Tags/src/Services/BazOrderedAttr.php [Baz.php]
 
 ```php [Qux.php]
 <?php
@@ -180,52 +126,9 @@ final class Qux
 }
 ```
 
-```php [container_build.php]
-<?php
-declare(strict_types=1);
+<<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
 
-// file: /app/src/container_build.php // [!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
-    ->build();
-
-$foo = $container->get(Foo::class);
-
-foreach ($foo->services as $service) {
-    var_dump($service::class);
-}
-
-// console output:
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Baz"
-//string(16) "App\Services\Bar"
-
-```
-
-```php [Foo.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Foo.php // [!code highlight]
-
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;// [!code highlight]
-
-final class Foo
-{
-    public function __construct(
-        #[TaggedAs('tags.ordered')]// [!code highlight]
-        public readonly iterable $services
-    ) {}    
-}
-```
+<<< @/_code/Tags/src/Services/FooOrderedAttr.php [Foo.php]
 
 :::
 

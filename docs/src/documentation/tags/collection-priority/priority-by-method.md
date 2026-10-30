@@ -5,194 +5,123 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Для элементов внедряемой коллекции представленных PHP классом приоритет в коллекции может быть задан через «метод-приоритета».
+Для элементов внедряемой коллекции представленных PHP классом приоритет в коллекции может быть объявлен через «метод-приоритета».
 
-«**Метод-приоритета**» задаётся в теге элемента коллекции.
+При объявлении тега в [файлах конфигураций](../../container-builder/configuration_files.md) «метод-приоритета» объявляется через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
+**Имя метаданных должно быть** представлено строкой `'priority.method'`, значение – имя метода.
+
+При объявлении тега через атрибут `\Kaspi\DiContainer\Attributes\Tag` «метод-приоритета» указывается в параметре `$priorityMethod`.
 
 <!--@include: _include/method_note.md-->
 
 ## Пример конфигурации { #example }
 
-Необходимо внедрить коллекцию в параметр `\App\Services\Foo::$services`.
-Элемент коллекции `\App\Services\Qux` должен использовать «**метод-приоритета**», для остальных элементов приоритет определить через **приоритет тега**.
+Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
 
-Внедряемая коллекция должна получить следующий порядок элементов:
+Внедряемая коллекция должна получить следующую очерёдность элементов:
 - `\App\Services\Qux`
 - `\App\Services\Baz`
 - `\App\Services\Bar`
 
-PHP классы:
+Элемент коллекции `\App\Services\Qux` должен использовать «**метод-приоритета**» `\App\Services\Qux::getPriority()` для объявления приоритета тега, для остальных элементов через [приоритет тега](priority-by-tag.md).
 
-<!--@include: _include/code-group-src.md-->
+::: code-group
 
-Реализуем «метод-приоритета» в `App\Services\Qux::getPriority()`. Метод возвращает значение приоритета `100`:
+<<< @/_code/Tags/src/Services/Foo.php
+
+<<< @/_code/Tags/src/Services/Bar.php
+
+<<< @/_code/Tags/src/Services/Baz.php
+
+<<< @/_code/Tags/src/Services/QuxPriorityMethod.php [Qux.php]
+
+:::
+
+### Объявление в файлах конфигураций { #php-definition }
+
+В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` для PHP класса `\App\Services\Qux` объявить тег `'tags.ordered'` и «метод-приоритета» через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag], для остальных классов объявить тег `'tags.ordered'` и его приоритет в параметре `$priority` метода `bindTag()`[^BindTag].
+
+**Имя метаданных для «метода-приоритета» должно быть** представлено строкой `'priority.method'`, значение – `'getPriority'`.
 
 
-```php
-// file: /app/src/Services/Qux.php
-namespace App\Services;
+::: code-group
 
-final class Qux
-{
-    public static function getPriority(): int // [!code ++]
-    {// [!code ++]
-        return 100;// [!code ++]
-    }// [!code ++]
+```php [tagged_services.php]
+<?php
+declare(strict_types=1);
 
-    // …
-}
+// file: /app/config/tagged_services.php //[!code highlight]
+
+use App\Services\{Bar, Baz, Qux};
+
+use function \Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->bindTag('tags.ordered');//[!code highlight]
+   
+   yield diAutowire(Baz::class)
+        ->bindTag(
+            name: 'tags.ordered',//[!code highlight]
+            priority: 10,//[!code ++]
+        );
+
+   yield diAutowire(Qux::class)
+        ->bindTag(
+            name: 'tags.ordered',//[!code highlight]
+            options: [//[!code ++]
+               'priority.method' => 'getPriority',//[!code ++]
+            ]//[!code ++]
+        );
+};
 ```
 
-### Настройка в файлах конфигураций { #php-definition }
+```php [services.php]
+<?php
+declare(strict_types=1);
 
-«Метод-приоритета» передаётся через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
-**Имя метаданных должно быть** представлено строкой `'priority.method'`, значение – имя метода.
+// file: /app/config/services.php //[!code highlight]
 
-
-Конфигурационный файл:
-
-```php {16-18}
-// file: /app/config/tagged_service.php
-use Generator;
-use App\Services\{Foo, Bar, Baz, Qux};
+use App\Services\Foo;
 
 use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs('tags.ordered')
-    );
-
-    yield diAutowire(Qux::class)
-        ->bindTag(
-            name: 'tags.ordered',
-            options: [
-               'priority.method' => 'getPriority',
-            ]
+            servies: diTaggedAs('tags.ordered')//[!code highlight]
         );
-        
-    yield diAutowire(Baz::class)
-        ->bindTag(
-            name: 'tags.ordered',
-            priority: 10,
-        );
-        
-    yield diAutowire(Bar::class)
-        // по умолчанию `$priority = null`
-        ->bindTag('tags.ordered');
 };
 ```
 
-Контейнер зависимостей:
+<<< @/_code/Tags/container_build_ordered.php [container_build.php]
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
+<<< @/_code/Tags/src/Services/Foo.php
 
-$container = (new DiContainerBuilder())
-    ->load('/app/config/tagged_foo_service.php')
-    ->build();
+<<< @/_code/Tags/src/Services/Bar.php
 
-$foo = $container->get(Foo::class);
+<<< @/_code/Tags/src/Services/Baz.php
 
-foreach ($foo->services as $service) {
-    var_dump($service::class);
-}
-// вывод консоли:
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Baz"
-//string(16) "App\Services\Bar"
-```
-
-### Конфигурация через атрибуты { #attributes }
-
-«Метод-приоритета» указывается в параметре атрибута `\Kaspi\DiContainer\Attributes\Tag::$priorityMethod`.
-
-Внедрение коллекции через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
-
-::: code-group
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
-
-final class Foo
-{
-    public function __construct(
-        #[TaggedAs('tags.ordered')]// [!code ++]
-        public readonly iterable $services
-    ) {}    
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-#[Tag('tags.ordered')]// [!code ++]
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php]
-// file: /app/src/Services/Baz.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-#[Tag('tags.ordered', priority: 10)]// [!code ++]
-final class Baz
-{
-    // …
-}
-```
-
-```php [Qux.php]
-// file: /app/src/Services/Qux.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-#[Tag('tags.ordered', priorityMethod: 'getPriority')]// [!code ++]
-final class Qux
-{
-    public static function getPriority(): int
-    {
-        return 100;
-    }
-
-    // …
-}
-```
+<<< @/_code/Tags/src/Services/QuxPriorityMethod.php [Qux.php]
 
 :::
 
-Контейнер зависимостей:
+### Объявление через атрибуты { #attributes }
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
+Объявить тег `'tags.ordered'` для PHP класса `\App\Services\Qux` и «метод-приоритета» в параметре `$priorityMethod` атрибута `\Kaspi\DiContainer\Attributes\Tag`. Для остальных PHP классов объявить тег `'tags.ordered'` и приоритет в параметре `$priority` атрибута `\Kaspi\DiContainer\Attributes\Tag`.
 
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
-    ->build();
+::: code-group
 
-$foo = $container->get(Foo::class);
+<<< @/_code/Tags/src/Services/QuxPriorityMethodAttr.php [Qux.php]
 
-foreach ($foo->services as $service) {
-    var_dump($service::class);
-}
-// вывод консоли:
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Baz"
-//string(16) "App\Services\Bar"
-```
+<<< @/_code/Tags/src/Services/BarOrderedAttr.php [Bar.php]
+
+<<< @/_code/Tags/src/Services/BazOrderedAttr.php [Baz.php]
+
+<<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
+
+<<< @/_code/Tags/src/Services/FooOrderedAttr.php [Foo.php]
+
+:::
 
 <!--@include: ../../php-definition/_include/bind_notes.md-->
