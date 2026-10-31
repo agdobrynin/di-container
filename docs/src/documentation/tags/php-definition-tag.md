@@ -197,8 +197,8 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Bar::class)
         ->bindArguments(
-            srvGroup_1: diTaggedAs('tags.group_1'),//[!code ++]
-            srvGroup_2: diTaggedAs('tags.group_2'),//[!code ++]
+            rules_liteRules: diTaggedAs('tags.lite-rules'),//[!code ++]
+            rules_otherRules: diTaggedAs('tags.other-rulers'),//[!code ++]
         );
 };
 ```
@@ -213,7 +213,7 @@ namespace App\Services;
 
 class Bar
 {
-    public function __construct(iterable ...$srvGroup) {}
+    public function __construct(iterable ...$rules) {}
 
 }
 ```
