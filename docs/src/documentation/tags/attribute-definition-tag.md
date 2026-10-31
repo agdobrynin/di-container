@@ -164,9 +164,9 @@ use Kaspi\DiContainer\Attributes\TaggedAs;//[!code ++]
 final class Qux
 {
     public function __construct(
-        #[TaggedAs('tags.group_one')]//[!code ++]
-        #[TaggedAs('tags.group_two')]//[!code ++]
-        iterable ...$collection
+        #[TaggedAs('tags.lite-rules')]//[!code ++]
+        #[TaggedAs('tags.other-rulers')]//[!code ++]
+        iterable ...$rules
     ) {}
 
 }
