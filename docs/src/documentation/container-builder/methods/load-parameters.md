@@ -1,3 +1,6 @@
+---
+outline: [2, 3]
+---
 # Регистрация параметров контейнера { #title }
 
 ## Обзор { #overview }
@@ -63,7 +66,7 @@ php /app/src/container_build.php
 
 Появится сообщение вида:
 
-```terminaloutput
+```console
 string (9) "/var/data"
 int(10)
 ```

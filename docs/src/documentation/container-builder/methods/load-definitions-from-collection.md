@@ -94,7 +94,7 @@ php /app/src/container_build.php
 
 Появится сообщение вида:
 
-```terminaloutput
+```console
 string (9) "/var/data"
 int(10)
 ```
@@ -181,7 +181,7 @@ php /app/src/container_build.php
 
 Появится сообщение вида:
 
-```terminaloutput
+```console
 string (4) "/tmp"
 int(10)
 ```
