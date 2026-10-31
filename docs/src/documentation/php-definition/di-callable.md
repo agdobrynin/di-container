@@ -37,21 +37,39 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
 
-Необходимо через метод `bindArguments()` указать вызываемому методу `\App\Services\Baz::factoryMethod()` как внедрят зависимость в параметр `$name`.
+PHP классы:
 
 ::: code-group
-
-<<< @/_code/php-definition/di-callable/callable_entries.php
-
-<<< @/_code/php-definition/di-callable/container.php
-
 <<< @/_code/php-definition/di-callable/Baz.php
 
 <<< @/_code/php-definition/di-callable/Bar.php
 
 <<< @/_code/php-definition/di-callable/Foo.php
+:::
+
+В файле конфигураций `callable_entries.php` необходимо объявить PHP класс `\App\Services\Foo` и указать внедрение зависимости в параметр `$value` через вызываемый тип[^CallableType] – `\App\Services\Baz::factoryMethod()`.
+
+Для метода `\App\Services\Baz::factoryMethod()` объявить внедрение скалярного типа в параметр `$name` через метод `bindArguments()`, в параметр `$bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
+
+::: code-group
+
+<<< @/_code/php-definition/di-callable/container.php
+
+<<< @/_code/php-definition/di-callable/callable_entries.php
 
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+string(26) "Lorem ipsum dolor sit amet"
+```
 
 ## bindTag()
 
@@ -63,13 +81,46 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 Чтобы обеспечить доступность вызываемого типа через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций соответствующий идентификатор контейнера[^ContainerId].
 
+PHP классы:
+
 ::: code-group
 
-```php [callable_services.php]
+<<< @/_code/php-definition/di-callable/Baz.php
+
+<<< @/_code/php-definition/di-callable/Bar.php
+
+:::
+
+Метод контейнера `get('baz.factory_method')` должен возвращать результат выполнения вызываемого типа `\App\Services\Baz::factoryMethod()`.
+
+Для метода `\App\Services\Baz::factoryMethod()` объявить внедрение скалярного типа в параметр `$name` через метод bindArguments(), в параметр `$bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
+
+::: code-group
+
+```php [container.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/config/callable_services.php// [!code highlight]
+// file: /app/src/container.php// [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/factory.php')// [!code ++]
+    ->build();
+
+$result = $container->get('baz.factory_method');// [!code highlight]
+
+var_dump($result);
+```
+
+```php [factory.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/factory.php // [!code highlight]
 
 use App\Services\Baz;
 
@@ -83,64 +134,31 @@ return static function(): Generator {
 };
 ```
 
-```php [container.php]
-<?php
-declare(strict_types=1);
+:::
 
-// file: /app/src/container.php// [!code highlight]
+Выполните в терминале команду:
 
-require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/callable_services.php')// [!code highlight]
-    ->build();
-
-$result = $container->get('baz.factory_method');// [!code highlight]
-$foo = new Foo($result);
-
-var_dump($foo->value);
-// string(26) "Lorem ipsum dolor sit amet"
+```shell
+php /app/src/container.php
 ```
 
-<<< @/_code/php-definition/di-callable/Baz.php
+Появится сообщение вида:
 
-<<< @/_code/php-definition/di-callable/Bar.php
-
-<<< @/_code/php-definition/di-callable/Foo.php
-
-:::
+```console
+string(26) "Lorem ipsum dolor sit amet"
+```
 
 ## Преобразуемые объявления { #convert-to-di-callable } 
 
-В файлах конфигураций можно указать вызываемый тип «как-есть», при условии что контейнер сможет самостоятельно внедрить требуемые зависимости на основании конфигурации контейнера.
+В файлах конфигураций можно указать вызываемый тип[^CallableType] «как-есть», при условии что контейнер сможет самостоятельно внедрить требуемые зависимости на основании конфигурации контейнера.
+
+### 🚧🚧🚧🚧
+
+### Пример объявления callable типов «как-есть» { #example-convert-to-di-callable }
+
+PHP классы и функции:
 
 ::: code-group
-
-```php [services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/callable_as_is.php// [!code highlight]
-
-use App\Services\ServiceFoo;
-
-return static function (): Generator {
-   // 1️⃣ анонимная функция
-   yield 'services.foo.one' => static fn () => new ServiceFoo(
-        apiKey: 'qwerty-value',
-        debug: false
-    );
-
-   // 2️⃣ статический метод класса
-   yield 'services.foo.two' => [ServiceFoo::class, 'makeWithDebug'];
-   
-   // 3️⃣ функция
-   yield 'services.foo.three' => 'App\Functions\staging_service';
-};
-```
 
 ```php [ServiceFoo.php]
 <?php
@@ -150,18 +168,20 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use function getenv;
+
 class ServiceFoo
 {
-
     public function __construct(
         public readonly string $apiKey,
         public readonly bool $debug
     ) {}
 
-
-    public static function makeWithDebug(string $apiKey): self
+    public static function makeForLocal(bool $debug = true): self
     {
-        return new self($apiKey, true)
+        $apiKey = getenv('APP_API_KEY_LOCAL');
+
+        return new self($apiKey, $debug)
     }
 }
 ```
@@ -178,12 +198,66 @@ use App\Services\ServiceFoo;
 
 use function getenv;
 
-function staging_service(bool $debug = true): ServiceOne {
+function staging_service(bool $debug = false): ServiceOne {
     $apiKey = getenv('APP_API_KEY_STAGING');
 
     return new ServiceFoo($apiKey, $debug);
 }
 
+```
+
+```php [Env.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Helpers/Env.php// [!code highlight]
+
+namespace App\Helpers;
+
+use function getenv;
+
+class Env
+{
+    // …
+
+    public static function apiKey(): string
+    {
+        return match (getenv('APP_ENV')) {
+            'dev' => getenv('APP_API_KEY_LOCAL'),
+            'staging' => getenv('APP_API_KEY_STAGING'),
+            'prod' => getenv('APP_API_KEY_PROD'),
+        };
+    }
+}
+```
+
+:::
+
+В файле конфигураций `callable_as_is.php` необходимо объявить три идентификатора контейнера `'services.foo.one'`, `'services.foo.two'`, `'services.foo.three'`. Метод контейнера `get()` обращаясь по этим идентификаторам должен получать объект PHP класса `\App\Services\ServiceFoo` с различными значениями свойств `$apiKey` и `$debug`.
+
+::: code-group
+
+```php [callable_as_is.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/callable_as_is.php// [!code highlight]
+
+use App\Services\ServiceFoo;
+
+return static function (): Generator {
+   // 1️⃣ анонимная функция
+   yield 'services.foo.one' => static fn () => new ServiceFoo(
+        apiKey: 'qwerty-value',
+        debug: false
+    );
+
+   // 2️⃣ статический метод класса
+   yield 'services.foo.two' => [ServiceFoo::class, 'makeForLocal'];
+   
+   // 3️⃣ функция
+   yield 'services.foo.three' => 'App\Functions\staging_service';
+};
 ```
 
 :::

@@ -9,10 +9,9 @@ use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/callable_entries.php')// [!code highlight]
+    ->load('/app/config/callable_entries.php')// [!code ++]
     ->build();
 
 $foo = $container->get(Foo::class);
 
 var_dump($foo->value);
-// string(26) "Lorem ipsum dolor sit amet"
