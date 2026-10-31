@@ -35,7 +35,7 @@ PHP классы:
 
 :::
 
-В файле конфигураций `report_services.php` необходимо объявить PHP класс `\App\Storages\ReportStorage` с внедрением скалярной зависимости в параметр `$dir` и PHP класс `\App\Services\ReportMaker` с внедрением скалярной зависимости в параметр `$lastDays`.
+В файле конфигураций `report_services.php` объявлены PHP классы `\App\Storages\ReportStorage` с внедрением скалярной зависимости в параметр `$dir` и `\App\Services\ReportMaker` с внедрением скалярной зависимости в параметр `$lastDays`.
 
 ::: code-group
 
@@ -100,7 +100,19 @@ int(10)
 - `$file` – полный путь к файлу конфигураций.
 - `$_` – полный путь к файлу конфигураций.
 
-Пример использования:
+### Пример использования { #example-load-override }
+
+PHP классы:
+
+::: code-group
+
+<<< @/_code/src/Services/ReportMaker.php
+
+<<< @/_code/src/Storages/ReportStorage.php
+
+:::
+
+В файле конфигураций `report_services.php` объявлены PHP класс `\App\Storages\ReportStorage` с внедрением скалярной зависимости в параметр `$dir` и `\App\Services\ReportMaker` с внедрением скалярной зависимости в параметр `$lastDays`, но если определена переменная среды `APP_ENV` со значением `'dev'` для этих классов необходимо объявить внедрение скалярных зависимостей с другими значениями, т.е. перезаписать ранее объявленные определения с новыми значениями для тех же идентификаторов контейнера[^ContainerId]. 
 
 ::: code-group
 
@@ -121,7 +133,7 @@ use function {getenv, putenv};
 putenv('APP_ENV=dev');//[!code ++]
 
 $builder = (new DiContainerBuilder())
-    ->load('/app/config/report_services.php');
+    ->load('/app/config/report_services.php');// [!code highlight]
 
 if ('dev' === getenv('APP_ENV')) {//[!code ++]
     $builder->loadOverride('/app/config/dev/services.php');//[!code ++]
@@ -132,10 +144,7 @@ $container = $builder->build();
 $service = $container->get(ReportMaker::class);
 
 var_dump($service->storage->dir);
-// string (4) "/tmp"
-
 var_dump($service->lastDays);
-// int(1)
 ```
 
 <<< @/_code/config/report_services.php
@@ -164,11 +173,20 @@ return static function (): Generator {
 };
 ```
 
-<<< @/_code/src/Services/ReportMaker.php
-
-<<< @/_code/src/Storages/ReportStorage.php
-
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```text
+string (4) "/tmp"
+// int(1)
+```
 
 > [!TIP]
 > Для объявления PHP классов используем [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md).
