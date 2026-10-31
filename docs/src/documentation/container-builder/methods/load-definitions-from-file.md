@@ -40,6 +40,9 @@ PHP классы:
 
 В файле конфигураций `report_services.php` объявлены PHP классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`.
 
+> [!TIP]
+> <!--@include: _include/tip_use_di-autowire.md-->
+
 ::: code-group
 
 ```php [container_build.php]
@@ -75,14 +78,10 @@ php /app/src/container_build.php
 
 Появится сообщение вида:
 
-```text
+```terminaloutput
 string (9) "/var/data"
 int(10)
 ```
-
-> [!TIP]
-> Для объявления PHP классов используем [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md).
-
 
 ## loadOverride()
 
@@ -116,6 +115,9 @@ PHP классы:
 :::
 
 В файле конфигураций `report_services.php` объявлены PHP классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если определена переменная среды `APP_ENV` со значением `'dev'`, то для этих классов необходимо объявить внедрение скалярных зависимостей с другими значениями, т.е. перезаписать ранее объявленные определения с новыми значениями для тех же идентификаторов контейнера[^ContainerId]. 
+
+> [!TIP]
+> <!--@include: _include/tip_use_di-autowire.md-->
 
 ::: code-group
 
@@ -186,12 +188,9 @@ php /app/src/container_build.php
 
 Появится сообщение вида:
 
-```text
+```terminaloutput
 string (4) "/tmp"
 // int(1)
 ```
-
-> [!TIP]
-> Для объявления PHP классов используем [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md).
 
 <!--@include: ../../_include/term_notes.md-->

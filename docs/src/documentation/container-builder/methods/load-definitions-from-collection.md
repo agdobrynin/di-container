@@ -27,10 +27,18 @@ outline: [2, 3]
 
 ### Пример использования метода addDefinitions() { #example-add-definitions }
 
-Объявить в контейнере через коллекцию PHP классы `\App\Storages\ReportStorage` и `App\Services\ReportMaker`. 
+PHP классы:
+
+::: code-group
+<<< @/_code/src/Services/ReportMaker.php
+
+<<< @/_code/src/Storages/ReportStorage.php
+:::
+
+Объявить через коллекцию PHP классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir`  и `\App\Services\ReportMaker` в параметр `$lastDays`.
 
 > [!TIP]
-> Для объявления PHP классов используем [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md#container-id) которая может представить в конфигурацию идентификатор контейнера.
+> <!--@include: _include/tip_use_di-autowire.md-->
 
 ::: code-group
 
@@ -73,17 +81,23 @@ $container = (new DiContainerBuilder())
 $service = $container->get(ReportMaker::class);
 
 var_dump($service->storage->dir);
-// string (9) "/var/data"
-
 var_dump($service->lastDays);
-// int(10)
 ```
-
-<<< @/_code/src/Services/ReportMaker.php
-<<< @/_code/src/Storages/ReportStorage.php
 
 ::: 
 
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```terminaloutput
+string (9) "/var/data"
+int(10)
+```
 
 ## addDefinitionsOverride()
 
@@ -102,7 +116,20 @@ var_dump($service->lastDays);
 
 ### Пример использования метода addDefinitionsOverride() { #example-add-definitions-override }
 
-Если значение переменной среды `APP_ENV` равно `'dev'`, то необходимо заменить объявление PHP класса `\App\Storages\ReportStorage` с другим аргументом. Для переопределения ранее объявленного PHP класса использовать метод `addDefinitionsOverride()`.
+PHP классы:
+
+::: code-group
+
+<<< @/_code/src/Services/ReportMaker.php
+
+<<< @/_code/src/Storages/ReportStorage.php
+
+:::
+
+В файле конфигураций `report_services.php` объявлены PHP классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если значение переменной среды `APP_ENV` равно `'dev'`, то для класса `\App\Storages\ReportStorage` необходимо внедрить скалярное значение `'/tmp'` в параметр `$dir` через коллекцию, т.е. перезаписать ранее объявленное определение с новым значениям для того же идентификатора контейнера[^ContainerId].
+
+> [!TIP]
+> <!--@include: _include/tip_use_di-autowire.md-->
 
 ::: code-group
 
@@ -140,17 +167,23 @@ $container = $builder->build();
 $service = $container->get(ReportMaker::class);
 
 var_dump($service->storage->dir);
-// string (4) "/tmp"
-
 var_dump($service->lastDays);
-// int(10)
 ```
 <<< @/_code/config/report_services.php
 
-<<< @/_code/src/Services/ReportMaker.php
-
-<<< @/_code/src/Storages/ReportStorage.php
-
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```terminaloutput
+string (4) "/tmp"
+int(10)
+```
 
 <!--@include: ../../_include/term_notes.md-->

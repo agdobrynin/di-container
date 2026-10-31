@@ -96,7 +96,7 @@ php /app/src/container_build.php
 
 Появится сообщение вида:
 
-```text
+```terminaloutput
 string(16) "App\Services\Qux"
 string(16) "App\Services\Bar"
 string(16) "App\Services\Baz"
@@ -189,7 +189,7 @@ php /app/src/container_build.php
 
 Появится сообщение вида:
 
-```text
+```terminaloutput
 string(16) "App\Services\Qux"
 string(16) "App\Services\Bar"
 string(16) "App\Services\Baz"
