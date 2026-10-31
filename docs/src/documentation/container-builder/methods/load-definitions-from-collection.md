@@ -84,7 +84,7 @@ var_dump($service->storage->dir);
 var_dump($service->lastDays);
 ```
 
-::: 
+:::
 
 Выполните в терминале команду:
 
