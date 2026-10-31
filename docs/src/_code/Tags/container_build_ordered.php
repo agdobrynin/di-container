@@ -18,8 +18,3 @@ $foo = $container->get(Foo::class);
 foreach ($foo->services as $service) {
     var_dump($service::class);
 }
-
-// console output:
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Baz"
-//string(16) "App\Services\Bar"
