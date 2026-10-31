@@ -104,11 +104,9 @@ string(16) "App\Services\Baz"
 
 ### Объявление через атрибуты { #attributes }
 
-## 🚧🚧🚧🚧
-
 Для PHP классов объявить тег `'tags.ordered'` через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
 
-**«Метод-приоритета» по умолчанию** задаётся в параметре `$priorityDefaultMethod` [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+Объявить внедрение коллекции элементов отмеченных тегом  `'tags.ordered'` в параметр `$services` конструктора класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) и задать **«метод-приоритета» по умолчанию** `'getPriority'` в параметре `$priorityDefaultMethod`.
 
 ::: code-group
 
@@ -120,15 +118,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
+use Kaspi\DiContainer\Attributes\TaggedAs;//[!code highlight]
 
 final class Foo
 {
     public function __construct(
-        #[TaggedAs(// [!code ++]
-            'tags.ordered',// [!code ++]
-            priorityDefaultMethod: 'getPriorityForCollection',// [!code ++]
-        )]// [!code ++]
+        #[TaggedAs(//[!code highlight]
+            'tags.ordered',//[!code highlight]
+            priorityDefaultMethod: 'getPriority',// [!code ++]
+        )]//[!code highlight]
         public readonly iterable $services
     ) {}    
 }
@@ -138,9 +136,9 @@ final class Foo
 // file: /app/src/Services/Bar.php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+use Kaspi\DiContainer\Attributes\Tag;//[!code highlight]
 
-#[Tag('tags.ordered')]// [!code ++]
+#[Tag('tags.ordered')]//[!code highlight]
 final class Bar
 {
     // …
@@ -151,9 +149,9 @@ final class Bar
 // file: /app/src/Services/Baz.php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+use Kaspi\DiContainer\Attributes\Tag;//[!code highlight]
 
-#[Tag('tags.ordered', priority: 10)]// [!code ++]
+#[Tag('tags.ordered')]//[!code highlight]
 final class Baz
 {
     // …
@@ -164,17 +162,16 @@ final class Baz
 // file: /app/src/Services/Qux.php
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+use Kaspi\DiContainer\Attributes\Tag;//[!code highlight]
 
-#[Tag('tags.ordered')]// [!code ++]
+#[Tag('tags.ordered')]//[!code highlight]
 final class Qux
 {
-    public static function getPriorityForCollection(): int
+    // …
+    public static function getPriority(): int
     {
         return 100;
     }
-
-    // …
 }
 ```
 
@@ -182,23 +179,20 @@ final class Qux
 
 Контейнер зависимостей:
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
+<<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
 
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
-    ->build();
+Выполните в терминале команду:
 
-$foo = $container->get(Foo::class);
+```shell
+php /app/src/container_build.php
+```
 
-foreach ($foo->services as $service) {
-    var_dump($service::class);
-}
-// вывод консоли:
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Baz"
-//string(16) "App\Services\Bar"
+Появится сообщение вида:
+
+```text
+string(16) "App\Services\Qux"
+string(16) "App\Services\Bar"
+string(16) "App\Services\Baz"
 ```
 
 <!--@include: ../../php-definition/_include/bind_notes.md-->
