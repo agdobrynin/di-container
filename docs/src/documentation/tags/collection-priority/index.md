@@ -14,5 +14,5 @@ aside: false
 Получение приоритета у элемента коллекции в порядке значимости:
 
 1. [Приоритет тега](priority-by-tag.md).
-2. [«Метод-приоритета»](priority-by-method.md).
+2. [«Метод-приоритета» тега](priority-by-method.md).
 3. [«Метод-приоритета» по умолчанию](priority-by-method-default.md).

@@ -33,7 +33,7 @@ outline: [2, 4]
 
 ### Объявление в файлах конфигураций { #priority-by-tag-php-definition }
 
-В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` необходимо указать приоритет каждого тега `'tags.ordered'` в параметре `$priority` метода `bindTag()`[^BindTag].
+В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` необходимо объявить тег `'tags.ordered'` для PHP классов и приоритет каждого тега в параметре `$priority` метода `bindTag()`[^BindTag].
 
 ::: code-group
 
@@ -85,27 +85,29 @@ return static function (): Generator {
 
 <<< @/_code/Tags/container_build_ordered.php [container_build.php]
 
-<<< @/_code/Tags/src/Services/Foo.php
-
-<<< @/_code/Tags/src/Services/Bar.php
-
-<<< @/_code/Tags/src/Services/Baz.php
-
-<<< @/_code/Tags/src/Services/Qux.php
-
 ::: 
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```text
+string(16) "App\Services\Qux"
+string(16) "App\Services\Baz"
+string(16) "App\Services\Bar"
+```
 
 Порядок сортировки внедрённой коллекции обусловлен значениями `$prioriy` для каждого тега.
 
 ### Объявление через атрибуты { #priority-by-tag-attributes }
 
-Элементам коллекции, представленные PHP классами, добавим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с параметром `$priority`.
+Объявить тег `'tags.ordered'` PHP классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с параметром `$priority` для каждого тега. 
 
 ::: code-group
-
-<<< @/_code/Tags/src/Services/BarOrderedAttr.php [Bar.php]
-
-<<< @/_code/Tags/src/Services/BazOrderedAttr.php [Baz.php]
 
 ```php [Qux.php]
 <?php
@@ -125,12 +127,29 @@ final class Qux
     // …
 }
 ```
+<<< @/_code/Tags/src/Services/BazOrderedAttr.php [Baz.php]
+
+<<< @/_code/Tags/src/Services/BarOrderedAttr.php [Bar.php]
 
 <<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
 
 <<< @/_code/Tags/src/Services/FooOrderedAttr.php [Foo.php]
 
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```text
+string(16) "App\Services\Qux"
+string(16) "App\Services\Baz"
+string(16) "App\Services\Bar"
+```
 
 Порядок сортировки внедрённой коллекции обусловлен значениями в параметре `$priority` атрибута `\Kaspi\DiContainer\Attributes\Tag` для каждого тега.
 

@@ -144,7 +144,7 @@ export default defineConfig({
                         items: [
                           { text: 'Обзор', link: 'index.md' },
                           { text: 'Приоритет тега', link: 'priority-by-tag.md' },
-                          { text: '«Метод-приоритета»', link: 'priority-by-method.md' },
+                          { text: '«Метод-приоритета» тега', link: 'priority-by-method.md' },
                           { text: '«Метод-приоритета» по умолчанию', link: 'priority-by-method-default.md' },
                         ],
                       },
