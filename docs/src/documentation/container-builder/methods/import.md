@@ -46,7 +46,21 @@ $builder = (new DiContainerBuilder())
 
 ## Пример объявления PHP классов из файловой системы { #example }
 
-Необходимо объявить PHP классы из директории проекта `'/app/src'`. PHP классы в директории `''/app/src/Various/'` необходимо исключить из контейнера.  
+PHP классы:
+
+::: code-group
+
+<<< @/_code/src/Services/ReportBuilder.php
+
+<<< @/_code/src/Interfaces/ReportsStorageInterface.php
+
+<<< @/_code/src/Storages/ReportsStorage.php
+
+<<< @/_code/src/Various/Qux.php
+
+:::
+
+Необходимо объявить PHP классы из директории проекта `'/app/src'`. PHP классы в директории `'/app/src/Various/'` необходимо исключить из контейнера.
 
 ::: code-group
 
@@ -76,27 +90,29 @@ $container = (new DiContainerBuilder())
 $reportBuilder = $container->get(ReportBuilder::class);
 
 var_dump($reportBuilder->storage->dir);
-// string (9) "/var/data"
-
 var_dump($reportBuilder->lastDays);
-// int(10)
-
 var_dump($container->has(Qux::class));
-// bool(false)
 
 $container->get(Qux::class); //[!code error]
-// throw exception: `\Kaspi\DiContainer\Exception\NotFoundException`
 ```
+
 <<< @/_code/config/report_parameters.php
 
-<<< @/_code/src/Services/ReportBuilder.php
-
-<<< @/_code/src/Interfaces/ReportsStorageInterface.php
-
-<<< @/_code/src/Storages/ReportsStorage.php
-
-<<< @/_code/src/Various/Qux.php
-
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```terminaloutput
+string (9) "/var/data"
+int(10)
+bool(false)
+PHP Warning:  Uncaught Kaspi\DiContainer\Exception\NotFoundException: No entry was found for 'App\Various\Qux' identifier.
+```
 
 <!--@include: ../../_include/term_notes.md-->
