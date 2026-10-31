@@ -11,12 +11,12 @@ use function Kaspi\DiContainer\{diAutowire, diParameter};
 return static function (): Generator {
     yield diAutowire(ReportStorage::class)
         ->bindArguments(
-            dir: diParameter('params.report_output_dir'),
+            dir: diParameter('params.report_output_dir'),//[!code ++]
         );
 
     yield diAutowire(ReportMaker::class)
         ->bindArguments(
-            lastDays: diParameter('params.last_days')
+            lastDays: diParameter('params.last_days')//[!code ++]
         );
 
     // other services

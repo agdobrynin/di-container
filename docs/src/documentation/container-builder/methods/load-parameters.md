@@ -9,10 +9,23 @@
 
 ### Пример { #example }
 
-Объявить параметры контейнера `'params.report_output_dir'` для директории вывода отчетов PHP класса `\App\Storages\ReportStorage::$dir` и `'params.last_days'` для количества последних дней формирования отчёта PHP класса `\App\Services\ReportMaker::$lastDays`.
+PHP классы:
 
 ::: code-group
 
+<<< @/_code/src/Services/ReportMaker.php
+
+<<< @/_code/src/Storages/ReportStorage.php
+
+:::
+
+В файле конфигураций `report_parameters.php` объявить скалярные значения для параметров контейнера:
+- `'params.report_output_dir'` – директория вывода отчётов.
+- `'params.last_days'` – количество последних дней используемых при формировании отчёта.
+
+В файле конфигураций `report_services_with_params.php` объявлены PHP классы с внедрением скалярных параметров через параметры контейнера.
+
+::: code-group
 
 ```php [container_build.php]
 <?php
@@ -28,28 +41,32 @@ use App\Services\ReportMaker;
 $container = (new DiContainerBuilder())
     ->load('/app/config/report_services_with_params.php')// [!code highlight]
     ->loadParameters('/app/config/report_parameters.php')// [!code ++]
-    // переопеделит ранее объявленный параметр
-    ->setParameter('params.last_days', 15)// [!code ++]
     ->build();
 
 $service = $container->get(ReportMaker::class);
 
 var_dump($service->storage->dir);
-// string (9) "/var/data"
-
 var_dump($service->lastDays);
-// int(15)
 ```
 
 <<< @/_code/config/report_parameters.php
 
 <<< @/_code/config/report_services_with_params.php
 
-<<< @/_code/src/Services/ReportMaker.php
-
-<<< @/_code/src/Storages/ReportStorage.php
-
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```terminaloutput
+string (9) "/var/data"
+int(10)
+```
 
 > [!NOTE]
 > Прочитайте главу «[параметры контейнера](../../container-parameters/index.md)».
