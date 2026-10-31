@@ -23,7 +23,19 @@
 > [!WARNING]
 > <!--@include: ../_include/build_id_equals.md-->
 
-Пример использования:
+### Пример использования { #example-load }
+
+PHP классы:
+
+::: code-group
+
+<<< @/_code/src/Storages/ReportStorage.php
+
+<<< @/_code/src/Services/ReportMaker.php
+
+:::
+
+В файле конфигураций `report_services.php` необходимо объявить PHP класс `\App\Storages\ReportStorage` с внедрением скалярной зависимости в параметр `$dir` и PHP класс `\App\Services\ReportMaker` с внедрением скалярной зависимости в параметр `$lastDays`.
 
 ::: code-group
 
@@ -45,20 +57,25 @@ $container = (new DiContainerBuilder())
 $service = $container->get(ReportMaker::class);
 
 var_dump($service->storage->dir);
-// string (9) "/var/data"
-
 var_dump($service->lastDays);
-// int(10)
 ```
 
 <<< @/_code/config/report_services.php
 
-<<< @/_code/src/Services/ReportMaker.php
-
-<<< @/_code/src/Storages/ReportStorage.php
-
 :::
 
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```text
+string (9) "/var/data"
+int(10)
+```
 
 > [!TIP]
 > Для объявления PHP классов используем [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md).
