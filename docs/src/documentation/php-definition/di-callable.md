@@ -152,7 +152,7 @@ string(26) "Lorem ipsum dolor sit amet"
 
 В файлах конфигураций можно указать вызываемый тип[^CallableType] «как-есть», при условии что контейнер сможет самостоятельно внедрить требуемые зависимости на основании конфигурации контейнера.
 
-### 🚧🚧🚧🚧
+Объявление `callable` типа в файле конфигураций преобразуется контейнером в хелпер функцию `diCallable()`.
 
 ### Пример объявления callable типов «как-есть» { #example-convert-to-di-callable }
 
@@ -160,28 +160,30 @@ PHP классы и функции:
 
 ::: code-group
 
-```php [ServiceFoo.php]
+```php [Foo.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/src/Services/ServiceFoo.php// [!code highlight]
+// file: /app/src/Services/Foo.php// [!code highlight]
 
 namespace App\Services;
 
+use App\Helpers\Env;
+
 use function getenv;
 
-class ServiceFoo
+class Foo
 {
     public function __construct(
         public readonly string $apiKey,
         public readonly bool $debug
     ) {}
 
-    public static function makeForLocal(bool $debug = true): self
+    public static function makeForLocal(Env $env, bool $debug = true): self
     {
-        $apiKey = getenv('APP_API_KEY_LOCAL');
+        $apiKey = $env::apiKey();
 
-        return new self($apiKey, $debug)
+        return new self($apiKey, $debug);
     }
 }
 ```
@@ -194,14 +196,15 @@ declare(strict_types=1);
 
 namespace App\Functions;
 
-use App\Services\ServiceFoo;
+use App\Services\Foo;
+use App\Helpers\Env;
 
 use function getenv;
 
-function staging_service(bool $debug = false): ServiceOne {
-    $apiKey = getenv('APP_API_KEY_STAGING');
+function staging_service(Env $env, bool $debug = false): Foo {
+    $apiKey = $env::apiKey();
 
-    return new ServiceFoo($apiKey, $debug);
+    return new Foo($apiKey, $debug);
 }
 
 ```
@@ -222,20 +225,58 @@ class Env
 
     public static function apiKey(): string
     {
-        return match (getenv('APP_ENV')) {
+        $apiKey = match (getenv('APP_ENV')) {
             'dev' => getenv('APP_API_KEY_LOCAL'),
             'staging' => getenv('APP_API_KEY_STAGING'),
             'prod' => getenv('APP_API_KEY_PROD'),
         };
+        
+        // $apiKey calculation
+        
+        return $apiKey;
     }
 }
 ```
 
 :::
 
-В файле конфигураций `callable_as_is.php` необходимо объявить три идентификатора контейнера `'services.foo.one'`, `'services.foo.two'`, `'services.foo.three'`. Метод контейнера `get()` обращаясь по этим идентификаторам должен получать объект PHP класса `\App\Services\ServiceFoo` с различными значениями свойств `$apiKey` и `$debug`.
+В файле конфигураций `callable_as_is.php` необходимо объявить три идентификатора контейнера:
+- `'services.foo_from_anonymous_fn'` – анонимная функция.
+- `'services.foo_from_static_method'` – статический метод класса.
+- `'services.foo_from_function'` – функция.
 
-::: code-group
+Метод контейнера `get()` обращаясь по этим идентификаторам должен получать объект PHP класса `\App\Services\Foo` с различными значениями свойств `$apiKey` и `$debug`.
+
+::: code-group 
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php// [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+
+putenv('APP_ENV=dev');// [!code highlight]
+putenv('APP_API_KEY_LOCAL=FOO-BAR');// [!code highlight]
+putenv('APP_API_KEY_STAGING=BAR-BAZ');// [!code highlight]
+putenv('APP_API_KEY_PROD=BAZ-QUX');// [!code highlight]
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/callable_as_is.php')// [!code ++]
+    ->build();
+
+$fooFromFn = $container->get('services.foo_from_anonymous_fn');
+var_dump($fooFromFn);
+
+$fooFromStaticMethod = $container->get('services.foo_from_static_method');
+var_dump($fooFromStaticMethod);
+
+$fooFromFunction = $container->get('services.foo_from_function');
+var_dump($fooFromStaticMethod);
+```
 
 ```php [callable_as_is.php]
 <?php
@@ -243,25 +284,52 @@ declare(strict_types=1);
 
 // file: /app/config/callable_as_is.php// [!code highlight]
 
-use App\Services\ServiceFoo;
+use App\Services\Foo;
 
 return static function (): Generator {
-   // 1️⃣ анонимная функция
-   yield 'services.foo.one' => static fn () => new ServiceFoo(
+   yield 'services.foo_from_anonymous_fn' => static fn () => new Foo(
         apiKey: 'qwerty-value',
         debug: false
     );
 
-   // 2️⃣ статический метод класса
-   yield 'services.foo.two' => [ServiceFoo::class, 'makeForLocal'];
+   yield 'services.foo_from_static_method' => [ServiceFoo::class, 'makeForLocal'];
    
-   // 3️⃣ функция
-   yield 'services.foo.three' => 'App\Functions\staging_service';
+   yield 'services.foo_from_function' => 'App\Functions\staging_service';
 };
 ```
 
 :::
 
-Объявления `callable` типов в файле конфигураций `/app/config/callable_as_is.php` будут автоматически конвертированы в хелпер функцию `diCallable()`.
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+object(App\Services\Foo)#1 (2) {
+  ["apiKey"]=>
+  string(12) "qwerty-value"
+  ["debug"]=>
+  bool(false)
+}
+
+object(App\Services\Foo)#1 (2) {
+  ["apiKey"]=>
+  string(7) "FOO-BAR"
+  ["debug"]=>
+  bool(true)
+}
+
+object(App\Services\Foo)#1 (2) {
+  ["apiKey"]=>
+  string(7) "FOO-BAR"
+  ["debug"]=>
+  bool(false)
+}
+```
+
 
 <!--@include: ../_include/term_notes.md-->
