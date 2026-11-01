@@ -45,9 +45,13 @@ outline: [2, 4]
 
 При объявлении PHP класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` пустая строка в параметре `$id` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP класса.
 
-::: code-group
+Объявить PHP класс через атрибут, который будет доступен через метод контейнера `$container->get(App\Services\Foo::class)`.
 
+::: code-group
 <<< @/_code/attribute-definition/autowire/Foo.php
+:::
+
+::: code-group
 
 ```php [container_build.php]
 <?php
@@ -67,18 +71,33 @@ $container = (new DiContainerBuilder())
 $foo = $container->get(Foo::class);//[!code highlight]
 
 var_dump($foo->value);
-// string(11) "Lorem ipsum"
 ```
 
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(11) "Lorem ipsum"
+```
 
 ### Объявление PHP класса с несколькими идентификаторами { #container-id-multuple }
 
 Атрибут `\Kaspi\DiContainer\Attributes\Autowire` может объявлять один и тот же PHP класс в контейнере с разными идентификаторами[^ContainerId].
 
-::: code-group
+Объявить PHP класс `App\Services\Bar` через атрибут. При обращении через метод контейнера `$container->get(App\Services\Bar::class)` свойство класса `$value` должно иметь значение `10`, при обращении через `$container->get('services.bar_20')` свойство класса `$value` должно иметь значение `20`. 
 
+::: code-group
 <<< @/_code/attribute-definition/autowire/Bar.php
+:::
+
+::: code-group
 
 ```php [container_build.php]
 <?php
@@ -95,26 +114,33 @@ $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
     ->build();
 
-var_dump($container->has(Bar::class));//[!code highlight]
-// bool(true)
-
 $bar = $container->get(Bar::class);
-
 var_dump($bar->value);
-// int(10)
 
-var_dump($container->has('services.bar_20'));//[!code highlight]
-// bool(true)
 
 $bar20 = $container->get('services.bar_20');
-
 var_dump($bar20->value);
-// int(20)
 ```
 
 :::
 
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+int(10)
+int(20)
+```
+
+
 ## Аргументы конструктора PHP класса { #arguments }
+
+## 🚧🚧🚧
 
 Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\Autowire` передает аргументы конструктору PHP класса.
 
