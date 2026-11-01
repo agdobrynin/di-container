@@ -45,7 +45,7 @@ outline: [2, 4]
 
 При объявлении PHP класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` пустая строка в параметре `$id` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP класса.
 
-Объявить PHP класс через атрибут, который будет доступен через метод контейнера `$container->get(App\Services\Foo::class)`.
+Объявить PHP класс `App\Services\Foo` через атрибут, идентификатор контейнера должен быть строкой `'App\Services\Foo'`, и объявить внедрение скалярного значения `'Lorem ipsum'` в параметр конструктора класса `$value`.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/Foo.php
@@ -91,7 +91,9 @@ string(11) "Lorem ipsum"
 
 Атрибут `\Kaspi\DiContainer\Attributes\Autowire` может объявлять один и тот же PHP класс в контейнере с разными идентификаторами[^ContainerId].
 
-Объявить PHP класс `App\Services\Bar` через атрибут. При обращении через метод контейнера `$container->get(App\Services\Bar::class)` свойство класса `$value` должно иметь значение `10`, при обращении через `$container->get('services.bar_20')` свойство класса `$value` должно иметь значение `20`. 
+Объявить PHP класс `App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'App\Services\Bar'`, и объявить внедрение скалярного значения `10` в параметр конструктора `$value`.
+
+Объявить PHP класс `App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'services.bar_20'`, и объявить внедрение скалярного значения `20` в параметр конструктора `$value`.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/Bar.php
@@ -140,8 +142,6 @@ int(20)
 
 ## Аргументы конструктора PHP класса { #arguments }
 
-## 🚧🚧🚧
-
 Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\Autowire` передает аргументы конструктору PHP класса.
 
 <!--@include: _include/arguments.md-->
@@ -150,14 +150,29 @@ int(20)
 
 ### Пример объявления аргументов конструктору { #example }
 
-Необходимо объявить PHP класс `\App\Services\FooService` с разными аргументами. 
-
-Так как идентификатор контейнера должен быть уникальным в рамках контейнера, необходимо объявить PHP класс `\App\Services\FooService` используя атрибут `\Kaspi\DiContainer\Attributes\Autowire` и значение в параметре `$id`. 
+PHP классы:
 
 ::: code-group
 
 <<< @/_code/attribute-definition/autowire/FooService.php
 
+<<< @/_code/attribute-definition/autowire/BarService.php
+
+<<< @/_code/attribute-definition/autowire/BazService.php
+
+<<< @/_code/attribute-definition/autowire/BatService.php
+
+<<< @/_code/attribute-definition/autowire/Interfaces/QuxInterface.php
+
+::: 
+
+Необходимо объявить PHP класс `\App\Services\FooService` с разными идентификаторами контейнера и аргументами.
+
+::: code-group
+<<< @/_code/attribute-definition/autowire/FooServiceAttr.php [FooService.php]
+:::
+
+::: code-group
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -179,36 +194,37 @@ $container = (new DiContainerBuilder())
 
 $fooService = $container->get(FooService::class);//[!code warning]
 
-var_dump($fooService->bat instanceof BatService);
-// bool(true)
-
-var_dump($fooService->qux instanceof BarService);
-// bool(true)
-
+var_dump($fooService->bat::class);
+var_dump($fooService->qux::class);
 var_dump($fooService->adminEmail);
-// string(19) "manager@example.com"
 
 $fooServiceWithBaz = $container->get('services.foo_service.with_baz');//[!code warning]
 
-var_dump($fooServiceWithBaz->bat instanceof BatService);
-// bool(true)
+echo PHP_EOL;
 
-var_dump($fooServiceWithBaz->qux instanceof BazService);
-// bool(true)
-
+var_dump($fooServiceWithBaz->bat::class);
+var_dump($fooServiceWithBaz->qux::class);
 var_dump($fooServiceWithBaz->adminEmail);
-// string(16) "admin@example.com
+```
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
 ```
 
-<<< @/_code/attribute-definition/autowire/BarService.php
+Появится сообщение вида:
 
-<<< @/_code/attribute-definition/autowire/BazService.php
+```console
+string(23) "App\Services\BatService"
+string(23) "App\Services\BarService"
+string(19) "manager@example.com"
 
-<<< @/_code/attribute-definition/autowire/BatService.php
-
-<<< @/_code/attribute-definition/autowire/Interfaces/QuxInterface.php
-
-:::
+string(23) "App\Services\BatService"
+string(23) "App\Services\BazService"
+string(16) "admin@example.com
+```
 
 ## Внедрение зависимостей через сеттер-методы { #setups }
 
@@ -250,7 +266,7 @@ final class Foo
         // …
     }
     
-    public function baz(QuxInterface $qux): void
+    public function baz(QuxInterface $qux): self
     {
         // …
     }
@@ -288,11 +304,15 @@ final class Foo
 
 ## Внедрения зависимости в параметр метода { #autowire-on-param }
 
-Объявить внедрение PHP класса в параметр метода или вызываемого типа[^CallableType] можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire`.
+Объявить внедрение PHP класса в параметр метода или вызываемого тип[^CallableType] можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire`.
 
-Значение в параметре `$id` атрибута `Autowire` может быть указано пустой строкой или строкой FQCN [^FQCN].
+Значение в параметре `$id` атрибута `Autowire` может быть указано пустой строкой или строкой FQCN[^FQCN].
 
 Пустая строка в параметре `$id` атрибута `Autowire` будет интерпретирована конфигуратором как тип параметра[^TypeHints] для которого применяется атрибут.
+
+### Пример объявления внедрения в параметр метода { #example-autowire-on-param }
+
+PHP классы:
 
 ::: code-group
 
@@ -305,56 +325,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Interfaces\QuxInterface;
-use Kaspi\DiContainer\Attributes\Autowire;
-use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
 
 class Foo
 {
     public function __construct(
-        #[Autowire(
-            id: Bar::class,// [!code ++]
-            arguments: [// [!code ++]
-                new DiParameter('emails.bar')// [!code ++]
-            ]// [!code ++]
-        )]
         public readonly QuxInterface $qux,
-
-        #[Autowire(
-            arguments: [// [!code ++]
-                new DiParameter('emails.baz')// [!code ++]
-            ]// [!code ++]
-        )]
         public readonly Baz $baz,
     ) {}
 }
-```
-
-```php
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container_build.php // [!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz};
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
-    ->addParameters([
-        'emails.bar' => 'manager@example.com',//[!code highlight]
-        'emails.baz' => 'admin@example.com',//[!code highlight]
-    ])
-    ->build();
-
-$foo = $container->get(Foo::class);//[!code warning]
-
-var_dump($foo->qux->notifyEmail);
-// string(19) "manager@example.com"
-
-var_dump($foo->baz->email);
-// string(16) "admin@example.com
 ```
 
 ```php [Bar.php]
@@ -392,5 +370,84 @@ final class Baz
 <<< @/_code/attribute-definition/autowire/Interfaces/QuxInterface.php
 
 :::
+
+Объявить внедрение в параметры конструктора `$qux` и `$baz` через атрибут `Kaspi\DiContainer\Attributes\Autowire` PHP класса `\App\Services\Foo`.
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\DiDefinition\DiDefinitionParameter as DiParameter;
+
+class Foo
+{
+    public function __construct(
+        #[Autowire(
+            id: Bar::class,// [!code ++]
+            arguments: [// [!code ++]
+                new DiParameter('emails.bar')// [!code ++]
+            ]// [!code ++]
+        )]
+        public readonly QuxInterface $qux,
+
+        #[Autowire(
+            arguments: [// [!code ++]
+                new DiParameter('emails.baz')// [!code ++]
+            ]// [!code ++]
+        )]
+        public readonly Baz $baz,
+    ) {}
+}
+```
+
+:::
+
+::: code-group
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar, Baz};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->addParameters([
+        'emails.bar' => 'manager@example.com',//[!code highlight]
+        'emails.baz' => 'admin@example.com',//[!code highlight]
+    ])
+    ->build();
+
+$foo = $container->get(Foo::class);//[!code warning]
+
+var_dump($foo->qux->notifyEmail);
+var_dump($foo->baz->email);
+```
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(19) "manager@example.com"
+string(16) "admin@example.com"
+```
 
 <!--@include: ../_include/term_notes.md-->
