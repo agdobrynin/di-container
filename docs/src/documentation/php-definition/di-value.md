@@ -32,19 +32,6 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 ::: code-group
 
-```php [emails.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/emails.php // [!code highlight]
-
-use function Kaspi\DiContainer\diValue;
-
-return static function(): Generator {
-     yield 'admin.email.tasks' => diValue('runner@company.inc'); // [!code ++]
-};
-```
-
 ```php [container.php]
 <?php
 declare(strict_types=1);
@@ -57,15 +44,47 @@ use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Bar;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/emails.php')//[!code highlight]
+    ->load('/app/config/emails.php')//[!code ++]
     ->build();
 
-$email = $container->get('admin.email.tasks');//[!code highlight]
+$emails = $container->get('tasks.emails');//[!code highlight]
 
 var_dump($email);
-// string(18) "runner@company.inc"
+```
+
+```php [emails.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/emails.php // [!code highlight]
+
+use function Kaspi\DiContainer\diValue;
+
+return static function(): Generator {
+     yield 'tasks.emails' => diValue([// [!code ++]
+        'runner@company.inc',// [!code ++]
+        'monitor@company.inc',// [!code ++]
+    ]);// [!code ++]
+};
 ```
 
 ::: 
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+array(2) {
+  [0]=>
+  string(18) "runner@company.inc"
+  [1]=>
+  string(19) "monitor@company.inc"
+}
+```
 
 <!--@include: ../_include/term_notes.md-->
