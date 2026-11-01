@@ -63,16 +63,13 @@ use App\Core\Kernel;
 use function Kaspi\DiContainer\diRuntime;
 
 return static function (): Generator {
-    yield diRuntime(Kernel::class);
-    /*
-     * 🚩 Эквивалентно объявлению // [!code highlight]
-     * Kernel::class => diRuntime(Kernel::class); // [!code warning]
-     */
+    yield Kernel::class => diRuntime(Kernel::class);//[!code --]
+    yield diRuntime(Kernel::class);//[!code ++]
 };
 ```
 
 > [!NOTE]
-> Пример файла конфигураций выше позволяет получить объект методом контейнера `$container->get(\App\Core\Kernel::class)`.
+> Пример файла конфигураций выше позволяет получить объект методом контейнера `$container->get(App\Core\Kernel::class)`.
 
 
 Так же доступно объявление объекта с произвольным строковым идентификатором контейнера[^ContainerId]:
