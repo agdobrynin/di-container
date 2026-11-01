@@ -26,49 +26,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
 ## Пример внедрение в параметр с типом mixed { #example }
 
-Необходимо внедрить PHP класс `\App\Services\Bar` через конструктор в параметр `$entry` класса `\App\Services\Foo`.
+PHP классы:
 
 ::: code-group
-
-```php [services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/services.php // [!code highlight]
-
-use App\Service\{Foo, Bar};
-
-use function Kaspi\DiContainer\{diAutowire, diGet};
-
-
-return static function (): Generator {
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            entry: diGet(Bar::class)// [!code ++]
-        );
-};
-```
-
-```php [container_build.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container_build.php // [!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar};
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')
-    ->build();
-
-$foo = $container->get(Foo::class);// [!code highlight]
-
-var_dump($foo->entry instanceof Bar);
-// (bool) true
-```
 
 ```php [Foo.php]
 <?php
@@ -99,6 +59,63 @@ final class Bar
 ```
 
 :::
+
+Необходимо объявить PHP класс `\App\Services\Foo` c внедрением в параметр `$entry` PHP класса `\App\Services\Bar`. 
+
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar};
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')// [!code ++]
+    ->build();
+
+$foo = $container->get(Foo::class);// [!code highlight]
+
+var_dump($foo->entry instanceof Bar);
+```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
+use App\Service\{Foo, Bar};
+
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            entry: diGet(Bar::class)// [!code ++]
+        );
+};
+```
+
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+(bool) true
+```
 
 ## Рецепты { #cookbook }
 
