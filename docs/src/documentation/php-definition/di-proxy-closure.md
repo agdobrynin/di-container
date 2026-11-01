@@ -49,25 +49,14 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 
 Чтобы обеспечить доступность «ленивого» определения через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
 
+Ресурсоёмкий PHP класс требующий длительной инициализации:
+
+<<< @/_code/php-definition/di-proxy-closure/Bar.php
+
+Метод контейнера `$container->get('services.bar_lazy')` должен возвращать «ленивый» объект класса `\App\Services\Bar`.
+
 ::: code-group
 
-```php [lazy_entries.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/lazy_entries.php // [!code highlight]
-
-use App\Services\Bar;
-
-use function Kaspi\DiContainer\diProxyClosure;
-
-return static function(): Generator {
-    yield 'services.bar_lazy' => diProxyClosure(// [!code ++]
-        Bar::class,// [!code ++]
-        isSingleton: true// [!code ++]
-    );// [!code ++]
-};
-```
 
 ```php [container.php]
 <?php
@@ -87,21 +76,77 @@ $container = (new DiContainerBuilder())
 $barLazy = $container->get('services.bar_lazy');
 
 var_dump($barLazy instanceof Closure);
-// bool(true)
-
 var_dump(($barLazy)() instanceof Bar);
-// bool(true)
 ```
 
-<<< @/_code/php-definition/di-proxy-closure/Bar.php
+```php [lazy_entries.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/lazy_entries.php // [!code highlight]
+
+use App\Services\Bar;
+
+use function Kaspi\DiContainer\diProxyClosure;
+
+return static function(): Generator {
+    yield 'services.bar_lazy' => diProxyClosure(// [!code ++]
+        Bar::class,// [!code ++]
+        isSingleton: true// [!code ++]
+    );// [!code ++]
+};
+```
 
 :::
 
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+bool(true)
+bool(true)
+```
+
 ## Пример внедрения параметра с отложенной инициализацией { #example }
 
-PHP класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления. Необходимо внедрить `\App\Services\Bar` в конструктор класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP класс `\Closure`.
+PHP классы:
+
+::: code-group
+
+<<< @/_code/php-definition/di-proxy-closure/Bar.php
+
+<<< @/_code/php-definition/di-proxy-closure/Foo.php
+
+:::
+
+PHP класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления, его внедрить в параметр `$barProxy` конструктора PHP класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP класс `\Closure`.
 
 ::: code-group 
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar};
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')//[!code ++]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->getBar() instanceof Bar);
+```
 
 ```php [services.php]
 <?php
@@ -121,32 +166,19 @@ return static function(): Generator {
 };
 ```
 
-```php [container.php]
-<?php
-declare(strict_types=1);
+:::
 
-// file: /app/src/container.php //[!code highlight]
+Выполните в терминале команду:
 
-require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar};
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')//[!code highlight]
-    ->build();
-
-$foo = $container->get(Foo::class);
-
-var_dump($foo->getBar() instanceof Bar);
-// bool(true)
+```shell
+php /app/src/container.php
 ```
 
-<<< @/_code/php-definition/di-proxy-closure/Foo.php
+Появится сообщение вида:
 
-<<< @/_code/php-definition/di-proxy-closure/Bar.php
-
-:::
+```console
+bool(true)
+```
 
 > [!TIP]
 > Используйте [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) для подсказок и автодополнения в IDE:

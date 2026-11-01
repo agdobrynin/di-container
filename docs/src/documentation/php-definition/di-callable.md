@@ -93,7 +93,7 @@ PHP классы:
 
 :::
 
-Метод контейнера `get('baz.factory_method')` должен возвращать результат выполнения вызываемого типа `\App\Services\Baz::factoryMethod()`.
+Метод контейнера ``$container->get('baz.factory_method')` должен возвращать результат выполнения вызываемого типа `\App\Services\Baz::factoryMethod()`.
 
 Для метода `\App\Services\Baz::factoryMethod()` объявить внедрение скалярного типа в параметр `$name` через метод `bindArguments()`, в параметр `$bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
 
