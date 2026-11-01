@@ -33,49 +33,13 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 ## Идентификатор контейнера { #container-id }
 
-Чтобы обеспечить доступность «фабрики» через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций соответствующий идентификатор контейнера[^ContainerId].
+Чтобы обеспечить доступность «фабрики» через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций соответствующий идентификатор контейнера[^ContainerId] и объявить «фабрику».
+
+### Пример объявления с идентификатором { #example }
+
+PHP классы:
 
 ::: code-group
-
-```php [factories.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/factories.php// [!code highlight]
-
-use App\Services\Foo;
-
-use function Kaspi\DiContainer\diFactory;
-
-return static function(): Generator {
-    yield 'services.foo_factory' => diFactory([Foo::class, 'createValue'])//[!code ++]
-        ->bindArguments(//[!code ++]
-           prefixValue: 'Lorem ipsum'//[!code ++]
-        );//[!code ++]
-};
-```
-
-```php [container.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container.php // [!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/factories.php')// [!code highlight]
-    ->build();
-
-$result = $container->get('services.foo_factory');// [!code highlight]
-
-var_dump($result);
-// string(26) "Lorem ipsum dolor sit amet"
-```
-
 ```php [Foo.php]
 <?php
 declare(strict_types=1);
@@ -114,7 +78,66 @@ final class Bar
     }
 }
 ```
+:::
+
+Метод контейнера `get('services.foo_factory')` должен возвращать результат выполнения «фабрики» `\App\Services\Foo::createValue()`.
+
+Для «фабрики» контейнер внедрит зависимость в параметр конструктора `$bar` самостоятельно, на основании конфигурации.
+
+Для метода `\App\Services\Foo::createValue()` объявить внедрение скалярного типа в параметр `$prefixValue` через метод `bindArguments()`. 
+
+::: code-group
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/factories.php')// [!code highlight]
+    ->build();
+
+$result = $container->get('services.foo_factory');// [!code highlight]
+
+var_dump($result);
+```
+
+```php [factories.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/factories.php// [!code highlight]
+
+use App\Services\Foo;
+
+use function Kaspi\DiContainer\diFactory;
+
+return static function(): Generator {
+    yield 'services.foo_factory' => diFactory([Foo::class, 'createValue'])//[!code ++]
+        ->bindArguments(//[!code ++]
+           prefixValue: 'Lorem ipsum'//[!code ++]
+        );//[!code ++]
+};
+```
 
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+string(26) "Lorem ipsum dolor sit amet"
+```
 
 <!--@include: ../_include/term_notes.md-->
