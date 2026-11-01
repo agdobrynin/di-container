@@ -37,7 +37,7 @@
 
 > [!TIP]
 > Изучите разделы документации
-> - «[Настройка тегов через php атрибут](../tags/attribute-definition-tag.md)».
+> - «[Объявление тега через атрибут](../tags/attribute-definition-tag.md)».
 > - «[Работа с тегами в контейнере](../tags/index.md)».
 
 <!--@include: ../_include/term_notes.md-->

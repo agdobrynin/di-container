@@ -26,20 +26,20 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
 Параметры:
 - `$name` – имя тега или FQNC [^FQCN] PHP интерфейса.
-- `$isLazy` – «[ленивая коллекция](../tags/index.md#collection-is-lazy)».
-- `$priorityDefaultMethod` – «[метод-приоритета](../tags/collection-priority/priority-by-method-default.md)» по умолчанию.
-- `$useKeys` – использовать [идентификаторы элементов коллекции](../tags/using-collecton-key/index.md).
-- `$key` – [имя метаданных](../tags/using-collecton-key/key-in-metadata.md) получаемое из тега.
-- `$keyDefaultMethod` – «[метод идентификатора](../tags/using-collecton-key/key-from-method-default.md)» элемента коллекции по умолчанию.
-- `$containerIdExclude` – [исключить из коллекции](../tags/exclide-from-collection.md#exclude-by-id) элементы по идентификатору контейнера.
-- `$selfExclude` – [исключить из коллекции вызывающий PHP класс](../tags/exclide-from-collection.md#exclide-self).
+- `$isLazy` – «ленивая коллекция».
+- `$priorityDefaultMethod` – «метод-приоритета» по умолчанию.
+- `$useKeys` – строковые идентификаторы элементов коллекции.
+- `$key` – имя метаданных в теге коллекции.
+- `$keyDefaultMethod` – «метод идентификатора» элемента коллекции по умолчанию.
+- `$containerIdExclude` – исключить из коллекции элементы по идентификатору контейнера.
+- `$selfExclude` – исключить из коллекции вызывающий PHP класс.
 
 У хелпер функции нет дополнительных методов.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
 > [!TIP]
-> Изучите раздел документации «[Настройка тегов в файлах конфигураций](../tags/php-definition-tag.md)».
+> Изучите раздел документации «[Объявление тега в файлах конфигураций](../tags/php-definition-tag.md)».
 > 
 > Для подробного ознакомления с механизмом формирования **приоритетов элементов коллекции, идентификаторов элементов коллекции** изучите раздел документации «[Работа с тегами в контейнере](../tags/index.md)».
 
