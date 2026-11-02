@@ -25,7 +25,44 @@
 
 ## Пример внедрение в параметр с типом mixed { #example }
 
-Необходимо внедрить PHP класс `\App\Services\Bar` через конструктор в параметр `$entry` класса `\App\Services\Foo`.
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(
+        public readonly mixed $entry
+    ) {}
+}
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+:::
+
+Необходимо внедрить в параметр конструктора `$entry` PHP класса `\App\Services\Foo` объект класса `\App\Services\Bar`.
+
+Параметр конструктора `$entry` PHP класса `\App\Services\Foo` представлен типом `mixed` поэтому контейнер не сможет самостоятельно решать какой тип зависимости необходимо внедрять в этот параметр. Конкретизируем через атрибут `\Kaspi\DiContainer\Attributes\Inject` объект необходимый для внедрения.
 
 ::: code-group
 
@@ -48,6 +85,10 @@ final class Foo
 }
 ```
 
+::: 
+
+::: code-group
+
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -63,26 +104,23 @@ $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')
     ->build();
 
-$foo = $container->get(Foo::class);// [!code highlight]
+$foo = $container->get(Foo::class);
 
 var_dump($foo->entry instanceof Bar);
-// (bool) true
+```
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
 ```
 
-```php [Bar.php]
-<?php
-declare(strict_types=1);
+Появится сообщение вида:
 
-// file: /app/src/Services/Bar.php //[!code highlight]
-
-namespace App\Services;
-
-final class Bar
-{
-    // …
-}
+```console
+(bool) true
 ```
-::: 
 
 ## Рецепты { #cookbook }
 
