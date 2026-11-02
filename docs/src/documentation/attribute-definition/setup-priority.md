@@ -22,7 +22,77 @@
 
 ## Пример изменения приоритета сеттер-методов { #example }
 
-Необходимо внедрить зависимости через сеттер-методы класса `\App\Services\Foo::bar()` и `\App\Services\Foo::baz()`. Первым необходимо внедрить зависимость через сеттер-метод `\App\Services\Foo::baz()`, после этого внедрить зависимость через `\App\Services\Foo::bar()`.
+PHP-классы:
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+use function array_values;
+
+final class Foo
+{
+    private array $injectedClass = [];
+
+    // …
+
+    public function bar(Bar $bar): void
+    {
+        $this->injectedClass[Bar::class] = $bar;
+    }
+
+    public function baz(Baz $baz): void
+    {
+        $this->injectedClass[Baz::class] = $baz;
+    }
+    
+    public function getInjectedClass(): array
+    {
+        return array_values($this->injectedClass);
+    }
+}
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php //[!code highlight]
+
+namespace App\Services;
+
+final class Baz
+{
+    // …
+}
+```
+
+:::
+
+
+Необходимо объявить внедрение зависимости через сеттер-методы класса `\App\Services\Foo::bar()` и `\App\Services\Foo::baz()`.
+
+Первым необходимо внедрить зависимость через сеттер-метод `\App\Services\Foo::baz()`, после этого внедрить зависимость через `\App\Services\Foo::bar()`.
 
 Используем атрибут `\Kaspi\DiContainer\Attributes\SetupPriority` для метода `\App\Services\Foo::baz()` чтобы указать очерёдность внедрения через сеттер-методы.
 
@@ -67,6 +137,10 @@ final class Foo
 }
 ```
 
+::: 
+
+::: code-group
+
 ```php [container.php]
 <?php
 declare(strict_types=1);
@@ -84,43 +158,26 @@ $container = (new DiContainerBuilder())
 
 $foo = $container->get(Foo::class);
 
-$injectedClass = $foo->getInjectedClass();
-
-var_dump($injectedClass[0] instanceof Baz);//[!code highlight]
-// bool(true)
-
-var_dump($injectedClass[1] instanceof Bar);//[!code highlight]
-// bool(true)
-```
-
-```php [Bar.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Bar.php //[!code highlight]
-
-namespace App\Services;
-
-final class Bar
-{
-    // …
+foreach ($foo->getInjectedClass() as $injectedClass) {
+    var_dump($injectedClass::class);
 }
 ```
 
-```php [Baz.php]
-<?php
-declare(strict_types=1);
+:::
 
-// file: /app/src/Services/Baz.php //[!code highlight]
 
-namespace App\Services;
+Выполните в терминале команду:
 
-final class Baz
-{
-    // …
-}
+```shell
+php /app/src/container.php
 ```
 
-::: 
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Baz"
+string(16) "App\Services\Bar"
+
+```
 
 <!--@include: ../_include/term_notes.md-->
