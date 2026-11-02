@@ -38,7 +38,7 @@ outline: [2, 3]
 
 При объявлении PHP класса через атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` пустая строка в параметре `$containerIdentifier` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP класса.
 
-PHP класс объявленный ниже будет доступен через идентификатор контейнера `'App\Services\FooServices'`:
+Объявить PHP класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть строкой `'App\Services\FooServices'`.
 
 ::: code-group
 
@@ -58,7 +58,9 @@ final class FooService
     // …
 }
 ```
+:::
 
+::: code-group
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -74,17 +76,34 @@ $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')
     ->build();
 
-$container->has(FooService::class);// [!code highlight]
-// (bool) true
+$container->has(FooService::class);
 ```
 
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+(bool) true
+```
 
 ### Объявление с несколькими идентификаторами { #container-id-multuple }
 
 Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` может объявлять один и тот же PHP класс в контейнере с разными идентификаторами[^ContainerId].
 
-```php
+Объявить PHP класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'App\Services\FooService'`.
+
+Объявить PHP класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'services.foo_service'`.
+
+::: code-group
+
+```php [FooService.php]
 <?php
 declare(strict_types=1);
 
@@ -102,6 +121,8 @@ final class FooService
 }
 ```
 
+:::
+
 ## Теги { #tags }
 
 Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\DiRuntime` устанавливает тег и метаданные для объявляемого PHP класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
@@ -110,7 +131,9 @@ final class FooService
 
 Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP классу**, даже если у класса указан атрибут `Tag`.
 
-```php
+::: code-group
+
+```php [FooService.php]
 <?php
 declare(strict_types=1);
 
@@ -130,5 +153,7 @@ final class FooService
     // …
 }
 ```
+
+:::
 
 <!--@include: ../_include/term_notes.md-->
