@@ -73,7 +73,6 @@ $result = $container->call(
 );
 
 var_dump($result);
-// string(22) "The name 'Ivan' saved!"
 ```
 
 ```php [PostController.php]
@@ -104,6 +103,18 @@ final class PostController
 <<< @/_code/src/Services/ServiceOne.php
 
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(22) "The name 'Ivan' saved!"
+```
 
 Фактически метод `call()` выполнит создание экземпляра класса `\App\Controllers\PostController` с внедрением зависимостей в конструктор и вызовет метод `\App\Controllers\PostController::store()`:
 
@@ -140,7 +151,6 @@ $result = $container->call(
 );
 
 var_dump($result);
-// string(22) "The name 'Ivan' saved!"
 ```
 
 ```php [SavePostController.php]
@@ -172,19 +182,16 @@ final class SavePostController
 
 :::
 
-Код выше эквивалентен этому код:
+Выполните в терминале команду:
 
-```php
+```shell
+php /app/src/container_build.php
+```
 
-$savePostController = $container->get(SavePostController::class);
+Появится сообщение вида:
 
-$result = $container->call(
-    [
-        $savePostController,
-        '__invoke'
-    ],
-    name: 'Ivan'
-);
+```console
+string(22) "The name 'Ivan' saved!"
 ```
 
 ## Функция { #example-function }
@@ -214,7 +221,6 @@ $result = $container->call(
 ); 
 
 var_dump($result);
-// string(22) "The name 'Ivan' saved!"
 ```
 
 ```php [functions.php]
@@ -243,6 +249,18 @@ if (!function_exists('App\Functions\one_service')) {
 :::
 
 
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(22) "The name 'Ivan' saved!"
+```
+
 Фактически метод `call()` выполнит следующий код:
 
 ```php
@@ -251,5 +269,21 @@ if (!function_exists('App\Functions\one_service')) {
     name: 'Ivan',
 );
 ```
+
+## Метод PHP объекта { #example-object-method }
+
+Для некоторых сценариев использования контейнера метод `call()` может быть удобен ?????
+
+🚧🚧🚧🚧
+
+example https://www.slimframework.com/docs/v4/objects/routing.html#get-route
+
+```php
+$app->get('/books/{id}', function ($request, $response, array $args) {
+    // Show book identified by $args['id']
+});
+```
+
+router + container: $object = $c->get(router->path('name')) + call(\[$object, router->path('name2')], router->paams('id')) 
 
 <!--@include: ../_include/term_notes.md-->
