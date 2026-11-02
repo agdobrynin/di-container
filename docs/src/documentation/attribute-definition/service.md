@@ -28,51 +28,9 @@
 
 ## Пример конфигурирования интерфейса { #example-interface-service }
 
+PHP классы и интерфейсы:
+
 ::: code-group
-
-
-```php [QuxInterface.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Interfaces/QuxInterface.php // [!code highlight]
-
-namespace App\Interfaces;
-
-use Kaspi\DiContainer\Attributes\Service;//[!code ++]
-use App\Services\Bar;
-
-#[Service(Bar::class)]//[!code ++]
-interface QuxInterface
-{
-    // …
-} 
-```
-
-```php [container.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container.php //[!code highlight]
-
-require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar};
-use App\Interfaces\QuxInterface;
-
-$container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
-    ->build();
-
-$foo = $container->get(Foo::class);
-
-var_dump($foo->qux instanceof QuxInterface);
-// bool(true)
-
-var_dump($foo->qux instanceof Bar);
-// bool(true)
-```
 
 ```php [Foo.php]
 <?php
@@ -88,6 +46,20 @@ final class Foo
 {
     public function __construct(public readonly QuxInterface $qux) {} 
 }
+```
+
+```php [QuxInterface.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/QuxInterface.php // [!code highlight]
+
+namespace App\Interfaces;
+
+interface QuxInterface
+{
+    // …
+} 
 ```
 
 ```php [Bar.php]
@@ -108,11 +80,74 @@ final class Bar implements QuxInterface
 
 :::
 
-Объявление реализации интерфейса `\App\Interfaces\QuxInterface` PHP классом `\App\Services\Bar` является глобальным. При внедрении зависимости с типом `\App\Interfaces\QuxInterface` контейнер всегда будет внедрять реализацию указанную в параметре `$id` атрибута `\Kaspi\DiContainer\Attributes\Service`.
+Необходимо глобально объявить, что PHP-класс `\App\Services\Bar` реализует интерфейс `\App\Interfaces\QuxInterface`.
+
+Это означает что контейнер на основании конфигурации будет внедрять в параметры методов или функций с типом `\App\Interfaces\QuxInterface` PHP-класс `\App\Services\Bar`.
+
+::: code-group
+
+```php [QuxInterface.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/QuxInterface.php // [!code highlight]
+
+namespace App\Interfaces;
+
+use Kaspi\DiContainer\Attributes\Service;//[!code ++]
+use App\Services\Bar;//[!code ++]
+
+#[Service(Bar::class)]//[!code ++]
+interface QuxInterface
+{
+    // …
+} 
+```
+
+:::
+
+::: code-group
+
+```php [container.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Bar};
+use App\Interfaces\QuxInterface;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->qux instanceof QuxInterface);
+var_dump($foo->qux instanceof Bar);
+```
+
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+bool(true)
+bool(true)
+```
 
 ## Конфигурация интерфейсов сторонних производителей { #inject-vendor-interface }
 
-При внедрении через интерфейс от сторонних производителей, например из других PHP пакетов, нужно объявлять реализацию интерфейса через [файлы конфигураций](../container-builder/methods/load-definitions-from-file.md) или через [коллекцию](../container-builder/methods/load-definitions-from-collection.md) при сборке контейнера.
+При объявлении внедрения в параметре с типом интерфейс от сторонних производителей, например из других PHP пакетов, нужно объявлять реализацию интерфейса через [файлы конфигураций](../container-builder/methods/load-definitions-from-file.md) или через [коллекцию](../container-builder/methods/load-definitions-from-collection.md) при сборке контейнера.
 
 ```php
 <?php

@@ -119,10 +119,21 @@ $container = (new DiContainerBuilder())
 $foo = $container->get(Foo::class);
 
 var_dump($foo->getBar() instanceof Bar);
-// bool(true)
 ```
 
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+bool(true)
+```
 
 > [!TIP]
 > Используйте [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) для подсказок и автодополнения в IDE:
