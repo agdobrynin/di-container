@@ -21,6 +21,40 @@
 
 ## Пример исключения PHP класса { #example }
 
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+final class Foo
+{
+    // …
+}
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php // [!code highlight]
+
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+:::
+
 Исключить из контейнера PHP класс `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude`.
 
 ::: code-group
@@ -42,6 +76,10 @@ final class Foo
 }
 ```
 
+:::
+
+::: code-group
+
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -58,28 +96,23 @@ $container = (new DiContainerBuilder())
     ->build();
 
 var_dump($container->has(Foo::class));
-// (bool) false
-
 var_dump($container->has(Bar::class));
-// (bool) true
-```
-
-```php [Bar.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Bar.php // [!code highlight]
-
-namespace App\Services;
-
-final class Bar
-{
-    // …
-}
 ```
 
 :::
 
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+(bool) false
+(bool) true
+```
 
 <!--@include: ../_include/term_notes.md-->
 
