@@ -272,18 +272,92 @@ string(22) "The name 'Ivan' saved!"
 
 ## Метод PHP объекта { #example-object-method }
 
-Для некоторых сценариев использования контейнера метод `call()` может быть удобен ?????
+В ряде сценариев использования контейнера метод `call()` может оказаться удобным, если вам нужно создать экземпляр PHP-класса, а затем вызвать у него какой-либо метод, при этом внедрение зависимостей в параметры методов происходит автоматически на основании конфигурации контейнера.
 
-🚧🚧🚧🚧
+::: code-group
 
-example https://www.slimframework.com/docs/v4/objects/routing.html#get-route
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-```php
-$app->get('/books/{id}', function ($request, $response, array $args) {
-    // Show book identified by $args['id']
-});
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')
+    ->build();
+
+
+$foo = new Foo();
+$calculateResult = $foo->doCalculateSomething();
+
+if (0 < $calculateResult) {
+    $container->call([$foo, 'save']);
+} else {
+    $container->call([$foo, 'delete']);
+}
 ```
 
-router + container: $object = $c->get(router->path('name')) + call(\[$object, router->path('name2')], router->paams('id')) 
+```php [Foo.php]
+<?php
+declare(strict_types=1);
 
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+final class Foo
+{
+    // …
+    
+    public function doCalculateSomething(): int
+    {
+        // calculate data
+    }
+    
+    public function save(Bar $bar): void
+    {
+        // …
+    }
+    
+    public function delete(Baz $baz): void
+    {
+        // …
+    }
+}
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php // [!code highlight]
+
+namespace App\Services;
+
+final class Bar
+{
+    // …
+}
+```
+
+```php [Baz.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php // [!code highlight]
+
+namespace App\Services;
+
+final class Baz
+{
+    // …
+}
+```
+
+:::
 <!--@include: ../_include/term_notes.md-->
