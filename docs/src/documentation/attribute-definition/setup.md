@@ -2,7 +2,7 @@
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Setup` внедряет зависимости в PHP класс через **мутабельные сеттер-методы**[^SetterMethodMutable].
+Атрибут `\Kaspi\DiContainer\Attributes\Setup` внедряет зависимости в PHP-класс через **мутабельные сеттер-методы**[^SetterMethodMutable].
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_METHOD`

@@ -37,7 +37,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 ### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 <<< @/_code/php-definition/di-callable/Baz.php
@@ -47,7 +47,7 @@ PHP классы:
 <<< @/_code/php-definition/di-callable/Foo.php
 :::
 
-В файле конфигураций `callable_entries.php` необходимо объявить PHP класс `\App\Services\Foo` и указать внедрение зависимости в параметр `$value` через вызываемый тип[^CallableType] – `\App\Services\Baz::factoryMethod()`.
+В файле конфигураций `callable_entries.php` необходимо объявить PHP-класс `\App\Services\Foo` и указать внедрение зависимости в параметр `$value` через вызываемый тип[^CallableType] – `\App\Services\Baz::factoryMethod()`.
 
 Для метода `\App\Services\Baz::factoryMethod()` объявить внедрение скалярного типа в параметр `$name` через метод `bindArguments()`, в параметр `$bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
 
@@ -83,7 +83,7 @@ string(26) "Lorem ipsum dolor sit amet"
 
 
 ### Пример объявления с идентификатором { #example-container-id }
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -158,7 +158,7 @@ string(26) "Lorem ipsum dolor sit amet"
 
 ### Пример объявления callable типов «как-есть» { #example-convert-to-di-callable }
 
-PHP классы и функции:
+PHP-классы и функции:
 
 ::: code-group
 
@@ -247,7 +247,7 @@ class Env
 - `'services.foo_from_static_method'` – статический метод класса.
 - `'services.foo_from_function'` – функция.
 
-Метод контейнера `get()` обращаясь по этим идентификаторам должен получать объект PHP класса `\App\Services\Foo` с различными значениями свойств `$apiKey` и `$debug`.
+Метод контейнера `get()` обращаясь по этим идентификаторам должен получать объект PHP-класса `\App\Services\Foo` с различными значениями свойств `$apiKey` и `$debug`.
 
 ::: code-group 
 

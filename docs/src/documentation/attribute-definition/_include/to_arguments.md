@@ -1,6 +1,6 @@
 ::: details В аргументах можно использовать классы других определений контейнера.
 
-- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – php класс.
+- `Kaspi\DiContainer\DiDefinition\DiDefinitionAutowire` – PHP-класс.
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionCallable` – вызываемый тип `callable`.
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionFactory` – [фабрика](../../07-factory.md) для внедрения зависимости.
 - `Kaspi\DiContainer\DiDefinition\DiDefinitionGet` – ссылка на идентификатор контейнера.

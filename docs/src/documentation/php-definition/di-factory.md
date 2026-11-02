@@ -16,7 +16,7 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 ```
 
 Параметры:
-- `$definition` – представление php класса и метода фабрики.
+- `$definition` – представление PHP-класса и метода фабрики.
 - `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 
 Функция `diFactory()` возвращает объект предоставляющий методы:
@@ -37,7 +37,7 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 
 ### Пример объявления с идентификатором { #example }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 ```php [Foo.php]

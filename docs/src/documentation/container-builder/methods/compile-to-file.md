@@ -60,7 +60,7 @@ $container = $builder->build();
 ```
 
 > [!TIP]
-> Будет сформирован PHP класс `\App\Core\FooContainer` и готовый к использованию PHP-код контейнера будет сохранен в файл `/app/var/container/FooContainer.php`.
+> Будет сформирован PHP-класс `\App\Core\FooContainer` и готовый к использованию PHP-код контейнера будет сохранен в файл `/app/var/container/FooContainer.php`.
 > 
 
 > [!WARNING]
@@ -83,7 +83,7 @@ $container = $builder->build();
 
 Параметр `'invalid_behavior'` принимает тип `\Kaspi\DiContainer\Enum\InvalidBehaviorCompileEnum`, значение по умолчанию `InvalidBehaviorCompileEnum::ExceptionOnCompile`.
 
-При компиляции контейнера может быть выброшено исключение в связи с несуществующим PHP классом или отсутствующей конфигураций определения контейнера. Параметр `'invalid_behavior'` и его значение указывает компилятору какое поведение будет при выбросе исключений во время компиляции.
+При компиляции контейнера может быть выброшено исключение в связи с несуществующим PHP-классом или отсутствующей конфигураций определения контейнера. Параметр `'invalid_behavior'` и его значение указывает компилятору какое поведение будет при выбросе исключений во время компиляции.
 
 1. Остановить компиляцию и выбросить исключение с сообщением:
 > `'invalid_behavior' => InvalidBehaviorCompileEnum::ExceptionOnCompile`
@@ -95,16 +95,16 @@ $container = $builder->build();
 
 Параметр `'di_definition_transformer'` принимает объект, значение по умолчанию пустая строка.
 
-PHP класс отвечающий за трансформацию определений контейнера в PHP классы необходимые компилятору. 
+PHP-класс отвечающий за трансформацию определений контейнера в PHP-классы необходимые компилятору. 
 
-Разработчик может создать собственный PHP класс, который будет реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`, и объект этого класса передать в параметр `'di_definition_transformer' => $customTransformer`.
+Разработчик может создать собственный PHP-класс, который будет реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\Compiler\DiDefinitionTransformerInterface`, и объект этого класса передать в параметр `'di_definition_transformer' => $customTransformer`.
 
 ### Хранение скомпилированных определений контейнера { #compiled_entries }
 
 Параметр `'compiled_entries'` принимает объект, значение по умолчанию пустая строка.
 
-PHP класс отвечающий за хранение скомпилированных определений контейнера.
+PHP-класс отвечающий за хранение скомпилированных определений контейнера.
 
-Разработчик может создать собственный PHP класс, который будет реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface`, и объект этого класса передать в параметр `'compiled_entries' => $customCompiledEntries`.
+Разработчик может создать собственный PHP-класс, который будет реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\Compiler\CompiledEntriesInterface`, и объект этого класса передать в параметр `'compiled_entries' => $customCompiledEntries`.
 
 <!--@include: ../../_include/term_notes.md-->

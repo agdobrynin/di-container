@@ -12,13 +12,13 @@ outline: [2, 4]
 Метод `call()` может вызвать `callable` тип, что означает:
 - Анонимная функция.
 - Функция.
-- Статический метод PHP класса.
+- Статический метод PHP-класса.
 - Метод PHP объекта.
 - PHP объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke).
-- **Метод может `call()` преобразовать** к `callable` не инициализированный PHP класс и его метод:
-  - Вызов нестатического метода PHP класса.
+- **Метод может `call()` преобразовать** к `callable` не инициализированный PHP-класс и его метод:
+  - Вызов нестатического метода PHP-класса.
     - `$container->call([App\Services\Foo::class, 'methodName']);`
-  - Вызов [магического метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) в PHP классе.
+  - Вызов [магического метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) в PHP-классе.
     - `$container->call(App\Services\CallableService::class);`
 
 Сигнатура метода:
@@ -43,7 +43,7 @@ outline: [2, 4]
 Параметры вызываемого типа не получившие аргументы будут внедрены контейнером самостоятельно, на основании конфигурации.
 
 
-## Нестатический метод PHP класса { #example-php-class }
+## Нестатический метод PHP-класса { #example-php-class }
 
 Получить результат вызова метода `\App\Controllers\PostController::store()` с передачей аргумента для параметра `$name`.
 
@@ -113,9 +113,9 @@ final class PostController
     ->post(name: 'Ivan')
 ```
 
-## Магический метод __invoke() в PHP классе { #example-php-class-invoke }
+## Магический метод __invoke() в PHP-классе { #example-php-class-invoke }
 
-PHP класс `App\Controllers\SavePostController` реализует магический метод `__invoke()` который может быть вызван через метод контейнера `call()`.
+PHP-класс `App\Controllers\SavePostController` реализует магический метод `__invoke()` который может быть вызван через метод контейнера `call()`.
 
 ::: code-group
 

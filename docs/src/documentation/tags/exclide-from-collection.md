@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Коллекции могу исключать элементы. Исключить из коллекции можно по идентификатору контейнера [^ContainerId] элемента коллекции или вызывающий PHP класс, т.е. самого себя.
+Коллекции могу исключать элементы. Исключить из коллекции можно по идентификатору контейнера [^ContainerId] элемента коллекции или вызывающий PHP-класс, т.е. самого себя.
 
 ## Исключение из коллекции по идентификатору контейнера { #exclude-by-id }
 
@@ -16,7 +16,7 @@ outline: [2, 4]
 
 ### Пример исключения из коллекции элементов { #example-exclude-by-id }
 
-PHP классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` отмечены тегом `'tags.internal_service'`.
+PHP-классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` отмечены тегом `'tags.internal_service'`.
 
 В параметр `\App\Service\Foo::$services` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из коллекции элемент с идентификатором контейнера `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get(App\Services\Baz::class)`.
 
@@ -100,7 +100,7 @@ foreach ($foo->services as $service) {
 
 В параметре `$containerIdExclude` [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
 
-Объявление тега PHP классу через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md). 
+Объявление тега PHP-классу через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md). 
 
 ::: code-group
 
@@ -142,10 +142,10 @@ foreach ($foo->services as $service) {
 
 ## Исключение вызывающего класса { #exclide-self }
 
-В коллекции элементов может содержаться PHP класс внедряющий эту же коллекцию. Для исключения такого поведения обратите внимание на параметр `$selfExclude`
+В коллекции элементов может содержаться PHP-класс внедряющий эту же коллекцию. Для исключения такого поведения обратите внимание на параметр `$selfExclude`
 в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md). По умолчанию значение этого параметра `true`.
 
-Если вызывающий PHP класс должен быть в коллекции, то необходимо указать в параметр `$selfExclude` значение `false`.
+Если вызывающий PHP-класс должен быть в коллекции, то необходимо указать в параметр `$selfExclude` значение `false`.
 
 ::: code-group
 

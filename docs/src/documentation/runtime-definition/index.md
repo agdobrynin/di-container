@@ -5,24 +5,24 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-В некоторых сценариях использования контейнера может возникнуть ситуация когда необходимо внедрить зависимость PHP класс, но конфигурация этого PHP класса заранее не известна, т.е. на момент конфигурирования известен только идентификатор контейнера[^ContainerId] или FQCN[^FQCN] этого PHP класса.
+В некоторых сценариях использования контейнера может возникнуть ситуация когда необходимо внедрить зависимость PHP-класс, но конфигурация этого PHP-класса заранее не известна, т.е. на момент конфигурирования известен только идентификатор контейнера[^ContainerId] или FQCN[^FQCN] этого PHP-класса.
 
-Реальное состояние объекта (_PHP класса_) инициализируется вне контейнера, и устанавливается в контейнер только во время выполнения, по заранее определенному идентификатору контейнера или FQCN этого PHP класса.
+Реальное состояние объекта (_PHP-класса_) инициализируется вне контейнера, и устанавливается в контейнер только во время выполнения, по заранее определенному идентификатору контейнера или FQCN этого PHP-класса.
 
-Такой PHP класс в рамках контейнера зависимостей называется **«Runtime Definition»**.
+Такой PHP-класс в рамках контейнера зависимостей называется **«Runtime Definition»**.
 
-Во время [компиляции контейнера](../container-builder/index.md#compile-to-file) параметры зависящие от **«Runtime Definition»** должны знать о существовании PHP класса который будет установлен в контейнер зависимостей только во время выполнения.
+Во время [компиляции контейнера](../container-builder/index.md#compile-to-file) параметры зависящие от **«Runtime Definition»** должны знать о существовании PHP-класса который будет установлен в контейнер зависимостей только во время выполнения.
 
 Объявление в контейнере «**Runtime Definition**» через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md) или [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
 
 > [!IMPORTANT]
-> Объявление в конфигурации контейнера **«Runtime Definition»** не создает конфигурацию PHP класса, а только предоставляет идентификатор контейнера[^ContainerId].
+> Объявление в конфигурации контейнера **«Runtime Definition»** не создает конфигурацию PHP-класса, а только предоставляет идентификатор контейнера[^ContainerId].
 
 ## Пример внедрения «Runtime definition» { #example-di-runtime }
 
 Необходимо объявить в контейнере зависимостей класс `\App\Core\Kernel` и класс `\App\Services\Qux` как **«Runtime Definition»**.
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -99,7 +99,7 @@ final class Bar
 
 ### Файлы конфигураций { #example-di-runtime-php-definition }
 
-Объявим в [файле конфигураций](../container-builder/configuration_files.md) требуемые нам PHP классы через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md):
+Объявим в [файле конфигураций](../container-builder/configuration_files.md) требуемые нам PHP-классы через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md):
 
 ::: code-group
 
@@ -168,10 +168,10 @@ var_dump($bar->kernel instanceof Kernel);
 
 ### Атрибуты { #example-di-runtime-attribute }
 
-Объявим требуемые нам PHP классы через [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md): 
+Объявим требуемые нам PHP-классы через [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md): 
 
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 

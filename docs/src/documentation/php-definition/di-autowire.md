@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Хелпер функция `diAutowire()` объявляет PHP класс в контейнере.
+Хелпер функция `diAutowire()` объявляет PHP-класс в контейнере.
 
 Сигнатура функции:
 
@@ -24,7 +24,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 ): Args & Setup & Tag & Resetter
 ```
 Параметры:
-- `$definition` – FQCN [^FQCN] объявляемого PHP класса.
+- `$definition` – FQCN [^FQCN] объявляемого PHP-класса.
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$isLazy` – объявить «ленивый объект».
 
@@ -35,7 +35,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 
 Функция `diAutowire()` возвращает объект предоставляющий методы:
- - `bindArguments()` – аргументы конструктора PHP класса.
+ - `bindArguments()` – аргументы конструктора PHP-класса.
  - `setup()` – внедрение зависимостей через мутабельный сеттер-метод [^SetterMethodMutable].
  - `setupImmutable()` – внедрение зависимостей через иммутабельный сеттер-метод [^SetterMethodImmutable].
  - `bindTag()` – тег с метаданными.
@@ -61,7 +61,7 @@ return static function (): Generator {
 };
 ```
 
-Идентификатор контейнера для объявляемого PHP класса может быть указан произвольной строкой.
+Идентификатор контейнера для объявляемого PHP-класса может быть указан произвольной строкой.
 
 ```php
 <?php
@@ -87,13 +87,13 @@ return static function (): Generator {
 
 ## bindArguments()
 
-Аргументы для конструктора PHP класса.
+Аргументы для конструктора PHP-класса.
 
 <!--@include: _include/bind_arguments.md-->
 
 ### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -149,11 +149,11 @@ string(9) "/var/data"
 
 ## Сеттер-методы внедрения зависимостей { #di-autowire-setter-method }
 
-Помимо внедрения зависимостей через конструктор PHP класса существует возможность внедрения зависимостей через сеттер-методы PHP класса.
+Помимо внедрения зависимостей через конструктор PHP-класса существует возможность внедрения зависимостей через сеттер-методы.
 
 ### setup()
 
-Метод `setup()` внедряет зависимость в PHP класс через **мутабельный сеттер-метод** [^SetterMethodMutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+Метод `setup()` внедряет зависимость в PHP-класс через **мутабельный сеттер-метод** [^SetterMethodMutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
 Сигнатура метода:
 
@@ -171,7 +171,7 @@ DiDefinitionSetupAutowireInterface::setup(
 
 #### Пример внедрения через метод setup() { #example-setter-method-setup }
 
-PHP класс:
+PHP-класс:
 
 ```php
 <?php
@@ -266,9 +266,9 @@ int(384)
 
 ### setupImmutable()
 
-Метод `setupImmutable()` внедряет зависимость в PHP класс через **иммутабельный сеттер-метод**[^SetterMethodImmutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+Метод `setupImmutable()` внедряет зависимость в PHP-класс через **иммутабельный сеттер-метод**[^SetterMethodImmutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
-Сеттер-метод должен возвращать тип `self`, `static` или тип объявляемого PHP класса в хелпер функции `diAutowire()`.
+Сеттер-метод должен возвращать тип `self`, `static` или тип объявляемого PHP-класса в хелпер функции `diAutowire()`.
 
 Сигнатура метода:
 
@@ -288,7 +288,7 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 > [Пример использования метода `setupImmutable()`](../../cookbook/autowire-setup.md)
 
 ## bindTag()
-Теги позволяют отнести объявляемый PHP класс к коллекции элементов отмеченных одним тегом.
+Теги позволяют отнести объявляемый PHP-класс к коллекции элементов отмеченных одним тегом.
 
 <!--@include: _include/bind_tag.md-->
 

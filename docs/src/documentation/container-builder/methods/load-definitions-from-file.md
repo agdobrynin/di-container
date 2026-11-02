@@ -28,7 +28,7 @@ outline: [2, 3]
 
 ### Пример использования метода load() { #example-load }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -38,7 +38,7 @@ PHP классы:
 
 :::
 
-В файле конфигураций `report_services.php` объявлены PHP классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`.
+В файле конфигураций `report_services.php` объявлены PHP-классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`.
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->
@@ -104,7 +104,7 @@ int(10)
 
 ### Пример использования метода loadOverride() { #example-load-override }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -114,7 +114,7 @@ PHP классы:
 
 :::
 
-В файле конфигураций `report_services.php` объявлены PHP классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если определена переменная среды `APP_ENV` со значением `'dev'`, то для этих классов необходимо объявить внедрение скалярных зависимостей с другими значениями, т.е. перезаписать ранее объявленные определения с новыми значениями для тех же идентификаторов контейнера[^ContainerId]. 
+В файле конфигураций `report_services.php` объявлены PHP-классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если определена переменная среды `APP_ENV` со значением `'dev'`, то для этих классов необходимо объявить внедрение скалярных зависимостей с другими значениями, т.е. перезаписать ранее объявленные определения с новыми значениями для тех же идентификаторов контейнера[^ContainerId]. 
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->

@@ -5,9 +5,9 @@ outline: [2, 3]
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` объявляет PHP класс в контейнере, реальное состояние которого будет инициализировано вне контейнера, и его значение будет установлено только во время выполнения.
+Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` объявляет PHP-класс в контейнере, реальное состояние которого будет инициализировано вне контейнера, и его значение будет установлено только во время выполнения.
 
-Такой PHP класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
+Такой PHP-класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`
@@ -36,9 +36,9 @@ outline: [2, 3]
 
 ## Идентификатор контейнера { #container-id }
 
-При объявлении PHP класса через атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` пустая строка в параметре `$containerIdentifier` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP класса.
+При объявлении PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` пустая строка в параметре `$containerIdentifier` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP-класса.
 
-Объявить PHP класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть строкой `'App\Services\FooServices'`.
+Объявить PHP-класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть строкой `'App\Services\FooServices'`.
 
 ::: code-group
 
@@ -95,11 +95,11 @@ php /app/src/container_build.php
 
 ### Объявление с несколькими идентификаторами { #container-id-multuple }
 
-Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` может объявлять один и тот же PHP класс в контейнере с разными идентификаторами[^ContainerId].
+Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` может объявлять один и тот же PHP-класс в контейнере с разными идентификаторами[^ContainerId].
 
-Объявить PHP класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'App\Services\FooService'`.
+Объявить PHP-класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'App\Services\FooService'`.
 
-Объявить PHP класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'services.foo_service'`.
+Объявить PHP-класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'services.foo_service'`.
 
 ::: code-group
 
@@ -125,11 +125,11 @@ final class FooService
 
 ## Теги { #tags }
 
-Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\DiRuntime` устанавливает тег и метаданные для объявляемого PHP класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
+Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\DiRuntime` устанавливает тег и метаданные для объявляемого PHP-класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
 
-Значение `null` в параметре `$tags` указывает контейнеру на необходимость **установить тег через атрибут `Tag` указанный в объявляемом PHP классе**.
+Значение `null` в параметре `$tags` указывает контейнеру на необходимость **установить тег через атрибут `Tag` указанный в объявляемом PHP-классе**.
 
-Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP классу**, даже если у класса указан атрибут `Tag`.
+Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP-классу**, даже если у класса указан атрибут `Tag`.
 
 ::: code-group
 

@@ -2,7 +2,7 @@
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\SetupPriority` изменяет очерёдность внедрения зависимостей через сеттер-методы PHP класса и используется вместе с атрибутами [`Setup`](setup.md) и [`SetupImmutable`](setup-immutable.md).
+Атрибут `\Kaspi\DiContainer\Attributes\SetupPriority` изменяет очерёдность внедрения зависимостей через сеттер-методы PHP-класса и используется вместе с атрибутами [`Setup`](setup.md) и [`SetupImmutable`](setup-immutable.md).
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_METHOD`

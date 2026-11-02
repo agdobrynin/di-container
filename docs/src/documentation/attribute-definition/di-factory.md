@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP класс в контейнере, или [внедряет зависимость](#di-factory-param).
+Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP-класс в контейнере, или [внедряет зависимость](#di-factory-param).
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`
@@ -38,13 +38,13 @@ outline: [2, 4]
 > [!TIP]
 > Изучите раздел документации [«Использование фабричных методов для внедрения зависимостей»](../07-factory.md).
 
-## Объявление PHP класса { #di-factory-class }
+## Объявление PHP-класса { #di-factory-class }
 
-PHP класс можно объявить через атрибут `\Kaspi\DiContainer\Attributes\DiFactory`, фабричный метод[^FactoryPattern] должен возвращать объявляемый класс, обеспечивая доступ к объявляемому PHP классу через методы контейнера `get()` и `has()`.
+PHP-класс можно объявить через атрибут `\Kaspi\DiContainer\Attributes\DiFactory`, фабричный метод[^FactoryPattern] должен возвращать объявляемый класс, обеспечивая доступ к объявляемому PHP-классу через методы контейнера `get()` и `has()`.
 
-### Пример объявления PHP класса через «фабрику» { #di-factory-class-example }
+### Пример объявления PHP-класса через «фабрику» { #di-factory-class-example }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 ```php [Qux.php]
@@ -69,7 +69,7 @@ final class Qux
 
 :::
 
-Объявить PHP класс `\App\Services\Qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()` – нестатический метод класса.
+Объявить PHP-класс `\App\Services\Qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()` – нестатический метод класса.
 
 ::: code-group
 
@@ -135,7 +135,7 @@ string(4) "Fuuz"
 
 ### Пример объявления внедрения зависимости через фабрику { #example-di-factory-param }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -165,7 +165,7 @@ final class Foo
 
 :::
 
-Для PHP класса `\App\Services\Foo` необходимо объявить внедрение зависимости в параметр `$qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()` – нестатический метод класса.
+Для PHP-класса `\App\Services\Foo` необходимо объявить внедрение зависимости в параметр `$qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()` – нестатический метод класса.
 
 
 ::: code-group

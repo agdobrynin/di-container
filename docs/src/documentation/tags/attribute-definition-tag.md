@@ -2,7 +2,7 @@
 
 ## Обзор { #overview }
 
-[Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) объявляет тег и метаданные для PHP класса.
+[Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) объявляет тег и метаданные для PHP-класса.
 
 [Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом с одинаковым именем.
 

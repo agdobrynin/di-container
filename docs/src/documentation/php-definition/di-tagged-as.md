@@ -32,7 +32,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 - `$key` – имя метаданных в теге коллекции.
 - `$keyDefaultMethod` – «метод идентификатора» элемента коллекции по умолчанию.
 - `$containerIdExclude` – исключить из коллекции элементы по идентификатору контейнера.
-- `$selfExclude` – исключить из коллекции вызывающий PHP класс.
+- `$selfExclude` – исключить из коллекции вызывающий PHP-класс.
 
 У хелпер функции нет дополнительных методов.
 

@@ -22,7 +22,7 @@
 
 ## Пример внедрения через вызываемый тип { #example }
 
-PHP классы и функции:
+PHP-классы и функции:
 
 ::: code-group
 
@@ -104,9 +104,9 @@ if (!function_exists('App\calculate_str')) {
 
 :::
 
-Для PHP класса `\App\Services\Foo` необходимо объявить внедрение в параметры конструктора `$bar` и `$calcStr`, при этом оба параметра требуют комплексных вычислений. 
+Для PHP-класса `\App\Services\Foo` необходимо объявить внедрение в параметры конструктора `$bar` и `$calcStr`, при этом оба параметра требуют комплексных вычислений. 
 
-Для параметра `$bar` класса `\App\Services\Foo` необходимо использовать метод `\App\Helpers\Configurator::doConfigBar()` выполняющий необходимые вычисления для инициализации PHP класса `\App\Services\Bar`. Статический метод PHP класса является вызываемым типом[^CallableType] поэтому используем атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` для внедрения зависимости в параметр конструктора `$bar`.
+Для параметра `$bar` класса `\App\Services\Foo` необходимо использовать метод `\App\Helpers\Configurator::doConfigBar()` выполняющий необходимые вычисления для инициализации PHP-класса `\App\Services\Bar`. Статический метод PHP-класса является вызываемым типом[^CallableType] поэтому используем атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` для внедрения зависимости в параметр конструктора `$bar`.
 
 Во второй параметр `$calcStr` класса `\App\Services\Foo` необходимо внедрить значение вычисляемое функцией `\App\calculate_str()`, внедрение так же объявим через атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable`.
 

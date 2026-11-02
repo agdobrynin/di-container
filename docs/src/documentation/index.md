@@ -80,7 +80,7 @@ $container->set($bar::class, $bar);
 - `\Kaspi\DiContainer\Interfaces\DiContainerInterface`
 - `\Kaspi\DiContainer\DiContainer`
 
-Для свойства PHP класса:
+Для свойства PHP-класса:
 ```php
 <?php
 declare(strict_types=1);

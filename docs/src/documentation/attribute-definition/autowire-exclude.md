@@ -3,7 +3,7 @@
 ## Обзор { #overview }
 
 
-Атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude` исключает из внедряемых зависимостей контейнера PHP класс или интерфейс. FQCN [^FQCN] будет недоступен для метода контейнера `get()` и `has()`.  
+Атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude` исключает из внедряемых зависимостей контейнера PHP-класс или интерфейс. FQCN [^FQCN] будет недоступен для метода контейнера `get()` и `has()`.  
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`
@@ -19,9 +19,9 @@
 > [!WARNING]
 > Атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude` исключает из конфигурирования любые другие атрибуты.
 
-## Пример исключения PHP класса { #example }
+## Пример исключения PHP-класса { #example }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -55,7 +55,7 @@ final class Bar
 
 :::
 
-Исключить из контейнера PHP класс `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude`.
+Исключить из контейнера PHP-класс `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude`.
 
 ::: code-group
 

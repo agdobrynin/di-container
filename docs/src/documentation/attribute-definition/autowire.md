@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` объявляет PHP класс в контейнере, или [внедряет зависимость в параметр метода](#autowire-on-param).
+Атрибут `\Kaspi\DiContainer\Attributes\Autowire` объявляет PHP-класс в контейнере, или [внедряет зависимость в параметр метода](#autowire-on-param).
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`
@@ -30,7 +30,7 @@ outline: [2, 4]
 
 - `$id` – идентификатор контейнера [^ContainerId], или пустая строка.
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
-- `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP класса.
+- `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP-класса.
 - `$tags` – тег с метаданными.
 - `$setups` – внедрение зависимостей через сеттер-метод [^SetterMethodMutable] [^SetterMethodImmutable].
 - `$resetter` – конфигурация сброса состояния объекта.
@@ -43,9 +43,9 @@ outline: [2, 4]
 
 ## Идентификатор контейнера { #container-id }
 
-При объявлении PHP класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` пустая строка в параметре `$id` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP класса.
+При объявлении PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` пустая строка в параметре `$id` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP-класса.
 
-Объявить PHP класс `\App\Services\Foo` через атрибут, идентификатор контейнера должен быть строкой `'App\Services\Foo'`, и объявить внедрение скалярного значения `'Lorem ipsum'` в параметр конструктора класса `$value`.
+Объявить PHP-класс `\App\Services\Foo` через атрибут, идентификатор контейнера должен быть строкой `'App\Services\Foo'`, и объявить внедрение скалярного значения `'Lorem ipsum'` в параметр конструктора класса `$value`.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/Foo.php
@@ -87,13 +87,13 @@ php /app/src/container_build.php
 string(11) "Lorem ipsum"
 ```
 
-### Объявление PHP класса с несколькими идентификаторами { #container-id-multuple }
+### Объявление PHP-класса с несколькими идентификаторами { #container-id-multuple }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` может объявлять один и тот же PHP класс в контейнере с разными идентификаторами[^ContainerId].
+Атрибут `\Kaspi\DiContainer\Attributes\Autowire` может объявлять один и тот же PHP-класс в контейнере с разными идентификаторами[^ContainerId].
 
-Объявить PHP класс `\App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'App\Services\Bar'`, и объявить внедрение скалярного значения `10` в параметр конструктора `$value`.
+Объявить PHP-класс `\App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'App\Services\Bar'`, и объявить внедрение скалярного значения `10` в параметр конструктора `$value`.
 
-Объявить PHP класс `\App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'services.bar_20'`, и объявить внедрение скалярного значения `20` в параметр конструктора `$value`.
+Объявить PHP-класс `\App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'services.bar_20'`, и объявить внедрение скалярного значения `20` в параметр конструктора `$value`.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/Bar.php
@@ -140,9 +140,9 @@ int(20)
 ```
 
 
-## Аргументы конструктора PHP класса { #arguments }
+## Аргументы конструктора PHP-класса { #arguments }
 
-Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\Autowire` передает аргументы конструктору PHP класса.
+Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\Autowire` передает аргументы конструктору PHP-класса.
 
 <!--@include: _include/arguments.md-->
 
@@ -150,7 +150,7 @@ int(20)
 
 ### Пример объявления аргументов конструктору { #example }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -166,7 +166,7 @@ PHP классы:
 
 ::: 
 
-Необходимо объявить PHP класс `\App\Services\FooService` с разными идентификаторами контейнера и аргументами.
+Необходимо объявить PHP-класс `\App\Services\FooService` с разными идентификаторами контейнера и аргументами.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/FooServiceAttr.php [FooService.php]
@@ -228,7 +228,7 @@ string(16) "admin@example.com
 
 ## Внедрение зависимостей через сеттер-методы { #setups }
 
-Параметр `$setups` атрибута `\Kaspi\DiContainer\Attributes\Autowire` объявляет внедрение зависимости через сеттер-методы PHP класса, используя атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](setup.md) и [`\Kaspi\DiContainer\Attributes\SetupImmutable`](setup-immutable.md).
+Параметр `$setups` атрибута `\Kaspi\DiContainer\Attributes\Autowire` объявляет внедрение зависимости через сеттер-методы PHP-класса, используя атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](setup.md) и [`\Kaspi\DiContainer\Attributes\SetupImmutable`](setup-immutable.md).
 
 Значение `null` в параметре `$setups` указывает контейнеру на необходимость внедрять зависимости через **атрибуты `Setup` и `SetupImmutable` указанные у методов класса**.
 
@@ -275,11 +275,11 @@ final class Foo
 
 ## Теги { #tags }
 
-Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\Autowire` устанавливает тег и метаданные для объявляемого PHP класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
+Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\Autowire` устанавливает тег и метаданные для объявляемого PHP-класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
 
-Значение `null` в параметре `$tags` указывает контейнеру на необходимость **установить тег через атрибут `Tag` указанный в объявляемом PHP классе**.
+Значение `null` в параметре `$tags` указывает контейнеру на необходимость **установить тег через атрибут `Tag` указанный в объявляемом PHP-классе**.
 
-Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP классу**, даже если у класса указан атрибут `Tag`.
+Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP-классу**, даже если у класса указан атрибут `Tag`.
 
 ```php
 <?php
@@ -304,7 +304,7 @@ final class Foo
 
 ## Внедрения зависимости в параметр метода { #autowire-on-param }
 
-Объявить внедрение PHP класса в параметр метода или вызываемого тип[^CallableType] можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire`.
+Объявить внедрение PHP-класса в параметр метода или вызываемого тип[^CallableType] можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire`.
 
 Значение в параметре `$id` атрибута `Autowire` может быть указано пустой строкой или строкой FQCN[^FQCN].
 
@@ -312,7 +312,7 @@ final class Foo
 
 ### Пример объявления внедрения в параметр метода { #example-autowire-on-param }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -371,7 +371,7 @@ final class Baz
 
 :::
 
-Для PHP класса `\App\Services\Foo` объявить внедрение в параметры конструктора `$qux` и `$baz` через атрибут `Kaspi\DiContainer\Attributes\Autowire`.
+Для PHP-класса `\App\Services\Foo` объявить внедрение в параметры конструктора `$qux` и `$baz` через атрибут `Kaspi\DiContainer\Attributes\Autowire`.
 
 ::: code-group
 

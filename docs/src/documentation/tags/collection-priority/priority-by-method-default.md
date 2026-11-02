@@ -7,7 +7,7 @@ outline: [2, 4]
 
 Для случаев когда определить приоритет элемента коллекции из тега не удается, используется **«метод-приоритета» по умолчанию**.
 
-При отсутствии в PHP классе **«метода-приоритета» по умолчанию**, элемент коллекции получит приоритет со значением `null`.
+При отсутствии в PHP-классе **«метода-приоритета» по умолчанию**, элемент коллекции получит приоритет со значением `null`.
 
 **«Метод-приоритета» по умолчанию** задаётся в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md) или в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
 
@@ -29,15 +29,15 @@ outline: [2, 4]
 
 :::
 
-При этом первым элементом коллекции должен быть PHP класс `\App\Services\Qux`, остальные элементы могут иметь неопределённую очерёдность. Для получения приоритета от элемента коллекции `\App\Services\Qux` воспользуемся возможностью объявить **«метод-приоритета» по умолчанию**, для этого реализуем метод `\App\Services\Qux::getPriority()`:
+При этом первым элементом коллекции должен быть PHP-класс `\App\Services\Qux`, остальные элементы могут иметь неопределённую очерёдность. Для получения приоритета от элемента коллекции `\App\Services\Qux` воспользуемся возможностью объявить **«метод-приоритета» по умолчанию**, для этого реализуем метод `\App\Services\Qux::getPriority()`:
 
 <<< @/_code/Tags/src/Services/QuxPriorityMethod.php
 
 ### Объявление в файлах конфигураций { #php-definition }
 
-В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.ordered'` в параметр `$servies` конструктора PHP класса `\App\Services\Foo` и задать **«метод-приоритета» по умолчанию** в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md).
+В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.ordered'` в параметр `$servies` конструктора PHP-класса `\App\Services\Foo` и задать **«метод-приоритета» по умолчанию** в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md).
 
-В файле конфигураций `tagged_services.php` объявить тег `'tags.ordered'` через метод `bindTag()` для PHP классов.
+В файле конфигураций `tagged_services.php` объявить тег `'tags.ordered'` через метод `bindTag()` для PHP-классов.
 
 ::: code-group
 
@@ -104,7 +104,7 @@ string(16) "App\Services\Baz"
 
 ### Объявление через атрибуты { #attributes }
 
-Для PHP классов объявить тег `'tags.ordered'` через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
+Для PHP-классов объявить тег `'tags.ordered'` через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
 
 Объявить внедрение коллекции элементов отмеченных тегом  `'tags.ordered'` в параметр `$services` конструктора класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) и задать **«метод-приоритета» по умолчанию** `'getPriority'` в параметре `$priorityDefaultMethod`.
 

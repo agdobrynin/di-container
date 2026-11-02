@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Для элементов внедряемой коллекции представленных PHP классом приоритет в коллекции может быть объявлен через «метод-приоритета».
+Для элементов внедряемой коллекции представленных PHP-классом приоритет в коллекции может быть объявлен через «метод-приоритета».
 
 При объявлении тега в [файлах конфигураций](../../container-builder/configuration_files.md) «метод-приоритета» объявляется через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag].
 **Имя метаданных должно быть** представлено строкой `'priority.method'`, значение – имя метода.
@@ -30,14 +30,14 @@ outline: [2, 4]
 
 :::
 
-При этом первым элементом коллекции должен быть PHP класс `\App\Services\Qux`, остальные элементы могут иметь неопределённую очерёдность. Для получения приоритета от элемента коллекции `\App\Services\Qux` воспользуемся возможностью объявить «метод-приоритета» для элемента коллекции, для этого реализуем метод `\App\Services\Qux::getPriority()`:
+При этом первым элементом коллекции должен быть PHP-класс `\App\Services\Qux`, остальные элементы могут иметь неопределённую очерёдность. Для получения приоритета от элемента коллекции `\App\Services\Qux` воспользуемся возможностью объявить «метод-приоритета» для элемента коллекции, для этого реализуем метод `\App\Services\Qux::getPriority()`:
 
 <<< @/_code/Tags/src/Services/QuxPriorityMethod.php
 
 
 ### Объявление в файлах конфигураций { #php-definition }
 
-В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` для PHP класса `\App\Services\Qux` объявить тег `'tags.ordered'` и «метод-приоритета» через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag], для остальных классов объявить тег `'tags.ordered'` через метод `bindTag()`.
+В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` для PHP-класса `\App\Services\Qux` объявить тег `'tags.ordered'` и «метод-приоритета» через [метаданные](../tag-metadata.md) в параметре `$options` метода `bindTag()`[^BindTag], для остальных классов объявить тег `'tags.ordered'` через метод `bindTag()`.
 
 **Имя метаданных для «метода-приоритета» должно быть** представлено строкой `'priority.method'`, значение – `'getPriority'`.
 
@@ -109,7 +109,7 @@ string(16) "App\Services\Baz"
 
 ### Объявление через атрибуты { #attributes }
 
-Объявить тег `'tags.ordered'` для PHP класса `\App\Services\Qux` и «метод-приоритета» в параметре `$priorityMethod` атрибута `\Kaspi\DiContainer\Attributes\Tag`. Для остальных PHP классов объявить тег `'tags.ordered'` через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
+Объявить тег `'tags.ordered'` для PHP-класса `\App\Services\Qux` и «метод-приоритета» в параметре `$priorityMethod` атрибута `\Kaspi\DiContainer\Attributes\Tag`. Для остальных PHP-классов объявить тег `'tags.ordered'` через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
 
 ::: code-group
 

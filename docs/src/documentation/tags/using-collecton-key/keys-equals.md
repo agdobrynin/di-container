@@ -14,7 +14,7 @@ outline: [2, 4]
 
 Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов будут получены из метаданных тегов.
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -54,7 +54,7 @@ final class Baz
 
 ### Настройка в файлах конфигураций { #keys-equals-example-php-definition }
 
-Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md), добавим теги и метаданные PHP классам через метод `bindTag()` [^BindTag].
+Для внедрения коллекции используем [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md), добавим теги и метаданные PHP-классам через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 
@@ -129,9 +129,9 @@ var_dump(
 
 ### Конфигурация через атрибуты { #keys-equals-example-attributes }
 
-Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с указанием ключа `'key_as'` из метаданных тегов, к PHP классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с указанием ключа `'key_as'` из метаданных тегов, к PHP-классам которые будут элементам коллекции [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 

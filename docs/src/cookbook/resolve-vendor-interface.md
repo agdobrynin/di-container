@@ -6,13 +6,13 @@ outline: [2, 4]
 ## Обзор { #overview }
 
 **Для глобального конфигурирования** внедрения по интерфейсу от сторонних производителей, например из других PHP пакетов, 
-нужно указать контейнеру какой PHP класс будет реализацией этого интерфейса. Это можно сделать используя методы [DiContainerBuilder::load()](../container-builder/index.md#load-definitions-from-file) или [DiContainerBuilder::addDefinitions()](../container-builder/index.md#load-definitions-from-collection) при сборке контейнера.
+нужно указать контейнеру какой PHP-класс будет реализацией этого интерфейса. Это можно сделать используя методы [DiContainerBuilder::load()](../container-builder/index.md#load-definitions-from-file) или [DiContainerBuilder::addDefinitions()](../container-builder/index.md#load-definitions-from-collection) при сборке контейнера.
 
 Для внедрения зависимости **только в параметр метода** можно использовать [атрибуты конфигурирования](../documentation/attribute-definition/index.md) или использовать хелпер функции для передачи аргументов в [файлах конфигураций](../documentation/container-builder/configuration_files.md).
 
 Рассмотрим ниже конфигурацию контейнера для [PSR-3: Logger Interface](https://www.php-fig.org/psr/psr-3/) и PHP пакета [Monolog](https://packagist.org/packages/monolog/monolog).
 
-PHP класс:
+PHP-класс:
 
 ::: code-group
 
@@ -50,7 +50,7 @@ final class Bar
 
 ## Глобальная конфигурация реализации интерфейса { #global-config }
 
-Для внедрения в параметр с типом `\Psr\Log\LoggerInterface` необходимо настроить PHP класс `\Monolog\Logger` в контейнере.
+Для внедрения в параметр с типом `\Psr\Log\LoggerInterface` необходимо настроить PHP-класс `\Monolog\Logger` в контейнере.
 Один из вариантов настроить конфигурацию `\Monolog\Logger` через «класс-фабрику»[^FactoryPattern] в файле конфигураций.
 
 <span id="do-configure-monolog"/>Фабричный метод `\App\Helpers\Configurator::doConfigureMonolog()` создает и настраивает объект `\Monolog\Logger`:
@@ -159,8 +159,8 @@ var_dump($bar->logger instanceof Logger);
 
 ## Внедрение в параметр метода – «по-месту» { #parameter-config }
 
-Если необходимо указать реализацию интерфейса `\Psr\Log\LoggerInterface` как PHP класс `\Monolog\Logger` только для параметра конструктора `\App\Services\Qux::$logger`,
-можно конфигурировать PHP класс `\Monolog\Logger` отдельно, а для параметра `\App\Services\Qux::$logger` указать какой PHP класс будет реализацией интерфейса.
+Если необходимо указать реализацию интерфейса `\Psr\Log\LoggerInterface` как PHP-класс `\Monolog\Logger` только для параметра конструктора `\App\Services\Qux::$logger`,
+можно конфигурировать PHP-класс `\Monolog\Logger` отдельно, а для параметра `\App\Services\Qux::$logger` указать какой PHP-класс будет реализацией интерфейса.
 
 
 Конфигурирование `\Monolog\Logger`:
@@ -198,7 +198,7 @@ return static function (): Generator {
 
 Конфигурирование через [PHP атрибуты](../documentation/attribute-definition/index.md).
 
-PHP класс:
+PHP-класс:
 
 ```php
 // file: /app/src/Services/Qux.php
@@ -242,7 +242,7 @@ var_dump($qux->logger instanceof Logger);
 
 Конфигурирование без PHP атрибутов, в силе [php определений](../documentation/php-definition/index.md).
 
-PHP класс:
+PHP-класс:
 
 ```php
 // file: /app/src/Services/Qux.php

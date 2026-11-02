@@ -10,8 +10,8 @@ outline: [2, 4]
 Через настройки внедрения коллекции и [метаданные тега](../tag-metadata.md) можно указывать пользовательские идентификаторы элементам коллекции:
 - [Идентификатор элемента как целое число](key-as-int.md).
 - [Идентификатор элемента в метаданных тега](key-in-metadata.md).
-- [«Метод идентификатора» элемента коллекции](key-from-method.md) для элемента коллекции PHP класс.
-- [«Метод идентификатора» элемента коллекции по умолчанию](key-from-method-default.md) для элемента коллекции PHP класс.
+- [«Метод идентификатора» элемента коллекции](key-from-method.md) для элемента коллекции PHP-класс.
+- [«Метод идентификатора» элемента коллекции по умолчанию](key-from-method-default.md) для элемента коллекции PHP-класс.
 
 > [!WARNING]
 > При обращении к элементу коллекции по строковому идентификатору может быть выброшено исключение с типом `Psr\Container\NotFoundExceptionInterface`, если элемент коллекции не найден.
@@ -36,7 +36,7 @@ outline: [2, 4]
 
 ## Пример внедрения коллекции { #example-inject-lazy-collection-with-key-assess }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -78,7 +78,7 @@ final class Baz
 
 ### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
-Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md). PHP классам добавим теги через метод `bindTag()` [^BindTag].
+Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md). PHP-классам добавим теги через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 
@@ -150,9 +150,9 @@ var_dump(count($foo->services));
 ### Конфигурация через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
 
 Внедрение в параметр `\App\Services\Foo::$services` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
-Добавим PHP классам теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Добавим PHP-классам теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 

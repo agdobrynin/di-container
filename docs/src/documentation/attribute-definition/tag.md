@@ -5,7 +5,7 @@ aside: false
 
 ## Обзор { #overview }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Tag` объявляет тег и метаданные для PHP класса.
+Атрибут `\Kaspi\DiContainer\Attributes\Tag` объявляет тег и метаданные для PHP-класса.
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`

@@ -27,7 +27,7 @@ outline: [2, 3]
 
 ### Пример использования метода addDefinitions() { #example-add-definitions }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 <<< @/_code/src/Services/ReportMaker.php
@@ -35,7 +35,7 @@ PHP классы:
 <<< @/_code/src/Storages/ReportStorage.php
 :::
 
-Объявить через коллекцию PHP классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir`  и `\App\Services\ReportMaker` в параметр `$lastDays`.
+Объявить через коллекцию PHP-классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir`  и `\App\Services\ReportMaker` в параметр `$lastDays`.
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->
@@ -116,7 +116,7 @@ int(10)
 
 ### Пример использования метода addDefinitionsOverride() { #example-add-definitions-override }
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -126,7 +126,7 @@ PHP классы:
 
 :::
 
-В файле конфигураций `report_services.php` объявлены PHP классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если значение переменной среды `APP_ENV` равно `'dev'`, то для класса `\App\Storages\ReportStorage` необходимо внедрить скалярное значение `'/tmp'` в параметр `$dir` через коллекцию, т.е. перезаписать ранее объявленное определение с новым значениям для того же идентификатора контейнера[^ContainerId].
+В файле конфигураций `report_services.php` объявлены PHP-классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если значение переменной среды `APP_ENV` равно `'dev'`, то для класса `\App\Storages\ReportStorage` необходимо внедрить скалярное значение `'/tmp'` в параметр `$dir` через коллекцию, т.е. перезаписать ранее объявленное определение с новым значениям для того же идентификатора контейнера[^ContainerId].
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->

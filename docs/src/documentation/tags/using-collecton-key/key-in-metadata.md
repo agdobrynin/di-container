@@ -23,7 +23,7 @@ outline: [2, 4]
 
 Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных тега с именем `'key_as'`.
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
@@ -65,7 +65,7 @@ final class Baz
 
 Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) и передачей имени метаданных в параметр `$key`.
 
-PHP классам добавим теги с метаданными через метод `bindTag()` [^BindTag].
+PHP-классам добавим теги с метаданными через метод `bindTag()` [^BindTag].
 
 Конфигурационный файл:
 
@@ -147,9 +147,9 @@ var_dump(
 
 Внедрение коллекции через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) и передачей имени метаданных в параметр `$key`.
 
-К PHP классам которые будут элементам коллекции применим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+К PHP-классам которые будут элементам коллекции применим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
 
-PHP классы:
+PHP-классы:
 
 ::: code-group
 
