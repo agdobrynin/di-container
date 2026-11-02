@@ -34,7 +34,7 @@
 
 ## Пример внедрения параметра с отложенной инициализацией { #example }
 
-PHP класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления. Необходимо внедрить `\App\Services\Bar` в конструктор класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP класс `\Closure`.
+PHP классы:
 
 ::: code-group
 
@@ -46,7 +46,37 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Closure;
+final class Foo
+{
+    public function __construct(
+        private readonly bar $bar
+    ) {}
+
+    public function getBar(): Bar
+    {
+        return $this->bar;
+    }
+}
+```
+
+<<< @/_code/php-definition/di-proxy-closure/Bar.php
+
+:::
+
+
+PHP класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления. Необходимо объявить внедрение PHP класса `\App\Services\Bar` в конструктор класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP класс `\Closure`.
+
+::: code-group
+
+```php {13-15} [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+use Closure;//[!code ++]
 use Kaspi\DiContainer\Attributes\ProxyClosure;//[!code ++]
 
 final class Foo
@@ -55,17 +85,22 @@ final class Foo
      * @param Closure(): Bar $barProxy
      */
     public function __construct(
+        private readonly bar $bar//[!code --]
         #[ProxyClosure(Bar::class)]//[!code ++]
-        private readonly Closure $barProxy
+        private readonly Closure $barProxy//[!code ++]
     ) {}
 
     public function getBar(): Bar
     {
-        return ($this->barProxy)();
+        return $this->bar;//[!code --]
+        return ($this->barProxy)();//[!code ++]
     }
 }
 ```
 
+:::
+
+::: code-group
 ```php [container.php]
 <?php
 declare(strict_types=1);
@@ -86,8 +121,6 @@ $foo = $container->get(Foo::class);
 var_dump($foo->getBar() instanceof Bar);
 // bool(true)
 ```
-
-<<< @/_code/php-definition/di-proxy-closure/Bar.php
 
 :::
 
