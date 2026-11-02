@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP класс в контейнере, или [внедряет зависимость](#example-di-factory-param).
+Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP класс в контейнере, или [внедряет зависимость](#di-factory-param).
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`
@@ -44,6 +44,31 @@ PHP класс можно объявить через атрибут `\Kaspi\DiC
 
 ### Пример объявления PHP класса через «фабрику» { #di-factory-class-example }
 
+PHP классы:
+
+::: code-group
+```php [Qux.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Qux.php
+
+namespace App\Services;
+
+final class Qux
+{
+    public function __construct(public readonly string $value) {}
+}
+```
+
+<<< @/_code/attribute-definition/di-factory/Configurator.php
+
+<<< @/_code/attribute-definition/di-factory/Bar.php
+
+<<< @/_code/attribute-definition/di-factory/Baz.php
+
+:::
+
 Объявить PHP класс `\App\Services\Qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()` – нестатический метод класса.
 
 ::: code-group
@@ -57,7 +82,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\DiFactory;//[!code ++]
-use App\Helpers\Configurator;
+use App\Helpers\Configurator;//[!code ++]
 
 #[DiFactory([Configurator::class, 'doConfigQux'])]//[!code ++]
 final class Qux
@@ -66,6 +91,9 @@ final class Qux
 }
 ```
 
+::: 
+
+::: code-group
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -82,15 +110,52 @@ $container = (new DiContainerBuilder())
     ->build();
 
 var_dump($container->has(Qux::class));
-// (bool) true
-
-$qux = $container->get(Qux::class);
-
-var_dump($qux->value);
-// string(4) "Fuuz"
-// or
-// string(2) "Ok"
+var_dump($container->get(Qux::class)->value);
 ```
+
+:::
+
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+(bool) true
+string(4) "Fuuz"
+```
+
+## Объявление внедрения зависимости через фабрику { #di-factory-param }
+
+Объявить внедрение в параметр метода или функции можно через атрибут `\Kaspi\DiContainer\Attributes\DiFactory`. Необходимо чтобы результат выполнения фабрики был совместим с типом параметра метода или функции.
+
+### Пример объявления внедрения зависимости через фабрику { #example-di-factory-param }
+
+PHP классы:
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(
+        public readonly Qux $qux
+    ) {}    
+}
+```
+
+<<< @/_code/attribute-definition/di-factory/Qux.php
 
 <<< @/_code/attribute-definition/di-factory/Configurator.php
 
@@ -98,11 +163,9 @@ var_dump($qux->value);
 
 <<< @/_code/attribute-definition/di-factory/Baz.php
 
-::: 
+:::
 
-## Пример объявления внедрения зависимости через фабрику { #example-di-factory-param }
-
-Необходимо внедрить зависимость через конструктор в параметр `$qux` PHP класса `\App\Services\Foo` используя фабрику `\App\Helpers\Configurator::quxDoConfig()` – нестатический метод класса.
+Для PHP класса `\App\Services\Foo` необходимо объявить внедрение зависимости в параметр `$qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()` – нестатический метод класса.
 
 
 ::: code-group
@@ -116,7 +179,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\DiFactory;//[!code ++]
-use App\Helpers\Configurator;
+use App\Helpers\Configurator;//[!code ++]
 
 final class Foo
 {
@@ -126,6 +189,10 @@ final class Foo
     ) {}    
 }
 ```
+
+:::
+
+::: code-group
 
 ```php [container_build.php]
 <?php
@@ -142,22 +209,22 @@ $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')
     ->build();
 
-$foo = $container->get(Foo::class);
-
-var_dump($foo->qux->value);
-// string(4) "Fuuz"
-// or
-// string(2) "Ok"
+var_dump($container->get(Foo::class)->qux->value);
 ```
 
-<<< @/_code/attribute-definition/di-factory/Qux.php
-
-<<< @/_code/attribute-definition/di-factory/Configurator.php
-
-<<< @/_code/attribute-definition/di-factory/Bar.php
-
-<<< @/_code/attribute-definition/di-factory/Baz.php
-
 :::
+
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(4) "Fuuz"
+```
 
 <!--@include: ../_include/term_notes.md-->
