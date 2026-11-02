@@ -293,7 +293,7 @@ use Kaspi\DiContainer\Attributes\Tag;
 #[Autowire(
     tags: [//[!code highlight]
         new Tag('tags.fuze'),//[!code ++]
-        new Tag('tags.interbal_service'),//[!code ++]
+        new Tag('tags.internal_service'),//[!code ++]
     ]//[!code highlight]
 )]
 final class Foo
@@ -371,7 +371,7 @@ final class Baz
 
 :::
 
-Объявить внедрение в параметры конструктора `$qux` и `$baz` через атрибут `Kaspi\DiContainer\Attributes\Autowire` PHP класса `\App\Services\Foo`.
+Для PHP класса `\App\Services\Foo` объявить внедрение в параметры конструктора `$qux` и `$baz` через атрибут `Kaspi\DiContainer\Attributes\Autowire`.
 
 ::: code-group
 
