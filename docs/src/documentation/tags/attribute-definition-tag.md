@@ -10,18 +10,38 @@
 
 ## Пример конфигурирования через атрибут { #example-inject-by-attribute-tagged-as }
 
-Объявить тег `'tags.lite-rules'` для каждого класса через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
-
-
-Объявить внедрение коллекции из элементов контейнера отмеченных тегом `'tags.lite-rules'` в параметр `$rules` конструктора класса `\App\Services\RuleCollection` через атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`.
+PHP-классы:
 
 ::: code-group
 
-<<< @/_code/src/Rules/RuleA_Attr.php [RuleA.php]
+```php [RuleCollection.php]
+<?php
+declare(strict_types=1);
 
-<<< @/_code/src/Rules/RuleB_Attr.php [RuleB.php]
+// file: /app/src/Services/RuleCollection.php // [!code highlight]
 
-<<< @/_code/src/Rules/RuleC_Attr.php [RuleC.php]
+namespace App\Services;
+
+final class RuleCollection
+{
+    public function __construct(
+        public readonly iterable $rules
+    ) {}
+}
+```
+
+<<< @/_code/src/Rules/RuleA.php
+
+<<< @/_code/src/Rules/RuleB.php
+
+<<< @/_code/src/Rules/RuleC.php
+:::
+
+Объявить внедрение коллекции из элементов контейнера отмеченных тегом `'tags.lite-rules'` в параметр `$rules` конструктора класса `\App\Services\RuleCollection` через атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`.
+
+Объявить тег `'tags.lite-rules'` для каждого класса через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
+
+::: code-group
 
 ```php [RuleCollection.php]
 <?php
@@ -42,6 +62,15 @@ final class RuleCollection
 }
 ```
 
+<<< @/_code/src/Rules/RuleA_Attr.php [RuleA.php]
+
+<<< @/_code/src/Rules/RuleB_Attr.php [RuleB.php]
+
+<<< @/_code/src/Rules/RuleC_Attr.php [RuleC.php]
+
+:::
+
+::: code-group
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -62,13 +91,21 @@ $ruleCollection = $container->get(RuleCollection::class);
 foreach ($ruleCollection->rules as $rule) {
     var_dump($rule::class);
 }
+```
+:::
 
-// console output:
-// string (15) "App\Rules\RuleA"
-// string (15) "App\Rules\RuleC"
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
 ```
 
-:::
+Появится сообщение вида:
+
+```console
+string (15) "App\Rules\RuleA"
+string (15) "App\Rules\RuleC"
+```
 
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
 
@@ -78,6 +115,33 @@ foreach ($ruleCollection->rules as $rule) {
 ## Внедрение зависимости в параметр с типом array { #inject-by-attribute-tagged-as-array-param }
 
 При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+
+PHP-классы:
+
+::: code-group
+```php [Rules.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Rules.php // [!code highlight]
+
+namespace App\Services;
+
+final class Rules
+{
+    public function __construct(
+        public readonly array $rules
+    ) {}
+}
+```
+
+<<< @/_code/src/Rules/RuleA.php
+
+<<< @/_code/src/Rules/RuleB.php
+
+<<< @/_code/src/Rules/RuleC.php
+
+:::
 
 Параметр `$rules` конструктора класса `\App\Services\Rules` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`.
 
@@ -105,6 +169,15 @@ final class Rules
 }
 ```
 
+<<< @/_code/src/Rules/RuleA_Attr.php [RuleA.php]
+
+<<< @/_code/src/Rules/RuleB_Attr.php [RuleB.php]
+
+<<< @/_code/src/Rules/RuleC_Attr.php [RuleC.php]
+
+:::
+
+::: code-group
 ```php [container_build.php]
 <?php
 declare(strict_types=1);
@@ -123,24 +196,26 @@ $container = (new DiContainerBuilder())
 $rules = $container->get(Rules::class);
 
 var_dump(is_array($rules->rules));
-// bool(true)
 
 foreach ($rules->rules as $rule) {
     var_dump($rule::class);
 }
+```
+:::
 
-// console output:
-// string (15) "App\Rules\RuleA"
-// string (15) "App\Rules\RuleC"
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
 ```
 
-<<< @/_code/src/Rules/RuleA_Attr.php [RuleA.php]
+Появится сообщение вида:
 
-<<< @/_code/src/Rules/RuleB_Attr.php [RuleB.php]
-
-<<< @/_code/src/Rules/RuleC_Attr.php [RuleC.php]
-
-:::
+```console
+bool(true)
+string (15) "App\Rules\RuleA"
+string (15) "App\Rules\RuleC"
+```
 
 Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
 
