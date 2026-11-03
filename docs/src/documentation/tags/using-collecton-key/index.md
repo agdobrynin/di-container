@@ -46,7 +46,7 @@ PHP-классы:
 
 Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» с доступом к элементам коллекции по идентификатору контейнера [^ContainerId].
 
-### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
+### Объявление в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
 Объявить внедрение «ленивой» коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) в файле конфигураций `services.php`. В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр хелпер функции `$useKeys` принимает значение `true` (значение по умолчанию). 
 
@@ -104,24 +104,7 @@ return static function (): Generator {
 };
 ```
 
-```php [tagged_services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/tagged_services.php  // [!code highlight]
-
-use App\Services\{Bar, Baz};
-
-use function \Kaspi\DiContainer\diAutowire;
-
-return static function (): Generator {
-    yield diAutowire(Bar::class)
-        ->bindTag('tags.internal');//[!code ++]
-   
-   yield diAutowire(Baz::class)
-        ->bindTag('tags.internal');//[!code ++]
-};
-```
+<<< @/_code/TagsId/config/tagged_services.php
 
 ::: 
 
@@ -139,7 +122,7 @@ string(16) "App\Services\Baz"
 int(2)
 ```
 
-### Конфигурация через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
+### Объявление через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
 
 Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md). В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр атрибута `$useKeys` принимает значение `true` (значение по умолчанию).
 
