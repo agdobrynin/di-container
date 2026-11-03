@@ -216,8 +216,7 @@ final class Baz
 
 ::: code-group
 
-```php
-[container_build.php]
+```php [container_build.php]
 <?php
 declare(strict_types=1);
 
