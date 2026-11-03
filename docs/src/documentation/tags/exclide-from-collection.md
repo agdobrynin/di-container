@@ -16,17 +16,55 @@ outline: [2, 4]
 
 ### Пример исключения из коллекции элементов { #example-exclude-by-id }
 
-PHP-классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` отмечены тегом `'tags.internal_service'`.
-
-В параметр `\App\Service\Foo::$services` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из коллекции элемент с идентификатором контейнера `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get(App\Services\Baz::class)`.
-
-#### Объявление в файлах конфигураций { #example-exclude-by-id-php-definitions }
-
-[В файле конфигураций](../container-builder/configuration_files.md) в параметре `$containerIdExclude` хелпер функции `diTaggedAs()` указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
-
+PHP классы:
 
 ::: code-group
 
+<<< @/_code/Tags/src/Services/Foo.php
+
+<<< @/_code/Tags/src/Services/Bar.php
+
+<<< @/_code/Tags/src/Services/Baz.php
+
+<<< @/_code/Tags/src/Services/Qux.php
+
+:::
+
+
+PHP-классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` будут отмечены тегом `'tags.internal_service'`.
+
+В параметр `$services` PHP класса `\App\Service\Foo` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из коллекции элемент с идентификатором контейнера `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get(App\Services\Baz::class)`.
+
+#### Объявление в файлах конфигураций { #example-exclude-by-id-php-definitions }
+
+[В файле конфигураций](../container-builder/configuration_files.md) `services.php` в параметре `$containerIdExclude` хелпер функции `diTaggedAs()` указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
+
+В файле конфигураций `tagged_services.php` объявить тег `'tags.internal_service'` для остальных PHP классов через метод `bindTag()`.
+
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')// [!code highlight]
+    ->load('/app/config/tagged_services.php.php')// [!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $service) {
+    var_dump($service::class);
+} 
+```
 
 ```php [services.php]
 <?php
@@ -60,51 +98,62 @@ return static function (): Generator {
 };
 ```
 
-```php [container_build.php]
+```php [tagged_services.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/src/container_build.php // [!code highlight]
+// file: /app/config/tagged_services.php //[!code highlight]
 
-require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+use App\Services\{Bar, Baz, Qux};
 
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\Foo;
+use function Kaspi\DiContainer\diAutowire;
 
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')// [!code highlight]
-    ->build();
-
-$foo = $container->get(Foo::class);
-
-foreach ($foo->services as $service) {
-    var_dump($service::class);
-}
-
-// console output:
-// string(16) "App\Services\Bar"
-// string(16) "App\Services\Qux"
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->bindTag('tags.internal_service');//[!code highlight]
+        
+    yield diAutowire(Baz::class)
+        ->bindTag('tags.internal_service');//[!code highlight]
+        
+    yield diAutowire(Qux::class)
+        ->bindTag('tags.internal_service');//[!code highlight]
+};
 ```
 
-<<< @/_code/Tags/src/Services/Foo.php
-
-<<< @/_code/Tags/src/Services/Bar.php
-
-<<< @/_code/Tags/src/Services/Baz.php
-
-<<< @/_code/Tags/src/Services/Qux.php
-
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Qux"
+```
 
 #### Объявление через атрибуты { #example-exclude-by-id-php-attributes }
 
 В параметре `$containerIdExclude` [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
 
-Объявление тега PHP-классу через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md). 
+Объявление тега `'tags.internal_service'` остальным PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md). 
 
 ::: code-group
 
 <<< @/_code/Tags/src/Services/FooAttr.php [Foo.php]
+
+<<< @/_code/Tags/src/Services/BarAttr.php [Bar.php]
+
+<<< @/_code/Tags/src/Services/BazAttr.php [Baz.php]
+
+<<< @/_code/Tags/src/Services/QuxAttr.php [Qux.php]
+
+:::
+
+::: code-group
 
 ```php [container_build.php]
 <?php
@@ -126,19 +175,22 @@ $foo = $container->get(Foo::class);
 foreach ($foo->services as $service) {
     var_dump($service::class);
 }
-
-// console output:
-// string(16) "App\Services\Bar"
-// string(16) "App\Services\Qux"
 ```
 
-<<< @/_code/Tags/src/Services/BarAttr.php [Bar.php]
-
-<<< @/_code/Tags/src/Services/BazAttr.php [Baz.php]
-
-<<< @/_code/Tags/src/Services/QuxAttr.php [Qux.php]
-
 :::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Qux"
+```
 
 ## Исключение вызывающего класса { #exclide-self }
 
