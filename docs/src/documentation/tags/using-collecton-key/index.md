@@ -39,60 +39,18 @@ outline: [2, 4]
 PHP-классы:
 
 ::: code-group
-
-```php [Foo.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Foo.php // [!code highlight]
-
-namespace App\Services;
-
-final class Foo
-{
-    public function __construct(
-        public readonly iterable $services
-    ) {}
-}
-```
-
-```php [Bar.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Bar.php // [!code highlight]
-
-namespace App\Services;
-
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Baz.php // [!code highlight]
-
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
+<<< @/_code/TagsId/src/Services/Foo.php
+<<< @/_code/TagsId/src/Services/Bar.php
+<<< @/_code/TagsId/src/Services/Baz.php
 :::
 
 Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» с доступом к элементам коллекции по идентификатору контейнера [^ContainerId].
 
 ### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
-Объявить внедрение «ленивой» коллекции элементов отмеченных тегом `'tags.access_by_key'` в параметр `$services` PHP-класса `\App\Services\Foo` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) в файле конфигураций `services.php`. В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр хелпер функции `$useKeys` принимает значение `true` (значение по умолчанию). 
+Объявить внедрение «ленивой» коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) в файле конфигураций `services.php`. В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр хелпер функции `$useKeys` принимает значение `true` (значение по умолчанию). 
 
-В файле конфигураций `tagged_services.php` PHP-классам представляющих элементы коллекции объявим тег `'tags.access_by_key'` через метод `bindTag()` [^BindTag].
+В файле конфигураций `tagged_services.php` PHP-классам представляющих элементы коллекции объявим тег `'tags.internal'` через метод `bindTag()` [^BindTag].
 
 ::: code-group
 
@@ -141,7 +99,7 @@ use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs('tags.access_by_key')//[!code ++]
+            servies: diTaggedAs('tags.internal')//[!code ++]
         );
 };
 ```
@@ -158,10 +116,10 @@ use function \Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
     yield diAutowire(Bar::class)
-        ->bindTag('tags.access_by_key');//[!code ++]
+        ->bindTag('tags.internal');//[!code ++]
    
    yield diAutowire(Baz::class)
-        ->bindTag('tags.access_by_key');//[!code ++]
+        ->bindTag('tags.internal');//[!code ++]
 };
 ```
 
@@ -183,16 +141,20 @@ int(2)
 
 ### Конфигурация через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
 
-Объявить внедрение коллекции элементов отмеченных тегом `'tags.access_by_key'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md). В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр атрибута `$useKeys` принимает значение `true` (значение по умолчанию).
+Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md). В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр атрибута `$useKeys` принимает значение `true` (значение по умолчанию).
 
-Объявим тег `'tags.access_by_key'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Объявим тег `'tags.internal'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 PHP-классы:
 
 ::: code-group
 
 ```php [Foo.php]
-//file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
@@ -200,38 +162,14 @@ use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
 final class Foo
 {
     public function __construct(
-        #[TaggedAs('tags.access_by_key')]// [!code ++]
+        #[TaggedAs('tags.internal')]// [!code ++]
         public readonly iterable $services
     ) {}    
 }
 ```
 
-```php [Bar.php]
-//file: /app/src/Services/Bar.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-#[Tag('tags.access_by_key')]// [!code ++]
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php]
-//file: /app/src/Services/Baz.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-#[Tag('tags.access_by_key')]// [!code ++]
-final class Baz
-{
-    // …
-}
-```
-
+<<< @/_code/TagsId/src/Services/BarAttr.php [Bar.php]
+<<< @/_code/TagsId/src/Services/BazAttr.php [Baz.php]
 :::
 
 ::: code-group
