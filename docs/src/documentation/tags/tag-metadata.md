@@ -7,8 +7,7 @@ aside: false
 - **имя метаданных** – произвольная непустая строка.
 - **значение** – [скалярный тип](https://www.php.net/manual/en/language.types.type-system.php#language.types.type-system.atomic.scalar), `null` или `array` состоящий из этих типов.
 
-Метаданные тега передаются через параметр `$options` в методе `bindTag()` хелпер функций [`diAutowire()`](../php-definition/di-autowire.md#bindtag),
-[`diCallable()`](../php-definition/di-callable.md#bindtag), [`diProxyClosure()`](../php-definition/di-proxy-closure.md#bindtag), [`diValue()`](../php-definition/di-value.md#bindtag)
+Метаданные тега передаются через параметр `$options` в методе `bindTag()`[^BindTag]
 или в [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
 
 <span id="reserved-keys"/>
@@ -23,3 +22,5 @@ aside: false
 > ]
 > ```
 > Подробнее о [приоритете в коллекции](collection-priority/priority-by-method.md).
+
+<!--@include: ../php-definition/_include/bind_notes.md-->
