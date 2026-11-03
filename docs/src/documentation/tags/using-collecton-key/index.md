@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Внедряемая коллекция по умолчанию в качестве идентифкаторов элементов получает идентификатор контейнера [^ContainerId] этого элемента, что позволяет обращаться к элементам коллекции в [произвольном порядке](#key-access).
+Внедряемая коллекция по умолчанию в качестве идентификаторов элементов получает идентификатор контейнера [^ContainerId] этого элемента, что позволяет обращаться к элементам коллекции в [произвольном порядке](#key-access).
 
 Через настройки внедрения коллекции и [метаданные тега](../tag-metadata.md) можно указывать пользовательские идентификаторы элементам коллекции:
 - [Идентификатор элемента как целое число](key-as-int.md).
@@ -41,7 +41,11 @@ PHP-классы:
 ::: code-group
 
 ```php [Foo.php]
-//file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php // [!code highlight]
+
 namespace App\Services;
 
 final class Foo
@@ -53,7 +57,11 @@ final class Foo
 ```
 
 ```php [Bar.php]
-//file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php // [!code highlight]
+
 namespace App\Services;
 
 final class Bar
@@ -63,7 +71,11 @@ final class Bar
 ```
 
 ```php [Baz.php]
-//file: /app/src/Services/Baz.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php // [!code highlight]
+
 namespace App\Services;
 
 final class Baz
@@ -74,83 +86,106 @@ final class Baz
 
 :::
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию» с доступом к элементам коллекции по идентификатору контейнера [^ContainerId].
+Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» с доступом к элементам коллекции по идентификатору контейнера [^ContainerId].
 
 ### Настройка в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
-Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md). PHP-классам добавим теги через метод `bindTag()` [^BindTag].
+Объявить внедрение «ленивой» коллекции элементов отмеченных тегом `'tags.access_by_key'` в параметр `$services` PHP-класса `\App\Services\Foo` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) в файле конфигураций `services.php`. В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр хелпер функции `$useKeys` принимает значение `true` (значение по умолчанию). 
 
-Конфигурационный файл:
+В файле конфигураций `tagged_services.php` PHP-классам представляющих элементы коллекции объявим тег `'tags.access_by_key'` через метод `bindTag()` [^BindTag].
 
-```php
-// file: /app/config/tagged_foo_service.php
-use Generator;
-use App\Services\{Foo, Bar, Baz};
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')// [!code highlight]
+    ->load('/app/config/tagged_services.php')// [!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+$bar = $foo->services->get(Bar::class);
+
+var_dump($bar::class);
+
+// доступ к элементу коллекции через методы `\ArrayAccess`
+$baz = $foo->services[Baz::class];
+
+var_dump($baz::class);
+
+// подсчёт количества элементов коллекции через `\Countable`
+var_dump(count($foo->services));
+```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
+use App\Services\Foo;
 
 use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs('tags.access_by_key')
+            servies: diTaggedAs('tags.access_by_key')//[!code ++]
         );
-
-    yield diAutowire(Bar::class)
-        ->bindTag('tags.access_by_key');
-   
-   yield diAutowire(Baz::class)
-        ->bindTag('tags.access_by_key');
 };
 ```
 
-Контейнер зависимостей:
+```php [tagged_services.php]
+<?php
+declare(strict_types=1);
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz};
+// file: /app/config/tagged_services.php  // [!code highlight]
 
-$container = (new DiContainerBuilder())
-    ->load('/app/config/tagged_foo_service.php')
-    ->build();
+use App\Services\{Bar, Baz};
 
-$foo = $container->get(Foo::class);
+use function \Kaspi\DiContainer\diAutowire;
 
-// перебор коллекции
-foreach ($foo->services as $id => $service) {
-    var_dump($id, is_object($service));
-}
-// вывод в консоли:
-//string(16) "App\Services\Bar"
-// bool(true)
-//string(16) "App\Services\Baz"
-// bool(true)
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->bindTag('tags.access_by_key');//[!code ++]
+   
+   yield diAutowire(Baz::class)
+        ->bindTag('tags.access_by_key');//[!code ++]
+};
+```
 
+::: 
 
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has(Bar::class),
-    $foo->services->get(Bar::class) instanceof Bar,
-);
-// bool(true)
-// bool(true)
+Выполните в терминале команду:
 
-// доступ к элементу коллекции через методы `\ArrayAccess`
-var_dump(
-    isset($foo->services[Baz::class]),
-    $foo->services[Baz::class] instanceof Baz,
-);
-// bool(true)
-// bool(true)
+```shell
+php /app/src/container_build.php
+```
 
-// подсчёт количества элементов коллекции через `\Countable`
-var_dump(count($foo->services));
-// int(2)
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Baz"
+int(2)
 ```
 
 ### Конфигурация через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
 
-Внедрение в параметр `\App\Services\Foo::$services` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
-Добавим PHP-классам теги через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Объявить внедрение коллекции элементов отмеченных тегом `'tags.access_by_key'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md). В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр атрибута `$useKeys` принимает значение `true` (значение по умолчанию).
+
+Объявим тег `'tags.access_by_key'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 PHP-классы:
 
@@ -199,48 +234,53 @@ final class Baz
 
 :::
 
-Контейнер зависимостей:
+::: code-group
 
-```php
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz};
+use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
     ->build();
 
 $foo = $container->get(Foo::class);
 
-// перебор коллекции
-foreach ($foo->services as $id => $service) {
-    var_dump($id, is_object($service));
-}
-// вывод в консоли:
-//string(16) "App\Services\Bar"
-// bool(true)
-//string(16) "App\Services\Baz"
-// bool(true)
-
-
 // доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has(Bar::class),
-    $foo->services->get(Bar::class) instanceof Bar,
-);
-// bool(true)
-// bool(true)
+$bar = $foo->services->get(Bar::class);
+
+var_dump($bar::class);
 
 // доступ к элементу коллекции через методы `\ArrayAccess`
-var_dump(
-    isset($foo->services[Baz::class]),
-    $foo->services[Baz::class] instanceof Baz,
-);
-// bool(true)
-// bool(true)
+$baz = $foo->services[Baz::class];
+
+var_dump($baz::class);
 
 // подсчёт количества элементов коллекции через `\Countable`
 var_dump(count($foo->services));
-// int(2)
+```
+
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Baz"
+int(2)
 ```
 
 <!--@include: ../../_include/term_notes.md-->
