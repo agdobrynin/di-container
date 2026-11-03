@@ -15,7 +15,7 @@ outline: [2, 4]
 Внедрение коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md)
 с передачей **имени метаданных** в параметре `$key`.
 
-Если в теге элемента коллекции нет указанного имени метаданных, контейнер попытается получить идентификатор элемента из [«метода идентификатора» элемента коллекции по умолчанию](key-from-method-default.md), а при отсутствии такого метода идентификатора элемента коллекции будет представлен идентификатором контейнера[^ContainerId] этого элемента. 
+<!--@include: _include/key_in_metadata_defined.md-->
 
 Метаданные тега передаются в параметре `$options` метода `bindTag()` [^BindTag] или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
