@@ -16,7 +16,7 @@ outline: [2, 4]
 
 ## Пример конфигурации { #example }
 
-Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
+PHP-классы:
 
 ::: code-group
 
@@ -29,6 +29,8 @@ outline: [2, 4]
 <<< @/_code/Tags/src/Services/Qux.php
 
 :::
+
+Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
 
 При этом первым элементом коллекции должен быть PHP-класс `\App\Services\Qux`, остальные элементы могут иметь неопределённую очерёдность. Для получения приоритета от элемента коллекции `\App\Services\Qux` воспользуемся возможностью объявить «метод-приоритета» для элемента коллекции, для этого реализуем метод `\App\Services\Qux::getPriority()`:
 
@@ -43,6 +45,8 @@ outline: [2, 4]
 
 
 ::: code-group
+
+<<< @/_code/Tags/container_build_ordered.php [container_build.php]
 
 ```php [tagged_services.php]
 <?php
@@ -88,8 +92,6 @@ return static function (): Generator {
         );
 };
 ```
-
-<<< @/_code/Tags/container_build_ordered.php [container_build.php]
 
 :::
 
@@ -138,9 +140,11 @@ final class Baz
 
 :::
 
-Контейнер зависимостей:
+::: code-group
 
 <<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
+
+:::
 
 Выполните в терминале команду:
 
