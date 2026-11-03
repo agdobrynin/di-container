@@ -15,7 +15,7 @@ outline: [2, 4]
 
 ## Пример конфигурации { #example }
 
-Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
+PHP-классы:
 
 ::: code-group
 
@@ -29,6 +29,8 @@ outline: [2, 4]
 
 :::
 
+Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр конструктора `$services` PHP-класса `\App\Services\Foo`.
+
 При этом первым элементом коллекции должен быть PHP-класс `\App\Services\Qux`, остальные элементы могут иметь неопределённую очерёдность. Для получения приоритета от элемента коллекции `\App\Services\Qux` воспользуемся возможностью объявить **«метод-приоритета» по умолчанию**, для этого реализуем метод `\App\Services\Qux::getPriority()`:
 
 <<< @/_code/Tags/src/Services/QuxPriorityMethod.php
@@ -40,6 +42,8 @@ outline: [2, 4]
 В файле конфигураций `tagged_services.php` объявить тег `'tags.ordered'` через метод `bindTag()` для PHP-классов.
 
 ::: code-group
+
+<<< @/_code/Tags/container_build_ordered.php [container_build.php]
 
 ```php [services.php]
 <?php
@@ -55,7 +59,7 @@ return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
             servies: diTaggedAs(
-                'tags.ordered',//[!code ++]
+                'tags.ordered',//[!code highlight]
                 priorityDefaultMethod: 'getPriority',//[!code ++]
             )
     );
@@ -74,17 +78,15 @@ use function \Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
     yield diAutowire(Bar::class)
-        ->bindTag('tags.ordered');//[!code ++]
+        ->bindTag('tags.ordered');//[!code highlight]
         
     yield diAutowire(Baz::class)
-        ->bindTag('tags.ordered');//[!code ++]
+        ->bindTag('tags.ordered');//[!code highlight]
 
     yield diAutowire(Qux::class)
-        ->bindTag('tags.ordered');//[!code ++]
+        ->bindTag('tags.ordered');//[!code highlight]
 };
 ```
-
-<<< @/_code/Tags/container_build_ordered.php [container_build.php]
 
 ::: 
 
@@ -177,9 +179,11 @@ final class Qux
 
 :::
 
-Контейнер зависимостей:
+::: code-group
 
 <<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
+
+:::
 
 Выполните в терминале команду:
 
