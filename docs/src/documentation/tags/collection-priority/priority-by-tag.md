@@ -9,14 +9,7 @@ outline: [2, 4]
 
 ## Пример конфигурации { #example-priority-by-tag }
 
-Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
-
-Внедряемая коллекция должна получить следующую очерёдность элементов:
-- `\App\Services\Qux`
-- `\App\Services\Baz`
-- `\App\Services\Bar`
-
-Для объявления очерёдности в коллекции использовать **приоритет тега**.
+PHP-классы:
 
 ::: code-group
 
@@ -30,12 +23,23 @@ outline: [2, 4]
 
 :::
 
+Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
+
+Внедряемая коллекция должна получить следующую очерёдность элементов:
+- `\App\Services\Qux`
+- `\App\Services\Baz`
+- `\App\Services\Bar`
+
+Для объявления очерёдности в коллекции использовать **приоритет тега**.
+
 
 ### Объявление в файлах конфигураций { #priority-by-tag-php-definition }
 
 В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` необходимо объявить тег `'tags.ordered'` для PHP-классов и приоритет каждого тега в параметре `$priority` метода `bindTag()`[^BindTag].
 
 ::: code-group
+
+<<< @/_code/Tags/container_build_ordered.php [container_build.php]
 
 ```php [tagged_services.php]
 <?php
@@ -83,8 +87,6 @@ return static function (): Generator {
 };
 ```
 
-<<< @/_code/Tags/container_build_ordered.php [container_build.php]
-
 ::: 
 
 Выполните в терминале команду:
@@ -131,9 +133,13 @@ final class Qux
 
 <<< @/_code/Tags/src/Services/BarOrderedAttr.php [Bar.php]
 
-<<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
-
 <<< @/_code/Tags/src/Services/FooOrderedAttr.php [Foo.php]
+
+:::
+
+::: code-group
+
+<<< @/_code/Tags/container_build_ordered_attr.php [container_build.php]
 
 :::
 

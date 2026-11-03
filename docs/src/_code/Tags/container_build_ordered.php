@@ -9,8 +9,8 @@ use Kaspi\DiContainer\DiContainerBuilder;
 use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')// [!code highlight]
     ->load('/app/config/tagged_services.php')// [!code highlight]
+    ->load('/app/config/services.php')// [!code highlight]
     ->build();
 
 $foo = $container->get(Foo::class);
