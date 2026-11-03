@@ -39,28 +39,15 @@ outline: [2, 4]
 
 ### Объявление в файлах конфигураций  { #as-php-definition }
 
-В [файлах конфигураций](../container-builder/configuration_files.md) необходимо указать в параметре `$tag` хелпер функции `diTaggedAs()` FQCN[^FQCN] интерфейса – `\App\Interfaces\RuleInterface`.
+Объявить внедрение коллекции из PHP-классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора `$rules` PHP-класса `\App\Services\FooValidator`.
+
+
+В [файле конфигураций](../container-builder/configuration_files.md) `services.php` необходимо указать в параметре `$tag` хелпер функции `diTaggedAs()` FQCN[^FQCN] интерфейса – `\App\Interfaces\RuleInterface`.
+
+Для объявления в контейнере других PHP-классов используем [метод `DiContainerBuilder::import()`](../container-builder/methods/import.md).
 
 ::: code-group
 
-```php [services.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/services.php // [!code highlight]
-
-use App\Interfaces\RuleInterface;
-use App\Services\FooValidator;
-
-use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
-
-return static function (): Generator {
-    yield diAutowire(FooValidator::class)
-        ->bindArguments(
-            rules: diTaggedAs(RuleInterface::class)//[!code ++]
-        );
-};
-```
 
 ```php [container_build.php]
 <?php
@@ -83,20 +70,41 @@ $validator = $container->get(FooValidator::class);
 foreach ($validator->rules as $rule) {
     var_dump($rule::class);
 }
-
-// console output:
-// string (22) "App\ValidateRules\RuleA"
-// string (22) "App\ValidateRules\RuleC"
 ```
-<<< @/_code/src/Services/FooValidator.php
 
-<<< @/_code/src/ValidateRules/RuleA.php
+```php [services.php]
+<?php
+declare(strict_types=1);
 
-<<< @/_code/src/ValidateRules/RuleB.php
+// file: /app/config/services.php // [!code highlight]
 
-<<< @/_code/src/ValidateRules/RuleC.php
+use App\Interfaces\RuleInterface;
+use App\Services\FooValidator;
+
+use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
+
+return static function (): Generator {
+    yield diAutowire(FooValidator::class)
+        ->bindArguments(
+            rules: diTaggedAs(RuleInterface::class)//[!code ++]
+        );
+};
+```
 
 ::: 
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string (22) "App\ValidateRules\RuleA"
+string (22) "App\ValidateRules\RuleC"
+```
 
 Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
 
@@ -105,11 +113,19 @@ foreach ($validator->rules as $rule) {
 
 ### Объявление через атрибуты { #as-php-attribute }
 
+Объявить внедрение коллекции из PHP-классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора `$rules` PHP-класса `\App\Services\FooValidator`.
+
 В атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs` необходимо указать в параметре `$name` FQCN интерфейса – `\App\Interfaces\RuleInterface`.
+
+Объявление внедрения коллекции:
 
 ::: code-group
 
 <<< @/_code/src/Services/FooValidatorAttr.php [FooValidator.php]
+
+::: 
+
+::: code-group
 
 ```php [container_build.php]
 <?php
@@ -131,19 +147,21 @@ $validator = $container->get(FooValidator::class);
 foreach ($validator->rules as $rule) {
     var_dump($rule::class);
 }
+```
+::: 
 
-// console output:
-// string (22) "App\ValidateRules\RuleA"
-// string (22) "App\ValidateRules\RuleC"
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
 ```
 
-<<< @/_code/src/ValidateRules/RuleA.php
+Появится сообщение вида:
 
-<<< @/_code/src/ValidateRules/RuleB.php
-
-<<< @/_code/src/ValidateRules/RuleC.php
-
-::: 
+```console
+string (22) "App\ValidateRules\RuleA"
+string (22) "App\ValidateRules\RuleC"
+```
 
 Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
 
