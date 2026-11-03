@@ -36,7 +36,7 @@ declare(strict_types=1);
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz};
+use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
     ->load('/app/config/services.php')// [!code highlight]

@@ -9,152 +9,140 @@ outline: [2, 4]
 
 Значение в метаданных тега указывается парой ключ-значение:
 
-- **ключ** – имя метаданных, одинаковое во всех тегах коллекции.
-- **значение** – идентификатор элемента коллекции. 
+- **ключ** – имя метаданных в теге.
+- **значение** – идентификатор элемента коллекции.
 
 Внедрение коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md)
 с передачей **имени метаданных** в параметре `$key`.
+
+Если в элементе коллекции нет указанного имени метаданных, контейнер попытается получить идентификатор элемента из [«метода идентификатора» элемента коллекции по умолчанию](key-from-method-default.md), а при отсутствии такого метода идентификатора элемента коллекции будет представлен идентификатором контейнера[^ContainerId] этого элемента. 
 
 Метаданные тега передаются в параметре `$options` метода `bindTag()` [^BindTag] или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
 <!--@include: _include/important_key_equals.md-->
 
-## Пример использования идентификатора элемента из метаданных { #example-key-in-metadata }
+## Пример извлечения идентификатора элемента из метаданных { #example-key-in-metadata }
 
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных тега с именем `'key_as'`.
+Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» из элементов отмеченных тегом `'tags.internal'`, где идентификатор элемента коллекции для PHP-класса `\App\Services\Bar` должен быть представлен строкой `'id_bar'` и будет объявлен в метаданных тега под именем `'key_as'`.
 
 PHP-классы:
 
 ::: code-group
-
-```php [Foo.php]
-//file: /app/src/Services/Foo.php
-namespace App\Services;
-
-final class Foo
-{
-    public function __construct(
-        public readonly iterable $services
-    ) {}
-}
-```
-
-```php [Bar.php]
-//file: /app/src/Services/Bar.php
-namespace App\Services;
-
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php]
-//file: /app/src/Services/Baz.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
+<<< @/_code/TagsId/src/Services/Foo.php
+<<< @/_code/TagsId/src/Services/Bar.php
+<<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-### Настройка в файлах конфигураций { #example-key-in-metadata-php-definition }
+### Объявление в файлах конфигураций { #example-key-in-metadata-php-definition }
 
-Внедрение в параметр `\App\Services\Foo::$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) и передачей имени метаданных в параметр `$key`.
+В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$key` равным `'key_as'`.
 
-PHP-классам добавим теги с метаданными через метод `bindTag()` [^BindTag].
+В файле конфигураций `tagged_services.php` объявляем тег `'tags.internal'` PHP-классам через метод `bindTag()`[^BindTag], а для PHP-класса `\App\Services\Bar` объявим дополнительно метаданные в параметре `$options`.
 
-Конфигурационный файл:
+::: code-group
 
-```php {12,19-21,27-29}
-// file: /app/config/tagged_foo_service.php
-use Generator;
-use App\Services\{Foo, Bar, Baz};
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Foo, Baz};
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')// [!code highlight]
+    ->load('/app/config/tagged_services.php')// [!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+$bar = $foo->services->get('id_bar');
+$baz = $foo->services->get(Baz::class);
+
+var_dump($bar::class);
+var_dump($baz::class);
+var_dump(count($foo->services));
+```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php //[!code highlight]
+
+use App\Services\Foo, Bar, Baz};
 
 use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs(
-                tag: 'tags.key_from_metadata',
-                key: 'key_as',
-            )
-        );
-
-    yield diAutowire(Bar::class)
-        ->bindTag(
-            name: 'tags.key_from_metadata',
-            options: [
-                'key_as' => 'id_bar',
-            ],
-        );
-   
-   yield diAutowire(Baz::class)
-        ->bindTag(
-            name: 'tags.key_from_metadata'
-            options: [
-                'key_as' => 'id_baz',
-            ],
+            servies: diTaggedAs(//[!code ++]
+                tag: 'tags.internal',//[!code ++]
+                key: 'key_as',//[!code ++]
+            )//[!code ++]
         );
 };
 ```
 
-Контейнер зависимостей:
+```php [tagged_services.php]
+<?php
+declare(strict_types=1);
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz};
+// file: /app/config/tagged_services.php //[!code highlight]
 
-$container = (new DiContainerBuilder())
-    ->load('/app/config/tagged_foo_service.php')
-    ->build();
+use App\Services\{Bar, Baz};
 
-$foo = $container->get(Foo::class);
+use function \Kaspi\DiContainer\diAutowire;
 
-// перебор коллекции
-foreach ($foo->services as $id => $service) {
-    var_dump($id, $service::class);
-}
-// вывод в консоли:
-//string(6) "id_bar"
-//string(16) "App\Services\Bar"
-//string(6) "id_baz"
-//string(16) "App\Services\Baz"
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->bindTag(//[!code ++]
+            'tags.internal',//[!code ++]
+            options: [//[!code ++]
+                'key_as' => 'id_bar',//[!code ++]
+            ]//[!code ++]
+        );//[!code ++]
 
-
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has('id_bar'),
-    $foo->services->get('id_bar') instanceof Bar,
-);
-// bool(true)
-// bool(true)
-
-// доступ к элементу коллекции через методы `\ArrayAccess`
-var_dump(
-    isset($foo->services['id_baz']),
-    $foo->services['id_baz'] instanceof Baz,
-);
-// bool(true)
-// bool(true)
+    yield diAutowire(Baz::class)
+        ->bindTag('tags.internal');//[!code ++]
+};
 ```
 
-### Конфигурация через атрибуты { #example-key-in-metadata-attributes }
+:::
 
-Внедрение коллекции через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) и передачей имени метаданных в параметр `$key`.
+Выполните в терминале команду:
 
-К PHP-классам которые будут элементам коллекции применим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Baz"
+int(2)
+```
+
+### Объявление через атрибуты { #example-key-in-metadata-attributes }
+
+Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через атрибут [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$key` равным `'key_as'`.
+
+Объявим тег `'tags.internal'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md), а для PHP-класса `\App\Services\Bar` объявим дополнительно метаданные в параметре `$options`.
 
 PHP-классы:
 
 ::: code-group
 
 ```php [Foo.php]
-//file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
@@ -163,7 +151,7 @@ final class Foo
 {
     public function __construct(
         #[TaggedAs(// [!code ++]
-            name: 'tags.key_from_metadata',// [!code ++]
+            name: 'tags.internal',// [!code ++]
             key: 'key_as',// [!code ++]
         )]// [!code ++]
         public readonly iterable $services
@@ -172,13 +160,17 @@ final class Foo
 ```
 
 ```php [Bar.php]
-//file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
 
 #[Tag(// [!code ++]
-    name: 'tags.key_from_metadata',// [!code ++]
+    name: 'tags.internal',// [!code ++]
     options: [// [!code ++]
         'key_as' => 'id_bar',// [!code ++]
     ],// [!code ++]
@@ -189,63 +181,49 @@ final class Bar
 }
 ```
 
-```php [Baz.php]
-//file: /app/src/Services/Baz.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-#[Tag(// [!code ++]
-    name: 'tags.key_from_metadata',// [!code ++]
-    options: [// [!code ++]
-        'key_as' => 'id_baz',// [!code ++]
-    ],// [!code ++]
-)]// [!code ++]
-final class Baz
-{
-    // …
-}
-```
+<<< @/_code/TagsId/src/Services/BazAttr.php [Baz.php]
 
 :::
 
-Контейнер зависимостей:
+::: code-group
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-```php
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz};
+use App\Services\{Foo, Baz};
 
 $container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
     ->build();
 
 $foo = $container->get(Foo::class);
+$bar = $foo->services->get('id_bar');
+$baz = $foo->services->get(Baz::class);
 
-// перебор коллекции
-foreach ($foo->services as $id => $service) {
-    var_dump($id, $service::class);
-}
-// вывод в консоли:
-//string(6) "id_bar"
-//string(16) "App\Services\Bar"
-//string(6) "id_baz"
-//string(16) "App\Services\Baz"
-
-
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has('id_bar'),
-    $foo->services->get('id_bar') instanceof Bar,
-);
-// bool(true)
-// bool(true)
-
-// доступ к элементу коллекции через методы `\ArrayAccess`
-var_dump(
-    isset($foo->services['id_baz']),
-    $foo->services['id_baz'] instanceof Baz,
-);
-// bool(true)
-// bool(true)
+var_dump($bar::class);
+var_dump($baz::class);
+var_dump(count($foo->services));
 ```
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Baz"
+int(2)
+```
+
 <!--@include: ../../php-definition/_include/bind_notes.md-->
+<!--@include: ../../_include/term_notes.md-->
