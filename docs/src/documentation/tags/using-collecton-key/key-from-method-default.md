@@ -15,174 +15,147 @@ outline: [2, 4]
 <!--@include: _include/key_from_method.md-->
 <!--@include: _include/important_key_equals.md-->
 
-## Пример использования «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default-default }
-
-Необходимо внедрить в параметр `\App\Services\Foo::$services` «ленивую коллекцию», где идентификаторы элементов коллекции будут получены из метаданных тега с именем `'key_as'`.
-
-Предусмотреть резервный метод `getCustomIndex()` для получения идентификатора элемента коллекции по умолчанию.
+## Пример извлечения идентификатора элемента из «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default-default }
 
 PHP-классы:
 
 ::: code-group
-
-```php [Foo.php]
-//file: /app/src/Services/Foo.php
-namespace App\Services;
-
-final class Foo
-{
-    public function __construct(
-        public readonly iterable $services
-    ) {}
-}
-```
-
-```php [Bar.php]
-//file: /app/src/Services/Bar.php
-namespace App\Services;
-
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php] {8-11}
-//file: /app/src/Services/Baz.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-
-    public static function getCustomIndex()
-    {
-        return 'baz_custom_id';    
-    }
-}
-```
-
-```php [Qux.php]
-//file: /app/src/Services/Qux.php
-namespace App\Services;
-
-final class Baz
-{
-    // …
-}
-```
-
+<<< @/_code/TagsId/src/Services/Foo.php
+<<< @/_code/TagsId/src/Services/Bar.php
+<<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-### Настройка в файлах конфигураций { #key-from-method-default-default-php-definition }
+Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» из элементов отмеченных тегом `'tags.internal'` и указанием резервного метода `getCustomIndex()` для извлечения идентификатора контейнера элемента коллекции.
 
-«Метод идентификатора» элемента коллекции по умолчанию задаётся в параметре `$keyDefaultMethod` [хелпер функции diTaggedAs()](../../php-definition/di-tagged-as.md).
+Реализуем метод `\App\Services\Baz::getCustomIndex()` возвращающий идентификатор элемента коллекции.
 
-Добавим теги и метаданные PHP-классам через метод `bindTag()` [^BindTag].
+::: code-group
+```php [Baz.php]
+<?php
+declare(strict_types=1);
 
-Конфигурационный файл:
+// file: /app/src/Services/Baz.php // [!code highlight]
 
-```php {13}
-// file: /app/config/tagged_foo_service.php
-use Generator;
-use App\Services\{Foo, Bar, Baz, Qux};
+namespace App\Services;
+
+final class Baz
+{
+    // …
+
+    public static function getCustomIndex(): string //[!code ++]
+    {//[!code ++]
+        return 'baz_custom_id';//[!code ++]
+    }//[!code ++]
+}
+```
+:::
+
+### Объявление в файлах конфигураций { #key-from-method-default-default-php-definition }
+
+В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$keyDefaultMethod` равным `'getCustomIndex'`.
+
+В файле конфигураций `tagged_services.php` объявляем тег `'tags.internal'` PHP-классам через метод `bindTag()`[^BindTag].
+
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')// [!code highlight]
+    ->load('/app/config/tagged_services.php')// [!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+foreach ($foo->services as $id => $service) {
+    var_dump($id, $service::class);
+    echo PHP_EOL;
+}
+```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php //[!code highlight]
+
+use App\Services\Foo;
 
 use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            servies: diTaggedAs(
-                tag: 'tags.example_classes',
-                key: 'key_as',
-                keyDefaultMethod: 'getCustomIndex',
-            )
+            servies: diTaggedAs(//[!code ++]
+                tag: 'tags.internal',//[!code ++]
+                keyDefaultMethod: 'getCustomIndex',//[!code ++]
+            )//[!code ++]
         );
-
-    yield diAutowire(Bar::class)
-        ->bindTag(
-            name: 'tags.example_classes',
-            options: [
-                'key_as' => 'id_bar',
-            ],
-        );
-   
-    yield diAutowire(Baz::class)
-        // 🚩 не указываем метаданные тегу
-        ->bindTag('tags.example_classes');
-        
-    yield diAutowire(Qux::class)
-        // 🚩 не указываем метаданные тегу
-        ->bindTag('tags.example_classes');
 };
 ```
 
-Контейнер зависимостей:
+```php [tagged_services.php]
+<?php
+declare(strict_types=1);
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz, Qux};
+// file: /app/config/tagged_services.php //[!code highlight]
 
-$container = (new DiContainerBuilder())
-    ->load('/app/config/tagged_foo_service.php')
-    ->build();
+use App\Services\{Bar, Baz};
 
-$foo = $container->get(Foo::class);
+use function \Kaspi\DiContainer\diAutowire;
 
-// перебор коллекции
-foreach ($foo->services as $id => $service) {
-    var_dump($id, $service::class);
-}
-// вывод в консоли:
-//string(6) "id_bar"
-//string(16) "App\Services\Bar"
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->bindTag('tags.internal');//[!code ++]
 
-//string(6) "baz_custom_id"
-//string(16) "App\Services\Baz"
-
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Qux"
-
-
-
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has('id_bar'),
-    $foo->services->get('id_bar') instanceof Bar,
-);
-// bool(true)
-// bool(true)
-
-// доступ к элементу коллекции через методы `\ArrayAccess`
-var_dump(
-    isset($foo->services['baz_custom_id']),
-    $foo->services['baz_custom_id'] instanceof Baz,
-);
-// bool(true)
-// bool(true)
-
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has(Qux::class),
-    $foo->services->get(Qux::class) instanceof Qux,
-);
-// bool(true)
-// bool(true)
+    yield diAutowire(Baz::class)
+        ->bindTag('tags.internal');//[!code ++]
+};
 ```
 
-### Конфигурация через атрибуты { #key-from-method-default-default-attributes }
+:::
 
+Выполните в терминале команду:
 
-Для внедрения коллекции добавим [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$keyDefaultMethod`.
+```shell
+php /app/src/container_build.php
+```
 
-К PHP-классам которые будут элементам коллекции применим [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с метаданными.
+Появится сообщение вида:
+
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Bar"
+
+string(15) "baz_custom_id"
+string(16) "App\Services\Baz"
+```
+
+### Объявление через атрибуты { #key-from-method-default-default-attributes }
+
+Для PHP-классов объявить тег `'tags.ordered'` через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+
+Объявить внедрение коллекции элементов отмеченных тегом `'tags.ordered'` в параметр `$services` конструктора класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$keyDefaultMethod` равным `'getCustomIndex'`.
 
 PHP-классы:
 
 ::: code-group
 
 ```php [Foo.php]
-//file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\TaggedAs;// [!code ++]
@@ -191,8 +164,7 @@ final class Foo
 {
     public function __construct(
         #[TaggedAs(// [!code ++]
-            name: 'tags.example_classes',// [!code ++]
-            key: 'key_as',// [!code ++]
+            name: 'tags.internal',// [!code ++]
             keyDefaultMethod: 'getCustomIndex',// [!code ++]
         )]// [!code ++]
         public readonly iterable $services
@@ -200,111 +172,71 @@ final class Foo
 }
 ```
 
-```php [Bar.php]
-//file: /app/src/Services/Bar.php
+<<< @/_code/TagsId/src/Services/BarAttr.php [Bar.php]
+
+```php [Baz.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php // [!code highlight]
+
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
+use Kaspi\DiContainer\Attributes\Tag;//[!code ++]
 
-#[Tag(// [!code ++]
-    name: 'tags.example_classes',// [!code ++]
-    options: [// [!code ++]
-        'key_as' => 'id_bar',// [!code ++]
-    ],// [!code ++]
-)]// [!code ++]
-final class Bar
-{
-    // …
-}
-```
-
-```php [Baz.php] {12-15}
-//file: /app/src/Services/Baz.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-// 🚩 не указываем метаданные тегу
-#[Tag(name: 'tags.example_classes')]// [!code ++]
+#[Tag('tags.internal')]//[!code ++]
 final class Baz
 {
     // …
 
-    public static function getCustomIndex()
-    {
-        return 'baz_custom_id';    
-    }
-}
-```
-
-```php [Qux.php]
-//file: /app/src/Services/Qux.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Tag;// [!code ++]
-
-// 🚩 не указываем метаданные тегу
-#[Tag(name: 'tags.example_classes')]// [!code ++]
-final class Baz
-{
-    // …
+    public static function getCustomIndex(): string//[!code ++]
+    {//[!code ++]
+        return 'baz_custom_id';//[!code ++]
+    }//[!code ++]
 }
 ```
 
 :::
 
-Контейнер зависимостей:
+::: code-group
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-```php
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{Foo, Bar, Baz, Qux};
+use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src')
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
     ->build();
 
 $foo = $container->get(Foo::class);
 
-// перебор коллекции
 foreach ($foo->services as $id => $service) {
     var_dump($id, $service::class);
+    echo PHP_EOL;
 }
-// вывод в консоли:
-//string(6) "id_bar"
-//string(16) "App\Services\Bar"
+```
+:::
 
-//string(6) "baz_custom_id"
-//string(16) "App\Services\Baz"
+Выполните в терминале команду:
 
-//string(16) "App\Services\Qux"
-//string(16) "App\Services\Qux"
+```shell
+php /app/src/container_build.php
+```
 
+Появится сообщение вида:
 
+```console
+string(16) "App\Services\Bar"
+string(16) "App\Services\Bar"
 
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has('id_bar'),
-    $foo->services->get('id_bar') instanceof Bar,
-);
-// bool(true)
-// bool(true)
-
-// доступ к элементу коллекции через методы `\ArrayAccess`
-var_dump(
-    isset($foo->services['baz_custom_id']),
-    $foo->services['baz_custom_id'] instanceof Baz,
-);
-// bool(true)
-// bool(true)
-
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
-var_dump(
-    $foo->services->has(Qux::class),
-    $foo->services->get(Qux::class) instanceof Qux,
-);
-// bool(true)
-// bool(true)
-
+string(15) "baz_custom_id"
+string(16) "App\Services\Baz"
 ```
 
 <!--@include: ../../_include/term_notes.md-->

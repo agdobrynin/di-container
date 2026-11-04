@@ -95,7 +95,7 @@ declare(strict_types=1);
 
 // file: /app/config/services.php //[!code highlight]
 
-use App\Services\Foo, Bar, Baz};
+use App\Services\Foo;
 
 use function \Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
