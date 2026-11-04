@@ -1,77 +1,20 @@
+---
+outline: [2,4]
+---
 # Ссылки на имена других «параметров контейнера» { #title }
 
 ## Обзор
 
-Чтобы указать ссылку на другой ранее добавленный «параметр контейнера», необходимо имя параметра указать между символами `{` и `}`.
+Чтобы указать ссылку на другой ранее добавленный «параметр контейнера», необходимо указать между символами `{` и `}` имя параметра.
 
 Значение `'{emails.admin}'` будет интерпретировано как получение значения параметра контейнера с именем `'emails.admin'`.
 
-Для строковых значений параметров поддерживается синтаксис объединения, склеивания, значений типа `string` и `number` <sup>[1](#tip)</sup>.
-
-## Пример использования ссылок в «параметрах контейнера» { #example }
-
-Конфигурация «параметров контейнера»:
-
-::: code-group
-
-```php [app_params.php]
-// file: /app/config/app_params.php
-return [
-    'storage' => '/var/storage',
-    'emails.admin' => 'admin@example.com',
-    'emails.manager' => 'manager@example.com',
-];
-```
-
-```php [dev_params.php]
-// file: /app/config/dev_params.php
-return [
-    'storage.images' => '{storage}/images',
-    'emails.as_string' => '{emails.admin}, {emails.manager}',
-    'emails.as_array' => [
-        '{emails.admin}',
-        '{emails.manager}',
-    ],
-];
-```
-
-::: 
-
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->loadParameters(
-        '/app/config/app_params.php',
-        '/app/config/dev_params.php',
-    )
-    ->build();
-
-$parameters = $container->parameters();
-
-var_dump($parameters->get('storage.images'));
-// string(19) "/var/storage/images"
-
-var_dump($parameters->get('emails.as_string'));
-// string(38) "admin@example.com, manager@example.com"
-
-var_dump($parameters->get('emails.as_array'));
-// array(2) {
-//   [0]=>
-//   string(17) "admin@example.com"
-//   [1]=>
-//   string(19) "manager@example.com"
-// }
-```
-
-<span id="tip"/>
-
 > [!TIP]
-> При объединении ссылок в строковом параметре допускается объединение
-> числовых и строковых значений параметров
+> При объединении ссылок в строковом параметре допускается объединение числовых и строковых значений параметров.
+> 
 > ```php
+> <?php
+> 
 >   return [
 >       'api.host' => 'api.example.com',
 >       'api.host_port' => 8080,
@@ -81,29 +24,206 @@ var_dump($parameters->get('emails.as_array'));
 > Значение параметра `'api.url'` будет приведено к строке `'api.example.com:8080'`.
 
 
-## Экранирование символа `{` { #escape-symbol }
+## Пример использования ссылок в «параметрах контейнера» { #example }
 
-Символ `{` используется как указатель на имя другого параметра. Если символ `{` является частью значения его необходимо экранировать, добавив еще один символ `{` чтобы избежать интерпретации его как ссылки на имя параметра.
-
-Конфигурация «параметров контейнера»:
+PHP-класс:
 
 ```php
-// file: /app/config/escaped_parameters.php
-return [
-     'parameter.escaped' => 'foo{{bar}baz',
-];
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(
+        public readonly string $imagesPath,
+        public readonly string $emails,
+        public readonly array $notifyTo,
+    ) {}    
+}
 ```
-Контейнер зависимостей:
 
-```php
+Внедрить через параметры контейнера значения в конструктор PHP-класса `\App\Services\Foo`.
+
+Файлы конфигурации параметров контейнера:
+
+::: code-group
+<<< @/_code/config/app_params.php
+<<< @/_code/config/dev_params.php
+:::
+
+### Объявления внедрения в файле конфигураций { #example-php-definition }
+
+В файле конфигураций `services.php` объявить внедрение в конструктор PHP-класса `\App\Services\Foo` через [хелпер функцию `diParameter()`](../php-definition/di-parameter.md).
+
+В файле конфигураций параметров контейнера `app_params.php` приведены основные значения, в файле `dev_params.php` используются ссылки на другие параметры контейнера для получения нужного значения для конкретного параметра. 
+
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
 
 $container = (new DiContainerBuilder())
-    ->loadParameters('/app/config/escaped_parameters.php')
+    ->loadParameters(// [!code highlight]
+        '/app/config/app_params.php',// [!code highlight]
+        '/app/config/dev_params.php',// [!code highlight]
+    )// [!code highlight]
+    ->load('/app/config/services.php')// [!code highlight]
     ->build();
 
-$parameters = $container->parameters();
+$foo = $container->get(Foo::class);
 
-var_dump($parameters->get('parameter.escaped'));
-// string(11) "foo{bar}baz"
+var_dump($foo->imagesPath);
+var_dump($foo->emails);
+var_dump($foo->notifyTo);
 ```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php
+
+use App\Services\Foo;
+
+use function Kaspi\DiContainer\{diAutowire, diParameter};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(//[!code ++]
+            imagesPath: diParameter('storage.images'),//[!code ++]
+            emails: diParameter('emails.as_string'),//[!code ++]
+            notifyTo: diParameter('emails.as_array'),//[!code ++]
+        );//[!code ++]
+};
+```
+<<< @/_code/config/app_params.php
+<<< @/_code/config/dev_params.php
+::: 
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(19) "/var/storage/images"
+string(38) "admin@example.com, manager@example.com"
+array(2) {
+  [0]=>
+  string(17) "admin@example.com"
+  [1]=>
+  string(19) "manager@example.com"
+}
+```
+
+### Объявление внедрения через атрибуты { #example-attribute-definition }
+
+Через атрибут `\Kaspi\DiContainer\Attributes\Parameter` внедрить параметры контейнера в конструктор PHP-класса `\App\Services\Foo`.
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
+
+final class Foo
+{
+    public function __construct(
+        #[Parameter('storage.images')]//[!code ++]
+        public readonly string $imagesPath,
+        #[Parameter('emails.as_string')]//[!code ++]
+        public readonly string $emails,
+        #[Parameter('emails.as_array')]//[!code ++]
+        public readonly array $notifyTo,
+    ) {}    
+}
+```
+:::
+
+::: code-group
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->loadParameters(// [!code highlight]
+        '/app/config/app_params.php',// [!code highlight]
+        '/app/config/dev_params.php',// [!code highlight]
+    )// [!code highlight]
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
+    ->build();
+
+$foo = $container->get(Foo::class);
+
+var_dump($foo->imagesPath);
+var_dump($foo->emails);
+var_dump($foo->notifyTo);
+```
+
+<<< @/_code/config/app_params.php
+<<< @/_code/config/dev_params.php
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+string(19) "/var/storage/images"
+string(38) "admin@example.com, manager@example.com"
+array(2) {
+  [0]=>
+  string(17) "admin@example.com"
+  [1]=>
+  string(19) "manager@example.com"
+}
+```
+
+## Экранирование символа { { #escape-symbol }
+
+Для экранирования в строке символа `{` необходимо его удвоить – <code v-pre>{{</code> чтобы избежать интерпретации его как ссылки на имя параметра.
+
+Рассмотрим пример: параметр контейнера `'params.foo'` должен быть представлен строкой `'foo{bar}baz'`. Так как символ `{` является зарезервированным для синтаксиса – ссылка на имена других «параметров контейнера», его необходимо экранировать, для этого значение необходимо представить строкой <code v-pre>'foo{{bar}baz'</code>.
+
+```php
+<?php
+
+// file: /app/config/escaped_parameters.php //[!code highlight]
+
+return [
+     'params.foo' => 'foo{{bar}baz',
+];
+```
+
