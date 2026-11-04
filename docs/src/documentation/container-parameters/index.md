@@ -2,21 +2,25 @@
 
 ## Обзор { #overview }
 
-При конфигурировании PHP-класса или вызываемого типа `callable`, можно не указывать контейнеру как внедрять зависимости **простых типов**, указывая в методе `bindArguments()` [^BindArguments] значение «как-есть».
+При объявлении PHP-класса или вызываемого типа[^CallableType], можно не указывать контейнеру как внедрять зависимости **простых типов**, указывая в методе `bindArguments()` [^BindArguments] значение «как-есть».
 
-К **простым типам** относятся значения `int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или тип `array` состоящий из простых типов.
+К **простым типам** относятся значения `int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или тип `array` состоящий из этих типов.
 
-Необходимо обеспечить внедрение зависимостей в PHP-классы из простых типов, указывая значения зависимостей «как-есть» через метод `bindArguments()`.
+Рассмотрим пример: необходимо обеспечить внедрение зависимостей в PHP-классы из простых типов, указывая значения зависимостей «как-есть» через метод `bindArguments()`.
 
 PHP-классы:
 
 ::: code-group
-
 ```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
 namespace App\Services;
 
-final class Foo {
+final class Foo
+{
     public function __construct(
         private readonly string $adminEmail
     ) {}
@@ -26,7 +30,11 @@ final class Foo {
 ```
 
 ```php [Configurator.php]
-// file: /app/src/Services/Configurator.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Configurator.php //[!code highlight]
+
 namespace App\Services;
 
 final class Configurator
@@ -41,7 +49,11 @@ final class Configurator
 ```
 
 ```php [Bar.php]
-// file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
 namespace App\Services;
 
 final class Bar
@@ -52,12 +64,15 @@ final class Bar
 
 :::
 
-Конфигурирование в файле:
+Объявление внедрений простых параметров в файле конфигураций:
 
 ```php
-// file: /app/config/services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php  //[!code highlight]
+
 use App\Services\{Foo, Configurator};
-use Generator;
 
 use function Kaspi\DiContainer\{diAutowire, diFactory};
 
@@ -76,38 +91,34 @@ return static function (): Generator {
 };
 ```
 
-Контейнер зависимостей:
-
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->load('/app/config/services.php')
-    ->import('App\\', src: '/app/src/')
-    ->build();
-```
-
 Как можно видеть в файле конфигурации используется одно и то же значение `'admin@example.com'` для внедрения.
 
-Иногда одно и то же значение внедряется в параметры методов PHP-классов или вызываемых типов `callable`, в нескольких конфигурационных файлах. Повторяющиеся значение можно определить как «**параметр контейнера**», который представляет собой многократно используемое значение при конфигурировании внедрений в параметры.
+Повторяющиеся значение можно определить как «**параметр контейнера**», который представляет собой многократно используемое значение при объявлении внедрений в параметры.
 
 **Конфигурацию параметров контейнера можно представить в виде коллекции <nobr>ключ–значение</nobr>: где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](#parameter-support-types).**
 
 Выше приведенный пример, где значение для параметра метода класса можно представить как «параметр контейнера»:
 
 ```php
-// file: /app/config/parameters.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/parameters.php //[!code highlight]
+
 return [
     'adminEmail' => 'admin@example.com',
 ];
 ```
 
-[Хелпер функция `diParameter()`](inject_params.md) внедряет зависимость из «параметров контейнера»:
+[Хелпер функция `diParameter()`](inject_params.md#helper-fn-di-parameter) внедряет зависимость из «параметров контейнера»:
 
 ```php
-// file: /app/config/services.php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php  //[!code highlight]
+
 use App\Services\{Foo, Configurator};
-use Generator;
 
 use function Kaspi\DiContainer\{diAutowire, diFactory, diParameter};
 
@@ -126,9 +137,16 @@ return static function (): Generator {
 };
 ```
 
-Используем метод `DiContainerBuilder::loadParameters()` для загрузки конфигурации «параметров контейнера»:
+Для объявления параметров контейнера используем [метод `DiContainerBuilder::loadParameters()`](declare_params.md):
 
 ```php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
 
 $container = (new DiContainerBuilder())
@@ -145,11 +163,12 @@ $container = (new DiContainerBuilder())
 - тип `null`
 - перечисляемые типы наследуемые от `\UnitEnum`
 - `array` из выше перечисленных типов
-- PHP константы из выше перечисленных типов определяемые через [`\define()`](https://www.php.net/manual/en/function.define.php)
-- значения из публичных констант у php-классов и php интерфейсов со значениями из выше перечисленных типов.
+- PHP-константы из выше перечисленных типов определяемые через функцию [`\define()`](https://www.php.net/manual/en/function.define.php)
+- значения из публичных констант PHP-классов и PHP-интерфейсов со значениями из выше перечисленных типов.
 
 ```php
-// конфигурация параметров контейнера.
+<?php
+declare(strict_types=1);
 
 return [
     // строковое значение
@@ -183,3 +202,4 @@ return [
 - [«Параметры контейнера» времени выполнения](inject_runtime_params.md).
 
 <!--@include: ../php-definition/_include/bind_notes.md-->
+<!--@include: ../_include/term_notes.md-->
