@@ -64,155 +64,97 @@ PHP-классы:
 
 В параметры конструктора `$mailTo` и `$debug` PHP-класса `\App\Services\Foo` объявить внедрение через [параметры контейнера](inject_params.md), для параметра `$setupType` реальное значение вычисляется только вне контейнера, поэтому для этого параметра необходимо использовать объявление внедрения через **«параметр контейнера» времени исполнения**.
 
-## 🚧🚧🚧 
+### Объявление в файлах конфигураций { #helper-fn-di-parameter-runtime }
+
+В файле конфигураций `services.php` объявить PHP-класс `\App\Services\Foo`, объявить внедрение для параметра конструктора `$setupType` через [хелпер функцию `diParameterRuntime()`](../php-definition/di-parameter-runtime.md), для параметров конструктора `$mailTo` и `$debug`, значения которых заранее известно, через [хелпер функцию `diParameter()`](../php-definition/di-parameter.md).
 
 ::: code-group
 
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-use App\Interfaces\QuxInterface;
-use App\Enums\Setup;
+// file: /app/src/container_build.php // [!code highlight]
 
-final class Foo
-{
-    public function __construct(
-        public readonly QuxInterface $qux,
-        public readonly Setup $setupType,
-        public readonly string $mailTo,
-        public readonly bool $baz,
-    ) {}
-}
-```
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
-```php [QuxInterface.php]
-// file: /app/src/Interfaces/QuxInterface.php
-namespace App\Interfaces;
-
-interface QuxInterface
-{
-    // …    
-}
-```
-
-```php [Setup.php]
-// file: /app/src/Enums/Setup.php
-namespace App\Enums;
-
-enum Setup
-{
-    case LOCAL;
-    case STAGES;
-    case PROD; 
-}
-```
-
-```php [Bar.php]
-// file: /app/src/Services/Bar.php
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Bar implements QuxInterface
-{
-    // …
-}
-```
-
-:::
-
-
-Конфигурация «параметров контейнера»:
-
-```php
-// file: /app/config/parameters.php
-
-return static function () {
-    yield 'mailTo' => 'manager@example.com';
-    
-    yield 'params.foo' => true;
-};
-```
-
-> [!IMPORTANT]
-> Значение требуемое для внедрения в параметр `\App\Services\Foo::$setupType` будет известно только после сборки контейнера.
-
-
-### Хелпер функция `diParameterRuntime()` { #helper-fn-di-parameter-runtime }
-
-Конфигурирование:
-
-```php
-// file: /app/config/services.php
-use App\Services\{Foo, Bar};
-use function Kaspi\DiContainer\{diAutowire, diGet, diParameter, diParameterRuntime};
-
-
-return static function () {
-    yield diAutowire(Foo::class)
-        ->bindArguments(
-            diGet(Bar::class),
-            /*
-             * Параметр # 2 конструктора с именем `$setupType`.
-             * Эквивалентно объявлению:
-             * diParameterRuntime(
-             *  'setupType',
-             *  'Забыли установить параметр контейнера \'setupType\'?'
-             * )
-             */
-            diParameterRuntime(message: 'Забыли установить параметр контейнера \'setupType\'?'),
-            /*
-             * Эквивалентно объявлению
-             * mailTo: diParameter('mailTo'),
-             */
-            mailTo: diParameter(),
-            baz: diParameter('params.foo'),
-        )
-    ;
-};
-```
-
-Контейнер зависимостей:
-
-```php
-use App\Enums\Setup;
-use App\Services\{Foo, Bar};
-use App\Interfaces\QuxInterface
 use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use App\Enums\SetupEnum;
+
 
 $container = (new DiContainerBuilder())
-    ->loadParameters('/app/config/parameters.php')
-    ->load('/app/config/services.php')
+    ->loadParameters('/app/config/params_main.php')//[!code highlight]
+    ->loadParameters('/app/config/params_notify.php')//[!code highlight]
+    ->load('/app/config/services.php')// [!code highlight]
     ->build();
 
-// 🚩 объявить "параметр контейнера" с именем 'setupType'// [!code highlight]
-$container->parameters()// [!code highlight]
-    ->set('setupType', Setup::STAGES);// [!code highlight]
+
+// …
+
+$mockSetupTypeValue = static fn () => SetupEnum::LOCAL;// [!code highlight]
+
+$calculatedSetupTypeValue = ($mockSetupTypeValue)();// [!code ++]
+
+$container->parameters()// [!code ++]
+    ->set(// [!code ++]
+        'params.setup_type',// [!code ++]
+        $calculatedSetupTypeValue,// [!code ++]
+    );// [!code ++]
+
+// …
 
 $foo = $container->get(Foo::class);
 
-var_dump($foo->qux instanceof Bar);
-// bool(true)
-
-var_dump($foo->qux instanceof QuxInterface);
-// bool(true)
-
-var_dump($foo->setupType === Setup::LOCAL);
-// bool(false)
-var_dump($foo->setupType === Setup::STAGES);
-// bool(true)
-
+var_dump($foo->bar);
+var_dump($foo->setupType);
 var_dump($foo->mailTo);
-// string(19) "manager@example.com"
-
-var_dump($foo->baz);
-// bool(true)
+var_dump($foo->debug);
 ```
 
-### Атрибут `ParameterRuntime` { #attribute-parameter-runtime }
+```php [services.php]
+<?php
+declare(strict_types=1);
 
-Конфигурирование через атрибуты:
+// file: /app/config/services.php  // [!code highlight]
+
+use App\Services\Foo;
+
+use function Kaspi\DiContainer\{diAutowire, diParameterRuntime, diParameter};
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->bindArguments(//[!code highlight]
+            setupType: diParameterRuntime('params.setup_type'),//[!code ++]
+            mailTo: diParameter('emails.notify'),//[!code highlight]
+            debug: diParameter('app.debug'),//[!code highlight]
+        );//[!code highlight]
+};
+```
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+object(App\Services\Bar)#2 (0) {
+}
+enum(App\Enums\SetupEnum::LOCAL)
+string(37) "admin@example.com, manager@example.com"
+bool(false)
+```
+
+### Объявление через атрибут { #attribute-parameter-runtime }
+
+Объявить внедрение в параметр конструктора `$setupType` через [атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md) PHP-класса `\App\Services\Foo`,
+для остальных параметров конструктора через [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](../attribute-definition/parameter.md).
+
+🚧🚧🚧
 
 ```php
 // file: /app/src/Services/Foo.php
