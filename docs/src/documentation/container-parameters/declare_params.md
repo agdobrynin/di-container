@@ -62,15 +62,18 @@ Kaspi\DiContainer\DiContainerBuilder::setParameter(
 - `DefinitionsConfiguratorInterface::removeParameter()` – удаление параметра по имени из конфигурации контейнера.
 - `DefinitionsConfiguratorInterface::hasParameter()` – проверка на доступность параметра по имени.
 
+Пример объявления и управления параметрами контейнера в файле конфигураций:
+
 ```php
-use Generator;
+<?php
+declare(strict_types=1);
+
 use App\Services\Foo;
 use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
 
 use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-
     $configurator->loadParameters('/app/config/more_app_params.php');
 
     if (!$configurator->hasParameter('debug')) {
@@ -82,8 +85,6 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
     yield diAutowire(Foo::class)
         ->bindArguments(
             diParameter('baz')
-        )
-    ;
-
+        );
 };
 ```
