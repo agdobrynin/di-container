@@ -104,7 +104,7 @@ if ('dev' === getenv('APP_ENV')) {//[!code ++]
     $builder->loadParameters('/app/config/params_dev.php');//[!code ++]
 }//[!code ++]
 
-$container->->build();
+$container = $builder->build();
 
 $foo = $container->get(Foo::class);
 
@@ -157,68 +157,85 @@ bool(true)
 
 ### Объявление через атрибут { #attribute-parameter }
 
-### 🚧🚧🚧🚧
+Объявить внедрение параметров контейнера через атрибут `\Kaspi\DiContainer\Attributes\Parameter` в конструктор PHP-класса `\App\Services\Foo`.
 
-Конфигурирование через атрибуты:
+::: code-group
+```php [Foo.php]
+<?php
+declare(strict_types=1);
 
-```php
 // file: /app/src/Services/Foo.php
+
 namespace App\Services;
 
-use App\Interfaces\QuxInterface;
-use App\Enums\Setup;
-use App\Services\Bar;// [!code ++]
-use Kaspi\DiContainer\Attributes\Inject;// [!code ++]
-use Kaspi\DiContainer\Attributes\Parameter;// [!code ++]
+use App\Enums\SetupEnum;
+use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
 
 final class Foo
 {
     public function __construct(
-        #[Inject(Bar::class)]// [!code ++]
-        public readonly QuxInterface $qux,
-        #[Parameter] // Эквивалентно объявлению #[Parameter('setupType')] // [!code ++]
-        public readonly Setup $setupType,
-        #[Parameter] // Эквивалентно объявлению #[Parameter('mailTo')] // [!code ++]
+        public readonly Bar $bar,
+        // Эквивалентно объявлению #[Parameter('setupType')]//[!code warning]
+        #[Parameter]//[!code ++]
+        public readonly SetupEnum $setupType,
+        #[Parameter('emails.notify')]//[!code ++]
         public readonly string $mailTo,
-        #[Parameter('params.foo')]// [!code ++]
-        public readonly bool $baz,
+        #[Parameter('app.debug')]//[!code ++]
+        public readonly bool $debug,
     ) {}
 }
 ```
+::: 
 
-Контейнер зависимостей:
-
+::: code-group
 ```php
-use App\Enums\Setup;
-use App\Services\{Foo, Bar};
-use App\Interfaces\QuxInterface
-use Kaspi\DiContainer\DiContainerBuilder;
+<?php
+declare(strict_types=1);
 
-$container = (new DiContainerBuilder())
-    ->loadParameters(
-        '/app/config/parameters.php',
-        '/app/config/setup_parameters.php',
-    )
-    ->load('/app/config/services.php')// [!code --]
-    ->import(namespace: 'App\\', src: '/app/src')// [!code ++]
-    ->build();
+// file: /app/src/container_build.php //[!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+use function {getenv, putenv};//[!code ++]
+
+putenv('APP_ENV=dev');
+
+$builder = (new DiContainerBuilder())
+    ->loadParameters('/app/config/params.php')//[!code ++]
+    ->loadParameters('/app/config/params_notify.php');//[!code ++]
+
+if ('dev' === getenv('APP_ENV')) {//[!code ++]
+    $builder->loadParameters('/app/config/params_dev.php');//[!code ++]
+}//[!code ++]
+
+$container = $builder->build();
 
 $foo = $container->get(Foo::class);
 
-var_dump($foo->qux instanceof Bar);
-// bool(true)
-
-var_dump($foo->qux instanceof QuxInterface);
-// bool(true)
-
-var_dump($foo->setupType === Setup::LOCAL);
-// bool(true)
-
+var_dump($foo->bar);
+var_dump($foo->setupType);
 var_dump($foo->mailTo);
-// string(19) "manager@example.com"
+var_dump($foo->debug);
+```
+:::
 
-var_dump($foo->baz);
-// bool(true)
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+object(App\Services\Bar)#2 (0) {
+}
+enum(App\Enums\SetupEnum::LOCAL)
+string(33) "admin@localhost, manager@localhost"
+bool(true)
 ```
 
 <!--@include: ../_include/term_notes.md-->
