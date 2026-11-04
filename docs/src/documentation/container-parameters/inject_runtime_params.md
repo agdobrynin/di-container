@@ -48,6 +48,22 @@ $container->parameters()//[!code ++]
 
 PHP-классы:
 
+::: code-group
+<<< @/_code/src/Services/Foo.php
+<<< @/_code/src/Services/Bar.php
+<<< @/_code/src/Enums/SetupEnum.php
+:::
+
+Файлы конфигурации параметров контейнера:
+
+
+::: code-group
+<<< @/_code/config/params_main.php
+<<< @/_code/config/params_notify.php
+:::
+
+В параметры конструктора `$mailTo` и `$debug` PHP-класса `\App\Services\Foo` объявить внедрение через [параметры контейнера](inject_params.md), для параметра `$setupType` реальное значение вычисляется только вне контейнера, поэтому для этого параметра необходимо использовать объявление внедрения через **«параметр контейнера» времени исполнения**.
+
 ## 🚧🚧🚧 
 
 ::: code-group
