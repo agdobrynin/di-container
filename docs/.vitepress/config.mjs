@@ -183,7 +183,19 @@ export default defineConfig({
                     base: '/documentation/runtime-definition/',
                     text: 'Объявление объекта в рантайм контейнере',
                     link: 'index.md',
-                  }
+                  },
+                  {
+                    base: '/documentation/factories/',
+                    text: 'Фабрика для внедрения зависимостей',
+                    collapsed: true,
+                    items: [
+                      {text: 'Обзор', link: 'index.md'},
+                      {text: 'Объявление PHP-класса через фабрику', link: 'declare_class.md'},
+                      {text: 'Аргументы для метода фабрики', link: 'args.md'},
+                      {text: 'Внедрение в параметры метода', link: 'inject_into_params.md'},
+                      {text: 'Фактическое имя класса фабрики', link: 'factory_class_container_id.md'},
+                    ],
+                  },
                 ]
               }
           ],
