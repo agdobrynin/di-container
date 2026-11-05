@@ -241,15 +241,20 @@ string(11) "Lorem ipsum"
 
 ### Объявление через атрибуты { #example-di-runtime-attribute }
 
-Объявим требуемые нам PHP-классы через [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md): 
+PHP-классы `\App\Core\Kernel` и `\App\Services\Qux` объявить через [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
 
+Объявим скалярные зависимости в PHP-классах `\App\Services\Bar`, `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\Parameter`, типизированную зависимость[^TypeHints] в этих классах контейнер самостоятельно на основании конфигурации контейнера.
 
 PHP-классы:
 
 ::: code-group
 
 ```php [Kernel.php]
-// file: /app/src/Core/Kernel.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Core/Kernel.php //[!code highlight]
+
 namespace App\Core;
 
 use Kaspi\DiContainer\Attributes\DiRuntime;// [!code ++]
@@ -259,28 +264,15 @@ use App\Services\Qux;
 #[DiRuntime]// [!code ++]
 class Kernel
 {
-    public function __construct(
-        private readonly DiContainerInterface $container
-    ) {}
-
-    // ...
-
-    public function initKernel(): void
-    {
-        // ...
-
-        $this->container->set($this::class, $this);
-        
-        $secureString = \calculate_secure_string();
-        $qux = new Qux($secureString);
-        
-        $this->container->set($qux::class, $qux);
-    }
-}
+// …
 ```
 
 ```php [Qux.php]
-// file: /app/src/Services/Qux.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Qux.php //[!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\DiRuntime;// [!code ++]
@@ -288,41 +280,119 @@ use Kaspi\DiContainer\Attributes\DiRuntime;// [!code ++]
 #[DiRuntime]// [!code ++]
 final class Qux
 {
-    public function __construct(
-        private readonly string $secureString
-    ) {}
-
-    // …    
-}
-```
-
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-final class Foo
-{
-    public function __construct(
-        public readonly Qux $qux
-    ) {}    
-}
+// …
 ```
 
 ```php [Bar.php]
-// file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
 namespace App\Services;
 
 use App\Core\Kernel;
+use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
 
 final class Bar
 {
     public function __construct(
-        public readonly Kernel $kernel
+        public readonly Kernel $kernel,
+        #[Parameter('app.baz_value')]//[!code ++]
+        public readonly string $baz,
     ) {}    
 }
 ```
 
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Parameter;//[!code ++]
+
+final class Foo
+{
+    public function __construct(
+        public readonly Qux $qux,
+        #[Parameter('app.baz_value')]//[!code ++]
+        public readonly string $baz,
+    ) {}    
+}
+```
 :::
 
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Bar, Foo};
+
+$container = (new DiContainerBuilder())
+    ->loadParameters('/app/config/params.php')//[!code highlight]
+    ->import(namespace: 'App\\', src: '/app/src')// [!code ++]
+    ->compileToFile('/app/var', 'App\Core\Container')//[!code ++]
+    ->build();
+
+// …
+
+/*
+ * Метод \App\Core\Kernel::initKernel()
+ * установит реальные значения для Runtime Definition.
+ */ 
+$kernel = new \App\Core\Kernel($container);
+$kernel->initKernel();
+
+// …
+
+$bar = $container->get(Bar::class);
+var_dump($bar->kernel, $bar->baz);//[!code warning]
+
+echo PHP_EOL;
+
+$foo = $container->get(Foo::class);
+var_dump($qux->qux, $foo->baz);//[!code warning]
+```
+
+```php [params.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/params.php // [!code highlight]
+
+
+return static function (): Generator {
+    yield 'app.baz_value' => 'Lorem ipsum';
+}
+```
+:::
+
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+object(App\Core\Kernel)#2 (0) {
+}
+string(11) "Lorem ipsum"
+
+object(App\Services\Qux)#4 (0) {
+}
+string(11) "Lorem ipsum"
+```
 
 <!--@include: ../_include/term_notes.md-->
