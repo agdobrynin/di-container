@@ -1,3 +1,6 @@
+---
+outline: [2,4]
+---
 # Использование фабричных методов для внедрения зависимостей { #title }
 
 ## Обзор { #overview }
@@ -17,195 +20,220 @@ PHP-класс «фабрика» можно использовать для [о
 
 Для случаев когда объявление PHP-класса не может быть создано простым вызовом `new Foo()`, а требует особой сборки, то нужно [делегировать сборку этого класса специальному PHP-классу – «фабрика»](declare_class.md).
 
-Объявить PHP-класс «фабрика» можно через:
-- [хелпер функцию `diFactory()`](../php-definition/di-factory.md) в файлах конфигураций.
-- [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
+Объявлять PHP-класс «фабрика» следует указав значение в параметре `$definition` [хелпер функции `diFactory()`](../php-definition/di-factory.md) в файлах конфигураций, или [атрибута `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
 
-## Фабрика со статическим методом.
-Для фабрики первым аргументом указывают имя класса,
-вторым статический метода класса.
+## Содержание раздела { #toc }
+
+- [Аргументы для метода фабрики](args.md)
+- [Объявление PHP-класса через фабрику](declare_class.md)
+- [Объявление внедрения зависимости в параметры](inject_into_params.md)
+- [Фактическое имя класса фабрики](factory_class_container_id.md)
+
+## Примеры объявления PHP-класса «фабрика» { #example }
+
+Рассмотрим общий и короткий пример объявления PHP-класса в контейнере через PHP-класс «фабрика».
+
+### Фабрика со статическим методом { #example-static-method }
+
+Статический метод фабрики является вызываемым типом[^CallableType], т.е. сам объект PHP-класса фабрики не будет создан контейнером, результат вызова статического метода и будет реализацией объявляемого класса `\App\Services\Foo`.
+
+PHP-класс «фабрика»:
 
 ```php
-// Фабрика
+<?php
+declare(strict_types=1);
+
 namespace App\Factories;
 
-use App\Classes\Foo;
+use App\Services\{Foo, Bar};
 
-class ClassFactory
+final class Factory
 {
-    public static function  create(): Foo
+    public static function createFoo(Bar $bar): Foo
     {
-        $createdObject = new Foo();
-        // дополнительные настройки объекта
+        $createdObject = new Foo($bar));
+
+        // additional configuration for $createdObject
 
         return $createdObject;
     }
 }
 ```
-При конфигурировании через хелпер функцию:
+
+Объявление через хелпер функцию:
+
 ```php
-// 
-use App\Classes\Foo;
-use App\Factories\ClassFactory;
-use function Kaspi\DiContainer\diFactory;
+<?php
+declare(strict_types=1);
+
+use App\Services\Foo;
+use App\Factories\Factory;
+
+use function Kaspi\DiContainer\diFactory;//[!code highlight]
 
 return static function () {
-    yield Foo::class => diFactory([ClassFactory::class, 'create']);
+    yield Foo::class => diFactory(//[!code highlight]
+        definition: [//[!code ++]
+            Factory::class,//[!code ++]
+            'createFoo',//[!code ++]
+        ]//[!code ++]
+    );//[!code highlight]
 };
 ```
-При конфигурировании через php атрибут:
+
+Объявление через атрибут:
+
 ```php
-namespace App\Classes;
+<?php
+declare(strict_types=1);
 
-use Kaspi\DiContainer\Attributes\DiFactory;
-use App\Factories\ClassFactory;
+namespace App\Services;
 
-#[DiFactory([ClassFactory::class, 'create'])]
-class Foo{}
+use Kaspi\DiContainer\Attributes\DiFactory;//[!code highlight]
+use App\Factories\Factory;
+
+#[DiFactory(//[!code highlight]
+    definition: [//[!code ++]
+        Factory::class,//[!code ++]
+        'createFoo',//[!code ++]
+    ]//[!code ++]
+)]//[!code highlight]
+class Foo
+{
+    // …
+}
 ```
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
 
-$container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
+### Фабрика с нестатическим методом { #example-method }
 
-$container->get(\App\Classes\Foo::class);
-```
-> [!NOTE]
-> Класс `\App\Classes\Foo` будет создан через вызов `\App\Factories\ClassFactory::create()`
+Если ваша фабрика использует обычный метод вместо статического, первым шагом необходимо убедиться что PHP-класс самой фабрики также был объявлен и доступен в контейнере, т.е. может быть получен через метод контейнера `get(App\Factories\Factory::class)`.
 
-
-## Фабрика с нестатическим методом.
-Если ваша фабрика использует обычный метод вместо статического,
-первым шагом необходимо убедиться что PHP-класс самой фабрики также был сконфигурирован
-и доступен в контейнере как определение, т.е. может быть получен через
-метод контейнера `get(\App\Factories\ClassFactory::class)`.
+PHP-класс «фабрика»:
 
 ```php
 namespace App\Factories;
 
-use App\Classes\Foo;
+use App\Services\{Foo, Bar};
 
-class ClassFactory
+final class Factory
 {
     public function __construct(private Bar $bar) {}
 
-    public function create(): Foo
+    public function createFoo(): Foo
     {
-        $foo = new Foo($this->bar);
-        // дополнительное конфигурирование `$foo`
+        $createdObject = new Foo($this->bar);
+
+        // additional configuration for $createdObject
         
-        return $foo;
+        return $createdObject;
     }
 }
 ```
-Конфигурация класса фабрики в контейнере если недоступно [автоматическое разрешение зависимостей](01-container-config.md#нулевая-конфигурация-для-внедрения-зависимостей):
-```php
-// config/services.php
-use App\Factories\ClassFactory;
-use function Kaspi\DiContainer\diAutowire;
 
-return function () {
-    // доступен через метод контейнера `get(\App\Factories\ClassFactory::class)`
-    yield diAutowire(ClassFactory::class)
-};
-``` 
-Объявление определения фабрики через хелпер функцию:
+Объявление через хелпер функцию:
+
 ```php
-// config/services_base.php
-use App\Classes\Foo;
-use App\Factories\ClassFactory;
-use function Kaspi\DiContainer\diFactory;
+<?php
+declare(strict_types=1);
+
+use App\Services\Foo;
+use App\Factories\Factory;
+
+use function Kaspi\DiContainer\diFactory;//[!code highlight]
 
 return static function () {
-    yield Foo::class => diFactory([ClassFactory::class, 'create']);
+    yield Foo::class => diFactory(//[!code highlight]
+        definition: [//[!code ++]
+            Factory::class,//[!code ++]
+            'createFoo',//[!code ++]
+        ]//[!code ++]
+    );//[!code highlight]
 };
 ```
-Объявление фабрики через php атрибут:
+
+Объявление через атрибут:
+
 ```php
-namespace App\Classes;
+<?php
+declare(strict_types=1);
 
-use Kaspi\DiContainer\Attributes\DiFactory;
-use App\Factories\ClassFactory;
+namespace App\Services;
 
-#[DiFactory([ClassFactory::class, 'create'])]
-class Foo{}
+use Kaspi\DiContainer\Attributes\DiFactory;//[!code highlight]
+use App\Factories\Factory;
+
+#[DiFactory(//[!code highlight]
+    definition: [//[!code ++]
+        Factory::class,//[!code ++]
+        'createFoo'//[!code ++]
+    ]//[!code ++]
+)]//[!code highlight]
+class Foo
+{
+    // …
+}
 ```
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
 
-$container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->load(__DIR__.'/config/services_base.php')
-    ->build()
-;
+### Фабрика реализующая магический метод __invoke() { #example-invoke }
 
-$container->get(\App\Classes\Foo::class);
-```
-> [!NOTE]
-> Класс \App\Classes\Foo будет создан через вызов `\App\Factories\ClassFactory::create()`.
-> 
-> При разрешении фабрики, контейнер попытается разрешить зависимость
-> `ClassFactory::$bar` в конструкторе на основе конфигурации.
->
+Если ваша фабрика реализует [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke), первым шагом необходимо убедиться что PHP-класс самой фабрики также был объявлен и доступен в контейнере, т.е. может быть получен через метод контейнера `get(App\Factories\FooFactory::class)`.
 
+Синтаксис объявления фабрики может быть сокращён до указания FQCN[^FQCN].
 
-## Фабрика с методом `__invoke()`.
-В качестве фабрики может быть использован метод `__invoke()`.
-Синтаксис объявления определения может быть сокращён до указания имени класса в виде строки (fully qualified class name).
+PHP-класс «фабрика»:
+
 ```php
 namespace App\Factories;
 
-use App\Classes\Foo;
+use App\Services\{Foo, Bar};
 
-class ClassFactoryInvokable
+final class FooFactory
 {
-    public function  __invoke(): Foo
+    public function __construct(private Bar $bar) {}
+
+    public function __invoke(): Foo
     {
-        $foo = new Foo();
-        // дополнительное конфигурирование `$foo`
+        $createdObject = new Foo($this->bar);
+
+        // additional configuration for $createdObject
         
-        return $foo;
+        return $createdObject;
     }
 }
 ```
-Объявление определения фабрики через хелпер функцию:
+
+Объявление через хелпер функцию:
+
 ```php
-// config/services.php
-use App\Classes\Foo;
-use App\Factories\ClassFactoryInvokable;
+<?php
+declare(strict_types=1);
+
+use App\Services\Foo;
+use App\Factories\FooFactory;
+
 use function Kaspi\DiContainer\diFactory;
 
-return function () {
-    yield Foo::class => diFactory(ClassFactoryInvokable::class);
+return static function () {
+    yield Foo::class => diFactory(FooFactory::class);//[!code ++]
 };
 ```
-Объявление фабрики через php атрибут:
+
+Объявление через атрибут:
+
 ```php
-use Kaspi\DiContainer\Attributes\DiFactory;
+<?php
+declare(strict_types=1);
 
-#[DiFactory(\App\Factories\ClassFactoryInvokable::class)]
-class Foo{}
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\DiFactory;//[!code ++]
+use App\Factories\FooFactory;//[!code highlight]
+
+#[DiFactory(FooFactory::class)]//[!code ++]
+class Foo
+{
+    // …
+}
 ```
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-
-$container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
-
-$container->get(\App\Classes\Foo::class);
-```
-> [!NOTE]
-> Класс `\App\Classes\Foo` будет создан через вызов
-> метода контейнера `$object = $container->get(App\Factories\ClassFactoryInvokable::class)`
-> и исполнением метода `$object::__invoke()`.
-> 
-
-
-
 
 <!--@include: ../_include/term_notes.md-->
