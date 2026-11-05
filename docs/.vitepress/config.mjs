@@ -187,6 +187,7 @@ export default defineConfig({
                   {
                     base: '/documentation/factories/',
                     text: 'Фабрика для внедрения зависимостей',
+                    link: 'index.md',
                     collapsed: true,
                     items: [
                       {text: 'Обзор', link: 'index.md'},

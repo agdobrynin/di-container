@@ -18,9 +18,9 @@ outline: [2,4]
 
 PHP-класс «фабрика» можно использовать для [объявления внедрения в параметры](inject_into_params.md) методов или вызываемых типов[^CallableType].
 
-Для случаев когда объявление PHP-класса не может быть создано простым вызовом `new Foo()`, а требует особой сборки, то нужно [делегировать сборку этого класса специальному PHP-классу – «фабрика»](declare_class.md).
+PHP-класс «фабрика» можно использовать для [объявления PHP-класса](declare_class.md) когда простой вызов `new Foo()` невозможен, и требуется особая сборка объекта.
 
-Объявлять PHP-класс «фабрика» следует указав значение в параметре `$definition` [хелпер функции `diFactory()`](../php-definition/di-factory.md) в файлах конфигураций, или [атрибута `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
+Для вызова «фабрики» следует указывать значение в параметре `$definition` [хелпер функции `diFactory()`](../php-definition/di-factory.md) в файлах конфигураций, или [атрибута `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
 
 ## Содержание раздела { #toc }
 
