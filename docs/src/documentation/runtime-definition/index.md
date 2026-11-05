@@ -20,14 +20,16 @@ outline: [2, 4]
 
 ## Пример внедрения «Runtime definition» { #example-di-runtime }
 
-Необходимо объявить в контейнере зависимостей класс `\App\Core\Kernel` и класс `\App\Services\Qux` как **«Runtime Definition»**.
-
 PHP-классы:
 
 ::: code-group
 
 ```php [Kernel.php]
-// file: /app/src/Core/Kernel.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Core/Kernel.php //[!code highlight]
+
 namespace App\Core;
 
 use Kaspi\DiContainer\Interfaces\DiContainerInterface;
@@ -56,7 +58,11 @@ class Kernel
 ```
 
 ```php [Qux.php]
-// file: /app/src/Services/Qux.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Qux.php //[!code highlight]
+
 namespace App\Services;
 
 final class Qux
@@ -69,20 +75,12 @@ final class Qux
 }
 ```
 
-```php [Foo.php]
-// file: /app/src/Services/Foo.php
-namespace App\Services;
-
-final class Foo
-{
-    public function __construct(
-        public readonly Qux $qux
-    ) {}    
-}
-```
-
 ```php [Bar.php]
-// file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
 namespace App\Services;
 
 use App\Core\Kernel;
@@ -90,22 +88,90 @@ use App\Core\Kernel;
 final class Bar
 {
     public function __construct(
-        public readonly Kernel $kernel
+        public readonly Kernel $kernel,
+        public readonly string $baz,
+    ) {}    
+}
+```
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+final class Foo
+{
+    public function __construct(
+        public readonly Qux $qux,
+        public readonly string $baz,
     ) {}    
 }
 ```
 
 :::
 
-### Файлы конфигураций { #example-di-runtime-php-definition }
+Реальное состояние PHP-классов `\App\Core\Kernel` и `\App\Services\Qux` может быть получено только вне рамок конфигурации контейнера, но в проекте есть PHP-классы которые внедряют эти классы как зависимости конструктора – `\App\Services\Bar` и `\App\Services\Foo`.
 
-Объявим в [файле конфигураций](../container-builder/configuration_files.md) требуемые нам PHP-классы через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md):
+**При сборке необходима компиляция контейнера**, поэтому необходимо объявить в контейнере зависимостей класс `\App\Core\Kernel` и класс `\App\Services\Qux` как **«Runtime Definition»**.
+
+### Объявление в файлах конфигураций { #example-di-runtime-php-definition }
+
+В файле конфигураций `runtime_services.php` объявляет PHP-классы `\App\Core\Kernel` и `\App\Services\Qux` через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md).
+
+Объявим PHP-классы `\App\Services\Bar`, `\App\Services\Foo` и их скалярные зависимости в файле конфигураций `services.php`, контейнер самостоятельно внедрит типизированную зависимость[^TypeHints] на основании конфигурации контейнера.
+
+Для объявления скалярных зависимостей используем [параметры контейнера](../container-parameters/inject_params.md).
 
 ::: code-group
 
-```php [runtime_definitions.php]
-// file: /app/config/runtime_definitions.php
-use Generator;
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{Bar, Foo};
+
+$container = (new DiContainerBuilder())
+    ->loadParameters('/app/config/params.php')//[!code highlight]
+    ->load('/app/config/runtime_services.php')// [!code ++]
+    ->load('/app/config/services.php')// [!code ++]
+    ->compileToFile('/app/var', 'App\Core\Container')//[!code ++]
+    ->build();
+
+
+// …
+
+/*
+ * Метод \App\Core\Kernel::initKernel()
+ * установит реальные значения для Runtime Definition.
+ */ 
+$kernel = new \App\Core\Kernel($container);
+$kernel->initKernel();
+
+// …
+
+$bar = $container->get(Bar::class);
+var_dump($bar->kernel, $bar->baz);//[!code warning]
+
+echo PHP_EOL;
+
+$foo = $container->get(Foo::class);
+var_dump($qux->qux, $foo->baz);//[!code warning]
+```
+
+```php [runtime_services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/runtime_services.php // [!code highlight]
+
 use App\Core\Kernel;
 use App\Services\Qux;
 
@@ -119,54 +185,61 @@ return static function (): Generator {
 ```
 
 ```php [services.php]
-// file: /app/config/services.php
-use Generator;
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php // [!code highlight]
+
 use App\Services\{Foo, Bar};
 
-use function Kaspi\DiContainer\diRuntime;
+use function Kaspi\DiContainer\{diAutowire, diParameter};
 
 return static function (): Generator {
-    yield diRuntime(Foo::class);
+    yield diAutowire(Foo::class)
+        ->bindArguments(
+            baz: diParameter('app.baz_value')
+        );
     
-    yield diRuntime(Bar::class);
+    yield diAutowire(Bar::class)
+        ->bindArguments(
+            baz: diParameter('app.baz_value')
+        );
 };
+```
+
+```php [params.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/params.php // [!code highlight]
+
+
+return static function (): Generator {
+    yield 'app.baz_value' => 'Lorem ipsum';
+}
 ```
 
 :::
 
-Контейнер зависимостей:
+Выполните в терминале команду:
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Core\Kernel;
-use App\Services\{Foo, Bar, Qux};
-
-use function glob;
-
-$container = (new DiContainerBuilder())
-    ->load(...glob('/app/config/*.php'))
-    ->compileToFile('/app/var', 'App\Core\Container')
-    ->build();
-
-/*
- * Метод \App\Core\Kernel::initKernel()
- * установит реальные значения для Runtime Definition.
- */ 
-(new Kernel($container)->initKernel();
-
-// …
-
-$foo = $container->get(Foo::class);
-var_dump($foo->qux instanceof Qux);
-// (bool)true
-
-
-$bar = $container->get(Bar::class);
-var_dump($bar->kernel instanceof Kernel);
-// (bool)true
+```shell
+php /app/src/container_build.php
 ```
 
-### Атрибуты { #example-di-runtime-attribute }
+Появится сообщение вида:
+
+```console
+object(App\Core\Kernel)#2 (0) {
+}
+string(11) "Lorem ipsum"
+
+object(App\Services\Qux)#4 (0) {
+}
+string(11) "Lorem ipsum"
+```
+
+### Объявление через атрибуты { #example-di-runtime-attribute }
 
 Объявим требуемые нам PHP-классы через [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md): 
 
@@ -251,36 +324,5 @@ final class Bar
 
 :::
 
-Контейнер зависимостей:
 
-```php
-use Kaspi\DiContainer\DiContainerBuilder;
-use App\Core\Kernel;
-use App\Services\{Foo, Bar, Qux};
-
-use function glob;// [!code --]
-
-$container = (new DiContainerBuilder())
-    ->load(...glob('/app/config/*.php'))// [!code --]
-    ->import(namespace: 'App\\', src: '/app/src')// [!code ++]
-    ->compileToFile('/app/var', 'App\Core\Container')
-    ->build();
-
-/*
- * Метод \App\Core\Kernel::initKernel()
- * установит реальные значения для Runtime Definition.
- */ 
-(new Kernel($container)->initKernel();
-
-// …
-
-$foo = $container->get(Foo::class);
-var_dump($foo->qux instanceof Qux);
-// (bool)true
-
-
-$bar = $container->get(Bar::class);
-var_dump($bar->kernel instanceof Kernel);
-// (bool)true
-```
 <!--@include: ../_include/term_notes.md-->
