@@ -154,71 +154,91 @@ bool(false)
 Объявить внедрение в параметр конструктора `$setupType` через [атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md) PHP-класса `\App\Services\Foo`,
 для остальных параметров конструктора через [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](../attribute-definition/parameter.md).
 
-🚧🚧🚧
+::: code-group
+```php [Foo.php]
+<?php
+declare(strict_types=1);
 
-```php
-// file: /app/src/Services/Foo.php
+// file: /app/src/Services/Foo.php // [!code highlight]
+
 namespace App\Services;
 
-use App\Interfaces\QuxInterface;
-use App\Enums\Setup;
-use App\Services\Bar;// [!code ++]
-use Kaspi\DiContainer\Attributes\Inject;// [!code ++]
-use Kaspi\DiContainer\Attributes\Parameter;// [!code ++]
+use App\Enums\SetupEnum;
+use Kaspi\DiContainer\Attributes\Parameter;// [!code highlight]
 use Kaspi\DiContainer\Attributes\ParameterRuntime;// [!code ++]
 
 final class Foo
 {
     public function __construct(
-        #[Inject(Bar::class)]// [!code ++]
-        public readonly QuxInterface $qux,
-        #[ParameterRuntime(// [!code ++]
-            message: 'Забыли установить параметр контейнера \'setupType\'?'// [!code ++]
-        )]// [!code ++]
-        // Эквивалентно объявлению #[ParameterRuntime('setupType', '...')]// [!code ++]
-        public readonly Setup $setupType,
-        #[Parameter] // Эквивалентно объявлению Parameter('mailTo') // [!code ++]
+        public readonly Bar $bar,
+        #[ParameterRuntime('params.setup_type')]// [!code ++]
+        public readonly SetupEnum $setupType,
+        #[Parameter('emails.notify')]// [!code highlight]
         public readonly string $mailTo,
-        #[Parameter('params.foo')]// [!code ++]
-        public readonly bool $baz,
+        #[Parameter('app.debug')]// [!code highlight]
+        public readonly bool $debug,
     ) {}
 }
 ```
+::: 
 
-Контейнер зависимостей:
+::: code-group
 
-```php
-use App\Enums\Setup;
-use App\Services\{Foo, Bar};
-use App\Interfaces\QuxInterface
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php // [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+use App\Enums\SetupEnum;
+
 
 $container = (new DiContainerBuilder())
-    ->loadParameters('/app/config/parameters.php')
-    ->load('/app/config/services.php')// [!code --]
-    ->import(namespace: 'App\\', src: '/app/src')// [!code ++]
+    ->loadParameters('/app/config/params_main.php')//[!code highlight]
+    ->loadParameters('/app/config/params_notify.php')//[!code highlight]
+    ->import(namespace: 'App\\', src: '/app/src')// [!code highlight]
     ->build();
 
-// 🚩 объявить "параметр контейнера" с именем 'setupType'// [!code highlight]
-$container->parameters()// [!code highlight]
-    ->set('setupType', Setup::STAGES);// [!code highlight]
+
+// …
+
+$mockSetupTypeValue = static fn () => SetupEnum::LOCAL;// [!code highlight]
+
+$calculatedSetupTypeValue = ($mockSetupTypeValue)();// [!code ++]
+
+$container->parameters()// [!code ++]
+    ->set(// [!code ++]
+        'params.setup_type',// [!code ++]
+        $calculatedSetupTypeValue,// [!code ++]
+    );// [!code ++]
+
+// …
 
 $foo = $container->get(Foo::class);
 
-var_dump($foo->qux instanceof Bar);
-// bool(true)
-
-var_dump($foo->qux instanceof QuxInterface);
-// bool(true)
-
-var_dump($foo->setupType === Setup::LOCAL);
-// bool(false)
-var_dump($foo->setupType === Setup::STAGES);
-// bool(true)
-
+var_dump($foo->bar);
+var_dump($foo->setupType);
 var_dump($foo->mailTo);
-// string(19) "manager@example.com"
+var_dump($foo->debug);
+```
+:::
 
-var_dump($foo->baz);
-// bool(true)
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+object(App\Services\Bar)#2 (0) {
+}
+enum(App\Enums\SetupEnum::LOCAL)
+string(37) "admin@example.com, manager@example.com"
+bool(false)
 ```
