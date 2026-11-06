@@ -39,7 +39,7 @@ final class FooFactory
     {
         $bar = new Bar($barValue);
         
-        // a certain configuration for $bar
+        // some settings for $bar
         
         return new Foo($bar);
     }
@@ -48,7 +48,7 @@ final class FooFactory
     {
         $baz = new Baz($barValue);
         
-        // a certain configuration for $baz
+        // some settings for $baz
         
         return new Foo($baz);
     }
