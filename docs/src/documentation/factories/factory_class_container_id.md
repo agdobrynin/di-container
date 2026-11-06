@@ -124,6 +124,14 @@ final class Baz implements QuxInterface
 ```
 :::
 
+В контейнере будет объявлено два идентификатора контейнера для фабрик:
+- `'factory.foo_bar'` для `\App\Factories\FooFactory::createFooBar()`.
+- `'factory.foo_baz'` для `\App\Factories\FooFactory::createFooBaz()`.
+
+Каждая фабрика должна всегда возвращать один и тот же объект (паттерн singleton).
+
+В параметры методов фабрик объявить внедрение скалярной зависимости через [параметры контейнера](../container-parameters/index.md).
+
 ## 🚧🚧🚧🚧
 
 ```php
