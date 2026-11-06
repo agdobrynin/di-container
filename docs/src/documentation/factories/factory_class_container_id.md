@@ -1,11 +1,126 @@
 ---
-aside: false
+outline: [2,4]
 ---
 # Фактическое имя класса фабрики { #title }
 
 ## Обзор { #overview }
 
-При объявлении внедрения зависимости через PHP-класс «фабрику»[^FactoryPattern] выбранное значение для класса не влияет на получаемый результат выполнения фабричного метода. Фактическое имя класса фабрики зависит только от объекта получаемого через метод контейнера `get()` и значение имени класса. Однако разумное значение для имени класса фабрики может упростить его использование при конфигурировании.
+Обычно PHP-класс «фабрика»[^FactoryPattern] представляется двумя строковыми значениями – имя PHP-класса и имя метода этого класса.
+
+```php
+$factoryDefinition = [App\Services\Foo::class, 'methodName'];
+```
+
+Для получения результата вызова метода фабрики `methodName()` контейнер сначала выполнит **получение объекта** по идентификатору контейнера или FQCN[^FQCN] через метод контейнера `get()`, в примере выше это вызова `$container->get('App\Services\Foo')`, и только потом выполнит вызова метода `methodName()`. Из этого следует: строковое значение для «имени PHP-класса» должно обеспечивать получение объекта из контейнера по идентификатору контейнера[^ContainerId] в котором должен быть реализован указанный метод, в примере выше это `'methodName'`.
+
+Указание в качестве имени класса фабрики допустимо любого идентификатора контейнера, если получаемый из контейнера объект реализует фабричный метод.
+
+## Пример указания идентификатора контейнера в качестве имени класс фабрики { #example }
+
+PHP-классы:
+
+::: code-group
+
+```php [FooFactory.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Factories/FooFactory.php //[!code highlight]
+
+namespace App\Factories;
+
+final class FooFactory
+{
+    public function __construct(
+        // other dependencies can be injected here
+    ) {}
+
+    public function createFooBar(string $value): Foo
+    {
+        $bar = new Bar($barValue);
+        
+        // a certain configuration for $bar
+        
+        return new Foo($bar);
+    }
+    
+    public function createFooBaz(string $value): Foo
+    {
+        $baz = new Baz($barValue);
+        
+        // a certain configuration for $baz
+        
+        return new Foo($baz);
+    }
+}
+```
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php //[!code highlight]
+
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Foo
+{
+    public function __construct(public readonly QuxInterface $qux) {}
+}
+```
+
+```php [QuxInterface.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/QuxInterface.php //[!code highlight]
+
+namespace App\Interfaces;
+
+interface QuxInterface
+{
+    // …
+}
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
+
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Bar implements QuxInterface
+{
+    public function __construct(public readonly string $value) {}
+    
+    // …
+}
+```
+
+```php [Baz.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php //[!code highlight]
+
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Baz implements QuxInterface
+{
+    public function __construct(public readonly string $value) {}
+    
+    // …
+}
+```
+:::
 
 ## 🚧🚧🚧🚧
 
