@@ -186,7 +186,7 @@ export default defineConfig({
                   },
                   {
                     base: '/documentation/factories/',
-                    text: 'Фабрика для внедрения зависимостей',
+                    text: 'Внедрение зависимостей через фабрику',
                     link: 'index.md',
                     collapsed: true,
                     items: [

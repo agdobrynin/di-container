@@ -5,7 +5,7 @@ outline: [2, 4]
 
 ## Обзор { #overview }
 
-Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP-класс в контейнере, или [внедряет зависимость](#di-factory-param).
+Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP-класс в контейнере, или внедряет зависимость.
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`
@@ -27,16 +27,16 @@ outline: [2, 4]
 - `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
 - `$arguments` – аргументы метода фабрики.
 
+> [!TIP]
+> Изучите раздел документации [«Использование фабричных методов для внедрения зависимостей»](../factories/index.md).
+
 ## Аргументы метода фабрики { #args }
 
-Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\DiFactory` передает аргументы методу фабрики.
+Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\DiFactory` указывает методу PHP-класса «фабрики» как внедрять зависимости в конкретные параметры метода.
 
 <!--@include: _include/arguments.md-->
 
 <!--@include: _include/to_arguments.md-->
-
-> [!TIP]
-> Изучите раздел документации [«Использование фабричных методов для внедрения зависимостей»](../factories/index.md).
 
 
 <!--@include: ../_include/term_notes.md-->
