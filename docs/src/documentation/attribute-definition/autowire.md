@@ -33,13 +33,13 @@ outline: [2, 4]
 - `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP-класса.
 - `$tags` – тег с метаданными.
 - `$setups` – внедрение зависимостей через сеттер-метод [^SetterMethodMutable] [^SetterMethodImmutable].
-- `$resetter` – конфигурация сброса состояния объекта.
+- `$resetter` – [конфигурация сброса состояния объекта](../object-resetters/index.md).
 - `$isLazy` – объявить «ленивый объект». 
 
 > [!TIP]
 > Изучите разделы документации:
 > - [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
-> - [Сброс состояния объектов](../object-resetters/index.md).
+
 
 ## Идентификатор контейнера { #container-id }
 

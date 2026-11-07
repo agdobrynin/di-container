@@ -81,13 +81,98 @@ while ($request = $app->getRequest()) {
 
 **Чтобы избежать утечек памяти, нужно использовать механизм сброса состояния объекта `\App\Services\FooLogger`.**
 
+Контейнер предоставляет готовый механизм сброса состояния объектов контейнера через PHP-класс `\Kaspi\DiContainer\ObjectResetters`.
+
+Конфигурация для сброса состояния объектов представлена парой ключ-значение, где ключ это идентификатор контейнера[^ContainerId], а значение представленное типами `string`, `false` или `callable` указывает как необходимо выполнять сброса состояния объекта.
+
+**Типы значений для сброса состояния объекта:**
+- `non-empty-string` – имя публичного метода PHP-класса.
+- `false` – если PHP-классом реализован интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`, то выполнять метод `reset()`.
+- `callable(object $object): void` – вызываемый тип[^CallableType] с параметром типа `object`.
+
+Выберем в качестве сброса состояния объекта реализацию публичного метода в этом же классе `\App\Services\FooLogger::doReset()` и объявления в параметре `$resetter` атрибута `\Kaspi\DiContainer\Attributes\Autowire`:
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace  App\Services;
+
+use Kaspi\DiContainer\Attributes\Autowire;//[!code ++]
+
+#[Autowire(isSingleton: true)]//[!code --]
+#[Autowire(//[!code ++]
+    isSingleton: true,//[!code ++]
+    resetter: 'doReset',//[!code ++]
+)]//[!code ++]
+final class FooLogger
+{
+//…
+
+    public function doReset(): void//[!code ++]
+    {//[!code ++]
+        $this->logs = [];//[!code ++]
+    }//[!code ++]
+```
+
+Теперь добавим в наше приложение работающее по схеме «event loop», использование PHP-класса `\Kaspi\DiContainer\ObjectResetters`:
+
+```php
+<?php
+declare(strict_types=1);
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use Kaspi\DiContainer\ObjectResetters;//[!code ++]
+use Framework\AppFactory;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->build();
+
+$app = AppFactory::create(
+    // ... some dependency here
+    container: $container
+);
+
+$resetters = $container->get(ObjectResetters::class);//[!code ++]
+
+// Event loop
+while ($request = $app->getRequest()) {
+    $response = $app->handle($request);
+    $app->emit($response);
+    $resetters->reset();//[!code ++]
+}
+```
+
+Теперь PHP-класс `\App\Services\FooLogger` будет сбрасывать своё состояния при вызове `$resetters->reset()`.
+
+## Способы конфигурирования сброса состояния объектов { #config }
+
+Объявить конфигурацию для сброса состояния объектов можно следующими способами:
+
+- [Автоматическая конфигурация](auto_config.md) PHP-класса `\Kaspi\DiContainer\ObjectResetters` контейнером.
+- [Объявление в контейнере](manual_config.md) PHP-класса `\Kaspi\DiContainer\ObjectResetters` с указанием необходимых значений для сброса состояния объектов.
+
+> [!TIP]
+> Для случаев когда невозможно изменить код PHP-класса, чтобы реализовать метод сброса состояния объекта, например PHP-класс из пакета стороннего производителя, можно [воспользоваться механизмом рефлексии объектов](reset_vendor_class.md).
+
+> [!NOTE]
+> Разработчик может реализовать собственный PHP-класс сброса состояния объектов который должен реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\ObjectResettersInterface`.
+
+## Типы значений для сброса состояния объекта { #resseter-types }
+
+🚧🚧🚧🚧
+- `non-empty-string` – имя публичного метода PHP-класса которое будет получено через метод контейнера `get(string $id)`.
+- `false` – если PHP-классом реализован интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`, то выполнять метод `reset()`.
+- `callable(object $object): void` – вызываемый тип[^CallableType] с параметром типа `object`.
+
+🚧🚧🚧🚧
+
+## 🚧🚧🚧🚧
+
 ## Поддерживаемые значения конфигурации сброса состояния объекта.
 Конфигурация представлена как идентификатор контейнера для объекта (_PHP-класса_) получаемого через метод контейнера `get(string $id)` и значение которое будет вызвано для сброса состояния полученного объекта.
 
-**Типы значений:**
-- `callable(object $object): void` – вызываемый тип с параметром типа `object` которое будет получено через метод контейнера `get(string $id)`.
-- `non-empty-string` – имя публичного метода PHP-класса которое будет получено через метод контейнера `get(string $id)`.
-- `false` – значение конфигурации сброса не установлено, проводить проверку реализации интерфейса `\Kaspi\DiContainer\Interfaces\ResetInterface`.
 
 
 > [!TIP]
@@ -314,9 +399,4 @@ while ($request = $app->getRequest()) {
 > [автоматическое конфигурирование из определений контейнера](#автоматическое-конфигурирование-сервиса-сброса-состояния-объектов-на-основе-установленных-значений-в-определения-контейнера).
 >
 
-> [!NOTE]
-> При необходимости разработчик может реализовать собственный класс сброса состояния объектов.
-> При настройке пользовательского класса для сброса состояния объектов необходимо
-> в настройках контейнера установить параметр `\Kaspi\DiContainer\DiContainerConfig::$isConfigureObjectResettersFromDefinitions` в значение `false`
-> для избежания ненужной настройки встроенного класса `\Kaspi\DiContainer\ObjectResetters`. 
-> 
+<!--@include: ../_include/term_notes.md-->
