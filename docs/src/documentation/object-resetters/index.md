@@ -83,14 +83,9 @@ while ($request = $app->getRequest()) {
 
 Контейнер предоставляет готовый механизм сброса состояния объектов контейнера через PHP-класс `\Kaspi\DiContainer\ObjectResetters`.
 
-Конфигурация для сброса состояния объектов представлена парой ключ-значение, где ключ это идентификатор контейнера[^ContainerId], а значение представленное типами `string`, `false` или `callable` указывает как необходимо выполнять сброса состояния объекта.
+Конфигурация для сброса состояния объекта представляется парой ключ-значение, где ключ это идентификатор контейнера[^ContainerId], а значение, представленное типами `string`, `false` или `callable`, указывает [как необходимо выполнить сброса состояния объекта](#resseter-types).
 
-**Типы значений для сброса состояния объекта:**
-- `non-empty-string` – имя публичного метода PHP-класса.
-- `false` – если PHP-классом реализован интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`, то выполнять метод `reset()`.
-- `callable(object $object): void` – вызываемый тип[^CallableType] с параметром типа `object`.
-
-Выберем в качестве сброса состояния объекта реализацию публичного метода в этом же классе `\App\Services\FooLogger::doReset()` и объявления в параметре `$resetter` атрибута `\Kaspi\DiContainer\Attributes\Autowire`:
+Выберем в качестве сброса состояния объекта выберем реализацию публичного метода в этом же классе `\App\Services\FooLogger::doReset()` и объявления в параметре `$resetter` атрибута `\Kaspi\DiContainer\Attributes\Autowire`:
 
 ```php
 <?php
@@ -159,43 +154,150 @@ while ($request = $app->getRequest()) {
 > [!NOTE]
 > Разработчик может реализовать собственный PHP-класс сброса состояния объектов который должен реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\ObjectResettersInterface`.
 
-## Типы значений для сброса состояния объекта { #resseter-types }
+## Конфигурация для сброса состояния объекта { #resseter-types }
+
+Конфигурация для сброса состояния объекта представляется парой ключ-значение, где ключ это идентификатор [^ContainerId] с использованием которого будет получен объект из контейнера через метод `get()`, а значение указывает контейнеру как именно будет выполнен сброс состояния объекта.
+
+Сброс состояния объекта можно произвести через **публичный метод реализованный в этом же PHP-классе**. Таким образом метод получает доступ ко всем приватным и защищённым свойствам этого PHP-класса. Для значения в конфигурации следует указать имя метода который должен выполнить сброс состояния объекта.
+
+Например, конфигурация PHP-класса `\App\Services\Foo` через атрибут `\aspi\DiContainer\Attributes\Autowire`. В файле конфигураций `services.php` конфигурация PHP-класса `\App\Services\Bar`.
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Attributes\Autowire;
+
+#[Autowire(
+    resetter: 'doReset',//[!code ++]
+)]
+final class Foo
+{
+    //…
+    
+    public function doReset(): void//[!code ++]
+    {//[!code ++]
+        // …//[!code ++]
+    }//[!code ++]
+}
+```
+
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+use App\Services\Bar;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->setResetter('doReset');//[!code ++]
+}
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+namespace App\Services;
+
+final class Bar
+{
+    //…
+    
+    public function doReset(): void//[!code ++]
+    {//[!code ++]
+        // …//[!code ++]
+    }//[!code ++]
+}
+```
+:::
+
+Сброс состояния объекта будет произведен если **PHP-класс реализует интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`** и его метод `reset()`, при этом устанавливать значение для сброса состояния объекта в атрибуте или хелпер функции необязательно, значение по умолчанию `false`.
+
+::: code-group
+
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+namespace App\Services;
+
+use Kaspi\DiContainer\Interfaces\ResetInterface;//[!code ++]
+
+final class Foo implements ResetInterface//[!code ++]
+{
+    //…
+    
+    public function reset(): void//[!code ++]
+    {//[!code ++]
+        // …//[!code ++]
+    }//[!code ++]
+}
+```
+:::
+
+Так же в качестве значения для сброса состояния объекта может быть использован любой вызываемый тип[^CallableType]. В качестве единственного аргумента вызываемый тип получает сам объект для которого выполняется сброс состояния – `callable(object $object): void`.
+
+Вызываемый тип может быть представлен классом со статическим методом, обычной функцией или анонимной функцией:
+
+::: code-group
+
+```php
+$resetter1 = [App\Helpers\Resettrer::class, 'doResetFoo'];
+
+$resetter2 = 'App\resetter_bar';
+
+$resetter3 = static function (object $object): void {
+    // …
+};
+```
+
+```php [Resettrer.php]
+<?php
+declare(strict_types=1);
+
+namespace App\Helpers;
+
+final class Resettrer
+{
+    /**
+     * @param App\Services\Foo $object
+     */
+    public static function doResetFoo(object $object): void//[!code ++]
+    {//[!code ++]
+        // …//[!code ++]
+    }//[!code ++]
+
+    // …
+}
+```
+
+```php [functions.php]
+<?php
+declare(strict_types=1);
+
+namespace App;
+
+if (!function_exists('App\resetter_bar')) {
+    /**
+     * @param App\Services\Bar $object
+     */
+    function resetter_bar(object $object): void {//[!code ++]
+        // …//[!code ++]
+    }//[!code ++]
+}
+
+```
+
+:::
 
 🚧🚧🚧🚧
-- `non-empty-string` – имя публичного метода PHP-класса которое будет получено через метод контейнера `get(string $id)`.
-- `false` – если PHP-классом реализован интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`, то выполнять метод `reset()`.
-- `callable(object $object): void` – вызываемый тип[^CallableType] с параметром типа `object`.
-
-🚧🚧🚧🚧
-
-## 🚧🚧🚧🚧
-
-## Поддерживаемые значения конфигурации сброса состояния объекта.
-Конфигурация представлена как идентификатор контейнера для объекта (_PHP-класса_) получаемого через метод контейнера `get(string $id)` и значение которое будет вызвано для сброса состояния полученного объекта.
-
-
-
-> [!TIP]
-> Вызываемый тип `callable` для сброса состояния объекта так же может быть представлен классом со статическим методом или обычной функцией.
-> ```php
-> $resetter = [App\Qux::class, 'doReset'];
-> ```
-> ```php
-> $resetter = 'App\functions\reset_bar_function';
-> ```
-
-> [!TIP]
-> При установленном значении `false` для сброса состояния объекта, будет проверено реализуется ли PHP-классом интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`,
-> если реализует, то контейнер автоматически сконфигурирует определение для сброса состояния через метод класса `reset()`.
-> ```php
->   final class Foo implements \Kaspi\DiContainer\Interfaces\ResetInterface
->   {
->       public function reset() : void {
->            // TODO: Implement reset() method.
->       }
->   }
-> ```
-> будет автоматически сконфигурирован метод `setResetter('reset')`.
 
 ### Автоматическое конфигурирование сервиса сброса состояния объектов на основе установленных значений в определения контейнера.
 При [настойке определений контейнера](03-php-definition.md) через конфигурационные файлы, некоторые хелпер функции реализуют интерфейс
