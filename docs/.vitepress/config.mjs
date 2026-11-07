@@ -197,6 +197,11 @@ export default defineConfig({
                       {text: 'Фактическое имя класса фабрики', link: 'factory_class_container_id.md'},
                     ],
                   },
+                  {
+                    base: '/documentation/container-reset/',
+                    text: 'Сброс контейнера зависимостей',
+                    link: 'index.md',
+                  },
                 ]
               }
           ],
