@@ -31,7 +31,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 > [!TIP]
 > Изучите разделы документации:
 > - [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
-> - [Сброс состояния объектов](../12-object-resetters.md).
+> - [Сброс состояния объектов](../object-resetters/index.md).
 
 
 Функция `diAutowire()` возвращает объект предоставляющий методы:

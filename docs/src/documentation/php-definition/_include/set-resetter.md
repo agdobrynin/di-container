@@ -9,4 +9,4 @@ DiDefinitionResetterSetterInterface::setResetter(
 ```
 
 > [!TIP]
-> Более подробное [описание конфигурации для сброса состояния объекта](../../12-object-resetters.md).
+> Более подробное [описание конфигурации для сброса состояния объекта](../../object-resetters/index.md).

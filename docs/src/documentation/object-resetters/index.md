@@ -1,10 +1,12 @@
-# ♻️ Сброс состояния объектов для долго-живущих процессов.
+# Сброс состояния объектов в долго-живущих процессах { #title }
 
-Некоторые сервисы которые разрешаются через метод контейнера `get(string $id)` и возвращают один и тот же объект (_PHP-класс_),
-т.е. сохраняя своё состояние в рамках всех вызовов контейнера, могут требовать сброса своего состояния в долгоживущих процессах.
+## Обзор { #overview }
+
+Некоторые объекты полученные через метод контейнера `get()` в зависимости от конфигурации могут возвращать [один и тот же объект](../container-config/index.md#is-singleton-service-default), т.е. сохраняя своё состояние в рамках всех вызовов контейнера. Такие объекты могут требовать сброса своего состояния в долгоживущих процессах.
 
 Пример класса который может «накапливать данные»:
 ```php
+<?php
 declare(strict_types=1);
 
 namespace  App\Services;
@@ -29,35 +31,38 @@ final class FooLogger
     }
 }
 ```
-Конфигурация для сервиса `App\Services\FooLogger` с указанием параметра `$isSingleton = true`:
+
+Например, приложению необходимо чтобы объект PHP-класса `\App\Services\FooLogger` сохранял своё состояние между компонентами системы, т.е. получать один и тот же объект при внедрении зависимости или получении через метод контейнера `get()`.
+
+При объявлении такого PHP-класса в контейнере необходимо установить значение `true` в параметр `$isSingleton` в [хелпер функции `diAutowire()`](../php-definition/di-autowire.md) или [атрибута `\Kaspi\DiContainer\Attributes\Aitowire`](../attribute-definition/autowire.md).
+
+Пример объявления PHP-класса через атрибут:
+
 ```php
-// /app/src/config/services_foo_logger.php
+<?php
 declare(strict_types=1);
 
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use Generator;
-use App\Services\FooLogger;
+namespace  App\Services;
 
-use function Kaspi\DiContainer\diAutowire;
+use Kaspi\DiContainer\Attributes\Autowire;//[!code ++]
 
-return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-    /*
-     * Установить параметр `$isSingleton` в `true чтобы всегда возвращать один и тот же объект
-     * через метод контейнера `$container->get(\App\Services\FooLogger::class)` 
-     */
-    yield diAutowire(FooLogger::class, isSingleton: true);
-};
+#[Autowire(isSingleton: true)]//[!code ++]
+final class FooLogger
+{
+//…
 ```
+
 Приложение работающее по схеме «event loop»:
+
 ```php
+<?php
 declare(strict_types=1);
 
 use Kaspi\DiContainer\DiContainerBuilder;
 use Framework\AppFactory;
 
 $container = (new DiContainerBuilder())
-    ->import('App\\', '/app/src')
-    ->load('/app/src/config/services_foo_logger.php')
+    ->import(namespace: 'App\\', src: '/app/src')//[!code ++]
     ->build();
 
 $app = AppFactory::create(
@@ -71,10 +76,10 @@ while ($request = $app->getRequest()) {
     $app->emit($response);
 }
 ```
-получая объект через `$container->get(\App\Services\FooLogger::class)` внутри приложения будет получен один и тот-же объект.
-Так как разные компоненты приложения могут получать зависимость и вызывать метод `\App\Services\FooLogger::log()`,
-то это приведет к «накоплению данных» в свойстве класса `\App\Services\FooLogger::$logs`.
-Чтобы избежать утечек памяти, нужно использовать механизм сброса состояния объекта.
+
+Получая объект через `$container->get(App\Services\FooLogger::class)` внутри приложения будет получен один и тот-же объект. Разные компоненты приложения могут внедрять зависимость и вызывать метод PHP-класса `\App\Services\FooLogger::log()`, что приведет к «накоплению данных» в свойстве класса `\App\Services\FooLogger::$logs`.
+
+**Чтобы избежать утечек памяти, нужно использовать механизм сброса состояния объекта `\App\Services\FooLogger`.**
 
 ## Поддерживаемые значения конфигурации сброса состояния объекта.
 Конфигурация представлена как идентификатор контейнера для объекта (_PHP-класса_) получаемого через метод контейнера `get(string $id)` и значение которое будет вызвано для сброса состояния полученного объекта.
@@ -120,15 +125,15 @@ setResetter(callable|false|string $resetter)
 
 Метод `setResetter()` применим к хелпер функциям:
 - [diAutowire](03-php-definition.md#diautowire).
-- [diRuntime](runtime-definition/index.md#хелпер-функция-diruntime).
+- [diRuntime](../runtime-definition/index.md#хелпер-функция-diruntime).
 
 Установить конфигурацию сброса для нужного объекта так же можно через значение в PHP атрибутах:
 - [Autowire](02-attribute-definition.md#autowire).
-- [DiRuntime](runtime-definition/index.md#атрибут-diruntime).
+- [DiRuntime](../runtime-definition/index.md#атрибут-diruntime).
 
 > [!TIP]
 > Для приложений использующих **PHP 8.5 и выше** параметр `$resetter`
-> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](runtime-definition/index.md#атрибут-diruntime)
+> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](../runtime-definition/index.md#атрибут-diruntime)
 > может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
 > ```php
 >  use Kaspi\DiContainer\Attributes\Autowire;

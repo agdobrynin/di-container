@@ -202,6 +202,17 @@ export default defineConfig({
                     text: 'Сброс контейнера зависимостей',
                     link: 'index.md',
                   },
+                  {
+                    base: '/documentation/object-resetters/',
+                    text: 'Сброс состояния объектов в долго-живущих процессах',
+                    link: 'index.md',
+                    collapsed: true,
+                    items: [
+                      {text: 'Обзор', link: 'index.md'},
+                      {text: 'Автоматическая конфигурация сброса состояния', link: 'auto_config.md'},
+                      {text: 'Самостоятельная конфигурация сброса состояния', link: 'manual_config.md'},
+                    ],
+                  },
                 ]
               }
           ],
