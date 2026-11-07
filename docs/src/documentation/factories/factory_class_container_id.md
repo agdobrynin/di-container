@@ -11,204 +11,90 @@ outline: [2,4]
 $factoryDefinition = [App\Services\Foo::class, 'methodName'];
 ```
 
-Для получения результата вызова метода фабрики `methodName()` – через метод контейнера `get('App\Services\Foo')` будет **получен объект**, и только потом будет вызван метод `methodName()`. 
+Для получения результата вызова PHP-класса «фабрика» первым этапом будет **получен объект** через метод контейнера `get('App\Services\Foo')`, и только потом происходит **вызов фабричного метода** `methodName()`. 
 
-Из этого следует, что строковое значение представляющее имя PHP-класса, является идентификатором контейнера[^ContainerId], позволяющее получить из контейнера объект в котором реализован метод фабрики (в приведенном выше примере — `'methodName'`).
+Из этого следует, что строковое значение представляющее имя PHP-класса, является идентификатором контейнера[^ContainerId].
 
 Указание в качестве имени класса фабрики допустимо любого идентификатора контейнера, если получаемый из контейнера объект реализует фабричный метод.
 
 ## Пример указания идентификатора контейнера в качестве имени класс фабрики { #example }
 
-PHP-классы:
+Через идентификатор контейнера `'services.foo_special'` можно получить настроенный особым образом объект PHP-класса `\App\Services\Foo`.
 
-::: code-group
-
-```php [FooFactory.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Factories/FooFactory.php //[!code highlight]
-
-namespace App\Factories;
-
-final class FooFactory
-{
-    public function __construct(
-        // other dependencies can be injected here
-    ) {}
-
-    public function createFooBar(string $value): Foo
-    {
-        $bar = new Bar($barValue);
-        
-        // some settings for $bar
-        
-        return new Foo($bar);
-    }
-    
-    public function createFooBaz(string $value): Foo
-    {
-        $baz = new Baz($barValue);
-        
-        // some settings for $baz
-        
-        return new Foo($baz);
-    }
-}
-```
-
-```php [Foo.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Foo.php //[!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Foo
-{
-    public function __construct(public readonly QuxInterface $qux) {}
-}
-```
-
-```php [QuxInterface.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Interfaces/QuxInterface.php //[!code highlight]
-
-namespace App\Interfaces;
-
-interface QuxInterface
-{
-    // …
-}
-```
-
-```php [Bar.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Bar.php //[!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Bar implements QuxInterface
-{
-    public function __construct(public readonly string $value) {}
-    
-    // …
-}
-```
-
-```php [Baz.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Baz.php //[!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\QuxInterface;
-
-final class Baz implements QuxInterface
-{
-    public function __construct(public readonly string $value) {}
-    
-    // …
-}
-```
-:::
-
-В контейнере будет объявлено два идентификатора контейнера для фабрик:
-- `'factory.foo_bar'` для `\App\Factories\FooFactory::createFooBar()`.
-- `'factory.foo_baz'` для `\App\Factories\FooFactory::createFooBaz()`.
-
-Каждая фабрика должна всегда возвращать один и тот же объект (паттерн singleton).
-
-В параметры методов фабрик объявить внедрение скалярной зависимости через [параметры контейнера](../container-parameters/index.md).
-
-## 🚧🚧🚧🚧
+Необходимо объявить внедрение зависимости через фабрику `\App\Services\Foo::doBaz()` в параметр конструктора `$value` PHP-класса `\App\Services\Bar`:
 
 ```php
-namespace App\Factories;
+<?php
+declare(strict_types=1);
 
-use App\Classes\Foo;
-use Psr\Log\LoggerInterface;
+namespace App\Services;
 
-class ClassFactory
+final class Bar
 {
-    private LoggerInterface $logger;
-
-    public function __construct(private Bar $bar) {}
-    
-    public function withLogger(LoggerInterface $logger): self
-    {
-        $new = clone $this;
-        $new->logger = $logger;
-        
-        return $new;
-    }
-
-    public function create(): Foo
-    {
-        $foo = new Foo($this->bar);
-        // дополнительное конфигурирование `$foo`
-        if (isset($this->logger)) {
-            $this->logger->info('Configured class via factory', $foo);
-        }
-        
-        return $foo;
-    }
+    public function __construct(public readonly mixed $value) {}    
 }
 ```
 
+Файл конфигураций `custom_services.php` задает особую конфигурацию PHP-класса `\App\Services\Foo` и идентификатор контейнера `'services.foo_special'`:
+
 ```php
-// config/services.php
-use App\Factories\ClassFactory;
-use function Kaspi\DiContainer\{diAutowire, diGet};
+<?php
+declare(strict_types=1);
 
-return function () {
-    
-    // доступен через метод контейнера `get('factories.class_factory.config_one')`
-    yield 'factories.class_factory.config_one' => diAutowire(ClassFactory::class)
-        ->setupImmutable('withLogger', diGet('services.app_logger'));
+// file: /app/config/custom_services.php
 
-    // использование идентификатора контейнера
-    yield Foo::class => diFactory([
-        'factories.class_factory.config_one', 'create'
-    ]);
+use App\Services\Foo;
 
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    yield 'services.foo_special' => diAutowire(Foo::class, isSingleton: true)
+        ->setup('methodOne')
+        ->setup('methodTwo');
 };
 ```
-Объявление фабрики через php атрибут:
+
+### Объявление в файлах конфигураций { #example-php-definition }
+
+В файле конфигураций `services.php` объявить PHP-класс `\App\Services\Bar` в контейнере и внедрение зависимости для параметра конструктора `$value` с помощью [хелпер функции diFactory()](../php-definition/di-factory.md).
+
 ```php
-use Kaspi\DiContainer\Attributes\DiFactory;
+<?php
+declare(strict_types=1);
 
-#[DiFactory(['factories.class_factory.config_one', 'create'])]
-class Foo{}
+// file: /app/config/services.php  // [!code highlight]
+
+use App\Service\Bar;
+
+use function Kaspi\DiContainer\{diAutowire, diFactory};
+
+return static function (): Generator {
+    yield diAutowire(Bar::class)
+        ->bindArguments(
+            value: diFactory(['services.foo_special', 'doBaz'])//[!code ++]        
+        );
+};
 ```
+
+### Объявление через атрибут { #example-attribute }
+
+Объявить внедрение в параметр конструктора `$value` PHP-класса `\App\Services\Bar` через [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
+
 ```php
-use Kaspi\DiContainer\DiContainerBuilder;
+<?php
+declare(strict_types=1);
 
-$container = (new DiContainerBuilder())
-    ->load(__DIR__.'/config/services.php')
-    ->build()
-;
+namespace App\Services;
 
-$container->get(\App\Classes\Foo::class);
+use Kaspi\DiContainer\Attributes\DiFactory;//[!code ++]
+
+final class Bar
+{
+    public function __construct(
+        #[DiFactory(['services.foo_special', 'doBaz'])]//[!code ++]
+        public readonly mixed $value
+    ) {}    
+}
 ```
-> [!NOTE]
-> Класс `\App\Classes\Foo` будет создан через вызов
-> метода контейнера `$object = $container->get('factories.class_factory.config_one')`
-> и исполнением метода `$object::create()`.
->
-> При разрешении фабрики, контейнер попытается разрешить зависимость
-> `ClassFactory::$bar` в конструкторе на основе конфигурации.
->
 
 <!--@include: ../_include/term_notes.md-->
