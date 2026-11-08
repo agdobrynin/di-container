@@ -6,45 +6,44 @@
 
 Объявлять PHP-класс `\Kaspi\DiContainer\ObjectResetters` и его конфигурацию не требуется, контейнер самостоятельно создаст конфигурацию для сброса состояния объектов и объявит PHP-класс `\Kaspi\DiContainer\ObjectResetters`.
 
-🚧🚧🚧
+При объявлении PHP-класса в [файлах конфигураций](../container-builder/configuration_files.md) для указания значения для сброса состояния объекта необходимо использовать метод `setResetter()` предоставляемый хелпер функциями:
+- [`diAutowire()`](../php-definition/di-autowire.md#setresetter).
+- [`diRuntime()`](../php-definition/di-runtime.md#setresetter).
 
-При [настойке определений контейнера](03-php-definition.md) через конфигурационные файлы, некоторые хелпер функции реализуют интерфейс
-`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface` который предоставляет настройку сброса состояния объекта.
-
-Метод конфигурирования:
-```php
-setResetter(callable|false|string $resetter)
-``` 
-Параметры:
-- `$resetter` – конфигурация сброса состояния объекта.
-
-Метод `setResetter()` применим к хелпер функциям:
-- [diAutowire](03-php-definition.md#diautowire).
-- [diRuntime](../runtime-definition/index.md#хелпер-функция-diruntime).
-
-Установить конфигурацию сброса для нужного объекта так же можно через значение в PHP атрибутах:
-- [Autowire](02-attribute-definition.md#autowire).
-- [DiRuntime](../runtime-definition/index.md#атрибут-diruntime).
+При объявлении PHP-класса через атрибуты необходимо передавать значение сброса состояния объекта в параметре конструктора `$resetter`:
+- [атрибута `\Kaspi\DiContainer\Attributes\Autowire`](../attribute-definition/autowire.md).
+- [атрибута `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
 
 > [!TIP]
-> Для приложений использующих **PHP 8.5 и выше** параметр `$resetter`
-> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](../runtime-definition/index.md#атрибут-diruntime)
-> может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
+> Для приложений использующих **PHP 8.5 и выше** параметр конструктора `$resetter` у атрибута может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
 > ```php
 >  use Kaspi\DiContainer\Attributes\Autowire;
 >  
 >  #[Autowire(
 >       isSingleton: true,
->       resetter: static function (Foo $foo): void {
+>       resetter: static function (Foo $foo): void {//[!code ++]
 >           // реализация механизма сброса объекта.
->       }
+>       }//[!code ++]
 >  )]
->  final class Foo {
+>  final class Foo
+>  {
 >    //
 >  }
 > ```
 
-**Пример конфигурирования сброса состояния объекта через определение контейнера**.
+
+## Пример конфигурирования сброса состояния объекта { #example }
+
+PHP-классы:
+
+::: code-group
+<<< @/_code/object-resetter/src/Foo.php
+<<< @/_code/object-resetter/src/Bar.php
+<<< @/_code/object-resetter/src/Baz.php
+<<< @/_code/object-resetter/src/Qux.php
+::: 
+
+Необходима конфигурация сброса состояния объектов PHP-классов `\App\Services\Foo`, `\App\Services\Bar` и `\App\Services\Baz`. 
 
 Конфигурирование сервиса через [PHP атрибут Autowire](02-attribute-definition.md#autowire):
 ```php

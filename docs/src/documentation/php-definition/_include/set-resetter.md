@@ -1,4 +1,4 @@
-Индивидуальная конфигурация для сброса состояния объекта.
+Значение для сброса состояния объекта.
 
 Метод `setResetter()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
 
@@ -9,4 +9,4 @@ DiDefinitionResetterSetterInterface::setResetter(
 ```
 
 > [!TIP]
-> Более подробное [описание конфигурации для сброса состояния объекта](../../object-resetters/index.md).
+> Ознакомитесь с подробной информацией в разделе [«Сброс состояния объектов в долго-живущих процессах»](../../object-resetters/index.md).

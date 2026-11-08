@@ -27,12 +27,7 @@ outline: [2, 3]
 - `$containerIdentifierOrClass` – идентификатора контейнера[^ContainerId] для «runtime definition».
 - `$message` – сообщение при возникновении ошибки.
 - `$tags` – тег с метаданными.
-- `$resetter` – конфигурация для сброса состояния объекта.
-
-> [!TIP]
-> Изучите разделы документации:
-> - [Сброс состояния объектов](../object-resetters/index.md).
-
+- `$resetter` – [значение для сброса состояния объекта](../object-resetters/index.md).
 
 ## Идентификатор контейнера { #container-id }
 

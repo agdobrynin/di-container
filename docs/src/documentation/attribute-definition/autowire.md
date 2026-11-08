@@ -33,7 +33,7 @@ outline: [2, 4]
 - `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP-класса.
 - `$tags` – тег с метаданными.
 - `$setups` – внедрение зависимостей через сеттер-метод [^SetterMethodMutable] [^SetterMethodImmutable].
-- `$resetter` – [конфигурация сброса состояния объекта](../object-resetters/index.md).
+- `$resetter` – [значение для сброса состояния объекта](../object-resetters/index.md).
 - `$isLazy` – объявить «ленивый объект». 
 
 > [!TIP]

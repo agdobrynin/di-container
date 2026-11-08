@@ -33,13 +33,12 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 > - [Внедрение «ленивых» объектов контейнером](../14-lazy-injection.md).
 > - [Сброс состояния объектов](../object-resetters/index.md).
 
-
 Функция `diAutowire()` возвращает объект предоставляющий методы:
  - `bindArguments()` – аргументы конструктора PHP-класса.
  - `setup()` – внедрение зависимостей через мутабельный сеттер-метод [^SetterMethodMutable].
  - `setupImmutable()` – внедрение зависимостей через иммутабельный сеттер-метод [^SetterMethodImmutable].
  - `bindTag()` – тег с метаданными.
- - `setResetter()` - конфигурация для сброса состояния объекта.
+ - `setResetter()` - значение для сброса состояния объекта.
 
 ## Идентификатор контейнера для diAutowire() { #container-id }
 
