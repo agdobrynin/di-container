@@ -209,8 +209,8 @@ export default defineConfig({
                     collapsed: true,
                     items: [
                       {text: 'Обзор', link: 'index.md'},
-                      {text: 'Автоматическая конфигурация сброса состояния', link: 'auto_config.md'},
-                      {text: 'Самостоятельная конфигурация сброса состояния', link: 'manual_config.md'},
+                      {text: 'Конфигурация из определений контейнера', link: 'definition_config.md'},
+                      {text: 'Конфигурация отдельных значений сброса состояния объектов', link: 'manual_config.md'},
                       {text: 'Сброс состояния объекта через рефлексию объекта', link: 'reset_vendor_class.md'},
                     ],
                   },

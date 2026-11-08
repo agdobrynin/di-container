@@ -143,10 +143,10 @@ while ($request = $app->getRequest()) {
 
 ## Способы конфигурирования сброса состояния объектов { #config }
 
-Объявить конфигурацию для сброса состояния объектов можно следующими способами:
+Объявить PHP-класс `\Kaspi\DiContainer\ObjectResetters` и его конфигурацию для сброса состояния объектов можно следующими способами:
 
-- [Автоматическая конфигурация](auto_config.md) PHP-класса `\Kaspi\DiContainer\ObjectResetters` контейнером.
-- [Объявление в контейнере](manual_config.md) PHP-класса `\Kaspi\DiContainer\ObjectResetters` с указанием необходимых значений для сброса состояния объектов.
+- [Конфигурация из определений контейнера](definition_config.md).
+- [Конфигурация отдельных значений сброса состояния объектов](manual_config.md).
 
 > [!TIP]
 > Для случаев когда невозможно изменить код PHP-класса, чтобы реализовать метод сброса состояния объекта, например PHP-класс из пакета стороннего производителя, можно [воспользоваться механизмом рефлексии объектов](reset_vendor_class.md).
@@ -154,13 +154,13 @@ while ($request = $app->getRequest()) {
 > [!NOTE]
 > Разработчик может реализовать собственный PHP-класс сброса состояния объектов который должен реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\ObjectResettersInterface`.
 
-## Конфигурация для сброса состояния объекта { #resseter-types }
+## Значения конфигурации для сброса состояния объекта { #resseter-types }
 
 Конфигурация для сброса состояния объекта представляется парой ключ-значение, где ключ это идентификатор [^ContainerId] с использованием которого будет получен объект из контейнера через метод `get()`, а значение указывает контейнеру как именно будет выполнен сброс состояния объекта.
 
-Сброс состояния объекта можно произвести через **публичный метод реализованный в этом же PHP-классе**. Таким образом метод получает доступ ко всем приватным и защищённым свойствам этого PHP-класса. Для значения в конфигурации следует указать имя метода который должен выполнить сброс состояния объекта.
+Сброс состояния объекта можно произвести через **публичный метод реализованный в этом же PHP-классе**, метод получает доступ ко всем приватным и защищённым свойствам. Для значения в конфигурации следует указать имя метода который должен выполнить сброс состояния объекта.
 
-Например, конфигурация PHP-класса `\App\Services\Foo` через атрибут `\aspi\DiContainer\Attributes\Autowire`. В файле конфигураций `services.php` конфигурация PHP-класса `\App\Services\Bar`.
+Например, значение конфигурации `'doReset'` для PHP-класса `\App\Services\Foo` через атрибут `\aspi\DiContainer\Attributes\Autowire` или в файле конфигураций `services.php` для PHP-класса `\App\Services\Bar`.
 
 ::: code-group
 
@@ -297,208 +297,10 @@ if (!function_exists('App\resetter_bar')) {
 
 :::
 
-🚧🚧🚧🚧
 
-### Автоматическое конфигурирование сервиса сброса состояния объектов на основе установленных значений в определения контейнера.
-При [настойке определений контейнера](03-php-definition.md) через конфигурационные файлы, некоторые хелпер функции реализуют интерфейс
-`\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface` который предоставляет настройку сброса состояния объекта.
+## 🚧🚧🚧
+## Конфигурация контейнера и сброс состояния объектов
 
-Метод конфигурирования:
-```php
-setResetter(callable|false|string $resetter)
-``` 
-Параметры:
-- `$resetter` – конфигурация сброса состояния объекта.
-
-Метод `setResetter()` применим к хелпер функциям:
-- [diAutowire](03-php-definition.md#diautowire).
-- [diRuntime](../runtime-definition/index.md#хелпер-функция-diruntime).
-
-Установить конфигурацию сброса для нужного объекта так же можно через значение в PHP атрибутах:
-- [Autowire](02-attribute-definition.md#autowire).
-- [DiRuntime](../runtime-definition/index.md#атрибут-diruntime).
-
-> [!TIP]
-> Для приложений использующих **PHP 8.5 и выше** параметр `$resetter`
-> у атрибутов [Autowire](02-attribute-definition.md#autowire) и [DiRuntime](../runtime-definition/index.md#атрибут-diruntime)
-> может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
-> ```php
->  use Kaspi\DiContainer\Attributes\Autowire;
->  
->  #[Autowire(
->       isSingleton: true,
->       resetter: static function (Foo $foo): void {
->           // реализация механизма сброса объекта.
->       }
->  )]
->  final class Foo {
->    //
->  }
-> ```
-
-**Пример конфигурирования сброса состояния объекта через определение контейнера**.
-
-Конфигурирование сервиса через [PHP атрибут Autowire](02-attribute-definition.md#autowire):
-```php
-declare(strict_types=1);
-
-// /app/src/Services/Foo.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Autowire;
-
-// Для сброса вызвать метод класса Foo::doReset()
-#[Autowire(isSingleton: true, resetter: 'doReset')]
-final class Foo {
-    // other method here
-
-    public function doReset(): void {
-        // reset state here
-    }
-}
-```
-```php
-declare(strict_types=1);
-
-// /app/src/Services/Bar.php
-namespace App\Services;
-
-// конфигурировать класс в файле 
-// `'/app/src/config/services_with_resetters.php'`
-final class Bar {
-    // other method here
-    
-    public function doResetLogs(): void {
-        // reset state here
-    }
-    
-    public function doResetBaz(): void {
-        // reset state here
-    }
-}
-```
-```php
-// /app/src/config/services_with_resetters.php
-declare(strict_types=1);
-
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use Generator;
-use App\Services\{Foo, Bar};
-
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-    yield diAutowire(Bar::class, isSingleton: true)
-        // Для сброса вызвать callback функцию
-        ->setResetter(static function (Bar $bar): void {
-            $bar->doResetLogs();
-            $bar->doResetBaz();
-        });
-};
-```
-> [!TIP]
-> В составе библиотеки уже реализован PHP-класс `\Kaspi\DiContainer\ObjectResetters`,
-> который будет настраивать сброс состояния объектов из определений контейнера и выполнять их:
-> 
-```php
-declare(strict_types=1);
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use Kaspi\DiContainer\ObjectResetters;
-use Framework\AppFactory;
-
-$container = (new DiContainerBuilder())
-    ->import('App\\', '/app/src')
-    ->load('/app/src/config/services.php')
-    ->load('/app/src/config/services_with_resetters.php')
-    ->build();
-
-$app = AppFactory::create(
-    // ... some dependency here
-    container: $container;
-);
-
-// получение настроенного PHP-класса для сброса состояния объектов
-$resetters = $container->get(ObjectResetters::class);
-
-// Event loop
-while ($request = $app->getRequest()) {
-    $response = $app->handle($request);
-    $app->emit($response);
-    // сбросить состояние объектов.
-    $resetters->reset();
-}
-```
-> [!IMPORTANT]
-> Для автоматической конфигурации сброса состояния объектов необходимо
-> чтобы параметр `\Kaspi\DiContainer\DiContainerConfig::$isConfigureObjectResettersFromDefinitions` имел значение `true`,
-> по умолчанию параметр имеет значение `true`.  
->
-
-### Ручная настройка сервиса сброса состояния объектов.
-
-Для настройки следует использовать [хелпер функцию `diAutowire`](03-php-definition.md#diautowire):
-```php
-// /app/src/config/object_resetters.php
-declare(strict_types=1);
-
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-use Kaspi\DiContainer\ObjectResetters;
-use Generator;
-use App\Services\{Foo, Bar};
-
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-    // Ключ массива это идентификатор контейнера для получения объекта
-    // которому необходимо сбросить состояние, а значение это конфигурация для сброса объекта.
-    $resettersConfiguration = [
-        // Для сброса вызвать метод класса Foo::doReset()
-        Foo::class => 'doReset',
-        // Для сброса вызвать callback функцию
-        Bar::class => static function (Bar $bar): void {
-            $bar->doResetLogs();
-            $bar->doResetBaz();
-        },
-    ];
-
-    // `$container->get(\Kaspi\DiContainer\ObjectResetters::class)` всегда возвращать один и тот же объект
-    yield diAutowire(ObjectResetters::class, isSingleton: true)
-        // передать настройку через сеттер-метод `ObjectResetters::setup()`
-        ->setup('setup', arguments: [$resettersConfiguration]);
-};
-```
-```php
-declare(strict_types=1);
-
-use Kaspi\DiContainer\DiContainerBuilder;
-use Kaspi\DiContainer\ObjectResetters;
-use Framework\AppFactory;
-
-$container = (new DiContainerBuilder())
-    ->import('App\\', '/app/src')
-    ->load('/app/src/config/object_resetters.php')
-    ->build();
-
-$app = AppFactory::create(
-    // ... some dependency here
-    container: $container;
-);
-
-// получение настроенного сервиса для сброса состояния объектов
-$resetters = $container->get(ObjectResetters::class);
-
-// Event loop
-while ($request = $app->getRequest()) {
-    $response = $app->handle($request);
-    $app->emit($response);
-    // сбросить состояние объектов.
-    $resetters->reset();
-}
-```
-> [!IMPORTANT]
-> Ручная настройка сброса состояния объектов **отключает**
-> [автоматическое конфигурирование из определений контейнера](#автоматическое-конфигурирование-сервиса-сброса-состояния-объектов-на-основе-установленных-значений-в-определения-контейнера).
->
+`$isConfigureObjectResettersFromDefinitions`
 
 <!--@include: ../_include/term_notes.md-->
