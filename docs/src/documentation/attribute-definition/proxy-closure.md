@@ -15,7 +15,7 @@
 > ```
 
 > [!TIP]
-> Если используется PHP 8.4 и выше, то вместо атрибута `\Kaspi\DiContainer\Attributes\ProxyClosure` предпочтительнее внедрять зависимость через встроенный в PHP механизм [«ленивых объектов»](../14-lazy-injection.md).
+> Если используется PHP 8.4 и выше, то вместо атрибута `\Kaspi\DiContainer\Attributes\ProxyClosure` предпочтительнее внедрять зависимость через встроенный в PHP механизм [«ленивых объектов»](../lazy-injection/index.md).
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_PARAMETER`

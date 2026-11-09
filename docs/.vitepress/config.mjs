@@ -214,6 +214,11 @@ export default defineConfig({
                       {text: 'Сброс состояния объекта через рефлексию объекта', link: 'reset_vendor_class.md'},
                     ],
                   },
+                  {
+                    base: '/documentation/lazy-injection/',
+                    text: 'Внедрение «ленивых» объектов контейнером',
+                    link: 'index.md',
+                  },
                 ]
               }
           ],
