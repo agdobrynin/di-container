@@ -31,7 +31,8 @@ PHP-классы:
 Объявить PHP-класс `\Kaspi\DiContainer\ObjectResetters` необходимо через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md), в параметре функции `$isSingleton` необходимо передать значение `true`.
 
 ::: code-group
-```php [object_resetters.php]
+```php
+[object_resetters.php]
 <?php
 declare(strict_types=1);
 
@@ -52,12 +53,7 @@ return static function (): Generator {
     ];//[!code highlight]
 
     yield diAutowire(ObjectResetters::class, isSingleton: true)//[!code ++]
-        ->setup(//[!code ++]
-            'setup',//[!code ++]
-            arguments: [//[!code ++]
-                $resetters//[!code ++]
-            ]//[!code ++]
-        );//[!code ++]
+        ->setup('setup', [$resetters]);//[!code ++]
 };
 ```
 ```php [app.php]
@@ -91,5 +87,8 @@ while ($request = $app->getRequest()) {
 }
 ```
 :::
+
+> [!IMPORTANT]
+> Обратите внимание, что в метод `setup()` аргумент `$resetters` следует передавать как массив, введу того что параметре метода `$arguments` представлен типом `array`.
 
 <!--@include: ../_include/term_notes.md-->
