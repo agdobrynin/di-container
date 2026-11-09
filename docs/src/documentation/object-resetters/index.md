@@ -238,7 +238,7 @@ final class Baz implements ResetInterface//[!code ++]
 ```php
 $resetter1 = [App\Helpers\Resettrer::class, 'doResetFoo'];
 
-$resetter2 = 'App\resetter_bar';
+$resetter2 = 'App\do_reset_bar';
 
 $resetter3 = static function (object $object): void {
     // …
@@ -265,17 +265,19 @@ final class Resettrer
 }
 ```
 
-```php [functions.php]
+```php [app_functions.php]
 <?php
 declare(strict_types=1);
 
+// file: /app/functions/app_functions.php [!code highlight]
+
 namespace App;
 
-if (!function_exists('App\resetter_bar')) {
+if (!function_exists('App\do_reset_bar')) {
     /**
      * @param App\Services\Bar $object
      */
-    function resetter_bar(object $object): void {//[!code ++]
+    function do_reset_bar(object $object): void {//[!code ++]
         // …//[!code ++]
     }//[!code ++]
 }

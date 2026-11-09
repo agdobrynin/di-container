@@ -175,11 +175,11 @@ final class Bar
 **Для PHP ниже версии 8.5** можем представить параметр конструктора `$resetter` любым вызываемым типом[^CallableType], например функцией `\App\do_reset_bar()`.
 
 ::: code-group
-```php [index.php]
+```php [app_functions.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/functions/index.php [!code highlight]
+// file: /app/functions/app_functions.php [!code highlight]
 
 namespace App;
 
