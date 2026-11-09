@@ -34,14 +34,6 @@
 
 ## Пример конфигурирования сброса состояния объекта { #example }
 
-PHP-классы:
-
-::: code-group
-<<< @/_code/object-resetter/src/Foo.php
-<<< @/_code/object-resetter/src/Bar.php
-<<< @/_code/object-resetter/src/Baz.php
-<<< @/_code/object-resetter/src/Qux.php
-::: 
 
 Необходима конфигурация сброса состояния объектов PHP-классов `\App\Services\Foo`, `\App\Services\Bar` и `\App\Services\Baz`. 
 

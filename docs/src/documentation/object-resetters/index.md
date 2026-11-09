@@ -5,32 +5,8 @@
 Некоторые объекты полученные через метод контейнера `get()` в зависимости от конфигурации могут возвращать [один и тот же объект](../container-config/index.md#is-singleton-service-default), т.е. сохраняя своё состояние в рамках всех вызовов контейнера. Такие объекты могут требовать сброса своего состояния в долгоживущих процессах.
 
 Пример класса который может «накапливать данные»:
-```php
-<?php
-declare(strict_types=1);
 
-namespace  App\Services;
-
-final class FooLogger
-{
-    private array $logs = [];
-
-    // other methods
-
-    public function log(string $where, string $message): void
-    {
-        $this->logs[] = [
-            'where' => $where,
-            'message' => $message,
-        ];
-    }
-    
-    public function getLogs(): array
-    {
-        return $this->logs;
-    }
-}
-```
+<<< @/_code/object-resetter/src/Services/FooLogger.php
 
 Например, приложению необходимо чтобы объект PHP-класса `\App\Services\FooLogger` сохранял своё состояние между компонентами системы, т.е. получать один и тот же объект при внедрении зависимости или получении через метод контейнера `get()`.
 
@@ -41,6 +17,8 @@ final class FooLogger
 ```php
 <?php
 declare(strict_types=1);
+
+// file: /app/src/Services/FooLogger.php [!code highlight]
 
 namespace  App\Services;
 
@@ -77,7 +55,7 @@ while ($request = $app->getRequest()) {
 }
 ```
 
-Получая объект через `$container->get(App\Services\FooLogger::class)` внутри приложения будет получен один и тот-же объект. Разные компоненты приложения могут внедрять зависимость и вызывать метод PHP-класса `\App\Services\FooLogger::log()`, что приведет к «накоплению данных» в свойстве класса `\App\Services\FooLogger::$logs`.
+Получая объект через `$container->get(App\Services\FooLogger::class)` внутри приложения будет получен один и тот-же объект. Разные компоненты приложения могут внедрять зависимость и вызывать метод PHP-класса `\App\Services\FooLogger::log()`, что приведет к «накоплению данных» в свойстве `$logs` класса `\App\Services\FooLogger`.
 
 **Чтобы избежать утечек памяти, нужно использовать механизм сброса состояния объекта `\App\Services\FooLogger`.**
 
@@ -85,7 +63,7 @@ while ($request = $app->getRequest()) {
 
 Конфигурация для сброса состояния объекта представляется парой ключ-значение, где ключ это идентификатор контейнера[^ContainerId], а значение, представленное типами `string`, `false` или `callable`, указывает [как необходимо выполнить сброса состояния объекта](#resseter-types).
 
-Выберем в качестве сброса состояния объекта выберем реализацию публичного метода в этом же классе `\App\Services\FooLogger::doReset()` и объявления в параметре `$resetter` атрибута `\Kaspi\DiContainer\Attributes\Autowire`:
+В качестве сброса состояния объекта выберем реализацию публичного метода `\App\Services\FooLogger::doReset()`. Так же необходимо изменять объявление PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` – в параметре `$resetter` необходимо указать имя метода выполняющего сброс состояния объекта `'doReset'`.
 
 ```php
 <?php
@@ -168,11 +146,14 @@ while ($request = $app->getRequest()) {
 <?php
 declare(strict_types=1);
 
+// file: /app/src/Services/Foo.php //[!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Autowire;
 
 #[Autowire(
+    isSingleton: true,//[!code highlight]
     resetter: 'doReset',//[!code ++]
 )]
 final class Foo
@@ -190,12 +171,14 @@ final class Foo
 <?php
 declare(strict_types=1);
 
+// file: /app/config/services.php //[!code highlight]
+
 use App\Services\Bar;
 
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
-    yield diAutowire(Bar::class)
+    yield diAutowire(Bar::class, isSingleton: true)//[!code highlight]
         ->setResetter('doReset');//[!code ++]
 }
 ```
@@ -203,6 +186,8 @@ return static function (): Generator {
 ```php [Bar.php]
 <?php
 declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php //[!code highlight]
 
 namespace App\Services;
 
@@ -222,15 +207,17 @@ final class Bar
 
 ::: code-group
 
-```php [Foo.php]
+```php [Baz.php]
 <?php
 declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php //[!code highlight]
 
 namespace App\Services;
 
 use Kaspi\DiContainer\Interfaces\ResetInterface;//[!code ++]
 
-final class Foo implements ResetInterface//[!code ++]
+final class Baz implements ResetInterface//[!code ++]
 {
     //…
     
