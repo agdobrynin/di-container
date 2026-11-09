@@ -39,6 +39,15 @@ outline: [2,4]
 
 ## Пример конфигурирования сброса состояния объекта { #example }
 
+PHP-классы:
+
+::: code-group
+<<< @/_code/object-resetter/src/Services/Foo.php
+<<< @/_code/object-resetter/src/Services/Bar.php
+<<< @/_code/object-resetter/src/Helpers/Resetters.php
+<<< @/_code/object-resetter/src/Services/Baz.php
+<<< @/_code/object-resetter/src/Services/Qux.php
+:::
 
 ### Объявление в файлах конфигураций { #example-php-definitin }
 
@@ -66,7 +75,7 @@ return static function (): Generator {
         });//[!code ++]
 
     yield diAutowire(Baz::class, isSingleton: true)// [!code highlight]
-        ->setResetter([Resetters::class, 'resetBaz']);//[!code ++]
+        ->setResetter([Resetters::class, 'resetObject']);//[!code ++]
 
     yield diRuntime(Qux::class, isSingleton: true)// [!code highlight]
         ->setResetter(false);// default value [!code warning]
