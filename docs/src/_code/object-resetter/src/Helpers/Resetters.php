@@ -13,6 +13,8 @@ final class Resetters
     {
         if ($object instanceof Baz) {
             // reset the state of `App\Services\Baz` here
+
+            return;
         }
     }
 }
