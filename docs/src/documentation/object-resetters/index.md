@@ -286,10 +286,10 @@ if (!function_exists('App\do_reset_bar')) {
 
 :::
 
-
-## 🚧🚧🚧
 ## Конфигурация контейнера и сброс состояния объектов
 
-`$isConfigureObjectResettersFromDefinitions`
+В PHP-классе `\Kaspi\DiContainer\DiContainerConfig`, предоставляющим [конфигурацию контейнеру](../container-config/index.md), параметр `$isConfigureObjectResettersFromDefinitions` отвечает за возможность контейнера создавать конфигурацию для PHP-класса `\Kaspi\DiContainer\ObjectResetters` на основании определений контейнера, значение по умолчанию для этого параметра `true` позволяет получить полностью готовый сервис для сброса состояния PHP-классов объявленных в контейнере.
+
+Передав аргумент `false` в параметр `$isConfigureObjectResettersFromDefinitions` PHP-класса `\Kaspi\DiContainer\DiContainerConfig`, вы запрещаете контейнеру самостоятельно создавать конфигурацию для PHP-класса `\Kaspi\DiContainer\ObjectResetters`, но вы можете [создать конфигурацию самостоятельно](manual_config.md) для этого класса.
 
 <!--@include: ../_include/term_notes.md-->
