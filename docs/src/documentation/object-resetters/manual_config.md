@@ -1,50 +1,78 @@
+---
+aside: false
+---
 # Конфигурация отдельных значений сброса состояния объектов { #title }
 
 ## Обзор { #overview }
 
-### Ручная настройка сервиса сброса состояния объектов.
+Сброс состояния объектов контейнера можно ограничить, объявив в контейнере PHP-класс `\Kaspi\DiContainer\ObjectResetters` в [файле конфигураций](../container-builder/configuration_files.md) и коллекцию значений для сброса состояния указанных объектов.
 
-Для настройки следует использовать [хелпер функцию `diAutowire`](03-php-definition.md#diautowire):
-```php
-// /app/src/config/object_resetters.php
+Коллекция необходимая для указания сброса состояния объектов представлена парой ключ-значение, где ключ это идентификатор контейнера[^ContainerId] для получения требуемого PHP-класса через метод контейнера `get()`, а значение указывает PHP-классу `\Kaspi\DiContainer\ObjectResetters` [как необходимо выполнить сброса состояния объекта](index.md##resseter-types).
+
+> [!IMPORTANT]
+> Объявляя самостоятельно PHP-класс `\Kaspi\DiContainer\ObjectResetters` сброс состояния объектов будет выполняться только для указанных в коллекции PHP-классов. 
+
+## Пример объявления класса ObjectResetters { #example }
+
+PHP-классы:
+
+::: code-group
+<<< @/_code/object-resetter/src/Services/Foo.php
+<<< @/_code/object-resetter/src/Services/Bar.php
+<<< @/_code/object-resetter/src/Helpers/Resetters.php
+<<< @/_code/object-resetter/src/Services/Baz.php
+<<< @/_code/object-resetter/src/Services/Qux.php
+:::
+
+Объявить значения для сброса состояния объектов необходимо **только для PHP-классов**:
+- `\App\Services\Bar` через анонимную функцию в которой вызвать методы `doResetPropertyFoo()` и `doResetPropertyBar()` сбрасывающие состояние двух свойств этого класса.
+- `\App\Services\Qux` через реализуемый метод `reset()` из интерфейса `\Kaspi\DiContainer\Interfaces\ResetInterface`.
+
+Объявить PHP-класс `\Kaspi\DiContainer\ObjectResetters` необходимо через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md), в параметре функции `$isSingleton` необходимо передать значение `true`.
+
+::: code-group
+```php [object_resetters.php]
+<?php
 declare(strict_types=1);
 
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+// file: /app/config/object_resetters.php [!code highlight]
+
 use Kaspi\DiContainer\ObjectResetters;
-use Generator;
-use App\Services\{Foo, Bar};
+use App\Services\{Bar, Qux};
 
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (DefinitionsConfiguratorInterface $configurator): Generator {
-    // Ключ массива это идентификатор контейнера для получения объекта
-    // которому необходимо сбросить состояние, а значение это конфигурация для сброса объекта.
-    $resettersConfiguration = [
-        // Для сброса вызвать метод класса Foo::doReset()
-        Foo::class => 'doReset',
-        // Для сброса вызвать callback функцию
-        Bar::class => static function (Bar $bar): void {
-            $bar->doResetLogs();
-            $bar->doResetBaz();
-        },
-    ];
+return static function (): Generator {
+    $resetters = [//[!code highlight]
+        Bar::class => static function (Bar $bar): void {//[!code highlight]
+            $bar->doResetPropertyFoo();//[!code highlight]
+            $bar->doResetPropertyBar();//[!code highlight]
+        },//[!code highlight]
+        Qux::class => 'reset',//[!code highlight]
+    ];//[!code highlight]
 
-    // `$container->get(\Kaspi\DiContainer\ObjectResetters::class)` всегда возвращать один и тот же объект
-    yield diAutowire(ObjectResetters::class, isSingleton: true)
-        // передать настройку через сеттер-метод `ObjectResetters::setup()`
-        ->setup('setup', arguments: [$resettersConfiguration]);
+    yield diAutowire(ObjectResetters::class, isSingleton: true)//[!code ++]
+        ->setup(//[!code ++]
+            'setup',//[!code ++]
+            arguments: [//[!code ++]
+                $resetters//[!code ++]
+            ]//[!code ++]
+        );//[!code ++]
 };
 ```
-```php
+```php [app.php]
+<?php
 declare(strict_types=1);
 
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
-use Kaspi\DiContainer\ObjectResetters;
+use Kaspi\DiContainer\ObjectResetters;//[!code ++]
 use Framework\AppFactory;
 
 $container = (new DiContainerBuilder())
     ->import('App\\', '/app/src')
-    ->load('/app/src/config/object_resetters.php')
+    ->load('/app/config/object_resetters.php')//[!code ++]
     ->build();
 
 $app = AppFactory::create(
@@ -52,18 +80,16 @@ $app = AppFactory::create(
     container: $container;
 );
 
-// получение настроенного сервиса для сброса состояния объектов
-$resetters = $container->get(ObjectResetters::class);
+$resetters = $container->get(ObjectResetters::class);//[!code ++]
 
 // Event loop
 while ($request = $app->getRequest()) {
     $response = $app->handle($request);
     $app->emit($response);
-    // сбросить состояние объектов.
-    $resetters->reset();
+
+    $resetters->reset();//[!code ++]
 }
 ```
-> [!IMPORTANT]
-> Ручная настройка сброса состояния объектов **отключает**
-> [автоматическое конфигурирование из определений контейнера](#автоматическое-конфигурирование-сервиса-сброса-состояния-объектов-на-основе-установленных-значений-в-определения-контейнера).
->
+:::
+
+<!--@include: ../_include/term_notes.md-->
