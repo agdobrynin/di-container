@@ -1,3 +1,6 @@
+---
+outline: [2,4]
+---
 # Внедрение «ленивых» объектов контейнером { #title }
 
 
@@ -8,123 +11,126 @@
 > [!IMPORTANT]
 > Механизм внедрения ленивых зависимостей доступен только для PHP 8.4 и выше.
 
-## 🚧🚧🚧 Как использовать
+## Как использовать { #how-to-use }
 
-Определение контейнера создаваемое через [хелпер функцию `diAutowire()`](03-php-definition.md#diautowire) 
-или PHP-класс сконфигурированный через [атрибут `Autowire()`](02-attribute-definition.md#autowire) можно определить как «ленивый объект».
-Если определение контейнера внедряется как зависимость, то вместо него будет внедрен прокси-объект реализующий «отложенную» инициализацию объекта.
+Объявление PHP-класса ленивым можно сделать через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md) или [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../attribute-definition/autowire.md) передав в параметре `$isLazy` значение `true`. Объявленный ленивый PHP-класс внедряет прокси-объект реализующий «отложенную» инициализацию объекта.
 
-```php
-// Сервис с требующий ленивой инициализации
-namespace App\Services;
+## Объявление PHP-класса в контейнере { #get-as-lazt }
 
-final class Foo {
-    public function __construct(private HeavyDependency $heavyDependency) {}
-    
-    public function doHeavy(): mixed
-    {
-        $result = $this->dependency->calculate();
-        //...
-        return $result;
-    }
-}
+При объявлении PHP-класса ленивым непосредственно в контейнере означает что этот класс всегда и везде внедряется в параметр метода или вызываемого типа[^CallableType] как прокси-объект, его инициализация выполняется только в момент обращения к этому PHP-классу.
+
+PHP-классы:
+
+::: code-group
+<<< @/_code/src/Services/FooService.php
+<<< @/_code/src/Services/BarService.php
+<<< @/_code/src/Services/HeavyDependency.php
+<<< @/_code/src/Services/BazService.php
+:::
+
+Необходимо объявить в контейнере PHP-класс `\App\Services\HeavyDependency` чтобы он внедрялся в параметры методов везде как ленивый-объект, без дополнительных объявлений.
+
+В параметр конструктора `$heavyDependency` PHP-классов `\App\Services\FooService` и `\App\Services\BarService` должен внедрятся ленивый объект `\App\Services\HeavyDependency`. 
+
+### Объявление в файлах конфигураций { #example-global-lazy-php-definition }
+
+В [файле конфигураций](../container-builder/configuration_files.md) `lazy_services.php` объявить ленивый PHP-класс можно через хелпер функцию `diAutowire()` с указанием в параметре `$isLazy` значения `true`:
+
+::: code-group
+
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\{FooService, BarService};
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
+    ->load('/app/config/lazy_services.php')//[!code ++]
+    ->build();
+
+var_dump($container->get(FooService::class));
+var_dump($container->get(BarService::class));
 ```
-```php
-namespace App\Services;
 
-// Класс использующий `App\Services\Foo`
-final class Bar {
-    /*
-     * В момент вызова метода `__construct()`
-     * сервис $foo ещё не инициализирован, его инициализация
-     * потребуется только в момент обращения к `$this->foo`.
-     * 
-     * Сервис $baz инициализируется в момент вызова метода `__construct()`.
-     */ 
-    public function __construct(private Foo $foo, private Baz $baz) {}
-    //
-    public function doFoo()
-    {
-        // Вызвать инициализацию сервиса `App\Services\Foo`
-        $result = $this->foo->doHeavy();    
-    }
-}
-```
+```php [lazy_services.php]
+<?php
+declare(strict_types=1);
 
-Объявление внедряемого PHP-класса в свойство `App\Services\Foo::$foo` как «ленивого объекта» может быть выполнена непосредственно через
-конфигурирование класса `App\Services\Foo` везде где он внедряется,
-или сконфигурировать «ленивым» внедрение конкретного аргумента.
+// file: /app/config/lazy_services.php [!code highlight]
 
-## 🌐 Объявление PHP-класса как «ленивого объекта» – глобально.
-PHP-класс будет внедряться как «ленивый объект» везде где запрошен как зависимость.
-
-🐘 Пример конфигурирования через хелпер функцию в файле конфигурации определений:
-```php
-// src/config/services_lazy.php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
+use App\Services\HeavyDependency;
 
 use function Kaspi\DiContainer\diAutowire;
 
-return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
-    // Объект будет внедряться как «ленивый» – указываем параметр $isLazy = true
-    yield diAutowire(App\Services\Foo::class, isLazy: true);    
+return static function (): Generator {
+    yield diAutowire(//[!code highlight]
+        HeavyDependency::class,//[!code highlight]
+        isLazy: true,//[!code ++]
+    );//[!code highlight]
 };
 ```
-#️⃣ Пример конфигурирования `App\Services\Foo` через php атрибут:
 
-```php
-// Сервис с требующий ленивой инициализации
-namespace App\Services;
+:::
 
-use Kaspi\DiContainer\Attributes\Autowire;
 
-#[Autowire(isLazy: true)]
-final class Foo {
-    public function __construct(private HeavyDependency $dependency) {}
-    // ...
+Выполните в терминале команду:
+
+```shell
+php /app/src/container_build.php
+```
+
+Появится сообщение вида:
+
+```console
+object(App\Services\FooService)#23 (1) {
+  ["heavyDependency"]=>
+  lazy proxy object(App\Services\HeavyDependency)#20 (0) {
+    ["bazService"]=>
+    uninitialized(App\Services\BazService)
+  }
+}
+object(App\Services\BarService)#33 (1) {
+  ["heavyDependency"]=>
+  lazy proxy object(App\Services\HeavyDependency)#30 (0) {
+    ["bazService"]=>
+    uninitialized(App\Services\BazService)
+  }
 }
 ```
 
-## 📍 Конфигурация «ленивого внедрения» конкретного аргумента.
+### Объявление через атрибут { #example-global-lazy-attribute }
 
-PHP-класс будет внедряться как «ленивый объект» только для указанного параметра метода.
+🚧🚧🚧
 
-🐘 Пример конфигурирования через хелпер функцию в файле конфигурации определений:
-```php
-// src/config/services_lazy.php
-use Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface;
-
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (DefinitionsConfiguratorInterface $configurator): \Generator {
-    yield diAutowire(App\Services\Bar::class)
-        ->bindArguments(
-            // Объект будет внедряться как «ленивый» – указываем параметр $isLazy = true
-            foo: diAutowire(App\Services\Foo::class, isLazy: true)
-        );
-};
-
-```
-#️⃣ Пример внедрения «ленивого объекта» в свойство `App\Services\Bar::$foo` через php атрибут:
+Объявить ленивый PHP-класс можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire` с указанием в параметре конструктора `$isLazy` значения `true`:
 
 ```php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php [!code highlight]
+
 namespace App\Services;
 
-use Kaspi\DiContainer\Attributes\Autowire;
+use Kaspi\DiContainer\Attributes\Autowire;//[!code ++]
 
-final class Bar {
-    public function __construct(
-        // Внедрить App\Services\Foo как ленивый объект.
-        #[Autowire(isLazy: true)]
-        private Foo $foo,
-
-        private Baz $baz,
-    ) {}
-    
-    // ...
-
-}
+#[Autowire(isLazy: true)]//[!code ++]
+final class HeavyDependency
+{
+// …
 ```
+
+## Объявление внедрения ленивого PHP-класса в параметр
+
+Объявление внедрения ленивого PHP-класса в параметр метода или вызываемого типа означает что прокси-объект будет внедряться только для указанного параметра, для остальных случав объект PHP-класса будет получен сразу с внедрёнными зависимостями, например при получении через метод контейнера `get()`.
+
+
 
 ## Получение сервиса с внедренным «ленивым объектом».
 
@@ -156,3 +162,5 @@ $result = $bar->doFoo();
 > - [хелпер функция `diProxyClosure()`](03-php-definition.md#diproxyclosure)
 > - [PHP атрибут `ProxyClosure()`](02-attribute-definition.md#proxyclosure)
 > 
+
+<!--@include: ../_include/term_notes.md-->
