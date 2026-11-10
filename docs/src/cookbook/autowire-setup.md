@@ -7,7 +7,9 @@ outline: [2, 4]
 
 Внедрение зависимостей в PHP-класс может происходить через **сеттер-методы**.
 
-Для внедрения зависимостей через сеттер-методы используются методы [`setup()`](../documentation/php-definition/di-autowire.md#setup), [`setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable) хелпер функции `diAutowire()` или атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md), [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
+Для внедрения зависимостей через сеттер-методы используются методы [`setup()`](../documentation/php-definition/di-autowire.md#setup), [`setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable) предоставляемые хелпер функцией `diAutowire()` или атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md), [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
+
+## 🚧🚧🚧
 
 ## Объявление PHP-классов в файлах конфигураций { #php-definition }
 
