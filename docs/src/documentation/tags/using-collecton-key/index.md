@@ -30,7 +30,7 @@ outline: [2, 4]
 - `\Countable`
 
 Реализация этих интерфейсов даёт возможность:
-- Перебор элементов коллекции через [языковую конструкцию `foreach`](https://www.php.net/manual/en/control-structures.foreach.php).
+- Перебор элементов коллекции через [языковую конструкцию `foreach`](https://www.php.net/manual/ru/control-structures.foreach.php).
 - Доступ к элементу по идентификатору в стиле PHP массивов – `$service['foo.name']`.
 - Доступ к элементу через методы `get()` и `has()` описанные в [PSR-11](https://www.php-fig.org/psr/psr-11/).
 

@@ -27,7 +27,7 @@
 - `$availableExtensions` – расширения файлов PHP-классов.
 
 > [!NOTE]
-> Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
+> Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/ru/function.fnmatch.php).
 
 PHP-классы найденные в исключенных файлах, параметр `$excludeFiles`, будут недоступны контейнеру через метод `get()`, а следовательно нельзя будет внедрить такой PHP-класс.
 

@@ -5,7 +5,7 @@ aside: false
 
 Метаданные тега указывается парой ключ-значение:
 - **имя метаданных** – произвольная непустая строка.
-- **значение** – [скалярный тип](https://www.php.net/manual/en/language.types.type-system.php#language.types.type-system.atomic.scalar), `null` или `array` состоящий из этих типов.
+- **значение** – [скалярный тип](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar), `null` или `array` состоящий из этих типов.
 
 Метаданные тега передаются через параметр `$options` в методе `bindTag()`[^BindTag]
 или в [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).

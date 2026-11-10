@@ -163,7 +163,7 @@ $container = (new DiContainerBuilder())
 - тип `null`
 - перечисляемые типы наследуемые от `\UnitEnum`
 - `array` из выше перечисленных типов
-- PHP-константы из выше перечисленных типов определяемые через функцию [`\define()`](https://www.php.net/manual/en/function.define.php)
+- PHP-константы из выше перечисленных типов определяемые через функцию [`\define()`](https://www.php.net/manual/ru/function.define.php)
 - значения из публичных констант PHP-классов и PHP-интерфейсов со значениями из выше перечисленных типов.
 
 ```php

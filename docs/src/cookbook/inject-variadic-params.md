@@ -124,7 +124,7 @@ var_dump($rules[2] instanceof RuleC);
 
 ### Именованные аргументы { #named-arguments }
 
-При использовании [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments)
+При использовании [именованных аргументов](https://www.php.net/manual/ru/functions.arguments.php#functions.named-arguments)
 для [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list)
 действуют правила описанные в документации php.
 

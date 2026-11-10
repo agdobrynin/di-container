@@ -6,11 +6,11 @@
 
 Класс `\Kaspi\DiContainer\DiContainerBuilder` предоставляет методы [`load()`](methods/load-definitions-from-file.md#load) и [`loadOverride()`](methods/load-definitions-from-file.md#loadoverride) для объявления определений контейнера и их идентификаторов[^ContainerId] из файлов конфигураций.
 
-Файл **должен использовать ключевое слово `return`** и возвращать любой [`iterable`](https://www.php.net/manual/en/language.types.iterable.php) или `callable` тип.
+Файл **должен использовать ключевое слово `return`** и возвращать любой [`iterable`](https://www.php.net/manual/ru/language.types.iterable.php) или `callable` тип.
 
-В PHP `iterable` – это специальный псевдотип, который включает в себя любые массивы и объекты классов, реализующих [интерфейс `\Traversable`](https://www.php.net/manual/en/class.traversable.php).
+В PHP `iterable` – это специальный псевдотип, который включает в себя любые массивы и объекты классов, реализующих [интерфейс `\Traversable`](https://www.php.net/manual/ru/class.traversable.php).
 
-В **файлах конфигураций** рекомендуется использование анонимных функций с [генератором](https://www.php.net/manual/en/language.generators.overview.php) (функции с ключевым словом `yield`), они позволяют отложить объявление определений до момента их фактического конфигурирования.
+В **файлах конфигураций** рекомендуется использование анонимных функций с [генератором](https://www.php.net/manual/ru/language.generators.overview.php) (функции с ключевым словом `yield`), они позволяют отложить объявление определений до момента их фактического конфигурирования.
 
 В конфигурации контейнера отслеживается уникальность идентификаторов контейнера[^ContainerId]. При вызове метода сборки контейнера `DiContainerBuilder::build()` будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` если в файлах конфигураций будут обнаружены не уникальные идентификаторы определений контейнера.
 

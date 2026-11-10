@@ -14,11 +14,11 @@ outline: [2, 4]
 - Функция.
 - Статический метод PHP-класса.
 - Метод PHP объекта.
-- PHP объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke).
+- PHP объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/ru/language.oop5.magic.php#object.invoke).
 - **Метод может `call()` преобразовать** к `callable` не инициализированный PHP-класс и его метод:
   - Вызов нестатического метода PHP-класса.
     - `$container->call([App\Services\Foo::class, 'methodName']);`
-  - Вызов [магического метод `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) в PHP-классе.
+  - Вызов [магического метод `__invoke()`](https://www.php.net/manual/ru/language.oop5.magic.php#object.invoke) в PHP-классе.
     - `$container->call(App\Services\CallableService::class);`
 
 Сигнатура метода:
@@ -38,7 +38,7 @@ outline: [2, 4]
 
 Параметр переменной длины `$argument` метода `call()` передает аргументы вызываемому типу.
 
-При объявлении внедрения зависимости в конкретный параметр вызываемого типа, можно использовать [именованные аргументы](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments).
+При объявлении внедрения зависимости в конкретный параметр вызываемого типа, можно использовать [именованные аргументы](https://www.php.net/manual/ru/functions.arguments.php#functions.named-arguments).
 
 Параметры вызываемого типа не получившие аргументы будут внедрены контейнером самостоятельно, на основании конфигурации.
 
