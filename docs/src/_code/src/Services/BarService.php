@@ -7,5 +7,7 @@ namespace App\Services;
 
 final class BarService
 {
-    public function __construct(public readonly HeavyDependency $heavyDependency) {}
+    public function __construct(
+        public readonly HeavyDependency $heavyDependency
+    ) {}
 }

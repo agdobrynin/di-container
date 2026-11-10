@@ -7,5 +7,7 @@ namespace App\Services;
 
 final class HeavyDependency
 {
-    public function __construct(public readonly BazService $bazService) {}
+    public function __construct(
+        public readonly BazService $bazService
+    ) {}
 }
