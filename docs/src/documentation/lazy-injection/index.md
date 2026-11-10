@@ -50,7 +50,7 @@ declare(strict_types=1);
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{FooService, BarService};
+use App\Services\{FooService, BarService, HeavyDependency};
 
 $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')//[!code highlight]
@@ -58,7 +58,10 @@ $container = (new DiContainerBuilder())
     ->build();
 
 var_dump($container->get(FooService::class));
+echo PHP_EOL;
 var_dump($container->get(BarService::class));
+echo PHP_EOL;
+var_dump($container->get(HeavyDependency::class));
 ```
 
 ```php [lazy_services.php]
@@ -97,12 +100,18 @@ object(App\Services\FooService)#23 (1) {
     uninitialized(App\Services\BazService)
   }
 }
+
 object(App\Services\BarService)#33 (1) {
   ["heavyDependency"]=>
   lazy proxy object(App\Services\HeavyDependency)#30 (0) {
     ["bazService"]=>
     uninitialized(App\Services\BazService)
   }
+}
+
+lazy proxy object(App\Services\HeavyDependency)#40 (0) {
+  ["bazService"]=>
+  uninitialized(App\Services\BazService)
 }
 ```
 
@@ -138,14 +147,17 @@ declare(strict_types=1);
 require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\{FooService, BarService};
+use App\Services\{FooService, BarService, HeavyDependency};
 
 $container = (new DiContainerBuilder())
     ->import(namespace: 'App\\', src: '/app/src')//[!code ++]
     ->build();
 
 var_dump($container->get(FooService::class));
+echo PHP_EOL;
 var_dump($container->get(BarService::class));
+echo PHP_EOL;
+var_dump($container->get(HeavyDependency::class));
 ```
 :::
 
@@ -165,12 +177,18 @@ object(App\Services\FooService)#23 (1) {
     uninitialized(App\Services\BazService)
   }
 }
+
 object(App\Services\BarService)#33 (1) {
   ["heavyDependency"]=>
   lazy proxy object(App\Services\HeavyDependency)#30 (0) {
     ["bazService"]=>
     uninitialized(App\Services\BazService)
   }
+}
+
+lazy proxy object(App\Services\HeavyDependency)#73 (0) {
+  ["bazService"]=>
+  uninitialized(App\Services\BazService)
 }
 ```
 
