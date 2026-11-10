@@ -1,4 +1,4 @@
-```console
+```console{3-6,11-14,17-20}
 object(App\Services\FooService)#23 (1) {
   ["heavyDependency"]=>
   lazy proxy object(App\Services\HeavyDependency)#20 (0) {
