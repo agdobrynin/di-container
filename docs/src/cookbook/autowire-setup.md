@@ -1,15 +1,79 @@
 ---
 outline: [2, 4]
+title: Внедрение зависимостей через сеттер-методы
 ---
-# Внедрение зависимостей через сеттер-методы { #title }
-
-## Обзор { #overview }
+### Внедрение зависимостей через сеттер-методы { #title }
 
 Внедрение зависимостей в PHP-класс может происходить через **сеттер-методы**.
 
-Для внедрения зависимостей через сеттер-методы используются методы [`setup()`](../documentation/php-definition/di-autowire.md#setup), [`setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable) предоставляемые хелпер функцией `diAutowire()` или атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md), [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
+Объявить внедрение зависимостей через сеттер-методы можно через методы [`setup()`](../documentation/php-definition/di-autowire.md#setup), [`setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable) предоставляемые хелпер функцией `diAutowire()` или атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md), [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
 
-## 🚧🚧🚧
+### Внедрение зависимости через мутабельный сеттер-метод { #example-setup }
+
+PHP-классы:
+
+::: code-group
+```php [Foo.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php [!code highlight]
+
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Foo
+{
+    private QuxInterface $qux;
+
+    public function setQux(QuxInterface $qux): void
+    {
+        $this->qux = $qux;
+    }
+
+    public function getQux(): ?QuxInterface
+    {
+        return $this->qux ?? null;
+    }
+}
+```
+<<< @/_code/cookbook/autowire-setup/src/Interfaces/QuxInterface.php
+<<< @/_code/cookbook/autowire-setup/src/Services/Bar.php
+:::
+
+Необходимо объявить внедрение в PHP-класа `\App\Services\Bar` через мутабельный сеттер-метод[^SetterMethodMutable] `\App\Services\Foo::setQux()`.
+
+Параметр `$qux` метода `\App\Services\Foo::setQux()` ожидает объект реализующий интерфейс `App\Interfaces\QuxInterface`. Контейнер предоставляет множество способов объявления [внедрения PHP-класса в параметр метода ожидающего интерфейс](inject-interface.md), для этого примера будет использовать [хелпер функцию `diGet()`](../documentation/php-definition/di-get.md) или [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) в зависимости от способа объявления внедрения зависимости.
+
+🚧🚧🚧🚧🚧
+
+#### Объявление в файлах конфигураций { #example-stup-php-definition }
+
+В файле конфигураций `services.php` объявим PHP-класс `\App\Services\Foo`, через метод `setup()`, предоставляемый хелпер функцией `diAutowire()`, объявим внедрение зависимости PHP-класса `\App\Services\Bar`.
+
+::: code-group
+```php
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php [!code highlight]
+
+use App\Service\Foo;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    yield diAutowire(Foo::class)
+        ->setup();
+};
+```
+::: 
+
+#### Объявление через атрибут { #example-stup-attribute }
+
+
+
 
 ## Объявление PHP-классов в файлах конфигураций { #php-definition }
 
@@ -70,7 +134,6 @@ final class FooLogger
 }
 ```
 
-<<< @/_code/cookbook/autowire-setup/FileLogger.php
 
 :::
 
