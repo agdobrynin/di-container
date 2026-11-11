@@ -1,9 +1,8 @@
 ---
 outline: [2, 4]
+title: «Параметры контейнера» времени выполнения
 ---
-# «Параметры контейнера» времени выполнения { #title }
-
-## Обзор { #overview }
+### «Параметры контейнера» времени выполнения { #title }
 
 В некоторых сценариях использования контейнера может возникнуть ситуация когда необходимо объявить «параметр контейнера», но значение этого параметра заранее не известно, т.е. на момент конфигурирования известно только имя параметра контейнера.
 
@@ -13,7 +12,7 @@ outline: [2, 4]
 
 Во время [компиляции контейнера](../container-builder/methods/compile-to-file.md) объявленные внедрения зависимостей должны знать о существовании **«параметров контейнера» времени исполнения**, значения которых будет установлено в контейнер только во время выполнения самого контейнера.
 
-## Внедрение «параметра контейнера» времени выполнения:
+### Внедрение «параметра контейнера» времени выполнения:
 
 - через [хелпер функцию `diParameterRuntime()`](../php-definition/di-parameter-runtime.md) в [файлах конфигураций](../container-builder/configuration_files.md).
 - через [атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md).
@@ -44,7 +43,7 @@ $container->parameters()//[!code ++]
 // …
 ```
 
-## Пример внедрения «параметра контейнера» времени выполнения { #example }
+### Пример внедрения «параметра контейнера» времени выполнения { #example }
 
 PHP-классы:
 
@@ -64,7 +63,7 @@ PHP-классы:
 
 В параметры конструктора `$mailTo` и `$debug` PHP-класса `\App\Services\Foo` объявить внедрение через [параметры контейнера](inject_params.md), для параметра `$setupType` реальное значение вычисляется только вне контейнера, поэтому для этого параметра необходимо использовать объявление внедрения через **«параметр контейнера» времени исполнения**.
 
-### Объявление в файлах конфигураций { #helper-fn-di-parameter-runtime }
+#### Объявление в файлах конфигураций { #helper-fn-di-parameter-runtime }
 
 В файле конфигураций `services.php` объявить PHP-класс `\App\Services\Foo`, объявить внедрение для параметра конструктора `$setupType` через [хелпер функцию `diParameterRuntime()`](../php-definition/di-parameter-runtime.md), для параметров конструктора `$mailTo` и `$debug`, значения которых заранее известно, через [хелпер функцию `diParameter()`](../php-definition/di-parameter.md).
 
@@ -149,7 +148,7 @@ string(37) "admin@example.com, manager@example.com"
 bool(false)
 ```
 
-### Объявление через атрибут { #attribute-parameter-runtime }
+#### Объявление через атрибут { #attribute-parameter-runtime }
 
 Объявить внедрение в параметр конструктора `$setupType` через [атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md) PHP-класса `\App\Services\Foo`,
 для остальных параметров конструктора через [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](../attribute-definition/parameter.md).

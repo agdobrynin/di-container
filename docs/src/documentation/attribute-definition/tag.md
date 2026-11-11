@@ -1,9 +1,8 @@
 ---
 aside: false
+title: Атрибут Tag
 ---
-# Tag
-
-## Обзор { #overview }
+### Атрибут Tag
 
 Атрибут `\Kaspi\DiContainer\Attributes\Tag` объявляет тег и метаданные для PHP-класса.
 

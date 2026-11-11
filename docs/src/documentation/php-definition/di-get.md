@@ -1,6 +1,8 @@
-# diGet()
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Хелпер функция diGet()
+---
+### Хелпер функция diGet()
 
 Хелпер функция `diGet()` внедряет зависимость через идентификатор контейнера [^ContainerId], это эквивалентно вызову метода контейнера `get()`.
 
@@ -24,7 +26,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 
 У хелпер функции нет дополнительных методов.
 
-## Пример внедрение в параметр с типом mixed { #example }
+### Пример внедрение в параметр с типом mixed { #example }
 
 PHP-классы:
 
@@ -117,7 +119,7 @@ php /app/src/container_build.php
 (bool) true
 ```
 
-## Рецепты { #cookbook }
+### Рецепты { #cookbook }
 
 В разделе «Рецепты» представлены примеры конкретизации объявления внедрения параметров:
 - [Внедрение зависимости по интерфейсу](../../cookbook/inject-interface.md#helper-di-get).

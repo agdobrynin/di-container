@@ -1,7 +1,8 @@
 ---
 aside: false
+title: Объявление в файлах конфигураций
 ---
-# Объявление в файлах конфигураций { #overview }
+### Объявление в файлах конфигураций { #overview }
 
 Для указания контейнеру каким образом нужно внедрять зависимости в PHP-классах или вызываемых типах используется механизм объявления определений в [файлах конфигураций](../container-builder/configuration_files.md) или в [коллекциях конфигураций](../container-builder/methods/load-definitions-from-collection.md).
 
@@ -17,7 +18,7 @@ aside: false
 > [!TIP]
 > ✅ Для параметра метода PHP-класса или `callable` типа можно указывать [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar), `null`, перечисляемые типы, «как есть» – без указания как внедрять такой тип зависимости. Для повторяющихся скалярных значений рекомендуется использовать «[параметры контейнера](../container-parameters/index.md)».
 
-## Хелпер функции { #helper-fn }
+#### Хелпер функции { #helper-fn }
 
   - [diAutowire()](di-autowire.md) – объявляет PHP-класс в контейнере.
   - [diCallable()](di-callable.md) – внедрение зависимости через тип `callable`.

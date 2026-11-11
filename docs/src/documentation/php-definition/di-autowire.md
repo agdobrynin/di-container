@@ -1,9 +1,8 @@
 ---
-outline: [2, 4]
+outline: [2,5]
+title: Хелпер функция diAutowire()
 ---
-# diAutowire()
-
-## Обзор { #overview }
+### Хелпер функция diAutowire()
 
 Хелпер функция `diAutowire()` объявляет PHP-класс в контейнере.
 
@@ -40,7 +39,7 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
  - `bindTag()` – тег с метаданными.
  - `setResetter()` - значение для сброса состояния объекта.
 
-## Идентификатор контейнера для diAutowire() { #container-id }
+### Идентификатор контейнера для diAutowire() { #container-id }
 
 Хелпер функция `diAutowier()` может передавать контейнеру идентификатор [^ContainerId] из параметра `$definition`, что обеспечивает доступ к нему через методы контейнера `get()` и `has()`.
 
@@ -84,13 +83,13 @@ return static function (): Generator {
 };
 ```
 
-## bindArguments()
+### bindArguments()
 
 Аргументы для конструктора PHP-класса.
 
 <!--@include: _include/bind_arguments.md-->
 
-### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
+#### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
 
 PHP-классы:
 
@@ -146,11 +145,11 @@ int(10)
 string(9) "/var/data"
 ```
 
-## Сеттер-методы внедрения зависимостей { #di-autowire-setter-method }
+### Сеттер-методы внедрения зависимостей { #di-autowire-setter-method }
 
 Помимо внедрения зависимостей через конструктор PHP-класса существует возможность внедрения зависимостей через сеттер-методы.
 
-### setup()
+#### setup()
 
 Метод `setup()` внедряет зависимость в PHP-класс через **мутабельный сеттер-метод** [^SetterMethodMutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
@@ -168,7 +167,7 @@ DiDefinitionSetupAutowireInterface::setup(
 
 <!--@include: _include/setter_method_arg.md-->
 
-#### Пример внедрения через метод setup() { #example-setter-method-setup }
+##### Пример внедрения через метод setup() { #example-setter-method-setup }
 
 PHP-класс:
 
@@ -263,7 +262,7 @@ int(384)
 > [!NOTE]
 > [Пример использования метода `setup()`](../../cookbook/autowire-setup.md#diautowire-setup)
 
-### setupImmutable()
+#### setupImmutable()
 
 Метод `setupImmutable()` внедряет зависимость в PHP-класс через **иммутабельный сеттер-метод**[^SetterMethodImmutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
 
@@ -286,12 +285,12 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
 > [!NOTE]
 > [Пример использования метода `setupImmutable()`](../../cookbook/autowire-setup.md)
 
-## bindTag()
+### bindTag()
 Теги позволяют отнести объявляемый PHP-класс к коллекции элементов отмеченных одним тегом.
 
 <!--@include: _include/bind_tag.md-->
 
-## setResetter()
+### setResetter()
 
 <!--@include: _include/set-resetter.md-->
 

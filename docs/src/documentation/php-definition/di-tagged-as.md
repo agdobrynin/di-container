@@ -1,9 +1,8 @@
 ---
 aside: false
+title: Хелпер функция diTaggedAs()
 ---
-# diTaggedAs()
-
-## Обзор { #overview }
+### Хелпер функция diTaggedAs()
 
 Хелпер функция `diTaggedAs()` внедряет коллекцию элементов из контейнера отмеченных тегом.
 

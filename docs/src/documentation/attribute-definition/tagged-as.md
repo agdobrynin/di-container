@@ -1,6 +1,8 @@
-# TaggedAs
-
-## Обзор { #overview }
+---
+aside: false
+title: Атрибут TaggedAs
+---
+### Атрибут TaggedAs
 
 Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs` внедряет коллекцию элементов из контейнера отмеченных тегом с одинаковым имененм.
 

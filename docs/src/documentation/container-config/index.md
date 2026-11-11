@@ -1,7 +1,8 @@
 ---
 aside: false
+title: Конфигурация для DiContainer
 ---
-# Конфигурация для DiContainer { #title }
+### Конфигурация для DiContainer { #title }
 
 Для конфигурации контейнера используется класс `\Kaspi\DiContainer\DiContainerConfig`.
 

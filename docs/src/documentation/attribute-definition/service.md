@@ -1,6 +1,8 @@
-# Service
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Атрибут Service
+---
+### Атрибут Service
 
 Атрибут `\Kaspi\DiContainer\Attributes\Service` указывает PHP интерфейсу его реализацию.
 
@@ -26,7 +28,7 @@
 
 Например, указание строкового идентификатора `'services.qux'` в параметре `$id` будет означать что контейнеру необходимо внедрять объект полученный через вызов метода `$container->get('services.qux')`. 
 
-## Пример конфигурирования интерфейса { #example-interface-service }
+### Пример конфигурирования интерфейса { #example-interface-service }
 
 PHP-классы и интерфейсы:
 
@@ -145,7 +147,7 @@ bool(true)
 bool(true)
 ```
 
-## Конфигурация интерфейсов сторонних производителей { #inject-vendor-interface }
+### Конфигурация интерфейсов сторонних производителей { #inject-vendor-interface }
 
 При объявлении внедрения в параметре с типом интерфейс от сторонних производителей, например из других PHP пакетов, нужно объявлять реализацию интерфейса через [файлы конфигураций](../container-builder/methods/load-definitions-from-file.md) или через [коллекцию](../container-builder/methods/load-definitions-from-collection.md) при сборке контейнера.
 

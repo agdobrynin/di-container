@@ -1,6 +1,8 @@
-# Управление параметрами контейнера { #title }
-
-## Обзор { #overview } 
+---
+outline: [2,4]
+title: Управление параметрами контейнера
+---
+### Управление параметрами контейнера { #title }
 
 В файлах конфигураций доступна регистрация и управление [параметрами контейнера](../../container-parameters/index.md).
 
@@ -25,7 +27,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 };
 ```
 
-## loadParameters()
+### loadParameters()
 
 Метод `loadParameters()` регистрирует параметры контейнера через файлы конфигураций параметров.
 
@@ -43,7 +45,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 - `$file` – полный путь к файлу описывающий конфигурацию параметров.
 - `$_` – дополнительные файлы конфигураций параметров контейнера.
 
-## `addParameters()`
+### `addParameters()`
 
 Метод `addParameters()` регистрирует параметры контейнера из коллекции.
 
@@ -58,7 +60,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 Параметры:
 - `$params` – коллекция ключ-значение конфигурации параметров.
 
-## setParameter()
+### setParameter()
 
 Метод `setParameter()` регистрирует имя параметра контейнера и его значение.
 
@@ -75,7 +77,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 - `$name` – имя параметра.
 - `$value` – значение параметра.
 
-## removeParameter()
+### removeParameter()
 
 Метод `removeParameter()` удаляет параметр контейнера по имени из конфигурации.
 
@@ -91,7 +93,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 
 - `$name` – имя параметра.
 
-## hasParameter()
+### hasParameter()
 
 Метод `hasParameter()` выполняет проверку наличия определенного параметра контейнера в конфигурации по имени параметра.
 

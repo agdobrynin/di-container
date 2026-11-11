@@ -1,6 +1,8 @@
-# Inject
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Атрибут Inject
+---
+### Атрибут Inject
 
 Атрибут `\Kaspi\DiContainer\Attributes\Inject` внедряет зависимость через идентификатор контейнера [^ContainerId], это эквивалентно вызову метода контейнера `get()`.
 
@@ -23,7 +25,7 @@
 Параметры:
 - `$id` - идентификатор контейнера [^ContainerId].
 
-## Пример внедрение в параметр с типом mixed { #example }
+### Пример внедрение в параметр с типом mixed { #example }
 
 PHP-классы:
 
@@ -122,7 +124,7 @@ php /app/src/container_build.php
 (bool) true
 ```
 
-## Рецепты { #cookbook }
+### Рецепты { #cookbook }
 
 В разделе «Рецепты» представлены примеры конкретизации объявления внедрения параметров:
 - [Внедрение зависимости по интерфейсу](../../cookbook/inject-interface.md#attribute-inject).

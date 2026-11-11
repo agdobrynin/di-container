@@ -1,9 +1,8 @@
 ---
 outline: [2,4]
+title: Объявление PHP-класса
 ---
-# Объявление PHP-класса { #title }
-
-## Обзор { #overview }
+### Объявление PHP-класса { #title }
 
 Для случаев когда объявление PHP-класса не может быть создано простым вызовом `new Foo()`, а требует особой сборки, то можно делегировать сборку этого класса специальному PHP-классу – «фабрика».
 
@@ -15,7 +14,7 @@ outline: [2,4]
 
 Важное замечание: фабричный метод[^FactoryPattern] должен возвращать объявляемый класс, обеспечивая доступ к объявляемому PHP-классу через методы контейнера `get()` и `has()`.
 
-## Пример объявления PHP-класса через «фабрику» { #di-factory-class-example }
+### Пример объявления PHP-класса через «фабрику» { #di-factory-class-example }
 
 PHP-классы:
 
@@ -33,7 +32,7 @@ PHP-классы:
 
 Объявить в контейнере PHP-класс `\App\Services\Qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()`.
 
-### Объявление в файлах конфигураций { #example-helper-fn-di-factory }
+#### Объявление в файлах конфигураций { #example-helper-fn-di-factory }
 
 В файле конфигураций `services.php` зарегистрируем PHP-класс `\App\Services\Qux` в контейнере, используя хелпер функцию `diFactory()`.
 
@@ -87,7 +86,7 @@ php /app/src/container_build.php
 string(4) "Fuuz"
 ```
 
-### Объявление через атрибут { #example-attribute-di-factory }
+#### Объявление через атрибут { #example-attribute-di-factory }
 
 Объявление PHP-класса `\App\Services\Qux` в контейнере через атрибут `\Kaspi\DiContainer\Attributes\DiFactory`.
 

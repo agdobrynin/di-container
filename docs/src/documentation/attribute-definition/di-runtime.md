@@ -1,9 +1,9 @@
 ---
-outline: [2, 3]
+outline: [2,4]
+title: Атрибут DiRuntime
 ---
-# DiRuntime
 
-## Обзор { #overview }
+### Атрибут DiRuntime
 
 Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` объявляет PHP-класс в контейнере, реальное состояние которого будет инициализировано вне контейнера, и его значение будет установлено только во время выполнения.
 
@@ -29,7 +29,7 @@ outline: [2, 3]
 - `$tags` – тег с метаданными.
 - `$resetter` – [значение для сброса состояния объекта](../object-resetters/index.md).
 
-## Идентификатор контейнера { #container-id }
+### Идентификатор контейнера для Runtime Definition { #container-id }
 
 При объявлении PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` пустая строка в параметре `$containerIdentifier` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP-класса.
 
@@ -88,7 +88,7 @@ php /app/src/container_build.php
 (bool) true
 ```
 
-### Объявление с несколькими идентификаторами { #container-id-multuple }
+#### Объявление Runtime Definition с несколькими идентификаторами { #container-id-multuple }
 
 Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` может объявлять один и тот же PHP-класс в контейнере с разными идентификаторами[^ContainerId].
 
@@ -118,7 +118,7 @@ final class FooService
 
 :::
 
-## Теги { #tags }
+### Теги { #tags }
 
 Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\DiRuntime` устанавливает тег и метаданные для объявляемого PHP-класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
 

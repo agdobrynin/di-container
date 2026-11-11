@@ -1,13 +1,14 @@
 ---
-outline: [2-4]
+outline: [2,4]
+title: Объявление ленивого PHP-класса в контейнере
 ---
-# Объявление ленивого PHP-класса в контейнере { #title }
+### Объявление ленивого PHP-класса в контейнере { #title }
 
 При объявлении PHP-класса ленивым непосредственно в контейнере означает что этот класс всегда и везде внедряется в параметр метода или вызываемого типа[^CallableType] как прокси-объект, его инициализация выполняется только в момент обращения к этому PHP-классу.
 
 <!--@include: _include/lazy_declare.md-->
 
-## Пример объявления ленивого PHP-класса { #example }
+### Пример объявления ленивого PHP-класса { #example }
 
 PHP-классы:
 
@@ -22,7 +23,7 @@ PHP-классы:
 
 В параметр конструктора `$heavyDependency` PHP-классов `\App\Services\FooService` и `\App\Services\BarService` должен внедрятся ленивый объект `\App\Services\HeavyDependency`.
 
-### Объявление в файлах конфигураций { #example-inject-as-lazy-global-php-definition }
+#### Объявление в файлах конфигураций { #example-inject-as-lazy-global-php-definition }
 
 В [файле конфигураций](../container-builder/configuration_files.md) `lazy_services.php` объявить ленивый PHP-класс `\App\Services\HeavyDependency` через хелпер функцию `diAutowire()` с указанием в параметре `$isLazy` значения `true`:
 
@@ -80,7 +81,7 @@ php /app/src/container_build.php
 Появится сообщение вида:
 <!--@include: _include/result_lazy_global.md-->
 
-### Объявление через атрибут { #example-inject-as-lazy-global-attribute }
+#### Объявление через атрибут { #example-inject-as-lazy-global-attribute }
 
 Объявить ленивый PHP-класс `\App\Services\HeavyDependency` через атрибут `\Kaspi\DiContainer\Attributes\Autowire` с указанием в параметре конструктора `$isLazy` значения `true`:
 

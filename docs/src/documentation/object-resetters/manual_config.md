@@ -1,9 +1,8 @@
 ---
 aside: false
+title: Конфигурация отдельных значений сброса состояния объектов
 ---
-# Конфигурация отдельных значений сброса состояния объектов { #title }
-
-## Обзор { #overview }
+### Конфигурация отдельных значений сброса состояния объектов { #title }
 
 Сброс состояния объектов контейнера можно ограничить, объявив в контейнере PHP-класс `\Kaspi\DiContainer\ObjectResetters` в [файле конфигураций](../container-builder/configuration_files.md) и коллекцию значений для сброса состояния указанных объектов.
 
@@ -12,7 +11,7 @@ aside: false
 > [!IMPORTANT]
 > Объявляя самостоятельно PHP-класс `\Kaspi\DiContainer\ObjectResetters` сброс состояния объектов будет выполняться только для указанных в коллекции PHP-классов. 
 
-## Пример объявления класса ObjectResetters { #example }
+### Пример объявления класса ObjectResetters { #example }
 
 PHP-классы:
 
@@ -28,34 +27,9 @@ PHP-классы:
 - `\App\Services\Bar` через анонимную функцию в которой вызвать методы `doResetPropertyFoo()` и `doResetPropertyBar()` сбрасывающие состояние двух свойств этого класса.
 - `\App\Services\Qux` через реализуемый метод `reset()` из интерфейса `\Kaspi\DiContainer\Interfaces\ResetInterface`.
 
-Объявить PHP-класс `\Kaspi\DiContainer\ObjectResetters` необходимо через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md), в параметре функции `$isSingleton` необходимо передать значение `true`.
+В файле конфигураций `object_resetters.php` объявить PHP-класс `\Kaspi\DiContainer\ObjectResetters` через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md), в параметре функции `$isSingleton` необходимо передать значение `true`.
 
 ::: code-group
-```php
-[object_resetters.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/config/object_resetters.php [!code highlight]
-
-use Kaspi\DiContainer\ObjectResetters;
-use App\Services\{Bar, Qux};
-
-use function Kaspi\DiContainer\diAutowire;
-
-return static function (): Generator {
-    $resetters = [//[!code highlight]
-        Bar::class => static function (Bar $bar): void {//[!code highlight]
-            $bar->doResetPropertyFoo();//[!code highlight]
-            $bar->doResetPropertyBar();//[!code highlight]
-        },//[!code highlight]
-        Qux::class => 'reset',//[!code highlight]
-    ];//[!code highlight]
-
-    yield diAutowire(ObjectResetters::class, isSingleton: true)//[!code ++]
-        ->setup('setup', [$resetters]);//[!code ++]
-};
-```
 ```php [app.php]
 <?php
 declare(strict_types=1);
@@ -85,6 +59,30 @@ while ($request = $app->getRequest()) {
 
     $resetters->reset();//[!code ++]
 }
+```
+```php [object_resetters.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/object_resetters.php [!code highlight]
+
+use Kaspi\DiContainer\ObjectResetters;
+use App\Services\{Bar, Qux};
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    $resetters = [//[!code highlight]
+        Bar::class => static function (Bar $bar): void {//[!code highlight]
+            $bar->doResetPropertyFoo();//[!code highlight]
+            $bar->doResetPropertyBar();//[!code highlight]
+        },//[!code highlight]
+        Qux::class => 'reset',//[!code highlight]
+    ];//[!code highlight]
+
+    yield diAutowire(ObjectResetters::class, isSingleton: true)//[!code ++]
+        ->setup('setup', [$resetters]);//[!code ++]
+};
 ```
 :::
 

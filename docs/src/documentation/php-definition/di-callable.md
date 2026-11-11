@@ -1,9 +1,8 @@
 ---
-outline: [2, 4]
+outline: [2,4]
+title: Хелпер функция diCallable()
 ---
-# diCallable()
-
-## Обзор { #overview }
+### Хелпер функция diCallable()
 
 Хелпер функция `diCallable()` внедряет зависимость через [вызываемый тип `callable`](https://www.php.net/manual/ru/language.types.callable.php).
 
@@ -29,13 +28,13 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 - `bindArguments()` – указать аргументы для параметров функции.
 - `bindTag()` – добавляет тег с метаданными для определения.
 
-## bindArguments()
+### bindArguments()
 
 Передача аргументов для параметров вызываемого типа (_функции_).
 
 <!--@include: ./_include/bind_arguments.md-->
 
-### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
+#### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
 
 PHP-классы:
 
@@ -71,18 +70,18 @@ php /app/src/container.php
 string(26) "Lorem ipsum dolor sit amet"
 ```
 
-## bindTag()
+### bindTag()
 
 Теги позволяют отнести объявляемый вызываемый тип к коллекции элементов отмеченных одним тегом.
 
 <!--@include: _include/bind_tag.md-->
 
-## Идентификатор контейнера { #container-id }
+### Идентификатор контейнера для вызываемого типа { #container-id }
 
 Чтобы обеспечить доступность вызываемого типа через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций соответствующий идентификатор контейнера[^ContainerId] и объявить `callable` тип.
 
 
-### Пример объявления с идентификатором { #example-container-id }
+#### Пример объявления идентификатора вызываемого типа { #example-container-id }
 PHP-классы:
 
 ::: code-group
@@ -93,7 +92,7 @@ PHP-классы:
 
 :::
 
-Метод контейнера ``$container->get('baz.factory_method')` должен возвращать результат выполнения вызываемого типа `\App\Services\Baz::factoryMethod()`.
+Метод контейнера `$container->get('baz.factory_method')` должен возвращать результат выполнения вызываемого типа `\App\Services\Baz::factoryMethod()`.
 
 Для метода `\App\Services\Baz::factoryMethod()` объявить внедрение скалярного типа в параметр `$name` через метод `bindArguments()`, в параметр `$bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
 
@@ -150,13 +149,13 @@ php /app/src/container.php
 string(26) "Lorem ipsum dolor sit amet"
 ```
 
-## Преобразуемые объявления { #convert-to-di-callable } 
+### Объявление callable типа «как-есть» { #convert-to-di-callable } 
 
 В файлах конфигураций можно указать вызываемый тип[^CallableType] «как-есть», при условии что контейнер сможет самостоятельно внедрить требуемые зависимости на основании конфигурации контейнера.
 
 Объявление `callable` типа в файле конфигураций преобразуется контейнером в хелпер функцию `diCallable()`.
 
-### Пример объявления callable типов «как-есть» { #example-convert-to-di-callable }
+#### Пример объявления callable типов «как-есть» { #example-convert-to-di-callable }
 
 PHP-классы и функции:
 

@@ -34,7 +34,9 @@ export default defineConfig({
               {
                 base: '/documentation/',
                 text: 'Руководство',
+                collapsed: false,
                 items: [
+                  { text: 'Обзор', link: 'index.md' },
                   {
                     base: '/documentation/container-builder/',
                     text: 'Сборка контейнера зависимостей',
@@ -232,8 +234,9 @@ export default defineConfig({
               {
                 base: '/cookbook/',
                 text: 'Рецепты',
-                collapsed: true,
+                collapsed: false,
                 items: [
+                  { text: 'Обзор', link: 'index.md' },
                   { text: 'Внедрение зависимостей через сеттер-методы', link: 'autowire-setup.md' },
                   { text: 'Внедрение зависимости по интерфейсу', link: 'inject-interface.md' },
                   { text: 'Внедрение зависимостей в параметры переменной длины', link: 'inject-variadic-params.md' },

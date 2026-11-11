@@ -1,9 +1,9 @@
 ---
 aside: false
+title: Атрибут ParameterRuntime
 ---
-# ParameterRuntime
+### Атрибут ParameterRuntime
 
-## Обзор { #overview }
 
 Атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime` внедрят зависимость из параметра контейнера времени исполнения[^ParameterRuntime].
 

@@ -1,6 +1,8 @@
-# Объявление тега через атрибут { #title }
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Объявление тега через атрибут
+---
+### Объявление тега через атрибут { #title }
 
 [Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) объявляет тег и метаданные для PHP-класса.
 
@@ -8,7 +10,7 @@
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-## Пример конфигурирования через атрибут { #example-inject-by-attribute-tagged-as }
+### Пример конфигурирования через атрибут { #example-inject-by-attribute-tagged-as }
 
 PHP-классы:
 
@@ -112,7 +114,7 @@ string (15) "App\Rules\RuleC"
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-## Внедрение зависимости в параметр с типом array { #inject-by-attribute-tagged-as-array-param }
+### Внедрение зависимости в параметр с типом array { #inject-by-attribute-tagged-as-array-param }
 
 При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
@@ -222,7 +224,7 @@ string (15) "App\Rules\RuleC"
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-## Внедрение коллекции для параметров переменной длины { #inject-by-attribute-tagged-as-variadic }
+### Внедрение коллекции для параметров переменной длины { #inject-by-attribute-tagged-as-variadic }
 
 Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
 

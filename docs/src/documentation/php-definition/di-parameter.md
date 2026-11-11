@@ -1,9 +1,8 @@
 ---
 aside: false
+title: Хелпер функция diParameter()
 ---
-# diParameter()
-
-## Обзор { #overview }
+### Хелпер функция diParameter()
 
 Хелпер функция `diParameter()` внедрят зависимость из параметров контейнера[^Parameter].
 

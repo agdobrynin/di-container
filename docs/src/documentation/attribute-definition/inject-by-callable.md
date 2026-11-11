@@ -1,6 +1,8 @@
-# InjectByCallable
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Атрибут InjectByCallable
+---
+### Атрибут InjectByCallable
 
 Атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` внедряет зависимость через вызываемый тип[^CallableType].
 
@@ -20,7 +22,7 @@
 
 Параметры в вызываемом типе могут быть внедрены контейнером автоматически на основании конфигурации контейнера.
 
-## Пример внедрения через вызываемый тип { #example }
+### Пример внедрения через вызываемый тип { #example }
 
 PHP-классы и функции:
 

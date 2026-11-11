@@ -1,9 +1,8 @@
 ---
 outline: [2, 4]
+title: «Метод идентификатора» элемента коллекции
 ---
-# «Метод идентификатора» элемента коллекции { #key-from-method }
-
-## Обзор { #overview }
+### «Метод идентификатора» элемента коллекции { #key-from-method }
 
 Идентификатор элемента коллекции, представленного PHP-классом, можно получить через специальный метод этого PHP-класса – «метод идентификатора». Объявление такого метода производится через [метаданные тега](../tag-metadata.md).
 
@@ -22,7 +21,7 @@ outline: [2, 4]
 
 <!--@include: _include/important_key_equals.md-->
 
-## Пример извлечения идентификатора элемента из «Метод идентификатора» { #example-key-from-method }
+### Пример извлечения идентификатора элемента из «Метод идентификатора» { #example-key-from-method }
 
 PHP-классы:
 
@@ -57,7 +56,7 @@ final class Baz
 ```
 :::
 
-### Объявление в файлах конфигураций { #example-key-from-method-php-definitions }
+#### Объявление в файлах конфигураций { #example-key-from-method-php-definitions }
 
 В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через хелпер функцию `diTaggedAs()` с параметром `$key` равным `'key_as'`.
 
@@ -152,7 +151,7 @@ string(15) "id_baz"
 string(16) "App\Services\Baz"
 ```
 
-### Объявление через атрибуты { #example-key-from-method-php-attributes }
+#### Объявление через атрибуты { #example-key-from-method-php-attributes }
 
 Объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$key` равным `'key_as'`.
 

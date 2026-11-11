@@ -1,9 +1,8 @@
 ---
-outline: [2, 4]
+outline: [2,4]
+title: Объявление объекта в рантайм контейнере
 ---
-#  Объявление объекта в рантайм контейнере { #title }
-
-## Обзор { #overview }
+###  Объявление объекта в рантайм контейнере { #title }
 
 В некоторых сценариях использования контейнера может возникнуть ситуация когда необходимо внедрить зависимость PHP-класс, но конфигурация этого PHP-класса заранее не известна, т.е. на момент конфигурирования известен только идентификатор контейнера[^ContainerId] или FQCN[^FQCN] этого PHP-класса.
 
@@ -18,7 +17,7 @@ outline: [2, 4]
 > [!IMPORTANT]
 > Объявление в конфигурации контейнера **«Runtime Definition»** не создает конфигурацию PHP-класса, а только предоставляет идентификатор контейнера[^ContainerId].
 
-## Пример внедрения «Runtime definition» { #example-di-runtime }
+### Пример внедрения «Runtime definition» { #example-di-runtime }
 
 PHP-классы:
 
@@ -117,7 +116,7 @@ final class Foo
 
 **При сборке необходима компиляция контейнера**, поэтому необходимо объявить в контейнере зависимостей класс `\App\Core\Kernel` и класс `\App\Services\Qux` как **«Runtime Definition»**.
 
-### Объявление в файлах конфигураций { #example-di-runtime-php-definition }
+#### Объявление в файлах конфигураций { #example-di-runtime-php-definition }
 
 В файле конфигураций `runtime_services.php` объявляет PHP-классы `\App\Core\Kernel` и `\App\Services\Qux` через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md).
 
@@ -239,7 +238,7 @@ object(App\Services\Qux)#4 (0) {
 string(11) "Lorem ipsum"
 ```
 
-### Объявление через атрибуты { #example-di-runtime-attribute }
+#### Объявление через атрибуты { #example-di-runtime-attribute }
 
 PHP-классы `\App\Core\Kernel` и `\App\Services\Qux` объявить через [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
 

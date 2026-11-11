@@ -1,9 +1,8 @@
 ---
-outline: [2, 4]
+outline: [2,4]
+title: Атрибут Autowire
 ---
-# Autowire
-
-## Обзор { #overview }
+### Атрибут Autowire
 
 Атрибут `\Kaspi\DiContainer\Attributes\Autowire` объявляет PHP-класс в контейнере, или [внедряет зависимость в параметр метода](#autowire-on-param).
 
@@ -41,7 +40,7 @@ outline: [2, 4]
 > - [Внедрение «ленивых» объектов контейнером](../lazy-injection/index.md).
 
 
-## Идентификатор контейнера { #container-id }
+### Идентификатор контейнера для PHP-класса { #container-id }
 
 При объявлении PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` пустая строка в параметре `$id` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP-класса.
 
@@ -87,7 +86,7 @@ php /app/src/container_build.php
 string(11) "Lorem ipsum"
 ```
 
-### Объявление PHP-класса с несколькими идентификаторами { #container-id-multuple }
+#### Объявление PHP-класса с несколькими идентификаторами { #container-id-multuple }
 
 Атрибут `\Kaspi\DiContainer\Attributes\Autowire` может объявлять один и тот же PHP-класс в контейнере с разными идентификаторами[^ContainerId].
 
@@ -140,7 +139,7 @@ int(20)
 ```
 
 
-## Аргументы конструктора PHP-класса { #arguments }
+### Аргументы конструктора PHP-класса { #arguments }
 
 Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\Autowire` передает аргументы конструктору PHP-класса.
 
@@ -148,7 +147,7 @@ int(20)
 
 <!--@include: _include/to_arguments.md-->
 
-### Пример объявления аргументов конструктору { #example }
+#### Пример объявления аргументов конструктору { #example }
 
 PHP-классы:
 
@@ -226,7 +225,7 @@ string(23) "App\Services\BazService"
 string(16) "admin@example.com
 ```
 
-## Внедрение зависимостей через сеттер-методы { #setups }
+### Внедрение зависимостей через сеттер-методы { #setups }
 
 Параметр `$setups` атрибута `\Kaspi\DiContainer\Attributes\Autowire` объявляет внедрение зависимости через сеттер-методы PHP-класса, используя атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](setup.md) и [`\Kaspi\DiContainer\Attributes\SetupImmutable`](setup-immutable.md).
 
@@ -273,7 +272,7 @@ final class Foo
 }
 ```
 
-## Теги { #tags }
+### Теги { #tags }
 
 Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\Autowire` устанавливает тег и метаданные для объявляемого PHP-класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
 
@@ -302,7 +301,7 @@ final class Foo
 }
 ```
 
-## Внедрения зависимости в параметр метода { #autowire-on-param }
+### Внедрения зависимости в параметр метода или вызываемого типа { #autowire-on-param }
 
 Объявить внедрение PHP-класса в параметр метода или вызываемого тип[^CallableType] можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire`.
 
@@ -310,7 +309,7 @@ final class Foo
 
 Пустая строка в параметре `$id` атрибута `Autowire` будет интерпретирована конфигуратором как тип параметра[^TypeHints] для которого применяется атрибут.
 
-### Пример объявления внедрения в параметр метода { #example-autowire-on-param }
+#### Пример объявления внедрения в параметр метода { #example-autowire-on-param }
 
 PHP-классы:
 

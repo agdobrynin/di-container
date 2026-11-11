@@ -1,9 +1,8 @@
 ---
 outline: [2,4]
+title: Аргументы для метода фабрики
 ---
-# Аргументы для метода фабрики { #title }
-
-## Обзор { #overview }
+### Аргументы для метода фабрики { #title }
 
 При объявлении внедрения зависимости или объявлении PHP-класса через PHP-класса «фабрика»[^FactoryPattern], параметры конструктора и метода PHP-класса «фабрика» могут быть внедрены автоматически на основании конфигурации контейнера.
 
@@ -13,7 +12,7 @@ outline: [2,4]
 
 При объявлении внедрения через [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md#args) аргументы указываются в параметре `$arguments`.
 
-## Пример указания аргументов методу PHP-класса «фабрика» { #example }
+### Пример указания аргументов методу PHP-класса «фабрика» { #example }
 
 PHP-классы:
 
@@ -80,7 +79,7 @@ final class Baz
 
 Для параметра `$prefixValue` фабричного метода `\App\Services\Bar::createValue()` объявить внедрение скалярного типа через [параметр контейнера](../container-parameters/index.md) с именем `'params.prefix_value'`.
 
-### Объявление в файлах конфигураций { #example-php-definition }
+#### Объявление в файлах конфигураций { #example-php-definition }
 
 В файле конфигураций `services.php` объявляем PHP-класс `\App\Services\Foo` и внедрение зависимости в параметр конструктора `$value` через [хелпер функцию `diFactory()`](../php-definition/di-factory.md).
 
@@ -143,7 +142,7 @@ php /app/src/container.php
 string(26) "Lorem ipsum dolor sit amet"
 ```
 
-### Объявление через атрибут { #example-attribute }
+#### Объявление через атрибут { #example-attribute }
 
 Объявляем внедрение зависимости в параметр конструктора `$value` через [атрибут `DiFactory`](../attribute-definition/di-factory.md) PHP-класса `\App\Services\Foo`.
 

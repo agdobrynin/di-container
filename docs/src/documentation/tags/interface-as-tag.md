@@ -1,9 +1,8 @@
 ---
 outline: [2, 4]
+title: PHP интерфейс как имя тега
 ---
-# PHP интерфейс как имя тега { #title }
-
-## Обзор { #overview }
+### PHP интерфейс как имя тега { #title }
 
 В качестве имени тега можно использовать FQCN[^FQCN] интерфейса реализуемого классами.
 
@@ -37,7 +36,7 @@ outline: [2, 4]
 
 Важное замечание – PHP-класс `\App\ValidateRules\RuleB` не реализует интерфейс `\App\Interfaces\RuleInterface` через ключевое слово `implements`.
 
-### Объявление в файлах конфигураций  { #as-php-definition }
+#### Объявление в файлах конфигураций  { #as-php-definition }
 
 Объявить внедрение коллекции из PHP-классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора `$rules` PHP-класса `\App\Services\FooValidator`.
 
@@ -111,7 +110,7 @@ string (22) "App\ValidateRules\RuleC"
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-### Объявление через атрибуты { #as-php-attribute }
+#### Объявление через атрибуты { #as-php-attribute }
 
 Объявить внедрение коллекции из PHP-классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора `$rules` PHP-класса `\App\Services\FooValidator`.
 
@@ -168,7 +167,7 @@ string (22) "App\ValidateRules\RuleC"
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-## Очерёдности элементов коллекции { #priority-by-method-default }
+### Очерёдности элементов коллекции { #priority-by-method-default }
 
 При использовании FQCN[^FQCN] интерфейса в качестве имени тега внедряемая коллекция имеет не определённую очередность элементов (сортировка элементов). 
 

@@ -1,6 +1,8 @@
-# Setup
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Атрибут Setup
+---
+### Атрибут Setup
 
 Атрибут `\Kaspi\DiContainer\Attributes\Setup` внедряет зависимости в PHP-класс через **мутабельные сеттер-методы**[^SetterMethodMutable].
 
@@ -19,11 +21,11 @@
 Параметры:
 - `$argument` - аргументы для передачи в сеттер-метод.
 
-## Аргументы сеттер-метода { #arguments }
+### Аргументы сеттер-метода { #arguments }
 
 <!--@include: _include/setter-method-args.md-->
 
-## Приоритет { #priority }
+### Приоритет { #priority }
 
 <!--@include: _include/setter-method-priority.md-->
 

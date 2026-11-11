@@ -1,9 +1,8 @@
 ---
 aside: false
+title: Хелпер функция diParameterRuntime()
 ---
-# diParameterRuntime()
-
-## Обзор { #overview }
+### Хелпер функция diParameterRuntime()
 
 Хелпер функция `diParameterRuntime()` внедрят зависимость из параметров контейнера времени исполнения[^ParameterRuntime].
 

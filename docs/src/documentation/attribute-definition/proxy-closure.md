@@ -1,6 +1,8 @@
-# ProxyClosure
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Атрибут ProxyClosure
+---
+### Атрибут ProxyClosure
 
 Атрибут `\Kaspi\DiContainer\Attributes\ProxyClosure` внедряет «ленивую» зависимость через встроенный PHP-класс [`\Closure`](https://www.php.net/manual/ru/class.closure.php), откладывая инициализацию зависимости до момента фактического его использования.
 
@@ -32,7 +34,7 @@
 Параметры:
 - `$containerIdentifier` – идентификатор контейнера [^ContainerId].
 
-## Пример внедрения параметра с отложенной инициализацией { #example }
+### Пример внедрения параметра с отложенной инициализацией { #example }
 
 PHP-классы:
 

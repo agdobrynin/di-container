@@ -1,14 +1,15 @@
 ---
-outline: [2-4]
+outline: [2,4]
+title: Объявление внедрения ленивого PHP-класса в параметр
 ---
 
-# Объявление внедрения ленивого PHP-класса в параметр { #title }
+### Объявление внедрения ленивого PHP-класса в параметр { #title }
 
 Объявление внедрения ленивого PHP-класса в параметр метода или вызываемого типа означает что прокси-объект будет внедряться только для указанного параметра, для остальных случав объект PHP-класса будет получен сразу с внедрёнными зависимостями, например при получении через метод контейнера `get()`.
 
 <!--@include: _include/lazy_declare.md-->
 
-## Пример внедрения ленивого PHP-класса { #example }
+### Пример внедрения ленивого PHP-класса { #example }
 
 PHP-классы:
 
@@ -21,7 +22,7 @@ PHP-классы:
 
 Для PHP-класса `\App\Services\FooService` необходимо объявить внедрение зависимости в параметр конструктора `$heavyDependency` через поркси-объект (*ленивый-объект*). Для остальных PHP-классов внедрение зависимости PHP-класса `\App\Services\HeavyDependency` необходимо без прокси-объекта.
 
-### Объявление в файлах конфигураций {#example-inject-lazy-arg-php-definition }
+#### Объявление в файлах конфигураций {#example-inject-lazy-arg-php-definition }
 
 В файле конфигураций `services.php` объявить PHP-класс `\App\Services\FooService` через хелпер функцию `diAutowire()` и объявить внедрение в параметр конструктора `$heavyDependency` PHP-класса `\App\Services\HeavyDependency` как ленивого-объекта.
 
@@ -82,7 +83,7 @@ php /app/src/container_build.php
 Появится сообщение вида:
 <!--@include: _include/result_lazy_args.md-->
 
-### Объявление через атрибут {#example-inject-lazy-arg-attribute }
+#### Объявление через атрибут {#example-inject-lazy-arg-attribute }
 
 Объявить внедрение в параметр конструктора `$heavyDependency` PHP-класса `\App\Services\FooService` PHP-класса `\App\Services\HeavyDependency` как ленивого-объекта, через атрибут `\Kaspi\DiContainer\Attributes\Autowire`:
 

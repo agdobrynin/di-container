@@ -1,9 +1,8 @@
 ---
-outline: [2, 4]
+outline: [2,4]
+title: Руководство. Введение.
 ---
-# Руководство { #documentation }
-
-## Обзор { #overview }
+### Введение { #documentation }
 
 В этой документации описывается API контейнера из пакета [kaspi/di-container](https://packagist.org/packages/kaspi/di-container).
 
@@ -73,7 +72,7 @@ $container->set($bar::class, $bar);
 
 Подробнее о методе `set()` рассказано в разделе [«Динамическое добавление определений в контейнер»](container-builder/set.md).
 
-## Особенности внедрения некоторых классов и интерфейсов { #resolve-class-interface }
+### Особенности внедрения некоторых классов и интерфейсов { #resolve-class-interface }
 
 При внедрении зависимостей ниже перечисленных типов всегда будет получен созданный контейнер:
 - `\Psr\Container\ContainerInterface`
@@ -101,7 +100,7 @@ var_dump($container === $container->get(Foo::class)->container);
 // (bool) true
 ```
 
-## Содержание { #toc }
+### Содержание документации { #toc }
 
 * 👷‍♂️ [Сборка контейнера зависимостей](container-builder/index.md).
 * ⚙️ [Конфигурация для DiContainer](container-config/index.md).

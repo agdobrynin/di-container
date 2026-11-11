@@ -1,9 +1,8 @@
 ---
 outline: [2, 4]
+title: «Метод-приоритета» по умолчанию
 ---
-# «Метод-приоритета» по умолчанию { #priority-by-method-default }
-
-## Обзор { #overview }
+### «Метод-приоритета» по умолчанию { #priority-by-method-default }
 
 Для случаев когда определить приоритет элемента коллекции из тега не удается, используется **«метод-приоритета» по умолчанию**.
 
@@ -13,7 +12,7 @@ outline: [2, 4]
 
 <!--@include: _include/method_note.md-->
 
-## Пример конфигурации { #example }
+### Пример конфигурации { #example }
 
 PHP-классы:
 
@@ -35,7 +34,7 @@ PHP-классы:
 
 <<< @/_code/Tags/src/Services/QuxPriorityMethod.php
 
-### Объявление в файлах конфигураций { #php-definition }
+#### Объявление в файлах конфигураций { #php-definition }
 
 В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.ordered'` в параметр `$servies` конструктора PHP-класса `\App\Services\Foo` и задать **«метод-приоритета» по умолчанию** в параметре `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md).
 
@@ -104,7 +103,7 @@ string(16) "App\Services\Bar"
 string(16) "App\Services\Baz"
 ```
 
-### Объявление через атрибуты { #attributes }
+#### Объявление через атрибуты { #attributes }
 
 Для PHP-классов объявить тег `'tags.ordered'` через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
 

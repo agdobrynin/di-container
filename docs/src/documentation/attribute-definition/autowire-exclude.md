@@ -1,7 +1,8 @@
-# AutowireExclude
-
-## Обзор { #overview }
-
+---
+aside: false
+title: Атрибут AutowireExclude
+---
+### Атрибут AutowireExclude
 
 Атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude` исключает из внедряемых зависимостей контейнера PHP-класс или интерфейс. FQCN [^FQCN] будет недоступен для метода контейнера `get()` и `has()`.  
 
@@ -19,7 +20,7 @@
 > [!WARNING]
 > Атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude` исключает из конфигурирования любые другие атрибуты.
 
-## Пример исключения PHP-класса { #example }
+#### Пример исключения PHP-класса { #example }
 
 PHP-классы:
 

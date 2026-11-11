@@ -1,6 +1,8 @@
-# diRuntime()
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Хелпер функция diRuntime()
+---
+### Хелпер функция diRuntime()
 
 Хелпер функция `diRuntime()` объявляет PHP-класс в контейнере, реальное состояние которого будет инициализировано вне контейнера, и его значение будет установлено только во время выполнения.
 
@@ -38,17 +40,17 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 > [!TIP]
 > Изучите раздел документации «[Конфигурирование объекта в рантайм контейнер](../runtime-definition/index.md)».
 
-## bindTag()
+### bindTag()
 
 Теги позволяют отнести «runtime definition» к коллекции элементов отмеченных одним тегом.
 
 <!--@include: ./_include/bind_tag.md-->
 
-## setResetter()
+### setResetter()
 
 <!--@include: _include/set-resetter.md-->
 
-## Идентификатор контейнера { #container-id }
+### Идентификатор контейнера для Runtime Definition { #container-id }
 
 Хелпер функция `diRuntime()` может передавать контейнеру идентификатор [^ContainerId] из параметра `$containerIdentifierOrClass`, что обеспечивает доступ к нему через методы контейнера `get()` и `has()`.
 

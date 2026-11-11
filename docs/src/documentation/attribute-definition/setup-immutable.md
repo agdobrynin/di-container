@@ -1,6 +1,8 @@
-# SetupImmutable
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Атрибут SetupImmutable
+---
+### Атрибут SetupImmutable
 
 Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` внедряет зависимости в PHP-класс через **иммутабельные сеттер-методам PHP-класса** [^SetterMethodImmutable]. 
 
@@ -21,11 +23,11 @@
 Параметры:
 - `$argument` - аргументы для передачи в сеттер-метод.
 
-## Аргументы сеттер-метода { #arguments }
+### Аргументы сеттер-метода { #arguments }
 
 <!--@include: _include/setter-method-args.md-->
 
-## Приоритет { #priority }
+### Приоритет { #priority }
 
 <!--@include: _include/setter-method-priority.md-->
 

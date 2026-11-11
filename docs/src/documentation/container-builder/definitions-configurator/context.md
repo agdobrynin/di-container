@@ -1,6 +1,8 @@
-# Контекст для файлов конфигураций { #title }
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Контекст для файлов конфигураций
+---
+### Контекст для файлов конфигураций { #title }
 
 При сборке и настройке контейнера можно определить дополнительный контекст для файлов конфигураций.
 
@@ -9,7 +11,7 @@
 Методы [`DiContainerBuilder::addConfiguratorContexts()`](../methods/configuration-context.md#addconfiguratorcontexts) и [`DiContainerBuilder::setConfiguratorContext()`](../methods/configuration-context.md#setconfiguratorcontext) устанавливают контекст для файлов конфигураций.
 
 
-## getContext()
+### getContext()
 
 Метод `getContext()` получает значение контекста по имени.
 
@@ -34,7 +36,7 @@
 >
 > Если в параметр `$fallback` установлено значение `null` и контекст не найден, то будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface`.
 
-## Пример использования контекста в файлах конфигураций { #example-context }
+### Пример использования контекста в файлах конфигураций { #example-context }
 
 В файле конфигураций `/app/app/config/foo_service.php` требуется контекст для объявления PHP-класса – нужно значение для параметра `\App\Services\Foo::$dsn` для настройки базы данных, и требуется вычисляемое значение получаемое в методе PHP-класса `\App\Core::calculateFoo()` для параметра для параметра `\App\Services\Foo::$foo`.
 

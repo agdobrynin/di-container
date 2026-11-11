@@ -1,9 +1,8 @@
 ---
 outline: [2, 4]
+title: Идентификаторы элементов коллекции
 ---
-# Идентификаторы элементов коллекции { #title }
-
-## Обзор { #overview }
+### Идентификаторы элементов коллекции { #title }
 
 Внедряемая коллекция по умолчанию в качестве идентификаторов элементов получает идентификатор контейнера [^ContainerId] этого элемента, что позволяет обращаться к элементам коллекции в [произвольном порядке](#key-access).
 
@@ -18,7 +17,7 @@ outline: [2, 4]
 
 <!--@include: _include/key_from_method.md-->
 
-## Произвольный доступ к элементам коллекции { #key-access }
+### Произвольный доступ к элементам коллекции { #key-access }
 
 При внедрении коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) параметр `$isLazy` по умолчанию имеет значение `true`,
 что означает – внедряемый объект будет «[ленивой коллекцией](../index.md#collection-is-lazy)».
@@ -34,7 +33,7 @@ outline: [2, 4]
 - Доступ к элементу по идентификатору в стиле PHP массивов – `$service['foo.name']`.
 - Доступ к элементу через методы `get()` и `has()` описанные в [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
-## Пример внедрения коллекции { #example-inject-lazy-collection-with-key-assess }
+### Пример внедрения коллекции { #example-inject-lazy-collection-with-key-assess }
 
 PHP-классы:
 
@@ -46,7 +45,7 @@ PHP-классы:
 
 Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» с доступом к элементам коллекции по идентификатору контейнера [^ContainerId].
 
-### Объявление в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
+#### Объявление в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
 Объявить внедрение «ленивой» коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) в файле конфигураций `services.php`. В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр хелпер функции `$useKeys` принимает значение `true` (значение по умолчанию). 
 
@@ -122,7 +121,7 @@ string(16) "App\Services\Baz"
 int(2)
 ```
 
-### Объявление через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
+#### Объявление через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
 
 Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md). В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр атрибута `$useKeys` принимает значение `true` (значение по умолчанию).
 

@@ -129,3 +129,6 @@
   --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
 }
 
+.vp-doc h3:first-child {
+  margin-top: 0rem;
+}

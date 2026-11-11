@@ -1,9 +1,8 @@
 ---
 outline: [2, 4]
+title: Идентификатор элемента в метаданных тега
 ---
-# Идентификатор элемента в метаданных тега { #key-in-metadata }
-
-## Обзор { #overview } 
+### Идентификатор элемента в метаданных тега { #key-in-metadata }
 
 Пользовательские идентификаторы элементам коллекции можно установить через [метаданные](../tag-metadata.md) тега.
 
@@ -21,7 +20,7 @@ outline: [2, 4]
 
 <!--@include: _include/important_key_equals.md-->
 
-## Пример извлечения идентификатора элемента из метаданных { #example-key-in-metadata }
+### Пример извлечения идентификатора элемента из метаданных { #example-key-in-metadata }
 
 PHP-классы:
 
@@ -33,7 +32,7 @@ PHP-классы:
 
 Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» из элементов отмеченных тегом `'tags.internal'`, где идентификатор элемента коллекции для PHP-класса `\App\Services\Bar` должен быть представлен строкой `'id_bar'` и будет объявлен в метаданных тега под именем `'key_as'`.
 
-### Объявление в файлах конфигураций { #example-key-in-metadata-php-definition }
+#### Объявление в файлах конфигураций { #example-key-in-metadata-php-definition }
 
 В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$key` равным `'key_as'`.
 
@@ -127,7 +126,7 @@ string(16) "App\Services\Baz"
 int(2)
 ```
 
-### Объявление через атрибуты { #example-key-in-metadata-attributes }
+#### Объявление через атрибуты { #example-key-in-metadata-attributes }
 
 Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через атрибут [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$key` равным `'key_as'`.
 

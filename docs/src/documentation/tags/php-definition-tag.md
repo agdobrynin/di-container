@@ -1,6 +1,8 @@
-# Объявление тега в файлах конфигураций { #title }
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Объявление тега в файлах конфигураций
+---
+### Объявление тега в файлах конфигураций { #title }
 
 Метод `bindTag()`[^BindTag], описанный интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`, объявляет тег и метаданные.
 
@@ -8,7 +10,7 @@
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-## Пример использования { #example-inject-by-helper-fn-di-tagged }
+### Пример использования { #example-inject-by-helper-fn-di-tagged }
 
 PHP-классы:
 
@@ -104,7 +106,7 @@ string (15) "App\Rules\RuleC"
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-## Внедрение зависимости в параметр с типом array { #inject-by-di-tagged-array-param }
+### Внедрение зависимости в параметр с типом array { #inject-by-di-tagged-array-param }
 
 При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
 
@@ -209,7 +211,7 @@ string (15) "App\Rules\RuleC"
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-## Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
+### Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
 
 Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
 

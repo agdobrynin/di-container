@@ -1,9 +1,8 @@
 ---
 outline: [2, 4]
+title: «Метод идентификатора» элемента коллекции по умолчанию
 ---
-# «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default }
-
-## Обзор { #overview }
+### «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default }
 
 Для элементов коллекции представленных PHP-классом **«метод идентификатора» элемента коллекции по умолчанию** это резервный механизм получения идентификатора элемента коллекции если отсутствует конфигурация в [метаданных тега](../tag-metadata.md).
 
@@ -15,7 +14,7 @@ outline: [2, 4]
 <!--@include: _include/key_from_method.md-->
 <!--@include: _include/important_key_equals.md-->
 
-## Пример извлечения идентификатора элемента из «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default-default }
+### Пример извлечения идентификатора элемента из «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default-default }
 
 PHP-классы:
 
@@ -50,7 +49,7 @@ final class Baz
 ```
 :::
 
-### Объявление в файлах конфигураций { #key-from-method-default-default-php-definition }
+#### Объявление в файлах конфигураций { #key-from-method-default-default-php-definition }
 
 В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$keyDefaultMethod` равным `'getCustomIndex'`.
 
@@ -140,7 +139,7 @@ string(15) "baz_custom_id"
 string(16) "App\Services\Baz"
 ```
 
-### Объявление через атрибуты { #key-from-method-default-default-attributes }
+#### Объявление через атрибуты { #key-from-method-default-default-attributes }
 
 Для PHP-классов объявить тег `'tags.ordered'` через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 

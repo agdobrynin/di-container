@@ -1,9 +1,8 @@
 ---
 aside: false
+title: Атрибут Parameter
 ---
-# Parameter
-
-## Обзор { #overview }
+### Атрибут Parameter
 
 Атрибут `\Kaspi\DiContainer\Attributes\Parameter` внедряет зависимость из «параметров контейнера».
 

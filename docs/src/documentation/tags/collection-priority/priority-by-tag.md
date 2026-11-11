@@ -1,13 +1,12 @@
 ---
 outline: [2, 4]
+title: Приоритет тега
 ---
-# Приоритет тега { #priority-by-tag }
-
-## Обзор { #overview }
+### Приоритет тега { #priority-by-tag }
 
 Приоритет тега указывается в параметре `$priority` метода `bindTag()`[^BindTag], или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
 
-## Пример конфигурации { #example-priority-by-tag }
+### Пример конфигурации { #example-priority-by-tag }
 
 PHP-классы:
 
@@ -33,7 +32,7 @@ PHP-классы:
 Для объявления очерёдности в коллекции использовать **приоритет тега**.
 
 
-### Объявление в файлах конфигураций { #priority-by-tag-php-definition }
+#### Объявление в файлах конфигураций { #priority-by-tag-php-definition }
 
 В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` необходимо объявить тег `'tags.ordered'` для PHP-классов и приоритет каждого тега в параметре `$priority` метода `bindTag()`[^BindTag].
 
@@ -105,7 +104,7 @@ string(16) "App\Services\Bar"
 
 Порядок сортировки внедрённой коллекции обусловлен значениями `$prioriy` для каждого тега.
 
-### Объявление через атрибуты { #priority-by-tag-attributes }
+#### Объявление через атрибуты { #priority-by-tag-attributes }
 
 Объявить тег `'tags.ordered'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с параметром `$priority` для каждого тега. 
 

@@ -1,20 +1,19 @@
 ---
-outline: [2, 4]
+outline: [2, 5]
+title: Исключение элементов из коллекции
 ---
-# Исключение элементов из коллекции { #title }
-
-## Обзор { #overview }
+### Исключение элементов из коллекции { #title }
 
 Коллекции могу исключать элементы. Исключить из коллекции можно по идентификатору контейнера [^ContainerId] элемента коллекции или вызывающий PHP-класс, т.е. самого себя.
 
-## Исключение из коллекции по идентификатору контейнера { #exclude-by-id }
+### Исключение из коллекции по идентификатору контейнера { #exclude-by-id }
 
 Для исключения элементов из коллекции используйте параметр `$containerIdExclude`
 в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
 
 Параметр `$containerIdExclude` может содержать идентификаторы контейнера [^ContainerId] исключаемых из внедряемой коллекции.
 
-### Пример исключения из коллекции элементов { #example-exclude-by-id }
+#### Пример исключения из коллекции элементов { #example-exclude-by-id }
 
 PHP классы:
 
@@ -35,7 +34,7 @@ PHP-классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` бу
 
 В параметр `$services` PHP класса `\App\Service\Foo` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из коллекции элемент с идентификатором контейнера `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get(App\Services\Baz::class)`.
 
-#### Объявление в файлах конфигураций { #example-exclude-by-id-php-definitions }
+##### Объявление в файлах конфигураций { #example-exclude-by-id-php-definitions }
 
 [В файле конфигураций](../container-builder/configuration_files.md) `services.php` в параметре `$containerIdExclude` хелпер функции `diTaggedAs()` указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
 
@@ -135,7 +134,7 @@ string(16) "App\Services\Bar"
 string(16) "App\Services\Qux"
 ```
 
-#### Объявление через атрибуты { #example-exclude-by-id-php-attributes }
+##### Объявление через атрибуты { #example-exclude-by-id-php-attributes }
 
 В параметре `$containerIdExclude` [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
 
@@ -192,7 +191,7 @@ string(16) "App\Services\Bar"
 string(16) "App\Services\Qux"
 ```
 
-## Исключение вызывающего класса { #exclide-self }
+### Исключение вызывающего класса { #exclide-self }
 
 В коллекции элементов может содержаться PHP-класс внедряющий эту же коллекцию. Для исключения такого поведения обратите внимание на параметр `$selfExclude`
 в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md). По умолчанию значение этого параметра `true`.

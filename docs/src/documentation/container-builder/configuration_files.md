@@ -1,6 +1,8 @@
-# Файлы конфигураций { #title }
-
-## Обзор { #overview }
+---
+outline: [2,4]
+title: Файлы конфигураций
+---
+### Файлы конфигураций { #title }
 
 Для объявления определений контейнера можно использовать файлы конфигураций и [хелпер функции для объявления определений контейнера](../php-definition/index.md#helper-fn).
 
@@ -14,7 +16,7 @@
 
 В конфигурации контейнера отслеживается уникальность идентификаторов контейнера[^ContainerId]. При вызове метода сборки контейнера `DiContainerBuilder::build()` будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` если в файлах конфигураций будут обнаружены не уникальные идентификаторы определений контейнера.
 
-## Анонимная функция и генератор { #example-generator-simple }
+### Анонимная функция и генератор { #example-generator-simple }
 
 Файл конфигураций возвращающий `iterable` тип может быть представлен например **анонимной функцией**. Результат выполнения такой функции генератор (`\Generator`) возвращающий объявления PHP-классов через ключевое слово `yield`.
 
@@ -36,7 +38,7 @@ return static function (): Generator {
 > [!TIP]
 > Для PHP-класса `App\Services\Foo` идентификатор контейнера [^ContainerId] будет сформирован автоматически через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md).
 
-## Анонимная функция с конфигуратором и генератором { #example-generator-configurator }
+### Анонимная функция с конфигуратором и генератором { #example-generator-configurator }
 
 Файл конфигураций может быть представлен `callable` типом, для такого файла первым параметром контейнер передаёт аргумент [конфигуратор определений контейнера](definitions-configurator/index.md).
 
@@ -63,7 +65,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 };
 ```
 
-## Вызываемый тип с конфигуратором  { #example-callable-configurator }
+### Вызываемый тип с конфигуратором  { #example-callable-configurator }
 
 Файл конфигураций может быть представлен `callable` типом результат вызова которого тип `void`.
 
@@ -90,7 +92,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {/
 };
 ```
 
-## PHP массив { #example-array }
+### PHP массив { #example-array }
 
 Файл конфигураций может быть представлен PHP массивом.
 

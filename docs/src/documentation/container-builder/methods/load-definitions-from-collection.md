@@ -1,14 +1,12 @@
 ---
-outline: [2, 3]
+outline: [2,4]
+title: Объявление определений контейнера через коллекцию
 ---
-
-# Объявление определений контейнера через коллекцию { #title }
-
-## Обзор { #overview }
+### Объявление определений контейнера через коллекцию { #title }
 
 Объявить определения контейнера можно используя коллекцию. Коллекция должна быть представлена любым `iterable` типом. Элементы коллекции должны быть представлены парой ключ-значение, где ключ коллекции это идентификатор контейнера [^ContainerId], а значение – объявление определения.
 
-## addDefinitions()
+### addDefinitions()
 
 Метод `addDefinitions()` объявляет определения контейнера с отслеживанием уникальности идентификаторов контейнера [^ContainerId] в рамках всей конфигурации контейнера.
 
@@ -25,7 +23,7 @@ outline: [2, 3]
 > [!WARNING]
 > <!--@include: ../_include/build_id_equals.md-->
 
-### Пример использования метода addDefinitions() { #example-add-definitions }
+#### Пример использования метода addDefinitions() { #example-add-definitions }
 
 PHP-классы:
 
@@ -99,7 +97,7 @@ string (9) "/var/data"
 int(10)
 ```
 
-## addDefinitionsOverride()
+### addDefinitionsOverride()
 
 Метод `addDefinitionsOverride()` объявляет определения из коллекции с перезаписью ранее объявленных определений если у них совпадают идентификаторы контейнера[^ContainerId].
 
@@ -114,7 +112,7 @@ int(10)
 - `$definitions` – коллекция определений.
 
 
-### Пример использования метода addDefinitionsOverride() { #example-add-definitions-override }
+#### Пример использования метода addDefinitionsOverride() { #example-add-definitions-override }
 
 PHP-классы:
 
