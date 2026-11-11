@@ -111,7 +111,8 @@ var_dump($container === $container->get(Foo::class)->container);
 * 🔖 [Работа с тегами в контейнере](tags/index.md).
 * 📋 [Параметры контейнера](container-parameters/index.md).
 * 🗳️ [Объявление объекта в рантайм контейнере](runtime-definition/index.md).
+* 🏭 [Использование фабричных методов для внедрения зависимостей](factories/index.md).
 * 🧹 [Сброс контейнера зависимостей](container-reset/index.md).
 * ♻️ [Сброс состояния объектов для долго-живущих процессов](object-resetters/index.md).
-* 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](lazy-injection/index.md)
+* 💤 [Внедрение «ленивых» объектов контейнером (lazy injection)](lazy-injection/index.md).
 
