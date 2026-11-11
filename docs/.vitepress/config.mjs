@@ -218,6 +218,12 @@ export default defineConfig({
                     base: '/documentation/lazy-injection/',
                     text: 'Внедрение «ленивых» объектов контейнером',
                     link: 'index.md',
+                    collapsed: true,
+                    items: [
+                      {text: 'Обзор', link: 'index.md'},
+                      {text: 'Объявление ленивого PHP-класса в контейнере', link: 'inject_as_lazy_global.md'},
+                      {text: 'Объявление внедрения ленивого PHP-класса в параметр', link: 'inject_lazy_arg.md'},
+                    ],
                   },
                 ]
               }

@@ -1,0 +1,1 @@
+Объявление PHP-класса ленивым можно сделать через [хелпер функцию `diAutowire()`](../../php-definition/di-autowire.md) или [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../../attribute-definition/autowire.md) передав в параметре `$isLazy` значение `true`. Объявленный ленивый PHP-класс внедряет прокси-объект реализующий «отложенную» инициализацию объекта.
