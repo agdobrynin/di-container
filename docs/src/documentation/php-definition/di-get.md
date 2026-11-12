@@ -122,7 +122,7 @@ php /app/src/container_build.php
 ### Рецепты { #cookbook }
 
 В разделе «Рецепты» представлены примеры конкретизации объявления внедрения параметров:
-- [Внедрение зависимости по интерфейсу](../../cookbook/inject-interface.md#helper-di-get).
+- [Внедрение зависимости PHP-класса реализующего конкретный интерфейс](../../cookbook/inject-interface.md#helper-di-get).
 - [Внедрение зависимостей для параметров объединенного типа](../../cookbook/inject-union-type-params.md#php-definition).
 
 <!--@include: ../_include/term_notes.md-->

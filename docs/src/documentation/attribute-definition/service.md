@@ -165,6 +165,6 @@ return static function (): Generator {
 };
 ```
 
-Пример объявления внедрения по интерфейсу стороннего производителя доступен в разделе «[Рецепты](../../cookbook/resolve-vendor-interface.md)».
+Пример объявления внедрения PHP-класса реализующего конкретный интерфейс стороннего производителя доступен в разделе «[Рецепты](../../cookbook/resolve-vendor-interface.md)».
 
 <!--@include: ../_include/term_notes.md-->
