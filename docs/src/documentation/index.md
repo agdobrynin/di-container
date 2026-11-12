@@ -100,7 +100,13 @@ var_dump($container === $container->get(Foo::class)->container);
 // (bool) true
 ```
 
-### Содержание документации { #toc }
+### Объявление внедрения зависимостей { #using }
+
+Объявить внедрение зависимостей можно в [файлах конфигураций](php-definition/index.md) или через [атрибуты](attribute-definition/index.md), так же можно совмещать оба типа объявления.
+
+Для сборки контейнера используйте [специальный класс `DiContainerBuilder`](container-builder/index.md).
+
+#### Содержание документации { #toc }
 
 * 👷‍♂️ [Сборка контейнера зависимостей](container-builder/index.md).
 * ⚙️ [Конфигурация для DiContainer](container-config/index.md).
