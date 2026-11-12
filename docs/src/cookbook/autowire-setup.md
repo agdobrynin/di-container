@@ -8,7 +8,7 @@ title: Внедрение зависимостей через сеттер-ме�
 
 Объявить внедрение зависимостей через сеттер-методы можно через методы [`setup()`](../documentation/php-definition/di-autowire.md#setup), [`setupImmutable()`](../documentation/php-definition/di-autowire.md#setupimmutable) предоставляемые хелпер функцией `diAutowire()` или атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](../documentation/attribute-definition/setup.md), [`\Kaspi\DiContainer\Attributes\SetupImmutable`](../documentation/attribute-definition/setup-immutable.md).
 
-### Внедрение зависимости через мутабельный сеттер-метод { #example-setup }
+### Мутабельный сеттер-метод[^SetterMethodMutable] { #example-setup }
 
 PHP-классы:
 
@@ -27,10 +27,10 @@ final class Foo
 {
     private QuxInterface $qux;
 
-    public function setQux(QuxInterface $qux): void
-    {
-        $this->qux = $qux;
-    }
+    public function setQux(QuxInterface $qux): void//[!code warning]
+    {//[!code warning]
+        $this->qux = $qux;//[!code warning]
+    }//[!code warning]
 
     public function getQux(): ?QuxInterface
     {
@@ -42,290 +42,299 @@ final class Foo
 <<< @/_code/cookbook/autowire-setup/src/Services/Bar.php
 :::
 
-Необходимо объявить внедрение в PHP-класа `\App\Services\Bar` через мутабельный сеттер-метод[^SetterMethodMutable] `\App\Services\Foo::setQux()`.
+Необходимо объявить внедрение в PHP-класа `\App\Services\Bar` через мутабельный сеттер-метод `\App\Services\Foo::setQux()`.
 
-Параметр `$qux` метода `\App\Services\Foo::setQux()` ожидает объект реализующий интерфейс `App\Interfaces\QuxInterface`. Контейнер предоставляет множество способов объявления [внедрения PHP-класса в параметр метода ожидающего интерфейс](inject-interface.md), для этого примера будет использовать [хелпер функцию `diGet()`](../documentation/php-definition/di-get.md) или [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) в зависимости от способа объявления внедрения зависимости.
-
-🚧🚧🚧🚧🚧
+Параметр `$qux` метода `\App\Services\Foo::setQux()` ожидает объект реализующий интерфейс `\App\Interfaces\QuxInterface`. Контейнер предоставляет [множество способов объявления](inject-interface.md) внедрения PHP-класса в параметр, для этого примера будет использована [хелпер функция `diGet()`](../documentation/php-definition/di-get.md) или [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) в зависимости от способа объявления внедрения зависимости.
 
 #### Объявление в файлах конфигураций { #example-stup-php-definition }
 
-В файле конфигураций `services.php` объявим PHP-класс `\App\Services\Foo`, через метод `setup()`, предоставляемый хелпер функцией `diAutowire()`, объявим внедрение зависимости PHP-класса `\App\Services\Bar`.
+В файле конфигураций `services.php` объявим PHP-класс `\App\Services\Foo` и объявление внедрения через сеттер-метод `'setQux'`.
 
 ::: code-group
-```php
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')//[!code ++]
+    ->build();
+
+$foo = $container->get(Foo::class);
+var_dump($foo->getQux());
+```
+```php [services.php]
 <?php
 declare(strict_types=1);
 
 // file: /app/config/services.php [!code highlight]
 
-use App\Service\Foo;
+use App\Service\{Foo, Bar};
 
-use function Kaspi\DiContainer\diAutowire;
+use function Kaspi\DiContainer\{diAutowire, diGet};
 
 return static function (): Generator {
     yield diAutowire(Foo::class)
-        ->setup();
+        ->setup(//[!code ++]
+            'setQux',//[!code ++]
+            [//[!code ++]
+                'qux' => diGet(Bar::class),//[!code ++]
+            ],//[!code ++]
+        );//[!code ++]
 };
 ```
 ::: 
 
+<!--@include: _include/autowire-setup-result.md-->
+
 #### Объявление через атрибут { #example-stup-attribute }
 
-
-
-
-## Объявление PHP-классов в файлах конфигураций { #php-definition }
-
-Внедрение зависимости через сеттер-метод в [файле конфигураций](../documentation/container-builder/configuration_files.md).
-
-### diAutowire::setup()
-
-Внедрение зависимости через мутабельный сеттер-метод [^SetterMethodMutable] `\App\Services\FooLogger::setLogger()`.
+Объявим внедрение PHP-класса `\App\Services\Bar` через атрибут `\Kaspi\DiContainer\Attributes\Setup`, указав его для сеттер-метода `\App\Services\Foo::setQux()`. Для объявления внедрения в параметр сеттер-метода используем атрибут `\Kaspi\DiContainer\Attributes\Inject`.
 
 ::: code-group
 
-<<< @/_code/cookbook/autowire-setup/container_build.php
+```php [Foo.php]
+<?php
+declare(strict_types=1);
 
-<<< @/_code/cookbook/autowire-setup/params_logger.php
+// file: /app/src/Services/Foo.php [!code highlight]
 
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+use Kaspi\DiContainer\Attributes\Inject;//[!code ++]
+use Kaspi\DiContainer\Attributes\Setup;//[!code ++]
+
+final class Foo
+{
+    private QuxInterface $qux;
+
+    public function setQux(QuxInterface $qux): void//[!code --]
+    #[Setup]//[!code ++]
+    public function setQux(//[!code ++]
+        #[Inject(Bar::class)]//[!code ++]
+        QuxInterface $qux//[!code ++]
+    ): void//[!code ++]
+    {
+// …
+```
+:::
+
+::: code-group
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Foo;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code ++]
+    ->build();
+
+$foo = $container->get(Foo::class);
+var_dump($foo->getQux());
+```
+:::
+
+<!--@include: _include/autowire-setup-result.md-->
+
+### Иммутабельный сеттер-метод[^SetterMethodImmutable]
+
+PHP-классы:
+
+::: code-group
+```php [Baz.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Baz.php [!code highlight]
+
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+
+final class Baz
+{
+    private QuxInterface $qux;
+
+    public function withQux(QuxInterface $qux): self//[!code warning]
+    {//[!code warning]
+        $new = clone $this;//[!code warning]
+        $new->qux = $qux;//[!code warning]
+//[!code warning]
+
+        return $new;//[!code warning]
+    }//[!code warning]
+
+    public function getQux(): ?QuxInterface
+    {
+        return $this->qux ?? null;
+    }
+}
+```
+<<< @/_code/cookbook/autowire-setup/src/Interfaces/QuxInterface.php
+<<< @/_code/cookbook/autowire-setup/src/Services/Bar.php
+:::
+
+Необходимо объявить внедрение в PHP-класа `\App\Services\Bar` через иммутабельный сеттер-метод `\App\Services\Baz::withQux()`. Обратите внимание, сеттер-метод возвращает новый объект класса `\App\Services\Baz`.
+
+Параметр `$qux` метода `\App\Services\Baz::withQux()` ожидает объект реализующий интерфейс `\App\Interfaces\QuxInterface`. Контейнер предоставляет [множество способов объявления](inject-interface.md) внедрения PHP-класса в параметр, для этого примера будет использована [хелпер функция `diGet()`](../documentation/php-definition/di-get.md) или [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) в зависимости от способа объявления внедрения зависимости.
+
+
+#### Объявление в файлах конфигураций { #example-stupimmutable-php-definition}
+
+В файле конфигураций `services.php` объявим PHP-класс `\App\Services\Baz` и объявление внедрения через сеттер-метод `'withQux'`.
+
+::: code-group
+```php [container_build.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/container_build.php [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Baz;
+
+$container = (new DiContainerBuilder())
+    ->load('/app/config/services.php')//[!code ++]
+    ->build();
+
+$baz = $container->get(Baz::class);
+var_dump($baz->getQux());
+```
 ```php [services.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/config/services/services.php
-use App\Services\{FooLogger, FileLogger};
+// file: /app/config/services.php [!code highlight]
+
+use App\Service\{Baz, Bar};
 
 use function Kaspi\DiContainer\{diAutowire, diGet};
 
-return static function(): \Generator {
-    yield diAutowire(FooLogger::class)
-        ->setup(// [!code ++]
-            'setLogger',// [!code ++]
-            [diGet(FileLogger::class)]// [!code ++]
-        );// [!code ++]
+return static function (): Generator {
+    yield diAutowire(Baz::class)
+        ->setupImmutable(//[!code ++]
+            'withQux',//[!code ++]
+            [//[!code ++]
+                'qux' => diGet(Bar::class),//[!code ++]
+            ],//[!code ++]
+        );//[!code ++]
 };
 ```
+:::
 
-<<< @/_code/cookbook/autowire-setup/service_logger.php
+<!--@include: _include/autowire-setup-result.md-->
 
-```php [FooLogger.php]
+#### Объявление через атрибут { #example-stupimmutable-attribute }
+
+Объявим внедрение PHP-класса `\App\Services\Bar` через атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable`, указав его для сеттер-метода `\App\Services\Baz::withQux()`. Для объявления внедрения в параметр сеттер-метода используем атрибут `\Kaspi\DiContainer\Attributes\Inject`.
+
+::: code-group
+```php [Baz.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/src/Services/FooLogger.php
+// file: /app/src/Services/Baz.php [!code highlight]
+
 namespace App\Services;
 
-use Psr\Log\LoggerInterface;
+use App\Interfaces\QuxInterface;
+use Kaspi\DiContainer\Attributes\Inject;//[!code ++]
+use Kaspi\DiContainer\Attributes\SetupImmutable;//[!code ++]
 
-final class FooLogger
+final class Baz
 {
-    private LoggerInterface $logger;
+    private QuxInterface $qux;
 
-    public function setLogger(LoggerInterface $logger): void
+    public function withQux(QuxInterface $qux): self//[!code --]
+    #[SetupImmutable]//[!code ++]
+    public function withQux(//[!code ++]
+        #[Inject(Bar::class)]//[!code ++]
+        QuxInterface $qux//[!code ++]
+    ): void//[!code ++]
     {
-        $this->logger = $logger;
-    }
-
-    public function getLogger(): ?LoggerInterface
-    {
-        return $this->logger ?? null;
-    }
-}
+// …
 ```
-
-
 :::
 
-### diAutowire::setupImmutable()
+::: code-group
+```php [container_build.php]
+<?php
+declare(strict_types=1);
 
-Внедрение зависимости через иммутабельный сеттер-метод [^SetterMethodImmutable] `\App\Services\FooLogger::withLogger()`.
+// file: /app/src/container_build.php [!code highlight]
+
+require_once __DIR__.'/../vendor/autoload.php';//[!code warning]
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Services\Baz;
+
+$container = (new DiContainerBuilder())
+    ->import(namespace: 'App\\', src: '/app/src')//[!code ++]
+    ->build();
+
+$baz = $container->get(Baz::class);
+var_dump($baz->getQux());
+```
+:::
+
+<!--@include: _include/autowire-setup-result.md-->
+
+### Внедрение нескольких зависимостей { #attribute-setup-multiple }
+
+Рассмотрим на примере внедрения нескольких зависимостей через один мутабельный[^SetterMethodMutable] сеттер-метод `\App\Services\Rules::addRule()`.
+
+Для объявления внедрения зависимостей используем атрибут `\Kaspi\DiContainer\Attributes\Setup`.
+
+Параметр `$inputRule` сеттер-метода ожидает объект реализующий интерфейс `\App\Interfaces\RuleInterface`. Контейнер предоставляет [множество способов объявления](inject-interface.md) внедрения PHP-класса в параметр, для этого примера будет использована PHP-класс `\Kaspi\DiContainer\DiDefinition\DiDefinitionGet`.
+
+<!--@include: ../documentation/attribute-definition/_include/to_arguments.md-->
 
 ::: code-group
 
-<<< @/_code/cookbook/autowire-setup/container_build.php
-
-<<< @/_code/cookbook/autowire-setup/params_logger.php
-
-```php [services.php]
+```php [container.php]
 <?php
 declare(strict_types=1);
 
-// file: /app/config/services/services.php
-use App\Services\{FooLogger, FileLogger};
+// file: /app/src/container.php [!code highlight]
 
-use function Kaspi\DiContainer\{diAutowire, diGet};
-
-return static function(): \Generator {
-    yield diAutowire(FooLogger::class)
-        ->setupImmutable(// [!code ++]
-            'withLogger',// [!code ++]
-            [diGet(FileLogger::class)]// [!code ++]
-        );// [!code ++]
-};
-```
-
-<<< @/_code/cookbook/autowire-setup/service_logger.php
-
-```php [FooLogger.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/FooLogger.php
-namespace App\Services;
-
-use Psr\Log\LoggerInterface;
-
-final class FooLogger
-{
-    private LoggerInterface $logger;
-
-    public function withLogger(LoggerInterface $logger): static
-    {
-        $new = clone $this;
-        $new->logger = $logger;
-
-        return $new;
-    }
-
-    public function getLogger(): ?LoggerInterface
-    {
-        return $this->logger ?? null;
-    }
-}
-```
-
-<<< @/_code/cookbook/autowire-setup/FileLogger.php
-
-:::
-
-## PHP атрибуты { #php-attributes }
-
-Внедрение зависимостей через сеттер-методы атрибутами `\Kaspi\DiContainer\Attributes\Setup` и `\Kaspi\DiContainer\Attributes\SetupImmutable`.
-
-### Setup { #attribute-setup }
-
-Атрибут `\Kaspi\DiContainer\Attributes\Setup` применяется к мутабельному сеттер-методу[^SetterMethodMutable] `\App\Services\FooLogger::setLogger()`.
-
-::: code-group
-
-<<< @/_code/cookbook/autowire-setup/container_build_attr.php
-
-<<< @/_code/cookbook/autowire-setup/params_logger.php
-
-```php [FooLogger.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/FooLogger.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\Setup;// [!code ++]
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;// [!code ++]
-use Psr\Log\LoggerInterface;
-
-final class FooLogger
-{
-    private LoggerInterface $logger;
-
-    #[Setup(// [!code ++]
-        new DiGet(FileLogger::class)// [!code ++]
-    )]// [!code ++]
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
-
-    public function getLogger(): ?LoggerInterface
-    {
-        return $this->logger ?? null;
-    }
-}
-```
-
-<<< @/_code/cookbook/autowire-setup/FileLoggerAttr.php [FileLogger.php]
-
-:::
-
-### SetupImmutable { #attribute-setup-immutable }
-
-Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` применяется к иммутабельному сеттер-методу[^SetterMethodImmutable] `\App\Services\FooLogger::withLogger()`.
-
-::: code-group
-
-<<< @/_code/cookbook/autowire-setup/container_build_attr.php
-
-<<< @/_code/cookbook/autowire-setup/params_logger.php
-
-```php [FooLogger.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/FooLogger.php
-namespace App\Services;
-
-use Kaspi\DiContainer\Attributes\SetupImmutable;// [!code ++]
-use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;// [!code ++]
-use Psr\Log\LoggerInterface;
-
-final class FooLogger
-{
-    private LoggerInterface $logger;
-
-    #[SetupImmutable(// [!code ++]
-        new DiGet(FileLogger::class)// [!code ++]
-    )]// [!code ++]
-    public function withLogger(LoggerInterface $logger): static
-    {
-        $new = clone $this;
-        $new->logger = $logger;
-
-        return $new;
-    }
-
-    public function getLogger(): ?LoggerInterface
-    {
-        return $this->logger ?? null;
-    }
-}
-```
-
-<<< @/_code/cookbook/autowire-setup/FileLoggerAttr.php [FileLogger.php]
-
-:::
-
-### Внедрение нескольких параметров { #attribute-setup-multiple }
-
-Внедрение нескольких зависимостей через один мутабельный сеттер-метод `\App\Services\RuleGenerator::addRule()`.
-
-::: code-group
-
-```php
-<?php
-declare(strict_types=1);
-
-// file: /app/src/container_build.php
 require_once __DIR__.'/../vendor/autoload.php';// [!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
-use App\Services\RuleGenerator;
-use App\Rules\{RuleA, RuleB};
+use App\Services\Rules;
 
 $container = (new DiContainerBuilder())
-    ->import(namespace: 'App\\', src: '/app/src/')
+    ->import(namespace: 'App\\', src: '/app/src/')//[!code ++]
     ->build();
 
-$ruleGenerator = $container->get(RuleGenerator::class);
-$rules = $ruleGenerator->->getRules();
+$rules = $container->get(Rules::class);
 
-var_dump($rules[0] instanceof App\Rules\RuleB);
-// (bool) true
-var_dump($rules[1] instanceof App\Rules\RuleA);
-// (bool) true
+foreach($rules->getRules() as $rule) {
+    var_dump($rule);
+    print PHP_EOL;
+}
 ```
 
-```php [RuleGenerator.php]
-// file: /app/src/Services/RuleGenerator.php
+```php [Rules.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Rules.php [!code highlight]
+
 namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\Setup;//[!code ++]
@@ -333,7 +342,7 @@ use Kaspi\DiContainer\DiDefinition\DiDefinitionGet as DiGet;//[!code ++]
 use App\Rules\{RuleA, RuleB};
 use App\Interfaces\RuleInterface;
 
-class RuleGenerator
+class Rules
 {
 
     private array $rules = [];
@@ -359,7 +368,11 @@ class RuleGenerator
 ```
 
 ```php [RuleInterface.php]
-// file: /app/src/Interfaces/RuleInterface.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/RuleInterface.php [!code highlight]
+
 namespace App\Interfaces;
 
 interface RuleInterface
@@ -369,7 +382,11 @@ interface RuleInterface
 ```
 
 ```php [RuleA.php]
-// file: /app/src/Rules/RuleA.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Rules/RuleA.php [!code highlight]
+
 namespace App\Rules;
 
 use App\Interfaces\RuleInterface;
@@ -381,7 +398,11 @@ class RuleA implements RuleInterface
 ```
 
 ```php [RuleB.php]
-// file: /app/src/Rules/RuleB.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Rules/RuleB.php [!code highlight]
+
 namespace App\Rules;
 
 use App\Interfaces\RuleInterface;
@@ -394,8 +415,21 @@ class RuleB implements RuleInterface
 
 :::
 
+Выполните в терминале команду:
 
-> [!NOTE]
-> Последовательность полученных объектов в свойство `\App\Services\RuleGenerator::$rules` обусловлен очередностью применения PHP атрибута `\Kaspi\DiContainer\Attributes\Setup` к методу `\App\Services\RuleGenerator::addRule()`.
+```shell
+php /app/src/container.php
+```
+
+Появится сообщение вида:
+
+```console
+object(App\Rules\RuleB)#2 (0) {
+}
+
+object(App\Rules\RuleA)#2 (0) {
+}
+```
+Очерёдность внедренных объектов через сеттер-метод обусловлена порядком применения атрибута `\Kaspi\DiContainer\Attributes\Setup` к методу `\App\Services\RuleGenerator::addRule()`.
 
 <!--@include: ../documentation/_include/term_notes.md-->
