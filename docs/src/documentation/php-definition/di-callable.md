@@ -4,7 +4,7 @@ title: Хелпер функция diCallable()
 ---
 ### Хелпер функция diCallable()
 
-Хелпер функция `diCallable()` внедряет зависимость через [вызываемый тип `callable`](https://www.php.net/manual/ru/language.types.callable.php).
+Хелпер функция `diCallable()` внедряет зависимость через выполнения указанного вызываемого типа[^CallableType].
 
 Сигнатура функции:
 

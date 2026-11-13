@@ -1,5 +1,5 @@
 ---
-outline: [2, 4]
+outline: [2, 5]
 title: Внедрение зависимости в параметр с типом интерфейс
 ---
 ### Внедрение зависимости в параметр с типом интерфейс { #overview }
@@ -25,7 +25,7 @@ title: Внедрение зависимости в параметр с типо
 
 Объявить внедрение зависимости в такой параметр можно через [хелпер функцию](../documentation/php-definition/index.md#helper-fn) или [атрибуты](../documentation/attribute-definition/index.md#attributes).
 
-### Пример объявления реализации интерфейса { #example }
+### Пример объявления реализации интерфейса { #example-global }
 
 PHP-классы:
 
@@ -36,11 +36,124 @@ PHP-классы:
 <<< @/_code/cookbook/inject-interface/src/Services/Baz.php
 :::
 
+Необходимо объявить реализацию интерфейса `\App\Interfaces\QuxInterface` PHP-классом `\App\Services\Bar`, т.е. чтобы контейнер автоматически, без дополнительных объявлений, внедрял зависимость этого класса если параметр метода или вызываемого типа ожидает объект реализующий интерфейс `\App\Interfaces\QuxInterface`.
 
-#### Хелпер функции { #helper-fn } 
+Обратите внимание что PHP-класс `\App\Services\Baz` так же реализует интерфейс `\App\Interfaces\QuxInterface`, но он не будет внедрен в любой параметр без дополнительного объявления.
 
+#### Хелпер функции { #helper-fn-global } 
 
-#### Атрибуты { #attributes }
+Для этой задачи необходимо объявить в [файле конфигураций](../documentation/container-builder/configuration_files.md) PHP-класс `\App\Services\Bar` и в качестве идентификатора контейнера[^ContainerId] указать FQCN[^FQCN] интерфейса.
+
+Ниже рассмотрим варианты объявления реализации интерфейса через различные хелпер функции.
+
+---
+
+##### diAutowire() { #helper-di-autowire-global }
+
+Файл конфигураций `services.php` использует [хелпер функцию `diAutowire()`](../documentation/php-definition/di-autowire.md) чтобы объявить PHP-класс, а в качестве идентификатора контейнера указан интерфейс `\App\Interfaces\QuxInterface`.
+
+Заметьте что здесь приведён простой пример объявления, но при объявлении PHP-класса доступны все методы этой хелпер функции, включая [объявлений внедрения в конструктор класса](../documentation/php-definition/di-autowire.md#bindarguments) и внедрений через [сеттер-методы](../documentation/php-definition/di-autowire.md#di-autowire-setter-method).
+
+::: code-group
+<<< @/_code/cookbook/inject-interface/container.php
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php [!code highlight]
+
+use App\Interfaces\QuxInterface;
+use App\Service\Bar;
+
+use function Kaspi\DiContainer\diAutowire;
+
+return static function (): Generator {
+    yield QuxInterface::class => diAutowire(Bar::class);//[!code ++]
+}
+```
+:::
+
+<!--@include: _include/inject-interface-result.md-->
+
+---
+
+##### diCallable() { #helper-di-callable-global }
+
+При объявлении реализации интерфейса может потребоваться сложная сборка PHP-класса, поэтому этот процесс можно делегировать любому вызываемому типу[^CallableType].
+
+Файл конфигураций `services.php` использует [хелпер функцию `diCallable()`](../documentation/php-definition/di-callable.md) чтобы объявить PHP-класс через анонимную функцию, а в качестве идентификатора контейнера указан интерфейс `\App\Interfaces\QuxInterface`.
+
+Так же в этом объявлении реализации интерфейса указываем в параметре `$isSingleton` хелпер функции значение `true`, чтобы контейнер получал один и тот же объект, а не создавал его заново.
+
+::: code-group
+<<< @/_code/cookbook/inject-interface/container.php
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php [!code highlight]
+
+use App\Interfaces\QuxInterface;
+use App\Service\Bar;
+
+use function Kaspi\DiContainer\diCallable;
+
+return static function (): Generator {
+    // Сложная сборка PHP-класса
+    $fn = static function (): Bar {//[!code highlight]
+        $bar = new Bar();//[!code highlight]
+        // [!code highlight]
+        // тут возможны дополнительные действия с $bar [!code highlight]
+        // [!code highlight]
+        return $bar;//[!code highlight]
+    };//[!code highlight]
+
+    yield QuxInterface::class => diCallable($fn, isSingleton: true);//[!code ++]
+}
+```
+:::
+
+<!--@include: _include/inject-interface-result.md-->
+
+> [!TIP]
+> Аналогичное объявление можно сделать через [хелпер функцию `diFactory()`](../documentation/php-definition/di-factory.md). 
+
+---
+
+##### diGet() { #helper-di-get-global }
+
+В случае если в контейнере уже существует объявление PHP-класса, с указанием всех необходимых внедрений и настроек, то при объявлении реализации интерфейса можно просто указать ссылку на имеющийся идентификатор контейнера этого PHP-класса. 
+
+Файл конфигураций `services.php` использует [хелпер функцию `diGet()`](../documentation/php-definition/di-get.md) чтобы объявить PHP-класс реализацией интерфейса `\App\Interfaces\QuxInterface`.
+
+::: code-group
+<<< @/_code/cookbook/inject-interface/container.php
+```php [services.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/config/services.php [!code highlight]
+
+use App\Interfaces\QuxInterface;
+use App\Service\Bar;
+
+use function Kaspi\DiContainer\{diAutowire, diGet};
+
+return static function (): Generator {
+    yield diAutowire(Bar::class);//[!code highlight]
+    
+    // … many lines
+    
+    yield QuxInterface::class => diGet(Bar::class);//[!code ++]
+}
+```
+:::
+
+<!--@include: _include/inject-interface-result.md-->
+
+---
+
+#### Атрибуты { #attributes-global }
 
 
 ## 🚧🚧🚧🚧
