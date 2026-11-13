@@ -56,7 +56,7 @@ $container->get(Service::class); // [!code error]
 
 Будет выброшено исключение:
 
-> [!WARNING] PHP Fatal error:
+> [!DANGER] PHP Fatal error:
 > Uncaught Kaspi\DiContainer\Exception\AutowireParameterTypeException:
 > Cannot automatically resolve dependency in App\Services\Service::__construct().
 > Please specify the Parameter #0 [ \<required\> App\Services\One | App\Services\Two $dependency ].
