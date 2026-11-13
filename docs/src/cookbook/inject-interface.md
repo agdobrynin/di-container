@@ -155,10 +155,96 @@ return static function (): Generator {
 
 #### Атрибуты { #attributes-global }
 
+[Атрибут `\Kaspi\DiContainer\Attributes\Service`](../documentation/attribute-definition/service.md) позволяет объявить глобально реализацию интерфейса в контейнере конкретным PHP-классом, т.е. контейнер будет автоматически внедрять объявленную реализацию интерфейса, если для конкретного параметра метода или вызываемого типа не объявлено внедрение другой реализации требуемого интерфейса.
 
-## 🚧🚧🚧🚧
+##### Service и FQCN { #service-fqcn }
 
---------
+Необходимо добавить атрибут к интерфейсу `\App\Interfaces\QuxInterface` и указать реализацию через PHP-класс `\App\Services\Bar`.
+
+Параметр конструктора `$id` атрибута принимает строковый параметр, который указывает контейнеру через какой идентификатор контейнера получить объект реализующий этот интерфейс, в этом случае мы можем указать значение `'App\Services\Bar'` или через константу `\App\Services\Bar::class`.
+
+::: code-group
+```php [QuxInterface.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/QuxInterface.php
+
+namespace App\Interfaces;
+
+use App\Service\Bar;//[!code ++]
+use Kaspi\DiContainer\Attributes\Service;//[!code ++]
+
+#[Service(Bar::class)]//[!code ++]
+interface QuxInterface
+{
+    // …
+}
+```
+:::
+
+::: code-group
+<<< @/_code/cookbook/inject-interface/container_attr.php [container.php]
+:::
+
+<!--@include: _include/inject-interface-result.md-->
+
+---
+
+##### Service и значение для параметра $id { #service-container-id }
+
+В разделе документации [к атрибуту `\Kaspi\DiContainer\Attributes\Service`](../documentation/attribute-definition/service.md) указано – параметр конструктора `$id` должен быть представлен как идентификатор контейнера. Это означает что если указывается строковое значение и оно является идентификатором контейнера, позволяющее получить объект реализующий объявляемый интерфейс через метод контейнера `get()`, то значение для параметра `$id` допустимо. 
+
+Рассмотрим пример когда реализация интерфейса будет получена через идентификатор контейнера `'services.bar'`, объявленное у PHP-класса `\App\Services\Bar` через [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../documentation/attribute-definition/autowire.md).
+
+Такое объявление реализации интерфейса может быть полезно если один и тот же PHP-класс необходимо объявить в контейнере с внедрением разных зависимостей и разными идентификаторами контейнера.
+
+::: code-group
+```php [QuxInterface.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/QuxInterface.php
+
+namespace App\Interfaces;
+
+use App\Service\Bar;//[!code ++]
+use Kaspi\DiContainer\Attributes\Service;//[!code ++]
+
+#[Service('services.bar')]//[!code ++]
+interface QuxInterface
+{
+// …
+```
+
+```php [Bar.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php [!code highlight]
+
+namespace App\Services;
+
+use App\Interfaces\QuxInterface;
+use Kaspi\DiContainer\Attributes\Autowire;//[!code ++]
+
+#[Autowire(id: 'services.bar')]//[!code ++]
+final class Bar implements QuxInterface
+{
+// …
+```
+:::
+
+::: code-group
+<<< @/_code/cookbook/inject-interface/container_attr.php [container.php]
+:::
+
+<!--@include: _include/inject-interface-result.md-->
+
+
+### Пример внедрения в конкретный параметр { #example-arg }
+
+### 🚧🚧🚧🚧
 
 Необходима конфигурация контейнера для автоматического внедрения параметра `App\Services\Foo::$service`: 
 
