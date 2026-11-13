@@ -30,55 +30,10 @@ title: Внедрение зависимости в параметр с типо
 PHP-классы:
 
 ::: code-group
-
-```php [Foo.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Foo.php [!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\ServiceInterface;
-
-final class Foo
-{
-    public function __construct(
-        public readonly ServiceInterface $service
-    ) {}
-}
-```
-
-```php[ServiceInterface.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Interfaces/ServiceInterface.php [!code highlight]
-
-namespace App\Interfaces;
-
-interface ServiceInterface
-{
-    // …
-}
-```
-
-```php [Bar.php]
-<?php
-declare(strict_types=1);
-
-// file: /app/src/Services/Bar.php [!code highlight]
-
-namespace App\Services;
-
-use App\Interfaces\ServiceInterface;
-
-final class Bar implements ServiceInterface
-{
-    // …
-}
-```
-
+<<< @/_code/cookbook/inject-interface/src/Services/Foo.php
+<<< @/_code/cookbook/inject-interface/src/Interfaces/QuxInterface.php
+<<< @/_code/cookbook/inject-interface/src/Services/Bar.php
+<<< @/_code/cookbook/inject-interface/src/Services/Baz.php
 :::
 
 
