@@ -11,40 +11,31 @@ title: Внедрение зависимости в параметр с типо
 Контейнер позволяет реализовать такое объявление множеством способов, в зависимости от решаемой задачи.
 
 > [!IMPORTANT]
-> Объект получаемый из контейнера для внедрения должен реализовывать интерфейс ожидаемый параметром.
+> Получаемый объект PHP-класса из контейнера для внедрения должен реализовывать интерфейс ожидаемый параметром.
 
 #### Глобальное объявление { #global }
 
 Объявить реализацию интерфейса в контейнере конкретным PHP-классом можно глобально, т.е. контейнер будет автоматически внедрять объявленную реализацию интерфейса, если для конкретного параметра метода или вызываемого типа не объявлено внедрение другой реализации требуемого интерфейса.
 
-Для глобального объявления реализации интерфейса необходимо объявить в качестве идентификатора контейнера[^ContainerId] имя интерфейса и его реализацию **через хелпер функцию** или **через [атрибут `\Kaspi\DiContainer\Attributes\Service`](../documentation/attribute-definition/service.md)**.
-
-В качестве хелпер функций для объявления реализации подойдут:
-- [`diAutowire()`](../documentation/php-definition/di-autowire.md) – объявляет конкретный PHP-класс.
-- [`diCallable()`](../documentation/php-definition/di-callable.md) – результат выполнения `callable` типа должен возвращать конкретный PHP-класс.
-- [`diFactory()`](../documentation/php-definition/di-factory.md) – фабричный метод должен возвращать конкретный PHP-класс.
+Для глобального объявления реализации интерфейса необходимо объявить в качестве идентификатора контейнера[^ContainerId] имя интерфейса и его реализацию [через хелпер функцию](../documentation/php-definition/index.md#helper-fn) или **через [атрибут `\Kaspi\DiContainer\Attributes\Service`](../documentation/attribute-definition/service.md)**.
 
 #### Объявление внедрения в конкретный параметр { #param }
 
-Если для параметра метода или вызываемого типа представленного конкретным интерфейсом необходимо объявить внедрение PHP-класса реализующего этот интерфейс, то это можно сделать через хелпер функцию или атрибуты.
+Для параметра метода или вызываемого типа представленного конкретным интерфейсом можно объявить внедрение зависимости отличающуюся от глобального объявления реализации интерфейса.
 
-В качестве хелпер функций для объявления внедрения в параметр подойдут:
-- [`diAutowire()`](../documentation/php-definition/di-autowire.md) – объявляет конкретный PHP-класс.
-- [`diCallable()`](../documentation/php-definition/di-callable.md) – результат выполнения `callable` типа должен возвращать конкретный PHP-класс.
-- [`diFactory()`](../documentation/php-definition/di-factory.md) – фабричный метод должен возвращать конкретный PHP-класс.
-- [`diGet()`](../documentation/php-definition/di-get.md) – объект получаемый через указанный идентификатор должен реализовывать нужный параметру интерфейс.
+Объявить внедрение зависимости в такой параметр можно через [хелпер функцию](../documentation/php-definition/index.md#helper-fn) или [атрибуты](../documentation/attribute-definition/index.md#attributes).
 
+### Пример объявления реализации интерфейса { #example }
 
-🚧🚧🚧🚧
-
---------
-
-Необходима конфигурация контейнера для автоматического внедрения параметра `App\Services\Foo::$service`: 
+PHP-классы:
 
 ::: code-group
 
 ```php [Foo.php]
-// file: /app/src/Services/Foo.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Foo.php [!code highlight]
 
 namespace App\Services;
 
@@ -52,19 +43,17 @@ use App\Interfaces\ServiceInterface;
 
 final class Foo
 {
-    public function __construct(private ServiceInterface $service) {}
-    
-    // …
-    
-    public function service(): ServiceInterface
-    {
-        return $this->service;
-    }
+    public function __construct(
+        public readonly ServiceInterface $service
+    ) {}
 }
 ```
 
-```php [ServiceInterface.php]
-// file: /app/src/Interfaces/ServiceInterface.php
+```php[ServiceInterface.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Interfaces/ServiceInterface.php [!code highlight]
 
 namespace App\Interfaces;
 
@@ -75,7 +64,10 @@ interface ServiceInterface
 ```
 
 ```php [Bar.php]
-// file: /app/src/Services/Bar.php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Bar.php [!code highlight]
 
 namespace App\Services;
 
@@ -83,11 +75,25 @@ use App\Interfaces\ServiceInterface;
 
 final class Bar implements ServiceInterface
 {
-    public function __construct(private readonly string $param) {}
+    // …
 }
 ```
 
 :::
+
+
+#### Хелпер функции { #helper-fn } 
+
+
+#### Атрибуты { #attributes }
+
+
+## 🚧🚧🚧🚧
+
+--------
+
+Необходима конфигурация контейнера для автоматического внедрения параметра `App\Services\Foo::$service`: 
+
 
 Для этой задачи необходимо чтобы имя интерфейса было указано как идентификатор контейнера, и сконфигурирован PHP-класс реализующий этот интерфейс.
 
