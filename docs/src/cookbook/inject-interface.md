@@ -27,6 +27,8 @@ title: Внедрение зависимости в параметр с типо
 
 ### Пример объявления реализации интерфейса { #example-global }
 
+Необходимо объявить реализацию определённого интерфейса PHP-классом чтобы внедрение во все типизированные параметры методов было автоматическим, без дополнительного объявления внедрения зависимости в параметры методов.
+
 PHP-классы:
 
 ::: code-group
@@ -243,6 +245,27 @@ final class Bar implements QuxInterface
 
 
 ### Пример внедрения в конкретный параметр { #example-arg }
+
+При объявлении внедрения в параметр метода или вызываемого типа ожидающего объект реализующий интерфейс, можно уточнить какую именно реализацию внедрять. При таком объявлении внедряемый PHP-класс может отличаться от [глобально объявленной реализации интерфейса](#global).
+
+PHP-классы:
+
+::: code-group
+<<< @/_code/cookbook/inject-interface/src/Services/Foo.php
+<<< @/_code/cookbook/inject-interface/src/Services/Qux.php
+<<< @/_code/cookbook/inject-interface/src/Interfaces/QuxInterface.php
+<<< @/_code/cookbook/inject-interface/src/Services/Bar.php
+<<< @/_code/cookbook/inject-interface/src/Services/Baz.php
+:::
+
+Необходимо объявить реализацию интерфейса `\App\Interfaces\QuxInterface` PHP-классом `\App\Services\Bar`, т.е. чтобы контейнер автоматически, без дополнительных объявлений, внедрял зависимость этого класса если параметр метода или вызываемого типа ожидает объект реализующий интерфейс `\App\Interfaces\QuxInterface`.
+
+Для PHP-класса `\App\Services\Qux` необходимо объявить внедрение зависимости в параметр конструктора `$qux` PHP-класса `\App\Services\Baz`, обратите внимание: внедряемый класса реализуют интерфейс `\App\Interfaces\QuxInterface`.
+
+#### Хелпер функции { #helper-fn-arg }
+
+#### Атрибуты { #attributes-arg }
+
 
 ### 🚧🚧🚧🚧
 
