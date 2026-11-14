@@ -238,7 +238,17 @@ export default defineConfig({
                 items: [
                   { text: 'Обзор', link: 'index.md' },
                   { text: 'Внедрение зависимостей через сеттер-методы', link: 'autowire-setup.md' },
-                  { text: 'Внедрение зависимости в параметр с типом интерфейс', link: 'inject-interface.md' },
+                  {
+                    base: '/cookbook/inject-interface/',
+                    text: 'Внедрение зависимости в параметр с типом интерфейс',
+                    collapsed: true,
+                    link: 'index.md',
+                    items: [
+                      {text: 'Обзор', link: 'index.md'},
+                      {text: 'Глобальное объявление интерфейса', link: 'global.md'},
+                      {text: 'Объявление внедрения в конкретный параметр', link: 'arg.md'},
+                    ],
+                  },
                   { text: 'Внедрение зависимостей в параметры переменной длины', link: 'inject-variadic-params.md' },
                   { text: 'Внедрение зависимостей для параметров объединенного типа', link: 'inject-union-type-params.md' },
                   { text: 'Внедрение зависимостей PHP-классов реализующих интерфейс сторонних производителей', link: 'resolve-vendor-interface.md' },
