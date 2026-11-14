@@ -245,7 +245,7 @@ export default defineConfig({
                     link: 'index.md',
                     items: [
                       {text: 'Обзор', link: 'index.md'},
-                      {text: 'Глобальное объявление интерфейса', link: 'global.md'},
+                      {text: 'Глобальное объявление реализации интерфейса', link: 'global.md'},
                       {text: 'Объявление внедрения в конкретный параметр', link: 'arg.md'},
                     ],
                   },
