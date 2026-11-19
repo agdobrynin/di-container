@@ -4,31 +4,31 @@ title: Declaration in configuration files
 ---
 ### Declaration in configuration files { #overview }
 
-Для указания контейнеру каким образом нужно внедрять зависимости в PHP-классах или вызываемых типах используется механизм объявления определений в [файлах конфигураций](../container-builder/configuration_files.md) или в [коллекциях конфигураций](../container-builder/methods/load-definitions-from-collection.md).
+To instruct the container on how to inject dependencies into PHP classes or callable types, you use a mechanism for declaring definitions within [configuration files](../container-builder/configuration_files.md) or [configuration collections](../container-builder/methods/load-definitions-from-collection.md).
 
-Для сборки контейнера используется [класс-строитель DiContainerBuilder](../container-builder/index.md).
+The [DiContainerBuilder class](../container-builder/index.md) is used to build the container.
 
-Определения объявляются через хелпер функции предоставляющие простой и понятный набор методов для разных типов определений контейнера. Хелпер функции позволяют передать аргументы, вызывать сеттер-методы или добавить теги.
+Definitions are declared via helper functions that provide a simple and intuitive set of methods for various types of container definitions. These helper functions allow you to pass arguments, invoke setter methods, or add tags.
 
-Хелпер функции имеют отложенную инициализацию параметров поэтому минимально влияют на начальную загрузку контейнера.
-
-> [!TIP]
-> ✅ **Можно не указывать** контейнеру как внедрять типизированный параметр метода [^TypeHints] PHP-класса или  `callable` типа при условии, что требуемый тип был ранее объявлен в контейнере или не требует дополнительной конфигурации, контейнер самостоятельно внедрит такую зависимость.
+Since these helper functions feature lazy parameter initialization, they have a minimal impact on the initial loading of the container.
 
 > [!TIP]
-> ✅ Для параметра метода PHP-класса или `callable` типа можно указывать [скалярные типы](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar), `null`, перечисляемые типы, «как есть» – без указания как внедрять такой тип зависимости. Для повторяющихся скалярных значений рекомендуется использовать «[параметры контейнера](../container-parameters/index.md)».
+> ✅ You do not need to explicitly instruct the container on how to inject a type-hinted parameter [^TypeHints] for a PHP class method or a `callable`; provided that the required type has already been registered in the container or requires no additional configuration, the container will automatically inject the dependency.
 
-#### Хелпер функции { #helper-fn }
+> [!TIP]
+> ✅ For parameters in PHP class methods or `callable` types, you can specify [scalar types](https://www.php.net/manual/en/language.types.type-system.php#language.types.type-system.atomic.scalar), `null`, or enumerated types directly – without needing to specify how such dependencies should be injected. For recurring scalar values, it is recommended to use [container parameters](../container-parameters/index.md).
 
-  - [diAutowire()](di-autowire.md) – объявляет PHP-класс в контейнере.
-  - [diCallable()](di-callable.md) – внедрение зависимости через тип `callable`.
-  - [diFactory()](di-factory.md) – внедрение зависимости через паттерн «фабрика».
-  - [diGet()](di-get.md) – внедрение зависимости по идентификатору контейнера.
-  - [diParameter()](di-parameter.md) – внедрение зависимости из «параметра контейнера».
-  - [diParameterRuntime()](di-parameter-runtime.md) – внедрение зависимости из «параметр контейнера времени исполнения».
-  - [diProxyClosure()](di-proxy-closure.md) – внедрение «ленивой» зависимости.
-  - [diTaggedAs()](di-tagged-as.md) – внедрение коллекции по тегу.
-  - [diValue()](di-value.md) – внедрение зависимости «как есть».
-  - [diRuntime()](di-runtime.md) – внедрение «runtime definition».
+#### Helper functions { #helper-fn }
+
+  - [diAutowire()](di-autowire.md) – declares a PHP class in the container.
+  - [diCallable()](di-callable.md) – dependency injection via a call to a `callable` type.
+  - [diFactory()](di-factory.md) – dependency injection via the factory pattern.
+  - [diGet()](di-get.md) – dependency injection by container identifier.
+  - [diParameter()](di-parameter.md) – dependency injection from a container parameter.
+  - [diParameterRuntime()](di-parameter-runtime.md) – dependency injection from a “runtime container parameter”.
+  - [diProxyClosure()](di-proxy-closure.md) – inject a “lazy” dependency.
+  - [diTaggedAs()](di-tagged-as.md) – incorporating a collection by tag.
+  - [diValue()](di-value.md) – dependency injection “as is”.
+  - [diRuntime()](di-runtime.md) – inject a “runtime definition”.
 
 <!--@include: ../_include/term_notes.md-->
