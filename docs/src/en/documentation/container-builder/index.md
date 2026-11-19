@@ -5,12 +5,12 @@ title: Building the dependency container
 
 ### Building the dependency container { #title }
 
-Комбинация методов класса `\Kaspi\DiContainer\DiContainerBuilder` предоставляет гибкую настройку и сборку контейнера зависимостей.
+The combination of methods in the `\Kaspi\DiContainer\DiContainerBuilder` class allows for flexible configuration and construction of a dependency container.
 
-Цепочка вызовов настройки сборки должна заканчиваться методом `\Kaspi\DiContainer\DiContainerBuilder::build()` для получения настроенного контейнера зависимостей.
+The chain of build configuration calls must end with the `\Kaspi\DiContainer\DiContainerBuilder::build()` method to obtain the configured dependency container.
 
-Собранный контейнер будет предоставлять стандартные методы `get()`, `has()` из спецификации [PSR-11](https://www.php-fig.org/psr/psr-11/),
-[метод `call()`](../call/index.md) и дополнительный [метод `set()`](set.md) для динамического добавления определений в контейнер.
+The assembled container will provide the standard `get()` and `has()` methods from the [PSR-11](https://www.php-fig.org/psr/psr-11/) specification,
+the [`call()` method](../call/index.md), and an additional [`set()` method](set.md) for dynamically adding definitions to the container.
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
@@ -27,56 +27,54 @@ $container = (new DiContainerBuilder())
 ```
 
 > [!IMPORTANT]
-> Валидация конфигурации контейнера провидится в методе `DiContainerBuilder::build()`. При некорректной конфигурации будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface`.
+> The container configuration is validated within the `DiContainerBuilder::build()` method. If the configuration is found to be invalid, an exception that implements the `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` interface will be thrown.
 
 > [!IMPORTANT]
-> [Методы загрузки из файлов конфигураций](methods/load-definitions-from-file.md) имеют следующий приоритет, чем раньше использован метод загрузки, тем приоритетнее объявления сделанные в этом файле. Идентификаторы контейнера[^ContainerId] для определений должны быть уникальными в рамках создаваемого контейнера.
+> [Methods for loading from configuration files](methods/load-definitions-from-file.md) follow a specific order of priority: the earlier a loading method is applied, the higher the priority given to the definitions it provides. Container identifiers[^ContainerId] used within these definitions must be recognizable within the context of the container being created.
 >
-> Для некоторых сценариев использования может понадобиться переопределение ранее объявленных определений.
-> Для переопределения используйте методы [`DiContainerBuilder::addDefinitionsOverride()`](methods/load-definitions-from-collection.md#adddefinitionsoverride)
-> и [`DiContainerBuilder::loadOverride()`](methods/load-definitions-from-file.md#loadoverride).
+> In some use cases, you may need to override previously declared definitions. To perform an override, use the [`DiContainerBuilder::addDefinitionsOverride()`](methods/load-definitions-from-collection.md#adddefinitionsoverride) and [`DiContainerBuilder::loadOverride()`](methods/load-definitions-from-file.md#loadoverride) methods.
 >
-> При возникновении конфликта объявления определений контейнера будет выброшено исключение.
+> An exception will be thrown if a conflict arises in the container definition declarations.
 
 
-### Методы сборки контейнера { #methods }
- 
-Класс `\Kaspi\DiContainer\DiContainerBuilder` реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerBuilderInterface` и предоставляет методы для объявления определений контейнера, регистрации параметров контейнера, формирования с контекстов для файлов конфигураций и компиляции контейнера в готовый к использованию PHP-код сохраняемый в файл.
+### Container's assembly methods { #methods }
 
-[Объявление определений контейнера из файлов конфигураций](methods/load-definitions-from-file.md):
-- `load()` – объявляет определения в контейнере из файлов конфигураций.
-- `loadOverride()` – объявляет определения в контейнере из файлов конфигураций с перезаписью.
+The `\Kaspi\DiContainer\DiContainerBuilder` class implements the `\Kaspi\DiContainer\Interfaces\DiContainerBuilderInterface` interface and provides methods for declaring container definitions, registering container parameters, creating contexts for configuration files, and compiling the container into ready-to-use PHP code, which is then saved to a file.
 
-[Объявление определений контейнера через коллекцию](methods/load-definitions-from-collection.md):
-- `addDefinitions()` – объявляет определения в контейнере из коллекции.
-- `addDefinitionsOverride()` – объявляет определения в контейнере из коллекции с перезаписью.
+[Declaring container definitions from configuration files](methods/load-definitions-from-file.md):
+- `load()` — declares definitions in the container based on configuration files.
+- `loadOverride()` — declares definitions in the container based on configuration files, with the option to overwrite existing ones.
 
-[Регистрация параметров контейнера](methods/load-parameters.md):
-- `loadParameters()` – регистрация параметров контейнера из файлов.
-- `addParameters()` – регистрация параметров контейнера из коллекции.
-- `setParameter()` – регистрация параметра контейнера и его значения.
+[Declaring container definitions via a collection](methods/load-definitions-from-collection.md):
+- `addDefinitions()` — declares definitions in the container based on a collection.
+- `addDefinitionsOverride()` — declares definitions in the container based on a collection, with the option to overwrite existing ones.
 
-[Объявление PHP-классов в контейнере из файловой системы](methods/import.md):
-- `import()` – объявляет PHP-классы через сканирование файловой системы.
+[Registering container parameters](methods/load-parameters.md):
+- `loadParameters()` — registers container parameters from files.
+- `addParameters()` — registers container parameters from a collection.
+- `setParameter()` — registers a container parameter and its value.
 
-[Компиляция контейнера](methods/compile-to-file.md):
-- `compileToFile()` – объявляет параметры компиляции контейнера в PHP-код.
+[Registering PHP classes in the container based on the file system](methods/import.md):
+- `import()` — registers PHP classes by scanning the file system.
 
-[Передача контекста для конфигурационных файлов](methods/configuration-context.md):
-- `addConfiguratorContexts()` – коллекция контекста для файлов конфигураций.
-- `setConfiguratorContext()` – именованный контекст для файлов конфигураций.
+[Container compilation](methods/compile-to-file.md):
+- `compileToFile()` — sets the parameters for compiling the container into PHP code.
 
-### Использование контейнера в разных окружениях приложения { #build-container-env }
+[Passing context for configuration files](methods/configuration-context.md):
+- `addConfiguratorContexts()` — a set of contexts for configuration files.
+- `setConfiguratorContext()` — a named context for configuration files.
 
-Окружения для приложений называются в зависимости от их назначения:
-Локальное (**dev**) — для разработчика, Тестовое (**test**) — для QA,
-Продакшен (**prod**) — для конечных пользователей.
+### Using a container across different application environments { #build-container-env }
 
-Не используйте [компиляцию контейнера](methods/compile-to-file.md) в среде разработки (_dev_), иначе все изменения, которые вы внесете конфигурацию контейнера в процессе изменения кода приложения через атрибуты, файлы конфигураций и т.п., не будут приняты во внимание. Компиляция контейнера в PHP код происходит только один раз при первом вызове сборки контейнера.
+Application environments are named according to their purpose:
+Local (**dev**) — for developers; test (**test**) — for quality assurance (QA) specialists;
+production (**prod**) — for end users.
 
-#### Как использовать компиляцию в разных средах приложения { #how-to-build-container-env }
+Do not use [container compilation](methods/compile-to-file.md) in the development (**dev**) environment; otherwise, any changes you make to the container configuration—such as modifications to application code via attributes, configuration files, etc.—will not be reflected. Container compilation into PHP code occurs only once—during the initial build of the container.
 
-Пример изолирования настройки компиляции контейнера в разных средах разработки:
+#### How to use compilation in different application environments { #how-to-build-container-env }
+
+An example of isolating container build settings across different development environments:
 
 ```php
 <?php
@@ -94,12 +92,12 @@ $builder = (new DiContainerBuilder())
     )
 ;
 
-// 🚩 окружение для локальной разработки приложения
+// 🚩 environment for local application development
 if ('dev' === getenv('APP_ENV')) {
     $builder->loadOverride('/app/config/dev_services.php');// [!code highlight]
 }
 
-// 🚩 Компилировать контейнер только когда APP_ENV === 'prod' окружении 
+// 🚩 Compile the container only when in the 'prod' environment (APP_ENV === 'prod')
 if ('prod' === getenv('APP_ENV')) {
     $builder->compileToFile('/app/var/container', 'App\\Core\\FooContainer');// [!code highlight]
 }
@@ -108,13 +106,10 @@ $container = $builder->build();
 ```
 
 > [!TIP]
-> При развёртывании в продуктивной среде новой или измененной версии контейнера
-> необходим удалить ранее созданный файл контейнера, например запуском shell скрипта для примера выше:
+> When deploying a new or modified version of a container in a production environment, it is necessary to remove the previously created container file—for example, by executing a shell script, as shown in the example above:
 > ```shell
 >  rm /app/var/container/FooContainer.php
 > ```
-> После удаления ранее сгенерированного файла `/app/var/container/FooContainer.php`
-> рекомендуется "прогреть" приложение чтобы при первом вызове произошла компиляция
-> контейнера. Последующие вызовы контейнера в коде будут на скомпилированном контейнере.
+> After deleting the previously generated file `/app/var/container/FooContainer.php`, it is recommended to "warm up" the application so that the container is compiled upon the first request. Subsequent calls to the container within the code will then use this compiled container.
 
 <!--@include: ../_include/term_notes.md-->

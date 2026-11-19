@@ -40,7 +40,7 @@ export default {
                                 { text: 'Контекст для файлов конфигураций', link: 'context.md' },
                             ],
                         },
-                        { text: 'Динамическое объявление определений', link: 'set.md' },
+                        { text: 'Dynamic declaration of an object within a container', link: 'set.md' },
                     ]
                 },
                 {

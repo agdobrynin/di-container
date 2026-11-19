@@ -1,8 +1,8 @@
 ---
 outline: [2,4]
-title: Dynamically Adding Definitions to a Container
+title: Dynamic declaration of an object within a container
 ---
-### Dynamically Adding Definitions to a Container { #title }
+### Dynamic declaration of an object within a container { #title }
 
 В некоторых сценариях использования контейнера невозможно объявить PHP-класс или другое определение при сборке контейнера через [методы класса `DiContainerBuilder`](index.md#methods) так как его конфигурация заранее неизвестна. Реальное состояние объекта инициализируется вне контейнера, и устанавливается в контейнер только во время выполнения.
 

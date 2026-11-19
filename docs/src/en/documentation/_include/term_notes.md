@@ -1,10 +1,9 @@
-[^SetterMethodMutable]: **Мутабельный сеттер-метод** — это метод для изменения значения внутреннего свойства объекта, который модифицирует существующий объект на месте и обычно возвращает `void`.
-[^SetterMethodImmutable]: **Иммутабельный сеттер-метод** — это метод, который не изменяет текущий объект, а создаёт и возвращает его новый экземпляр с обновлённым значением.
-[^FQCN]: **F**ully **Q**ualified **C**lass **N**ame – полное имя класса или интерфейса, включая пространство имён.
-[^TypeHints]: **Type hints** – указание ожидаемого типа данных для параметров метода, например имя конкретного класса или интерфейса.
-[^ParameterRuntime]: Параметр «времени исполнения» устанавливает своё реальное значение вне контейнера, его значение будет установлено после сборки контейнера. Такой параметр предназначен для корректной конфигурации определений контейнера которые зависят от такого параметра.
-[^Parameter]: Параметр контейнера это простой скалярный тип который можно повторно использовать для указания как внедрять зависимость.
-[^FactoryPattern]: В некоторых сценариях возникает необходимость для внедрения зависимостей применить шаблон проектирования «фабрика»
-чтобы делегировать процесс создания требуемого объекта специальному PHP-классу – «фабрика».
-[^ContainerId]: Идентификатор контейнера (Container ID) – это строковое имя (или имя класса/интерфейса), по которому сервис или объект зарегистрирован и запрашивается из контейнера через метод `get()`.
-[^CallableType]: Вызываемый тип – `callable`, представляет значения или выражения, доступные для вызова как функция. Описание [в документации PHP](https://www.php.net/manual/ru/language.types.callable.php).
+[^SetterMethodMutable]: A **mutable setter method** is a method used to change the value of an object's internal property; it modifies the existing object in place and typically returns `void`.
+[^SetterMethodImmutable]: An **immutable setter method** is a method that does not modify the current object, but instead creates and returns a new instance of it with an updated value.
+[^FQCN]: **F**ully **Q**ualified **C**lass **N**ame – the full name of a class or interface, including its namespace.
+[^TypeHints]: **Type hints** – the specification of an expected data type for method parameters, such as the name of a specific class or interface.
+[^ParameterRuntime]: A "runtime" parameter acquires its actual value outside the container; this value is assigned after the container has been built. Such a parameter is intended for the proper configuration of container definitions that depend on it.
+[^Parameter]: A container parameter is a simple scalar type that can be reused to specify how a dependency should be injected.
+[^FactoryPattern]: In some scenarios, it becomes necessary—for the purpose of dependency injection—to employ the "factory" design pattern, delegating the creation of a required object to a dedicated PHP class known as a "factory."
+[^ContainerId]: A container ID is a string name (or a class/interface name) used to register a service or object within a container and to retrieve it via the `get()` method.
+[^CallableType]: The `callable` type represents values ​​or expressions that can be invoked as a function. See the description [in the PHP documentation](https://www.php.net/manual/ru/language.types.callable.php).
