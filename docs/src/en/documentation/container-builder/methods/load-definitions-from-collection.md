@@ -1,31 +1,31 @@
 ---
 outline: [2,4]
-title: Объявление определений контейнера через коллекцию
+title: Declaring definitions via a collection
 ---
-### Объявление определений контейнера через коллекцию { #title }
+### Declaring definitions via a collection { #title }
 
-Объявить определения контейнера можно используя коллекцию. Коллекция должна быть представлена любым `iterable` типом. Элементы коллекции должны быть представлены парой ключ-значение, где ключ коллекции это идентификатор контейнера [^ContainerId], а значение – объявление определения.
+Definitions can be declared using a collection. This collection must be an `iterable` type. Its elements should be key-value pairs, where the key is a container identifier [^ContainerId] and the value is the definition declaration.
 
 ### addDefinitions()
 
-Метод `addDefinitions()` объявляет определения контейнера с отслеживанием уникальности идентификаторов контейнера [^ContainerId] в рамках всей конфигурации контейнера.
+The `addDefinitions()` method declares container definitions while ensuring that each container identifier [^ContainerId] remains unique throughout the entire container configuration.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::addDefinitions(
     iterable $definitions
 ): static;
 ```
-Параметры:
-- `$definitions` – коллекция определений.
+Parameters:
+- `$definitions` – a collection of definitions.
 
 > [!WARNING]
 > <!--@include: ../_include/build_id_equals.md-->
 
-#### Пример использования метода addDefinitions() { #example-add-definitions }
+#### Example of using the addDefinitions() method { #example-add-definitions }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/src/Services/ReportMaker.php
@@ -33,7 +33,7 @@ PHP-классы:
 <<< @/_code/src/Storages/ReportStorage.php
 :::
 
-Объявить через коллекцию PHP-классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir`  и `\App\Services\ReportMaker` в параметр `$lastDays`.
+Declare PHP classes via a collection, with scalar parameters injected: `\App\Storages\ReportStorage` into the `$dir` parameter, and `\App\Services\ReportMaker` into the `$lastDays` parameter.
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->
@@ -54,7 +54,7 @@ use App\Storages\ReportStorage;
 
 use function Kaspi\DiContainer\diAutowire;
 
-// Анонимная функция в качестве коллекции
+// An anonymous function as a collection
 $fn = static function (): Generator {// [!code highlight]
     yield diAutowire(ReportStorage::class)// [!code highlight]
         ->bindArguments(// [!code highlight]
@@ -62,7 +62,7 @@ $fn = static function (): Generator {// [!code highlight]
         );// [!code highlight]
 };// [!code highlight]
 
-// PHP массив в качестве коллекции
+// PHP array as a collection
 $services = [// [!code highlight]
     diAutowire(ReportMaker::class)// [!code highlight]
         ->bindArguments(// [!code highlight]
@@ -84,13 +84,13 @@ var_dump($service->lastDays);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (9) "/var/data"
@@ -99,22 +99,22 @@ int(10)
 
 ### addDefinitionsOverride()
 
-Метод `addDefinitionsOverride()` объявляет определения из коллекции с перезаписью ранее объявленных определений если у них совпадают идентификаторы контейнера[^ContainerId].
+The `addDefinitionsOverride()` method registers definitions from a collection, overwriting any previously registered definitions that share the same identifier within the container[^ContainerId].
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::addDefinitionsOverride(
     iterable $definitions
 ): static;
 ```
-Параметры:
-- `$definitions` – коллекция определений.
+Parameters:
+- `$definitions` – a collection of definitions.
 
 
-#### Пример использования метода addDefinitionsOverride() { #example-add-definitions-override }
+#### Example of using the addDefinitionsOverride() method { #example-add-definitions-override }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -124,7 +124,7 @@ PHP-классы:
 
 :::
 
-В файле конфигураций `report_services.php` объявлены PHP-классы с внедрением скалярных параметров: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если значение переменной среды `APP_ENV` равно `'dev'`, то для класса `\App\Storages\ReportStorage` необходимо внедрить скалярное значение `'/tmp'` в параметр `$dir` через коллекцию, т.е. перезаписать ранее объявленное определение с новым значениям для того же идентификатора контейнера[^ContainerId].
+The `report_services.php` configuration file defines PHP classes into which scalar parameters are injected: a value is passed to the `$dir` parameter of `\App\Storages\ReportStorage`, and a value is passed to the `$lastDays` parameter of `\App\Services\ReportMaker`. If the `APP_ENV` environment variable is set to `'dev'`, then the scalar value `'/tmp'` must be injected into the `$dir` parameter of the `\App\Storages\ReportStorage` class (via a collection of parameters). In effect, this means overwriting a previously established definition with a new value for the same identifier within the container[^ContainerId].
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->
@@ -171,13 +171,13 @@ var_dump($service->lastDays);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (4) "/tmp"
