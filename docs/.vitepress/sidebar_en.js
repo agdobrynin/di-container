@@ -26,7 +26,7 @@ export default {
                                 { text: 'Context for configuration files', link: 'methods/configuration-context.md' },
                             ],
                         },
-                        { text: 'Файлы конфигураций', link: 'configuration_files.md' },
+                        { text: 'Definition configuration files', link: 'configuration_files.md' },
                         {
                             base: '/en/documentation/container-builder/definitions-configurator/',
                             text: 'Конфигуратор определений',
