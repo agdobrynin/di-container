@@ -21,7 +21,7 @@ title: Объявление в файлах конфигураций
 #### Хелпер функции { #helper-fn }
 
   - [diAutowire()](di-autowire.md) – объявляет PHP-класс в контейнере.
-  - [diCallable()](di-callable.md) – внедрение зависимости через тип `callable`.
+  - [diCallable()](di-callable.md) – внедрение зависимости через вызов `callable` типа.
   - [diFactory()](di-factory.md) – внедрение зависимости через паттерн «фабрика».
   - [diGet()](di-get.md) – внедрение зависимости по идентификатору контейнера.
   - [diParameter()](di-parameter.md) – внедрение зависимости из «параметра контейнера».
