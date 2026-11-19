@@ -4,11 +4,11 @@ title: Dynamic declaration of an object within a container
 ---
 ### Dynamic declaration of an object within a container { #title }
 
-В некоторых сценариях использования контейнера невозможно объявить PHP-класс или другое определение при сборке контейнера через [методы класса `DiContainerBuilder`](index.md#methods) так как его конфигурация заранее неизвестна. Реальное состояние объекта инициализируется вне контейнера, и устанавливается в контейнер только во время выполнения.
+In some container usage scenarios, it is not possible to declare a PHP class or other definition during the container build process—using the [methods of the `DiContainerBuilder` class](index.md#methods) — because the configuration is not known in advance. The actual state of an object is initialized outside the container and is injected into the container only at runtime.
 
-Метод контейнера `set()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiContainerSetterInterface`.
+The container's `set()` method is defined by the `\Kaspi\DiContainer\Interfaces\DiContainerSetterInterface` interface.
 
-Сигнатура метода:
+The method signature is as follows:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DiContainerSetterInterface::set(
@@ -17,18 +17,19 @@ title: Dynamic declaration of an object within a container
 ): static;
 ```
 
-Параметры:
-- `$id` – идентификатор контейнера [^ContainerId].
-- `$definition` – объект.
+Parameters:
+- `$id` – container identifier [^ContainerId].
+- `$definition` – object.
 
 > [!WARNING]
-> Метод `set()` может выбросить исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface` если идентификатор контейнера указанный в параметре `$id` не уникален в конфигурации контейнера. 
+> The `set()` method may throw an exception that implements the `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface` interface if the container identifier specified in the `$id` parameter is not unique within the container configuration.
 
-Важно заметить что динамически объявленные объекты не будут [скомпилированы](methods/compile-to-file.md).
+> [!IMPORTANT]
+> Dynamically declared objects will not be [compiled](methods/compile-to-file.md).
 
-**Для сохранения высокой производительности контейнера рекомендуется использовать объявление PHP-классов через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md) или [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md)**.
+**To maintain high container performance, it is recommended to declare PHP classes using the [`diRuntime()` helper function](../php-definition/di-runtime.md) or the [`\Kaspi\DiContainer\Attributes\DiRuntime` attribute](../attribute-definition/di-runtime.md).**
 
-### Пример динамического объявления объекта в контейнере { #example }
+### Example of dynamic object declaration within a container { #example }
 
 ```php
 <?php
