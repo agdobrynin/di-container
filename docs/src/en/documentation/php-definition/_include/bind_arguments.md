@@ -9,7 +9,7 @@ DiDefinitionArgumentsInterface::bindArguments(
 ```
 
 Parameters:
-- `$argument` – the arguments.
+- `$argument` – arguments.
 
 When specifying how a dependency should be injected into a particular parameter using `bindArguments()`, you can use [named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments).
 
