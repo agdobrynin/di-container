@@ -1,12 +1,12 @@
 ---
 outline: [2,4]
-title: Хелпер функция diValue()
+title: Helper function diValue()
 ---
-### Хелпер функция diValue()
+### Helper function diValue()
 
-Хелпер функция `diValue()` внедряет зависимость «как есть».
+The `diValue()` helper function injects a dependency "as is."
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
@@ -16,21 +16,21 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 ): DiDefinitionTagArgumentInterface
 ```
 
-Параметры:
-- `$value` – переданное значение в контейнер.
+Parameters:
+- `$value` – the value passed into the container.
 
-Функция `diValue()` возвращает объект предоставляющий методы:
-- `bindTag()` – добавляет тег с метаданными для определения.
+The `diValue()` function returns an object that provides the following methods:
+- `bindTag()` – adds a tag containing metadata for identification.
 
 ### bindTag()
 
-Теги позволяют отнести объявляемое определение к коллекции элементов отмеченных одним тегом.
+Tags allow a declared definition to be associated with a collection of elements marked with the same tag.
 
 <!--@include: ./_include/bind_tag.md-->
 
-### Идентификатор контейнера { #container-id }
+### Container identifier { #container-id }
 
-Чтобы обеспечить доступность объявляемого определения через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
+To make a declared definition accessible via the container's `get()` and `has()` methods, you must specify a container identifier[^ContainerId] in the configuration file that corresponds to the declared definition.
 
 ::: code-group
 
@@ -72,13 +72,13 @@ return static function(): Generator {
 
 ::: 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 array(2) {
