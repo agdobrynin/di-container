@@ -1,8 +1,8 @@
 ---
 aside: false
-title: Dependency container reset
+title: Container reset
 ---
-### Dependency container reset { #title }
+### Container reset { #title }
 
 Performing a reset on the dependency container will return it to its initial state — clearing its internal buffer of properties and dependencies, bringing them back to the same state they were in when the container was first initialized.
 
