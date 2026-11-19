@@ -6,4 +6,4 @@
 [^Parameter]: A container parameter is a simple scalar type that can be reused to specify how a dependency should be injected.
 [^FactoryPattern]: In some scenarios, it becomes necessary—for the purpose of dependency injection—to employ the "factory" design pattern, delegating the creation of a required object to a dedicated PHP class known as a "factory."
 [^ContainerId]: A container ID is a string name (or a class/interface name) used to register a service or object within a container and to retrieve it via the `get()` method.
-[^CallableType]: The `callable` type represents values ​​or expressions that can be invoked as a function. See the description [in the PHP documentation](https://www.php.net/manual/ru/language.types.callable.php).
+[^CallableType]: The `callable` type represents values ​​or expressions that can be invoked as a function. See the description [in the PHP documentation](https://www.php.net/manual/en/language.types.callable.php).

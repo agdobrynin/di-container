@@ -29,7 +29,7 @@ Parameters:
 - `$availableExtensions` – file extensions for PHP classes.
 
 > [!NOTE]
-> The `$excludeFiles` parameter uses the pattern syntax from the [PHP function `\fnmatch()`](https://www.php.net/manual/ru/function.fnmatch.php).
+> The `$excludeFiles` parameter uses the pattern syntax from the [PHP function `\fnmatch()`](https://www.php.net/manual/en/function.fnmatch.php).
 
 PHP classes found in files excluded via the `$excludeFiles` parameter will not be accessible to the container via the `get()` method; consequently, such PHP classes cannot be injected.
 
