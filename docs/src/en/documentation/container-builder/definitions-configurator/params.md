@@ -1,10 +1,10 @@
 ---
 outline: [2,4]
-title: Управление параметрами контейнера
+title: Managing container parameters
 ---
-### Управление параметрами контейнера { #title }
+### Managing container parameters { #title }
 
-В файлах конфигураций доступна регистрация и управление [параметрами контейнера](../../container-parameters/index.md).
+Configuration files allow for the registration and management of [container parameters](../../container-parameters/index.md).
 
 ```php
 <?php
@@ -29,9 +29,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 
 ### loadParameters()
 
-Метод `loadParameters()` регистрирует параметры контейнера через файлы конфигураций параметров.
+The `loadParameters()` method registers container parameters via parameter configuration files.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::loadParameters(
@@ -40,16 +40,16 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 ): void
 ```
 
-Параметры:
+Parameters:
 
-- `$file` – полный путь к файлу описывающий конфигурацию параметров.
-- `$_` – дополнительные файлы конфигураций параметров контейнера.
+- `$file` – the full path to the file that defines the parameter configuration.
+- `$_` – additional configuration files for container parameters.
 
 ### `addParameters()`
 
-Метод `addParameters()` регистрирует параметры контейнера из коллекции.
+The `addParameters()` method registers container parameters from a collection.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::addParameters(
@@ -57,14 +57,14 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 ): void
 ```
 
-Параметры:
-- `$params` – коллекция ключ-значение конфигурации параметров.
+Parameters:
+- `$params` – a key-value collection of configuration parameters.
 
 ### setParameter()
 
-Метод `setParameter()` регистрирует имя параметра контейнера и его значение.
+The `setParameter()` method registers a container parameter name and its value.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::setParameter(
@@ -73,15 +73,15 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 ): void
 ```
 
-Параметры:
-- `$name` – имя параметра.
-- `$value` – значение параметра.
+Parameters:
+- `$name` – the name of the parameter.
+- `$value` – the value of the parameter.
 
 ### removeParameter()
 
-Метод `removeParameter()` удаляет параметр контейнера по имени из конфигурации.
+The `removeParameter()` method removes a container parameter from the configuration by its name.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::removeParameter(
@@ -89,15 +89,15 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 ): void
 ```
 
-Параметры:
+Parameters:
 
-- `$name` – имя параметра.
+- `$name` – parameter name.
 
 ### hasParameter()
 
-Метод `hasParameter()` выполняет проверку наличия определенного параметра контейнера в конфигурации по имени параметра.
+The `hasParameter()` method checks for the existence of a specific container parameter in the configuration, based on the parameter name.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::removeParameter(
@@ -105,8 +105,8 @@ return static function (DefinitionsConfiguratorInterface $configurator): Generat
 ): void
 ```
 
-Параметры:
+Parameters:
 
-- `$name` – имя параметра.
+- `$name` – parameter name.
 
 <!--@include: ../../_include/term_notes.md-->

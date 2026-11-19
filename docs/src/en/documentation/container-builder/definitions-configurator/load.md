@@ -1,10 +1,10 @@
 ---
 outline: [2,4]
-title: Объявление определений из файлов конфигураций
+title: Declaring definitions from configuration files
 ---
-### Объявление определений из файлов конфигураций { #title }
+### Declaring definitions from configuration files { #title }
 
-В [файлах конфигураций](../configuration_files.md) доступно объявление определений из других файлов конфигураций.
+In [configuration files](../configuration_files.md), it is possible to declare definitions from other configuration files.
 
 ```php
 <?php
@@ -25,9 +25,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 ### load()
 
-Метод `load()` объявляет определения из файлов конфигураций с отслеживанием уникальности идентификаторов контейнера [^ContainerId].
+The `load()` method registers definitions from configuration files while tracking the uniqueness of container identifiers [^ContainerId].
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::load(
@@ -36,16 +36,16 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ): void
 ```
 
-Параметры:
+Parameters:
 
-- `$file` – полный путь к файлу конфигураций определений.
-- `$_` – полный путь к файлу конфигураций определений.
+- `$file` – the full path to the definitions configuration file.
+- `$_` – the full path to the definitions configuration file.
 
 ### loadOverride()
 
-Метод `loadOverride()` объявляет определения из файлов конфигураций с возможностью переопределения ранее объявленных определений по тому же идентификатору контейнера [^ContainerId].
+The `loadOverride()` method registers definitions from configuration files, with the ability to override previously registered definitions that share the same container identifier [^ContainerId].
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::loadOverride(
@@ -54,9 +54,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ): void
 ```
 
-Параметры:
+Parameters:
 
-- `$file` – полный путь к файлу конфигураций определений.
-- `$_` – полный путь к файлу конфигураций определений.
+- `$file` – the full path to the definitions configuration file.
+- `$_` – the full path to the definitions configuration file.
 
 <!--@include: ../../_include/term_notes.md-->

@@ -1,12 +1,12 @@
 ---
 outline: [2,4]
-title: Конфигуратор определений
+title: Definition Configurator
 ---
-### Конфигуратор определений { #title } 
+### Definition Configurator { #title } 
 
-Через **Конфигуратор определений** в можно объявлять или удалять определения контейнера, использовать другие файлы конфигураций, регистрировать параметры контейнера и использовать контекст для построения логики объявления определений контейнера.
+Through the **Definition Configurator** you can declare or delete container definitions, use other configuration files, register container parameters, and use context to build logic for declaring container definitions.
 
-Конфигуратор передается в анонимную функцию первым параметром для [файлов конфигураций](../configuration_files.md).
+The configurator is passed as the first parameter to the anonymous function for [configuration files](../configuration_files.md).
 
 ```php
 <?php
@@ -23,30 +23,29 @@ return static function (
 };
 ```
 
-### Методы конфигуратора определений { #methods }
+### Definition Configurator Methods { #methods }
 
-Конфигуратор реализует интерфейс `\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface` и предоставляет методы для объявления определений, регистрации параметров контейнера, использования файлов конфигураций и работой с контекстом в файлах конфигураций.
+The configurator implements the `\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface` interface and provides methods for declaring definitions, registering container parameters, using configuration files, and working with context within those configuration files.
 
-[Объявление и получение определений контейнера](get_remove.md):
-  - `getDefinitions()` – получает все объявленные определения.
-  - `setDefinition()` – объявить определение контейнера.
-  - `getDefinition()` – получить определение по идентификатору контейнера. 
-  - `findTaggedDefinitions()` – получить определения контейнера по тегу.
-  - `removeDefinition()` – удаляет объявление из контейнера.
-
-
-[Объявление определений из файлов конфигураций](load.md):
-  - `load()` – объявление определений контейнера из файлов конфигураций.
-  - `loadOverride()` – объявление определений контейнера из файлов конфигураций с заменой.
+[Defining and retrieving container definitions](get_remove.md):
+- `getDefinitions()` – retrieves all declared definitions.
+- `setDefinition()` – declares a container definition.
+- `getDefinition()` – retrieves a definition by its container identifier.
+- `findTaggedDefinitions()` – retrieves container definitions by tag.
+- `removeDefinition()` – removes a declaration from the container.
 
 
-[Управление параметрами контейнера](params.md):
-  - `loadParameters()` – регистрация параметров контейнера из файлов.
-  - `addParameters()` – регистрация параметров контейнера из коллекции.
-  - `setParameter()` – регистрация параметра контейнера.
-  - `removeParameter()` – удаление параметра контейнера.
-  - `hasParameter()` – доступность параметра контейнера.
+[Loading definitions from configuration files](load.md):
+- `load()` – loading container definitions from configuration files.
+- `loadOverride()` – loading container definitions from configuration files with overrides.
 
-[Контекст для конфигурационных файлов](context.md):
-  - `getContext()` – получить контекст.
+[Managing container parameters](params.md):
+- `loadParameters()` – register container parameters from files.
+- `addParameters()` – register container parameters from a collection.
+- `setParameter()` – register a container parameter.
+- `removeParameter()` – remove a container parameter.
+- `hasParameter()` – check for the existence of a container parameter.
+
+[Context for configuration files](context.md):
+- `getContext()` – retrieve the context.
 

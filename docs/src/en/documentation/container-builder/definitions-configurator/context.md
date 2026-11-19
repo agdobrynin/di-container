@@ -1,21 +1,21 @@
 ---
 outline: [2,4]
-title: Контекст для файлов конфигураций
+title: Context for configuration files
 ---
-### Контекст для файлов конфигураций { #title }
+### Context for configuration files { #title }
 
-При сборке и настройке контейнера можно определить дополнительный контекст для файлов конфигураций.
+When building and configuring a container, you can define an additional context for configuration files.
 
-Контекст определятся самим разработчиком как коллекция ключ-значение. Передать в коллекцию по ключу можно любой тип – `mixed`, например объект, массив значений или другой желаемый тип.
+This context is defined by the developer as a collection of key-value pairs. You can pass any type — such as an object, an array of values, or any other desired type — into the collection associated with a given key.
 
-Методы [`DiContainerBuilder::addConfiguratorContexts()`](../methods/configuration-context.md#addconfiguratorcontexts) и [`DiContainerBuilder::setConfiguratorContext()`](../methods/configuration-context.md#setconfiguratorcontext) устанавливают контекст для файлов конфигураций.
+The methods [`DiContainerBuilder::addConfiguratorContexts()`](../methods/configuration-context.md#addconfiguratorcontexts) and [`DiContainerBuilder::setConfiguratorContext()`](../methods/configuration-context.md#setconfiguratorcontext) are used to set the context for configuration files.
 
 
 ### getContext()
 
-Метод `getContext()` получает значение контекста по имени.
+The `getContext()` method retrieves a context value by name.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::getContext(
@@ -24,25 +24,24 @@ title: Контекст для файлов конфигураций
 ): mixed
 ```
 
-Параметры:
+Parameters:
 
-Параметры:
-- `$name` – имя контекста.
-- `$fallback`  – резервный обработчик для случая если контекст не найден по имени.
-
+Parameters:
+- `$name` – the name of the context.
+- `$fallback` – a fallback handler to be used in case the context is not found by its name.
 
 > [!TIP]
-> Для параметра `$fallback` применяется типизация `callable(string $name): mixed`.
+> The `$fallback` parameter uses the type `callable(string $name): mixed`.
 >
-> Если в параметр `$fallback` установлено значение `null` и контекст не найден, то будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface`.
+> If the `$fallback` parameter is set to `null` and the context is not found, an exception implementing the `\Kaspi\DiContainer\Interfaces\Exceptions\DefinitionsLoaderExceptionInterface` interface will be thrown.
 
-### Пример использования контекста в файлах конфигураций { #example-context }
+### Example of using context in configuration files { #example-context }
 
-В файле конфигураций `/app/app/config/foo_service.php` требуется контекст для объявления PHP-класса – нужно значение для параметра `\App\Services\Foo::$dsn` для настройки базы данных, и требуется вычисляемое значение получаемое в методе PHP-класса `\App\Core::calculateFoo()` для параметра для параметра `\App\Services\Foo::$foo`.
+In the configuration file `/app/app/config/foo_service.php`, a context is required to define a PHP class: a value must be provided for the `\App\Services\Foo::$dsn` property (for database configuration), and a value — computed via the `\App\Core::calculateFoo()` PHP method must be assigned to the `\App\Services\Foo::$foo` property.
 
-Настройки подключения к базе хранятся в переменной окружения `DATABASE_DSN`.
+Database connection settings are stored in the `DATABASE_DSN` environment variable.
 
-Сборка контейнера:
+Building the container:
 
 ::: code-group
 
@@ -64,7 +63,7 @@ $builder = (new DiContainerBuilder())
         '/app/app/config/foo_service.php',// [!code highlight]
     );
 
-// Использую стороннюю библиотеку для работы с `.env` файлами.
+// I am using a third-party library for working with `.env` files.
 $dotenv = Dotenv::createImmutable('/app/');// [!code highlight]
 $dotenv->required('DATABASE_DSN');// [!code highlight]
 $dotenv->load();// [!code highlight]
@@ -72,7 +71,7 @@ $dotenv->load();// [!code highlight]
 $builder->setConfiguratorContext('DATABASE_DSN', $_ENV['DATABASE_DSN']);// [!code ++]
 
 /**
- * объект содержащий нужные данные для конфигурирования контейнера
+ * an object containing the data needed to configure the container
  * @var \App\Core $core
  */ 
 $builder->setConfiguratorContext($core::class, $core);// [!code ++]

@@ -1,24 +1,23 @@
 ---
 outline: [2,4]
-title: Объявление и получение определений контейнера
+title: Declaring and retrieving container definitions
 ---
-### Объявление и получение определений контейнера { #title }
+### Declaring and retrieving container definitions { #title }
 
-При сборке контейнера через `\Kaspi\DiContainer\DiContainerBuilder` все объявленные определения будут доступны в конфигураторе определений, включая импортированные определения через [метод `DiContainerBuilder::import()`](../index.md#dicontainerbuilder-import).
-
+When building a container via `\Kaspi\DiContainer\DiContainerBuilder`, all declared definitions will be available within the definition configurator, including those imported via the [`DiContainerBuilder::import()` method](../index.md#dicontainerbuilder-import).
 ### getDefinitions()
 
-Метод `getDefinitions()` возвращает коллекцию всех объявленных определений при сборке контейнера, где ключ коллекции это идентификатор контейнера[^ContainerId].
+The `getDefinitions()` method returns a collection of all definitions declared at the time the container is built, where the collection key is the container identifier[^ContainerId].
 
-Метод может вернуть только те определения которые были объявлены раньше вызова метода `getDefinitions()`.
+The method can only return definitions that were declared prior to the call to `getDefinitions()`.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::getDefinitions(): iterable
 ```
 
-Пример использования:
+Example of use:
 
 ```php
 <?php
@@ -39,9 +38,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 ### setDefinition()
 
-Метод `setDefinition()` объявляет определение и его идентификатор контейнера[^ContainerId]. Метод заменит ранее объявленное определение контейнера если совпадают идентификаторы.
+The `setDefinition()` method declares a definition and its container identifier[^ContainerId]. If the identifiers match, this method will replace any previously declared container definition.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::setDefinition(
@@ -50,12 +49,12 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ): void
 ```
 
-Параметры:
+Parameters:
 
-- `$id` – идентификатор контейнера.
-- `$definition` – определение контейнера.
+- `$id` – the container identifier.
+- `$definition` – the container definition.
 
-Пример использования:
+Usage example:
 
 ```php
 <?php
@@ -85,9 +84,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 ### getDefinition()
 
-Метод получает по идентификатору контейнера[^ContainerId] объявленное определение контейнера.
+The method retrieves the declared container definition using the container identifier[^ContainerId].
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::getDefinition(
@@ -96,17 +95,17 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ): mixed
 ```
 
-Параметры:
-- `$id` – идентификатор контейнера определения.
-- `$fallback` – резервный обработчик для случая если определение не найдено.
+Parameters:
+- `$id` – the identifier of the definition container.
+- `$fallback` – a fallback handler for cases where the definition is not found.
 
 > [!TIP]
-> Для параметра `$fallback` применяется типизация `callable(string $id): mixed`.
+> The `$fallback` parameter uses the type `callable(string $id): mixed`.
 >
-> Если в параметр `$fallback` установлено значение `null` и определение не найдено, то будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface`.
+> If the `$fallback` parameter is set to `null` and the definition is not found, an exception implementing the `\Kaspi\DiContainer\Interfaces\Exceptions\NotFoundDefinitionInterface` interface will be thrown.
 
 
-Пример использования:
+Example of use:
 
 ```php
 <?php
@@ -120,7 +119,7 @@ use Kaspi\DiContainer\Exception\NotFoundDefinition;
 use function Kaspi\DiContainer\diAutowire;
 
 return static function (DefinitionsConfiguratorInterface $configurator): void {
-    // без указания $fallback
+    // without specification $fallback
     try {
         $configurator->getDefinition('foo_bar');// [!code ++]
     } catch (NotFoundDefinition) {// [!code warning]
@@ -131,7 +130,7 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
         );// [!code highlight]
     }
 
-    // Использовать $fallback
+    // Use $fallback
     $qux = $configurator->getDefinition('qux', static fn () => null);// [!code ++]
 
     if (null === $qux) {
@@ -146,9 +145,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 ### findTaggedDefinitions()
 
-Метод `findTaggedDefinitions()` возвращает коллекцию всех объявленных определений отмеченных тегом, где ключ коллекции это идентификатор контейнера[^ContainerId].
+The `findTaggedDefinitions()` method returns a collection of all declared definitions that carry a specific tag, where the collection key is the container identifier[^ContainerId].
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::findTaggedDefinitions(
@@ -156,13 +155,13 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ): iterable
 ```
 
-Параметры:
-- `$tag` – имя тега, FQCN[^FQCN] интерфейса.
+Parameters:
+- `$tag` – tag name, or the FQCN[^FQCN] of an interface.
 
 > [!TIP]
-> В параметре `$tag` можно указывать [FQCN интерфейса](../../tags/interface-as-tag.md).
+> In the `$tag` parameter, you can specify the [interface's FQCN](../../tags/interface-as-tag.md).
 
-Пример использования:
+Example of use:
 
 ```php
 <?php
@@ -186,9 +185,9 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 
 ### removeDefinition()
 
-Метод `removeDefinition()` исключает идентификатор[^ContainerId] из контейнера и удаляет объявление определения если оно было сделано ранее.
+The `removeDefinition()` method excludes an identifier[^ContainerId] from the container and removes the definition declaration, if one was previously made.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface::removeDefinition(
@@ -196,15 +195,15 @@ return static function (DefinitionsConfiguratorInterface $configurator): void {
 ): void
 ```
 
-Параметры:
+Parameters:
 
-- `$id` – идентификатор контейнера.
+- `$id` – container identifier.
 
-Все исключенные идентификаторы контейнера будут недоступны для внедрения в параметры.
+Any excluded container IDs will not be injectable into parameters.
 
-При получении через метод контейнера `has()` будет возвращаться `false`, а при попытке получить исключенный идентификатор через метод контейнера `get()` будет выброшено исключение реализующее интерфейс `\Psr\Container\NotFoundExceptionInterface`.
+When receiving through the container method `has()`, `false` will be returned, and when trying to get an excluded identifier through the container method `get()`, an exception implementing the interface `\Psr\Container\NotFoundExceptionInterface` will be thrown.
 
-Пример использования:
+Usage example:
 
 ```php
 <?php
