@@ -1,16 +1,15 @@
 ---
 outline: [2,4]
-title: Хелпер функция diProxyClosure()
+title: Helper function diProxyClosure()
 ---
-### Хелпер функция diProxyClosure()
+### Helper function diProxyClosure()
 
-Хелпер функция `diProxyClosure()` внедряет «ленивую» зависимость через встроенный PHP-класс `\Closure`,
-откладывая инициализацию зависимости до момента фактического его использования.
+The helper function `diProxyClosure()` injects a lazy dependency via the built-in PHP class `\Closure`, deferring the dependency's initialization until the moment it is actually used.
 
-Такой приём объявления зависимости пригодится для внедрения «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмкий вычислений.
+This approach to declaring dependencies is useful for incorporating heavy dependencies that require a long initialization time or resource-intensive computations.
 
 > [!IMPORTANT]
-> Обязательно типизировать параметр[^TypeHints] как `\Closure` или `callable` для внедрения зависимости через хелпер функцию `diProxyClosure()`.
+> Be sure to type-hint the parameter[^TypeHints] as `\Closure` or `callable` for dependency injection via the `diProxyClosure()` helper function.
 > ```php{2}
 >  public function __construct(
 >       private readonly \Closure $bar
@@ -18,9 +17,9 @@ title: Хелпер функция diProxyClosure()
 > ```
 
 > [!TIP]
-> Если используется PHP 8.4 и выше, то вместо хелпер функции `diProxyClosure()` предпочтительнее внедрять зависимость через встроенный в PHP механизм [«ленивых объектов»](../lazy-injection/index.md).
+> If you are using PHP 8.4 or higher, it is preferable to inject dependencies using PHP’s built-in [“lazy objects”](../lazy-injection/index.md) mechanism, rather than using the `diProxyClosure()` helper function.
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
@@ -31,28 +30,28 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface;
 ): DiDefinitionTagArgumentInterface
 ```
 
-Параметры:
-- `$containerIdentifier` – идентификатор контейнера [^ContainerId].
-- `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
+Parameters:
+- `$containerIdentifier` – container identifier [^ContainerId].
+- `$isSingleton` – The container will return the same object instance (singleton pattern). If set to `null`, the value will be determined based on the [container configuration](../container-config/index.md#is-singleton-service-default).
 
-Функция `diProxyClosure()` возвращает объект предоставляющий методы:
-- `bindTag()` – добавляет тег с метаданными для определения.
+The `diProxyClosure()` function returns an object that provides the following methods:
+- `bindTag()` – adds a tag containing metadata for identification.
 
 ### bindTag()
 
-Теги позволяют отнести «ленивое» определение к коллекции элементов отмеченных одним тегом.
+Tags allow a lazy definition to be associated with a collection of elements marked with a single tag.
 
 <!--@include: ./_include/bind_tag.md-->
 
-### Идентификатор контейнера для «ленивого» определения { #container-id }
+### Container identifier for lazy definition { #container-id }
 
-Чтобы обеспечить доступность «ленивого» определения через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций идентификатор контейнера[^ContainerId] соответствующий объявленному определению.
+To make a "lazy" definition accessible via the container's `get()` and `has()` methods, you must specify a container identifier[^ContainerId] in the configuration file that corresponds to the declared definition.
 
-Ресурсоёмкий PHP-класс требующий длительной инициализации:
+A resource-intensive PHP class that requires a lengthy initialization process:
 
 <<< @/_code/php-definition/di-proxy-closure/Bar.php
 
-Метод контейнера `$container->get('services.bar_lazy')` должен возвращать «ленивый» объект класса `\App\Services\Bar`.
+The container method `$container->get('services.bar_lazy')` should return a "lazy" object of the class `\App\Services\Bar`.
 
 ::: code-group
 
@@ -98,22 +97,22 @@ return static function(): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 bool(true)
 bool(true)
 ```
 
-### Пример внедрения параметра с отложенной инициализацией { #example }
+### Example of implementing a parameter with deferred initialization { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -123,7 +122,7 @@ PHP-классы:
 
 :::
 
-PHP-класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления, его внедрить в параметр `$barProxy` конструктора PHP-класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP-класс `\Closure`.
+The PHP class `\App\Services\Bar` performs resource-intensive calculations upon initialization; it should be injected into the `$barProxy` parameter of the `\App\Services\Foo` class constructor using a "lazy" object initialization technique, implemented via PHP's built-in `\Closure` class.
 
 ::: code-group 
 
@@ -167,20 +166,20 @@ return static function(): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 bool(true)
 ```
 
 > [!TIP]
-> Используйте [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) для подсказок и автодополнения в IDE:
+> Use [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) for hints and autocompletion in your IDE:
 > ```php{1-3}
 >   /**
 >    * @param Closure(): Bar $barProxy
