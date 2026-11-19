@@ -1,12 +1,12 @@
 ---
 outline: [2,4]
-title: Хелпер функция diFactory()
+title: Helper function diFactory()
 ---
-### Хелпер функция diFactory()
+### Helper function diFactory()
 
-Хелпер функция `diFactory()` внедряет зависимость контейнера через паттерн «фабрика» [^FactoryPattern].
+The helper function `di Factory()` injects a container dependency using the factory pattern[^FactoryPattern].
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
@@ -17,29 +17,29 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface;
 ): DiDefinitionArgumentsInterface
 ```
 
-Параметры:
-- `$definition` – представление PHP-класса и метода фабрики.
-- `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
+Parameters:
+- `$definition` – a representation of a PHP class and a factory method.
+- `$isSingleton` – The container will return the same object instance (singleton pattern). If set to `null`, the value will be determined based on the [container configuration](../container-config/index.md#is-singleton-service-default).
 
-Функция `diFactory()` возвращает объект предоставляющий методы:
-- `bindArguments()` – передать аргументы для метода фабрики.
+The `diFactory()` function returns an object that provides the following methods:
+- `bindArguments()` – to pass arguments to the factory method.
 
 > [!TIP]
-> Изучите раздел документации [«Использование фабричных методов для внедрения зависимостей»](../factories/index.md).
+> Reads the documentation section [“Using factory methods for dependency injection”](../factories/index.md).
 
 ### bindArguments()
 
-Указание методу PHP-класса «фабрики» как внедрять зависимости в конкретные параметры метода.
+Specifying how a factory method should inject dependencies into specific method parameters.
 
 <!--@include: ./_include/bind_arguments.md-->
 
-### Идентификатор контейнера для PHP-класса «фабрики» { #container-id }
+### Container identifier for a factory method { #container-id }
 
-Чтобы сделать доступным результат выполнения метода PHP-класса «фабрики» доступным через методы `get()` и `has()` контейнера, необходимо указать соответствующий идентификатор контейнера[^ContainerId] в файле конфигураций и объявить вызов метода PHP-класса «фабрики».
+To make the result of a factory method available via the container's `get()` and `has()` methods, you must specify the corresponding container identifier[^ContainerId] in the configuration file and declare the factory.
 
-#### Пример объявления идентификатора контейнера для PHP-класса «фабрики» { #example }
+#### Example of declaring a container identifier for a factory { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 ```php [Foo.php]
@@ -82,11 +82,11 @@ final class Bar
 ```
 :::
 
-Метод контейнера `get('services.foo_factory')` должен возвращать результат выполнения «фабрики» `\App\Services\Foo::createValue()`.
+The container method `get('services.foo_factory')` should return the result of executing the factory `\App\Services\Foo::createValue()`.
 
-Для «фабрики» контейнер внедрит зависимость в параметр конструктора `$bar` самостоятельно, на основании конфигурации.
+For the factory the container will automatically inject the dependency into the `$bar` constructor parameter, based on the configuration.
 
-Для метода `\App\Services\Foo::createValue()` объявить внедрение скалярного типа в параметр `$prefixValue` через метод `bindArguments()`. 
+For the `\App\Services\Foo::createValue()` method, configure the injection of a scalar type into the `$prefixValue` parameter using the `bindArguments()` method.
 
 ::: code-group
 
@@ -130,13 +130,13 @@ return static function(): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(26) "Lorem ipsum dolor sit amet"
