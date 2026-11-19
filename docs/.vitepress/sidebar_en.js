@@ -20,7 +20,7 @@ export default {
                                 { text: 'Overview', link: 'index.md' },
                                 { text: 'Declaring definitions in configuration files', link: 'methods/load-definitions-from-file.md' },
                                 { text: 'Declaration via a collection', link: 'methods/load-definitions-from-collection.md' },
-                                { text: 'Регистрация параметров контейнера', link: 'methods/load-parameters.md' },
+                                { text: 'Registration of container parameters', link: 'methods/load-parameters.md' },
                                 { text: 'Объявление через сканирование файловой системы', link: 'methods/import.md' },
                                 { text: 'Компиляция контейнера', link: 'methods/compile-to-file.md' },
                                 { text: 'Контекст для файлов конфигураций', link: 'methods/configuration-context.md' },

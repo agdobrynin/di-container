@@ -1,17 +1,17 @@
 ---
 outline: [2,4]
-title: Регистрация параметров контейнера
+title: Registration of container parameters
 ---
-### Регистрация параметров контейнера { #title }
+### Registration of container parameters { #title }
 
-Конфигурацию параметров контейнера можно представить в виде коллекции ключ-значение, где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](../../container-parameters/index.md#parameter-support-types).
+The configuration of container parameters can be represented as a set of key-value pairs, where the key is the string name of the parameter, and the value is one of the [supported types](../../container-parameters/index.md#parameter-support-types).
 
 > [!IMPORTANT]
-> Все добавленные ранее параметры в конфигурацию могут быть замены новыми значениями если имя параметра совпадает.
+> Any parameters previously added to the configuration can be replaced with new values, provided the parameter name matches.
 
-#### Пример { #example }
+#### Example { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -21,11 +21,11 @@ PHP-классы:
 
 :::
 
-В файле конфигураций `report_parameters.php` объявить скалярные значения для параметров контейнера:
-- `'params.report_output_dir'` – директория вывода отчётов.
-- `'params.last_days'` – количество последних дней используемых при формировании отчёта.
+In the `report_parameters.php` configuration file, specify scalar values for the container parameters:
+- `'params.report_output_dir'` — the directory for saving reports.
+- `'params.last_days'` — the number of recent days to be taken into account when generating a report.
 
-В файле конфигураций `report_services_with_params.php` объявлены PHP-классы с внедрением скалярных параметров через параметры контейнера.
+The `report_services_with_params.php` configuration file defines the PHP classes to which these scalar values are passed via container parameters.
 
 ::: code-group
 
@@ -57,13 +57,13 @@ var_dump($service->lastDays);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (9) "/var/data"
@@ -71,13 +71,13 @@ int(10)
 ```
 
 > [!NOTE]
-> Прочитайте главу «[параметры контейнера](../../container-parameters/index.md)».
+> Read the chapter [“Container parameters”](../../container-parameters/index.md)».
 
 ### loadParameters()
 
-Метод `loadParameters()` выполняет регистрацию параметров контейнера из файлов:
+The `loadParameters()` method registers container parameters from files:
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::loadParameters(
@@ -85,17 +85,16 @@ int(10)
     string ...$_
 ): static
 ```
+Parameters:
 
-Параметры:
-
-- `$file` – полный путь к файлу.
-- `$_` – полный путь к файлу.
+- `$file` – full path to the file.
+- `$_` – full path to the file.
 
 ### addParameters()
 
-Метод `addParameters()` выполняет регистрацию параметров контейнера из коллекции.
+The `addParameters()` method registers container parameters from a collection.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::addParameters(
@@ -103,14 +102,14 @@ int(10)
 ): static
 ```
 
-Параметры:
-- `$params` – коллекция ключ-значение конфигурации параметров.
+Parameters:
+- `$params` – key-value collection of parameters configuration.
 
 ### setParameter()
 
-Метод `setParameter()` выполняет регистрацию параметра контейнера и его значения.
+The `setParameter()` method registers a container parameter and its value.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder\DiContainerBuilder::setParameter(
@@ -119,8 +118,8 @@ int(10)
 ): static
 ```
 
-Параметры:
-- `$name` – имя параметра.
-- `$value` – значение параметра.
+Parameters:
+- `$name` – the name of the parameter.
+- `$value` – the value of the parameter.
 
 <!--@include: ../../_include/term_notes.md-->
