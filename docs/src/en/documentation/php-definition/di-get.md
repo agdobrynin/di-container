@@ -1,17 +1,16 @@
 ---
 outline: [2,4]
-title: Хелпер функция diGet()
+title: Helper function diGet()
 ---
-### Хелпер функция diGet()
+### Helper function diGet()
 
-Хелпер функция `diGet()` внедряет зависимость через идентификатор контейнера [^ContainerId], это эквивалентно вызову метода контейнера `get()`.
+The helper function `diGet()` injects a dependency via a container identifier [^ContainerId]; this is equivalent to calling the container's `get()` method.
 
-Для случаев когда параметр метода или вызываемого типа[^CallableType] указан через определяемые пользователем типы (PHP-класс, встроенные PHP-классы, перечисления) применять хелпер функцию `diGet()` нет необходимости, контейнер внедряет зависимость автоматически на основании конфигурации.
+In cases where a parameter of a method or a callable type[^CallableType] is specified using user-defined types (such as PHP classes, built-in PHP classes, or enums), there is no need to use the `diGet()` helper function; the container automatically injects the dependency based on the configuration.
 
-Использовать хелпер функцию `diGet()` для внедрения зависимости необходимо когда контейнер не может автоматически определить тип зависимости в конкретном параметре метода или вызываемого типа, в таком случае нужна конкретизация внедряемого типа. Например, параметр метода указан с типом `mixed` или представлен составным типом (пересечение класс-типов, объединение типов), в этом случае хелпер функция будет конкретизировать какое значение контейнера необходимо внедрить в параметр.
+The `diGet()` helper function should be used for dependency injection when the container cannot automatically determine the type of dependency. For example, if a method parameter is defined with the `mixed` type or as a composite type (such as an intersection or union of class types), the helper function serves to clarify exactly which value from the container should be injected into that parameter.
 
-
-Сигнатура функции:
+Function signature:
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
@@ -21,14 +20,14 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 ): DiDefinitionNoArgumentsInterface
 ```
 
-Параметры:
-- `$containerIdentifier` – идентификатор контейнера [^ContainerId].
+Parameters:
+- `$containerIdentifier` – container identifier [^ContainerId].
 
-У хелпер функции нет дополнительных методов.
+The helper function has no additional methods.
 
-### Пример внедрение в параметр с типом mixed { #example }
+### Example of injection into a parameter of type mixed { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -62,7 +61,7 @@ final class Bar
 
 :::
 
-Необходимо объявить PHP-класс `\App\Services\Foo` c внедрением в параметр `$entry` PHP-класса `\App\Services\Bar`. 
+It is necessary to inject the PHP class `\App\Services\Foo` into the `$entry` parameter of the PHP class `\App\Services\Bar`.
 
 ::: code-group
 
@@ -107,22 +106,22 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 (bool) true
 ```
 
-### Рецепты { #cookbook }
+### Cookbook { #cookbook }
 
-В разделе «Рецепты» представлены примеры конкретизации объявления внедрения параметров:
-- [Внедрение зависимости PHP-класса реализующего конкретный интерфейс](../../cookbook/inject-interface.md#helper-di-get).
-- [Внедрение зависимостей для параметров объединенного типа](../../cookbook/inject-union-type-params.md#php-definition).
+The “Cookbook” section provides examples of how to refine an ad by incorporating parameters:
+- [Dependency injection of a PHP class that implements a specific interface](../../cookbook/inject-interface.md#helper-di-get).
+- [Dependency injection for union type parameters](../../cookbook/inject-union-type-params.md#php-definition).
 
 <!--@include: ../_include/term_notes.md-->
