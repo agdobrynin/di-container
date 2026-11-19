@@ -1,12 +1,12 @@
 ---
 aside: false
-title: Хелпер функция diParameter()
+title: Helper function diParameter()
 ---
-### Хелпер функция diParameter()
+### Helper function diParameter()
 
-Хелпер функция `diParameter()` внедрят зависимость из параметров контейнера[^Parameter].
+The helper function `diParameter()` injects a dependency from the container's parameters[^Parameter].
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
@@ -16,10 +16,10 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 ): DiDefinitionNoArgumentsInterface
 ```
 
-Параметры:
-- `$name` – имя параметра контейнера.
+Parameters:
+- `$name` – container parameter name.
 
 > [!NOTE]
-> Изучите отдельный раздел документации посвященный [параметрами контейнера](../container-parameters/inject_params.md).
+> Read the section of the documentation dedicated to [container parameters](../container-parameters/inject_params.md).
 
 <!--@include: ../_include/term_notes.md-->
