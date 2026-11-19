@@ -1,17 +1,17 @@
 ---
 outline: [2,4]
-title: Хелпер функция diRuntime()
+title: Helper function diRuntime()
 ---
-### Хелпер функция diRuntime()
+### Helper function diRuntime()
 
-Хелпер функция `diRuntime()` объявляет PHP-класс в контейнере, реальное состояние которого будет инициализировано вне контейнера, и его значение будет установлено только во время выполнения.
+The helper function `diRuntime()` declares a PHP class within the container; its actual state is initialized outside the container, and its value is set only at runtime.
 
-Такой PHP-класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
+In the context of a dependency injection container, such a PHP class is called a **“[Runtime Definition](../runtime-definition/index.md)”**.
 
 > [!WARNING]
-> Хелпер функция не может быть применена к параметрам метода или функции. Для внедрения в параметры методов или вызываемых типов используйте [хелпер функцию `diGet()`](di-get.md)
+> A helper function cannot be applied to the parameters of a method or function. To inject dependencies into the parameters of methods or callable types, use the [helper function `diGet()`](di-get.md).
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\{
@@ -26,23 +26,23 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 ): Tag & Resetter
 ```
 
-Параметры:
+Parameters:
 
-- `$containerIdentifierOrClass` – идентификатора контейнера[^ContainerId] для «runtime definition».
-- `$message` – сообщение при возникновении ошибки.
-- `$classDefinition` – резервное объявление FQCN[^FQCN] объекта.
+- `$containerIdentifierOrClass` – the container identifier[^ContainerId] for a "runtime definition".
+- `$message` – the error message.
+- `$classDefinition` – a fallback FQCN[^FQCN] declaration for the object.
 
-Функция `diRuntime()` возвращает объект предоставляющий методы:
+The `diRuntime()` function returns an object that provides the following methods:
 
-- `bindTag()` – тег с метаданными.
-- `setResetter()` - значение для сброса состояния объекта.
+- `bindTag()` – add a tag with metadata.
+- `setResetter()` – set a value used to reset the object's state.
 
 > [!TIP]
-> Изучите раздел документации «[Конфигурирование объекта в рантайм контейнер](../runtime-definition/index.md)».
+> Read the documentation section "[Configuring an object in the runtime container](../runtime-definition/index.md)".
 
 ### bindTag()
 
-Теги позволяют отнести «runtime definition» к коллекции элементов отмеченных одним тегом.
+Tags allow a "runtime definition" to be associated with a collection of elements marked with the same tag.
 
 <!--@include: ./_include/bind_tag.md-->
 
@@ -50,9 +50,9 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 
 <!--@include: _include/set-resetter.md-->
 
-### Идентификатор контейнера для Runtime Definition { #container-id }
+### Container identifier for Runtime Definition { #container-id }
 
-Хелпер функция `diRuntime()` может передавать контейнеру идентификатор [^ContainerId] из параметра `$containerIdentifierOrClass`, что обеспечивает доступ к нему через методы контейнера `get()` и `has()`.
+The `diRuntime()` helper function can pass an identifier [^ContainerId] to the container via the `$containerIdentifierOrClass` parameter, making it accessible through the container's `get()` and `has()` methods.
 
 ```php
 <?php
@@ -71,10 +71,10 @@ return static function (): Generator {
 ```
 
 > [!NOTE]
-> Пример файла конфигураций выше позволяет получить объект методом контейнера `$container->get(App\Core\Kernel::class)`.
+> The configuration file example above allows you to retrieve an object using the container method `$container->get(App\Core\Kernel::class)`.
 
 
-Так же доступно объявление объекта с произвольным строковым идентификатором контейнера[^ContainerId]:
+It is also possible to declare an object with an arbitrary string-based container identifier[^ContainerId]:
 
 ```php
 <?php
@@ -92,6 +92,6 @@ return static function (): Generator {
 ```
 
 > [!NOTE]
-> Пример файла конфигураций выше позволяет получить объект методом контейнера `$container->get('services.core_kernel')`.
+> The configuration file example above allows you to retrieve an object using the container method `$container->get('services.core_kernel')`.
 
 <!--@include: ../_include/term_notes.md-->
