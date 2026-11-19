@@ -1,16 +1,16 @@
 ---
 outline: [2,4]
-title: Объявление PHP-классов в контейнере из файловой системы
+title: Registering PHP classes in a container from the file system
 ---
-### Объявление PHP-классов в контейнере из файловой системы { #title }
+### Registering PHP classes in a container from the file system { #title }
 
-Объявить PHP-классы и интерфейсы в контейнере можно в автоматическом режиме через сканирование файловой системы. При анализе PHP-классов и интерфейсов из файловой системы учитываются примененные атрибуты если в конфигурации контейнера указано [использование PHP атрибутов](../../container-config/index.md#use-attribute).
+PHP classes and interfaces can be automatically registered in the container by scanning the file system. When analyzing PHP classes and interfaces from the file system, all attributes applied to them are taken into account (see [using PHP attributes](../../container-config/index.md#use-attribute)).
 
 ### import()
 
-Метод `import()` объявляет PHP-классы из указанных директорий файловой системы.
+The `import()` method declares PHP classes from the specified file system directories.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::import(
@@ -21,19 +21,19 @@ title: Объявление PHP-классов в контейнере из фа
 ): static;
 ```
 
-Параметры:
+Parameters:
 
-- `$namespace` – префикс пространства имён PHP-классов.
-- `$src` – директория источник.
-- `$excludeFiles` – исключить из объявления PHP-классы в находящиеся в файлах.
-- `$availableExtensions` – расширения файлов PHP-классов.
+- `$namespace` – the namespace prefix for PHP classes.
+- `$src` – the source directory.
+- `$excludeFiles` – PHP classes located in these files should be excluded from the declaration.
+- `$availableExtensions` – file extensions for PHP classes.
 
 > [!NOTE]
-> Параметр `$excludeFiles` использует синтаксис шаблонов из [php функции `\fnmatch()`](https://www.php.net/manual/ru/function.fnmatch.php).
+> The `$excludeFiles` parameter uses the pattern syntax from the [PHP function `\fnmatch()`](https://www.php.net/manual/ru/function.fnmatch.php).
 
-PHP-классы найденные в исключенных файлах, параметр `$excludeFiles`, будут недоступны контейнеру через метод `get()`, а следовательно нельзя будет внедрить такой PHP-класс.
+PHP classes found in files excluded via the `$excludeFiles` parameter will not be accessible to the container via the `get()` method; consequently, such PHP classes cannot be injected.
 
-Объявить PHP-классы можно из нескольких директорий вызывая последовательно метод `import()` с указанием уникального значения в параметре `$namespace`:
+You can register PHP classes from multiple directories by calling the `import()` method repeatedly, providing a unique value for the `$namespace` parameter each time:
 
 ```php
 <?php
@@ -46,9 +46,9 @@ $builder = (new DiContainerBuilder())
   ->import(namespace: 'App\Actions\\', src: '/app/src/Actions');
 ```
 
-#### Пример объявления PHP-классов из файловой системы { #example }
+#### Example of declaring PHP classes from the file system { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -62,7 +62,7 @@ PHP-классы:
 
 :::
 
-Необходимо объявить PHP-классы из директории проекта `'/app/src'`. PHP-классы в директории `'/app/src/Various/'` необходимо исключить из контейнера.
+It is necessary to register the PHP classes from the project directory `'/app/src'`. PHP classes located in the `'/app/src/Various/'` directory must be excluded from the container.
 
 ::: code-group
 
@@ -102,13 +102,13 @@ $container->get(Qux::class); //[!code error]
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (9) "/var/data"

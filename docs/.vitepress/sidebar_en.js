@@ -21,7 +21,7 @@ export default {
                                 { text: 'Declaring definitions in configuration files', link: 'methods/load-definitions-from-file.md' },
                                 { text: 'Declaration via a collection', link: 'methods/load-definitions-from-collection.md' },
                                 { text: 'Registration of container parameters', link: 'methods/load-parameters.md' },
-                                { text: 'Объявление через сканирование файловой системы', link: 'methods/import.md' },
+                                { text: 'Registering PHP classes in a container from the file system', link: 'methods/import.md' },
                                 { text: 'Компиляция контейнера', link: 'methods/compile-to-file.md' },
                                 { text: 'Контекст для файлов конфигураций', link: 'methods/configuration-context.md' },
                             ],
