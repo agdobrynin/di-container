@@ -1,36 +1,35 @@
 ---
 outline: [2,4]
-title: Контекст для файлов конфигураций
+title: Context for configuration files
 ---
-### Контекст для файлов конфигураций { #title }
-
-В [файлах конфигураций](../configuration_files.md) можно использовать контекст для настройки и сборки контейнера.
+### Context for configuration files { #title }
+In [configuration files](../configuration_files.md), you can use a context to configure and build a container.
 
 > [!TIP]
-> Подробное описание и примеры использования описаны в разделе «[Контекст для файлов конфигураций](../definitions-configurator/context.md)».
+> A detailed description and usage examples can be found in the section "[Context for configuration files](../definitions-configurator/context.md)."
 
 > [!WARNING]
-> Значение для ранее добавленных контекстов могут быть заменены если имена контекста совпадают.
+> Values for previously added contexts may be overwritten if the context names match.
 
 ### addConfiguratorContexts()
 
-Метод `addConfiguratorContexts()` передаёт коллекцию контекста для файлов конфигураций.
+The `addConfiguratorContexts()` method passes a collection of contexts for configuration files.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DiContainerBuilder::addConfiguratorContexts(
     iterable $contexts
 ): static
 ```
-Параметры:
-- `$contexts` – коллекция ключ-значение, где ключ коллекции это имя контекста.
+Parameters:
+- `$contexts` – a key-value collection, where the key is the name of the context.
 
 ### setConfiguratorContext()
 
-Метод `setConfiguratorContext()` передаёт именованный контекст для файлов конфигураций.
+The `setConfiguratorContext()` method passes a named context for configuration files.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\Interfaces\DiContainerBuilder::setConfiguratorContext(
@@ -38,8 +37,8 @@ title: Контекст для файлов конфигураций
     mixed $context
 ): static
 ```
-Параметры:
-- `$name` – имя контекста, непустая строка.
-- `$context` – значение контекста.
+Parameters:
+- `$name` – the name of the context (a non-empty string).
+- `$context` – the value of the context.
 
 <!--@include: ../../_include/term_notes.md-->

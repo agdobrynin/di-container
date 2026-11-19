@@ -23,7 +23,7 @@ export default {
                                 { text: 'Registration of container parameters', link: 'methods/load-parameters.md' },
                                 { text: 'Registering PHP classes in a container from the file system', link: 'methods/import.md' },
                                 { text: 'Container compilation', link: 'methods/compile-to-file.md' },
-                                { text: 'Контекст для файлов конфигураций', link: 'methods/configuration-context.md' },
+                                { text: 'Context for configuration files', link: 'methods/configuration-context.md' },
                             ],
                         },
                         { text: 'Файлы конфигураций', link: 'configuration_files.md' },
