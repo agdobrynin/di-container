@@ -1,1 +1,1 @@
-Для объявления PHP-классов используем [хелпер функцию `diAutowire()`](/documentation/php-definition/di-autowire.md#container-id) которая может представить в конфигурацию идентификатор контейнера.
+To declare PHP classes, the helper function [`diAutowire()`](/en/documentation/php-definition/di-autowire.md#container-id) is used, which allows you to pass a container identifier into the configuration.

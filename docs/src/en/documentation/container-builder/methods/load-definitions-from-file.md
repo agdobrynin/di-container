@@ -1,16 +1,16 @@
 ---
 outline: [2,4]
-title: Объявление определений контейнера из файлов конфигураций
+title: Declaring definitions in configuration files
 ---
-### Объявление определений контейнера из файлов конфигураций { #title }
+### Declaring definitions in configuration files { #title }
 
-[Файлы конфигураций](../configuration_files.md) помогают разделить и сгруппировать объявление определений контейнера. Используя разные файлы конфигураций можно по условиям собирать нужные файлы и передавать в сборку контейнера.
+[Configuration files](../configuration_files.md) help to separate and group container definitions. By using different configuration files, you can selectively include the ones you need based on specific conditions and pass them into the container build process.
 
 ### load()
 
-Метод `load()` объявляет определения в контейнере из файлов конфигураций с отслеживанием уникальности идентификаторов контейнера [^ContainerId].
+The `load()` method registers definitions in the container based on configuration files, while simultaneously ensuring that the identifiers within the container remain unique [^ContainerId].
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::load(
@@ -18,16 +18,16 @@ title: Объявление определений контейнера из ф�
     string ...$_
 ): static;
 ```
-Параметры:
-- `$file` – полный путь к файлу конфигураций.
-- `$_` – полный путь к файлу конфигураций.
+Parameters:
+- `$file` – full path to the configuration file.
+- `$_` – full path to the configuration file.
 
 > [!WARNING]
 > <!--@include: ../_include/build_id_equals.md-->
 
-#### Пример использования метода load() { #example-load }
+#### Example of using the load() method { #example-load }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -37,7 +37,7 @@ PHP-классы:
 
 :::
 
-В файле конфигураций `report_services.php` объявлены PHP-классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`.
+In the `report_services.php` configuration file, PHP classes are defined using scalar dependency injection: `\App\Storages\ReportStorage` is injected into the `$dir` parameter, and `\App\Services\ReportMaker` is injected into the `$lastDays` parameter.
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->
@@ -69,13 +69,13 @@ var_dump($service->lastDays);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message similar to the following will appear:
 
 ```console
 string (9) "/var/data"
@@ -84,11 +84,11 @@ int(10)
 
 ### loadOverride()
 
-Для некоторых сценариев использования может понадобиться переопределение ранее объявленных определений по тому же идентификатору контейнера [^ContainerId].
+In some cases, it may be necessary to override previously established definitions associated with the same container identifier [^ContainerId].
 
-Метод `loadOverride()` объявляет определения контейнера из файлов конфигураций с перезаписью ранее объявленных определений если у них совпадают идентификаторы.
+The `loadOverride()` method declares container definitions from configuration files, overwriting any previously defined entries that share the same identifier.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 \Kaspi\DiContainer\DiContainerBuilder::loadOverride(
@@ -97,13 +97,13 @@ int(10)
 ): static;
 ```
 
-Параметры:
-- `$file` – полный путь к файлу конфигураций.
-- `$_` – полный путь к файлу конфигураций.
+Parameters:
+- `$file` – full path to the configuration file.
+- `$_` – full path to the configuration file.
 
-#### Пример использования метода loadOverride() { #example-load-override }
+#### Example of using the loadOverride() method { #example-load-override }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -113,7 +113,7 @@ PHP-классы:
 
 :::
 
-В файле конфигураций `report_services.php` объявлены PHP-классы с внедрением скалярной зависимости: `\App\Storages\ReportStorage` в параметр `$dir` и `\App\Services\ReportMaker` в параметр `$lastDays`. Если определена переменная среды `APP_ENV` со значением `'dev'`, то для этих классов необходимо объявить внедрение скалярных зависимостей с другими значениями, т.е. перезаписать ранее объявленные определения с новыми значениями для тех же идентификаторов контейнера[^ContainerId]. 
+In the `report_services.php` configuration file, PHP classes are defined with scalar dependency injection: `\App\Storages\ReportStorage` receives a value for the `$dir` parameter, and `\App\Services\ReportMaker` receives a value for the `$lastDays` parameter. If the `APP_ENV` environment variable is set to `'dev'`, then scalar dependency injection for these classes must be redefined with different values—effectively overwriting the previously declared definitions for the same container identifiers[^ContainerId].
 
 > [!TIP]
 > <!--@include: _include/tip_use_di-autowire.md-->
@@ -179,13 +179,13 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (4) "/tmp"

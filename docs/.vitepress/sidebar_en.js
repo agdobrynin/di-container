@@ -18,7 +18,7 @@ export default {
                             collapsed: false,
                             items: [
                                 { text: 'Overview', link: 'index.md' },
-                                { text: 'Объявление из файлов конфигураций', link: 'methods/load-definitions-from-file.md' },
+                                { text: 'Declaring definitions in configuration files', link: 'methods/load-definitions-from-file.md' },
                                 { text: 'Объявление через коллекцию', link: 'methods/load-definitions-from-collection.md' },
                                 { text: 'Регистрация параметров контейнера', link: 'methods/load-parameters.md' },
                                 { text: 'Объявление через сканирование файловой системы', link: 'methods/import.md' },

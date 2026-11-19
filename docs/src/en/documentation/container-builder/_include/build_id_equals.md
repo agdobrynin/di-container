@@ -1,1 +1,1 @@
-При вызове метода сборки контейнера `DiContainerBuilder::build()` будет выброшено исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` если в переданных для сборки определениях будут обнаружены не уникальные идентификаторы.
+Calling the `DiContainerBuilder::build()` method will throw an exception that implements the `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerBuilderExceptionInterface` interface if any non-unique identifiers are found among the definitions provided for building the container.
