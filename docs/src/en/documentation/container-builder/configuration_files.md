@@ -18,7 +18,7 @@ The container configuration tracks the uniqueness of container identifiers[^Cont
 
 ### Anonymous function and generator { #example-generator-simple }
 
-A configuration file that returns an `iterable` type can be represented, for example, by an **anonymous function**. The result of executing such a function is a generator (`\Generator`) that yields PHP class declarations using the `yield` keyword.
+A configuration file that returns an `iterable` type can be represented, for example, by an **anonymous function**. The result of executing such a function is a generator (`\Generator`).
 
 ```php
 <?php
