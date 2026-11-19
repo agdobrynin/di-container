@@ -1,8 +1,8 @@
 ---
 outline: [2, 5]
-title: Глобальное объявление интерфейса
+title: Global declaration of interface implementation
 ---
-### Пример глобального объявления реализации интерфейса { #overview }
+### Example of a global interface implementation declaration { #overview }
 
 Все типизированные параметры метода или вызываемого типа[^CallableType] должны внедрять один и тот же PHP-класс, который заявлен как реализация определённого интерфейса.
 

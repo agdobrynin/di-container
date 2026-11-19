@@ -1,8 +1,8 @@
 ---
 outline: [2, 4]
-title: Внедрение зависимостей через сеттер-методы
+title: Dependency injection via setter methods
 ---
-### Внедрение зависимостей через сеттер-методы { #title }
+### Dependency injection via setter methods { #title }
 
 Внедрение зависимостей в PHP-класс может происходить через **сеттер-методы**.
 

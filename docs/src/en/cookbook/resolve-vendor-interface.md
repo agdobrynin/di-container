@@ -1,8 +1,8 @@
 ---
 outline: [3, 5]
-title: Внедрение зависимостей PHP-классов реализующих интерфейс сторонних производителей
+title: Dependency injection for PHP classes that implement third-party interfaces
 ---
-### Внедрение зависимостей PHP-классов реализующих интерфейс сторонних производителей { #overview }
+### Dependency injection for PHP classes that implement third-party interfaces { #overview }
 
 Существует два способа объявить реализацию интерфейса от сторонних производителей, например из других PHP пакетов:
 1. Объявить в контейнере глобально реализацию интерфейса в файле конфигураций.

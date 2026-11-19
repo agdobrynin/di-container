@@ -1,8 +1,8 @@
 ---
 outline: [2, 4]
-title: Внедрение зависимости в параметр с типом интерфейс
+title: Dependency injection into a parameter with an interface type
 ---
-### Внедрение зависимости в параметр с типом интерфейс { #overview }
+### Dependency injection into a parameter with an interface type { #overview }
 
 При некоторых сценариях использования контейнера требуется возможность объявить внедрение зависимости в параметр метода или вызываемого типа[^CallableType] ожидающего объект реализующий определённый интерфейс.
 

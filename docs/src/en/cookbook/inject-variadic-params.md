@@ -1,9 +1,9 @@
 ---
 outline: [3, 5]
-title: Внедрение зависимостей в параметры переменной длины
+title: Dependency injection into variable-length parameters
 ---
 
-### Внедрение зависимостей в параметры переменной длины { #overview }
+### Dependency injection into variable-length parameters { #overview }
 
 При внедрении зависимостей в параметр переменной длины можно использовать комбинации хелпер функций или PHP атрибутов. Проверка типа[^TypeHints] внедряемой зависимости происходит в рантайм – в момент выполнения, контейнер не выполняет валидацию типов при [сборке контейнера](../documentation/container-builder/index.md).
 
@@ -27,7 +27,7 @@ title: Внедрение зависимостей в параметры пер�
 - `\App\Rules\RuleA`
 - `\App\Rules\RuleC`
 
-Контейнер предоставляет множество способов объявления внедрения PHP-класса в параметр, для этого примера будет использована [хелпер функция `diGet()`](../documentation/php-definition/di-get.md) или [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/index.md) в зависимости от способа объявления внедрения зависимости.
+Контейнер предоставляет множество способов объявления внедрения PHP-класса в параметр, для этого примера будет использована [хелпер функция `diGet()`](../documentation/php-definition/di-get.md) или [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) в зависимости от способа объявления внедрения зависимости.
 
 ---
 
@@ -92,7 +92,7 @@ array(3) {
 
 Предположим что в свойство `\App\Services\Rules::$rules` необходимо внедрить PHP-классы и в качестве ключа массив использовать строковое значение. Для этого в файле конфигураций `services.php` при объявлении внедрения в параметр конструктора `$inputRule` будем использовать именованные аргументы.
 
-При объявлении внедрения с использованием [именованных аргументов](https://www.php.net/manual/ru/functions.arguments.php#functions.named-arguments) для [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list) действуют правила описанные в PHP-документации.
+При объявлении внедрения с использованием [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) для [параметров переменной длины](https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list) действуют правила описанные в PHP-документации.
 
 ::: code-group
 <<< @/_code/cookbook/inject-variadic-params/container_build.php
