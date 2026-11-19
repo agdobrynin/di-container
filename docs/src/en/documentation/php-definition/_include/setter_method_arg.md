@@ -1,9 +1,9 @@
-Параметр `$arguments` передает аргументы сеттер-методу.
+The `$arguments` parameter passes arguments to a setter method.
 
-При объявлении внедрения зависимости в конкретный в конкретный параметр, указывайте в качестве ключа массива в `$arguments` имя этого параметра.
+When defining dependency injection for a specific parameter, use the name of that parameter as the array key within `$arguments`.
 
-Параметры сеттер-метода не получившие аргументы будут внедрены контейнером самостоятельно, на основании конфигурации.
+Setter method parameters that do not receive explicit arguments will be injected automatically by the container, based on its configuration.
 
-Аргументы сеттер-метода могут принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
+Arguments for a setter method can utilize helper functions such as `diGet()`, `diValue()`, `diAutowire()`, and others.
 
-Для внедрения скалярных типов зависимостей рекомендуется использовать «[параметры контейнера](../../container-parameters/index.md)».
+For the injection of scalar-type dependencies, it is recommended to use [container parameters](../../container-parameters/index.md).

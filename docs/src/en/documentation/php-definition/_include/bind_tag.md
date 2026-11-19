@@ -1,6 +1,6 @@
-Метод `bindTag()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`.
+The `bindTag()` method is defined by the `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface` interface.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 DiDefinitionTagArgumentInterface::bindTag(
@@ -11,4 +11,4 @@ DiDefinitionTagArgumentInterface::bindTag(
 ```
 
 > [!TIP]
-> Более подробное [описание работы с тегами](../../tags/php-definition-tag.md).
+> For more details, see the [guide on working with tags](../../tags/php-definition-tag.md).

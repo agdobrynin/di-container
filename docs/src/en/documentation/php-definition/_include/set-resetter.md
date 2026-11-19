@@ -1,6 +1,6 @@
-Значение для сброса состояния объекта.
+A value used for resetting an object's state.
 
-Метод `setResetter()` описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface`.
+The `setResetter()` method is defined by the `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionResetterSetterInterface` interface.
 
 ```php
 DiDefinitionResetterSetterInterface::setResetter(
@@ -9,4 +9,4 @@ DiDefinitionResetterSetterInterface::setResetter(
 ```
 
 > [!TIP]
-> Ознакомитесь с подробной информацией в разделе [«Сброс состояния объектов в долго-живущих процессах»](../../object-resetters/index.md).
+> See the detailed information in the section [“Resetting object state in long-running processes”](../../object-resetters/index.md).

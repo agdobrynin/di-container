@@ -1,6 +1,6 @@
-Метод передачи аргументов `bindArguments()` для параметров описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface`.
+The `bindArguments()` method for defining parameters is described by the `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionArgumentsInterface` interface.
 
-Сигнатура метода:
+Method signature:
 
 ```php
 DiDefinitionArgumentsInterface::bindArguments(
@@ -8,17 +8,16 @@ DiDefinitionArgumentsInterface::bindArguments(
 )
 ```
 
-Параметры:
-- `$argument` – аргументы.
+Parameters:
+- `$argument` – the arguments.
 
-При указании в методе `bindArguments()` как внедрять зависимость в конкретный параметр, можно использовать [именованные аргументы](https://www.php.net/manual/ru/functions.arguments.php#functions.named-arguments).
+When specifying how a dependency should be injected into a particular parameter using `bindArguments()`, you can use [named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments).
 
-Контейнер внедрит зависимости самостоятельно на основании конфигурации, если в аргументах не указано как внедрять зависимость в конкретный параметр.
-
+If the method does not explicitly specify how a dependency should be injected into a given parameter, the container will handle the injection automatically based on its configuration.
 
 > [!TIP]
-> - Параметр `$argument` в методе `bindArgument()` может принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
-> - Для внедрения скалярных типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](../../container-parameters/index.md)».
+> - The `$argument` parameter in `bindArguments()` can accept helper functions such as `diGet()`, `diValue()`, `diAutowire()`, and others.
+> - For injecting scalar-type dependencies, it is recommended to use [container parameters](../../container-parameters/index.md).
 
 > [!WARNING]
-> Метод `bindArguments()` перезаписывает ранее добавленные аргументы.
+> The `bindArguments()` method overwrites any previously added arguments.

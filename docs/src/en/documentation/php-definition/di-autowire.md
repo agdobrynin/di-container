@@ -1,12 +1,12 @@
 ---
 outline: [2,5]
-title: Хелпер функция diAutowire()
+title: Helper function diAutowire()
 ---
-### Хелпер функция diAutowire()
+### Helper function diAutowire()
 
-Хелпер функция `diAutowire()` объявляет PHP-класс в контейнере.
+The helper function `diAutowire()` registers a PHP class in the container.
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\{
@@ -22,28 +22,28 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
     bool $isLazy = false,
 ): Args & Setup & Tag & Resetter
 ```
-Параметры:
-- `$definition` – FQCN [^FQCN] объявляемого PHP-класса.
-- `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
-- `$isLazy` – объявить «ленивый объект».
+Parameters:
+- `$definition` – The FQCN [^FQCN] of the PHP class being declared.
+- `$isSingleton` – The container will return the same object instance (singleton pattern). If set to `null`, the value will be determined based on the [container configuration](../container-config/index.md#is-singleton-service-default).
+- `$isLazy` – declare a PHP class as lazy object.
 
 > [!TIP]
-> Изучите разделы документации:
-> - [Внедрение «ленивых» объектов контейнером](../lazy-injection/index.md).
-> - [Сброс состояния объектов](../object-resetters/index.md).
+> Review the following sections of the documentation:
+> - [Lazy injection of container objects](../lazy-injection/index.md).
+> - [Resetting object state](../object-resetters/index.md).
 
-Функция `diAutowire()` возвращает объект предоставляющий методы:
- - `bindArguments()` – аргументы конструктора PHP-класса.
- - `setup()` – внедрение зависимостей через мутабельный сеттер-метод [^SetterMethodMutable].
- - `setupImmutable()` – внедрение зависимостей через иммутабельный сеттер-метод [^SetterMethodImmutable].
- - `bindTag()` – тег с метаданными.
- - `setResetter()` - значение для сброса состояния объекта.
+The `diAutowire()` function returns an object that provides the following methods:
+- `bindArguments()` – passes arguments to a PHP class constructor.
+- `setup()` – declares dependency injection via a mutable setter method [^SetterMethodMutable].
+- `setupImmutable()` – declares dependency injection via an immutable setter method [^SetterMethodImmutable].
+- `bindTag()` – assigns a tag with metadata.
+- `setResetter()` – specifies a value (or callback) used to reset the object's state.
 
-### Идентификатор контейнера для diAutowire() { #container-id }
+### Container identifier for diAutowire() { #container-id }
 
-Хелпер функция `diAutowier()` может передавать контейнеру идентификатор [^ContainerId] из параметра `$definition`, что обеспечивает доступ к нему через методы контейнера `get()` и `has()`.
+The helper function `diAutowire()` can pass an identifier [^ContainerId] to the container from the `$definition` parameter, making it accessible via the container's `get()` and `has()` methods.
 
-[Файл конфигураций](../container-builder/configuration_files.md) с автоматическим формированием идентификатора контейнера:
+A [configuration file](../container-builder/configuration_files.md) with an automatically generated container identifier:
 
 ```php
 <?php
@@ -59,7 +59,7 @@ return static function (): Generator {
 };
 ```
 
-Идентификатор контейнера для объявляемого PHP-класса может быть указан произвольной строкой.
+The container identifier for a PHP class being declared can be specified as an arbitrary string.
 
 ```php
 <?php
@@ -85,13 +85,13 @@ return static function (): Generator {
 
 ### bindArguments()
 
-Аргументы для конструктора PHP-класса.
+Arguments for a PHP class constructor.
 
 <!--@include: _include/bind_arguments.md-->
 
-#### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
+#### Example of dependency injection via the bindArguments() method { #example-bind-arguments }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -101,9 +101,9 @@ PHP-классы:
 
 :::
 
-Необходимо через метод `bindArguments()` указать конструктору как внедрять зависимость в конкретный параметр:
-- в параметр `$lastDays` класса `\App\Services\ReportMaker`.
-- в параметр `$dir` класса `\App\Storages\ReportStorage`.
+You need to use the `bindArguments()` method to specify how the constructor should inject a dependency into a particular parameter:
+- into the `$lastDays` parameter of the `\App\Services\ReportMaker` class;
+- into the `$dir` parameter of the `\App\Storages\ReportStorage` class.
 
 ::: code-group
 
@@ -132,28 +132,28 @@ var_dump($report->storage->dir);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 int(10)
 string(9) "/var/data"
 ```
 
-### Сеттер-методы внедрения зависимостей { #di-autowire-setter-method }
+### Dependency injection via setter methods { #di-autowire-setter-method }
 
-Помимо внедрения зависимостей через конструктор PHP-класса существует возможность внедрения зависимостей через сеттер-методы.
+In addition to dependency injection via a PHP class constructor, it is also possible to inject dependencies using setter methods.
 
 #### setup()
 
-Метод `setup()` внедряет зависимость в PHP-класс через **мутабельный сеттер-метод** [^SetterMethodMutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+The `setup()` method injects a dependency into a PHP class via a **mutable setter method** [^SetterMethodMutable] and is defined by the `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface` interface.
 
-Сигнатура метода:
+Method signature:
 
 ```php 
 DiDefinitionSetupAutowireInterface::setup(
@@ -161,15 +161,15 @@ DiDefinitionSetupAutowireInterface::setup(
     array $arguments = []
 )
 ``` 
-Параметры:
-- `$method` – имя сеттер-метода в классе.
-- `$arguments` – аргументы к параметрам сеттер-метода.
+Parameters:
+- `$method` – the name of a setter method within the class.
+- `$arguments` – the arguments for the setter method's parameters.
 
 <!--@include: _include/setter_method_arg.md-->
 
-##### Пример внедрения через метод setup() { #example-setter-method-setup }
+##### Example of implementation via the setup() method { #example-setter-method-setup }
 
-PHP-класс:
+PHP class:
 
 ```php
 <?php
@@ -199,7 +199,7 @@ final class ReportStorage
 }
 ```
 
-Необходимо внедрить зависимость через сеттер-метод `\App\Storages\ReportsStorage::setPermission()`.
+Dependency injection must be performed via the setter method `\App\Storages\ReportsStorage::setPermission()`.
 
 ::: code-group
 
@@ -247,28 +247,28 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 int(384)
 ```
 
 > [!NOTE]
-> [Пример использования метода `setup()`](../../cookbook/autowire-setup.md#diautowire-setup)
+> [Example of using the `setup()` method](../../cookbook/autowire-setup.md#diautowire-setup)
 
 #### setupImmutable()
 
-Метод `setupImmutable()` внедряет зависимость в PHP-класс через **иммутабельный сеттер-метод**[^SetterMethodImmutable], и описан интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface`.
+The `setupImmutable()` method injects a dependency into a PHP class via an **immutable setter method**[^SetterMethodImmutable] and is defined by the `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionSetupAutowireInterface` interface.
 
-Сеттер-метод должен возвращать тип `self`, `static` или тип объявляемого PHP-класса в хелпер функции `diAutowire()`.
+The setter method must return `self`, `static`, or the type of the PHP class being declared within the `diAutowire()` helper function.
 
-Сигнатура метода:
+Method signature:
 
 ```php 
 DiDefinitionSetupAutowireInterface::setupImmutable(
@@ -276,17 +276,18 @@ DiDefinitionSetupAutowireInterface::setupImmutable(
     array $arguments = []
 )
 ``` 
-Параметры:
-- `$method` – имя сеттер-метода в классе.
-- `$arguments` – аргументы к параметрам сеттер-метода.
+Parameters:
+- `$method` – the name of a setter method within the class.
+- `$arguments` – the arguments for the setter method's parameters.
 
 <!--@include: _include/setter_method_arg.md-->
 
 > [!NOTE]
-> [Пример использования метода `setupImmutable()`](../../cookbook/autowire-setup.md)
+> [Example of using the `setupImmutable()` method](../../cookbook/autowire-setup.md)
 
 ### bindTag()
-Теги позволяют отнести объявляемый PHP-класс к коллекции элементов отмеченных одним тегом.
+
+Tags allow a PHP class being declared to be associated with a collection of elements marked with the same tag.
 
 <!--@include: _include/bind_tag.md-->
 
