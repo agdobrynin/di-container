@@ -1,12 +1,12 @@
 ---
 aside: false
-title: Хелпер функция diTaggedAs()
+title: Helper function diTaggedAs()
 ---
-### Хелпер функция diTaggedAs()
+### Helper function diTaggedAs()
 
-Хелпер функция `diTaggedAs()` внедряет коллекцию элементов из контейнера отмеченных тегом.
+The `diTaggedAs()` helper function injects a collection of items from the container that are marked with a specific tag.
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
@@ -23,24 +23,24 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 ): DiDefinitionNoArgumentsInterface
 ```
 
-Параметры:
-- `$name` – имя тега или FQNC [^FQCN] PHP интерфейса.
-- `$isLazy` – «ленивая коллекция».
-- `$priorityDefaultMethod` – извлечение приоритета из метода PHP-класса по умолчанию.
-- `$useKeys` – использовать строковые идентификаторы элементов коллекции.
-- `$key` – извлечение идентификатора элемента коллекции по имени метаданных из тега.
-- `$keyDefaultMethod` – извлечение идентификатора элемента коллекции из метода PHP-класса по умолчанию.
-- `$containerIdExclude` – исключить из коллекции элементы по идентификатору контейнера.
-- `$selfExclude` – исключить из коллекции вызывающий PHP-класс.
+Parameters:
+- `$name` – the tag name or the FQCN [^FQCN] of a PHP interface.
+- `$isLazy` – enables a "lazy collection."
+- `$priorityDefaultMethod` – retrieves the priority from a default method within the PHP class.
+- `$useKeys` – uses string identifiers for collection elements.
+- `$key` – retrieves the identifier for a collection element based on a metadata name from the tag.
+- `$keyDefaultMethod` – retrieves the identifier for a collection element from a default method within the PHP class.
+- `$containerIdExclude` – excludes elements from the collection based on their container ID.
+- `$selfExclude` – excludes the calling PHP class from the collection.
 
-У хелпер функции нет дополнительных методов.
+The helper function has no additional methods.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
 > [!TIP]
-> Изучите раздел документации «[Объявление тега в файлах конфигураций](../tags/php-definition-tag.md)».
-> 
-> Для подробного ознакомления с механизмом формирования **приоритетов элементов коллекции, идентификаторов элементов коллекции** изучите раздел документации «[Работа с тегами в контейнере](../tags/index.md)».
+> See the documentation section "[Defining a tag in configuration files](../tags/php-definition-tag.md)."
+>
+> For more information on how **collection item priorities** and **collection item identifiers** are specified, please refer to the documentation section "[Working with tags in the container](../tags/index.md)."
 
 
 <!--@include: ../_include/term_notes.md-->
