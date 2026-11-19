@@ -24,7 +24,8 @@ title: Динамическое объявление объекта в конт�
 > [!WARNING]
 > Метод `set()` может выбросить исключение реализующее интерфейс `\Kaspi\DiContainer\Interfaces\Exceptions\ContainerIdentifierAlreadyRegisteredExceptionInterface` если идентификатор контейнера указанный в параметре `$id` не уникален в конфигурации контейнера. 
 
-Важно заметить что динамически объявленные объекты не будут [скомпилированы](methods/compile-to-file.md).
+> [!IMPORTANT]
+> Динамически объявленные объекты не будут [скомпилированы](methods/compile-to-file.md).
 
 **Для сохранения высокой производительности контейнера рекомендуется использовать объявление PHP-классов через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md) или [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md)**.
 
