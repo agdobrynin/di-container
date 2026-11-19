@@ -1,12 +1,12 @@
 ---
 outline: [2,4]
-title: Хелпер функция diCallable()
+title: Helper function diCallable()
 ---
-### Хелпер функция diCallable()
+### Helper function diCallable()
 
-Хелпер функция `diCallable()` внедряет зависимость через выполнения указанного вызываемого типа[^CallableType].
+The helper function `diCallable()` injects a dependency by invoking the specified callable type[^CallableType].
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use Kaspi\DiContainer\Interfaces\DiDefinition\{
@@ -20,23 +20,23 @@ use Kaspi\DiContainer\Interfaces\DiDefinition\{
 ): Args & Tag
 ```
 
-Параметры:
-- `$definition` – вызываемый тип.
-- `$isSingleton` – возвращать один и тот же результат (паттерн singleton). Если значение null, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
+Parameters:
+- `$definition` – the callable type.
+- `$isSingleton` – The container will return the same object instance (singleton pattern). If set to `null`, the value will be determined based on the [container configuration](../container-config/index.md#is-singleton-service-default).
 
-Функция `diCallable()` возвращает объект предоставляющий методы:
-- `bindArguments()` – указать аргументы для параметров функции.
-- `bindTag()` – добавляет тег с метаданными для определения.
+The `diCallable()` function returns an object that provides the following methods:
+- `bindArguments()` – specifies arguments for the function parameters.
+- `bindTag()` – adds a tag containing metadata to the definition.
 
 ### bindArguments()
 
-Передача аргументов для параметров вызываемого типа (_функции_).
+Passing arguments for the parameters of a callable type.
 
 <!--@include: ./_include/bind_arguments.md-->
 
-#### Пример внедрения зависимости через метод bindArguments() { #example-bind-arguments }
+#### Example of dependency injection via the bindArguments() method { #example-bind-arguments }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/php-definition/di-callable/Baz.php
@@ -46,9 +46,9 @@ PHP-классы:
 <<< @/_code/php-definition/di-callable/Foo.php
 :::
 
-В файле конфигураций `callable_entries.php` необходимо объявить PHP-класс `\App\Services\Foo` и указать внедрение зависимости в параметр `$value` через вызываемый тип[^CallableType] – `\App\Services\Baz::factoryMethod()`.
+In the `callable_entries.php` configuration file, you must declare the PHP class `\App\Services\Foo` and specify that a dependency should be injected into the `$value` parameter using a callable type[^CallableType] — specifically, `\App\Services\Baz::factoryMethod()`.
 
-Для метода `\App\Services\Baz::factoryMethod()` объявить внедрение скалярного типа в параметр `$name` через метод `bindArguments()`, в параметр `$bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
+For the `\App\Services\Baz::factoryMethod()` method, you must configure the injection of a scalar value into the `$name` parameter using the `bindArguments()` method; the container will automatically inject the dependency for the `$bar` parameter based on the existing configuration.
 
 ::: code-group
 
@@ -58,13 +58,13 @@ PHP-классы:
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(26) "Lorem ipsum dolor sit amet"
@@ -72,17 +72,18 @@ string(26) "Lorem ipsum dolor sit amet"
 
 ### bindTag()
 
-Теги позволяют отнести объявляемый вызываемый тип к коллекции элементов отмеченных одним тегом.
+Tags allow a declared callable type to be associated with a collection of elements marked with the same tag.
 
 <!--@include: _include/bind_tag.md-->
 
-### Идентификатор контейнера для вызываемого типа { #container-id }
+### Container identifier for the invoked type { #container-id }
 
-Чтобы обеспечить доступность вызываемого типа через метод контейнера `get()` и `has()` необходимо указать в файле конфигураций соответствующий идентификатор контейнера[^ContainerId] и объявить `callable` тип.
+To ensure that a callable type is accessible via the container’s `get()` and `has()` methods, you must specify the corresponding container identifier[^ContainerId] in the configuration file and declare the `callable` type.
 
 
-#### Пример объявления идентификатора вызываемого типа { #example-container-id }
-PHP-классы:
+#### Example of declaring an identifier for a callable type { #example-container-id }
+
+PHP classes:
 
 ::: code-group
 
@@ -92,9 +93,9 @@ PHP-классы:
 
 :::
 
-Метод контейнера `$container->get('baz.factory_method')` должен возвращать результат выполнения вызываемого типа `\App\Services\Baz::factoryMethod()`.
+The container method `$container->get('baz.factory_method')` should return the result of executing the callable `\App\Services\Baz::factoryMethod()`.
 
-Для метода `\App\Services\Baz::factoryMethod()` объявить внедрение скалярного типа в параметр `$name` через метод `bindArguments()`, в параметр `$bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
+For the `\App\Services\Baz::factoryMethod()` method, configure the injection of a scalar value into the `$name` parameter using the `bindArguments()` method; the container will automatically inject the dependency for the `$bar` parameter based on its configuration.
 
 ::: code-group
 
@@ -137,27 +138,27 @@ return static function(): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(26) "Lorem ipsum dolor sit amet"
 ```
 
-### Объявление callable типа «как-есть» { #convert-to-di-callable } 
+### “As-is” declaration of a callable type { #convert-to-di-callable } 
 
-В файлах конфигураций можно указать вызываемый тип[^CallableType] «как-есть», при условии что контейнер сможет самостоятельно внедрить требуемые зависимости на основании конфигурации контейнера.
+In configuration files, you can specify a callable type[^CallableType] “as-is”, provided that the container is able to automatically inject the required dependencies based on its own configuration.
 
-Объявление `callable` типа в файле конфигураций преобразуется контейнером в хелпер функцию `diCallable()`.
+When a `callable` type is declared in a configuration file, the container converts it into a helper function called `diCallable()`.
 
-#### Пример объявления callable типов «как-есть» { #example-convert-to-di-callable }
+#### Example of declaring callable types “as-is” { #example-convert-to-di-callable }
 
-PHP-классы и функции:
+PHP classes and functions:
 
 ::: code-group
 
@@ -241,12 +242,12 @@ class Env
 
 :::
 
-В файле конфигураций `callable_as_is.php` необходимо объявить три идентификатора контейнера:
-- `'services.foo_from_anonymous_fn'` – анонимная функция.
-- `'services.foo_from_static_method'` – статический метод класса.
-- `'services.foo_from_function'` – функция.
+In the `callable_as_is.php` configuration file, you need to declare three container identifiers:
+- `'services.foo_from_anonymous_fn'` – an anonymous function.
+- `'services.foo_from_static_method'` – a static class method.
+- `'services.foo_from_function'` – a function.
 
-Метод контейнера `get()` обращаясь по этим идентификаторам должен получать объект PHP-класса `\App\Services\Foo` с различными значениями свойств `$apiKey` и `$debug`.
+When accessed using these identifiers, the container's `get()` method should return an instance of the PHP class `\App\Services\Foo` with different values for the `$apiKey` and `$debug` properties.
 
 ::: code-group 
 
@@ -301,13 +302,13 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(App\Services\Foo)#1 (2) {
