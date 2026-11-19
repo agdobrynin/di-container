@@ -1,12 +1,12 @@
 ---
 aside: false
-title: Хелпер функция diParameterRuntime()
+title: Helper function diParameterRuntime()
 ---
-### Хелпер функция diParameterRuntime()
+### Helper function diParameterRuntime()
 
-Хелпер функция `diParameterRuntime()` внедрят зависимость из параметров контейнера времени исполнения[^ParameterRuntime].
+The helper function `diParameterRuntime()` injects a dependency from the runtime container parameters[^ParameterRuntime].
 
-Сигнатура функции:
+Function signature:
 
 ```php
 use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
@@ -17,11 +17,11 @@ use \Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionNoArgumentsInterface;
 ): DiDefinitionNoArgumentsInterface
 ```
 
-Параметры:
-- `$name` – имя параметра контейнера.
-- `$message` – дополнительное сообщение, если параметр контейнера ещё не имеет значения
+Parameters:
+- `$name` – the name of the container parameter.
+- `$message` – an optional message to provide if the container parameter does not yet have a value.
 
 > [!TIP]
-> Изучите отдельный раздел документации [«Параметры контейнера» времени выполнения](../container-parameters/inject_runtime_params.md).
+> Read the [Runtime "Container Parameters"](../container-parameters/inject_runtime_params.md) section of the documentation.
 
 <!--@include: ../_include/term_notes.md-->
