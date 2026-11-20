@@ -4,7 +4,7 @@ title: Атрибут DiFactory
 ---
 ### Атрибут DiFactory
 
-Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP-класс в контейнере, или внедряет зависимость.
+Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн фабрика [^FactoryPattern]. Атрибут объявляет PHP-класс в контейнере, или внедряет зависимость в параметр метода или вызываемого типа[^CallableType].
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_CLASS`
