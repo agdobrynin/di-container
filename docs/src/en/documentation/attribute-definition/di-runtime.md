@@ -1,19 +1,19 @@
 ---
 outline: [2,4]
-title: Атрибут DiRuntime
+title: DiRuntime attribute
 ---
 
-### Атрибут DiRuntime
+### DiRuntime attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` объявляет PHP-класс в контейнере, реальное состояние которого будет инициализировано вне контейнера, и его значение будет установлено только во время выполнения.
+The `\Kaspi\DiContainer\Attributes\DiRuntime` attribute declares a PHP class within the container whose actual state will be initialized outside the container, with its value being set only at runtime.
 
-Такой PHP-класс в рамках контейнера зависимостей называется **«[Runtime Definition](../runtime-definition/index.md)»**.
+In the context of a dependency container, such a PHP class is called a **“[Runtime Definition](../runtime-definition/index.md)”**.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_CLASS`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\DiRuntime::__construct(
@@ -23,17 +23,17 @@ title: Атрибут DiRuntime
     callable|false|string $resetter = false,
 )
 ```
-Параметры:
-- `$containerIdentifierOrClass` – идентификатора контейнера[^ContainerId] для «runtime definition».
-- `$message` – сообщение при возникновении ошибки.
-- `$tags` – тег с метаданными.
-- `$resetter` – [значение для сброса состояния объекта](../object-resetters/index.md).
+Parameters:
+- `$containerIdentifierOrClass` – the container identifier[^ContainerId] for a "runtime definition".
+- `$message` – the message to display if an error occurs.
+- `$tags` – a tag declaration with metadata.
+- `$resetter` – a [value used to reset an object's state](../object-resetters/index.md).
 
-### Идентификатор контейнера для Runtime Definition { #container-id }
+### Container identifier for Runtime Definition { #container-id }
 
-При объявлении PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` пустая строка в параметре `$containerIdentifier` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP-класса.
+When declaring a PHP class using the `\Kaspi\DiContainer\Attributes\DiRuntime` attribute, an empty string for the `$containerIdentifier` parameter is interpreted by the container as an identifier corresponding to the FQCN[^FQCN] of the PHP class being declared.
 
-Объявить PHP-класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть строкой `'App\Services\FooServices'`.
+To declare the PHP class `\App\Services\FooService` via this attribute as a "Runtime Definition," the container identifier must be the string `'App\Services\FooServices'`.
 
 ::: code-group
 
@@ -76,25 +76,25 @@ $container->has(FooService::class);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 (bool) true
 ```
 
-#### Объявление Runtime Definition с несколькими идентификаторами { #container-id-multuple }
+#### Runtime Definition declaration with multiple identifiers { #container-id-multuple }
 
-Атрибут `\Kaspi\DiContainer\Attributes\DiRuntime` может объявлять один и тот же PHP-класс в контейнере с разными идентификаторами[^ContainerId].
+The `\Kaspi\DiContainer\Attributes\DiRuntime` attribute can be used to register the same PHP class within the container under different identifiers[^ContainerId].
 
-Объявить PHP-класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'App\Services\FooService'`.
+To register the PHP class `\App\Services\FooService` as a "Runtime Definition" via this attribute, the container identifier must be specified as the string `'App\Services\FooService'`.
 
-Объявить PHP-класс `\App\Services\FooService` через атрибут как «Runtime Definition», идентификатор контейнера должен быть представлен строкой `'services.foo_service'`.
+To register the PHP class `\App\Services\FooService` as a "Runtime Definition" via this attribute, the container identifier must be specified as the string `'services.foo_service'`.
 
 ::: code-group
 
@@ -118,13 +118,13 @@ final class FooService
 
 :::
 
-### Теги { #tags }
+### Tags { #tags }
 
-Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\DiRuntime` устанавливает тег и метаданные для объявляемого PHP-класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
+The `$tags` parameter of the `\Kaspi\DiContainer\Attributes\DiRuntime` attribute sets a tag and metadata for the PHP class being declared, using the `\Kaspi\DiContainer\Attributes\Tag` attribute (see [tag.md](tag.md)).
 
-Значение `null` в параметре `$tags` указывает контейнеру на необходимость **установить тег через атрибут `Tag` указанный в объявляемом PHP-классе**.
+A value of `null` for the `$tags` parameter instructs the container to **set the tag based on the `Tag` attribute specified within the PHP class being declared**.
 
-Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP-классу**, даже если у класса указан атрибут `Tag`.
+A value of `[]` (an empty array) for the `$tags` parameter instructs the container **not to assign any tag to the PHP class being declared**, even if a `Tag` attribute is present on that class.
 
 ::: code-group
 
