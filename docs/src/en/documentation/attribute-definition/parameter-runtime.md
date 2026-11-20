@@ -1,17 +1,16 @@
 ---
 aside: false
-title: Атрибут ParameterRuntime
+title: ParameterRuntime attribute
 ---
-### Атрибут ParameterRuntime
+### ParameterRuntime attribute
 
+The `\Kaspi\DiContainer\Attributes\ParameterRuntime` attribute will inject a dependency from a runtime container parameter[^ParameterRuntime].
 
-Атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime` внедрят зависимость из параметра контейнера времени исполнения[^ParameterRuntime].
-
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\ParameterRuntime::__construct(
@@ -20,12 +19,12 @@ title: Атрибут ParameterRuntime
 )
 ```
 
-Параметры:
-- `$name` – имя параметра контейнера.
-- `$message` – дополнительное сообщение, если параметр контейнера ещё не имеет значения.
+Parameters:
+- `$name` – the name of a container parameter.
+- `$message` – an optional message to provide if the container parameter does not yet have a value.
 
 > [!TIP]
-> Изучите отдельный раздел документации [«Параметры контейнера» времени выполнения](../container-parameters/inject_runtime_params.md).
+> More information can be found in the [Runtime container parameters](../container-parameters/inject_runtime_params.md) section.
 
 
 <!--@include: ../_include/term_notes.md-->
