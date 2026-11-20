@@ -1,17 +1,18 @@
 ---
 outline: [2,4]
-title: Атрибут Autowire
+title: Autowire attribute
 ---
-### Атрибут Autowire
+### Autowire attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` объявляет PHP-класс в контейнере, или [внедряет зависимость в параметр метода](#autowire-on-param).
+The `\Kaspi\DiContainer\Attributes\Autowire` attribute registers a PHP class in the container or [injects a dependency into a method parameter](#autowire-on-param).
 
-Конфигурация атрибута:
+Attribute configuration:
+
 - `\Attribute::TARGET_CLASS`
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\Autowire::__construct(
@@ -25,26 +26,25 @@ title: Атрибут Autowire
 )
 ```
 
-Параметры:
+Parameters:
 
-- `$id` – идентификатор контейнера [^ContainerId], или пустая строка.
-- `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
-- `$arguments`<span id="constrcut-arguments"/> – аргументы для конструктора PHP-класса.
-- `$tags` – тег с метаданными.
-- `$setups` – внедрение зависимостей через сеттер-метод [^SetterMethodMutable] [^SetterMethodImmutable].
-- `$resetter` – [значение для сброса состояния объекта](../object-resetters/index.md).
-- `$isLazy` – объявить «ленивый объект». 
+- `$id` – container identifier [^ContainerId], or an empty string.
+- `$isSingleton` – The container will return the same object instance (singleton pattern). If set to `null`, the value will be determined based on the [container configuration](../container-config/index.md#is-singleton-service-default).
+- `$arguments`<span id="constrcut-arguments"/> – arguments for a PHP class constructor.
+- `$tags` – tag with metadata.
+- `$setups` – dependency injection via a setter method[^SetterMethodMutable] [^SetterMethodImmutable].
+- `$resetter` – [value for resetting an object's state](../object-resetters/index.md).
+- `$isLazy` – declare a "lazy object". 
 
 > [!TIP]
-> Изучите разделы документации:
-> - [Внедрение «ленивых» объектов контейнером](../lazy-injection/index.md).
+> Read the documentation section on [injecting "lazy" objects via the container](../lazy-injection/index.md).
 
 
-### Идентификатор контейнера для PHP-класса { #container-id }
+### Container identifier for a PHP class { #container-id }
 
-При объявлении PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` пустая строка в параметре `$id` интерпретируется контейнером как идентификатор контейнера представленный FQCN[^FQCN] объявляемого PHP-класса.
+When declaring a PHP class using the `\Kaspi\DiContainer\Attributes\Autowire` attribute, an empty string in the `$id` parameter is interpreted by the container as a container identifier represented by the FQCN[^FQCN] of the PHP class.
 
-Объявить PHP-класс `\App\Services\Foo` через атрибут, идентификатор контейнера должен быть строкой `'App\Services\Foo'`, и объявить внедрение скалярного значения `'Lorem ipsum'` в параметр конструктора класса `$value`.
+Register the PHP class `\App\Services\Foo` using an attribute, with the container identifier set to the string `'App\Services\Foo'`, and configure the injection of the scalar value `'Lorem ipsum'` into the class constructor parameter `$value`.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/Foo.php
@@ -74,25 +74,25 @@ var_dump($foo->value);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(11) "Lorem ipsum"
 ```
 
-#### Объявление PHP-класса с несколькими идентификаторами { #container-id-multuple }
+#### Declaring a PHP class with multiple identifiers { #container-id-multuple }
 
-Атрибут `\Kaspi\DiContainer\Attributes\Autowire` может объявлять один и тот же PHP-класс в контейнере с разными идентификаторами[^ContainerId].
+The `\Kaspi\DiContainer\Attributes\Autowire` attribute can be used to register the same PHP class in the container under different identifiers[^ContainerId].
 
-Объявить PHP-класс `\App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'App\Services\Bar'`, и объявить внедрение скалярного значения `10` в параметр конструктора `$value`.
+Declare the PHP class `\App\Services\Bar` using an attribute, with the container identifier specified as the string `'App\Services\Bar'`, and define the injection of the scalar value `10` into the constructor parameter `$value`.
 
-Объявить PHP-класс `\App\Services\Bar` через атрибут, идентификатор контейнера должен быть представлен строкой `'services.bar_20'`, и объявить внедрение скалярного значения `20` в параметр конструктора `$value`.
+Declare the PHP class `\App\Services\Bar` using an attribute, with the container identifier specified as the string `'services.bar_20'`, and define the injection of the scalar value `20` into the constructor parameter `$value`.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/Bar.php
@@ -125,13 +125,13 @@ var_dump($bar20->value);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 int(10)
@@ -139,17 +139,17 @@ int(20)
 ```
 
 
-### Аргументы конструктора PHP-класса { #arguments }
+### PHP class constructor arguments { #arguments }
 
-Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\Autowire` передает аргументы конструктору PHP-класса.
+The `$arguments` parameter of the `\Kaspi\DiContainer\Attributes\Autowire` attribute passes arguments to the constructor of a PHP class.
 
 <!--@include: _include/arguments.md-->
 
 <!--@include: _include/to_arguments.md-->
 
-#### Пример объявления аргументов конструктору { #example }
+#### Example of declaring arguments for a PHP class constructor { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -165,7 +165,7 @@ PHP-классы:
 
 ::: 
 
-Необходимо объявить PHP-класс `\App\Services\FooService` с разными идентификаторами контейнера и аргументами.
+It is necessary to declare the PHP class `\App\Services\FooService` with different container identifiers and arguments.
 
 ::: code-group
 <<< @/_code/attribute-definition/autowire/FooServiceAttr.php [FooService.php]
@@ -207,13 +207,13 @@ var_dump($fooServiceWithBaz->adminEmail);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(23) "App\Services\BatService"
@@ -225,13 +225,13 @@ string(23) "App\Services\BazService"
 string(16) "admin@example.com
 ```
 
-### Внедрение зависимостей через сеттер-методы { #setups }
+### Dependency injection via setter methods { #setups }
 
-Параметр `$setups` атрибута `\Kaspi\DiContainer\Attributes\Autowire` объявляет внедрение зависимости через сеттер-методы PHP-класса, используя атрибуты [`\Kaspi\DiContainer\Attributes\Setup`](setup.md) и [`\Kaspi\DiContainer\Attributes\SetupImmutable`](setup-immutable.md).
+The `$setups` parameter of the `\Kaspi\DiContainer\Attributes\Autowire` attribute declares dependency injection via setter methods of a PHP class, using the [`\Kaspi\DiContainer\Attributes\Setup`](setup.md) and [`\Kaspi\DiContainer\Attributes\SetupImmutable`](setup-immutable.md) attributes.
 
-Значение `null` в параметре `$setups` указывает контейнеру на необходимость внедрять зависимости через **атрибуты `Setup` и `SetupImmutable` указанные у методов класса**.
+A `null` value for the `$setups` parameter instructs the container to inject dependencies via **the `Setup` and `SetupImmutable` attributes specified on the class methods**.
 
-Значение `[]` (пустой массив) в параметре `$setups` указывает контейнеру **не внедрять зависимости через сеттер-методы**, даже если у методов класса указаны атрибуты `Setup` и `SetupImmutable`.
+A value of `[]` (an empty array) for the `$setups` parameter instructs the container **not to inject dependencies via setter methods**, even if the class methods are marked with the `Setup` or `SetupImmutable` attributes.
 
 ```php
 <?php
@@ -272,13 +272,13 @@ final class Foo
 }
 ```
 
-### Теги { #tags }
+### Tags { #tags }
 
-Параметр `$tags` атрибута `\Kaspi\DiContainer\Attributes\Autowire` устанавливает тег и метаданные для объявляемого PHP-класса, используя [атрибут `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
+The `$tags` parameter of the `\Kaspi\DiContainer\Attributes\Autowire` attribute sets the tag and metadata for the declared PHP class using the [attribute `\Kaspi\DiContainer\Attributes\Tag`](tag.md).
 
-Значение `null` в параметре `$tags` указывает контейнеру на необходимость **установить тег через атрибут `Tag` указанный в объявляемом PHP-классе**.
+A `null` value for the `$tags` parameter instructs the container to **set the tag via the `Tag` attribute specified in the PHP class being declared**.
 
-Значение `[]` (пустой массив) в параметре `$tags` указывает контейнеру **не устанавливать тег к объявляемому PHP-классу**, даже если у класса указан атрибут `Tag`.
+A value of `[]` (an empty array) for the `$tags` parameter instructs the container **not to assign a tag to the PHP class being declared**, even if that class has a `Tag` attribute specified.
 
 ```php
 <?php
@@ -301,17 +301,17 @@ final class Foo
 }
 ```
 
-### Внедрения зависимости в параметр метода или вызываемого типа { #autowire-on-param }
+### Dependency injection into a method parameter or a called type { #autowire-on-param }
 
-Объявить внедрение PHP-класса в параметр метода или вызываемого тип[^CallableType] можно через атрибут `\Kaspi\DiContainer\Attributes\Autowire`.
+You can declare the injection of a PHP class into a method parameter or a callable type[^CallableType] using the `\Kaspi\DiContainer\Attributes\Autowire` attribute.
 
-Значение в параметре `$id` атрибута `Autowire` может быть указано пустой строкой или строкой FQCN[^FQCN].
+The value for the `$id` parameter of the `Autowire` attribute can be specified as an empty string or an FQCN[^FQCN] string.
 
-Пустая строка в параметре `$id` атрибута `Autowire` будет интерпретирована конфигуратором как тип параметра[^TypeHints] для которого применяется атрибут.
+An empty string in the `$id` parameter of the `Autowire` attribute will be interpreted by the container as the type of the parameter[^TypeHints] to which the attribute is applied.
 
-#### Пример объявления внедрения в параметр метода { #example-autowire-on-param }
+#### Example of declaring an injection into a method parameter { #example-autowire-on-param }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -370,7 +370,7 @@ final class Baz
 
 :::
 
-Для PHP-класса `\App\Services\Foo` объявить внедрение в параметры конструктора `$qux` и `$baz` через атрибут `Kaspi\DiContainer\Attributes\Autowire`.
+For the PHP class `\App\Services\Foo`, declare the injection of `$qux` and `$baz` into the constructor parameters using the `Kaspi\DiContainer\Attributes\Autowire` attribute.
 
 ::: code-group
 
@@ -436,13 +436,13 @@ var_dump($foo->baz->email);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(19) "manager@example.com"
