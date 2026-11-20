@@ -1,16 +1,16 @@
 ---
 outline: [2,4]
-title: Атрибут Setup
+title: Setup attribute
 ---
-### Атрибут Setup
+### Setup attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\Setup` внедряет зависимости в PHP-класс через **мутабельные сеттер-методы**[^SetterMethodMutable].
+The `\Kaspi\DiContainer\Attributes\Setup` attribute injects dependencies into a PHP class via **mutable setter methods**[^SetterMethodMutable].
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_METHOD`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\Setup::__construct(
@@ -18,14 +18,14 @@ title: Атрибут Setup
 )
 ```
 
-Параметры:
-- `$argument` - аргументы для передачи в сеттер-метод.
+Parameters:
+- `$argument` - arguments to be passed to a setter method.
 
-### Аргументы сеттер-метода { #arguments }
+### Setter method arguments { #arguments }
 
 <!--@include: _include/setter-method-args.md-->
 
-### Приоритет { #priority }
+### Priority { #priority }
 
 <!--@include: _include/setter-method-priority.md-->
 

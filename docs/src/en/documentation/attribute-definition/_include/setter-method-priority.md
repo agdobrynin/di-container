@@ -1,3 +1,3 @@
-Контейнер внедряет зависимости через сеттер-методы отмеченные атрибутом в том порядке в каком они объявлены в PHP-классе.
+The container injects dependencies via setter methods marked with an attribute, following the order in which they are declared in the PHP class.
 
-При необходимости можно изменить очерёдность внедрения зависимостей [через атрибут `Kaspi\DiContainer\Attributes\SetupPriority`](setup-priority.md).
+If necessary, you can change the order of dependency injection [using the `Kaspi\DiContainer\Attributes\SetupPriority` attribute](setup-priority.md).
