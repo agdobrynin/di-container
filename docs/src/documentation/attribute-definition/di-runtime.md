@@ -26,7 +26,7 @@ title: Атрибут DiRuntime
 Параметры:
 - `$containerIdentifierOrClass` – идентификатора контейнера[^ContainerId] для «runtime definition».
 - `$message` – сообщение при возникновении ошибки.
-- `$tags` – тег с метаданными.
+- `$tags` – объявление тега с метаданными.
 - `$resetter` – [значение для сброса состояния объекта](../object-resetters/index.md).
 
 ### Идентификатор контейнера для Runtime Definition { #container-id }
