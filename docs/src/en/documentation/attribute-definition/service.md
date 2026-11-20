@@ -1,15 +1,15 @@
 ---
 outline: [2,4]
-title: Атрибут Service
+title: Service attribute
 ---
-### Атрибут Service
+### АService attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\Service` указывает PHP интерфейсу его реализацию.
+The `\Kaspi\DiContainer\Attributes\Service` attribute tells the PHP interface its implementation.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_CLASS`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\Service::__construct(
@@ -18,19 +18,19 @@ title: Атрибут Service
 )
 ```
 
-Параметры:
-- `$id` – идентификатор контейнера [^ContainerId].
-- `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
+Parameters:
+- `$id` – container identifier [^ContainerId].
+- `$isSingleton` – The container will return the same object instance (singleton pattern). If set to `null`, the value will be determined based on the [container configuration](../container-config/index.md#is-singleton-service-default).
 
-Параметр `$id` указывает реализацию интерфейса PHP-классом, который доступен в контейнере через метод `get()`.
+The `$id` parameter specifies the implementation of an interface via a PHP class, which is accessible within the container through the `get()` method.
 
-Объявление реализации интерфейса через атрибут `\Kaspi\DiContainer\Attributes\Service` является глобальным – если для конкретного параметра не объявлено как необходимо внедрять зависимость, то контейнер внедрит зависимость на основании конфигурации интерфейса, получив значение объекта из контейнера через метод `get()` со значением идентификатора указанного в параметре `$id`.
+Declaring an interface implementation using the `\Kaspi\DiContainer\Attributes\Service` attribute is global in scope; if no specific dependency injection instructions are provided for a given parameter, the container will resolve the dependency based on the interface configuration by retrieving the object from the container via the `get()` method, using the identifier specified in the `$id` parameter.
 
-Например, указание строкового идентификатора `'services.qux'` в параметре `$id` будет означать что контейнеру необходимо внедрять объект полученный через вызов метода `$container->get('services.qux')`. 
+For example, specifying the string identifier `'services.qux'` for the `$id` parameter means that the container should inject the object obtained by calling the `$container->get('services.qux')` method.
 
-### Пример конфигурирования интерфейса { #example-interface-service }
+### Example of interface configuration { #example-interface-service }
 
-PHP-классы и интерфейсы:
+PHP classes and interfaces:
 
 ::: code-group
 
@@ -82,9 +82,9 @@ final class Bar implements QuxInterface
 
 :::
 
-Необходимо глобально объявить, что PHP-класс `\App\Services\Bar` реализует интерфейс `\App\Interfaces\QuxInterface`.
+It is necessary to declare globally that the PHP class `\App\Services\Bar` implements the interface `\App\Interfaces\QuxInterface`.
 
-Это означает что контейнер на основании конфигурации будет внедрять в параметры методов или функций с типом `\App\Interfaces\QuxInterface` PHP-класс `\App\Services\Bar`.
+This means that, based on the configuration, the container will inject the PHP class `\App\Services\Bar` into any method or function parameters that are type-hinted with `\App\Interfaces\QuxInterface`.
 
 ::: code-group
 
@@ -134,22 +134,22 @@ var_dump($foo->qux instanceof Bar);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 bool(true)
 bool(true)
 ```
 
-### Конфигурация интерфейсов сторонних производителей { #inject-vendor-interface }
+### Configuration of third-party interfaces { #inject-vendor-interface }
 
-При объявлении внедрения в параметре с типом интерфейс от сторонних производителей, например из других PHP пакетов, нужно объявлять реализацию интерфейса через [файлы конфигураций](../container-builder/methods/load-definitions-from-file.md) или через [коллекцию](../container-builder/methods/load-definitions-from-collection.md) при сборке контейнера.
+When configuring dependency injection for a parameter typed as an interface—such as one provided by a third-party PHP package — you must specify the implementation of that interface via [configuration files](../container-builder/methods/load-definitions-from-file.md) or a [collection](../container-builder/methods/load-definitions-from-collection.md) during the container-building process.
 
 ```php
 <?php
@@ -165,6 +165,6 @@ return static function (): Generator {
 };
 ```
 
-Пример объявления внедрения PHP-класса реализующего конкретный интерфейс стороннего производителя доступен в разделе «[Рецепты](../../cookbook/resolve-vendor-interface.md)».
+An example showing how to implement a PHP class that satisfies a specific third-party interface can be found in the [Cookbook](../../cookbook/resolve-vendor-interface.md) section.
 
 <!--@include: ../_include/term_notes.md-->
