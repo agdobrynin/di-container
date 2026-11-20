@@ -1,15 +1,15 @@
 ---
 outline: [2,4]
-title: Атрибут ProxyClosure
+title: ProxyClosure attribute
 ---
-### Атрибут ProxyClosure
+### ProxyClosure attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\ProxyClosure` внедряет «ленивую» зависимость через встроенный PHP-класс [`\Closure`](https://www.php.net/manual/ru/class.closure.php), откладывая инициализацию зависимости до момента фактического его использования.
+The `\Kaspi\DiContainer\Attributes\ProxyClosure` attribute injects a "lazy" dependency via the built-in PHP class [`\Closure`](https://www.php.net/manual/en/class.closure.php), deferring the dependency's initialization until the moment it is actually used.
 
-Такой приём объявления зависимости пригодится для внедрения «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмкий вычислений.
+This approach to declaring dependencies is useful for injecting "heavy" dependencies that require a long initialization time or involve resource-intensive computations.
 
 > [!IMPORTANT]
-> Обязательно типизировать параметр[^TypeHints] как `\Closure` или `callable` для внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\ProxyClosure`.
+> Be sure to type-hint the parameter[^TypeHints] as `\Closure` or `callable` when performing dependency injection via the `\Kaspi\DiContainer\Attributes\ProxyClosure` attribute.
 > ```php{2}
 >  public function __construct(
 >       private readonly \Closure $bar
@@ -17,13 +17,13 @@ title: Атрибут ProxyClosure
 > ```
 
 > [!TIP]
-> Если используется PHP 8.4 и выше, то вместо атрибута `\Kaspi\DiContainer\Attributes\ProxyClosure` предпочтительнее внедрять зависимость через встроенный в PHP механизм [«ленивых объектов»](../lazy-injection/index.md).
+> If you are using PHP 8.4 or higher, it is preferable to inject dependencies using PHP’s built-in [“lazy objects”](../lazy-injection/index.md) mechanism, rather than using the `\Kaspi\DiContainer\Attributes\ProxyClosure` attribute.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\ProxyClosure::__construct(
@@ -31,12 +31,12 @@ title: Атрибут ProxyClosure
 )
 ```
 
-Параметры:
-- `$containerIdentifier` – идентификатор контейнера [^ContainerId].
+Parameters:
+- `$containerIdentifier` – container identifier [^ContainerId].
 
-### Пример внедрения параметра с отложенной инициализацией { #example }
+### Example of implementing a parameter with deferred initialization { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -66,7 +66,7 @@ final class Foo
 :::
 
 
-PHP-класс `\App\Services\Bar` при инициализации производит ресурсоёмкие вычисления. Необходимо объявить внедрение PHP-класса `\App\Services\Bar` в конструктор класса `\App\Services\Foo` используя приём «ленивой» инициализации объекта через встроенный в PHP-класс `\Closure`.
+The PHP class `\App\Services\Bar` performs resource-intensive calculations upon initialization. You need to inject `\App\Services\Bar` into the constructor of the class `\App\Services\Foo` by employing a "lazy" initialization pattern, utilizing the built-in PHP class `\Closure`.
 
 ::: code-group
 
@@ -125,20 +125,20 @@ var_dump($foo->getBar() instanceof Bar);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 bool(true)
 ```
 
 > [!TIP]
-> Используйте [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) для подсказок и автодополнения в IDE:
+> Use [PhpDocBlock](https://docs.phpdoc.org/guide/getting-started/what-is-a-docblock.html) for hints and autocompletion in your IDE:
 > ```php{1-3}
 >   /**
 >    * @param Closure(): Bar $barProxy
