@@ -1,16 +1,16 @@
 ---
 aside: false
-title: Атрибут TaggedAs
+title: TaggedAs attribute
 ---
-### Атрибут TaggedAs
+### TaggedAs attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs` внедряет коллекцию элементов из контейнера отмеченных тегом с одинаковым имененм.
+The `\Kaspi\DiContainer\Attributes\TaggedAs` attribute injects a collection of items from the container that are marked with a tag of the same name.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\TaggedAs::__construct(
@@ -25,21 +25,21 @@ title: Атрибут TaggedAs
 )
 ```
 
-Параметры:
-- `$name` – имя тега или FQNC [^FQCN] интерфейса.
-- `$isLazy` – «ленивая коллекция».
-- `$priorityDefaultMethod` – извлечение приоритета из метода PHP-класса по умолчанию.
-- `$useKeys` – использовать строковые идентификаторы элементов коллекции.
-- `$key` – извлечение идентификатора элемента коллекции по имени метаданных из тега.
-- `$keyDefaultMethod` – извлечение идентификатора элемента коллекции из метода PHP-класса по умолчанию.
-- `$containerIdExclude` – исключить из коллекции элементы по идентификатору контейнера.
-- `$selfExclude` – исключить из коллекции вызывающий PHP-класс.
+Parameters:
+- `$name` – the tag name or the FQCN [^FQCN] of an interface.
+- `$isLazy` – enables a "lazy collection."
+- `$priorityDefaultMethod` – retrieves the priority from a default method within the PHP class.
+- `$useKeys` – uses string identifiers for the collection elements.
+- `$key` – retrieves the identifier for a collection element based on a metadata name from the tag.
+- `$keyDefaultMethod` – retrieves the identifier for a collection element from a default method within the PHP class.
+- `$containerIdExclude` – excludes elements from the collection based on their container ID.
+- `$selfExclude` – excludes the calling PHP class from the collection.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
 > [!TIP]
-> Изучите разделы документации
-> - «[Объявление тега через атрибут](../tags/attribute-definition-tag.md)».
-> - «[Работа с тегами в контейнере](../tags/index.md)».
+> Explore the sections of the documentation:
+> - [Declaring a tag via an attribute](../tags/attribute-definition-tag.md).
+> - [Tags](../tags/index.md).
 
 <!--@include: ../_include/term_notes.md-->
