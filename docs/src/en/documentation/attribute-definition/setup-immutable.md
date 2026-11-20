@@ -1,18 +1,18 @@
 ---
 outline: [2,4]
-title: Атрибут SetupImmutable
+title: SetupImmutable attribute
 ---
-### Атрибут SetupImmutable
+### АSetupImmutable attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\SetupImmutable` внедряет зависимости в PHP-класс через **иммутабельные сеттер-методам PHP-класса** [^SetterMethodImmutable]. 
+The `\Kaspi\DiContainer\Attributes\SetupImmutable` attribute injects dependencies into a PHP class via **immutable setter methods** [^SetterMethodImmutable].
 
-Возвращаемое значение сеттер-метода должно быть `self`, `static` или того же PHP-класса к которому принадлежит сеттер-метод.
+The return value of such a setter method must be `self`, `static`, or the same PHP class to which the setter method belongs.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_METHOD`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\SetupImmutable::__construct(
@@ -20,14 +20,14 @@ title: Атрибут SetupImmutable
 )
 ```
 
-Параметры:
-- `$argument` - аргументы для передачи в сеттер-метод.
+Parameters:
+- `$argument` - arguments to be passed to a setter method.
 
-### Аргументы сеттер-метода { #arguments }
+### Setter method arguments { #arguments }
 
 <!--@include: _include/setter-method-args.md-->
 
-### Приоритет { #priority }
+### Priority { #priority }
 
 <!--@include: _include/setter-method-priority.md-->
 
