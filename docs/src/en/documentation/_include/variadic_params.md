@@ -1,1 +1,1 @@
-При использовании [именованных аргументов](https://www.php.net/manual/ru/functions.arguments.php#functions.named-arguments) и [параметров переменной длины](https://www.php.net/manual/ru/functions.arguments.php#functions.variable-arg-list) действуют правила описанные в документации по PHP.
+When using [named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) and [variable-length parameter lists](https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list), the rules described in the PHP documentation apply.
