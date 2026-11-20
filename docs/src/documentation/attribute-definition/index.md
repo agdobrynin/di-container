@@ -25,7 +25,7 @@ title: Объявление через атрибуты
 - [AutowireExclude](autowire-exclude.md) – исключает из внедряемых зависимостей контейнера.
 - [DiFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
 - [Inject](inject.md) – внедрение зависимости по идентификатору контейнера [^ContainerId].
-- [InjectByCallable](inject-by-callable.md) – внедрение зависимости через `callable` тип.
+- [InjectByCallable](inject-by-callable.md) – внедрение зависимости через вызов `callable` типа.
 - [Parameter](parameter.md) – внедрение зависимости из «параметров контейнера».
 - [ParameterRuntime](parameter-runtime.md) – внедрение зависимости из «параметров контейнера времени исполнения».
 - [ProxyClosure](proxy-closure.md) – внедрение «ленивой» зависимости.

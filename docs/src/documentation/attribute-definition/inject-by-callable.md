@@ -4,7 +4,7 @@ title: Атрибут InjectByCallable
 ---
 ### Атрибут InjectByCallable
 
-Атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` внедряет зависимость через вызываемый тип[^CallableType].
+Атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` внедряет зависимость через вызов указанного вызываемого типа[^CallableType].
 
 Конфигурация атрибута:
 - `\Attribute::TARGET_PARAMETER`
