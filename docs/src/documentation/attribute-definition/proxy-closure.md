@@ -9,7 +9,7 @@ title: Атрибут ProxyClosure
 Такой приём объявления зависимости пригодится для внедрения «тяжёлых» зависимостей, требующих длительного времени инициализации или ресурсоёмкий вычислений.
 
 > [!IMPORTANT]
-> Обязательно типизировать параметр[^TypeHints] как `\Closure` или `callable` для внедрения зависимости через атрибут `\Kaspi\DiContainer\Attributes\ProxyClosure`.
+> При использовании внедрения зависимостей через атрибут `\Kaspi\DiContainer\Attributes\ProxyClosure` обязательно укажите тип параметра[^TypeHints] как `\Closure` или `callable`.
 > ```php{2}
 >  public function __construct(
 >       private readonly \Closure $bar
