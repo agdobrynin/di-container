@@ -1,30 +1,30 @@
 ---
 outline: [2,4]
-title: Атрибут InjectByCallable
+title: InjectByCallable attribute
 ---
-### Атрибут InjectByCallable
+### InjectByCallable attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` внедряет зависимость через вызываемый тип[^CallableType].
+The `\Kaspi\DiContainer\Attributes\InjectByCallable` attribute injects a dependency by invoking the specified callable type[^CallableType].
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\InjectByCallable::__construct(
     callable $callable
 )
 ```
-Параметры:
-- `$callable` – вызываемый тип.
+Parameters:
+- `$callable` – a callable type.
 
-Параметры в вызываемом типе могут быть внедрены контейнером автоматически на основании конфигурации контейнера.
+Parameters in the callable type can be automatically injected by the container, based on the container's configuration.
 
-### Пример внедрения через вызываемый тип { #example }
+### Example of implementation via a callable type { #example }
 
-PHP-классы и функции:
+PHP classes and functions:
 
 ::: code-group
 
@@ -106,13 +106,13 @@ if (!function_exists('App\calculate_str')) {
 
 :::
 
-Для PHP-класса `\App\Services\Foo` необходимо объявить внедрение в параметры конструктора `$bar` и `$calcStr`, при этом оба параметра требуют комплексных вычислений. 
+For the PHP class `\App\Services\Foo`, it is necessary to declare dependency injection for the constructor parameters `$bar` and `$calcStr`, both of which require complex calculations.
 
-Для параметра `$bar` класса `\App\Services\Foo` необходимо использовать метод `\App\Helpers\Configurator::doConfigBar()` выполняющий необходимые вычисления для инициализации PHP-класса `\App\Services\Bar`. Статический метод PHP-класса является вызываемым типом[^CallableType] поэтому используем атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable` для внедрения зависимости в параметр конструктора `$bar`.
+For the `$bar` parameter of the `\App\Services\Foo` class, it is necessary to use the `\App\Helpers\Configurator::doConfigBar()` method, which performs the calculations required to initialize the `\App\Services\Bar` PHP class. Since a static method of a PHP class is a callable type[^CallableType], we use the `\Kaspi\DiContainer\Attributes\InjectByCallable` attribute to inject the dependency into the `$bar` constructor parameter.
 
-Во второй параметр `$calcStr` класса `\App\Services\Foo` необходимо внедрить значение вычисляемое функцией `\App\calculate_str()`, внедрение так же объявим через атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable`.
+For the second parameter, `$calcStr`, of the `\App\Services\Foo` class, you need to inject a value calculated by the `\App\calculate_str()` function; this injection should be declared using the `\Kaspi\DiContainer\Attributes\InjectByCallable` attribute.
 
-Методу `\App\Helpers\Configurator::doConfigBar()` необходима скалярная зависимость в параметре `$inputStr`, для объявления внедрения зависимости используем [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](parameter.md). 
+The `\App\Helpers\Configurator::doConfigBar()` method requires a scalar dependency for its `$inputStr` parameter; to declare this dependency injection, use the [`\Kaspi\DiContainer\Attributes\Parameter` attribute](parameter.md).
 
 ::: code-group
 
@@ -168,7 +168,7 @@ final class Configurator
 
 :::
 
-Контейнеру для внедрения скалярных зависимостей требуется объявить [параметр контейнера](../container-parameters/index.md) с именем `'params.lorem'`, сделаем это через [метод `setParameter()`](../container-builder/methods/load-parameters.md#setparameter).
+To inject scalar dependencies, the container requires a [container parameter](../container-parameters/index.md) named `'params.lorem'`; we will define this using the [`setParameter()` method](../container-builder/methods/load-parameters.md#setparameter).
 
 
 ::: code-group
@@ -197,13 +197,13 @@ var_dump($foo->calcStr);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(11) "Lorem ipsum"
