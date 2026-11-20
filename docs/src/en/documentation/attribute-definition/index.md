@@ -4,37 +4,37 @@ title: Declaration via attributes
 ---
 ### Declaration via attributes { #title }
 
-Для указания контейнеру каким образом нужно внедрять зависимости в PHP-классах или вызываемых типах используется механизм объявления определений через атрибуты.
+To instruct the container on how to inject dependencies into PHP classes or callable types[^CallableType], a mechanism for declaring definitions via attributes is used.
 
-[В конфигурации контейнера](../container-config/index.md#use-attribute) по умолчанию параметр `$useAttribute` включён.
+In the [container configuration](../container-config/index.md#use-attribute), the `$useAttribute` parameter is enabled by default.
 
-Для создания настроенного контейнера используется класс-строитель [DiContainerBuilder](../container-builder/index.md).
+To create a configured container, the builder class [DiContainerBuilder](../container-builder/index.md) is used.
 
-Атрибуты содержат метаданные для объявления определений контейнера: аргументы, внедрение через сеттер методы или объявление тегов.
+Attributes contain metadata for declaring container definitions: arguments, injection via setter methods, or the declaration of tags.
 
-**При объявлении определений контейнера можно совмещать атрибуты и [файлы конфигураций](../php-definition/index.md).**
+**When declaring container definitions, you can combine attributes and [configuration files](../php-definition/index.md).**
 
 > [!WARNING]
-> Объявление определений или объявление внедрений в параметры методов через атрибуты имеют более высокий приоритет чем объявления в файлах конфигураций.
+> Defining container entries or specifying dependency injections for method parameters via attributes takes precedence over definitions made in configuration files.
 
 > [!IMPORTANT]
-> Для объявления PHP-класса или интерфейса необходимо выбрать только один способ объявления – через атрибуты или в файлах конфигураций. 
+> To declare a PHP class or interface, you must choose only one declaration method: either via attributes or through configuration files.
 
-### Доступные атрибуты { #attributes }
-- [Autowire](autowire.md) – объявление PHP-класса в контейнере.
-- [AutowireExclude](autowire-exclude.md) – исключает из внедряемых зависимостей контейнера.
-- [DiFactory](di-factory.md) – внедрение зависимости через паттерн «фабрика».
-- [Inject](inject.md) – внедрение зависимости по идентификатору контейнера [^ContainerId].
-- [InjectByCallable](inject-by-callable.md) – внедрение зависимости через `callable` тип.
-- [Parameter](parameter.md) – внедрение зависимости из «параметров контейнера».
-- [ParameterRuntime](parameter-runtime.md) – внедрение зависимости из «параметров контейнера времени исполнения».
-- [ProxyClosure](proxy-closure.md) – внедрение «ленивой» зависимости.
-- [Service](service.md) – указывает реализацию PHP интерфейса.
-- [Setup](setup.md) – внедрение зависимости в PHP-класс через мутабельный сеттер-метод.
-- [SetupImmutable](setup-immutable.md) – внедрение зависимости в PHP-класс через иммутабельный сеттер-метод.
-- [SetupPriority](setup-priority.md) – приоритет сеттер-метода.
-- [Tag](tag.md) – объявление тега.
-- [TaggedAs](tagged-as.md) – внедрение коллекции по тегу.
-- [DiRuntime](di-runtime.md) – внедрение «runtime definition».
+### Available attributes { #attributes }
+- [Autowire](autowire.md) – declaring a PHP class in a container.
+- [AutowireExclude](autowire-exclude.md) – excludes from the container's injected dependencies.
+- [DiFactory](di-factory.md) – dependency injection via the factory pattern.
+- [Inject](inject.md) – dependency injection by container identifier[^ContainerId].
+- [InjectByCallable](inject-by-callable.md) – dependency injection via a call to a `callable` type.
+- [Parameter](parameter.md) – dependency injection from "container parameters".
+- [ParameterRuntime](parameter-runtime.md) – dependency injection from "runtime container parameters".
+- [ProxyClosure](proxy-closure.md) – implementation of "lazy" dependency.
+- [Service](service.md) – specifies the implementation of a PHP interface.
+- [Setup](setup.md) – dependency injection into a PHP class via a mutable setter method.
+- [SetupImmutable](setup-immutable.md) – Dependency injection into a PHP class via an immutable setter method.
+- [SetupPriority](setup-priority.md) – setter method priority.
+- [Tag](tag.md) – tag declaration.
+- [TaggedAs](tagged-as.md) – a collection by tag.
+- [DiRuntime](di-runtime.md) – implement "runtime definition".
 
 <!--@include: ../_include/term_notes.md-->
