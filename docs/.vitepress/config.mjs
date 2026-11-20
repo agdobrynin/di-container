@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
-import sidebar_ru from './sidebar_ru.js'
-import sidebar_en from './sidebar_en.js'
+import sidebar_ru from './sidebar_ru.mjs'
+import sidebar_en from './sidebar_en.mjs'
 
 
 // https://vitepress.dev/reference/site-config
