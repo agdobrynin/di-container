@@ -1,24 +1,24 @@
 ---
 aside: false
-title: Атрибут Parameter
+title: Parameter attribute
 ---
-### Атрибут Parameter
+### Parameter attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\Parameter` внедряет зависимость из «параметров контейнера».
+The `\Kaspi\DiContainer\Attributes\Parameter` attribute injects a dependency from the container parameters.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\Parameter::__construct(
     string $name = ''
 )
 ```
-Параметры:
-- `$name` – имя параметра контейнера.
+Parameters:
+- `$name` – the name of a container parameter.
 
 > [!TIP]
-> Более подробное описание в разделе [«Параметры контейнера»](../container-parameters/inject_params.md).
+> A more detailed description can be found in the [“Container Parameters”](../container-parameters/inject_params.md) section.
