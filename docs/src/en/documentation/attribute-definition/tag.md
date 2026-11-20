@@ -1,16 +1,16 @@
 ---
 aside: false
-title: Атрибут Tag
+title: Tag attribute
 ---
-### Атрибут Tag
+### Tag attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\Tag` объявляет тег и метаданные для PHP-класса.
+The `\Kaspi\DiContainer\Attributes\Tag` attribute declares a tag and metadata for a PHP class.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_CLASS`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\Tag::__construct(
@@ -21,13 +21,13 @@ title: Атрибут Tag
 )
 ```
 
-Параметры:
-- `$name` – имя тега.
-- `$options` – метаданные тега.
-- `$priority` – приоритет тега.
-- `$priorityMethod` – «метод приоритета».
+Parameters:
+- `$name` – the name of the tag.
+- `$options` – the tag's metadata.
+- `$priority` – the priority of the tag.
+- `$priorityMethod` – the "priority method."
 
 > [!TIP]
-> Более подробное описание в разделе [«Работа с тегами в контейнере»](../tags/index.md).
+> A more detailed description can be found in the section [Tags](../tags/index.md).
 
 <!--@include: ../_include/term_notes.md-->
