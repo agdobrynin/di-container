@@ -1,28 +1,28 @@
 ---
 aside: false
-title: Атрибут AutowireExclude
+title: AutowireExclude attribute
 ---
-### Атрибут AutowireExclude
+### AutowireExclude attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude` исключает из внедряемых зависимостей контейнера PHP-класс или интерфейс. FQCN [^FQCN] будет недоступен для метода контейнера `get()` и `has()`.  
+The `\Kaspi\DiContainer\Attributes\AutowireExclude` attribute excludes a PHP class or interface from the container's injectable dependencies. The FQCN [^FQCN] will be inaccessible to the container's `get()` and `has()` methods.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_CLASS`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\AutowireExclude::__construct()
 ```
 
-У атрибута нет параметров.
+The attribute has no parameters.
 
 > [!WARNING]
-> Атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude` исключает из конфигурирования любые другие атрибуты.
+> The `\Kaspi\DiContainer\Attributes\AutowireExclude` attribute excludes any other attributes from the configuration process.
 
-#### Пример исключения PHP-класса { #example }
+#### Example of a PHP class exception { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -56,7 +56,7 @@ final class Bar
 
 :::
 
-Исключить из контейнера PHP-класс `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\AutowireExclude`.
+Exclude the PHP class `\App\Services\Foo` from the container using the `\Kaspi\DiContainer\Attributes\AutowireExclude` attribute.
 
 ::: code-group
 
@@ -102,13 +102,13 @@ var_dump($container->has(Bar::class));
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 (bool) false
