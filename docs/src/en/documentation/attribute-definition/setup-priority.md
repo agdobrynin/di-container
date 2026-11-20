@@ -1,15 +1,15 @@
 ---
 outline: [2,4]
-title: Атрибут SetupPriority
+title: SetupPriority attribute
 ---
-### Атрибут SetupPriority
+### SetupPriority attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\SetupPriority` изменяет очерёдность внедрения зависимостей через сеттер-методы PHP-класса и используется вместе с атрибутами [`Setup`](setup.md) и [`SetupImmutable`](setup-immutable.md).
+The `\Kaspi\DiContainer\Attributes\SetupPriority` attribute modifies the order in which dependencies are injected via the setter methods of a PHP class; it is used in conjunction with the [`Setup`](setup.md) and [`SetupImmutable`](setup-immutable.md) attributes.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_METHOD`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\SetupPriority::__construct(
@@ -17,14 +17,14 @@ title: Атрибут SetupPriority
 )
 ```
 
-Параметры:
-- `$priority` - приоритет вызова.
+Parameters:
+- `$priority` – call priority.
 
-Чем выше значение параметра `$priority`, тем раньше будет внедрена зависимость через сеттер-метод.
+The higher the value of the `$priority` parameter, the earlier the dependency will be injected via a setter method.
 
-### Пример изменения приоритета сеттер-методов { #example }
+### Example of changing the priority of setter methods { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -91,12 +91,11 @@ final class Baz
 
 :::
 
+Dependency injection must be configured via setter methods for `\App\Services\Foo::bar()` and `\App\Services\Foo::baz()`.
 
-Необходимо объявить внедрение зависимости через сеттер-методы класса `\App\Services\Foo::bar()` и `\App\Services\Foo::baz()`.
+The dependency must first be injected via the setter method `\App\Services\Foo::baz()`, followed by the injection via `\App\Services\Foo::bar()`.
 
-Первым необходимо внедрить зависимость через сеттер-метод `\App\Services\Foo::baz()`, после этого внедрить зависимость через `\App\Services\Foo::bar()`.
-
-Используем атрибут `\Kaspi\DiContainer\Attributes\SetupPriority` для метода `\App\Services\Foo::baz()` чтобы указать очерёдность внедрения через сеттер-методы.
+Use the `\Kaspi\DiContainer\Attributes\SetupPriority` attribute on the `\App\Services\Foo::baz()` method to specify the order of injection via the setter methods.
 
 ::: code-group
 
@@ -168,18 +167,17 @@ foreach ($foo->getInjectedClass() as $injectedClass) {
 :::
 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Baz"
 string(16) "App\Services\Bar"
-
 ```
 
 <!--@include: ../_include/term_notes.md-->
