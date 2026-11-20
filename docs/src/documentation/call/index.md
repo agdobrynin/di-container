@@ -15,10 +15,14 @@ title: Метод контейнера для вызываемых типов
 - Метод PHP объекта.
 - PHP объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/ru/language.oop5.magic.php#object.invoke).
 - **Метод может `call()` преобразовать** к `callable` не инициализированный PHP-класс и его метод:
-  - Вызов нестатического метода PHP-класса.
-    - `$container->call([App\Services\Foo::class, 'methodName']);`
-  - Вызов [магического метод `__invoke()`](https://www.php.net/manual/ru/language.oop5.magic.php#object.invoke) в PHP-классе.
-    - `$container->call(App\Services\CallableService::class);`
+  - Вызов нестатического метода PHP-класса:
+    ```php
+    $container->call([App\Services\Foo::class, 'methodName']);
+    ```
+  - Вызов магического метода `__invoke()` в PHP-классе:
+    ```php
+    $container->call(App\Services\CallableService::class);
+    ```
 
 Сигнатура метода:
 
