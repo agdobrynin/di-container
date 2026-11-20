@@ -1,20 +1,20 @@
 ---
 outline: [2,4]
-title: Атрибут Inject
+title: Inject attribute
 ---
-### Атрибут Inject
+### Inject attribute
 
-Атрибут `\Kaspi\DiContainer\Attributes\Inject` внедряет зависимость через идентификатор контейнера [^ContainerId], это эквивалентно вызову метода контейнера `get()`.
+The `\Kaspi\DiContainer\Attributes\Inject` attribute injects a dependency via a container identifier [^ContainerId]; this is equivalent to calling the container's `get()` method.
 
-Для случаев когда параметр метода или вызываемого типа[^CallableType] указан через определяемые пользователем типы (PHP-класс, встроенные PHP-классы, перечисления) применять атрибут `Inject` нет необходимости, контейнер внедряет зависимость автоматически на основании конфигурации.
+In cases where a parameter of a method or a callable type[^CallableType] is defined using custom types (such as PHP classes, built-in PHP classes, or enumerations), the `Inject` attribute is not required — the container will automatically inject the dependency based on the configuration.
 
-Применение атрибута `Inject` необходимо когда контейнер не может автоматически определить тип зависимости в конкретном параметре метода или вызываемого типа, в таком случае нужна конкретизация внедряемого типа. Например, параметр метода указан с типом `mixed` или представлен составным типом (пересечение класс-типов, объединение типов), в этом случае атрибут будет конкретизировать какое значение контейнера необходимо внедрить в параметр.
+The `Inject` attribute is necessary in cases where the container cannot automatically determine the dependency type for a specific method parameter or a type being instantiated; in such situations, the type of the object to be injected must be specified explicitly. For example, if a method parameter is defined as `mixed` or as a composite type (an intersection or union types), this attribute allows you to precisely specify which value from the container should be injected into that parameter.
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\Inject::__construct(
@@ -22,12 +22,12 @@ title: Атрибут Inject
 )
 ```
 
-Параметры:
-- `$id` - идентификатор контейнера [^ContainerId].
+Parameters:
+- `$id` - container identifier [^ContainerId].
 
-### Пример внедрение в параметр с типом mixed { #example }
+### Example of injection into a parameter of type mixed { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -62,9 +62,9 @@ final class Bar
 ```
 :::
 
-Необходимо внедрить в параметр конструктора `$entry` PHP-класса `\App\Services\Foo` объект класса `\App\Services\Bar`.
+It is necessary to inject an object of the `\App\Services\Bar` class into the `$entry` constructor parameter of the `\App\Services\Foo` PHP class.
 
-Параметр конструктора `$entry` PHP-класса `\App\Services\Foo` представлен типом `mixed` поэтому контейнер не сможет самостоятельно решать какой тип зависимости необходимо внедрять в этот параметр. Конкретизируем через атрибут `\Kaspi\DiContainer\Attributes\Inject` объект необходимый для внедрения.
+Since the `$entry` constructor parameter of the `\App\Services\Foo` class is typed as `mixed`, the container cannot automatically determine which type of dependency should be injected. We will specify the required object for injection using the `\Kaspi\DiContainer\Attributes\Inject` attribute.
 
 ::: code-group
 
@@ -112,22 +112,22 @@ var_dump($foo->entry instanceof Bar);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 (bool) true
 ```
 
-### Рецепты { #cookbook }
+### Cookbook { #cookbook }
 
-В разделе «Рецепты» представлены примеры конкретизации объявления внедрения параметров:
-- [Внедрение зависимости PHP-класса реализующего конкретный интерфейс](../../cookbook/inject-interface.md#attribute-inject).
-- [Внедрение зависимостей для параметров объединенного типа](../../cookbook/inject-union-type-params.md#php-attributes).
+The "Recipes" section provides examples of how to refine an ad by incorporating parameters:
+- [Dependency injection of a PHP class that implements a specific interface](../../cookbook/inject-interface.md#attribute-inject).
+- [Dependency injection for union type parameters](../../cookbook/inject-union-type-params.md#php-attributes).
 
 <!--@include: ../_include/term_notes.md-->
