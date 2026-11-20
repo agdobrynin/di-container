@@ -1,17 +1,17 @@
 ---
 outline: [2,4]
-title: Атрибут DiFactory
+title: DiFactory attribute
 ---
-### Атрибут DiFactory
+### DiFactory attribute
 
-Объявление через атрибут `\Kaspi\DiContainer\Attributes\DiFactory` реализуется через паттерн «фабрика» [^FactoryPattern]. Атрибут объявляет PHP-класс в контейнере, или внедряет зависимость.
+Declaration via the `\Kaspi\DiContainer\Attributes\DiFactory` attribute is implemented using the Factory pattern [^FactoryPattern]. This attribute registers a PHP class within the container or injects a dependency into a parameter of a method or a callable type [^CallableType].
 
-Конфигурация атрибута:
+Attribute configuration:
 - `\Attribute::TARGET_CLASS`
 - `\Attribute::TARGET_PARAMETER`
 - `\Attribute::IS_REPEATABLE`
 
-Сигнатура атрибута:
+Attribute signature:
 
 ```php
 \Kaspi\DiContainer\Attributes\DiFactory::__construct(
@@ -21,17 +21,17 @@ title: Атрибут DiFactory
 )
 ```
 
-Параметры:
-- `$definition` – FQCN[^FQCN] и имя метода.
-- `$isSingleton` – возвращать один и тот же объект (паттерн singleton). Если значение `null`, то значение будет выбрано на основе [настройки контейнера](../container-config/index.md#is-singleton-service-default).
-- `$arguments` – аргументы метода фабрики.
+Parameters:
+- `$definition` – FQCN[^FQCN] and method name.
+- `$isSingleton` – The container will return the same object instance (singleton pattern). If set to `null`, the value will be determined based on the [container configuration](../container-config/index.md#is-singleton-service-default).
+- `$arguments` – arguments for the factory method.
 
 > [!TIP]
-> Изучите раздел документации [«Использование фабричных методов для внедрения зависимостей»](../factories/index.md).
+> Read the documentation section [“Using factory methods for dependency injection”](../factories/index.md).
 
-### Аргументы метода фабрики { #args }
+### Factory method arguments { #args }
 
-Параметр `$arguments` атрибута `\Kaspi\DiContainer\Attributes\DiFactory` указывает методу PHP-класса «фабрики» как внедрять зависимости в конкретные параметры метода.
+The `$arguments` parameter of the `\Kaspi\DiContainer\Attributes\DiFactory` attribute specifies how dependencies should be injected into specific parameters of a PHP "factory" class method.
 
 <!--@include: _include/arguments.md-->
 
