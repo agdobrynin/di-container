@@ -4,23 +4,27 @@ title: Container method for callable types
 ---
 ### Container method for callable types { #title }
 
-Контейнер реализует интерфейс `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface` который предоставляет метод `call()` для вызываемых типов[^CallableType] или значений преобразуемых контейнером к такому типу.
+The container implements the `\Kaspi\DiContainer\Interfaces\DiContainerCallInterface` interface, which provides a `call()` method for callable types[^CallableType] — or for values that the container can convert into such types.
 
-**Важная особенность метода `call()` – внедрение зависимостей в параметры вызываемых типов происходит автоматически на основании конфигурации контейнера.**
+**An important feature of the `call()` method is that dependency injection into the parameters of these callable types occurs automatically, based on the container's configuration.**
 
-Метод `call()` может вызвать `callable` тип, что означает:
-- Анонимная функция.
-- Функция.
-- Статический метод PHP-класса.
-- Метод PHP объекта.
-- PHP объект реализующий [магический метод `__invoke()`](https://www.php.net/manual/ru/language.oop5.magic.php#object.invoke).
-- **Метод может `call()` преобразовать** к `callable` не инициализированный PHP-класс и его метод:
-  - Вызов нестатического метода PHP-класса.
-    - `$container->call([App\Services\Foo::class, 'methodName']);`
-  - Вызов [магического метод `__invoke()`](https://www.php.net/manual/ru/language.oop5.magic.php#object.invoke) в PHP-классе.
-    - `$container->call(App\Services\CallableService::class);`
+The `call()` method can invoke a `callable` type, which means:
+- Anonymous function.
+- Function.
+- Static method of a PHP class.
+- Method of a PHP object.
+- A PHP object that implements the [magic method `__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke).
+- **The `call()` method can convert** an uninitialized PHP class and its method into a `callable`:
+  - Invoking a non-static method of a PHP class:
+    ```php
+    $container->call([App\Services\Foo::class, 'methodName']);
+    ```
+  - Invoking the magic method `__invoke()` in a PHP class:
+    ```php
+    $container->call(App\Services\CallableService::class);
+    ```
 
-Сигнатура метода:
+Method signature:
 
 ```php 
 \Kaspi\DiContainer\Interfaces\DiContainerCallInterface::call(
@@ -29,22 +33,21 @@ title: Container method for callable types
 )
 ``` 
 
-Параметры:
-- `$definition` - вызываемый тип или значение преобразуемое к `callable` типу.
-- `$argument` - аргументы вызываемого типа.
+Parameters:
+- `$definition` – a callable type or a value that can be converted into a `callable` type.
+- `$argument` – arguments for the callable type.
 
-#### Аргументы вызываемого типа { #args }
+#### Arguments { #args }
 
-Параметр переменной длины `$argument` метода `call()` передает аргументы вызываемому типу.
+The `$argument` parameter of the `call()` method passes arguments to the callable type.
 
-При объявлении внедрения зависимости в конкретный параметр вызываемого типа, можно использовать [именованные аргументы](https://www.php.net/manual/ru/functions.arguments.php#functions.named-arguments).
+When declaring dependency injection for a specific parameter of a callable type, you can use [named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments).
 
-Параметры вызываемого типа не получившие аргументы будут внедрены контейнером самостоятельно, на основании конфигурации.
+Parameters of the callable type that do not receive arguments will be injected by the container automatically, based on the configuration.
 
+### Non-static method of a PHP class { #example-php-class }
 
-### Нестатический метод PHP-класса { #example-php-class }
-
-Получить результат вызова метода `\App\Controllers\PostController::store()` с передачей аргумента для параметра `$name`.
+Get the result of calling the `\App\Controllers\PostController::store()` method, passing an argument for the `$name` parameter.
 
 ::: code-group
 
@@ -103,29 +106,28 @@ final class PostController
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(22) "The name 'Ivan' saved!"
 ```
 
-Фактически метод `call()` выполнит создание экземпляра класса `\App\Controllers\PostController` с внедрением зависимостей в конструктор и вызовет метод `\App\Controllers\PostController::store()`:
+In effect, the `call()` method will instantiate the `\App\Controllers\PostController` class—injecting dependencies into its constructor—and then invoke the `\App\Controllers\PostController::store()` method:
 
 ```php
-// будет выполнено
 (new \App\Controllers\PostController(serviceOne: new ServiceOne()))
     ->post(name: 'Ivan')
 ```
 
-### Магический метод __invoke() в PHP-классе { #example-php-class-invoke }
+### The __invoke() magic method in a PHP class { #example-php-class-invoke }
 
-PHP-класс `App\Controllers\SavePostController` реализует магический метод `__invoke()` который может быть вызван через метод контейнера `call()`.
+The PHP class `App\Controllers\SavePostController` implements the magic method `__invoke()`, which can be called via the container's `call()` method.
 
 ::: code-group
 
@@ -181,21 +183,21 @@ final class SavePostController
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(22) "The name 'Ivan' saved!"
 ```
 
-### Функция { #example-function }
+### PHP Function { #example-function }
 
-Функция `\App\Functions\one_service()` принимает два параметра, первый параметр `$service` – контейнер внедрит автоматически на основании конфигурации, второй параметр `$name` необходимо передать в методе контейнера `call()`. 
+The `\App\Functions\one_service()` function accepts two parameters: the first parameter, `$service`, is automatically injected by the container based on its configuration, while the second parameter, `$name`, must be passed via the container's `call()` method.
 
 ::: code-group
 
@@ -248,19 +250,19 @@ if (!function_exists('App\Functions\one_service')) {
 :::
 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(22) "The name 'Ivan' saved!"
 ```
 
-Фактически метод `call()` выполнит следующий код:
+In effect, the `call()` method will execute the following code:
 
 ```php
 \App\Functions\one_service(
@@ -269,9 +271,9 @@ string(22) "The name 'Ivan' saved!"
 );
 ```
 
-### Метод PHP объекта { #example-object-method }
+### PHP object method{ #example-object-method }
 
-В ряде сценариев использования контейнера метод `call()` может оказаться удобным, если вам нужно создать экземпляр PHP-класса, а затем вызвать у него какой-либо метод, при этом внедрение зависимостей в параметры методов происходит автоматически на основании конфигурации контейнера.
+In some container usage scenarios, the `call()` method can be convenient if you need to instantiate a PHP class and then invoke one of its methods, with dependency injection into the method parameters occurring automatically based on the container's configuration.
 
 ::: code-group
 
