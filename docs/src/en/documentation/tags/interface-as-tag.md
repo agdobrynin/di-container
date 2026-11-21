@@ -1,16 +1,16 @@
 ---
 outline: [2, 4]
-title: PHP интерфейс как имя тега
+title: PHP interface as a tag name
 ---
-### PHP интерфейс как имя тега { #title }
+### PHP interface as a tag name { #title }
 
-В качестве имени тега можно использовать FQCN[^FQCN] интерфейса реализуемого классами.
+The FQCN[^FQCN] of an interface implemented by the classes can be used as the tag name.
 
-Объявление внедрения коллекции делается через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+A collection injection is declared using the [`diTaggedAs()`](../php-definition/di-tagged-as.md) helper function or the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) attribute.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-В качестве примера рассмотрим класс `\App\Services\FooValidator`:
+As an example, let’s look at the `\App\Services\FooValidator` class:
 
 ::: code-group
 
@@ -20,9 +20,9 @@ title: PHP интерфейс как имя тега
 
 :::
 
-Необходимо объявить внедрение коллекции из PHP-классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора класс `$rules`.
+It is necessary to declare the injection of a collection of PHP classes all of which implement the `\App\Interfaces\RuleInterface` interface into the `$rules` constructor parameter of the class.
 
-Представлены PHP-классы выполняющие некую валидацию данных:
+Below are the PHP classes that perform a specific data validation:
 
 ::: code-group
 
@@ -34,16 +34,16 @@ title: PHP интерфейс как имя тега
 
 :::
 
-Важное замечание – PHP-класс `\App\ValidateRules\RuleB` не реализует интерфейс `\App\Interfaces\RuleInterface` через ключевое слово `implements`.
+An important note: the PHP class `\App\ValidateRules\RuleB` does not implement the `\App\Interfaces\RuleInterface` interface via the `implements` keyword.
 
-#### Объявление в файлах конфигураций  { #as-php-definition }
+#### Declaration in configuration files  { #as-php-definition }
 
-Объявить внедрение коллекции из PHP-классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора `$rules` PHP-класса `\App\Services\FooValidator`.
+Declare the injection of a collection of PHP classes that implement the `\App\Interfaces\RuleInterface` interface into the `$rules` constructor parameter of the `\App\Services\FooValidator` PHP class.
 
 
-В [файле конфигураций](../container-builder/configuration_files.md) `services.php` необходимо указать в параметре `$tag` хелпер функции `diTaggedAs()` FQCN[^FQCN] интерфейса – `\App\Interfaces\RuleInterface`.
+In the `services.php` [configuration file](../container-builder/configuration_files.md), you must specify the FQCN of the interface `\App\Interfaces\RuleInterface` within the `$tag` parameter of the `diTaggedAs()` helper function.
 
-Для объявления в контейнере других PHP-классов используем [метод `DiContainerBuilder::import()`](../container-builder/methods/import.md).
+To register other PHP classes in the container, we use the [`DiContainerBuilder::import()` method](../container-builder/methods/import.md).
 
 ::: code-group
 
@@ -92,31 +92,29 @@ return static function (): Generator {
 
 ::: 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (22) "App\ValidateRules\RuleA"
 string (22) "App\ValidateRules\RuleC"
 ```
 
-Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
+The class `\App\ValidateRules\RuleB` was not included in the collection because it does not implement the `App\Interfaces\RuleInterface` interface.
 
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-#### Объявление через атрибуты { #as-php-attribute }
+#### Declaration via attributes { #as-php-attribute }
 
-Объявить внедрение коллекции из PHP-классов реализующих интерфейс `\App\Interfaces\RuleInterface` в параметр конструктора `$rules` PHP-класса `\App\Services\FooValidator`.
+Configure the injection of a collection of PHP classes that implement the `\App\Interfaces\RuleInterface` interface into the `$rules` constructor parameter of the `\App\Services\FooValidator` PHP class.
 
-В атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs` необходимо указать в параметре `$name` FQCN интерфейса – `\App\Interfaces\RuleInterface`.
-
-Объявление внедрения коллекции:
+In the `\Kaspi\DiContainer\Attributes\TaggedAs` attribute, the `$name` parameter must be set to the FQCN of the interface: `\App\Interfaces\RuleInterface`.
 
 ::: code-group
 
@@ -149,43 +147,43 @@ foreach ($validator->rules as $rule) {
 ```
 ::: 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (22) "App\ValidateRules\RuleA"
 string (22) "App\ValidateRules\RuleC"
 ```
 
-Класс `\App\ValidateRules\RuleB` не попал в коллекцию так как не реализует интерфейс `App\Interfaces\RuleInterface`.
+The class `\App\ValidateRules\RuleB` was not included in the collection because it does not implement the `App\Interfaces\RuleInterface` interface.
 
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-### Очерёдности элементов коллекции { #priority-by-method-default }
+### Ordering of collection elements { #priority-by-method-default }
 
-При использовании FQCN[^FQCN] интерфейса в качестве имени тега внедряемая коллекция имеет не определённую очередность элементов (сортировка элементов). 
+When using an interface's FQCN as a tag name, the order of elements in the injected collection is undefined.
 
-Для изменения очерёдности элементов такой коллекции можно воспользоваться параметром `$priorityDefaultMethod` [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) или [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md), указав «метод-приоритета» по умолчанию.
+To control the order of elements in such a collection, you can use the `$priorityDefaultMethod` parameter available in the [`diTaggedAs()`](../php-definition/di-tagged-as.md) helper function or the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) attribute to specify a default priority method.
 
-Необходимо добавить статический метод в нужный PHP-класс, который будет возвращать приоритет в коллекции:
+You must add a static method to the relevant PHP class, this method should return the priority value for the collection:
 
 ```php
 public static function getPriority(): int // [!code ++]
 {// [!code ++]
-    // Для каждого класса свой приоритет// [!code ++]
+    // Each class has its own priority// [!code ++]
     return 100;// [!code ++]
 }// [!code ++]
 ```
 
-Если «метод-приоритета» по умолчанию не определен в PHP-классе, который является элементом коллекции, то значение приорита будет `null`.
+If a priority method is not defined by default in a PHP class that serves as an element of a collection, the priority value will be `null`.
 
-Для хелпер функции `diTaggedAs()` указать метод-приоритета `getPriority` :
+For the `diTaggedAs()` helper function, specify the priority method `getPriority`:
 
 ```php
 <?php
@@ -209,7 +207,7 @@ return static function (): Generator {
 };
 ```
 
-Для атрибута `\Kaspi\DiContainer\Attributes\TaggedAs` указать метод-приоритета `getPriority`:
+For the `\Kaspi\DiContainer\Attributes\TaggedAs` attribute, specify the priority method `getPriority`:
 
 ```php
 <?php
@@ -246,6 +244,6 @@ final class FooValidator
 }
 ```
 
-⬆️ Изучите информацию в разделе документации [«Приоритет элементов коллекции»](collection-priority/index.md).
+⬆️ Review the information in the “[Collection element priority](collection-priority/index.md)” section of the documentation.
 
 <!--@include: ../_include/term_notes.md-->
