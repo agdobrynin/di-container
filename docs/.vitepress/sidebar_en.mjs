@@ -101,7 +101,7 @@ export default {
                     collapsed: true,
                     items: [
                         { text: 'Overview', link: 'index.md' },
-                        { text: 'Объявление тега в файлах конфигураций', link: 'php-definition-tag.md' },
+                        { text: 'Declaring a tag in configuration files', link: 'php-definition-tag.md' },
                         { text: 'Объявление тега через атрибут', link: 'attribute-definition-tag.md' },
                         { text: 'PHP интерфейс как имя тега', link: 'interface-as-tag.md' },
                         { text: 'Исключение элементов из коллекции', link: 'exclide-from-collection.md' },

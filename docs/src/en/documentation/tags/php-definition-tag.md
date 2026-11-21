@@ -1,18 +1,18 @@
 ---
 outline: [2,4]
-title: Объявление тега в файлах конфигураций
+title: Declaring a tag in configuration files
 ---
-### Объявление тега в файлах конфигураций { #title }
+### Declaring a tag in configuration files { #title }
 
-Метод `bindTag()`[^BindTag], описанный интерфейсом `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface`, объявляет тег и метаданные.
+The `bindTag()`[^BindTag] method, defined by the `\Kaspi\DiContainer\Interfaces\DiDefinition\DiDefinitionTagArgumentInterface` interface, declares a tag and its metadata.
 
-[Хелпер функция `diTaggedAs()`](../php-definition/di-tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом с одинаковым именем.
+[The `diTaggedAs()` helper function](../php-definition/di-tagged-as.md) injects a collection of items from the container that are marked with a tag of the same name.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-### Пример использования { #example-inject-by-helper-fn-di-tagged }
+### Example of use { #example-inject-by-helper-fn-di-tagged }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -37,9 +37,9 @@ final class RuleCollection
 
 :::
 
-Объявить тег `'tags.lite-rules'` для каждого класса через метод `bindTag()`[^BindTag] в [файле конфигураций](../container-builder/configuration_files.md) `rule_services.php`.
+Declare the `'tags.lite-rules'` tag for each class using the `bindTag()`[^BindTag] method in the `rule_services.php` [configuration file](../container-builder/configuration_files.md).
 
-Объявить внедрение коллекции из элементов контейнера отмеченных тегом `'tags.lite-rules'` в параметр `$rules` конструктора класса `\App\Services\RuleCollection` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций `services.php`.
+Register the injection of a collection of container elements marked with the `'tags.lite-rules'` tag into the `$rules` parameter of the `\App\Services\RuleCollection` class constructor, using the [`diTaggedAs()` helper function](../php-definition/di-tagged-as.md) within the `services.php` configuration file.
 
 ::: code-group
 
@@ -88,29 +88,29 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (15) "App\Rules\RuleA"
 string (15) "App\Rules\RuleC"
 ```
 
-Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
+The `\App\Rules\RuleB` class is not included in the collection because it is marked with the tag `'tags.other-rulers'`.
 
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-### Внедрение зависимости в параметр с типом array { #inject-by-di-tagged-array-param }
+### Dependency injection into a parameter of type array { #inject-by-di-tagged-array-param }
 
-При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md).
+When injecting a collection of elements from a container—identified by a specific tag — into a parameter of type `array`, you must set the `$isLazy` argument to `false` within the [`diTaggedAs()` helper function](../php-definition/di-tagged-as.md).
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -137,7 +137,7 @@ final class Rules
 
 :::
 
-Параметр `$rules` конструктора класса `\App\Services\Rules` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через [хелпер функцию `diTaggedAs()`](../php-definition/di-tagged-as.md) в файле конфигураций `services.php`.
+The `$rules` parameter of the `\App\Services\Rules` class constructor is of type `array`. You need to inject a collection of container elements marked with the `'tags.lite-rules'` tag using the [`diTaggedAs()` helper function](../php-definition/di-tagged-as.md) within the `services.php` configuration file.
 
 ::: code-group
 
@@ -193,27 +193,27 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (15) "App\Rules\RuleA"
 string (15) "App\Rules\RuleC"
 ```
 
-Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
+The `\App\Rules\RuleB` class is not included in the collection because it is marked with the tag `'tags.other-rulers'`.
 
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-### Внедрение коллекции для параметров переменной длины { #inject-by-di-tagged-as-variadic }
+### Implementing a collection for variable-length parameters{ #inject-by-di-tagged-as-variadic }
 
-Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
+A variable-length parameter also supports the inclusion of collections of elements from a container marked with a tag.
 
 ::: code-group
 
