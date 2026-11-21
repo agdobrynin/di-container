@@ -62,7 +62,7 @@ export default defineConfig({
       link: '/en/',
       themeConfig: {
         nav: [
-          { text: 'Documentation', link: '/en/documentation/' },
+          { text: 'Manual', link: '/en/documentation/' },
           { text: 'Cookbook', link: '/en/cookbook/' },
         ],
         sidebar: sidebar_en,
