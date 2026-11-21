@@ -1,9 +1,8 @@
-
 > [!IMPORTANT]
-> Метод должен быть объявлен в PHP-классе с модификаторами `public` и `static`. Возвращаемые значения метода – `int`, `string` или `null`.
+> The method must be declared within a PHP class using the `public` and `static` modifiers. It must return an `int`, a `string`, or `null`.
 >
-> В качестве параметров метод принимает два аргумента передаваемые контейнером:
->  - `string $tag` – имя тега.
->  - `array $options` – [метаданные тега](../../tag-metadata.md).
+> The method accepts two arguments, which are passed by the container:
+>  - `string $tag` – the name of the tag.
+>  - `array $options` – [tag metadata](../../tag-metadata.md).
 >
-> Эти параметры метода можно использовать построения логики выдачи приоритета тега.
+> These parameters can be used to implement logic for determining the tag's priority.
