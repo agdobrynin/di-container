@@ -112,7 +112,7 @@ export default {
                             collapsed: true,
                             items: [
                                 { text: 'Overview', link: 'index.md' },
-                                { text: 'Приоритет тега', link: 'priority-by-tag.md' },
+                                { text: 'Tag priority', link: 'priority-by-tag.md' },
                                 { text: '«Метод-приоритета» тега', link: 'priority-by-method.md' },
                                 { text: '«Метод-приоритета» по умолчанию', link: 'priority-by-method-default.md' },
                             ],

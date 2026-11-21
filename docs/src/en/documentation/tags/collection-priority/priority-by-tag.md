@@ -1,14 +1,14 @@
 ---
 outline: [2, 4]
-title: Приоритет тега
+title: Tag priority
 ---
-### Приоритет тега { #priority-by-tag }
+### Tag priority { #priority-by-tag }
 
-Приоритет тега указывается в параметре `$priority` метода `bindTag()`[^BindTag], или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+The tag priority is specified in the `$priority` parameter of the `bindTag()`[^BindTag] method, or of the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute.
 
-### Пример конфигурации { #example-priority-by-tag }
+### Configuration example { #example-priority-by-tag }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -22,19 +22,19 @@ PHP-классы:
 
 :::
 
-Необходимо внедрить коллекцию элементов отмеченных тегом `'tags.ordered'` в параметр `$services` через конструктор класса `\App\Services\Foo`.
+You need to inject a collection of elements tagged with `'tags.ordered'` into the `$services` parameter via the constructor of the `\App\Services\Foo` class.
 
-Внедряемая коллекция должна получить следующую очерёдность элементов:
+The injected collection must follow this specific order:
 - `\App\Services\Qux`
 - `\App\Services\Baz`
 - `\App\Services\Bar`
 
-Для объявления очерёдности в коллекции использовать **приоритет тега**.
+Use the **tag priority** to define the order of elements within the collection.
 
 
-#### Объявление в файлах конфигураций { #priority-by-tag-php-definition }
+#### Declaration in configuration files { #priority-by-tag-php-definition }
 
-В [файле конфигураций](../../container-builder/configuration_files.md) `tagged_services.php` необходимо объявить тег `'tags.ordered'` для PHP-классов и приоритет каждого тега в параметре `$priority` метода `bindTag()`[^BindTag].
+In the `tagged_services.php` [configuration file](../../container-builder/configuration_files.md), you need to declare the `'tags.ordered'` tag for PHP classes, specifying the priority for each tag via the `$priority` parameter of the `bindTag()` method.
 
 ::: code-group
 
@@ -88,13 +88,13 @@ return static function (): Generator {
 
 ::: 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Qux"
@@ -102,11 +102,11 @@ string(16) "App\Services\Baz"
 string(16) "App\Services\Bar"
 ```
 
-Порядок сортировки внедрённой коллекции обусловлен значениями `$prioriy` для каждого тега.
+The sort order of the embedded collection is determined by the `$priority` values for each tag.
 
-#### Объявление через атрибуты { #priority-by-tag-attributes }
+#### Declaration via attributes { #priority-by-tag-attributes }
 
-Объявить тег `'tags.ordered'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) с параметром `$priority` для каждого тега. 
+Assign the `'tags.ordered'` tag to PHP classes using the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute, specifying a `$priority` parameter for each tag.
 
 ::: code-group
 
@@ -142,13 +142,13 @@ final class Qux
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Qux"
@@ -156,6 +156,6 @@ string(16) "App\Services\Baz"
 string(16) "App\Services\Bar"
 ```
 
-Порядок сортировки внедрённой коллекции обусловлен значениями в параметре `$priority` атрибута `\Kaspi\DiContainer\Attributes\Tag` для каждого тега.
+The sort order of an injected collection is determined by the values  in the `$priority` parameter of the `\Kaspi\DiContainer\Attributes\Tag` attribute for each tag.
 
 <!--@include: ../../php-definition/_include/bind_notes.md-->
