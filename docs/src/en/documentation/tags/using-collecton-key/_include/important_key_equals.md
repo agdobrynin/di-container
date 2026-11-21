@@ -1,2 +1,2 @@
 > [!IMPORTANT]
-> Если идентификаторы элементов коллекции совпадают, в коллекцию добавляется элемент с более высоким приоритетом, а остальные элементы исключаются. Изучите раздел «[Совпадение идентификаторов элементов в коллекции](../keys-equals.md)».
+> If the identifiers of collection items match, the item with the higher priority is added to the collection, while the other items are excluded. See the section "[Matching collection item identifiers](../keys-equals.md)."
