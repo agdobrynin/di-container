@@ -1,22 +1,21 @@
 ---
 outline: [2, 4]
-title: «Метод идентификатора» элемента коллекции по умолчанию
+title: Default "identifier method" for a collection element
 ---
-### «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default }
+### Default "identifier method" for a collection element { #key-from-method-default }
 
-Для элементов коллекции представленных PHP-классом **«метод идентификатора» элемента коллекции по умолчанию** это резервный механизм получения идентификатора элемента коллекции если отсутствует конфигурация в [метаданных тега](../tag-metadata.md).
+For collection elements represented by a PHP class, the **default collection element identifier method** serves as a fallback mechanism for retrieving an element's identifier when no such configuration is provided in the [tag metadata](../tag-metadata.md).
 
-Если **«метод идентификатора» элемента коллекции по умолчанию** не реализован в PHP-классе, то значение идентификатора будет представлено идентификатором контейнера [^ContainerId] этого элемента.
+If the **default collection element identifier method** is not implemented within the PHP class, the identifier value will default to the container identifier[^ContainerId] of that element.
 
-Внедрение коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md)
-с указанием в параметре `$keyDefaultMethod` имени метода.
+A collection can be injected using the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function or the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute, with the method name specified via the `$keyDefaultMethod` parameter.
 
 <!--@include: _include/key_from_method.md-->
 <!--@include: _include/important_key_equals.md-->
 
-### Пример извлечения идентификатора элемента из «Метод идентификатора» элемента коллекции по умолчанию { #key-from-method-default-default }
+### Example of extracting an item identifier from the default collection item's "identifier method" { #key-from-method-default-default }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/TagsId/src/Services/Foo.php
@@ -24,9 +23,9 @@ PHP-классы:
 <<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» из элементов отмеченных тегом `'tags.internal'` и указанием резервного метода `getCustomIndex()` для извлечения идентификатора контейнера элемента коллекции.
+It is necessary to inject a lazy collection of elements tagged with `'tags.internal'` into the `$services` constructor parameter of the PHP class `\App\Services\Foo`, specifying the `getCustomIndex()` fallback method to retrieve the container identifier for each collection element.
 
-Реализуем метод `\App\Services\Baz::getCustomIndex()` возвращающий идентификатор элемента коллекции.
+We will implement the `\App\Services\Baz::getCustomIndex()` method, which returns the identifier for a collection element.
 
 ::: code-group
 ```php [Baz.php]
@@ -49,11 +48,11 @@ final class Baz
 ```
 :::
 
-#### Объявление в файлах конфигураций { #key-from-method-default-default-php-definition }
+#### Declaration in configuration files { #key-from-method-default-default-php-definition }
 
-В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$keyDefaultMethod` равным `'getCustomIndex'`.
+In the `services.php` configuration file, declare the injection of a collection of elements marked with the tag `'tags.internal'` into the `$services` constructor parameter, using the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function with the `$keyDefaultMethod` parameter set to `'getCustomIndex'`.
 
-В файле конфигураций `tagged_services.php` объявляем тег `'tags.internal'` PHP-классам через метод `bindTag()`[^BindTag].
+In the `tagged_services.php` configuration file, assign the tag `'tags.internal'` to PHP classes using the `bindTag()`[^BindTag] method.
 
 ::: code-group
 
@@ -123,13 +122,13 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
@@ -139,13 +138,13 @@ string(15) "baz_custom_id"
 string(16) "App\Services\Baz"
 ```
 
-#### Объявление через атрибуты { #key-from-method-default-default-attributes }
+#### Declaration via attributes { #key-from-method-default-default-attributes }
 
-Для PHP-классов объявить тег `'tags.ordered'` через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+For PHP classes, declare the `'tags.ordered'` tag using the `\Kaspi\DiContainer\Attributes\Tag` attribute (see [here](../../attribute-definition/tag.md)).
 
-Объявить внедрение коллекции элементов отмеченных тегом `'tags.ordered'` в параметр `$services` конструктора класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$keyDefaultMethod` равным `'getCustomIndex'`.
+Configure the injection of a collection of elements marked with the `'tags.ordered'` tag into the `$services` parameter of the `\App\Services\Foo` class constructor, using the `\Kaspi\DiContainer\Attributes\TaggedAs` attribute (see [here](../../attribute-definition/tagged-as.md)) with the `$keyDefaultMethod` parameter set to `'getCustomIndex'`.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -222,13 +221,13 @@ foreach ($foo->services as $id => $service) {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
