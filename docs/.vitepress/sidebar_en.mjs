@@ -125,8 +125,8 @@ export default {
                             items: [
                                 { text: 'Overview', link: 'index.md' },
                                 { text: 'Element identifier as an integer', link: 'key-as-int.md' },
-                                { text: 'Идентификатор элемента в метаданных тега', link: 'key-in-metadata.md' },
-                                { text: '«Метод идентификатора» элемента коллекции', link: 'key-from-method.md' },
+                                { text: 'Element identifier in tag metadata', link: 'key-in-metadata.md' },
+                                { text: 'Collection\'s identifier method', link: 'key-from-method.md' },
                                 { text: '«Метод идентификатора» элемента коллекции по умолчанию', link: 'key-from-method-default.md' },
                                 { text: 'Совпадение идентификаторов элементов в коллекции', link: 'keys-equals.md' },
                             ],
