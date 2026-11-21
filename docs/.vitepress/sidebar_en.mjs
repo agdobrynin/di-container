@@ -107,7 +107,7 @@ export default {
                         { text: 'Removing elements from a collection', link: 'exclide-from-collection.md' },
                         {
                             base: '/en/documentation/tags/collection-priority/',
-                            text: 'Приоритет элементов коллекции',
+                            text: 'Priority of collection elements',
                             link: 'index.md',
                             collapsed: true,
                             items: [
