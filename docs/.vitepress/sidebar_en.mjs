@@ -114,7 +114,7 @@ export default {
                                 { text: 'Overview', link: 'index.md' },
                                 { text: 'Tag priority', link: 'priority-by-tag.md' },
                                 { text: 'Tag priority method', link: 'priority-by-method.md' },
-                                { text: '«Метод-приоритета» по умолчанию', link: 'priority-by-method-default.md' },
+                                { text: 'Default priority method', link: 'priority-by-method-default.md' },
                             ],
                         },
                         {
