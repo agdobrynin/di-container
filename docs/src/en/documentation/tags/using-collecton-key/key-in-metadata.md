@@ -1,28 +1,27 @@
 ---
 outline: [2, 4]
-title: Идентификатор элемента в метаданных тега
+title: Element identifier in tag metadata
 ---
-### Идентификатор элемента в метаданных тега { #key-in-metadata }
+### Element identifier in tag metadata { #key-in-metadata }
 
-Пользовательские идентификаторы элементам коллекции можно установить через [метаданные](../tag-metadata.md) тега.
+Custom identifiers can be assigned to collection elements via tag [metadata](../tag-metadata.md).
 
-Значение в метаданных тега указывается парой ключ-значение:
+Metadata within a tag is defined as a key-value pair:
 
-- **ключ** – имя метаданных в теге.
-- **значение** – идентификатор элемента коллекции.
+- **key** – the name of the metadata within the tag.
+- **value** – the identifier for the collection element.
 
-Внедрение коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md)
-с передачей **имени метаданных** в параметре `$key`.
+Inject a collection using the [`diTaggedAs()` helper function](../../php-definition/di-tagged-as.md) or the [`\Kaspi\DiContainer\Attributes\TaggedAs` attribute](../../attribute-definition/tagged-as.md), passing the **metadata name** as the `$key` parameter.
 
 <!--@include: _include/key_in_metadata_defined.md-->
 
-Метаданные тега передаются в параметре `$options` метода `bindTag()` [^BindTag] или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Tag metadata is passed via the `$options` parameter of the `bindTag()`[^BindTag]  method or the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute.
 
 <!--@include: _include/important_key_equals.md-->
 
-### Пример извлечения идентификатора элемента из метаданных { #example-key-in-metadata }
+### Example of extracting an element identifier from metadata { #example-key-in-metadata }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/TagsId/src/Services/Foo.php
@@ -30,13 +29,13 @@ PHP-классы:
 <<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» из элементов отмеченных тегом `'tags.internal'`, где идентификатор элемента коллекции для PHP-класса `\App\Services\Bar` должен быть представлен строкой `'id_bar'` и будет объявлен в метаданных тега под именем `'key_as'`.
+It is necessary to inject a lazy collection into the `$services` constructor parameter of the PHP class `\App\Services\Foo`. This collection should consist of elements marked with the tag `'tags.internal'`, where the identifier for an element corresponding to the PHP class `\App\Services\Bar` must be the string `'id_bar'`, specified within the tag metadata under the key `'key_as'`.
 
-#### Объявление в файлах конфигураций { #example-key-in-metadata-php-definition }
+#### Declaration in configuration files { #example-key-in-metadata-php-definition }
 
-В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$key` равным `'key_as'`.
+In the `services.php` configuration file, declare the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` constructor parameter using the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function, with the `$key` parameter set to `'key_as'`.
 
-В файле конфигураций `tagged_services.php` объявляем тег `'tags.internal'` PHP-классам через метод `bindTag()`[^BindTag], а для PHP-класса `\App\Services\Bar` объявим дополнительно метаданные в параметре `$options`.
+In the `tagged_services.php` configuration file, assign the `'tags.internal'` tag to PHP classes using the `bindTag()`[^BindTag] method; additionally, for the PHP class `\App\Services\Bar`, specify further metadata via the `$options` parameter.
 
 ::: code-group
 
@@ -112,13 +111,13 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
@@ -126,13 +125,13 @@ string(16) "App\Services\Baz"
 int(2)
 ```
 
-#### Объявление через атрибуты { #example-key-in-metadata-attributes }
+#### Declaration via attributes { #example-key-in-metadata-attributes }
 
-Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через атрибут [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$key` равным `'key_as'`.
+Configure the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` parameter of the PHP class `\App\Services\Foo` using the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute, with the `$key` parameter set to `'key_as'`.
 
-Объявим тег `'tags.internal'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md), а для PHP-класса `\App\Services\Bar` объявим дополнительно метаданные в параметре `$options`.
+Assign the `'tags.internal'` tag to the PHP classes using the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute; for the PHP class `\App\Services\Bar`, additionally define metadata within the `$options` parameter.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -210,13 +209,13 @@ var_dump(count($foo->services));
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
