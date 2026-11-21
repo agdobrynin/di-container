@@ -1,18 +1,18 @@
 ---
 outline: [2,4]
-title: Объявление тега через атрибут
+title: Declaring a tag via an attribute
 ---
-### Объявление тега через атрибут { #title }
+### Declaring a tag via an attribute { #title }
 
-[Атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) объявляет тег и метаданные для PHP-класса.
+The [`\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) attribute declares a tag and metadata for a PHP class.
 
-[Атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) внедряет коллекцию элементов из контейнера отмеченных тегом с одинаковым именем.
+The [`\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) attribute injects a collection of elements from the container tagged with the same name.
 
 <!--@include: ../_include/need_import_php_class.md-->
 
-### Пример конфигурирования через атрибут { #example-inject-by-attribute-tagged-as }
+### Example of configuration via an attribute { #example-inject-by-attribute-tagged-as }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -39,9 +39,9 @@ final class RuleCollection
 <<< @/_code/src/Rules/RuleC.php
 :::
 
-Объявить внедрение коллекции из элементов контейнера отмеченных тегом `'tags.lite-rules'` в параметр `$rules` конструктора класса `\App\Services\RuleCollection` через атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`.
+Configure the injection of a collection of container elements—marked with the tag `'tags.lite-rules'` into the `$rules` parameter of the `\App\Services\RuleCollection` class constructor, using the `\Kaspi\DiContainer\Attributes\TaggedAs` attribute.
 
-Объявить тег `'tags.lite-rules'` для каждого класса через атрибут `\Kaspi\DiContainer\Attributes\Tag`.
+Assign the tag `'tags.lite-rules'` to each class using the `\Kaspi\DiContainer\Attributes\Tag` attribute.
 
 ::: code-group
 
@@ -96,29 +96,29 @@ foreach ($ruleCollection->rules as $rule) {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string (15) "App\Rules\RuleA"
 string (15) "App\Rules\RuleC"
 ```
 
-Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
+The `\App\Rules\RuleB` class is not included in the collection because it is marked with the tag `'tags.other-rulers'`.
 
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-### Внедрение зависимости в параметр с типом array { #inject-by-attribute-tagged-as-array-param }
+### Dependency injection into a parameter of type array { #inject-by-attribute-tagged-as-array-param }
 
-При внедрении коллекции элементов из контейнера отмеченных тегом в параметр с типом `array` обязательно установить значение `false` для параметра `$isLazy` в [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+When injecting a collection of elements into a parameter of type `array`, you must set the `$isLazy` parameter in the `\Kaspi\DiContainer\Attributes\TaggedAs` attribute to `false`.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 ```php [Rules.php]
@@ -145,7 +145,7 @@ final class Rules
 
 :::
 
-Параметр `$rules` конструктора класса `\App\Services\Rules` представлен типом `array`. Необходимо внедрить коллекцию из элементов контейнера отмеченных тегом `'tags.lite-rules'` через атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`.
+The `$rules` parameter of the `\App\Services\Rules` class constructor is of type `array`. It is necessary to inject a collection of container elements marked with the tag `'tags.lite-rules'` using the `\Kaspi\DiContainer\Attributes\TaggedAs` attribute.
 
 ::: code-group
 
@@ -205,13 +205,13 @@ foreach ($rules->rules as $rule) {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 bool(true)
@@ -219,14 +219,14 @@ string (15) "App\Rules\RuleA"
 string (15) "App\Rules\RuleC"
 ```
 
-Класс `\App\Rules\RuleB` не попадает в коллекцию так как отмечен тегом `'tags.other-rulers'`.
+The `\App\Rules\RuleB` class is not included in the collection because it is marked with the tag `'tags.other-rulers'`.
 
 > [!NOTE]
 > <!--@include: _include/random_order_tag.md-->
 
-### Внедрение коллекции для параметров переменной длины { #inject-by-attribute-tagged-as-variadic }
+### Implementing a collection for variable-length parameters { #inject-by-attribute-tagged-as-variadic }
 
-Параметр переменной длины так же поддерживает внедрение коллекций элементов из контейнера отмеченных тегом.
+A variable-length parameter also supports the inclusion of collections of elements from a container marked with a tag.
 
 ```php
 <?php
