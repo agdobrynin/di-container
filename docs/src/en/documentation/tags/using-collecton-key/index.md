@@ -1,41 +1,41 @@
 ---
 outline: [2, 4]
-title: Идентификаторы элементов коллекции
+title: Collection element identifiers
 ---
-### Идентификаторы элементов коллекции { #title }
+### Collection element identifiers { #title }
 
-Внедряемая коллекция по умолчанию в качестве идентификаторов элементов получает идентификатор контейнера [^ContainerId] этого элемента, что позволяет обращаться к элементам коллекции в [произвольном порядке](#key-access).
+By default, a collection uses the container identifier[^ContainerId] of each item as its element identifier, which allows you to access the items in the collection in [any order](#key-access).
 
-Через [метаданные тега](../tag-metadata.md) и методы PHP классов можно указывать пользовательские идентификаторы элементам коллекции:
-- [Идентификатор элемента как целое число](key-as-int.md).
-- [Идентификатор элемента в метаданных тега](key-in-metadata.md).
-- [«Метод идентификатора» элемента коллекции](key-from-method.md) для элемента коллекции PHP-класс.
-- [«Метод идентификатора» элемента коллекции по умолчанию](key-from-method-default.md) для элемента коллекции PHP-класс.
+You can assign custom identifiers to collection elements using [tag metadata](../tag-metadata.md) or PHP class methods:
+- [Element identifier as an integer](key-as-int.md).
+- [Element identifier in tag metadata](key-in-metadata.md).
+- [Element identifier via a method](key-from-method.md) – for collection elements that are PHP classes.
+- [Default element identifier via a method](key-from-method-default.md) – for collection elements that are PHP classes.
 
 > [!WARNING]
-> При обращении к элементу коллекции по строковому идентификатору может быть выброшено исключение с типом `Psr\Container\NotFoundExceptionInterface`, если элемент коллекции не найден.
+> When accessing an element in a collection via its string identifier, an exception of type `\Psr\Container\NotFoundExceptionInterface` may be thrown if the element is not found.
 
 <!--@include: _include/key_from_method.md-->
 
-### Произвольный доступ к элементам коллекции { #key-access }
+### Random access to collection elements { #key-access }
 
-При внедрении коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) параметр `$isLazy` по умолчанию имеет значение `true`,
-что означает – внедряемый объект будет «[ленивой коллекцией](../index.md#collection-is-lazy)».
+When injecting a collection via the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function or the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute, the `$isLazy` parameter defaults to `true`.
+This means that the injected object will be a [lazy collection](../index.md#collection-is-lazy).
 
-«Ленивая коллекция» реализует интерфейсы:
+A lazy collection implements the following interfaces:
 - `\Iterator`
 - `\Psr\Container\ContainerInterface`
 - `\ArrayAccess`
 - `\Countable`
 
-Реализация этих интерфейсов даёт возможность:
-- Перебор элементов коллекции через [языковую конструкцию `foreach`](https://www.php.net/manual/ru/control-structures.foreach.php).
-- Доступ к элементу по идентификатору в стиле PHP массивов – `$service['foo.name']`.
-- Доступ к элементу через методы `get()` и `has()` описанные в [PSR-11](https://www.php-fig.org/psr/psr-11/).
+Implementing these interfaces enables:
+- Iterating over collection elements using the PHP `foreach` language construct.
+- Accessing elements by their identifier using PHP array-style syntax — e.g. `$service['foo.name']`.
+- Accessing elements via the `get()` and `has()` methods as defined in [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
-### Пример внедрения коллекции { #example-inject-lazy-collection-with-key-assess }
+### Example of collection implementation { #example-inject-lazy-collection-with-key-assess }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/TagsId/src/Services/Foo.php
@@ -43,13 +43,13 @@ PHP-классы:
 <<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» с доступом к элементам коллекции по идентификатору контейнера [^ContainerId].
+It is necessary to inject a lazy collection into the `$services` constructor parameter of the PHP class `\App\Services\Foo`, with access to the collection elements via their container identifiers.
 
-#### Объявление в файлах конфигураций { #example-inject-lazy-collection-with-key-assess-php-definitions }
+#### Declaration in configuration files { #example-inject-lazy-collection-with-key-assess-php-definitions }
 
-Объявить внедрение «ленивой» коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) в файле конфигураций `services.php`. В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр хелпер функции `$useKeys` принимает значение `true` (значение по умолчанию). 
+Configure the injection of a lazy collection of elements marked with the `'tags.internal'` tag into the `$services` parameter of the PHP class `\App\Services\Foo` using the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function within the `services.php` configuration file. To ensure that the container identifier for each element serves as its key in the collection, the `$useKeys` parameter of the helper function should be set to `true` (which is the default value).
 
-В файле конфигураций `tagged_services.php` PHP-классам представляющих элементы коллекции объявим тег `'tags.internal'` через метод `bindTag()` [^BindTag].
+In the `tagged_services.php` configuration file, assign the `'tags.internal'` tag to the PHP classes that represent the elements of this collection by using the `bindTag()`[^BindTag] method.
 
 ::: code-group
 
@@ -71,17 +71,17 @@ $container = (new DiContainerBuilder())
 
 $foo = $container->get(Foo::class);
 
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+// accessing a collection element via methods `\Psr\Container\ContainerInterface`
 $bar = $foo->services->get(Bar::class);
 
 var_dump($bar::class);
 
-// доступ к элементу коллекции через методы `\ArrayAccess`
+// accessing a collection element via methods `\ArrayAccess`
 $baz = $foo->services[Baz::class];
 
 var_dump($baz::class);
 
-// подсчёт количества элементов коллекции через `\Countable`
+// counting the number of elements in a collection via `\Countable`
 var_dump(count($foo->services));
 ```
 
@@ -107,13 +107,13 @@ return static function (): Generator {
 
 ::: 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
@@ -121,13 +121,13 @@ string(16) "App\Services\Baz"
 int(2)
 ```
 
-#### Объявление через атрибуты { #example-inject-lazy-collection-with-key-assess-attributes }
+#### Declaration via attributes { #example-inject-lazy-collection-with-key-assess-attributes }
 
-Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md). В качестве ключа каждого элемента коллекции должен быть идентификатор контейнера этого элемента, для этого параметр атрибута `$useKeys` принимает значение `true` (значение по умолчанию).
+Declare the injection of a collection of elements marked with the tag `'tags.internal'` into the `$services` parameter of the PHP class `\App\Services\Foo` using the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute. The container identifier for each element in the collection should serve as its key; this is achieved by setting the `$useKeys` attribute parameter to `true` (which is the default value).
 
-Объявим тег `'tags.internal'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+We will assign the tag `'tags.internal'` to PHP classes using the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -173,29 +173,29 @@ $container = (new DiContainerBuilder())
 
 $foo = $container->get(Foo::class);
 
-// доступ к элементу коллекции через методы `\Psr\Container\ContainerInterface`
+// accessing a collection element via `\Psr\Container\ContainerInterface` methods
 $bar = $foo->services->get(Bar::class);
 
 var_dump($bar::class);
 
-// доступ к элементу коллекции через методы `\ArrayAccess`
+// accessing a collection element via `\ArrayAccess` methods
 $baz = $foo->services[Baz::class];
 
 var_dump($baz::class);
 
-// подсчёт количества элементов коллекции через `\Countable`
+// counting the number of elements in the collection via `\Countable`
 var_dump(count($foo->services));
 ```
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"

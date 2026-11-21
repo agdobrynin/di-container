@@ -119,7 +119,7 @@ export default {
                         },
                         {
                             base: '/en/documentation/tags/using-collecton-key/',
-                            text: 'Идентификаторы элементов коллекции',
+                            text: 'Collection element identifiers',
                             link: 'index.md',
                             collapsed: true,
                             items: [

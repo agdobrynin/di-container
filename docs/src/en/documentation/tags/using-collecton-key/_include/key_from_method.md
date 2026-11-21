@@ -1,8 +1,8 @@
 > [!IMPORTANT]
-> «Метод идентификатора» и «метод идентификатора» по умолчанию должен быть объявлен в PHP-классе с модификаторами `public` и `static`. Возвращаемое значение метода – `string`.
+> The identifier method must be declared within a PHP class using the `public` and `static` modifiers. The method must return a `string`.
 >
-> В качестве параметров метод принимает два аргумента передаваемые контейнером:
->  - `string $tag` – имя тега.
->  - `array $options` – [метаданные тега](../../tag-metadata.md).
+> The method accepts two arguments, which are passed by the container:
+>  - `string $tag` – the tag name.
+>  - `array $options` – [tag metadata](../../tag-metadata.md).
 >
-> Эти параметры метода можно использовать построения логики формирования идентификатора элемента коллекции.
+> These parameters can be used to define the logic for generating an identifier for a collection element.
