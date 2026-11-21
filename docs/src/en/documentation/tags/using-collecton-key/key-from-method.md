@@ -1,29 +1,28 @@
 ---
 outline: [2, 4]
-title: «Метод идентификатора» элемента коллекции
+title: Collection's identifier method
 ---
-### «Метод идентификатора» элемента коллекции { #key-from-method }
+### Collection's identifier method { #key-from-method }
 
-Идентификатор элемента коллекции, представленного PHP-классом, можно получить через специальный метод этого PHP-класса – «метод идентификатора». Объявление такого метода производится через [метаданные тега](../tag-metadata.md).
+The identifier of a collection element represented by a PHP class can be retrieved via a specific method within that class referred to as an "identifier method." This method is declared using [tag metadata](../tag-metadata.md).
 
-Значение в метаданных тега указывается парой ключ-значение:
-- **ключ** – имя метаданных в теге.
-- **значение** – «метод идентификатора» с префиксом `self::`.
+The value within the tag metadata is specified as a key-value pair:
+- **key** – the name of the metadata within the tag.
+- **value** – the "identifier method," prefixed with `self::`.
 
-Внедрение коллекции через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md)
-с передачей **имени метаданных** в параметре `$key`.
+A collection can be injected using the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function or the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute, by passing the **metadata name** as the `$key` parameter.
 
 <!--@include: _include/key_in_metadata_defined.md-->
 
-Метаданные тега передаются в параметре `$options` метода `bindTag()` [^BindTag] или [атрибута `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+Tag metadata is passed via the `$options` parameter of the `bindTag()`[^BindTag]  method or the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute.
 
 <!--@include: _include/key_from_method.md-->
 
 <!--@include: _include/important_key_equals.md-->
 
-### Пример извлечения идентификатора элемента из «Метод идентификатора» { #example-key-from-method }
+### Example of extracting an element identifier from an "identifier method" { #example-key-from-method }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/TagsId/src/Services/Foo.php
@@ -31,9 +30,9 @@ PHP-классы:
 <<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` «ленивую коллекцию» из элементов отмеченных тегом `'tags.internal'`, где идентификатор элемента коллекции для PHP-класса `\App\Services\Bar` должен использовать «метод идентификатора» `\App\Services\Baz::getKey()` и будет объявлен в метаданных тега под именем `'key_as'`.
+It is necessary to inject a lazy collection into the `$services` constructor parameter of the PHP class `\App\Services\Foo`. This collection should consist of elements marked with the tag `'tags.internal'`. For the PHP class `\App\Services\Bar`, the collection element identifier must be derived using the "identifier method" `\App\Services\Baz::getKey()`, which should be specified in the tag metadata under the name `'key_as'`.
 
-Реализуем метод `\App\Services\Baz::getKey()` возвращающий идентификатор элемента коллекции.
+We will implement the `\App\Services\Baz::getKey()` method, which returns the identifier for an element in the collection.
 
 ::: code-group
 ```php [Baz.php]
@@ -56,11 +55,11 @@ final class Baz
 ```
 :::
 
-#### Объявление в файлах конфигураций { #example-key-from-method-php-definitions }
+#### Declaration in configuration files { #example-key-from-method-php-definitions }
 
-В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через хелпер функцию `diTaggedAs()` с параметром `$key` равным `'key_as'`.
+In the `services.php` configuration file, declare the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` constructor parameter, using the `diTaggedAs()` helper function with the `$key` parameter set to `'key_as'`.
 
-В файле конфигураций `tagged_services.php` объявляем тег `'tags.internal'` PHP-классам через метод `bindTag()`, а для PHP-класса `\App\Services\Baz` объявим дополнительно метаданные в параметре `$options`.
+In the `tagged_services.php` configuration file, assign the `'tags.internal'` tag to PHP classes using the `bindTag()` method; additionally, for the `\App\Services\Baz` PHP class, specify extra metadata via the `$options` parameter.
 
 ::: code-group
 
@@ -135,13 +134,13 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
@@ -151,13 +150,13 @@ string(15) "id_baz"
 string(16) "App\Services\Baz"
 ```
 
-#### Объявление через атрибуты { #example-key-from-method-php-attributes }
+#### Declaration via attributes { #example-key-from-method-php-attributes }
 
-Объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$key` равным `'key_as'`.
+Declare the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` constructor parameter using the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute, with the `$key` parameter set to `'key_as'`.
 
-Объявим тег `'tags.internal'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md), а для PHP-класса `\App\Services\Baz` объявим дополнительно метаданные в параметре `$options`.
+We will assign the `'tags.internal'` tag to PHP classes using the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute; for the `\App\Services\Baz` PHP class, we will also provide additional metadata via the `$options` parameter.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -239,13 +238,13 @@ foreach ($foo->services as $id => $service) {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
