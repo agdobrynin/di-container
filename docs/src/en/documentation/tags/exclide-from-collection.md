@@ -1,21 +1,21 @@
 ---
 outline: [2, 5]
-title: Исключение элементов из коллекции
+title: Removing elements from a collection
 ---
-### Исключение элементов из коллекции { #title }
+### Removing elements from a collection { #title }
 
-Коллекции могу исключать элементы. Исключить из коллекции можно по идентификатору контейнера [^ContainerId] элемента коллекции или вызывающий PHP-класс, т.е. самого себя.
+Collections can exclude elements. An element can be excluded from a collection based on its container identifier[^ContainerId] or by specifying the calling PHP class that is, the class itself.
 
-### Исключение из коллекции по идентификатору контейнера { #exclude-by-id }
+### Exclusion from a collection by container identifier { #exclude-by-id }
 
-Для исключения элементов из коллекции используйте параметр `$containerIdExclude`
-в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md).
+To exclude elements from a collection, use the `$containerIdExclude` parameter
+in the [`diTaggedAs()`](../php-definition/di-tagged-as.md) helper function and the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) attribute.
 
-Параметр `$containerIdExclude` может содержать идентификаторы контейнера [^ContainerId] исключаемых из внедряемой коллекции.
+The `$containerIdExclude` parameter can contain the container identifiers of the elements to be excluded from the injected collection.
 
-#### Пример исключения из коллекции элементов { #example-exclude-by-id }
+#### An example of removing an item from a collection { #example-exclude-by-id }
 
-PHP классы:
+PHP classes:
 
 ::: code-group
 
@@ -30,15 +30,15 @@ PHP классы:
 :::
 
 
-PHP-классы `\App\Service\Bar`, `\App\Service\Baz`, `\App\Service\Qux` будут отмечены тегом `'tags.internal_service'`.
+The PHP classes `\App\Service\Bar`, `\App\Service\Baz`, and `\App\Service\Qux` will be marked with the tag `'tags.internal_service'`.
 
-В параметр `$services` PHP класса `\App\Service\Foo` необходимо внедрить коллекцию элементов отмеченных тегом `'tags.internal_service'`, но исключить из коллекции элемент с идентификатором контейнера `'App\Services\Baz'`, т.е. сервис получаемый через метод контейнера `$container->get(App\Services\Baz::class)`.
+A collection of elements tagged with `'tags.internal_service'` must be injected into the `$services` parameter of the PHP class `\App\Service\Foo`. However, the collection element with the container identifier `'App\Services\Baz'` must be excluded from this collection; the element can be retrieved via the container method <nobr>`$container->get(App\Services\Baz::class)`</nobr>.
 
-##### Объявление в файлах конфигураций { #example-exclude-by-id-php-definitions }
+##### Declaration in configuration files { #example-exclude-by-id-php-definitions }
 
-[В файле конфигураций](../container-builder/configuration_files.md) `services.php` в параметре `$containerIdExclude` хелпер функции `diTaggedAs()` указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
+[In the configuration file](../container-builder/configuration_files.md) `services.php` in the `$containerIdExclude` parameter of the `diTaggedAs()` helper function, specify the `'App\Services\Baz'` identifier to exclude from the collection.
 
-В файле конфигураций `tagged_services.php` объявить тег `'tags.internal_service'` для остальных PHP классов через метод `bindTag()`.
+In the `tagged_services.php` configuration file, declare the tag `'tags.internal_service'` for the remaining PHP classes using the `bindTag()` method.
 
 ::: code-group
 
@@ -121,24 +121,24 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
 string(16) "App\Services\Qux"
 ```
 
-##### Объявление через атрибуты { #example-exclude-by-id-php-attributes }
+##### Declaration via attributes { #example-exclude-by-id-php-attributes }
 
-В параметре `$containerIdExclude` [атрибута `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) указать идентификатор `'App\Services\Baz'` для исключения из коллекции.
+Use the `$containerIdExclude` parameter of the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) attribute to specify the identifier `'App\Services\Baz'` for exclusion from the collection.
 
-Объявление тега `'tags.internal_service'` остальным PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md). 
+Declare the `'tags.internal_service'` tag for other PHP classes using the [`\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md) attribute.
 
 ::: code-group
 
@@ -178,29 +178,28 @@ foreach ($foo->services as $service) {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(16) "App\Services\Bar"
 string(16) "App\Services\Qux"
 ```
 
-### Исключение вызывающего класса { #exclide-self }
+### Excluding the calling class { #exclide-self }
 
-В коллекции элементов может содержаться PHP-класс внедряющий эту же коллекцию. Для исключения такого поведения обратите внимание на параметр `$selfExclude`
-в [хелпер функции `diTaggedAs()`](../php-definition/di-tagged-as.md) и [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md). По умолчанию значение этого параметра `true`.
+A collection of elements may contain a PHP class that itself injects that same collection. To prevent this behavior, refer to the `$selfExclude` parameter in the [`diTaggedAs()`](../php-definition/di-tagged-as.md) helper function and the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../attribute-definition/tagged-as.md) attribute. By default, this parameter is set to `true`.
 
-Если вызывающий PHP-класс должен быть в коллекции, то необходимо указать в параметр `$selfExclude` значение `false`.
+If the calling PHP class should be included in the collection, you must set the `$selfExclude` parameter to `false`.
 
 ::: code-group
 
-```php [хелпер функция diTaggedAs()]
+```php [helper function diTaggedAs()]
 <?php
 declare(strict_types=1);
 
@@ -212,7 +211,7 @@ use function Kaspi\DiContainer\{diAutowire, diTaggedAs};
 
 return static function (): Generator {
     yield diAutowire(ClassTaggedAs::class)
-        ->bindTag('tags.foo')//[!code highlight]
+        ->bindTag('tags.foo')//[!code warning]
         ->bindArguments(
             items: diTaggedAs(
                 'tags.foo',//[!code highlight]
@@ -222,7 +221,7 @@ return static function (): Generator {
 };
 ```
 
-```php [атрибут TaggedAs]
+```php [TaggedAs attribute]
 <?php
 declare(strict_types=1);
 
@@ -232,7 +231,7 @@ namespace App\Services;
 
 use Kaspi\DiContainer\Attributes\{Tag, TaggedAs}; 
 
-#[Tag('tags.foo')]//[!code highlight]
+#[Tag('tags.foo')]//[!code warning]
 final class ClassTaggedAs
 {
     public function __construct(

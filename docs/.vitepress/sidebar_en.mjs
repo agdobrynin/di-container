@@ -104,7 +104,7 @@ export default {
                         { text: 'Declaring a tag in configuration files', link: 'php-definition-tag.md' },
                         { text: 'Declaring a tag via an attribute', link: 'attribute-definition-tag.md' },
                         { text: 'PHP interface as a tag name', link: 'interface-as-tag.md' },
-                        { text: 'Исключение элементов из коллекции', link: 'exclide-from-collection.md' },
+                        { text: 'Removing elements from a collection', link: 'exclide-from-collection.md' },
                         {
                             base: '/en/documentation/tags/collection-priority/',
                             text: 'Приоритет элементов коллекции',
