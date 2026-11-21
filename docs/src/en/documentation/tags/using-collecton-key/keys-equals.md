@@ -1,21 +1,21 @@
 ---
 outline: [2, 4]
-title: Совпадение идентификаторов элементов в коллекции
+title: Intersection of element identifiers in a collection
 ---
-### Совпадение идентификаторов элементов в коллекции { #keys-equals }
+### Intersection of element identifiers in a collection { #keys-equals }
 
-Внедряемая коллекция по умолчанию в качестве идентификатора элементов получает идентификатор контейнера [^ContainerId] этого элемента,
-но через [метаданные тега](../tag-metadata.md) можно указывать пользовательские идентификаторы элементов коллекции.
+By default, collection uses the container ID[^ContainerId] of an item as its identifier;
+however, custom identifiers for collection items can be specified via [tag metadata](../tag-metadata.md).
 
-При совпадении идентификаторов у элементов в коллекцию попадает элемент с более высоким [приоритетом](../collection-priority/index.md), другие элементы с таким же идентификатором будут игнорированы.
+If multiple items in a collection share the same identifier, the item with the higher [priority](../collection-priority/index.md) is included in the collection, while other items with the same identifier are ignored.
 
-### Пример { #keys-equals-example }
+### Example { #keys-equals-example }
 
-Рассмотрим пример объявления тега `'tags.internal'` PHP-классам, где идентификатор элемента коллекции объявлен через метаданные тега, при этом значение идентификатора `'id_service'` совпадают для всех объявленных тегов.
+Let’s look at an example of registering the `'tags.internal'` tag for PHP classes, where the collection element identifier is defined via tag metadata, with the identifier value `'id_service'` being the same for all registered tags.
 
-Для элемента коллекции `\App\Services\Baz` используется значение приоритета `100`, а для элемента коллекции `\App\Services\Bar` значение приоритета по умолчанию `null`.
+For the collection element `\App\Services\Baz`, a priority value of `100` is used, while for the collection element `\App\Services\Bar`, the default priority value of `null` is applied.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/TagsId/src/Services/Foo.php
@@ -23,13 +23,13 @@ PHP-классы:
 <<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-При внедрении коллекции в параметр конструктора `$services` PHP-класса `\App\Services\Foo` результатом становится коллекция, содержащая один элемент — PHP-класс `\App\Services\Baz`. Это происходит потому, что, поскольку оба элемента в коллекции имеют одинаковый идентификатор (`'id_service'`), приоритет, назначенный классу `\App\Services\Baz` через параметр `$priority`, оказывается выше приоритета класса `\App\Services\Bar`.
+When a collection is injected into the `$services` constructor parameter of the PHP class `\App\Services\Foo`, the result is a collection containing a single element: the PHP class `\App\Services\Baz`. This occurs because, given that both items in the collection share the same identifier (`'id_service'`), the priority assigned to `\App\Services\Baz` via the `$priority` parameter is higher than that of `\App\Services\Bar`.
 
-#### Объявление в файлах конфигураций { #keys-equals-example-php-definition }
+#### Declaration in configuration files { #keys-equals-example-php-definition }
 
-В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services` через хелпер функцию `diTaggedAs()` с параметром `$key` равным `'key_as'` указывающим имя метаданных для извлечения идентификатора элемента коллекции из тега.
+In the `services.php` configuration file, declare the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` constructor parameter. This is done using the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function, with the `$key` parameter set to `'key_as'`, which specifies the metadata key used to extract the element's identifier from the tag.
 
-В файле конфигураций `tagged_services.php` объявляем тег `'tags.internal'` и метаданные в параметре `$options` PHP-классам через метод `bindTag()`[^BindTag]. Имя метаданных `'key_as'` для каждого тега указывает какой идентификатор элемента получит каждый тег.
+In the `tagged_services.php` configuration file, define the `'tags.internal'` tag and its associated metadata within the `$options` parameter for the relevant PHP classes, using the `bindTag()`[^BindTag] method. The metadata key `'key_as'` determines the identifier that will be assigned to each element associated with that tag.
 
 ::: code-group
 
@@ -110,26 +110,26 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(15) "id_service"
 string(16) "App\Services\Baz"
 ```
 
-#### Объявление через атрибуты { #keys-equals-example-attributes }
+#### Declaration via attributes { #keys-equals-example-attributes }
 
-Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$key` равным `'key_as'` указывающим имя метаданных для извлечения идентификатора элемента коллекции из тега.
+Configure the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` parameter of the PHP class `\App\Services\Foo` using the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute. The `$key` parameter is set to `'key_as'`, which specifies the metadata key used to extract the element's identifier from the tag.
 
-Объявим тег `'tags.internal'` и метаданные в параметре `$options` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md). Имя метаданных `'key_as'` для каждого тега указывает какой идентификатор элемента получит каждый тег.
+We will define the `'tags.internal'` tag and its associated metadata for PHP classes using the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute. The metadata key `'key_as'` for each tag determines the identifier assigned to that specific element.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -228,13 +228,13 @@ foreach ($foo->services as $id => $service) {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(15) "id_service"

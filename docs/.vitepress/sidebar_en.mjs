@@ -128,7 +128,7 @@ export default {
                                 { text: 'Element identifier in tag metadata', link: 'key-in-metadata.md' },
                                 { text: 'Collection\'s identifier method', link: 'key-from-method.md' },
                                 { text: 'Default "identifier method" for a collection element', link: 'key-from-method-default.md' },
-                                { text: 'Совпадение идентификаторов элементов в коллекции', link: 'keys-equals.md' },
+                                { text: 'Intersection of element identifiers in a collection', link: 'keys-equals.md' },
                             ],
                         },
                         { text: 'Соглашение по именованию тегов и мета-данных', link: 'naming-convention.md' },
