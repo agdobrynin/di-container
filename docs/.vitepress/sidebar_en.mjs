@@ -131,7 +131,7 @@ export default {
                                 { text: 'Intersection of element identifiers in a collection', link: 'keys-equals.md' },
                             ],
                         },
-                        { text: 'Соглашение по именованию тегов и мета-данных', link: 'naming-convention.md' },
+                        { text: 'Naming convention for tags and metadata', link: 'naming-convention.md' },
                         { text: 'Метаданные тега', link: 'tag-metadata.md' },
                     ],
                 },

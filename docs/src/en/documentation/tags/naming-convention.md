@@ -1,17 +1,17 @@
 ---
 aside: false
-title: Соглашение по именованию тегов и метаданных
+title: Naming convention for tags and metadata
 ---
-### Соглашение по именованию тегов и метаданных { #title }
+### Naming convention for tags and metadata { #title }
 
-Рекомендовано придерживаться соглашения по именованию значений для имён тегов, и имён метаданных тега:
-- использовать строчные буквы для имён тегов и ключей в метаданных.
-- разделять символом подчеркивание `_` части имени если определение состоит из нескольких слов.
-- разделять символом точка `.` группы в определении.
+It is recommended to follow a naming convention for tag names and tag metadata names:
+- use lowercase letters for tag names and metadata keys.
+- use an underscore `_` to separate parts of a name if it consists of multiple words.
+- use a dot `.` to separate groups within a definition.
 
-#### Пример использования имён по соглашению { #example-naming-convention }
+#### Example of using names according to a convention { #example-naming-convention }
 
-Объявление в файле конфигураций определений:
+Declaration in the definitions configuration file:
 
 ```php
 use function Kaspi\DiContainer\diAutowire;
@@ -26,7 +26,7 @@ diAutowire(SomeClass::class)
      );
 ```
 
-Объявление через PHP атрибуты:
+Declaration via PHP attributes:
 
 ```php
 use Kaspi\DiContainer\Attributes\Tag;
