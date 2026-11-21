@@ -132,7 +132,7 @@ export default {
                             ],
                         },
                         { text: 'Naming convention for tags and metadata', link: 'naming-convention.md' },
-                        { text: 'Метаданные тега', link: 'tag-metadata.md' },
+                        { text: 'Tag metadata', link: 'tag-metadata.md' },
                     ],
                 },
                 {
