@@ -124,7 +124,7 @@ export default {
                             collapsed: true,
                             items: [
                                 { text: 'Overview', link: 'index.md' },
-                                { text: 'Идентификатор элемента как целое число', link: 'key-as-int.md' },
+                                { text: 'Element identifier as an integer', link: 'key-as-int.md' },
                                 { text: 'Идентификатор элемента в метаданных тега', link: 'key-in-metadata.md' },
                                 { text: '«Метод идентификатора» элемента коллекции', link: 'key-from-method.md' },
                                 { text: '«Метод идентификатора» элемента коллекции по умолчанию', link: 'key-from-method-default.md' },

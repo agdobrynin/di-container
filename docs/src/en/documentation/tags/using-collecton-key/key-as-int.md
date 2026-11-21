@@ -1,19 +1,19 @@
 ---
 outline: [2, 4]
-title: Идентификатор элемента как целое число
+title: Element identifier as an integer
 ---
-### Идентификатор элемента как целое число { #key-as-int }
+### Element identifier as an integer { #key-as-int }
 
-Внедряемая коллекция может быть представлен простым списком, где идентификаторы элементов представлены целыми числами от `0` до `n`.
+A collection being injected can be represented as a simple list, where element identifiers are integers ranging from `0` to `n`.
 
-При объявлении внедрения коллекции-списка необходимо параметру `$useKeys` установить значение `false` в [хелпер функции `diTaggedAs()`](../../php-definition/di-tagged-as.md) или [атрибуте `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md).
+When declaring the injection of such a list-like collection, you must set the `$useKeys` parameter to `false` within the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function or the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute.
 
 > [!WARNING]
-> Объявление внедрения коллекции-списока означает что другие параметры хелпер-функции или атрибута отвечающие за извлечение идентификаторов элементов коллекции будут проигнорированы.  
+> Declaring the implementation of a collection/list means that other parameters of the helper function or attribute—those responsible for extracting the identifiers of the collection's elements—will be ignored.
 
-### Пример внедрения коллекции-списка { #example }
+### Example of implementing a list collection { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/TagsId/src/Services/Foo.php
@@ -21,13 +21,13 @@ PHP-классы:
 <<< @/_code/TagsId/src/Services/Baz.php
 :::
 
-Необходимо внедрить в параметр конструктора `$services` PHP-класса `\App\Services\Foo` коллецию-список, где идентификаторы элементов коллекции представлены целыми числами от `0` до `n`.
+It is necessary to inject a collection specifically a list—into the `$services` constructor parameter of the PHP class `\App\Services\Foo`, where the identifiers of the collection elements are represented by integers ranging from `0` to `n`.
 
-#### Объявление в файлах конфигураций { #example-php-definition }
+#### Declaration in configuration files { #example-php-definition }
 
-В файле конфигураций `services.php` объявить внедрение коллекции из элементов отмеченных тегом `'tags.internal'` в параметр конструктора `$services`  через [хелпер функцию `diTaggedAs()`](../../php-definition/di-tagged-as.md) с параметром `$useKeys` равным `false`.
+In the `services.php` configuration file, declare the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` constructor parameter using the [`diTaggedAs()`](../../php-definition/di-tagged-as.md) helper function, with the `$useKeys` parameter set to `false`.
 
-В файле конфигураций `tagged_services.php` объявляем тег `'tags.internal'` PHP-классам через метод `bindTag()` [^BindTag].
+In the `tagged_services.php` configuration file, assign the `'tags.internal'` tag to PHP classes using the `bindTag()`[^BindTag] method.
 
 ::: code-group
 
@@ -80,13 +80,13 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 int(0)
@@ -96,13 +96,13 @@ int(1)
 string(16) "App\Services\Baz"
 ```
 
-#### Объявление через атрибуты { #example-attributes }
+#### Declaration via attributes { #example-attributes }
 
-Объявить внедрение коллекции элементов отмеченных тегом `'tags.internal'` в параметр `$services` PHP-класса `\App\Services\Foo` через [атрибут `\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) с параметром `$useKeys` равным `false`.
+Declare the injection of a collection of elements marked with the `'tags.internal'` tag into the `$services` parameter of the PHP class `\App\Services\Foo` using the [`\Kaspi\DiContainer\Attributes\TaggedAs`](../../attribute-definition/tagged-as.md) attribute, with the `$useKeys` parameter set to `false`.
 
-Объявим тег `'tags.internal'` PHP-классам через [атрибут `\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md).
+We will assign the `'tags.internal'` tag to PHP classes using the [`\Kaspi\DiContainer\Attributes\Tag`](../../attribute-definition/tag.md) attribute.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -157,13 +157,13 @@ foreach ($foo->services as $id => $service) {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 int(0)
