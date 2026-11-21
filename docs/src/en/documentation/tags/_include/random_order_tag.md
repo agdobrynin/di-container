@@ -1,1 +1,1 @@
-Очерёдность элементов в коллекции не определена при такой конфигурации, и может быть любой. Изучите информацию в разделе документации [«Приоритет элементов коллекции»](/documentation/tags/collection-priority/index.md).
+The order of elements in the collection is not defined in this configuration and can be any. Please review the documentation section ["Collection Item Priority"](/en/documentation/tags/collection-priority/index.md).
