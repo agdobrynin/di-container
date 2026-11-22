@@ -4,13 +4,13 @@ title: Container parameters
 ---
 ### Container parameters
 
-При объявлении PHP-класса или вызываемого типа[^CallableType], можно не указывать контейнеру как внедрять зависимости **простых типов**, указывая в методе `bindArguments()` [^BindArguments] значение «как-есть».
+When declaring a PHP class or a callable type[^CallableType], you do not need to specify how the container should inject dependencies of **simple types**; instead, you can provide the values "as-is" using the `bindArguments()`[^BindArguments] method.
 
-К **простым типам** относятся значения `int`, `float`, `string`, `bool`, `null`, `\UnitEnum` или тип `array` состоящий из этих типов.
+**Simple types** include `int`, `float`, `string`, `bool`, `null`, `\UnitEnum`, or an `array` consisting of these types.
 
-Рассмотрим пример: необходимо обеспечить внедрение зависимостей в PHP-классы из простых типов, указывая значения зависимостей «как-есть» через метод `bindArguments()`.
+Consider the following example: we need to inject dependencies specifically simple types into PHP classes by providing the dependency values "as-is" via the `bindArguments()` method.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 ```php [Foo.php]
@@ -66,7 +66,7 @@ final class Bar
 
 :::
 
-Объявление внедрений простых параметров в файле конфигураций:
+Declaration of simple parameter implementations in a configuration file:
 
 ```php
 <?php
@@ -81,25 +81,25 @@ use function Kaspi\DiContainer\{diAutowire, diFactory};
 return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(
-            // значение как-есть// [!code highlight]
+            // as-is value// [!code highlight]
             adminEmail: 'admin@example.com'// [!code highlight]
         );
 
     yield 'services.do_something' => diFactory(Configurator::class)
         ->bindArguments(
-            // значение как-есть// [!code highlight]
+            // as-is value// [!code highlight]
             adminEmail: 'admin@example.com'// [!code highlight]
         );
 };
 ```
 
-Как можно видеть в файле конфигурации используется одно и то же значение `'admin@example.com'` для внедрения.
+As you can see in the `services.php` configuration file, the same value, `'admin@example.com'`, is used for injection.
 
-Повторяющиеся значение можно определить как «**параметр контейнера**», который представляет собой многократно используемое значение при объявлении внедрений в параметры.
+This recurring value can be defined as a "**container parameter**" a reusable value that can be referenced when declaring injections into parameters.
 
-**Конфигурацию параметров контейнера можно представить в виде коллекции <nobr>ключ–значение</nobr>: где ключ это строковое имя параметра, а значение представлено одним из [поддерживаемых типов](#parameter-support-types).**
+**Container parameter configuration can be represented as a collection of key-value pairs, where the key is the string name of the parameter, and the value is one of the [supported types](#parameter-support-types).**
 
-Выше приведенный пример, где значение для параметра метода класса можно представить как «параметр контейнера»:
+In the example above, the value used for a class method parameter can be defined as a container parameter:
 
 ```php
 <?php
@@ -112,7 +112,7 @@ return [
 ];
 ```
 
-[Хелпер функция `diParameter()`](inject_params.md#helper-fn-di-parameter) внедряет зависимость из «параметров контейнера»:
+The helper function [`diParameter()`](inject_params.md#helper-fn-di-parameter) injects a dependency from container parameters:
 
 ```php
 <?php
@@ -139,7 +139,7 @@ return static function (): Generator {
 };
 ```
 
-Для объявления параметров контейнера используем [метод `DiContainerBuilder::loadParameters()`](declare_params.md):
+To declare container parameters, use the [`DiContainerBuilder::loadParameters()`](declare_params.md) method:
 
 ```php
 <?php
@@ -158,50 +158,50 @@ $container = (new DiContainerBuilder())
     ->build();
 ```
 
-### Поддерживаемые типы значений параметров контейнера { #parameter-support-types }
+### Supported parameter value types for containers { #parameter-support-types }
 
-В параметры контейнера можно установить следующие простые типы значений:
-- скалярные php типы `int|float|string|bool`
-- тип `null`
-- перечисляемые типы наследуемые от `\UnitEnum`
-- `array` из выше перечисленных типов
-- PHP-константы из выше перечисленных типов определяемые через функцию [`\define()`](https://www.php.net/manual/ru/function.define.php)
-- значения из публичных констант PHP-классов и PHP-интерфейсов со значениями из выше перечисленных типов.
+The following simple value types can be set as container parameters:
+- scalar PHP types: `int`, `float`, `string`, and `bool`
+- the `null` type
+- enumerated types that inherit from `\UnitEnum`
+- arrays consisting of the aforementioned types
+- PHP constants (defined via the [`\define()`](https://www.php.net/manual/en/function.define.php) function) that hold values of the aforementioned types
+- values from public constants defined within PHP classes or interfaces, provided those constants are of the aforementioned types.
 
 ```php
 <?php
 declare(strict_types=1);
 
 return [
-    // строковое значение
+    // string value
     'adminEmail' => 'admin@example.com',
-    // булевы тип
+    // Boolean type
     'services.enable_logging' => true,
-    // числовой тип - целое число, число с плавающей точкой
+    // numeric type - integer, floating-point number
     'logger.port' => 1_025,
-    // тип null
+    // null type
     'smtp.context' => null,
-    // массив
+    // array
     'ui.locales' => [
         'ru' => 'ru_RU.utf8',
         'en' => 'en_US.utf8',
         'fi' => 'fi_FI.utf8',
     ],
-    // значение установленное из PHP константы определенное через `\define()`
+    // a value set from a PHP constant defined via `\define()`
     'value.from_constat' => CONSTATN_NAME,
-    // значение установленное через публичную константу в классе
+    // a value set via a public constant in a class
     'value.from_class_constat' => Foo::MAX_SIZE,
-    // значение установленное через перечисления наследуемые от `\UnitEnum`
+    // a value defined via enumerations that inherit from `\UnitEnum`
     'value.from_enumerator' => FooEnum::Viewed,
 ];
 ```
 
-### Содержание раздела { #toc }
+### Section Contents { #toc }
 
-- [Объявление «параметров контейнера»](declare_params.md).
-- [Ссылки на имена других «параметров контейнера»](expression_in_params.md).
-- [Внедрение «параметров контейнера»](inject_params.md).
-- [«Параметры контейнера» времени выполнения](inject_runtime_params.md).
+- [Declaration of container parameters](declare_params.md).
+- [References to the names of other container parameters](expression_in_params.md).
+- [Declaring dependency injection via container parameters](inject_params.md).
+- [Runtime container parameters](inject_runtime_params.md).
 
 <!--@include: ../php-definition/_include/bind_notes.md-->
 <!--@include: ../_include/term_notes.md-->

@@ -1,1 +1,1 @@
-Порядок объявления параметров контейнера имеет значение! Если параметр контейнера уже был объявлен, а затем объявляется другой параметр с тем же именем, то его значение будет перезаписано — будет использовано значение из последнего объявления.
+The order in which container parameters are declared matters! If a container parameter has already been declared and another parameter with the same name is subsequently declared, its value will be overwritten the value from the latest declaration will be used.
