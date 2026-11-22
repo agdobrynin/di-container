@@ -4,22 +4,22 @@ title: Declaring an object in a runtime container
 ---
 ###  Declaring an object in a runtime container { #title }
 
-В некоторых сценариях использования контейнера может возникнуть ситуация когда необходимо внедрить зависимость PHP-класс, но конфигурация этого PHP-класса заранее не известна, т.е. на момент конфигурирования известен только идентификатор контейнера[^ContainerId] или FQCN[^FQCN] этого PHP-класса.
+In certain container usage scenarios, a situation may arise where it is necessary to inject a PHP class as a dependency, yet the configuration for this class is not known in advance meaning that at the time of configuration, only the container identifier[^ContainerId] or the fully qualified class name.
 
-Реальное состояние объекта (_PHP-класса_) инициализируется вне контейнера, и устанавливается в контейнер только во время выполнения, по заранее определенному идентификатору контейнера или FQCN этого PHP-класса.
+The actual state of the object (the PHP class instance) is initialized outside the container and injected into the container only at runtime, using a pre-defined container identifier or the class's FQCN[^FQCN].
 
-Такой PHP-класс в рамках контейнера зависимостей называется **«Runtime Definition»**.
+Within the context of a dependency container, such a PHP class is referred to as a **Runtime Definition**.
 
-Во время [компиляции контейнера](../container-builder/index.md#compile-to-file) параметры зависящие от **«Runtime Definition»** должны знать о существовании PHP-класса который будет установлен в контейнер зависимостей только во время выполнения.
+During [container compilation](../container-builder/methods/compile-to-file.md), parameters that depend on a **Runtime Definition** must be aware of the existence of a PHP class that will only be injected into the dependency container at runtime.
 
-Объявление в контейнере «**Runtime Definition**» через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md) или [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
+You can create a definition within the **Runtime Definition** container using the [`diRuntime()`](../php-definition/di-runtime.md) helper function or the [`\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md) attribute.
 
 > [!IMPORTANT]
-> Объявление в конфигурации контейнера **«Runtime Definition»** не создает конфигурацию PHP-класса, а только предоставляет идентификатор контейнера[^ContainerId].
+> Declaring an item within the **Runtime Definition** container configuration does not create a PHP class configuration; it merely provides a container identifier[^ContainerId].
 
-### Пример внедрения «Runtime definition» { #example-di-runtime }
+### Example of implementing a runtime definition { #example-di-runtime }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -112,17 +112,17 @@ final class Foo
 
 :::
 
-Реальное состояние PHP-классов `\App\Core\Kernel` и `\App\Services\Qux` может быть получено только вне рамок конфигурации контейнера, но в проекте есть PHP-классы которые внедряют эти классы как зависимости конструктора – `\App\Services\Bar` и `\App\Services\Foo`.
+The actual state of the PHP classes `\App\Core\Kernel` and `\App\Services\Qux` can only be determined outside the scope of the container configuration; however, the project contains other PHP classes specifically `\App\Services\Bar` and `\App\Services\Foo` that inject these classes as constructor dependencies.
 
-**При сборке необходима компиляция контейнера**, поэтому необходимо объявить в контейнере зависимостей класс `\App\Core\Kernel` и класс `\App\Services\Qux` как **«Runtime Definition»**.
+**Container compilation is required during the build process**, which necessitates declaring both `\App\Core\Kernel` and `\App\Services\Qux` within the dependency container as **Runtime Definitions**.
 
-#### Объявление в файлах конфигураций { #example-di-runtime-php-definition }
+#### Declaration in configuration files { #example-di-runtime-php-definition }
 
-В файле конфигураций `runtime_services.php` объявляет PHP-классы `\App\Core\Kernel` и `\App\Services\Qux` через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md).
+In the `runtime_services.php` configuration file, the PHP classes `\App\Core\Kernel` and `\App\Services\Qux` are declared using the helper function [`diRuntime()`](../php-definition/di-runtime.md).
 
-Объявим PHP-классы `\App\Services\Bar`, `\App\Services\Foo` и их скалярные зависимости в файле конфигураций `services.php`, контейнер самостоятельно внедрит типизированную зависимость[^TypeHints] на основании конфигурации контейнера.
+We will declare the PHP classes `\App\Services\Bar` and `\App\Services\Foo`, along with their scalar dependencies, in the `services.php` configuration file; the container will automatically inject the type-hinted dependencies[^TypeHints] based on its configuration.
 
-Для объявления скалярных зависимостей используем [параметры контейнера](../container-parameters/inject_params.md).
+To declare scalar dependencies, we use [container parameters](../container-parameters/inject_params.md).
 
 ::: code-group
 
@@ -148,8 +148,8 @@ $container = (new DiContainerBuilder())
 // …
 
 /*
- * Метод \App\Core\Kernel::initKernel()
- * установит реальные значения для Runtime Definition.
+ * The \App\Core\Kernel::initKernel() method
+ * will set the actual values for the Runtime Definition.
  */ 
 $kernel = new \App\Core\Kernel($container);
 $kernel->initKernel();
@@ -220,13 +220,13 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(App\Core\Kernel)#2 (0) {
@@ -238,13 +238,13 @@ object(App\Services\Qux)#4 (0) {
 string(11) "Lorem ipsum"
 ```
 
-#### Объявление через атрибуты { #example-di-runtime-attribute }
+#### Declaration via attributes { #example-di-runtime-attribute }
 
-PHP-классы `\App\Core\Kernel` и `\App\Services\Qux` объявить через [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
+Declare PHP classes `\App\Core\Kernel` and `\App\Services\Qux` via the attribute [`\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
 
-Объявим скалярные зависимости в PHP-классах `\App\Services\Bar`, `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\Parameter`, типизированную зависимость[^TypeHints] в этих классах контейнер самостоятельно на основании конфигурации контейнера.
+Declare scalar dependencies in the PHP classes `\App\Services\Bar` and `\App\Services\Foo` using the `\Kaspi\DiContainer\Attributes\Parameter` attribute; the container will automatically resolve typed dependencies[^TypeHints] in these classes based on its configuration.
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -376,13 +376,13 @@ return static function (): Generator {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(App\Core\Kernel)#2 (0) {
