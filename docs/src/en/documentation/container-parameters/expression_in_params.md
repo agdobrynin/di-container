@@ -1,15 +1,15 @@
 ---
 outline: [2,4]
-title: Ссылки на имена других «параметров контейнера»
+title: References to the names of other container parameters
 ---
-### Ссылки на имена других «параметров контейнера» { #title }
+### References to the names of other container parameters { #title }
 
-Чтобы указать ссылку на другой ранее добавленный «параметр контейнера», необходимо указать между символами `{` и `}` имя параметра.
+To reference another previously added container parameter, you must specify the parameter name between the `{` and `}` characters.
 
-Значение `'{emails.admin}'` будет интерпретировано как получение значения параметра контейнера с именем `'emails.admin'`.
+The value `'{emails.admin}'` will be interpreted as a request to retrieve the value of the container parameter named `'emails.admin'`.
 
 > [!TIP]
-> При объединении ссылок в строковом параметре допускается объединение числовых и строковых значений параметров.
+> When combining links within a string parameter, it is permissible to include both numeric and string parameter values.
 > 
 > ```php
 > <?php
@@ -23,9 +23,9 @@ title: Ссылки на имена других «параметров конт
 > Значение параметра `'api.url'` будет приведено к строке `'api.example.com:8080'`.
 
 
-### Пример использования ссылок в «параметрах контейнера» { #example }
+### An example of using links in container parameters { #example }
 
-PHP-класс:
+PHP classes:
 
 ```php
 <?php
@@ -45,20 +45,20 @@ final class Foo
 }
 ```
 
-Внедрить через параметры контейнера значения в конструктор PHP-класса `\App\Services\Foo`.
+Inject values ​​into the constructor of the PHP class `\App\Services\Foo` via container parameters.
 
-Файлы конфигурации параметров контейнера:
+Container parameter configuration files:
 
 ::: code-group
 <<< @/_code/config/app_params.php
 <<< @/_code/config/dev_params.php
 :::
 
-#### Объявления внедрения в файле конфигураций { #example-php-definition }
+#### Declarations of implementation in the configuration file { #example-php-definition }
 
-В файле конфигураций `services.php` объявить внедрение в конструктор PHP-класса `\App\Services\Foo` через [хелпер функцию `diParameter()`](../php-definition/di-parameter.md).
+In the `services.php` configuration file, declare an injection into the constructor of the PHP class `\App\Services\Foo` using the [`diParameter()`](../php-definition/di-parameter.md) helper function.
 
-В файле конфигураций параметров контейнера `app_params.php` приведены основные значения, в файле `dev_params.php` используются ссылки на другие параметры контейнера для получения нужного значения для конкретного параметра. 
+The `app_params.php` configuration file contains the primary parameter values for the container, while the `dev_params.php` file uses references to other container parameters to derive the required values for specific parameters.
 
 ::: code-group
 
@@ -111,13 +111,13 @@ return static function (): Generator {
 <<< @/_code/config/dev_params.php
 ::: 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(19) "/var/storage/images"
@@ -130,9 +130,9 @@ array(2) {
 }
 ```
 
-#### Объявление внедрения через атрибуты { #example-attribute-definition }
+#### Declaring implementation via attributes { #example-attribute-definition }
 
-Через атрибут `\Kaspi\DiContainer\Attributes\Parameter` внедрить параметры контейнера в конструктор PHP-класса `\App\Services\Foo`.
+Inject container parameters into the constructor of the PHP class `\App\Services\Foo` using the `\Kaspi\DiContainer\Attributes\Parameter` attribute.
 
 ::: code-group
 
@@ -191,13 +191,13 @@ var_dump($foo->notifyTo);
 <<< @/_code/config/dev_params.php
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(19) "/var/storage/images"
@@ -210,11 +210,11 @@ array(2) {
 }
 ```
 
-### Экранирование символа { { #escape-symbol }
+### Character escaping { { #escape-symbol }
 
-Для экранирования в строке символа `{` необходимо его удвоить – <code v-pre>{{</code> чтобы избежать интерпретации его как ссылки на имя параметра.
+To escape the `{` character within a string, you must double it <code v-pre>{{</code> to prevent it from being interpreted as a reference to a parameter name.
 
-Рассмотрим пример: параметр контейнера `'params.foo'` должен быть представлен строкой `'foo{bar}baz'`. Так как символ `{` является зарезервированным для синтаксиса – ссылка на имена других «параметров контейнера», его необходимо экранировать, для этого значение необходимо представить строкой <code v-pre>'foo{{bar}baz'</code>.
+Consider this example: a container parameter `'params.foo'` needs to be represented by the string `'foo{bar}baz'`. Since the `{` character is reserved for syntax—specifically for referencing other container parameters it must be escaped; therefore, the value should be written as <code v-pre>'foo{{bar}baz'</code>.
 
 ```php
 <?php
