@@ -8,16 +8,16 @@ title: Объявление объекта в рантайм контейнер�
 
 Реальное состояние объекта (_PHP-класса_) инициализируется вне контейнера, и устанавливается в контейнер только во время выполнения, по заранее определенному идентификатору контейнера или FQCN этого PHP-класса.
 
-Такой PHP-класс в рамках контейнера зависимостей называется **«Runtime Definition»**.
+Такой PHP-класс в рамках контейнера зависимостей называется **Runtime Definition**.
 
-Во время [компиляции контейнера](../container-builder/index.md#compile-to-file) параметры зависящие от **«Runtime Definition»** должны знать о существовании PHP-класса который будет установлен в контейнер зависимостей только во время выполнения.
+Во время [компиляции контейнера](../container-builder/methods/compile-to-file.md) параметры зависящие от **Runtime Definition** должны знать о существовании PHP-класса который будет установлен в контейнер зависимостей только во время выполнения.
 
-Объявление в контейнере «**Runtime Definition**» через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md) или [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
+Сделать объявление в контейнере **Runtime Definition** можно через [хелпер функцию `diRuntime()`](../php-definition/di-runtime.md) или [атрибут `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
 
 > [!IMPORTANT]
-> Объявление в конфигурации контейнера **«Runtime Definition»** не создает конфигурацию PHP-класса, а только предоставляет идентификатор контейнера[^ContainerId].
+> Объявление в конфигурации контейнера **Runtime Definition** не создает конфигурацию PHP-класса, а только предоставляет идентификатор контейнера[^ContainerId].
 
-### Пример внедрения «Runtime definition» { #example-di-runtime }
+### Пример внедрения Runtime definition { #example-di-runtime }
 
 PHP-классы:
 
@@ -114,7 +114,7 @@ final class Foo
 
 Реальное состояние PHP-классов `\App\Core\Kernel` и `\App\Services\Qux` может быть получено только вне рамок конфигурации контейнера, но в проекте есть PHP-классы которые внедряют эти классы как зависимости конструктора – `\App\Services\Bar` и `\App\Services\Foo`.
 
-**При сборке необходима компиляция контейнера**, поэтому необходимо объявить в контейнере зависимостей класс `\App\Core\Kernel` и класс `\App\Services\Qux` как **«Runtime Definition»**.
+**При сборке необходима компиляция контейнера**, поэтому необходимо объявить в контейнере зависимостей класс `\App\Core\Kernel` и класс `\App\Services\Qux` как **Runtime Definition**.
 
 #### Объявление в файлах конфигураций { #example-di-runtime-php-definition }
 
