@@ -1,17 +1,17 @@
 ---
 outline: [2-4]
-title: Объявление «параметров контейнера»
+title: Defining container parameters
 ---
-### Объявление «параметров контейнера» { #title }
+### Defining container parameters { #title }
 
-Объявление «параметров контейнера» производится через класс `\Kaspi\DiContainer\DiContainerBuilder`, или в файлах конфигурации через [конфигуратор определений](../container-builder/definitions-configurator/index.md).
+Container parameters are declared using the `\Kaspi\DiContainer\DiContainerBuilder` class, or in configuration files via the [definitions configurator](../container-builder/definitions-configurator/index.md).
 
 > [!IMPORTANT]
 > <!--@include: _include/declare_order.md-->
 
-Регистрация параметров контейнера обычно объявляется в файлах конфигураций представляющих коллекции ключ-значение – имя параметра и его значение, в виде PHP-массивов. Так же доступно объявление из любых итерируемых коллекций, например – `callable` тип возвращающий `iterable` тип для возможности перебора коллекции.
+Container parameter registration is typically defined in configuration files that represent key-value collections mapping parameter names to their respective values as PHP arrays. It is also possible to define parameters using any iterable collection; for instance, one can use a `callable` that returns an `iterable` type, allowing the collection to be traversed.
 
-### Объявление «параметров контейнера» из файлов { #load-parameters }
+### Defining container parameters from files { #load-parameters }
 
 ```php
 Kaspi\DiContainer\DiContainerBuilder::loadParameters(
@@ -20,14 +20,14 @@ Kaspi\DiContainer\DiContainerBuilder::loadParameters(
 ): static
 ```
 
-Параметры:
-- `$file` – полный путь к файлу описывающий конфигурацию параметров.
-- `$_` – дополнительные файлы конфигураций параметров контейнера.
+Parameters:
+- `$file` – the full path to the file that defines the parameter configuration.
+- `$_` – additional configuration files for container parameters.
 
 > [!IMPORTANT]
-> Файл конфигурации параметров контейнера должен начинаться с ключевого слова `return` и возвращать любой итерируемый тип или `callable` тип который также должен возвращать любой итерируемый тип.
+> The container parameter configuration file must begin with the `return` keyword and return either an iterable type or a `callable` type that, in turn, must also return an iterable type.
 
-### Объявление «параметров контейнера» из коллекции { #add-parameters }
+### Declaring container parameters from a collection { #add-parameters }
 
 ```php
 Kaspi\DiContainer\DiContainerBuilder::addParameters(
@@ -35,10 +35,10 @@ Kaspi\DiContainer\DiContainerBuilder::addParameters(
 ): static
 ```
 
-Параметры:
-- `$params` – коллекция ключ-значение конфигурации параметров.
+Parameters:
+- `$params` – a key-value collection of configuration parameters.
 
-### Объявление одного «параметра контейнера» { #set-parameter }
+### Declaration of a single container parameter { #set-parameter }
 
 ```php
 Kaspi\DiContainer\DiContainerBuilder::setParameter(
@@ -47,26 +47,26 @@ Kaspi\DiContainer\DiContainerBuilder::setParameter(
 ): static
 ```
 
-Параметры:
-- `$name` – имя параметра.
-- `$value` – значение параметра.
+Parameters:
+- `$name` – the name of the parameter.
+- `$value` – the value of the parameter.
 
-### Объявление «параметров контейнера» в конфигураторе определений { #cofigurator }
+### Declaring container parameters in the definition configurator { #cofigurator }
 
-Объявлять и управлять «параметрами контейнера» так же можно в файлах конфигурации через [конфигуратор определений](../container-builder/definitions-configurator/index.md).
+You can also declare and manage container parameters in configuration files using the [definitions configurator](../container-builder/definitions-configurator/index.md).
 
 > [!IMPORTANT]
-> Все добавленные ранее параметры в конфигурацию могут быть замены новыми значениями если имя параметра совпадает.
+> Any parameters previously added to the configuration can be replaced with new values, provided the parameter name matches.
 
-Интерфейс `\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface` предоставляем методы для объявления параметров контейнера:
+The `\Kaspi\DiContainer\Interfaces\DefinitionsConfiguratorInterface` interface provides methods for declaring container parameters:
 
-- `DefinitionsConfiguratorInterface::loadParameters()` – объявление «параметров контейнера» из файлов.
-- `DefinitionsConfiguratorInterface::addParameters()` – объявление «параметров контейнера» из коллекции.
-- `DefinitionsConfiguratorInterface::setParameter()` – объявление параметра и его значения.
-- `DefinitionsConfiguratorInterface::removeParameter()` – удаление параметра по имени из конфигурации контейнера.
-- `DefinitionsConfiguratorInterface::hasParameter()` – проверка на доступность параметра по имени.
+- `DefinitionsConfiguratorInterface::loadParameters()` – declaring container parameters from files.
+- `DefinitionsConfiguratorInterface::addParameters()` – declaring container parameters from a collection.
+- `DefinitionsConfiguratorInterface::setParameter()` – declaration of a parameter and its value.
+- `DefinitionsConfiguratorInterface::removeParameter()` – removing a parameter by name from the container configuration.
+- `DefinitionsConfiguratorInterface::hasParameter()` – checking for the availability of a parameter by name.
 
-Пример объявления и управления параметрами контейнера в файле конфигураций:
+Example of declaring and managing container parameters in a configuration file:
 
 ```php
 <?php

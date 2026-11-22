@@ -142,7 +142,7 @@ export default {
                     collapsed: true,
                     items: [
                         { text: 'Overview', link: 'index.md' },
-                        { text: 'Объявление «параметров контейнера»', link: 'declare_params.md' },
+                        { text: 'Defining container parameters', link: 'declare_params.md' },
                         { text: 'Ссылки на имена «параметров контейнера»', link: 'expression_in_params.md' },
                         { text: 'Внедрение «параметров контейнера»', link: 'inject_params.md' },
                         { text: '«Параметры контейнера» времени выполнения', link: 'inject_runtime_params.md' },
