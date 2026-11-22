@@ -12,7 +12,7 @@ title: Параметры контейнера времени выполнени
 
 Во время [компиляции контейнера](../container-builder/methods/compile-to-file.md) объявленные внедрения зависимостей должны знать о существовании **параметров контейнера времени исполнения**, значения которых будет установлено в контейнер только во время выполнения самого контейнера.
 
-### Внедрение параметра контейнера времени выполнения:
+### Внедрение параметра контейнера времени выполнения { #inject }
 
 - через [хелпер функцию `diParameterRuntime()`](../php-definition/di-parameter-runtime.md) в [файлах конфигураций](../container-builder/configuration_files.md).
 - через [атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md).
