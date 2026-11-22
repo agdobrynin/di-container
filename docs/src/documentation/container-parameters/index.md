@@ -198,10 +198,10 @@ return [
 
 ### Содержание раздела { #toc }
 
-- [Объявление «параметров контейнера»](declare_params.md).
-- [Ссылки на имена других «параметров контейнера»](expression_in_params.md).
-- [Внедрение «параметров контейнера»](inject_params.md).
-- [«Параметры контейнера» времени выполнения](inject_runtime_params.md).
+- [Объявление параметров контейнера](declare_params.md).
+- [Ссылки на имена других параметров контейнера](expression_in_params.md).
+- [Объявление внедрения зависимости из параметров контейнера](inject_params.md).
+- [Параметры контейнера времени выполнения](inject_runtime_params.md).
 
 <!--@include: ../php-definition/_include/bind_notes.md-->
 <!--@include: ../_include/term_notes.md-->
