@@ -1,29 +1,28 @@
 ---
 outline: [2, 4]
-title: «Параметры контейнера» времени выполнения
+title: Runtime container parameters
 ---
-### «Параметры контейнера» времени выполнения { #title }
+### Runtime container parameters { #title }
 
-В некоторых сценариях использования контейнера может возникнуть ситуация когда необходимо объявить «параметр контейнера», но значение этого параметра заранее не известно, т.е. на момент конфигурирования известно только имя параметра контейнера.
+In certain container usage scenarios, it may be necessary to declare a container parameter without knowing its value in advance that is, only the name of the parameter is known at the time of configuration.
 
-Реальное значение такого параметра вычисляется вне контейнера, и устанавливается в контейнер только во время выполнения, по заранее определенному имени параметра контейнера.
+The actual value of such a parameter is calculated outside the container and is assigned to it only at runtime, using the pre-defined parameter name.
 
-Такие параметры контейнера называются – **«параметр контейнера» времени исполнения**.
+These types of container parameters are referred to as **runtime container parameters**.
 
-Во время [компиляции контейнера](../container-builder/methods/compile-to-file.md) объявленные внедрения зависимостей должны знать о существовании **«параметров контейнера» времени исполнения**, значения которых будет установлено в контейнер только во время выполнения самого контейнера.
+During [container compilation](../container-builder/methods/compile-to-file.md), declared dependency injections must be aware of the existence of **runtime container parameters**, the values of which will be set in the container only when the container itself is executed.
 
-### Внедрение «параметра контейнера» времени выполнения:
+### Injecting a runtime container parameter { #inject }
 
-- через [хелпер функцию `diParameterRuntime()`](../php-definition/di-parameter-runtime.md) в [файлах конфигураций](../container-builder/configuration_files.md).
-- через [атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md).
+- via the helper function [`diParameterRuntime()`](../php-definition/di-parameter-runtime.md) in [configuration files](../container-builder/configuration_files.md).
+- via the attribute [`\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md).
 
-Хелпер функция и атрибут принимают один аргумент в параметре `$name` – имя «параметра контейнера».
+Both the helper function and the attribute accept a single argument, `$name`, which represents the name of the container parameter.
 
 > [!TIP]
 > <!--@include: _include/param_name_on_empty_arg.md-->
 
-Установить реальное значение **«параметра контейнера» времени исполнения** необходимо через метод `set()` объекта реализующего интерфейс `\Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface`, а получить такой объект можно через метод контейнера `parameters()`.
-
+To set the actual value of a **runtime container parameter**, you must use the `set()` method of an object that implements the `\Kaspi\DiContainer\Interfaces\SourceParametersMutableInterface` interface; this object can be retrieved via the container's `parameters()` method.
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
 
@@ -32,9 +31,9 @@ $container = (new DiContainerBuilder())
 
 // …
 
-// вычисляем значение параметра
+// calculate the value of the parameter
 $calculatedValue = doCalculateValue();//[!code ++]
-// получаем параметры контейнера
+// we set the actual value of the container parameter
 $container->parameters()//[!code ++]
     ->set(//[!code ++]
         'params.runtime_foo',//[!code ++]
@@ -43,9 +42,9 @@ $container->parameters()//[!code ++]
 // …
 ```
 
-### Пример внедрения «параметра контейнера» времени выполнения { #example }
+### Example of inject a runtime container parameter { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/src/Services/Foo.php
@@ -53,7 +52,7 @@ PHP-классы:
 <<< @/_code/src/Enums/SetupEnum.php
 :::
 
-Файлы конфигурации параметров контейнера:
+Container parameter configuration files:
 
 
 ::: code-group
@@ -61,11 +60,11 @@ PHP-классы:
 <<< @/_code/config/params_notify.php
 :::
 
-В параметры конструктора `$mailTo` и `$debug` PHP-класса `\App\Services\Foo` объявить внедрение через [параметры контейнера](inject_params.md), для параметра `$setupType` реальное значение вычисляется только вне контейнера, поэтому для этого параметра необходимо использовать объявление внедрения через **«параметр контейнера» времени исполнения**.
+For the `$mailTo` and `$debug` constructor parameters of the PHP class `\App\Services\Foo`, configure injection using [container parameters](inject_params.md). Since the actual value for the `$setupType` parameter can only be determined outside the container, you must use a **runtime container parameter** to configure its injection.
 
-#### Объявление в файлах конфигураций { #helper-fn-di-parameter-runtime }
+#### Declaration in configuration files { #helper-fn-di-parameter-runtime }
 
-В файле конфигураций `services.php` объявить PHP-класс `\App\Services\Foo`, объявить внедрение для параметра конструктора `$setupType` через [хелпер функцию `diParameterRuntime()`](../php-definition/di-parameter-runtime.md), для параметров конструктора `$mailTo` и `$debug`, значения которых заранее известно, через [хелпер функцию `diParameter()`](../php-definition/di-parameter.md).
+In the `services.php` configuration file, register the PHP class `\App\Services\Foo`. Configure dependency injection for the constructor parameter `$setupType` using the helper function [`diParameterRuntime()`](../php-definition/di-parameter-runtime.md), and for the constructor parameters `$mailTo` and `$debug`—whose values are known in advance—use the helper function [`diParameter()`](../php-definition/di-parameter.md).
 
 ::: code-group
 
@@ -132,13 +131,13 @@ return static function (): Generator {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(App\Services\Bar)#2 (0) {
@@ -148,10 +147,9 @@ string(37) "admin@example.com, manager@example.com"
 bool(false)
 ```
 
-#### Объявление через атрибут { #attribute-parameter-runtime }
+#### Declaration via an attribute { #attribute-parameter-runtime }
 
-Объявить внедрение в параметр конструктора `$setupType` через [атрибут `\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md) PHP-класса `\App\Services\Foo`,
-для остальных параметров конструктора через [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](../attribute-definition/parameter.md).
+Specify the injection for the constructor parameter `$setupType` using the [`\Kaspi\DiContainer\Attributes\ParameterRuntime`](../attribute-definition/parameter-runtime.md) attribute within the PHP class `\App\Services\Foo`, and use the [`\Kaspi\DiContainer\Attributes\Parameter`](../attribute-definition/parameter.md) attribute for the remaining constructor parameters.
 
 ::: code-group
 ```php [Foo.php]
@@ -226,13 +224,13 @@ var_dump($foo->debug);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(App\Services\Bar)#2 (0) {
