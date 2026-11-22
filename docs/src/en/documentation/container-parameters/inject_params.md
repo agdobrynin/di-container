@@ -1,21 +1,21 @@
 ---
 outline: [2, 4]
-title: Внедрение «параметров контейнера»
+title: Declaring dependency injection via container parameters
 ---
-### Внедрение «параметров контейнера» { #title }
+### Declaring dependency injection via container parameters { #title }
 
-Внедрение в параметры метода или вызываемого типа[^CallableType] «параметров контейнера»:
-- через [хелпер функцию `diParameter()`](../php-definition/di-parameter.md) в [файлах конфигураций](../container-builder/configuration_files.md).
-- через [атрибут `\Kaspi\DiContainer\Attributes\Parameter`](../attribute-definition/parameter.md).
+Injecting container parameters into the arguments of a method or a callable type[^CallableType]:
+- via the helper function [`diParameter()`](../php-definition/di-parameter.md) in [configuration files](../container-builder/configuration_files.md).
+- via the attribute [`\Kaspi\DiContainer\Attributes\Parameter`](../attribute-definition/parameter.md).
 
-Хелпер функция и атрибут принимают один аргумент в параметре `$name` – имя «параметра контейнера».
+Both the helper function and the attribute accept a single argument, `$name`, which represents the name of the container parameter.
 
 > [!TIP]
 > <!--@include: _include/param_name_on_empty_arg.md-->
 
-### Пример внедрения «параметра контейнера» { #example }
+### Example { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/src/Services/Foo.php
@@ -23,7 +23,7 @@ PHP-классы:
 <<< @/_code/src/Enums/SetupEnum.php
 :::
 
-Файлы конфигурации параметров контейнера:
+Container parameter configuration files:
 
 ::: code-group
 <<< @/_code/config/params.php
@@ -34,17 +34,16 @@ PHP-классы:
 > [!IMPORTANT]
 > <!--@include: _include/declare_order.md-->
 
-Внедрить через параметры контейнера значения в конструктор PHP-класса `\App\Services\Foo`.
+Inject values into the constructor of the PHP class `\App\Services\Foo` via container parameters.
 
-Параметры контейнера должны быть определены с учетом следующего условия: если переменная окружения `APP_ENV` установлена в значение `'dev'`, параметры контейнера должны загружаться из файла `params_dev.php`; во всех остальных случаях они должны загружаться из файла `params.php`.
+The container parameters must be defined according to the following condition: if the `APP_ENV` environment variable is set to `'dev'`, the container parameters should be loaded from the `params_dev.php` file; in all other cases, they should be loaded from the `params.php` file.
 
-#### Объявление в файлах конфигураций { #helper-fn-di-parameter }
+#### Declaration in configuration files { #helper-fn-di-parameter }
 
-В файле конфигураций `services.php` объявить PHP-класс `\App\Services\Foo`, и объявить внедрение параметров контейнера в конструктор этого класса через хелпер функцию `diParameter()`:
-- `'setupType'` в параметр конструктора `$setupType`.
-- `'emails.notify'` в параметр конструктора `$mailTo`.
-- `'app.debug'` в параметр конструктора `$debug`.
- 
+In the `services.php` configuration file, define the PHP class `\App\Services\Foo` and configure the injection of container parameters into its constructor using the `diParameter()` helper function:
+- `'setupType'` into the `$setupType` constructor parameter.
+- `'emails.notify'` into the `$mailTo` constructor parameter.
+- `'app.debug'` into the `$debug` constructor parameter.
 
 ::: code-group
 
@@ -96,8 +95,8 @@ return static function (): Generator {
     yield diAutowire(Foo::class)
         ->bindArguments(//[!code ++]
             /*
-             * Параметр # 2 конструктора с именем `$setupType`.
-             * Эквивалентно объявлению diParameter('setupType')
+             * Parameter #2 of the constructor, named `$setupType`.
+             * Equivalent to the declaration diParameter('setupType')
              */
             setupType: diParameter(),//[!code ++]
             mailTo: diParameter('emails.notify'),//[!code ++]
@@ -107,13 +106,13 @@ return static function (): Generator {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(App\Services\Bar)#2 (0) {
@@ -123,9 +122,9 @@ string(33) "admin@localhost, manager@localhost"
 bool(true)
 ```
 
-#### Объявление через атрибут { #attribute-parameter }
+#### Declaration via an attribute { #attribute-parameter }
 
-Объявить внедрение параметров контейнера через атрибут `\Kaspi\DiContainer\Attributes\Parameter` в конструктор PHP-класса `\App\Services\Foo`.
+Declare the injection of container parameters via the `\Kaspi\DiContainer\Attributes\Parameter` attribute into the constructor of the PHP class `\App\Services\Foo`.
 
 ::: code-group
 ```php [Foo.php]
@@ -143,7 +142,7 @@ final class Foo
 {
     public function __construct(
         public readonly Bar $bar,
-        // Эквивалентно объявлению #[Parameter('setupType')]//[!code warning]
+        // Equivalent to the declaration #[Parameter('setupType')]//[!code warning]
         #[Parameter]//[!code ++]
         public readonly SetupEnum $setupType,
         #[Parameter('emails.notify')]//[!code ++]
@@ -190,13 +189,13 @@ var_dump($foo->debug);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(App\Services\Bar)#2 (0) {
