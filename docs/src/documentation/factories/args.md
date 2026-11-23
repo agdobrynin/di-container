@@ -8,7 +8,7 @@ title: Аргументы для метода фабрики
 
 Для особых сценариев можно указать методу PHP-класса «фабрика» как внедрять зависимости в конкретные параметры.
 
-При объявлении внедрения в [файлах конфигураций](../container-builder/configuration_files.md) аргументы передаются в метод `bingArguments()` [хелпер функции diFactory()](../php-definition/di-factory.md#bindarguments).
+При объявлении внедрения в [файлах конфигураций](../container-builder/configuration_files.md) аргументы передаются в метод `bingArguments()` [хелпер функции `diFactory()`](../php-definition/di-factory.md#bindarguments).
 
 При объявлении внедрения через [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md#args) аргументы указываются в параметре `$arguments`.
 
