@@ -4,12 +4,11 @@ title: Dependency injection into a union-typed parameter
 ---
 ### Dependency injection into a union-typed parameter { #overview }
 
-При внедрении в параметр [объединенного типа](https://www.php.net/manual/en/language.types.type-system.php#language.types.type-system.composite.union) на основе конфигурации контейнера производится попытка найти доступные объявления PHP-классов, и если будет найдено несколько логически равнозначных вариантов внедрения зависимости то будет выброшено исключение,
-которое сообщит о необходимости уточнить тип внедряемого аргумента.
+When performing injection for a parameter with a [union type](https://www.php.net/manual/en/language.types.type-system.php#language.types.type-system.composite.union), the container configuration is used to search for available PHP class declarations. If multiple logically equivalent options for dependency injection are found, an exception is thrown, indicating that the type of the argument being injected must be specified more precisely.
 
-Ниже рассмотрим пример как объявить внедрение для параметра объединённого типа.
+Below, we will look at an example of how to define an injection for a parameter with a union type.
 
-### PHP-классы { #php-classes }
+### PHP classes { #php-classes }
 
 ::: code-group
 
@@ -81,24 +80,24 @@ var_dump($foo->dependency);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Будет выброшено исключение:
+An exception will be thrown:
 
 > [!DANGER] PHP Fatal error:
 > Uncaught Kaspi\DiContainer\Exception\AutowireParameterTypeException:
 > Cannot automatically resolve dependency in App\Services\Foo::__construct().
 > Please specify the Parameter #0 [ \<required\> App\Services\Bar | App\Services\Baz $dependency ].
 
-**Для устранения ошибки необходимо конкретизировать тип аргумента для параметра конструктора `$dependency` PHP-класса `\App\Services\Foo`.**
+To resolve the error, you need to specify the argument type for the `$dependency` constructor parameter in the PHP class `\App\Services\Foo`.
 
-#### Объявление в файлах конфигураций { #php-definitions }
+#### Declaration in configuration files { #php-definitions }
 
-В файле конфигураций `services.php` через [хелпер функцию `diGet()`](../documentation/php-definition/di-get.md) конкретизируем какую именно зависимость необходимо внедрить в параметре конструктора `$dependency` PHP-класса `\App\Services\Foo`.
+In the `services.php` configuration file, using the [`diGet()`](../documentation/php-definition/di-get.md) helper function, we specify which dependency needs to be implemented in the `$dependency` constructor parameter of the `\App\Services\Foo` PHP class.
 
 ::: code-group
 ```php [container_build.php]
@@ -138,22 +137,22 @@ return static function (): Generator {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
   object(App\Services\Baz)#2 (0) {
   }
 ```
 
-#### Объявление через атрибут { #php-attributes }
+#### Declaration via an attribute { #php-attributes }
 
-Через [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) конкретизируем какую именно зависимость необходимо внедрить в параметре конструктора `$dependency` PHP-класса `\App\Services\Foo`.
+Using the [`\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) attribute, we specify exactly which dependency should be injected into the `$dependency` constructor parameter of the PHP class `\App\Services\Foo`.
 
 ::: code-group
 
@@ -201,13 +200,13 @@ var_dump($foo->dependency);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
   object(App\Services\Baz)#2 (0) {
