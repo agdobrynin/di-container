@@ -6,16 +6,16 @@ title: Container reset
 
 Performing a reset on the dependency container will return it to its initial state — clearing its internal buffer of properties and dependencies, bringing them back to the same state they were in when the container was first initialized.
 
-### Полный сброс контейнера зависимостей { #full-reset }
+### Complete reset of the dependency container { #full-reset }
 
-Метод `reset()` выполняющий «сброс» контейнера может быть вызван как для рантайм контейнера, так и для [скомпилированного контейнера](../container-builder/methods/compile-to-file.md).
+The `reset()` method, which performs a reset of the container, can be called on both a runtime container and a [compiled container](../container-builder/methods/compile-to-file.md).
 
-Выполнение сброса контейнера приведет всю конфигурацию контейнера в состояние которое было на момент первой инициализации. У всех PHP-классов и определений контейнера объявленных [через хелпер функции](../php-definition/index.md) или [атрибуты](../attribute-definition/index.md) так же будут очищены внутренние буферы свойств и вспомогательные кэши.
+Resetting the container restores its entire configuration to the state it was in at the time of its initial initialization. For all PHP classes and container definitions declared [via helper functions](../php-definition/index.md) or [attributes](../attribute-definition/index.md), any internal property buffers and auxiliary caches will also be cleared.
 
-Для [параметров контейнера](../container-parameters/index.md) так же выполняется сброс.
+[Container parameters](../container-parameters/index.md) are likewise reset.
 
 > [!WARNING]
-> Для объявленных в контейнере [рантайм объектов](../runtime-definition/index.md) и [рантайм параметров контейнера](../container-parameters/inject_runtime_params.md) так же будут сброшены внутренние буферы и кэши – они будут приведены в первоначальное состояние. Используйте повторное объявление значений если они необходимы после сброса контейнера. 
+> For [runtime objects](../runtime-definition/index.md) and [container runtime parameters](../container-parameters/inject_runtime_params.md) defined within the container, internal buffers and caches will also be cleared resetting them to their initial state. If these values are still required after the container has been reset, you will need to re-declare them.
 
 ```php
 use Kaspi\DiContainer\DiContainerBuilder;
