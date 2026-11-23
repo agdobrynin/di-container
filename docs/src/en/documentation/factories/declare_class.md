@@ -1,22 +1,22 @@
 ---
 outline: [2,4]
-title: Объявление PHP-класса
+title: PHP class declaration
 ---
-### Объявление PHP-класса { #title }
+### PHP class declaration { #title }
 
-Для случаев когда объявление PHP-класса не может быть создано простым вызовом `new Foo()`, а требует особой сборки, то можно делегировать сборку этого класса специальному PHP-классу – «фабрика».
+In cases where a PHP class cannot be instantiated simply by calling `new Foo()`, but instead requires a specific construction process, you can delegate the creation of that class to a dedicated PHP class, known as a “**factory**”.
 
 <!--@include: _include/auto_inject_params.md-->
 
-Объявление PHP-класса через «фабрику» можно сделать:
-- через [хелпер функцию `diFactory()`](../php-definition/di-factory.md) в файлах конфигураций.
-- через [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
+A PHP class can be defined via a factory in the following ways:
+- using the [`diFactory()`](../php-definition/di-factory.md) helper function within configuration files.
+- using the [`\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md) attribute.
 
-Важное замечание: фабричный метод[^FactoryPattern] должен возвращать объявляемый класс, обеспечивая доступ к объявляемому PHP-классу через методы контейнера `get()` и `has()`.
+Important note: the factory method[^FactoryPattern] must return the class being defined, thereby enabling access to that PHP class via the container's `get()` and `has()` methods.
 
-### Пример объявления PHP-класса через «фабрику» { #di-factory-class-example }
+### Example of declaring a PHP class via a factory { #di-factory-class-example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -30,11 +30,11 @@ PHP-классы:
 
 :::
 
-Объявить в контейнере PHP-класс `\App\Services\Qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()`.
+Register the PHP class `\App\Services\Qux` in the container using the factory `\App\Helpers\Configurator::quxDoConfig()`.
 
-#### Объявление в файлах конфигураций { #example-helper-fn-di-factory }
+#### Declaration in configuration files { #example-helper-fn-di-factory }
 
-В файле конфигураций `services.php` зарегистрируем PHP-класс `\App\Services\Qux` в контейнере, используя хелпер функцию `diFactory()`.
+In the `services.php` configuration file, we will register the PHP class `\App\Services\Qux` in the container using the `diFactory()` helper function.
 
 ::: code-group
 ```php [container_build.php]
@@ -73,22 +73,22 @@ return static function (): Generator {
 
 ::: 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 (bool) true
 string(4) "Fuuz"
 ```
 
-#### Объявление через атрибут { #example-attribute-di-factory }
+#### Declaration via an attribute { #example-attribute-di-factory }
 
-Объявление PHP-класса `\App\Services\Qux` в контейнере через атрибут `\Kaspi\DiContainer\Attributes\DiFactory`.
+Register the PHP class `\App\Services\Qux` in the container using the `\Kaspi\DiContainer\Attributes\DiFactory` attribute.
 
 ::: code-group
 
@@ -135,13 +135,13 @@ var_dump($container->get(Qux::class)->value);
 :::
 
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 (bool) true
