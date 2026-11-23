@@ -6,15 +6,15 @@ title: Resetting object state for long-running processes
 
 Depending on the configuration, some objects retrieved via the container's `get()` method may return [the same instance](../container-config/index.md#is-singleton-service-default) – meaning they retain their state across multiple calls to the container. In long-running processes, such objects may require their state to be reset.
 
-Пример класса который может «накапливать данные»:
+An example of a class that can accumulate data:
 
 <<< @/_code/object-resetter/src/Services/FooLogger.php
 
-Например, приложению необходимо чтобы объект PHP-класса `\App\Services\FooLogger` сохранял своё состояние между компонентами системы, т.е. получать один и тот же объект при внедрении зависимости или получении через метод контейнера `get()`.
+For example, an application might require an instance of the PHP class `\App\Services\FooLogger` to maintain its state across various system components meaning that the same object should be returned whenever it is injected as a dependency or retrieved via the container's `get()` method.
 
-При объявлении такого PHP-класса в контейнере необходимо установить значение `true` в параметр `$isSingleton` в [хелпер функции `diAutowire()`](../php-definition/di-autowire.md) или [атрибута `\Kaspi\DiContainer\Attributes\Aitowire`](../attribute-definition/autowire.md).
+When registering such a PHP class in the container, you must set the `$isSingleton` parameter to `true` within the [`diAutowire()`](../php-definition/di-autowire.md) helper function or the [`\Kaspi\DiContainer\Attributes\Autowire`](../attribute-definition/autowire.md) attribute.
 
-Пример объявления PHP-класса через атрибут:
+Example of registering a PHP class using an attribute:
 
 ```php
 <?php
@@ -32,7 +32,7 @@ final class FooLogger
 //…
 ```
 
-Приложение работающее по схеме «event loop»:
+An application that operates based on an "event loop" model:
 
 ```php
 <?php
@@ -57,15 +57,15 @@ while ($request = $app->getRequest()) {
 }
 ```
 
-Получая объект через `$container->get(App\Services\FooLogger::class)` внутри приложения будет получен один и тот-же объект. Разные компоненты приложения могут внедрять зависимость и вызывать метод PHP-класса `\App\Services\FooLogger::log()`, что приведет к «накоплению данных» в свойстве `$logs` класса `\App\Services\FooLogger`.
+When retrieving an object via `$container->get(App\Services\FooLogger::class)` within an application, the exact same object instance is returned. Various components of the application can inject this dependency and call the `\App\Services\FooLogger::log()` method, which will result in data accumulating within the `$logs` property of the `\App\Services\FooLogger` class.
 
-**Чтобы избежать утечек памяти, нужно использовать механизм сброса состояния объекта `\App\Services\FooLogger`.**
+**To prevent memory leaks, you must implement a mechanism to reset the state of the `\App\Services\FooLogger` object.**
 
-Контейнер предоставляет готовый механизм сброса состояния объектов контейнера через PHP-класс `\Kaspi\DiContainer\ObjectResetters`.
+The container provides a built-in mechanism for resetting the state of its objects via the `\Kaspi\DiContainer\ObjectResetters` class.
 
-Конфигурация для сброса состояния объекта представляется парой ключ-значение, где ключ это идентификатор контейнера[^ContainerId], а значение, представленное типами `string`, `false` или `callable`, указывает [как необходимо выполнить сброса состояния объекта](#resseter-types).
+The configuration for resetting an object's state is defined as a key-value pair, where the key is the container identifier[^ContainerId], and the value, which can be a `string`, `false`, or a `callable`, specifies [how the object's state should be reset](#resseter-types).
 
-В качестве сброса состояния объекта выберем реализацию публичного метода `\App\Services\FooLogger::doReset()`. Так же необходимо изменять объявление PHP-класса через атрибут `\Kaspi\DiContainer\Attributes\Autowire` – в параметре `$resetter` необходимо указать имя метода выполняющего сброс состояния объекта `'doReset'`.
+In this case, we will use the public method `\App\Services\FooLogger::doReset()` to perform the state reset. Additionally, you must update the class definition by adding the `\Kaspi\DiContainer\Attributes\Autowire` attribute, specifying the name of the reset method – `'doReset'` – in the `$resetter` parameter.
 
 ```php
 <?php
@@ -90,7 +90,7 @@ final class FooLogger
     }//[!code ++]
 ```
 
-Теперь добавим в наше приложение работающее по схеме «event loop», использование PHP-класса `\Kaspi\DiContainer\ObjectResetters`:
+Now, let’s add the use of the PHP class `\Kaspi\DiContainer\ObjectResetters` to our application, which operates using an "event loop" pattern:
 
 ```php
 <?php
@@ -119,28 +119,28 @@ while ($request = $app->getRequest()) {
 }
 ```
 
-Теперь PHP-класс `\App\Services\FooLogger` будет сбрасывать своё состояния при вызове `$resetters->reset()`.
+Now, the PHP class `\App\Services\FooLogger` will reset its state when `$resetters->reset()` is called.
 
-### Способы конфигурирования сброса состояния объектов { #config }
+### Methods for configuring the resetting of object state { #config }
 
-Объявить PHP-класс `\Kaspi\DiContainer\ObjectResetters` и его конфигурацию для сброса состояния объектов можно следующими способами:
+You can declare the `\Kaspi\DiContainer\ObjectResetters` PHP class and its configuration for resetting object state in the following ways:
 
-- [Конфигурация из определений контейнера](definition_config.md).
-- [Конфигурация отдельных значений сброса состояния объектов](manual_config.md).
+- [Configuration derived from container definitions](definition_config.md).
+- [Configuration of individual object state reset values](manual_config.md).
 
 > [!TIP]
-> Для случаев когда невозможно изменить код PHP-класса, чтобы реализовать метод сброса состояния объекта, например PHP-класс из пакета стороннего производителя, можно [воспользоваться механизмом рефлексии объектов](reset_vendor_class.md).
+> In cases where it is not possible to modify the code of a PHP class to implement a method for resetting the object's state, for example: when dealing with a PHP class from a third-party package, you can [use the object reflection mechanism](reset_vendor_class.md).
 
 > [!NOTE]
-> Разработчик может реализовать собственный PHP-класс сброса состояния объектов который должен реализовывать интерфейс `\Kaspi\DiContainer\Interfaces\ObjectResettersInterface`.
+> A developer can implement a custom PHP class for resetting object state, which must implement the `\Kaspi\DiContainer\Interfaces\ObjectResettersInterface` interface.
 
-### Значения конфигурации для сброса состояния объекта { #resseter-types }
+### Configuration values for resetting object state { #resseter-types }
 
-Конфигурация для сброса состояния объекта представляется парой ключ-значение, где ключ это идентификатор [^ContainerId] с использованием которого будет получен объект из контейнера через метод `get()`, а значение указывает контейнеру как именно будет выполнен сброс состояния объекта.
+The configuration for resetting an object's state is represented as a key-value pair, where the key is an identifier[^ContainerId] used to retrieve the object from the container via the `get()` method, and the value instructs the container on exactly how to reset the object's state.
 
-Сброс состояния объекта можно произвести через **публичный метод реализованный в этом же PHP-классе**, метод получает доступ ко всем приватным и защищённым свойствам. Для значения в конфигурации следует указать имя метода который должен выполнить сброс состояния объекта.
+An object's state can be reset via a **public method implemented within the same PHP class**; this method has access to all private and protected properties. The value in the configuration should specify the name of the method that is to perform the state reset.
 
-Например, значение конфигурации `'doReset'` для PHP-класса `\App\Services\Foo` через атрибут `\aspi\DiContainer\Attributes\Autowire` или в файле конфигураций `services.php` для PHP-класса `\App\Services\Bar`.
+For example, the configuration value `'doReset'` could be used for the PHP class `\App\Services\Foo` via the `\aspi\DiContainer\Attributes\Autowire` attribute, or for the PHP class `\App\Services\Bar` within a `services.php` configuration file.
 
 ::: code-group
 
@@ -205,7 +205,7 @@ final class Bar
 ```
 :::
 
-Сброс состояния объекта будет произведен если **PHP-класс реализует интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface`** и его метод `reset()`, при этом устанавливать значение для сброса состояния объекта в атрибуте или хелпер функции необязательно, значение по умолчанию `false`.
+The object's state will be reset if the **PHP class implements the `\Kaspi\DiContainer\Interfaces\ResetInterface` interface** and its `reset()` method; note that it is not mandatory to specify a value for the object state reset in the attribute or helper function, as the default value is `false`.
 
 ::: code-group
 
@@ -231,9 +231,9 @@ final class Baz implements ResetInterface//[!code ++]
 ```
 :::
 
-Так же в качестве значения для сброса состояния объекта может быть использован любой вызываемый тип[^CallableType]. В качестве единственного аргумента вызываемый тип получает сам объект для которого выполняется сброс состояния – `callable(object $object): void`.
+Additionally, any callable type[^CallableType] can be used to reset an object's state. The callable receives the object whose state is being reset as its only argument: `callable(object $object): void`.
 
-Вызываемый тип может быть представлен классом со статическим методом, обычной функцией или анонимной функцией:
+A callable can be a class with a static method, a regular function, or an anonymous function:
 
 ::: code-group
 
@@ -288,10 +288,10 @@ if (!function_exists('App\do_reset_bar')) {
 
 :::
 
-### Конфигурация контейнера и сброс состояния объектов
+### Container configuration and resetting object state
 
-В PHP-классе `\Kaspi\DiContainer\DiContainerConfig`, предоставляющим [конфигурацию контейнеру](../container-config/index.md), параметр `$isConfigureObjectResettersFromDefinitions` отвечает за возможность контейнера создавать конфигурацию для PHP-класса `\Kaspi\DiContainer\ObjectResetters` на основании определений контейнера, значение по умолчанию для этого параметра `true` позволяет получить полностью готовый сервис для сброса состояния PHP-классов объявленных в контейнере.
+In the `\Kaspi\DiContainer\DiContainerConfig` PHP class, which provides [configuration for the container](../container-config/index.md), the `$isConfigureObjectResettersFromDefinitions` parameter determines whether the container can automatically generate configuration for the `\Kaspi\DiContainer\ObjectResetters` class based on the container's definitions. By default, this parameter is set to `true`, which allows for the creation of a fully configured service for resetting the state of PHP classes registered within the container.
 
-Передав аргумент `false` в параметр `$isConfigureObjectResettersFromDefinitions` PHP-класса `\Kaspi\DiContainer\DiContainerConfig`, вы запрещаете контейнеру самостоятельно создавать конфигурацию для PHP-класса `\Kaspi\DiContainer\ObjectResetters`, но вы можете [создать конфигурацию самостоятельно](manual_config.md) для этого класса.
+If you pass `false` as the value for the `$isConfigureObjectResettersFromDefinitions` parameter in `\Kaspi\DiContainer\DiContainerConfig`, the container will not automatically generate configuration for the `\Kaspi\DiContainer\ObjectResetters` class; however, you may still [create the configuration for this class manually](manual_config.md).
 
 <!--@include: ../_include/term_notes.md-->
