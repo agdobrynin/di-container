@@ -159,7 +159,7 @@ export default {
                     collapsed: true,
                     items: [
                         {text: 'Overview', link: 'index.md'},
-                        {text: 'Аргументы для метода фабрики', link: 'args.md'},
+                        {text: 'Arguments for a factory method', link: 'args.md'},
                         {text: 'Объявление PHP-класса', link: 'declare_class.md'},
                         {text: 'Объявление внедрения зависимости', link: 'inject_into_params.md'},
                         {text: 'Фактическое имя класса фабрики', link: 'factory_class_container_id.md'},

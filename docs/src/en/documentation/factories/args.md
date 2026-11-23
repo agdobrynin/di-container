@@ -1,20 +1,20 @@
 ---
 outline: [2,4]
-title: Аргументы для метода фабрики
+title: Arguments for a factory method
 ---
-### Аргументы для метода фабрики { #title }
+### Arguments for a factory method { #title }
 
-При объявлении внедрения зависимости или объявлении PHP-класса через PHP-класса «фабрика»[^FactoryPattern], параметры конструктора и метода PHP-класса «фабрика» могут быть внедрены автоматически на основании конфигурации контейнера.
+When declaring dependency injection or defining a PHP class via a factory class[^FactoryPattern], the parameters of the factory class's constructor and methods can be injected automatically based on the container configuration.
 
-Для особых сценариев можно указать методу PHP-класса «фабрика» как внедрять зависимости в конкретные параметры.
+For specific scenarios, you can define how dependencies should be injected into particular parameters of a factory class method.
 
-При объявлении внедрения в [файлах конфигураций](../container-builder/configuration_files.md) аргументы передаются в метод `bingArguments()` [хелпер функции diFactory()](../php-definition/di-factory.md#bindarguments).
+When declaring injection within [configuration files](../container-builder/configuration_files.md), arguments are passed to the `bindArguments()` method of the [`diFactory()`](../php-definition/di-factory.md#bindarguments) helper function.
 
-При объявлении внедрения через [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md#args) аргументы указываются в параметре `$arguments`.
+When declaring injection via the [`\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md#args) attribute, arguments are specified using the `$arguments` parameter.
 
-### Пример указания аргументов методу PHP-класса «фабрика» { #example }
+### Example of passing arguments to a PHP class factory method { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 ```php [Foo.php]
@@ -71,19 +71,19 @@ final class Baz
 ```
 :::
 
-Необходимо объявить внедрение в параметр конструктора `$value` PHP-класса `\App\Services\Foo` значения которое вычисляет метод `\App\Services\Bar::createValue()`.
+It is necessary to declare the injection into the constructor parameter `$value` of the PHP class `\App\Services\Foo` of the value that is calculated by the `\App\Services\Bar::createValue()` method.
 
-В этом примере `\App\Services\Bar::createValue()` является «фабрикой» которой делегирован процесс создания требуемого значения.
+In this example, `\App\Services\Bar::createValue()` is a “factory” that is delegated the process of creating the required value.
 
-В параметр конструктора `$baz` PHP-класса `\App\Services\Bar` контейнер внедрит зависимость самостоятельно, на основании конфигурации.
+In the constructor parameter `$baz` of the PHP class `\App\Services\Bar` the container will inject the dependency on its own, based on the configuration.
 
-Для параметра `$prefixValue` фабричного метода `\App\Services\Bar::createValue()` объявить внедрение скалярного типа через [параметр контейнера](../container-parameters/index.md) с именем `'params.prefix_value'`.
+For the `$prefixValue` parameter of the `\App\Services\Bar::createValue()` factory method, declare a scalar type injection via a [container parameter](../container-parameters/index.md) named `'params.prefix_value'`.
 
-#### Объявление в файлах конфигураций { #example-php-definition }
+#### Declaration in configuration files { #example-php-definition }
 
-В файле конфигураций `services.php` объявляем PHP-класс `\App\Services\Foo` и внедрение зависимости в параметр конструктора `$value` через [хелпер функцию `diFactory()`](../php-definition/di-factory.md).
+In the configuration file `services.php` we declare the PHP class `\App\Services\Foo` and inject the dependency into the constructor parameter `$value` through the helper function [`diFactory()`](../php-definition/di-factory.md).
 
-Для параметра `$prefixValue` фабричного метода `\App\Services\Bar::createValue()` объявим внедрение скалярного значения через [хелпер функцию `diParameter()`](../php-definition/di-parameter.md).
+For the `$prefixValue` parameter of the `\App\Services\Bar::createValue()` factory method, we will declare the implementation of a scalar value through the [`diParameter()`](../php-definition/di-parameter.md) helper function.
 
 ::: code-group
 
@@ -130,27 +130,27 @@ return static function(): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(26) "Lorem ipsum dolor sit amet"
 ```
 
-#### Объявление через атрибут { #example-attribute }
+#### Declaration via an attribute { #example-attribute }
 
-Объявляем внедрение зависимости в параметр конструктора `$value` через [атрибут `DiFactory`](../attribute-definition/di-factory.md) PHP-класса `\App\Services\Foo`.
+We will declare dependency injection for the constructor parameter `$value` using the [`DiFactory`](../attribute-definition/di-factory.md) attribute within the PHP class `\App\Services\Foo`.
 
-Для параметра `$prefixValue` фабричного метода `\App\Services\Bar::createValue()` объявим внедрение скалярного значения PHP-класс `\Kaspi\DiContainer\DiDefinition\DiDefinitionParameter`.
+For the `$prefixValue` parameter of the factory method `\App\Services\Bar::createValue()`, we will declare the injection of a scalar value using the PHP class `\Kaspi\DiContainer\DiDefinition\DiDefinitionParameter`.
 
 <!--@include: ../attribute-definition/_include/to_arguments.md-->
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -204,13 +204,13 @@ var_dump($foo->value);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(26) "Lorem ipsum dolor sit amet"
