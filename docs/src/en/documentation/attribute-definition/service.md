@@ -2,7 +2,7 @@
 outline: [2,4]
 title: Service attribute
 ---
-### АService attribute
+### Service attribute
 
 The `\Kaspi\DiContainer\Attributes\Service` attribute tells the PHP interface its implementation.
 
