@@ -211,7 +211,7 @@ export default {
                     items: [
                         {text: 'Overview', link: 'index.md'},
                         {text: 'Global declaration of interface implementation', link: 'global.md'},
-                        {text: 'Declaration of an insertion into a specific parameter', link: 'arg.md'},
+                        {text: 'Injecting a PHP class as an interface implementation for a specific parameter type', link: 'arg.md'},
                     ],
                 },
                 { text: 'Dependency injection into variable-length parameters', link: 'inject-variadic-params.md' },

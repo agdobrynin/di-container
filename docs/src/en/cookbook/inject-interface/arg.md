@@ -1,6 +1,6 @@
 ---
 outline: [2, 5]
-title: Declaration of an insertion into a specific parameter
+title: Injecting a PHP class as an interface implementation for a specific parameter type
 ---
 ### Example of implementation for a specific parameter { #overview }
 
