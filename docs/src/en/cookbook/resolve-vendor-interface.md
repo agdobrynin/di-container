@@ -4,22 +4,23 @@ title: Dependency injection for PHP classes that implement third-party interface
 ---
 ### Dependency injection for PHP classes that implement third-party interfaces { #overview }
 
-Существует два способа объявить реализацию интерфейса от сторонних производителей, например из других PHP пакетов:
-1. Объявить в контейнере глобально реализацию интерфейса в файле конфигураций.
-2. Объявить внедрение реализации интерфейса в конкретный параметр.
+There are two ways to register an implementation of an interface from a third-party source, such as another PHP package:
+1. Register the interface implementation globally within the container via a configuration file.
+2. Inject a specific implementation of an interface into a particular parameter.
 
-Выбор способа объявления зависит от решаемой задачи.
+The choice of approach depends on the specific task at hand.
 
-Ниже рассмотрим конфигурацию контейнера для [PSR-3: Logger Interface](https://www.php-fig.org/psr/psr-3/) и PHP пакета [Monolog](https://packagist.org/packages/monolog/monolog).
+Below, we will look at how to configure the container for [PSR-3: Logger Interface](https://www.php-fig.org/psr/psr-3/) and the PHP package [Monolog](https://packagist.org/packages/monolog/monolog).
 
-#### PHP-классы { #php-classes-1 }
+#### PHP classes { #php-classes-1 }
 
 ::: code-group
 <<< @/_code/cookbook/resolve-vendor-interface/src/Services/Foo.php
 <<< @/_code/cookbook/resolve-vendor-interface/src/Services/Bar.php
 :::
 
-Документация предлагает пример конфигурации логера:
+The documentation provides an example of a logger configuration:
+
 ```php
 <?php
 
@@ -36,44 +37,44 @@ $log->warning('Foo');
 $log->error('Bar');
 ```
 
-Из примера видно, что для гибкой конфигурации логера мы можем выделить в [параметры контейнера](../documentation/container-parameters/index.md) несколько аргументов:
-- `'name'` – имя канала логера
-- `'path/to/your.log'` – файл логера
-- `\Monolog\Level::Warning` – уровень логирования сообщений
+As the example shows, for a flexible logger configuration, we can define several arguments within the [container parameters](../documentation/container-parameters/index.md):
+- `'name'` – the name of the logger channel
+- `'path/to/your.log'` – the logger file
+- `\Monolog\Level::Warning` – the logging level for messages
 
 ::: code-group
 <<< @/_code/cookbook/resolve-vendor-interface/parameters.php
 :::
 
-Для объявления реализации интерфейса можно использовать разные варианты, например, использовать анонимную функцию и [хелпер функцию `diCallable()`](../documentation/php-definition/di-callable.md), или фабричный[^FactoryPattern] метод PHP-класса и [хелпер функцию `diFactory()`](../documentation/php-definition/di-factory.md). Так же можно объявить внедрение в параметры метода реализации интерфейса через хелпер функции или атрибуты.
+To declare the implementation of an interface, you can use different options, for example, using an anonymous function and the helper function [`diCallable()`](../documentation/php-definition/di-callable.md), or a factory[^FactoryPattern] method of a PHP class and the helper function [`diFactory()`](../documentation/php-definition/di-factory.md). You can also define dependency injection for the parameters of an interface implementation's methods by using helper functions or attributes.
 
-В зависимости от задачи выберем для объявления реализации интерфейса `\Psr\Log\LoggerInterface` [хелпер функцию `diAutowire()`](../documentation/php-definition/di-autowire.md) или [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../documentation/attribute-definition/autowire.md).
+Let's select the helper function [`diAutowire()`](../documentation/php-definition/di-autowire.md) or [attribute `\Kaspi\DiContainer\Attributes\Autowire`](../documentation/attribute-definition/autowire.md) to declare the implementation of the interface `\Psr\Log\LoggerInterface`.
 
 ---
 
-### Глобальное объявление реализации интерфейса { #global-config }
+### Global declaration of interface implementation { #global-config }
 
-Глобальное объявление реализации интерфейса определённым PHP-классом означает что контейнер сможет автоматически внедрять объявленный PHP-класс как зависимость, если параметр метода или вызываемого[^CallableType] типа представлен типом `\Psr\Log\LoggerInterface`.
+Globally declaring that a specific PHP class implements an interface allows the container to automatically inject that class as a dependency whenever a method parameter or a callable[^CallableType] argument is type-hinted with `\Psr\Log\LoggerInterface`.
 
-Важное замечание: необходимо обеспечить внедрение одного и тот же объекта реализующего интерфейс, т.е. не создавать каждый раз новый объект при внедрении зависимости. 
+Important note: it is essential to ensure that the same object — the one implementing the interface — is injected each time, rather than creating a new instance for every dependency injection.
 
-Интерфейс `\Psr\Log\LoggerInterface` предоставляется сторонним производителем, и прямого доступа к коду у нас нет, поэтому объявить через [атрибут `\Kaspi\DiContainer\Attributes\Service`](../documentation/attribute-definition/service.md) реализацию интерфейса у нас нет возможности.
+Since the `\Psr\Log\LoggerInterface` is provided by a third party, and we do not have direct access to its source code, we cannot use the `\Kaspi\DiContainer\Attributes\Service` attribute to declare the implementation.
 
-Для решения этой задачи сделаем объявление реализации интерфейса в файле конфигураций `services.php` через хелпер функцию `diAutowire()`, где идентификатор контейнера[^ContainerId] будет представлен как FQCN[^FQCN] интерфейса для PHP-класса `\Monolog\Logger`.
+To address this, we can define the interface implementation in the `services.php` configuration file using the `diAutowire()` helper function, where the container identifier[^ContainerId] is set to the FQCN[^FQCN] of the interface, mapped to the `\Monolog\Logger` PHP class.
 
 ::: code-group
 <<< @/_code/cookbook/resolve-vendor-interface/container_build.php
-<<< @/_code/cookbook/resolve-vendor-interface/services.php
+<<< @/_code/cookbook/resolve-vendor-interface/services_en.php [services.php]
 <<< @/_code/cookbook/resolve-vendor-interface/parameters.php
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 object(Monolog\Logger)#12 (0) {
@@ -83,17 +84,17 @@ object(Monolog\Logger)#12 (0) {
 ```
 
 > [!NOTE]
-> Обратите внимание, идентификатор объекта будет одинаковым для всех внедренных объектов, в примере `#12`. Такое поведение контейнера обусловлено объявлением PHP-класса `\Monolog\Logger` значением в параметре `$isSingleton` [хелпер функции `diAutowire()`](../documentation/php-definition/di-autowire.md).
+> Note that the object identifier will be the same for all injected objects in this example, `#12`. This container behavior is due to the `\Monolog\Logger` PHP class being specified as the value for the `$isSingleton` parameter in the [`diAutowire()`](../documentation/php-definition/di-autowire.md) helper function.
 
 ---
 
-###  Внедрение реализации интерфейса в конкретный параметр { #param-config }
+### Injecting an interface implementation into a specific parameter { #param-config }
 
-При объявлении внедрения в параметр метода или вызываемого типа[^CallableType] можно заменить [глобально объявленную реализацию интерфейса](#global-config) уточнив какую именно реализацию необходимо внедрять в конкретный параметр.
+When defining an injection for a method parameter or a callable type[^CallableType], you can override the [globally configured interface implementation](#global-config) by specifying exactly which implementation should be injected into a particular parameter.
 
-Предположим что только для PHP-класса `\App\Services\Bar` требуется внедрить логгер с другими параметрами, в частности требуется писать логи через хендлер `Monolog\Handler\SocketHandler`.
+Suppose that, specifically for the PHP class `\App\Services\Bar`, you need to inject a logger with different parameters for instance, one that writes logs using the `Monolog\Handler\SocketHandler`.
 
-Требуемая конфигурация логера:
+The required logger configuration:
 ```php
 <?php
 
@@ -111,14 +112,13 @@ $log->warning('Foo');
 $log->error('Bar');
 ```
 
-Выделим в отдельный файл конфигураций `services_monolog.php` объявление для PHP-класса `\Monolog\Handler\SocketHandler`.
+Let’s move the declaration for the PHP class `\Monolog\Handler\SocketHandler` into a separate configuration file, `services_monolog.php`.
 
 ::: code-group
-<<< @/_code/cookbook/resolve-vendor-interface/services_monolog.php
+<<< @/_code/cookbook/resolve-vendor-interface/services_monolog_en.php [services_monolog.php]
 :::
 
-
-Воспользуемся объявлением внедрения в параметр конструктора `$logger` PHP-класса `\App\Services\Bar` через [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../documentation/attribute-definition/autowire.md), так как можем изменить код самого PHP-класса.
+We will use the injection declaration in the `$logger` constructor parameter of the PHP class `\App\Services\Bar` via the attribute [`\Kaspi\DiContainer\Attributes\Autowire`](../documentation/attribute-definition/autowire.md), since we can change the code of the PHP class itself.
 
 
 ::: code-group
@@ -145,7 +145,7 @@ final class Bar
             arguments: [new Parameter('baz_logger.name')],//[!code ++]
             setups: [//[!code ++]
                 'pushHandler' => new Setup(//[!code ++]
-                    // получить по идентификатору контейнера объект PHP-класса[!code warning]
+                    // The reference to a PHP class object[!code warning]
                     new DiGet('baz_logger.handler')//[!code ++]
                 ),//[!code ++]
             ],//[!code ++]
@@ -159,7 +159,7 @@ final class Bar
 ```
 :::
 
-Добавим при сборке контейнера новый файл конфигураций `services_monolog.php`:
+When building the container, let's add a new configuration file, `services_monolog.php`:
 
 ::: code-group
 ```php [container_build.php]
@@ -191,13 +191,13 @@ var_dump($bar->logger->getHandlers());
 <<< @/_code/cookbook/resolve-vendor-interface/services_monolog.php
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 array(1) {
