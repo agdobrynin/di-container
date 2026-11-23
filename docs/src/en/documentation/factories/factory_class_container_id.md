@@ -1,26 +1,26 @@
 ---
 outline: [2,4]
-title: Фактическое имя класса фабрики
+title: Actual name of the factory class
 ---
-### Фактическое имя класса фабрики { #title }
+### Actual name of the factory class { #title }
 
-Обычно PHP-класс «фабрика»[^FactoryPattern] представлен двумя строковыми значениями – имя PHP-класса и имя метода этого класса:
+Typically, the PHP class factory[^FactoryPattern] is represented by two string values – the name of the PHP class and the name of the method of this class:
 
 ```php
 $factoryDefinition = [App\Services\Foo::class, 'methodName'];
 ```
 
-Для получения результата вызова PHP-класса «фабрика» первым этапом будет **получен объект** через метод контейнера `get('App\Services\Foo')`, и только потом происходит **вызов фабричного метода** `methodName()`. 
+To obtain the result of a call to a PHP "factory" class, the first step is to **retrieve an object** via the container's `get('App\Services\Foo')` method; only then is the **factory method** `methodName()` invoked.
 
-Из этого следует, что строковое значение представляющее имя PHP-класса, является идентификатором контейнера[^ContainerId].
+It follows from this that a string value representing the name of a PHP class serves as a container identifier[^ContainerId].
 
-Указание в качестве имени класса фабрики допустимо любого идентификатора контейнера, если получаемый из контейнера объект реализует фабричный метод.
+Any container identifier may be specified as the name of a factory class, provided that the object retrieved from the container implements the factory method.
 
-### Пример указания идентификатора контейнера в качестве имени класс фабрики { #example }
+### Example of specifying a container identifier as a factory class name { #example }
 
-Через идентификатор контейнера `'services.foo_special'` можно получить настроенный особым образом объект PHP-класса `\App\Services\Foo`.
+Using the container identifier `'services.foo_special'`, you can retrieve an instance of the PHP class `\App\Services\Foo` that has been configured in a specific way.
 
-Необходимо объявить внедрение зависимости через фабрику `\App\Services\Foo::doBaz()` в параметр конструктора `$value` PHP-класса `\App\Services\Bar`:
+You need to declare a dependency injection via the factory method `\App\Services\Foo::doBaz()` into the `$value` constructor parameter of the PHP class `\App\Services\Bar`.
 
 ```php
 <?php
@@ -34,7 +34,7 @@ final class Bar
 }
 ```
 
-Файл конфигураций `custom_services.php` задает особую конфигурацию PHP-класса `\App\Services\Foo` и идентификатор контейнера `'services.foo_special'`:
+The configuration file `custom_services.php` defines a specific configuration for the PHP class `\App\Services\Foo` and a container identifier `'services.foo_special'`:
 
 ```php
 <?php
@@ -53,9 +53,9 @@ return static function (): Generator {
 };
 ```
 
-#### Объявление в файлах конфигураций { #example-php-definition }
+#### Declaration in configuration files { #example-php-definition }
 
-В файле конфигураций `services.php` объявить PHP-класс `\App\Services\Bar` в контейнере и внедрение зависимости для параметра конструктора `$value` с помощью [хелпер функции diFactory()](../php-definition/di-factory.md).
+In the `services.php` configuration file, register the PHP class `\App\Services\Bar` in the container and configure dependency injection for the constructor parameter `$value` using the [`diFactory()`](../php-definition/di-factory.md) helper function.
 
 ```php
 <?php
@@ -75,9 +75,9 @@ return static function (): Generator {
 };
 ```
 
-#### Объявление через атрибут { #example-attribute }
+#### Declaration via an attribute { #example-attribute }
 
-Объявить внедрение в параметр конструктора `$value` PHP-класса `\App\Services\Bar` через [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
+Declare the injection of a value into the `$value` constructor parameter of the PHP class `\App\Services\Bar` using the [`\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md) attribute.
 
 ```php
 <?php
