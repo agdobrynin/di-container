@@ -5,14 +5,14 @@ title: Dependency injection into variable-length parameters
 
 ### Dependency injection into variable-length parameters { #overview }
 
-При внедрении зависимостей в параметр переменной длины можно использовать комбинации хелпер функций или PHP атрибутов. Проверка типа[^TypeHints] внедряемой зависимости происходит в рантайм – в момент выполнения, контейнер не выполняет валидацию типов при [сборке контейнера](../documentation/container-builder/index.md).
+When injecting dependencies into a variable length parameter, you can use combinations of helper functions or PHP attributes. The type checking [^TypeHints] of the injected dependency occurs at runtime - at the time of execution, the container does not perform type validation when [building the container](../documentation/container-builder/index.md).
 
 > [!WARNING]
-> Параметр переменной длины является опциональным. Если не задан аргумент, то он будет пропущен при внедрении зависимости.
+> A variable-length parameter is optional. If no argument is provided, it will be omitted during dependency injection.
 
-Рассмотрим пример объявления внедрения в параметр переменной длины.
+Let’s look at an example of declaring the inclusion of a variable-length argument.
 
-### PHP-классы { #php-classes }
+### PHP classes { #php-classes }
 
 ::: code-group
 <<< @/_code/cookbook/inject-variadic-params/src/Services/Rules.php
@@ -22,18 +22,18 @@ title: Dependency injection into variable-length parameters
 <<< @/_code/cookbook/inject-variadic-params/src/Rules/RuleC.php
 :::
 
-Необходимо объявить внедрение в параметр конструктора переменной длины `$inputRule` PHP-класса `\App\Services\Rules`. Внедрение PHP-классов в следующем порядке:
+It is necessary to configure the injection of dependencies into the variadic `$inputRule` constructor parameter of the PHP class `\App\Services\Rules`. The PHP classes should be injected in the following order:
 - `\App\Rules\RuleB`
 - `\App\Rules\RuleA`
 - `\App\Rules\RuleC`
 
-Контейнер предоставляет множество способов объявления внедрения PHP-класса в параметр, для этого примера будет использована [хелпер функция `diGet()`](../documentation/php-definition/di-get.md) или [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) в зависимости от способа объявления внедрения зависимости.
+The container provides multiple ways to declare the injection of a PHP class into a parameter; for this example, we will use either the helper function [`diGet()`](../documentation/php-definition/di-get.md) or the attribute [`\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md), depending on the method used to declare the dependency injection.
 
 ---
 
-#### Объявление в файлах конфигураций { #php-definition }
+#### Declaration in configuration files { #php-definition }
 
-В файле конфигураций `services.php` объявить PHP-класс `\App\Services\Rules` через хелпер функцию `diAutowire()` и внедрение зависимостей в параметр `$inputRule` в [методе `bindArguments()`](../documentation/php-definition/di-autowire.md#bindarguments).
+In the `services.php` configuration file, register the PHP class `\App\Services\Rules` using the `diAutowire()` helper function, and inject dependencies into the `$inputRule` parameter via the [`bindArguments()`](../documentation/php-definition/di-autowire.md#bindarguments) method.
 
 ::: code-group
 <<< @/_code/cookbook/inject-variadic-params/container_build.php
@@ -57,19 +57,19 @@ return static function (): Generator {
         ->bindArguments(//[!code ++]
             diGet(RuleB::class),//[!code ++]
             diGet(RuleA::class),//[!code ++]
-            diGet('services.rule_c'), // получение по идентификатору контейнера//[!code ++]
+            diGet('services.rule_c'), // reference to a container identifier//[!code ++]
         );//[!code ++]
 };
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 array(3) {
@@ -85,14 +85,13 @@ array(3) {
 }
 ```
 
-Порядок объектов внедренных через конструктор в свойство `\App\Services\Rules::$rules` обусловлен порядком объявления внедрения в файле конфигураций `services.php`.
-
+The order of objects injected via the constructor into the `\App\Services\Rules::$rules` property is determined by the order in which the injections are declared in the `services.php` configuration file.
 
 ##### Именованные аргументы { #named-arguments }
 
-Предположим что в свойство `\App\Services\Rules::$rules` необходимо внедрить PHP-классы и в качестве ключа массив использовать строковое значение. Для этого в файле конфигураций `services.php` при объявлении внедрения в параметр конструктора `$inputRule` будем использовать именованные аргументы.
+Suppose you need to inject PHP classes into the `\App\Services\Rules::$rules` property, using string values as keys for the array. To achieve this, you can use named arguments when defining the injection for the `$inputRule` constructor parameter within the `services.php` configuration file.
 
-При объявлении внедрения с использованием [именованных аргументов](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) для [параметров переменной длины](https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list) действуют правила описанные в PHP-документации.
+When defining an injection using [named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) for [variadic parameters](https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list), the rules outlined in the PHP documentation apply.
 
 ::: code-group
 <<< @/_code/cookbook/inject-variadic-params/container_build.php
@@ -117,13 +116,13 @@ return static function (): Generator {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console{2,5}
 array(2) {
@@ -136,7 +135,8 @@ array(2) {
 }
 ```
 
-При использовании строковых ключей в свойстве `\App\Services\Rules::$rules` можно использовать доступ к внедрённым классам указанному имени аргумента:
+When using string keys in the `\App\Services\Rules::$rules` property, you can access injected classes by specifying the argument name:
+
 ```php
 $rules = $container->get(Rules::class);
 
@@ -145,13 +145,13 @@ $ruleB = $rules->rules['inputRule_B'];
 ```
 
 > [!TIP]
-> Для внедрения коллекций предпочтительнее использовать [теги](../documentation/tags/index.md).
+> For implementing collections, it is preferable to use [tags](../documentation/tags/index.md).
 
 ---
 
-#### Объявление через атрибут { #php-attributes }
+#### Declaration via an attribute { #php-attributes }
 
-Объявим внедрение в параметр конструктора `$inputRule` PHP-класса `\App\Services\Rules` через [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md).
+Let’s declare the injection of a dependency into the `$inputRule` constructor parameter of the PHP class `\App\Services\Rules` using the [`\Kaspi\DiContainer\Attributes\Inject`](../documentation/attribute-definition/inject.md) attribute.
 
 ::: code-group
 
@@ -206,13 +206,13 @@ var_dump($rules->rules);
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 array(3) {
@@ -228,6 +228,6 @@ array(3) {
 }
 ```
 
-Порядок объектов внедренных через конструктор в свойство `\App\Services\Rules::$rules` обусловлен порядком объявления внедрения через атрибут.
+The order of objects embedded via a constructor into the `\App\Services\Rules::$rules` property is determined by the order of declaration of injection via an attribute.
 
 <!--@include: ../documentation/_include/term_notes.md-->
