@@ -1,32 +1,32 @@
 ---
 outline: [2,4]
-title: Конфигурация из определений контейнера
+title: Configuration for resetting object state based on container definitions
 ---
-### Конфигурация из определений контейнера { #title }
+### Configuration for resetting object state based on container definitions { #title }
 
-Объявляя PHP-класс в контейнере через хелпер функцию или атрибут можно установить значение указывающее контейнеру как именно будет выполнен сброс состояния объекта.
+When registering a PHP class in the container via a helper function or an attribute, you can specify a value that instructs the container on exactly how the object's state should be reset.
 
-Можно использовать способность контейнера самостоятельно создавать конфигурацию для сброса состояния объектов на основании указанных значений в каждом объявленном PHP-классе, при этом объявлять PHP-класс `\Kaspi\DiContainer\ObjectResetters` и его конфигурацию не требуется.
+The container has the built-in capability to automatically generate a configuration for resetting object states based on the values provided for each registered PHP class; there is no need to manually define the `\Kaspi\DiContainer\ObjectResetters` class or its configuration.
 
-Метод `reset()` предоставляемый классом `\Kaspi\DiContainer\ObjectResetters` выполнит сброс состояния объекта для каждого объявленного PHP-класса с установленным значением для сброса состояния объекта. 
+The `reset()` method, provided by the `\Kaspi\DiContainer\ObjectResetters` class, will perform the state reset for every registered PHP class that has an associated state-reset value.
 
-При объявлении PHP-класса в [файлах конфигураций](../container-builder/configuration_files.md) для указания значения сброса состояния объекта необходимо использовать метод `setResetter()` предоставляемый хелпер функциями:
-- [`diAutowire()`](../php-definition/di-autowire.md#setresetter).
-- [`diRuntime()`](../php-definition/di-runtime.md#setresetter).
+When registering a PHP class within [configuration files](../container-builder/configuration_files.md), you must use the `setResetter()` method available via the following helper functions to specify the state-reset value:
+- [`diAutowire()`](../php-definition/di-autowire.md#setresetter)
+- [`diRuntime()`](../php-definition/di-runtime.md#setresetter)
 
-При объявлении PHP-класса через атрибуты необходимо передавать значение сброса состояния объекта в параметре конструктора `$resetter`:
-- [атрибута `\Kaspi\DiContainer\Attributes\Autowire`](../attribute-definition/autowire.md).
-- [атрибута `\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md).
+When registering a PHP class using attributes, you must pass the state-reset value via the `$resetter` constructor parameter for the following attributes:
+- [`\Kaspi\DiContainer\Attributes\Autowire`](../attribute-definition/autowire.md)
+- [`\Kaspi\DiContainer\Attributes\DiRuntime`](../attribute-definition/di-runtime.md)
 
 > [!TIP]
-> Для приложений использующих **PHP 8.5 и выше** параметр конструктора `$resetter` у атрибута может быть представлен как [статическая анонимная функция](https://www.php.net/manual/ru/functions.anonymous.php#functions.anonymous):
+> For applications using **PHP 8.5 and higher**, the `$resetter` constructor parameter for an attribute can be defined as a [static anonymous function](https://www.php.net/manual/en/functions.anonymous.php#functions.anonymous):
 > ```php
 >  use Kaspi\DiContainer\Attributes\Autowire;
 >  
 >  #[Autowire(
 >       isSingleton: true,
 >       resetter: static function (Foo $foo): void {//[!code ++]
->           // реализация механизма сброса объекта.
+>           // implementation of an object-reset mechanism.
 >       }//[!code ++]
 >  )]
 >  final class Foo
@@ -36,9 +36,9 @@ title: Конфигурация из определений контейнера
 > ```
 
 
-### Пример конфигурирования сброса состояния объекта { #example }
+### Example of configuring an object state reset { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/object-resetter/src/Services/Foo.php
@@ -48,18 +48,18 @@ PHP-классы:
 <<< @/_code/object-resetter/src/Services/Qux.php
 :::
 
-Необходимо объявить значения сброса состояния объектов в контейнере для PHP-коассов:
-- `\App\Services\Foo` через метод класса `doReset()`.
-- `\App\Services\Bar` через анонимную функцию в которой вызвать методы `doResetPropertyFoo()` и `doResetPropertyBar()` сбрасывающие состояние двух свойств этого класса.
-- `\App\Services\Baz` через вызываемый тип `[App\Helpers\Resetters::class, 'resetObject']`.
-- `\App\Services\Qux` через реализуемый метод `reset()` из интерфейса `\Kaspi\DiContainer\Interfaces\ResetInterface`.
+You need to define how the state of objects in the container should be reset for the following PHP classes:
+- `\App\Services\Foo`: via the class method `doReset()`.
+- `\App\Services\Bar`: via an anonymous function that calls the methods `doResetPropertyFoo()` and `doResetPropertyBar()`, which reset the state of two properties within that class.
+- `\App\Services\Baz`: via the callable `[App\Helpers\Resetters::class, 'resetObject']`.
+- `\App\Services\Qux`: via the `reset()` method, as defined by the `\Kaspi\DiContainer\Interfaces\ResetInterface` interface.
 
 > [!NOTE]
-> Для PHP-класса `\App\Services\Qux` объявлять значение для сброса состояния объекта не обязательно, сам класс реализует интерфейс `\Kaspi\DiContainer\Interfaces\ResetInterface` и при конфигурировании PHP-класса `\Kaspi\DiContainer\ObjectResetters` контейнер самостоятельно проверить реализацию классом нужного интерфейса и включит такой класс в конфигурацию для сброса состояния объектов.
+> For the PHP class `\App\Services\Qux`, it is not necessary to explicitly declare a value for resetting the object's state; the class itself implements the `\Kaspi\DiContainer\Interfaces\ResetInterface` interface. When configuring the `\Kaspi\DiContainer\ObjectResetters` component, the container will automatically verify that the class implements the required interface and include it in the configuration for resetting object states.
 
-#### Объявление в файлах конфигураций { #example-php-definitin }
+#### Declaration in configuration files { #example-php-definitin }
 
-Рассмотрим объявление PHP-классов в файле конфигураций `services.php` с установкой сброса состояния объектов с различными допустимыми значениями через метод `setResetter()`.
+Let’s examine the declaration of PHP classes in the `services.php` configuration file, where object state resetting is configured using the `setResetter()` method with various valid values.
 
 ```php
 <?php
@@ -89,9 +89,9 @@ return static function (): Generator {
 };
 ```
 
-#### Объявление через атрибуты { #example-attribute }
+#### Declaration via attributes { #example-attribute }
 
-Рассмотрим объявление PHP-классов через атрибуты с установкой сброса состояния объектов с различными допустимыми значениями в параметре конструктора `$resetter`.
+Let’s examine the declaration of PHP classes using attributes, where the resetting of object state is configured by passing various valid values to the `$resetter` constructor parameter.
 
 ::: code-group
 
@@ -146,7 +146,7 @@ final class Qux implements ResetInterface
 ```
 ::: 
 
-Для PHP-класса `\App\Services\Bar` сброс состояния объекта необходимо сделать посредством вызова двух методов класса – `doResetPropertyFoo()` и `doResetPropertyBar()`. **Если используется PHP 8.5 и выше** параметр конструктора `$resetter` у атрибута может быть представлен как статическая анонимная функция:
+For the PHP class `\App\Services\Bar`, resetting the object's state requires calling two class methods: `doResetPropertyFoo()` and `doResetPropertyBar()`. **If using PHP 8.5 or higher**, the `$resetter` constructor parameter for the attribute can be defined as a static anonymous function:
 
 ::: code-group
 ```php [Bar.php]
@@ -171,7 +171,7 @@ final class Bar
 ```
 :::
 
-**Для PHP ниже версии 8.5** можем представить параметр конструктора `$resetter` любым вызываемым типом[^CallableType], например функцией `\App\do_reset_bar()`.
+**For PHP versions below 8.5**, we can provide the `$resetter` constructor parameter as any callable type[^CallableType] for example, the function `\App\do_reset_bar()`.
 
 ::: code-group
 ```php [app_functions.php]
