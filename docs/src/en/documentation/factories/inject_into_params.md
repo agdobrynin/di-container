@@ -1,23 +1,23 @@
 ---
 outline: [2,4]
-title: Объявление внедрения зависимости через фабрику
+title: Declaring dependency injection via a factory
 ---
-### Объявление внедрения зависимости через фабрику { #title }
+### Declaring dependency injection via a factory { #title }
 
-Объявить внедрение в параметр метода или вызываемого типа[^CallableType] можно через PHP-класс «фабрика».
+Injection into a parameter of a method or a callable type[^CallableType] can be declared via a PHP factory class.
 
 <!--@include: _include/auto_inject_params.md-->
 
-Объявление внедрения в параметры можно сделать:
-- через [хелпер функцию `diFactory()`](../php-definition/di-factory.md) в файлах конфигураций.
-- через [атрибут `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
+Injection into parameters can be declared:
+- via the [`diFactory()`](../php-definition/di-factory.md) helper function in configuration files.
+- via the [`\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md) attribute.
 
-Важное замечание: фабричный метод[^FactoryPattern] должен возвращать результат совместимый с типом параметра[^TypeHints] метода или функции.
+Important note: the factory method[^FactoryPattern] must return a result that is compatible with the parameter type[^TypeHints] of the method or function.
 
 
-### Пример объявления внедрения зависимости через «фабрику» { #example }
+### Example of declaring dependency injection via a factory { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 
@@ -47,11 +47,11 @@ final class Foo
 
 :::
 
-Для PHP-класса `\App\Services\Foo` необходимо объявить внедрение зависимости в параметр `$qux` через фабрику `\App\Helpers\Configurator::quxDoConfig()`.
+For the PHP class `\App\Services\Foo`, it is necessary to declare a dependency injection into the `$qux` parameter via the factory `\App\Helpers\Configurator::quxDoConfig()`.
 
-#### Объявление в файлах конфигураций { #helper-fn-di-factory }
+#### Declaration in configuration files { #helper-fn-di-factory }
 
-В файле конфигураций `services.php` зарегистрируем PHP-класс `\App\Services\Foo` в контейнере и настроим внедрение зависимости для параметра конструктора `$qux` с помощью хелпер функции `diFactory()`.
+In the `services.php` configuration file, we will register the PHP class `\App\Services\Foo` in the container and configure dependency injection for the constructor parameter `$qux` using the `diFactory()` helper function.
 
 ::: code-group
 
@@ -92,21 +92,21 @@ return static function (): Generator {
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(4) "Fuuz"
 ```
 
-#### Объявление через атрибут { #attribute-di-factory }
+#### Declaration via an attribute { #attribute-di-factory }
 
-Объявить внедрение в параметр конструктора `$qux` PHP-класса `\App\Services\Foo` через атрибут `\Kaspi\DiContainer\Attributes\DiFactory`.
+Declare the injection of a dependency into the `$qux` constructor parameter of the PHP class `\App\Services\Foo` using the `\Kaspi\DiContainer\Attributes\DiFactory` attribute.
 
 ::: code-group
 
@@ -153,13 +153,13 @@ var_dump($container->get(Foo::class)->qux->value);
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 ```console
 string(4) "Fuuz"
