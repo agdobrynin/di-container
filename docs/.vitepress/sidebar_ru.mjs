@@ -176,7 +176,7 @@ export default {
                     collapsed: true,
                     items: [
                         {text: 'Обзор', link: 'index.md'},
-                        {text: 'Конфигурация из определений контейнера', link: 'definition_config.md'},
+                        {text: 'Конфигурация сброса состояния объектов из определений контейнера', link: 'definition_config.md'},
                         {text: 'Конфигурация отдельных значений сброса состояния объектов', link: 'manual_config.md'},
                         {text: 'Сброс состояния объекта через рефлексию объекта', link: 'reset_vendor_class.md'},
                     ],
