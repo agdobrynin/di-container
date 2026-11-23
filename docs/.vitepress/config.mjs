@@ -6,6 +6,7 @@ import sidebar_en from './sidebar_en.mjs'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base: '/di-container/',
   lang: 'ru-RU',
   title: "kaspi/di-container",
   titleTemplate: "Dependency injection container for PHP",
@@ -75,7 +76,6 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/logo_optimize.svg',
-    base: '/di-container/',
     socialLinks: [
       { icon: 'github', link: 'https://github.com/agdobrynin/di-container', ariaLabel: 'Git Hub' },
       { icon: 'packagist', link: 'https://packagist.org/packages/kaspi/di-container', ariaLabel: 'Packagist' },
