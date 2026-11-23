@@ -4,33 +4,33 @@ title: Dependency injection into a parameter with an interface type
 ---
 ### Dependency injection into a parameter with an interface type { #overview }
 
-При некоторых сценариях использования контейнера требуется возможность объявить внедрение зависимости в параметр метода или вызываемого типа[^CallableType] ожидающего объект реализующий определённый интерфейс.
+In certain container usage scenarios, it is necessary to be able to declare a dependency injection within a method parameter or a callable type[^CallableType] that expects an object implementing a specific interface.
 
-Обеспечить внедрение такого объекта можно связав FQCN[^FQCN] интерфейса с конкретным PHP-классом, при этом контейнер автоматически внедряет нужный объект.
+Such an object can be injected by associating the interface's FQCN[^FQCN] with a specific PHP class, allowing the container to automatically inject the required object.
 
-Контейнер позволяет реализовать такое объявление множеством способов, в зависимости от решаемой задачи.
+The container offers various ways to implement such a declaration, depending on the specific task at hand.
 
 > [!IMPORTANT]
-> Получаемый объект PHP-класса из контейнера для внедрения должен реализовывать интерфейс ожидаемый параметром.
+> The PHP class object retrieved from the dependency injection container must implement the interface expected by the parameter.
 
 ---
 
-### Глобальное объявление { #global }
+### Globally register { #global }
 
-Объявить реализацию интерфейса в контейнере конкретным PHP-классом можно глобально, т.е. контейнер будет автоматически внедрять объявленную реализацию интерфейса, если для конкретного параметра метода или вызываемого типа не объявлено внедрение другой реализации требуемого интерфейса.
+You can globally register a specific PHP class as the implementation of an interface within the container; the container will then automatically inject this implementation whenever an interface is required, unless a different implementation has been explicitly specified for a particular method parameter or type being invoked.
 
-Для глобального объявления реализации интерфейса необходимо объявить в качестве идентификатора контейнера[^ContainerId] имя интерфейса и его реализацию [через хелпер функцию](../../documentation/php-definition/index.md#helper-fn) или **через [атрибут `\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md)**.
+To globally register an interface implementation, you must specify the interface name as the container identifier[^ContainerId] and provide its implementation – either [via a helper function](../../documentation/php-definition/index.md#helper-fn) or **by using the [`\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md) attribute**.
 
-💡 [Примеры реализации глобального объявления реализации интерфейса](global.md).
+💡 [Examples of global interface implementation registration](global.md).
 
 ---
 
-### Объявление внедрения в конкретный параметр { #param }
+### Declaration of an insertion into a specific parameter { #param }
 
-Для параметра метода или вызываемого типа представленного конкретным интерфейсом можно объявить внедрение зависимости отличающуюся от глобального объявления реализации интерфейса.
+For a method parameter or a type being instantiated that is represented by a specific interface, you can declare a dependency injection that differs from the global implementation defined for that interface.
 
-Объявить внедрение зависимости в такой параметр можно через [хелпер функцию](../../documentation/php-definition/index.md#helper-fn) или [атрибуты](../../documentation/attribute-definition/index.md#attributes).
+You can declare dependency injection for such a parameter using a [helper function](../../documentation/php-definition/index.md#helper-fn) or [attributes](../../documentation/attribute-definition/index.md#attributes).
 
-💡 [Примеры реализации объявления внедрения в конкретный параметр](arg.md).
+💡 [Examples of declaring dependency injection for a specific parameter](arg.md).
 
 <!--@include: ../../documentation/_include/term_notes.md-->
