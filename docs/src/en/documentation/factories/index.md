@@ -4,39 +4,39 @@ title: Using factory methods for dependency injection
 ---
 ### Using factory methods for dependency injection { #title }
 
-In some dependency injection scenarios, it becomes necessary to use the “factory” design pattern, delegating the creation of a required object to a dedicated PHP class — a “factory”. In such cases, the container can invoke a method on your PHP class to perform the dependency injection.
+In some dependency injection scenarios, it becomes necessary to use the “factory” design pattern, delegating the creation of a required object to a dedicated PHP class – a “factory”. In such cases, the container can invoke a method on your PHP class to perform the dependency injection.
 
 <!--@include: _include/auto_inject_params.md-->
 
-При объявлении внедрения зависимости через фабрику выбранное значение для класса не влияет на получаемый результат выполнения фабричного метода. [Фактическое имя класса фабрики](factory_class_container_id.md) зависит только от объекта получаемого через метод контейнера `get()`. Однако разумное значение для имени класса фабрики может упростить его использование при конфигурировании контейнера.
+When declaring dependency injection via a factory, the value chosen for the class does not affect the actual result returned by the factory method. The [actual name of the factory class](factory_class_container_id.md) depends solely on the object retrieved via the container's `get()` method. Nevertheless, choosing a sensible name for the factory class can make it easier to work with when configuring the container.
 
-**В качестве PHP-класса «фабрика» можно использовать:**
-- Публичный статический метод PHP-класса.
-- Публичный метод PHP-класса.
-- Магический метод `__invoke()` реализованный в PHP-классе.
+**A PHP class can be used as a factory:**
+- A public static method of a PHP class.
+- A public method of a PHP class.
+- The `__invoke()` magic method implemented in a PHP class.
 
-PHP-класс «фабрика» можно использовать для [объявления внедрения в параметры](inject_into_params.md) методов или вызываемых типов[^CallableType].
+A PHP factory class can be used to [declare dependency injection into parameters](inject_into_params.md) for methods or callable types[^CallableType].
 
-PHP-класс «фабрика» можно использовать для [объявления PHP-класса](declare_class.md) когда простой вызов `new Foo()` невозможен, и требуется особая сборка объекта.
+A PHP factory class can also be used to [declare a PHP class](declare_class.md) in cases where a simple `new Foo()` call is not sufficient and a specific object construction process is required.
 
-Для вызова «фабрики» следует указывать значение в параметре `$definition` [хелпер функции `diFactory()`](../php-definition/di-factory.md) в файлах конфигураций, или [атрибута `\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md).
+To invoke a factory, you should specify the value within the `$definition` parameter of the [`diFactory()`](../php-definition/di-factory.md) helper function (used in configuration files) or via the [`\Kaspi\DiContainer\Attributes\DiFactory`](../attribute-definition/di-factory.md) attribute.
 
-### Содержание раздела { #toc }
+### Section Contents { #toc }
 
-- [Аргументы для метода фабрики](args.md)
-- [Объявление PHP-класса через фабрику](declare_class.md)
-- [Объявление внедрения зависимости в параметры](inject_into_params.md)
-- [Фактическое имя класса фабрики](factory_class_container_id.md)
+- [Arguments for a factory method](args.md)
+- [Declaring a PHP class via a factory](declare_class.md)
+- [Declaring dependency injection into parameters](inject_into_params.md)
+- [Actual class name of the factory](factory_class_container_id.md)
 
-### Примеры объявления PHP-класса «фабрика» { #example }
+### Examples of declaring a PHP factory class { #example }
 
-Рассмотрим общий и короткий пример объявления PHP-класса в контейнере через PHP-класс «фабрика».
+Let’s look at a simple, concise example of declaring a PHP class within a container using a factory PHP class.
 
-#### Фабрика со статическим методом { #example-static-method }
+#### Factory with a static method { #example-static-method }
 
-Статический метод фабрики является вызываемым типом[^CallableType], т.е. сам объект PHP-класса фабрики не будет создан контейнером, результат вызова статического метода и будет реализацией объявляемого класса `\App\Services\Foo`.
+A static factory method is a callable type[^CallableType]; this means that the factory PHP class itself is not instantiated by the container. Instead, the result of invoking the static method serves as the implementation of the declared class, `\App\Services\Foo`.
 
-PHP-класс «фабрика»:
+Factory PHP class:
 
 ```php
 <?php
@@ -59,7 +59,7 @@ final class Factory
 }
 ```
 
-Объявление через хелпер функцию:
+Declaration via a helper function:
 
 ```php
 <?php
@@ -80,7 +80,7 @@ return static function () {
 };
 ```
 
-Объявление через атрибут:
+Declaration via an attribute:
 
 ```php
 <?php
@@ -103,11 +103,11 @@ class Foo
 }
 ```
 
-#### Фабрика с нестатическим методом { #example-method }
+#### Factory with non-static method { #example-method }
 
-Если ваша фабрика использует обычный метод вместо статического, первым шагом необходимо убедиться что PHP-класс самой фабрики также был объявлен и доступен в контейнере, т.е. может быть получен через метод контейнера `get(App\Factories\Factory::class)`.
+If your factory uses an instance method rather than a static one, the first step is to ensure that the factory's PHP class itself has been registered and is available within the container meaning it can be retrieved via the container's `get(App\Factories\Factory::class)` method.
 
-PHP-класс «фабрика»:
+Factory PHP class:
 
 ```php
 namespace App\Factories;
@@ -129,7 +129,7 @@ final class Factory
 }
 ```
 
-Объявление через хелпер функцию:
+Declaration via a helper function:
 
 ```php
 <?php
@@ -150,7 +150,7 @@ return static function () {
 };
 ```
 
-Объявление через атрибут:
+Declaration via an attribute:
 
 ```php
 <?php
@@ -173,13 +173,13 @@ class Foo
 }
 ```
 
-#### Фабрика реализующая магический метод __invoke() { #example-invoke }
+#### A factory that implements the magic __invoke() method { #example-invoke }
 
-Если ваша фабрика реализует [магический метод `__invoke()`](https://www.php.net/manual/ru/language.oop5.magic.php#object.invoke), первым шагом необходимо убедиться что PHP-класс самой фабрики также был объявлен и доступен в контейнере, т.е. может быть получен через метод контейнера `get(App\Factories\FooFactory::class)`.
+If your factory implements the [`__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) magic method, the first step is to ensure that the PHP class of the factory itself has also been declared and is available in the container, i.e. can be retrieved via the container's `get(App\Factories\FooFactory::class)` method.
 
-Синтаксис объявления фабрики может быть сокращён до указания FQCN[^FQCN].
+The syntax for declaring a factory can be simplified to just specifying its FQCN[^FQCN].
 
-PHP-класс «фабрика»:
+Factory PHP class:
 
 ```php
 namespace App\Factories;
@@ -201,7 +201,7 @@ final class FooFactory
 }
 ```
 
-Объявление через хелпер функцию:
+Declaration via a helper function:
 
 ```php
 <?php
@@ -217,7 +217,7 @@ return static function () {
 };
 ```
 
-Объявление через атрибут:
+Declaration via an attribute:
 
 ```php
 <?php

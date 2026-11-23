@@ -1,1 +1,1 @@
-Параметры конструктора и метода PHP-класса «фабрика» могут быть внедрены автоматически на основании конфигурации контейнера. Для особых сценариев можно [объявить аргументы для метода фабрики](../args.md).
+Parameters for the constructor and methods of a PHP factory class can be injected automatically based on the container configuration. For specific scenarios, you can [declare arguments for the factory method](../args.md).
