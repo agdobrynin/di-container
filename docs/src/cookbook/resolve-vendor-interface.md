@@ -47,7 +47,7 @@ $log->error('Bar');
 
 Для объявления реализации интерфейса можно использовать разные варианты, например, использовать анонимную функцию и [хелпер функцию `diCallable()`](../documentation/php-definition/di-callable.md), или фабричный[^FactoryPattern] метод PHP-класса и [хелпер функцию `diFactory()`](../documentation/php-definition/di-factory.md). Так же можно объявить внедрение в параметры метода реализации интерфейса через хелпер функции или атрибуты.
 
-В зависимости от задачи выберем для объявления реализации интерфейса `\Psr\Log\LoggerInterface` [хелпер функцию `diAutowire()`](../documentation/php-definition/di-autowire.md) или [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../documentation/attribute-definition/autowire.md).
+Выберем для объявления реализации интерфейса `\Psr\Log\LoggerInterface` [хелпер функцию `diAutowire()`](../documentation/php-definition/di-autowire.md) или [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../documentation/attribute-definition/autowire.md).
 
 ---
 
