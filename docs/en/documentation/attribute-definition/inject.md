@@ -127,7 +127,7 @@ A message like the following will appear:
 ### Cookbook { #cookbook }
 
 The "Recipes" section provides examples of how to refine an ad by incorporating parameters:
-- [Dependency injection of a PHP class that implements a specific interface](../../cookbook/inject-interface.md#attribute-inject).
+- [Dependency injection of a PHP class that implements a specific interface](../../cookbook/inject-interface/index.md#inject).
 - [Dependency injection for union type parameters](../../cookbook/inject-union-type-params.md#php-attributes).
 
 <!--@include: ../_include/term_notes.md-->

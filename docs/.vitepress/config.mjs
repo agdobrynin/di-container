@@ -10,10 +10,8 @@ export default defineConfig({
   title: "kaspi/di-container",
   titleTemplate: "Dependency injection container for PHP",
   description: "Dependency injection container for PHP",
-  srcDir: './src',
   srcExclude: ['**/_include/', '**/_code/'],
   vite: {
-    publicDir: '../public',
     plugins: [
       groupIconVitePlugin()
     ],
