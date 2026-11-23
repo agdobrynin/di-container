@@ -4,9 +4,9 @@ title: Declaration of an insertion into a specific parameter
 ---
 ### Example of implementation for a specific parameter { #overview }
 
-При объявлении внедрения в параметр метода или вызываемого типа[^CallableType] ожидающего объект реализующий определённый интерфейс, можно уточнить какую именно реализацию внедрять. При таком объявлении внедряемый PHP-класс может отличаться от [глобально объявленной реализации интерфейса](index.md#global).
+When declaring an injection into a method parameter or a callable type[^CallableType] that expects an object implementing a specific interface, you can specify exactly which implementation should be injected. In such a declaration, the PHP class being injected may differ from the [globally declared implementation of the interface](index.md#global).
 
-### PHP-классы { #php-classes }
+### PHP classes { #php-classes }
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/src/Interfaces/QuxInterface.php
@@ -16,26 +16,26 @@ title: Declaration of an insertion into a specific parameter
 <<< @/_code/cookbook/inject-interface/src/Services/Baz.php
 :::
 
-Необходимо объявить реализацию интерфейса `\App\Interfaces\QuxInterface` PHP-классом `\App\Services\Bar`, т.е. чтобы контейнер автоматически внедрял в параметр метода на основании конфигурации.
+You need to register the `\App\Services\Bar` PHP class as an implementation of the `\App\Interfaces\QuxInterface` interface, so that the container can automatically inject it into method parameters based on the configuration.
 
-Для PHP-класса `\App\Services\Qux` необходимо объявить внедрение зависимости в параметр конструктора `$qux` PHP-класса `\App\Services\Baz`, обратите внимание: внедряемый класса реализуют интерфейс `\App\Interfaces\QuxInterface`.
+Additionally, for the `\App\Services\Qux` PHP class, you need to configure dependency injection into the `$qux` constructor parameter of the `\App\Services\Baz` PHP class; note that the class being injected implements the `\App\Interfaces\QuxInterface` interface.
 
-#### Хелпер функции { #helper-fn-arg }
+#### Helper functions { #helper-fn-arg }
 
-В файле конфигураций `services.php` указана основная реализация интерфейса `\App\Interfaces\QuxInterface` PHP-классом `\App\Services\Bar`.
+In the `services.php` configuration file, the primary implementation of the `\App\Interfaces\QuxInterface` interface is specified as the PHP class `\App\Services\Bar`.
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/services.php
 :::
 
-Это означает что в любой параметр с типом `\App\Interfaces\QuxInterface` будет внедрён объект PHP-класса `\App\Service\Bar`.
+This means that an object of the PHP class `\App\Service\Bar` will be injected into any parameter with the type `\App\Interfaces\QuxInterface`.
 
 ##### diAutowire()
 
-Файл конфигураций `services_qux.php` использует [хелпер функцию `diAutowire()`](../../documentation/php-definition/di-autowire.md) чтобы объявить внедрение в параметр конструктора `$qux` PHP-класса `\App\Services\Qux`.
+The configuration file `services_qux.php` uses the helper function [`diAutowire()`](../../documentation/php-definition/di-autowire.md) to declare injection into the `$qux` constructor parameter of the PHP class `\App\Services\Qux`.
 
 > [!NOTE]
-> Здесь приведён простой пример внедрения через хелпер функцию. При объявлении внедрения PHP-класса через хелпер функцию доступны все методы этой хелпер функции, включая [объявлений внедрения в конструктор класса](../../documentation/php-definition/di-autowire.md#bindarguments) и внедрений через [сеттер-методы](../../documentation/php-definition/di-autowire.md#di-autowire-setter-method).
+> Here is a simple example of injection via a helper function. When defining the injection of a PHP class using a helper function, all the features of that helper function are available — including [constructor argument binding](../../documentation/php-definition/di-autowire.md#bindarguments) and injection via [setter methods](../../documentation/php-definition/di-autowire.md#di-autowire-setter-method).
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/container_build.php
@@ -65,10 +65,9 @@ return static function (): Generator {
 
 ##### diCallable()
 
-В некоторых случая когда требуется сложная инициализация PHP-класса процесс создания такого объекта можно делегировать любому вызываемому типу[^CallableType].
+In some cases, when complex initialization of a PHP class is required, the process of creating such an object can be delegated to any callable type[^CallableType].
 
-Файл конфигураций `services_qux.php` использует [хелпер функцию `diCallable()`](../../documentation/php-definition/di-callable.md) чтобы объявить PHP-класс через анонимную функцию.
-
+The configuration file `services_qux.php` uses the helper function [`diCallable()`](../../documentation/php-definition/di-callable.md) to declare a PHP class via an anonymous function.
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/container_build.php
@@ -86,7 +85,7 @@ return static function (): Generator {
     // Сложная сборка PHP-класса
     $fn = static function (): Baz {
         $baz = new Baz();
-        // тут возможны дополнительные действия с $baz
+        // Additional operations with $baz are possible here.
         return $baz;
     };
 
@@ -103,16 +102,15 @@ return static function (): Generator {
 
 
 > [!TIP]
-> Аналогичное объявление можно сделать через [хелпер функцию `diFactory()`](../../documentation/php-definition/di-factory.md).
+> A similar declaration can be made using the helper function [`diFactory()`](../../documentation/php-definition/di-factory.md).
 
 ---
 
 ##### diGet()
 
-В случае если в контейнере уже существует объявление PHP-класса, с указанием всех необходимых внедрений и настроек и он доступен для метода контейнера `get()`, то при объявлении реализации интерфейса можно просто указать ссылку на имеющийся идентификатор контейнера этого PHP-класса.
+If a PHP class definition — complete with all necessary dependency injections and configurations — already exists in the container and is accessible via its `get()` method, then when defining an implementation for an interface, you can simply provide a reference to the identifier for that PHP class as it exists within the container.
 
-Файл конфигураций `services_qux.php` использует [хелпер функцию `diGet()`](../../documentation/php-definition/di-get.md) для объявления внедрения в параметр.
-
+The configuration file `services_qux.php` uses the helper function [`diGet()`](../../documentation/php-definition/di-get.md) to declare an injection into a parameter.
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/container_build.php
@@ -142,9 +140,9 @@ return static function (): Generator {
 
 <!--@include: _include/inject-interface-arg-result.md-->
 
-#### Атрибуты { #attributes-arg }
+#### Attributes { #attributes-arg }
 
-Реализация интерфейса `\App\Interfaces\QuxInterface` объявлена PHP-классом `\App\Services\Bar` глобально через [атрибут `\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md).
+The implementation of the `\App\Interfaces\QuxInterface` interface is declared by the PHP class `\App\Services\Bar` globally via the [`\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md) attribute.
 
 ::: code-group
 ```php [QuxInterface.php]
@@ -166,16 +164,16 @@ interface QuxInterface
 ```
 :::
 
-Это означает что в любой параметр с типом `\App\Interfaces\QuxInterface` будет внедрён объект PHP-класса `\App\Service\Bar`.
+This means that an object of the PHP class `\App\Service\Bar` will be injected into any parameter with the type `\App\Interfaces\QuxInterface`.
 
 ---
 
 ##### Autowire
 
-Параметр конструктора `$qux` PHP-класса `\App\Services\Qux` представлен типом `\App\Interfaces\QuxInterface`, необходимо объявить внедрение в этот параметр другой реализации интерфейса, а именно PHP-класс `\App\Services\Baz`. Объявить внедрение можно через [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../../documentation/attribute-definition/autowire.md).
+The `$qux` constructor parameter of the PHP class `\App\Services\Qux` is typed as `\App\Interfaces\QuxInterface`. You need to specify that a different implementation of this interface — specifically, the PHP class `\App\Services\Baz` — should be injected into this parameter. This can be done using the [`\Kaspi\DiContainer\Attributes\Autowire`](../../documentation/attribute-definition/autowire.md) attribute.
 
 > [!NOTE]
-> Здесь приведён простой пример использования атрибута. При объявлении внедрения PHP-класса через атрибут доступны все возможности атрибута, включая [объявления аргументов конструктора](../../documentation/attribute-definition/autowire.md#arguments) и внедрений через [сеттер-методы](../../documentation/attribute-definition/autowire.md#setups).
+> Here is a simple example of using an attribute. When declaring the injection of a PHP class via an attribute, all of the attribute's features are available, including [constructor argument declarations](../../documentation/attribute-definition/autowire.md#arguments) and injections via [setter methods](../../documentation/attribute-definition/autowire.md#setups).
 
 ::: code-group
 ```php [Qux.php]
@@ -209,9 +207,9 @@ final class Qux
 
 ##### InjectByCallable
 
-При объявлении реализации интерфейса может потребоваться сложная сборка PHP-класса, поэтому этот процесс можно делегировать любому вызываемому типу[^CallableType].
+Declaring an interface implementation can require complex PHP class assembly, so this process can be delegated to any callable type[^CallableType].
 
-В этом примере в качестве вызываемого типа выступает статический метод PHP-класса – `\App\Helpers\FactoryCreate::makeService()`, а объявить внедрение можно через [атрибут `\Kaspi\DiContainer\Attributes\InjectByCallable`](../../documentation/attribute-definition/inject-by-callable.md).
+In this example, the called type is the static method of the PHP class - `\App\Helpers\FactoryCreate::makeService()`, and the injection can be declared using the attribute [`\Kaspi\DiContainer\Attributes\InjectByCallable`](../../documentation/attribute-definition/inject-by-callable.md).
 
 ::: code-group
 ```php [FactoryCreate.php]
@@ -226,11 +224,11 @@ use App\Services\Baz;//[!code ++]
 
 final class FactoryCreate//[!code ++]
 {//[!code ++]
-    // Сложная сборка PHP-класса//[!code ++]
+    // Complex PHP class construction//[!code ++]
     public static function makeService(): Baz//[!code ++]
     {//[!code ++]
         $baz = new Baz();//[!code ++]
-        // тут возможны дополнительные действия с $baz //[!code ++]
+        // Additional operations with $baz are possible here. //[!code ++]
         return $baz;//[!code ++]
     }//[!code ++]
 }//[!code ++]
@@ -270,7 +268,7 @@ final class Qux
 
 ##### Inject
 
-В случае если в контейнере уже объявлен PHP-класс, с указанием всех необходимых внедрений и настроек, и он доступен для метода контейнера `get()`, то можно использовать [атрибут `\Kaspi\DiContainer\Attributes\Inject`](../../documentation/attribute-definition/inject.md) для объявления внедрения в параметр.
+If a PHP class has already been registered in the container — with all necessary injections and configurations specified — and is accessible via the container's `get()` method, you can use the [`\Kaspi\DiContainer\Attributes\Inject`](../../documentation/attribute-definition/inject.md) attribute to declare an injection into a parameter.
 
 ::: code-group
 ```php [Qux.php]
