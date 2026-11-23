@@ -1,17 +1,17 @@
 ---
 outline: [2,4]
-title: Объявление внедрения ленивого PHP-класса в параметр
+title: Declaring the injection of a lazy PHP class into a parameter
 ---
 
-### Объявление внедрения ленивого PHP-класса в параметр { #title }
+### Declaring the injection of a lazy PHP class into a parameter { #title }
 
-Объявление внедрения ленивого PHP-класса в параметр метода или вызываемого типа означает что прокси-объект будет внедряться только для указанного параметра, для остальных случав объект PHP-класса будет получен сразу с внедрёнными зависимостями, например при получении через метод контейнера `get()`.
+Declaring a PHP class as "lazy" for injection into a method parameter or a callable type means that a proxy object will be injected specifically for that parameter; in all other cases, for example, when retrieving the object via the container's `get()` method, the actual PHP class instance will be returned, with all its dependencies already injected.
 
 <!--@include: _include/lazy_declare.md-->
 
-### Пример внедрения ленивого PHP-класса { #example }
+### Example of implementing a lazy PHP class { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/src/Services/FooService.php
@@ -20,11 +20,11 @@ PHP-классы:
 <<< @/_code/src/Services/BazService.php
 :::
 
-Для PHP-класса `\App\Services\FooService` необходимо объявить внедрение зависимости в параметр конструктора `$heavyDependency` через поркси-объект (*ленивый-объект*). Для остальных PHP-классов внедрение зависимости PHP-класса `\App\Services\HeavyDependency` необходимо без прокси-объекта.
+For the PHP class `\App\Services\FooService`, the dependency `\App\Services\HeavyDependency` must be injected into the constructor parameter `$heavyDependency` via a proxy object (*lazy object*). For all other PHP classes, the dependency `\App\Services\HeavyDependency` should be injected without a proxy object.
 
-#### Объявление в файлах конфигураций {#example-inject-lazy-arg-php-definition }
+#### Declaration in configuration files {#example-inject-lazy-arg-php-definition }
 
-В файле конфигураций `services.php` объявить PHP-класс `\App\Services\FooService` через хелпер функцию `diAutowire()` и объявить внедрение в параметр конструктора `$heavyDependency` PHP-класса `\App\Services\HeavyDependency` как ленивого-объекта.
+In the `services.php` configuration file, register the PHP class `\App\Services\FooService` using the `diAutowire()` helper function, and configure the injection of the `\App\Services\HeavyDependency` PHP class into the `$heavyDependency` constructor parameter as a lazy object.
 
 ::: code-group
 
@@ -74,18 +74,18 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 <!--@include: _include/result_lazy_args.md-->
 
-#### Объявление через атрибут {#example-inject-lazy-arg-attribute }
+#### Declaration via an attribute {#example-inject-lazy-arg-attribute }
 
-Объявить внедрение в параметр конструктора `$heavyDependency` PHP-класса `\App\Services\FooService` PHP-класса `\App\Services\HeavyDependency` как ленивого-объекта, через атрибут `\Kaspi\DiContainer\Attributes\Autowire`:
+Declare the `$heavyDependency` constructor parameter of the PHP class `\App\Services\FooService` — which is of type `\App\Services\HeavyDependency` – as a lazy object, using the `\Kaspi\DiContainer\Attributes\Autowire` attribute:
 
 ::: code-group
 
@@ -134,13 +134,13 @@ var_dump($container->get(HeavyDependency::class));
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 <!--@include: _include/result_lazy_args.md-->
 
 <!--@include: ../_include/term_notes.md-->

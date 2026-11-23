@@ -189,7 +189,7 @@ export default {
                     items: [
                         {text: 'Overview', link: 'index.md'},
                         {text: 'Declaring a lazy PHP class in a container', link: 'inject_as_lazy_global.md'},
-                        {text: 'Объявление внедрения ленивого PHP-класса в параметр', link: 'inject_lazy_arg.md'},
+                        {text: 'Declaring the injection of a lazy PHP class into a parameter', link: 'inject_lazy_arg.md'},
                     ],
                 },
             ]
