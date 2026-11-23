@@ -183,7 +183,7 @@ export default {
                 },
                 {
                     base: '/en/documentation/lazy-injection/',
-                    text: 'Injection of lazy objects by the container',
+                    text: 'Inject lazy objects by the container',
                     link: 'index.md',
                     collapsed: true,
                     items: [

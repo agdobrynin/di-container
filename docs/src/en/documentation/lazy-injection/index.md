@@ -1,22 +1,22 @@
 ---
 outline: [2,4]
-title: Injection of lazy objects by the container
+title: Inject lazy objects by the container
 ---
-### Injection of lazy objects by the container { #title }
+### Inject lazy objects by the container { #title }
 
-Ленивое внедрение зависимостей позволяет отложить создание зависимостей объекта до момента их фактического использования, а не раньше. Для реализации этого функционала контейнера используется [«Virtual Proxies» описанный в PHP документации](https://www.php.net/manual/ru/language.oop5.lazy-objects.php).
+Lazy dependency injection allows for deferring the creation of an object's dependencies until the moment they are actually used—and not a moment sooner. To implement this functionality, the container utilizes "Virtual Proxies," as described in the PHP documentation [here](https://www.php.net/manual/en/language.oop5.lazy-objects.php).
 
 > [!IMPORTANT]
-> Механизм внедрения ленивых зависимостей **доступен только для PHP 8.4 и выше**.
+> The mechanism for implementing lazy dependencies **is available only for PHP 8.4 and higher**.
 
 > [!TIP]
-> **Если версия PHP ниже 8.4**, то можно объявить внедрение «ленивой» зависимости через [хелпер функцию `diProxyClosure()`](../php-definition/di-proxy-closure.md) или [атрибут `ProxyClosure()`](../attribute-definition/proxy-closure.md).
+> **If the PHP version is below 8.4**, you can declare a lazy dependency injection using the [`diProxyClosure()`](../php-definition/di-proxy-closure.md) helper function or the [`ProxyClosure()`](../attribute-definition/proxy-closure.md) attribute.
 
-### Как использовать { #how-to-use }
+### How to use { #how-to-use }
 
-Представьте что PHP-класс `\App\Bar` при инициализации требует много вычислительных ресурсов и памяти, тем самым увеличивая время создания объекта такого класса.
+Imagine that the PHP class `\App\Bar` requires significant computational resources and memory during initialization, thereby increasing the time it takes to create an object of that class.
 
-В конструкторе PHP-класса `\App\Foo` контейнер внедрит PHP-класс `\App\Bar`.
+The container will inject the PHP class `\App\Bar` into the constructor of the PHP class `\App\Foo`.
 
 ```php
 <?php
@@ -43,9 +43,9 @@ final class Foo
 }
 ```
 
-Как видно из кода, конструктор PHP-класса `\App\Foo` получит через контейнер внедрение двух объектов при любом вызове `$container->get(App\Foo::class)`, в том числе ресурсоёмкий класс `\App\Bar`, при том что используется он не всегда.
+As the code shows, the constructor of the PHP class `\App\Foo` will receive two injected objects via the container whenever `$container->get(App\Foo::class)` is called, including the resource intensive class `\App\Bar`, even though it is not always used.
 
-Объявление ленивого внедрения PHP-класса `\App\Bar` решает проблему получения ресурсоёмких внедрений. 
+Declaring a lazy injection for the PHP class `\App\Bar` resolves the issue of instantiating resource intensive dependencies.
  
 <!--@include: _include/lazy_declare.md-->
 
@@ -77,10 +77,10 @@ final class Foo
 }
 ```
 
-Инициализация PHP-класса `\App\Bar`, объявленного как ленивое внедрение, произойдет только в момент обращения к приватному свойству `$bar` класса `\App\Foo`, т.е при обращении к методу `\App\Foo::doWithBar()` а не раньше, тем самым уменьшая потребление памяти, ресурсов и времени инициализации PHP-класса `\App\Foo`.
+The initialization of the `\App\Bar` PHP class, configured as a lazy injection, will occur only when the private property `$bar` of the `\App\Foo` class is accessed specifically, when the `\App\Foo::doWithBar()` method is called and not before. This reduces memory consumption, resource usage, and the time required to initialize the `\App\Foo` PHP class.
 
 
-### Содержание раздела { #toc }
+### Section Contents { #toc }
 
-- [Глобальное объявление ленивого PHP-класса в контейнере](inject_as_lazy_global.md)
-- [Объявление внедрения ленивого PHP-класса в параметр](inject_lazy_arg.md)
+- [Global declaration of a lazy PHP class in a container](inject_as_lazy_global.md)
+- [Declaring the injection of a lazy PHP class into a parameter](inject_lazy_arg.md)
