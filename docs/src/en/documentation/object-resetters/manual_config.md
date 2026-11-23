@@ -1,19 +1,19 @@
 ---
 aside: false
-title: Конфигурация отдельных значений сброса состояния объектов
+title: Configuration of individual object state reset values
 ---
-### Конфигурация отдельных значений сброса состояния объектов { #title }
+### Configuration of individual object state reset values { #title }
 
-Сброс состояния объектов контейнера можно ограничить, объявив в контейнере PHP-класс `\Kaspi\DiContainer\ObjectResetters` в [файле конфигураций](../container-builder/configuration_files.md) и коллекцию значений для сброса состояния указанных объектов.
+You can restrict the resetting of object states within the container by declaring the `\Kaspi\DiContainer\ObjectResetters` PHP class in your [configuration file](../container-builder/configuration_files.md), along with a collection of values that define how the states of the specified objects should be reset.
 
-Коллекция необходимая для указания сброса состояния объектов представлена парой ключ-значение, где ключ это идентификатор контейнера[^ContainerId] для получения требуемого PHP-класса через метод контейнера `get()`, а значение указывает PHP-классу `\Kaspi\DiContainer\ObjectResetters` [как необходимо выполнить сброса состояния объекта](index.md##resseter-types).
+The collection used to specify these state resets consists of key-value pairs: the key is the container identifier[^ContainerId] used to retrieve the corresponding PHP class via the container's `get()` method while the value instructs the `\Kaspi\DiContainer\ObjectResetters` class on how to perform the state reset for that object (see [here](index.md#resseter-types) for details).
 
 > [!IMPORTANT]
-> Объявляя самостоятельно PHP-класс `\Kaspi\DiContainer\ObjectResetters` сброс состояния объектов будет выполняться только для указанных в коллекции PHP-классов. 
+> When you manually declare the `\Kaspi\DiContainer\ObjectResetters` PHP class, object state resets will be performed only for the PHP classes explicitly included in your collection.
 
-### Пример объявления класса ObjectResetters { #example }
+### Example of an ObjectResetters class declaration { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/object-resetter/src/Services/Foo.php
@@ -23,11 +23,11 @@ PHP-классы:
 <<< @/_code/object-resetter/src/Services/Qux.php
 :::
 
-Объявить значения для сброса состояния объектов необходимо **только для PHP-классов**:
-- `\App\Services\Bar` через анонимную функцию в которой вызвать методы `doResetPropertyFoo()` и `doResetPropertyBar()` сбрасывающие состояние двух свойств этого класса.
-- `\App\Services\Qux` через реализуемый метод `reset()` из интерфейса `\Kaspi\DiContainer\Interfaces\ResetInterface`.
+You must define the values for resetting the state of objects specifically for the following PHP classes:
+- `\App\Services\Bar`: Use an anonymous function that calls the methods `doResetPropertyFoo()` and `doResetPropertyBar()`, which reset the state of the class's two properties.
+- `\App\Services\Qux`: Implement the `reset()` method as defined by the `\Kaspi\DiContainer\Interfaces\ResetInterface` interface.
 
-В файле конфигураций `object_resetters.php` объявить PHP-класс `\Kaspi\DiContainer\ObjectResetters` через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md), в параметре функции `$isSingleton` необходимо передать значение `true`.
+In the `object_resetters.php` configuration file, define the PHP class `\Kaspi\DiContainer\ObjectResetters` using the `diAutowire()` helper function, ensuring that the `$isSingleton` parameter is set to `true`.
 
 ::: code-group
 ```php [app.php]
@@ -87,6 +87,6 @@ return static function (): Generator {
 :::
 
 > [!IMPORTANT]
-> Обратите внимание, что в метод `setup()` аргумент `$resetters` следует передавать как массив, введу того что параметре метода `$arguments` представлен типом `array`.
+> Please note that the `$resetters` argument should be passed to the `setup()` method as an array, given that the method's `$arguments` parameter is defined as an `array` type.
 
 <!--@include: ../_include/term_notes.md-->
