@@ -4,9 +4,9 @@ title: Global declaration of interface implementation
 ---
 ### Example of a global interface implementation declaration { #overview }
 
-Все типизированные параметры метода или вызываемого типа[^CallableType] должны внедрять один и тот же PHP-класс, который заявлен как реализация определённого интерфейса.
+All typed parameters of a method or a callable type[^CallableType] must implement the same PHP class, which is declared as an implementation of a specific interface.
 
-### PHP-классы { #php-classes }
+### PHP classes { #php-classes }
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/src/Services/Foo.php
@@ -15,24 +15,24 @@ title: Global declaration of interface implementation
 <<< @/_code/cookbook/inject-interface/src/Services/Baz.php
 :::
 
-Необходимо объявить реализацию интерфейса `\App\Interfaces\QuxInterface` PHP-классом `\App\Services\Bar`. Контейнер должен автоматически внедрять объявленную реализацию интерфейса в параметр метод, без дополнительных объявлений.
+You need to register the `\App\Services\Bar` PHP class as the implementation of the `\App\Interfaces\QuxInterface` interface. The container should automatically inject this registered implementation into method parameters, without requiring any additional declarations.
 
-Обратите внимание что PHP-класс `\App\Services\Baz` так же реализует интерфейс `\App\Interfaces\QuxInterface`, но он не будет внедрен в любой параметр без дополнительного объявления.
+Note that while the `\App\Services\Baz` PHP class also implements `\App\Interfaces\QuxInterface`, it will not be injected into any parameter without an explicit declaration.
 
-#### Хелпер функции { #helper-fn-global }
+#### Helper functions { #helper-fn-global }
 
-Для этой задачи необходимо объявить в [файле конфигураций](../../documentation/container-builder/configuration_files.md) PHP-класс `\App\Services\Bar` и в качестве идентификатора контейнера[^ContainerId] указать FQCN[^FQCN] интерфейса.
+For this task, you need to declare the PHP class `\App\Services\Bar` in the [configuration file](../../documentation/container-builder/configuration_files.md) and specify the interface's FQCN[^FQCN] as the container identifier[^ContainerId].
 
-Ниже рассмотрим варианты объявления реализации интерфейса через различные хелпер функции.
+Below, we will look at ways to declare an interface implementation using various helper functions.
 
 ---
 
 ##### diAutowire()
 
-Файл конфигураций `services.php` использует [хелпер функцию `diAutowire()`](../../documentation/php-definition/di-autowire.md) чтобы объявить PHP-класс, а в качестве идентификатора контейнера указан интерфейс `\App\Interfaces\QuxInterface`.
+The `services.php` configuration file uses the [`diAutowire()`](../../documentation/php-definition/di-autowire.md) helper function to declare a PHP class, with the `\App\Interfaces\QuxInterface` interface specified as the container identifier.
 
 > [!NOTE]
-> Здесь приведён простой пример объявления, но при объявлении PHP-класса доступны все методы этой хелпер функции, включая [объявлений внедрения в конструктор класса](../../documentation/php-definition/di-autowire.md#bindarguments) и внедрений через [сеттер-методы](../../documentation/php-definition/di-autowire.md#di-autowire-setter-method).
+> This is a simple example of a declaration; however, when declaring a PHP class, all methods of this helper function are available—including those for [defining constructor injection](../../documentation/php-definition/di-autowire.md#bindarguments) and injection via [setter methods](../../documentation/php-definition/di-autowire.md#di-autowire-setter-method).
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/container.php
@@ -59,11 +59,11 @@ return static function (): Generator {
 
 ##### diCallable()
 
-При объявлении реализации интерфейса может потребоваться сложная сборка PHP-класса, поэтому этот процесс можно делегировать любому вызываемому типу[^CallableType].
+When declaring an interface implementation, the construction of a PHP class may be complex; therefore, this process can be delegated to any callable type[^CallableType].
 
-Файл конфигураций `services.php` использует [хелпер функцию `diCallable()`](../../documentation/php-definition/di-callable.md) чтобы объявить PHP-класс через анонимную функцию, а в качестве идентификатора контейнера указан интерфейс `\App\Interfaces\QuxInterface`.
+The `services.php` configuration file uses the [`diCallable()`](../../documentation/php-definition/di-callable.md) helper function to define a PHP class via an anonymous function, with the `\App\Interfaces\QuxInterface` interface serving as the container identifier.
 
-Так же в этом объявлении реализации интерфейса указываем в параметре `$isSingleton` хелпер функции значение `true`, чтобы контейнер получал один и тот же объект, а не создавал его заново.
+Additionally, in this interface implementation declaration, the `$isSingleton` parameter of the helper function is set to `true`, ensuring that the container retrieves the same object instance rather than creating a new one each time.
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/container.php
@@ -96,15 +96,15 @@ return static function (): Generator {
 <!--@include: _include/inject-interface-result.md-->
 
 > [!TIP]
-> Аналогичное объявление можно сделать через [хелпер функцию `diFactory()`](../../documentation/php-definition/di-factory.md).
+> A similar declaration can be made using the helper function [`diFactory()`](../../documentation/php-definition/di-factory.md).
 
 ---
 
 ##### diGet()
 
-В случае если в контейнере уже существует объявление PHP-класса, с указанием всех необходимых внедрений и настроек, то при объявлении реализации интерфейса можно просто указать ссылку на имеющийся идентификатор контейнера этого PHP-класса.
+If a PHP class definition—complete with all necessary injections and configurations—already exists within the container, you can simply reference the existing container identifier for that PHP class when declaring an implementation of an interface.
 
-Файл конфигураций `services.php` использует [хелпер функцию `diGet()`](../../documentation/php-definition/di-get.md) чтобы объявить PHP-класс реализацией интерфейса `\App\Interfaces\QuxInterface`.
+The `services.php` configuration file uses the helper function [`diGet()`](../../documentation/php-definition/di-get.md) to register a PHP class as an implementation of the `\App\Interfaces\QuxInterface` interface.
 
 ::: code-group
 <<< @/_code/cookbook/inject-interface/container.php
@@ -133,15 +133,15 @@ return static function (): Generator {
 
 ---
 
-#### Атрибуты { #attributes-global }
+#### Attributes { #attributes-global }
 
-[Атрибут `\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md) позволяет объявить глобально реализацию интерфейса в контейнере конкретным PHP-классом, т.е. контейнер будет автоматически внедрять объявленную реализацию интерфейса, если для конкретного параметра метода или вызываемого типа не объявлено внедрение другой реализации требуемого интерфейса.
+The [`\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md) attribute allows you to globally register a specific PHP class as the implementation of an interface within the container. This means the container will automatically inject this registered implementation whenever a dependency on that interface is required — unless a different implementation has been explicitly specified for a particular method parameter or type being invoked.
 
-##### Service и FQCN { #service-fqcn }
+##### Service and FQCN { #service-fqcn }
 
-Необходимо добавить атрибут к интерфейсу `\App\Interfaces\QuxInterface` и указать реализацию через PHP-класс `\App\Services\Bar`.
+You need to add an attribute to the `\App\Interfaces\QuxInterface` interface and specify its implementation via the PHP class `\App\Services\Bar`.
 
-Параметр конструктора `$id` атрибута принимает строковый параметр, который указывает контейнеру через какой идентификатор контейнера получить объект реализующий этот интерфейс, в этом случае мы можем указать значение `'App\Services\Bar'` или через константу `\App\Services\Bar::class`.
+The `$id` parameter of the attribute’s constructor accepts a string value that tells the container which identifier to use to retrieve an object implementing this interface; in this case, you can provide the value `'App\Services\Bar'` or use the constant `\App\Services\Bar::class`.
 
 ::: code-group
 ```php [QuxInterface.php]
@@ -171,13 +171,13 @@ interface QuxInterface
 
 ---
 
-##### Service и значение для параметра $id { #service-container-id }
+##### Service and its significance for the $id parameter { #service-container-id }
 
-В разделе документации [к атрибуту `\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md) указано – параметр конструктора `$id` должен быть представлен как идентификатор контейнера. Это означает что если возможно получить через метод контейнера `get()` объект реализующий объявляемый интерфейс, то значение для параметра `$id` допустимо.
+The documentation for the [`\Kaspi\DiContainer\Attributes\Service`](../../documentation/attribute-definition/service.md) attribute states that the `$id` constructor parameter must serve as a container identifier. This means that if an object implementing the declared interface can be retrieved via the container's `get()` method, then that value is valid for the `$id` parameter.
 
-Рассмотрим пример когда реализация интерфейса будет получена через идентификатор контейнера `'services.bar'`, объявленное у PHP-класса `\App\Services\Bar` через [атрибут `\Kaspi\DiContainer\Attributes\Autowire`](../../documentation/attribute-definition/autowire.md).
+Consider an example where an implementation of an interface is retrieved using the container identifier `'services.bar'`, which is declared for the PHP class `\App\Services\Bar` via the [`\Kaspi\DiContainer\Attributes\Autowire`](../../documentation/attribute-definition/autowire.md) attribute.
 
-Такое объявление реализации интерфейса может быть полезно если один и тот же PHP-класс необходимо объявить в контейнере с внедрением разных зависимостей и разными идентификаторами контейнера.
+Declaring an interface implementation in this way can be useful when the same PHP class needs to be registered in the container multiple times – each instance having different injected dependencies and a unique container identifier.
 
 ::: code-group
 ```php [QuxInterface.php]
