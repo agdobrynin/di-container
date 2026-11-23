@@ -188,7 +188,7 @@ export default {
                     collapsed: true,
                     items: [
                         {text: 'Overview', link: 'index.md'},
-                        {text: 'Объявление ленивого PHP-класса в контейнере', link: 'inject_as_lazy_global.md'},
+                        {text: 'Declaring a lazy PHP class in a container', link: 'inject_as_lazy_global.md'},
                         {text: 'Объявление внедрения ленивого PHP-класса в параметр', link: 'inject_lazy_arg.md'},
                     ],
                 },

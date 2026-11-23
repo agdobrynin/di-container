@@ -1,16 +1,16 @@
 ---
 outline: [2,4]
-title: Объявление ленивого PHP-класса в контейнере
+title: Declaring a lazy PHP class in a container
 ---
-### Объявление ленивого PHP-класса в контейнере { #title }
+### Declaring a lazy PHP class in a container { #title }
 
-При объявлении PHP-класса ленивым непосредственно в контейнере означает что этот класс всегда и везде внедряется в параметр метода или вызываемого типа[^CallableType] как прокси-объект, его инициализация выполняется только в момент обращения к этому PHP-классу.
+Declaring a PHP class as "lazy" directly within the container means that, whenever it is injected, whether as a method parameter or into a callable type[^CallableType], it is provided as a proxy object; the actual initialization of the PHP class occurs only at the moment it is accessed.
 
 <!--@include: _include/lazy_declare.md-->
 
-### Пример объявления ленивого PHP-класса { #example }
+### Example of a lazy PHP class declaration { #example }
 
-PHP-классы:
+PHP classes:
 
 ::: code-group
 <<< @/_code/src/Services/FooService.php
@@ -19,13 +19,13 @@ PHP-классы:
 <<< @/_code/src/Services/BazService.php
 :::
 
-Необходимо объявить в контейнере PHP-класс `\App\Services\HeavyDependency` чтобы он внедрялся в параметры методов везде как ленивый-объект, без дополнительных объявлений.
+The PHP class `\App\Services\HeavyDependency` must be registered in the container so that it is injected into method parameters, wherever it is used, as a "lazy" object, without requiring any additional declarations.
 
-В параметр конструктора `$heavyDependency` PHP-классов `\App\Services\FooService` и `\App\Services\BarService` должен внедрятся ленивый объект `\App\Services\HeavyDependency`.
+A lazy instance of `\App\Services\HeavyDependency` should be injected into the `$heavyDependency` constructor parameter of the PHP classes `\App\Services\FooService` and `\App\Services\BarService`.
 
-#### Объявление в файлах конфигураций { #example-inject-as-lazy-global-php-definition }
+#### Declaration in configuration files { #example-inject-as-lazy-global-php-definition }
 
-В [файле конфигураций](../container-builder/configuration_files.md) `lazy_services.php` объявить ленивый PHP-класс `\App\Services\HeavyDependency` через хелпер функцию `diAutowire()` с указанием в параметре `$isLazy` значения `true`:
+In the `lazy_services.php` [configuration file](../container-builder/configuration_files.md), declare the lazy PHP class `\App\Services\HeavyDependency` using the `diAutowire()` helper function, with the `$isLazy` parameter set to `true`:
 
 ::: code-group
 
@@ -72,18 +72,18 @@ return static function (): Generator {
 
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 <!--@include: _include/result_lazy_global.md-->
 
-#### Объявление через атрибут { #example-inject-as-lazy-global-attribute }
+#### Declaration via an attribute { #example-inject-as-lazy-global-attribute }
 
-Объявить ленивый PHP-класс `\App\Services\HeavyDependency` через атрибут `\Kaspi\DiContainer\Attributes\Autowire` с указанием в параметре конструктора `$isLazy` значения `true`:
+Declare a lazy PHP class `\App\Services\HeavyDependency` using the `\Kaspi\DiContainer\Attributes\Autowire` attribute, with the `$isLazy` constructor parameter set to `true`:
 
 ::: code-group
 ```php [HeavyDependency.php]
@@ -127,13 +127,13 @@ var_dump($container->get(HeavyDependency::class));
 ```
 :::
 
-Выполните в терминале команду:
+Run the following command in the terminal:
 
 ```shell
 php /app/src/container_build.php
 ```
 
-Появится сообщение вида:
+A message like the following will appear:
 
 <!--@include: _include/result_lazy_global.md-->
 
