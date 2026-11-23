@@ -55,10 +55,10 @@ use function Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
     yield diAutowire(MetricCollector::class, isSingleton: true)
-        ->setResetter(static function (MetricCollector $collector): void {//[!code highlight]
+        ->setResetter(static function (MetricCollector $collector): void {//[!code ++]
             $propertyMetrics = new ReflectionProperty($collector, 'metrics');//[!code ++]
             $propertyMetrics->setValue($collector, []);//[!code ++]
-        });//[!code highlight]
+        });//[!code ++]
 };
 ```
 
