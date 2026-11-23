@@ -1,14 +1,14 @@
 ---
 aside: false
-title: Сброс состояния объекта через рефлексию объекта
+title: Resetting an object's state via object reflection
 ---
-### Сброс состояния объекта через рефлексию объекта { #title }
+### Resetting an object's state via object reflection { #title }
 
-Для некоторых сценариев использования контейнера может быть полезным знать как использовать возможность сброса состояния объекта когда невозможно получить доступ к приватным и защищённым свойствам PHP-класса напрямую, **например в PHP-классе от стороннего производителя**.
+For certain container use cases, it can be helpful to know how to reset an object's state when it is impossible to directly access the private or protected properties of a PHP class for instance, when dealing with a class from a third-party vendor.
 
-Механизм сброса состояния объекта в контейнере получает объект с внедрёнными зависимостями через метод `get()` и его идентификатор[^ContainerId]. Для получения доступа к приватным и защищённым свойствам объекта используется [рефлексия (Reflection) в PHP](https://www.php.net/manual/ru/book.reflection.php) – это встроенный API, позволяющий программе анализировать собственную структуру во время выполнения.
+The object state reset mechanism within the container retrieves an object along with its injected dependencies via the `get()` method and its corresponding identifier[^ContainerId]. To access the object's private and protected properties, the mechanism of [PHP Reflection](https://www.php.net/manual/en/book.reflection.php) a built-in API that allows a program to analyze its own structure at runtime.
 
-Рассмотрим пример сброса состояния объекта PHP-класса `\VendorName\MetricCollector` из пакета стороннего производителя через рефлексию.
+Let’s look at an example of how to reset the state of an object specifically an instance of the `\VendorName\MetricCollector` class from a third-party package using reflection.
 
 ```php
 <?php
@@ -35,13 +35,13 @@ final class MetricCollector
 }
 ```
 
-PHP-класс `\VendorName\MetricCollector` необходимо объявить в контейнере так, чтобы он сохранял своё состояние между компонентами системы, т.е. получать один и тот же объект при внедрении зависимости. Объявление класса сделаем через [хелпер функцию `diAutowire()`](../php-definition/di-autowire.md) и передадим аргумент `true` в параметр функции `$isSingleton`.
+The PHP class `\VendorName\MetricCollector` must be registered in the container in a way that preserves its state across system components ensuring that the same object instance is retrieved whenever it is injected as a dependency. We will register this class using the helper function [`diAutowire()`](../php-definition/di-autowire.md), passing `true` to the `$isSingleton` parameter.
 
-При получении одного и того же объекта в рамках приложения с долго-живущими процессами приведет к «накоплению» данных в свойстве `$metrics` PHP-класса `\VendorName\MetricCollector`.
+In an application with long-running processes, using the same object instance will lead to an accumulation of data within the `$metrics` property of the `\VendorName\MetricCollector` class.
 
-В приведённом примере невозможно напрямую получить доступ к свойству `$metrics` или изменить код PHP-класса `\VendorName\MetricCollector`, поэтому для сброса состояния объекта будем использовать [PHP-класс `\ReflectionProperty`](https://www.php.net/manual/ru/class.reflectionproperty.php).
+Since it is not possible to directly access the `$metrics` property or modify the source code of the `\VendorName\MetricCollector` class in this scenario, we will use the PHP class [`\ReflectionProperty`](https://www.php.net/manual/en/class.reflectionproperty.php) to reset the object's state.
 
-Сделаем объявление значения для сброса состояния объекта через анонимную функцию с использованием рефлексии: 
+We will define the logic for resetting the object's state using an anonymous function that leverages reflection:
 
 ```php
 <?php
@@ -55,10 +55,10 @@ use function Kaspi\DiContainer\diAutowire;
 
 return static function (): Generator {
     yield diAutowire(MetricCollector::class, isSingleton: true)
-        ->setResetter(static function (MetricCollector $collector): void {//[!code highlight]
+        ->setResetter(static function (MetricCollector $collector): void {//[!code ++]
             $propertyMetrics = new ReflectionProperty($collector, 'metrics');//[!code ++]
             $propertyMetrics->setValue($collector, []);//[!code ++]
-        });//[!code highlight]
+        });//[!code ++]
 };
 ```
 

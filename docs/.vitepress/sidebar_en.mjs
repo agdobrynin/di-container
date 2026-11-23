@@ -178,7 +178,7 @@ export default {
                         {text: 'Overview', link: 'index.md'},
                         {text: 'Configuration for resetting object state based on container definitions', link: 'definition_config.md'},
                         {text: 'Configuration of individual object state reset values', link: 'manual_config.md'},
-                        {text: 'Сброс состояния объекта через рефлексию объекта', link: 'reset_vendor_class.md'},
+                        {text: 'Resetting an object\'s state via object reflection', link: 'reset_vendor_class.md'},
                     ],
                 },
                 {
