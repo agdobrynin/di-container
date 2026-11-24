@@ -3,8 +3,10 @@
   "description": "Documentation of kaspi/di-container - Dependency Injection Container for PHP",
   "version": "4.7.0",
   "devDependencies": {
+    "@viteplus/versions": "^3.0.0",
+    "typescript": "^7.0.2",
     "vitepress": "^2.0.0-alpha.20",
-    "vitepress-plugin-group-icons": "^1.8.1"
+    "vitepress-plugin-group-icons": "^1.8.2"
   },
   "scripts": {
     "docs:dev-host": "vitepress dev docs --host",

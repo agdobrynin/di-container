@@ -5,58 +5,58 @@ isHome: true
 
 hero:
     name: kaspi/di-container
-    text: Dependency injection container for PHP 8.1 – 8.5
-    tagline: A lightweight codebase with no external dependencies or unnecessary «clutter».
+    text: Контейнер внедрения зависимостей для PHP 8.1 - 8.5
+    tagline: Легковесная кодовая база без внешних зависимостей и лишнего «мусора».
     image:
         src: /logo_optimize.svg
         alt: kaspi/di-container
     actions:
       - theme: brand
-        text: Manual
-        link: /en/documentation/
+        text: Руководство
+        link: documentation/
       - theme: alt
-        text: Cookbook
-        link: /en/cookbook/
+        text: Рецепты
+        link: cookbook/
       - theme: alt
         text: GitHub
         link: https://github.com/agdobrynin/di-container
 features:
     - title: Autowire
-      details: Automatic dependency injection for parameters of class constructor and callable type.
+      details: Автоматическое внедрение зависимостей для конструктора класса и параметров вызываемого типа.
       icon: 🛠️
     - title: Lazy injection
-      details: Lazy initialization of injected objects.
+      details: Отложенная инициализация внедряемых объектов.
       icon: 💤
     - title: Attribute-driven
-      details: The container can be configured using native PHP 8+ attributes.
+      details: Контейнер можно настроить с помощью нативных атрибутов PHP 8+.
       icon:  #️⃣ 
     - title: Zero configuration
-      details: If a class has no dependencies or depends only on other concrete classes, the container does not need to be told how to instantiate that class.
+      details: Если класс не имеет зависимостей или зависит только от других конкретных классов, контейнеру не нужно указывать, как внедрить этот класс.
       icon: 🧊
     - title: Definition Tags
-      details: Retrieving a collection of definitions and services from a container by tag.
+      details: Получение коллекции определений и сервисов в контейнере по тегу.
       icon: 🏷️
     - title: Compiling the Container
-      details: Generating a configured container into PHP code, optimized specifically for your configuration and your classes.
+      details: Генерация настроенного контейнера в PHP-код оптимизированный специально для вашей конфигурации и ваших классов.
       icon: 📦
 
 ---
 
-## DiContainer overview { #overview }
+## Обзор DiContainer { #overview }
 
-Kaspi/di-container is a dependency injection container for PHP >= 8.1 that implements the [PSR-11](https://www.php-fig.org/psr/psr-11/).
+Kaspi/di-container — это контейнер внедрения зависимостей для PHP >= 8.1 реализующий рекомендацию [PSR-11](https://www.php-fig.org/psr/psr-11/).
 
-## Install { #install }
+## Установка { #install }
 
-Use the PHP dependency manager [composer](https://getcomposer.org/) to install the "kaspi/di-container" package.
+Используйте менеджер зависимостей для PHP [composer](https://getcomposer.org/) чтобы установить пакет "kaspi/di-container".
 
 ```shell
 composer require kaspi/di-container
 ```
 
-## Quck start { #quick-start }
+## Быстрый старт { #quick-start }
 
-PHP-classes:
+PHP-классы:
 
 ::: code-group
 
@@ -71,7 +71,7 @@ namespace App\Controllers;
 use App\Services\Mail;
 use App\Models\Post;
 
-// Controller for processing an action
+// Контроллер для обработки действия
 final class  PostController
 {
     public function __construct(private Mail $mail) {}
@@ -95,7 +95,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-// Email sending service
+// Сервис отправки почты
 final class Mail
 {
     public function __construct(private Envelope $envelope) {}
@@ -107,7 +107,7 @@ final class Mail
     
     public function send(): bool
     {
-        // sending message
+        // отправка сообщения
     }
 }
 ```
@@ -120,7 +120,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-// Class for creating a message
+// Класс для создания сообщения
 final class Envelope
 {
     public function subject(string $subject): void
@@ -142,7 +142,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-// Data model — blog post
+// Модель данных — пост в блоге
 class Post
 {
     public string $title;
@@ -152,10 +152,10 @@ class Post
 
 :::
 
-In action:
+В действии:
 
 ::: code-group
-```php [in the style of PSR-11]
+```php [в стиле PSR-11]
 <?php
 declare(strict_types=1);
 
@@ -167,18 +167,18 @@ $container = (new DiContainerBuilder())
     ->build();
 
 if ($container->has(PostController::class)) {
-    // An object with dependencies injected via the constructor[!code warning]
+    // Объект с внедренными зависимостями через конструктор[!code warning]
     $postController = $container->get(PostController::class);
     
-    // let's fill in the post details[!code warning]
+    // заполним данные поста[!code warning]
     $post = new Post();
     $post->title = 'Lorem ipsum';
 
-    // calling a method on the obtained object[!code warning]
+    // вызов метода полученного объекта[!code warning]
     $postController->send($post);
 }
 ```
-```php [container's call() method]
+```php [метод контейнера call()]
 <?php
 declare(strict_types=1);
 
@@ -189,7 +189,7 @@ use App\Models\Post;
 $container = (new DiContainerBuilder())
     ->build();
 
-// let's fill in the post details[!code warning]
+// заполним данные поста[!code warning]
 $post = new Post();
 $post->title = 'Lorem ipsum';
 
@@ -197,4 +197,4 @@ $container->call([PostController::class, 'send'], $post);
 ```
 :::
 
-<VPButton href="/en/documentation/">Manual reference</VPButton>
+<VPButton href="documentation/">Начать изучение руководства</VPButton>

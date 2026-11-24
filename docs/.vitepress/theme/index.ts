@@ -1,17 +1,30 @@
-import type { Theme } from 'vitepress'
+import type { VNode } from '@vue/runtime-core'
+import type { Awaitable, Theme } from 'vitepress'
+
 import DefaultTheme from 'vitepress/theme'
 import { VPButton } from 'vitepress/theme'
 import { useRoute } from 'vitepress';
-import { onMounted, nextTick, watch } from 'vue';
+import { onMounted, nextTick, watch, h } from 'vue'
+import VersionSwitcher from '@viteplus/versions/components/version-switcher.component.vue'
+import { installVersionFallback } from '@viteplus/versions/fallback'
 
 import './style.css'
 import 'virtual:group-icons.css'
 
 export default {
     extends: DefaultTheme,
-    enhanceApp({ app }) {
+
+    Layout: (): VNode => {
+        return h(DefaultTheme.Layout, null, {
+        });
+    },
+
+    enhanceApp({ app, router, siteData }): Awaitable<void> {
+        app.component('VersionSwitcher', VersionSwitcher);
+        installVersionFallback(router, siteData);
         app.component('VPButton', VPButton);
     },
+
     setup() {
         const route = useRoute();
         // Функция для прокрутки к активному пункту меню
@@ -28,6 +41,7 @@ export default {
                 })
             }
         };
+
         // Срабатывает при первой загрузке страницы
         onMounted(async () => {
             await nextTick()

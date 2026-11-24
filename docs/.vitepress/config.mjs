@@ -1,11 +1,10 @@
-import { defineConfig } from 'vitepress'
+import { defineVersionedConfig } from '@viteplus/versions'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
-import sidebar_ru from './sidebar_ru.mjs'
-import sidebar_en from './sidebar_en.mjs'
 
+import sidebar_ru_v47X from './sidebar_ru_v4.7.x.mjs'
+import sidebar_en_v47X from './sidebar_en_v4.7.x.mjs'
 
-// https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default defineVersionedConfig({
   base: '/di-container/',
   lang: 'ru-RU',
   title: "kaspi/di-container",
@@ -16,6 +15,10 @@ export default defineConfig({
     plugins: [
       groupIconVitePlugin()
     ],
+  },
+  versionsConfig: {
+    current: 'v4.7.x',
+    versionSwitcher: false,
   },
   locales: {
     root: {
@@ -31,10 +34,11 @@ export default defineConfig({
           label: 'На этой странице',
         },
         nav: [
+          { component: 'VersionSwitcher', props: { label: 'Версия', latestLabel: 'последняя' } },
           { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
           { text: 'Рецепты', link: '/cookbook/', activeMatch: '/cookbook/' },
         ],
-        sidebar: sidebar_ru,
+        sidebar: {...sidebar_ru_v47X},
       },
       markdown: {
         config(md) {
@@ -47,7 +51,6 @@ export default defineConfig({
           tipLabel: 'Подсказка',
           importantLabel: 'Важно',
           warningLabel: 'Предупреждение'
-          // ...остальные метки, а также заголовки `customContainers`
         },
         codeCopyButton: {
           tooltipText: 'Копировать код',
@@ -61,10 +64,11 @@ export default defineConfig({
       link: '/en/',
       themeConfig: {
         nav: [
-          { text: 'Manual', link: '/en/documentation/' },
-          { text: 'Cookbook', link: '/en/cookbook/' },
+          { text: 'Manual', link: '/documentation/' },
+          { text: 'Cookbook', link: '/cookbook/' },
+          { component: 'VersionSwitcher' },
         ],
-        sidebar: sidebar_en,
+        sidebar: {...sidebar_en_v47X},
       },
       markdown: {
         config(md) {
