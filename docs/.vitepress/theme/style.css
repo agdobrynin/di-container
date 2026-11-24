@@ -132,3 +132,20 @@
 .vp-doc h3:first-child {
   margin-top: 0rem;
 }
+
+/* Базовый стиль текста рядом с иконкой перевода */
+.VPNavBarTranslations .button .text::after {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+}
+
+/* Текст для каждой локали */
+html[lang="ru"] .VPNavBarTranslations .button .text::after {
+  content: "Русский";
+}
+
+html[lang="en"] .VPNavBarTranslations .button .text::after {
+  content: "English";
+}
