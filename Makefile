@@ -13,8 +13,9 @@ define HELP_TEXT
 *     make build             *
 *     make install           *
 *     make sh                *
-*     make dev               *
-*     make preview           *
+*     make docs-dev          *
+*     make docs-preview      *
+*     make docs-build        *
 *                            *
 ******************************
 endef
@@ -36,10 +37,14 @@ install:
 sh:
 	$(docker-run) sh
 
-.PHONY: dev
-dev:
+.PHONY: docs-dev
+docs-dev:
 	$(docker-run) npm run docs:dev-host
 
-.PHONY: preview
-preview:
+.PHONY: docs-preview
+docs-preview:
 	$(docker-run) npm run docs:preview
+
+.PHONY: docs-build
+docs-build:
+	$(docker-run) npm run docs:build

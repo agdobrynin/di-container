@@ -13,7 +13,7 @@ make build && make install
 Running development mode:
 
 ```shell
-make dev
+make docs-dev
 ```
 
 and using host from text:
