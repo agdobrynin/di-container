@@ -18,7 +18,7 @@ DiDefinitionArgumentsInterface::bindArguments(
 
 > [!TIP]
 > - Параметр `$argument` в методе `bindArgument()` может принимать хелпер функции такие как `diGet()`, `diValue()`, `diAutowire()` и другие.
-> - Для внедрения скалярных типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](../../container-parameters/index.md)».
+> - Для внедрения скалярных типы зависимостей в `$argument` рекомендуется использовать «[параметры контейнера](/documentation/container-parameters/index.md)».
 
 > [!WARNING]
 > Метод `bindArguments()` перезаписывает ранее добавленные аргументы.

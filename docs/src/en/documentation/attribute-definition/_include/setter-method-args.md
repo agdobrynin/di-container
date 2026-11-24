@@ -6,4 +6,4 @@ Setter method parameters that do not receive arguments will be injected by the c
 
 <!--@include: to_arguments.md-->
 
-An example of using setter methods for dependency injection can be found in the [Cookbook](../../../cookbook/autowire-setup.md#php-attributes) section.
+An example of using setter methods for dependency injection can be found in the [Cookbook](/en/cookbook/autowire-setup.md) section.

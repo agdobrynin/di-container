@@ -120,7 +120,7 @@ final class FooService
 
 ### Tags { #tags }
 
-The `$tags` parameter of the `\Kaspi\DiContainer\Attributes\DiRuntime` attribute sets a tag and metadata for the PHP class being declared, using the `\Kaspi\DiContainer\Attributes\Tag` attribute (see [tag.md](tag.md)).
+The `$tags` parameter of the `\Kaspi\DiContainer\Attributes\DiRuntime` attribute sets a tag and metadata for the PHP class being declared, using the [`\Kaspi\DiContainer\Attributes\Tag`](tag.md) attribute.
 
 A value of `null` for the `$tags` parameter instructs the container to **set the tag based on the `Tag` attribute specified within the PHP class being declared**.
 

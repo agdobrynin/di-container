@@ -3,6 +3,6 @@
 >
 > The method accepts two arguments, which are passed by the container:
 >  - `string $tag` – the tag name.
->  - `array $options` – [tag metadata](../../tag-metadata.md).
+>  - `array $options` – [tag metadata](/en/documentation/tags/tag-metadata.md).
 >
 > These parameters can be used to define the logic for generating an identifier for a collection element.

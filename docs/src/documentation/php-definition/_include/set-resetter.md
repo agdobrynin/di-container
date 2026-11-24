@@ -9,4 +9,4 @@ DiDefinitionResetterSetterInterface::setResetter(
 ```
 
 > [!TIP]
-> Ознакомитесь с подробной информацией в разделе [«Сброс состояния объектов в долго-живущих процессах»](../../object-resetters/index.md).
+> Ознакомитесь с подробной информацией в разделе [«Сброс состояния объектов в долго-живущих процессах»](/documentation/object-resetters/index.md).

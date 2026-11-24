@@ -6,4 +6,4 @@ Setter method parameters that do not receive explicit arguments will be injected
 
 Arguments for a setter method can utilize helper functions such as `diGet()`, `diValue()`, `diAutowire()`, and others.
 
-For the injection of scalar-type dependencies, it is recommended to use [container parameters](../../container-parameters/index.md).
+For the injection of scalar-type dependencies, it is recommended to use [container parameters](/en/documentation/container-parameters/index.md).

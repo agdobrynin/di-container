@@ -11,4 +11,4 @@ DiDefinitionTagArgumentInterface::bindTag(
 ```
 
 > [!TIP]
-> For more details, see the [guide on working with tags](../../tags/php-definition-tag.md).
+> For more details, see the [guide on working with tags](/en/documentation/tags/php-definition-tag.md).

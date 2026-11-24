@@ -17,7 +17,7 @@ If the method does not explicitly specify how a dependency should be injected in
 
 > [!TIP]
 > - The `$argument` parameter in `bindArguments()` can accept helper functions such as `diGet()`, `diValue()`, `diAutowire()`, and others.
-> - For injecting scalar-type dependencies, it is recommended to use [container parameters](../../container-parameters/index.md).
+> - For injecting scalar-type dependencies, it is recommended to use [container parameters](/en/documentation/container-parameters/index.md).
 
 > [!WARNING]
 > The `bindArguments()` method overwrites any previously added arguments.

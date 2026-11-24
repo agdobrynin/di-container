@@ -9,4 +9,4 @@ DiDefinitionResetterSetterInterface::setResetter(
 ```
 
 > [!TIP]
-> See the detailed information in the section [“Resetting object state in long-running processes”](../../object-resetters/index.md).
+> See the detailed information in the section [“Resetting object state in long-running processes”](/en/documentation/object-resetters/index.md).

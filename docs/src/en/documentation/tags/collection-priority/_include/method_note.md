@@ -3,6 +3,6 @@
 >
 > The method accepts two arguments, which are passed by the container:
 >  - `string $tag` – the name of the tag.
->  - `array $options` – [tag metadata](../../tag-metadata.md).
+>  - `array $options` – [tag metadata](/en/documentation/tags/tag-metadata.md).
 >
 > These parameters can be used to implement logic for determining the tag's priority.
