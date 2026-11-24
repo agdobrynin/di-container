@@ -196,3 +196,5 @@ $post->title = 'Lorem ipsum';
 $container->call([PostController::class, 'send'], $post);
 ```
 :::
+
+<VPButton href="/documentation/">Ссылка на руководство</VPButton>
