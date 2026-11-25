@@ -5,6 +5,83 @@ title: Руководство. Введение.
 
 ### Введение { #documentation }
 
+[Внедрение зависимостей](https://ru.wikipedia.org/wiki/%D0%92%D0%BD%D0%B5%D0%B4%D1%80%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B7%D0%B0%D0%B2%D0%B8%D1%81%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D0%B8) важный шаблон проектирования в разработке программного обеспечения. Его идея заключается в том, что классы не создают необходимые им объекты, они получают их извне. Это обеспечивает независимость кода и делает его более пригодным для повторного использования и тестирования.
+
+**Внедрение зависимостей** это метод написания более качественного кода.
+
+**Контейнер внедрения зависимостей** это инструмент, помогающий автоматически собирать объекты и подставлять их зависимости по правилам конфигурации или авто-связывания (autowiring).
+
+Рассмотрим упрощённый пример из набора PHP-классов. Эти классы представляют классический пример передачи зависимостей через конструктор:
+
+::: code-group
+```php [PostController.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Controllers/PostController.php [!code highlight]
+
+namespace App\Controllers;
+
+use App\Services\Mail;
+use App\Models\Post;
+
+// Контроллер для обработки действия
+final class  PostController
+{
+    public function __construct(private Mail $mail) {}
+    // …
+}
+```
+```php [Mail.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Mail.php [!code highlight]
+
+namespace App\Services;
+
+// Сервис отправки почты
+final class Mail
+{
+    public function __construct(private Envelope $envelope) {}
+    // …
+}
+```
+```php [Envelope.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Envelope.php [!code highlight]
+
+namespace App\Services;
+
+// Класс для создания сообщения
+final class Envelope
+{
+    // ...
+}
+```
+:::
+
+Теперь представим, чтобы получить объект класс `\App\Controllers\PostController` нам необходимо передать в конструктор объект класса `App\Services\Mail` который зависит от объекта класса `\App\Services\Envelope`. 
+
+Получается цепочка создания объектов и передачи зависимостей через конструктор:
+
+```php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/index.php [!code highlight]
+
+require_once __DIR__ . '/../vendor/autoload.php';// [!code warning]
+
+$envelop = new \App\Services\Envelope();
+$mail = new \App\Services\Mail($envelop);
+$controller = new \App\Controllers\PostController($mail);
+```
+
+Контейнер внедрения зависимостей призван сделать внедрение зависимостей более практичным и автоматизировать операции внедрения зависимостей на основании предоставленной конфигурации.
+
 ---
 
 ### Обзор DiContainer { #overview }
@@ -24,6 +101,8 @@ composer require kaspi/di-container
 ---
 
 ### Быстрый старт { #quick-start }
+
+Рассмотрим упрощённый пример из набора PHP-классов для которых необходимо обеспечить автоматическое внедрение зависимостей используя контейнер внедрения зависимостей "kaspi/di-container".
 
 PHP-классы:
 
@@ -128,6 +207,10 @@ class Post
 <?php
 declare(strict_types=1);
 
+// file: /app/src/container_psr11.php [!code highlight]
+
+require_once __DIR__ . '/../vendor/autoload.php';// [!code warning]
+
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Controllers\PostController;
 use App\Models\Post;
@@ -150,6 +233,10 @@ if ($container->has(PostController::class)) {
 ```php [метод контейнера call()]
 <?php
 declare(strict_types=1);
+
+// file: /app/src/container_call.php [!code highlight]
+
+require_once __DIR__ . '/../vendor/autoload.php';// [!code warning]
 
 use Kaspi\DiContainer\DiContainerBuilder;
 use App\Controllers\PostController;
