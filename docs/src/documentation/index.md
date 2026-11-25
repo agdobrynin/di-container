@@ -2,9 +2,171 @@
 outline: [2,4]
 title: Руководство. Введение.
 ---
+
 ### Введение { #documentation }
 
-В этой документации описывается API контейнера из пакета [kaspi/di-container](https://packagist.org/packages/kaspi/di-container).
+---
+
+### Обзор DiContainer { #overview }
+
+Kaspi/di-container — это контейнер внедрения зависимостей для PHP >= 8.1 реализующий рекомендацию [PSR-11](https://www.php-fig.org/psr/psr-11/).
+
+---
+
+### Установка { #install }
+
+Используйте менеджер зависимостей для PHP [composer](https://getcomposer.org/) чтобы установить пакет "kaspi/di-container".
+
+```shell
+composer require kaspi/di-container
+```
+
+---
+
+### Быстрый старт { #quick-start }
+
+PHP-классы:
+
+::: code-group
+
+```php [PostController.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Controllers/PostController.php [!code highlight]
+
+namespace App\Controllers;
+
+use App\Services\Mail;
+use App\Models\Post;
+
+// Контроллер для обработки действия
+final class  PostController
+{
+    public function __construct(private Mail $mail) {}
+    
+    public function send(Post $post): bool
+    {
+        $this->mail->envelop()
+            ->subject('Publication success')
+            ->message('Post <'.$post->title.'> was published.');
+
+        return $this->mail->send();
+    }
+}
+```
+
+```php [Mail.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Mail.php [!code highlight]
+
+namespace App\Services;
+
+// Сервис отправки почты
+final class Mail
+{
+    public function __construct(private Envelope $envelope) {}
+    
+    public function envelop(): Envelope
+    {
+        return $this->envelope;
+    }
+    
+    public function send(): bool
+    {
+        // отправка сообщения
+    }
+}
+```
+
+```php [Envelope.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Envelope.php [!code highlight]
+
+namespace App\Services;
+
+// Класс для создания сообщения
+final class Envelope
+{
+    public function subject(string $subject): void
+    {
+        // ...
+    }
+
+    public function message(string $message): void
+    {
+        // ...
+    }
+}
+```
+```php [Post.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Models/Post.php [!code highlight]
+
+namespace App\Models;
+
+// Модель данных — пост в блоге
+class Post
+{
+    public string $title;
+    // ...
+}
+```
+
+:::
+
+В действии:
+
+::: code-group
+```php [в стиле PSR-11]
+<?php
+declare(strict_types=1);
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Controllers\PostController;
+use App\Models\Post;
+
+$container = (new DiContainerBuilder())
+    ->build();
+
+if ($container->has(PostController::class)) {
+    // Объект с внедренными зависимостями через конструктор[!code warning]
+    $postController = $container->get(PostController::class);
+    
+    // заполним данные поста[!code warning]
+    $post = new Post();
+    $post->title = 'Lorem ipsum';
+
+    // вызов метода полученного объекта[!code warning]
+    $postController->send($post);
+}
+```
+```php [метод контейнера call()]
+<?php
+declare(strict_types=1);
+
+use Kaspi\DiContainer\DiContainerBuilder;
+use App\Controllers\PostController;
+use App\Models\Post;
+
+$container = (new DiContainerBuilder())
+    ->build();
+
+// заполним данные поста[!code warning]
+$post = new Post();
+$post->title = 'Lorem ipsum';
+
+$container->call([PostController::class, 'send'], $post);
+```
+:::
+
+---
 
 ### PSR-11
 
