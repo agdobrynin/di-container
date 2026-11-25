@@ -4,12 +4,99 @@ title: Manual. Introduction.
 ---
 ### Introduction { #introduction }
 
+[Dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) is an important design pattern in software development. The core idea is that classes do not create the objects they need; instead, they receive them from an external source. This ensures code independence and makes the code more reusable and easier to test.
+
+**Dependency injection** is a technique for writing better-quality code.
+
+A **dependency injection container** is a tool that helps automatically assemble objects and inject their dependencies based on configuration rules or autowiring.
+
+Let’s look at a simplified example using a set of PHP classes. These classes illustrate the classic pattern of passing dependencies via a constructor:
+
+::: code-group
+```php [PostController.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Controllers/PostController.php [!code highlight]
+
+namespace App\Controllers;
+
+use App\Services\Mail;
+use App\Models\Post;
+
+// Controller for processing an action
+final class  PostController
+{
+    public function __construct(private Mail $mail) {}
+    // …
+}
+```
+```php [Mail.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Mail.php [!code highlight]
+
+namespace App\Services;
+
+// Email sending service
+final class Mail
+{
+    public function __construct(private Envelope $envelope) {}
+    // …
+}
+```
+```php [Envelope.php]
+<?php
+declare(strict_types=1);
+
+// file: /app/src/Services/Envelope.php [!code highlight]
+
+namespace App\Services;
+
+// Class for creating a message
+final class Envelope
+{
+    // ...
+}
+```
+:::
+
+Now, let’s imagine that to obtain an instance of the `\App\Controllers\PostController` class, we need to pass an instance of the `App\Services\Mail` class into its constructor – a class which, in turn, depends on an instance of the `\App\Services\Envelope` class.
+
+This results in a chain of object creation and dependency passing via the constructor:
+
+```php
+<?php
+declare(strict_types=1);
+
+// file: /app/src/index.php [!code highlight]
+
+require_once __DIR__ . '/../vendor/autoload.php';// [!code warning]
+
+$envelop = new \App\Services\Envelope();
+$mail = new \App\Services\Mail($envelop);
+$controller = new \App\Controllers\PostController($mail);
+```
+
+A dependency injection container is designed to make dependency injection more practical and to automate dependency injection operations based on a provided configuration.
 
 ---
 
 ### DiContainer overview { #overview }
 
 Kaspi/di-container is a dependency injection container for PHP >= 8.1 that implements the [PSR-11](https://www.php-fig.org/psr/psr-11/).
+
+#### Features { #features }
+
+- **Autowiring**: automatic dependency injection — you declare dependencies using type hints, and the container handles the rest. In most cases, you do not need to define object configuration;
+- **Lazy injection**: allows for the deferred creation of object dependencies until the moment they are actually used;
+- **Attribute-driven**: declarative dependency injection using native PHP 8+ attributes;
+- **Zero configuration**: no object configuration is required if a PHP class has no dependencies or depends only on other concrete classes;
+- **Definition Tags**: allows for the injection or retrieval of a collection of items from the container that share the same tag name;
+- **Compiling the Container**: generates a configured container as high-performance PHP code, optimized specifically for your configuration and classes;
+- **PSR-11**: compliant with the PSR-11 standard for dependency injection containers;
+- **Object state reset**: a mechanism for resetting the state of objects within long-running processes;
 
 ### Install { #install }
 
@@ -23,7 +110,9 @@ composer require kaspi/di-container
 
 ### Quck start { #quick-start }
 
-PHP-classes:
+Let’s look at a simplified example involving a set of PHP classes for which we need to implement automatic dependency injection using the "kaspi/di-container" dependency injection container.
+
+PHP classes:
 
 ::: code-group
 
@@ -75,6 +164,7 @@ final class Mail
     public function send(): bool
     {
         // sending message
+        return true;
     }
 }
 ```
