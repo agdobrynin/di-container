@@ -39,6 +39,9 @@ export default defineVersionedConfig({
           { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
           { text: 'Рецепты', link: '/cookbook/', activeMatch: '/cookbook/' },
         ],
+        editLink: {
+          text: 'Предложите изменения для этой страницы',
+        },
         sidebar: {...sidebar_ru_v47X},
       },
       markdown: {
@@ -101,5 +104,29 @@ export default defineVersionedConfig({
         },
       },
     },
+    editLink: {
+      pattern: ({ filePath, relativePath }) => {
+        const owner = 'agdobrynin';
+        const repo = 'di-container';
+        const branch = 'docs';
+
+        // GitHub blob link to the specific file
+        const fileUrl = `https://github.com/${ owner }/${ repo }/blob/${ branch }/docs/${ filePath }`;
+
+        // Pre-filled issue parameters
+        const title = encodeURIComponent(`Suggestion for: ${ relativePath }`);
+        const body = encodeURIComponent(
+            '### Suggested changes\n\n' +
+            `File: [${ relativePath }](${ fileUrl })\n\n` +
+            '---\n\n' +
+            '**Describe your suggestion:**\n\n'
+        );
+        const labels = encodeURIComponent('enhancement,documentation');
+
+        return `https://github.com/${ owner }/${ repo }/issues/new?title=${ title }&body=${ body }&labels=${ labels }`;
+      },
+
+      text: 'Suggest changes to this page'
+    }
   }
 })
