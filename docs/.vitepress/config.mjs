@@ -3,6 +3,7 @@ import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-i
 
 import sidebar_ru_v47X from './sidebar_ru_v4.7.x.mjs'
 import sidebar_en_v47X from './sidebar_en_v4.7.x.mjs'
+import search_ru from './search_ru.mjs'
 
 export default defineVersionedConfig({
   base: '/di-container/',
@@ -86,6 +87,19 @@ export default defineVersionedConfig({
     ],
     head: [
       ['link', { rel: 'icon', href: '/favicon.ico' }]
-    ]
+    ],
+    search: {
+      provider: 'local',
+      options: {
+        locales: {
+          root: {
+            translations: search_ru
+          },
+          'v4.7.x': {
+            translations: search_ru
+          },
+        },
+      },
+    },
   }
 })
