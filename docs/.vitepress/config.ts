@@ -1,7 +1,18 @@
+/**
+ * Type-only imports erased during TypeScript compilation.
+ */
+import type {MarkdownRenderer, PageData} from 'vitepress';
+
+/**
+ * Imports
+ */
 import { defineVersionedConfig } from '@viteplus/versions'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
 import { fileURLToPath, URL } from 'node:url'
 
+/**
+ * Configuration files
+ */
 import sidebar_ru_v47X from './sidebar_ru_v4.7.x.mjs'
 import sidebar_en_v47X from './sidebar_en_v4.7.x.mjs'
 import search_ru from './search_ru.mjs'
@@ -17,6 +28,7 @@ export default defineVersionedConfig({
   ],
   srcExclude: ['**/_include/', '**/_code/'],
   vite: {
+    // @ts-ignore
     plugins: [
       groupIconVitePlugin()
     ],
@@ -25,6 +37,13 @@ export default defineVersionedConfig({
         '@vp': fileURLToPath(new URL('.', import.meta.url))
       }
     }
+  },
+  markdown: {
+    config(md: MarkdownRenderer) {
+      md.use(groupIconMdPlugin, {
+        titleBar: { includeSnippet: true },
+      })
+    },
   },
   versionsConfig: {
     current: 'v4.7.x',
@@ -53,12 +72,8 @@ export default defineVersionedConfig({
         },
         sidebar: {...sidebar_ru_v47X},
       },
+      // @ts-ignore
       markdown: {
-        config(md) {
-          md.use(groupIconMdPlugin, {
-            titleBar: { includeSnippet: true },
-          })
-        },
         container: {
           noteLabel: 'Замечание',
           tipLabel: 'Подсказка',
@@ -83,11 +98,6 @@ export default defineVersionedConfig({
         ],
         sidebar: {...sidebar_en_v47X},
       },
-      markdown: {
-        config(md) {
-          md.use(groupIconMdPlugin)
-        },
-      }
     },
   },
   themeConfig: {
@@ -111,7 +121,7 @@ export default defineVersionedConfig({
       },
     },
     editLink: {
-      pattern: ({ filePath, relativePath }) => {
+      pattern: ({ filePath, relativePath }: PageData) => {
         const owner = 'agdobrynin';
         const repo = 'di-container';
         const branch = 'docs';

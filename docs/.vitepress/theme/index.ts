@@ -5,10 +5,13 @@ import DefaultTheme from 'vitepress/theme'
 import { VPButton } from 'vitepress/theme'
 import { useRoute } from 'vitepress';
 import { onMounted, nextTick, watch, h } from 'vue'
+// @ts-ignore
 import VersionSwitcher from '@viteplus/versions/components/version-switcher.component.vue'
 import { installVersionFallback } from '@viteplus/versions/fallback'
 
+// @ts-ignore
 import './style.css'
+// @ts-ignore
 import 'virtual:group-icons.css'
 
 export default {
