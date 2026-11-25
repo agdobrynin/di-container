@@ -89,7 +89,7 @@ Kaspi/di-container is a dependency injection container for PHP >= 8.1 that imple
 
 #### Features { #features }
 
-- **Autowiring**: automatic dependency injection — you declare dependencies using type hints, and the container handles the rest. In most cases, you do not need to define object configuration;
+- **Autowiring**: automatic dependency injection — you declare dependencies using type hints[^TypeHints], and the container handles the rest. In most cases, you do not need to define object configuration;
 - **Lazy injection**: allows for the deferred creation of object dependencies until the moment they are actually used;
 - **Attribute-driven**: declarative dependency injection using native PHP 8+ attributes;
 - **Zero configuration**: no object configuration is required if a PHP class has no dependencies or depends only on other concrete classes;
@@ -370,3 +370,4 @@ To build the container, use the [special `DiContainerBuilder` class](container-b
 * ♻️ [Resetting object state for long-running processes](object-resetters/index.md).
 * 💤 [Injection of lazy objects by the container](lazy-injection/index.md).
 
+<!--@include: _include/term_notes.md-->
