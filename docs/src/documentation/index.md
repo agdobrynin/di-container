@@ -166,6 +166,7 @@ final class Mail
     public function send(): bool
     {
         // отправка сообщения
+        return true;
     }
 }
 ```
