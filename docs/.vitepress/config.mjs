@@ -1,5 +1,6 @@
 import { defineVersionedConfig } from '@viteplus/versions'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
+import { fileURLToPath, URL } from 'node:url'
 
 import sidebar_ru_v47X from './sidebar_ru_v4.7.x.mjs'
 import sidebar_en_v47X from './sidebar_en_v4.7.x.mjs'
@@ -16,6 +17,11 @@ export default defineVersionedConfig({
     plugins: [
       groupIconVitePlugin()
     ],
+    resolve: {
+      alias: {
+        '@vp': fileURLToPath(new URL('.', import.meta.url))
+      }
+    }
   },
   versionsConfig: {
     current: 'v4.7.x',
