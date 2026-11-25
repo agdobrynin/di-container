@@ -12,6 +12,9 @@ export default defineVersionedConfig({
   title: "kaspi/di-container",
   titleTemplate: "Dependency injection container for PHP",
   description: "Dependency injection container for PHP",
+  head: [
+    ['link', {rel: 'icon', href: '/di-container/favicon.ico'}],
+  ],
   srcExclude: ['**/_include/', '**/_code/'],
   vite: {
     plugins: [
@@ -93,9 +96,6 @@ export default defineVersionedConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/agdobrynin/di-container', ariaLabel: 'Git Hub' },
       { icon: 'packagist', link: 'https://packagist.org/packages/kaspi/di-container', ariaLabel: 'Packagist' },
-    ],
-    head: [
-      ['link', { rel: 'icon', href: '/favicon.ico' }]
     ],
     search: {
       provider: 'local',
