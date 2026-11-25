@@ -7,7 +7,7 @@ FROM ${NODE_IMAGE:-node:22-alpine}
 
 RUN mkdir ${APP_DIR:-/var/app} && \
   chown -R 1000:1000 ${APP_DIR:-/var/app} && \
-  npm install -g npm@12.1.0
+  npm install -g npm@latest
 
 WORKDIR ${APP_DIR:-/var/app}
 
