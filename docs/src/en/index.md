@@ -24,9 +24,12 @@ features:
     - title: Autowiring & Zero configuration
       details: Automatic dependency injection based on a specified configuration. If a class has no dependencies, or depends only on other concrete classes, no configuration is required.
       icon: 🧊
-    - title: Hi performance
-      details: Injects objects as lazy dependencies. Compilation of the container into high-performance PHP code, optimized specifically for your configuration.
-      icon: ⚡
+    - title: Lazy object & Tags
+      details: Injects objects as lazy dependencies. Tags provide the ability to embed or retrieve a collection of elements from a container tagged with the same name.
+      icon: 💤
     - title: Attribute-driven & PSR-11
       details: Declarative dependency injection using native PHP 8+ attributes. Compatible with the PSR-11 recommendation for dependency injection containers.
       icon:  #️⃣ 
+    - title: Hi performance
+      details: Compilation of the container into high-performance PHP code, optimized specifically for your configuration. A mechanism for resetting the state of objects in long-running processes.
+      icon: 💎
