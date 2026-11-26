@@ -196,8 +196,7 @@ Requirements:
 
 Clone repository:
 ```shell
-git clone https://github.com/agdobrynin/di-container.git &&
-cd di-container
+git clone https://github.com/agdobrynin/di-container.git && cd di-container
 ```
 Install dependencies:
 ```shell
