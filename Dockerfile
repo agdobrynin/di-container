@@ -5,6 +5,8 @@ ARG VITE_PREVIEW_PORT
 
 FROM ${NODE_IMAGE:-node:22-alpine}
 
+RUN apk add --no-cache git
+
 RUN mkdir ${APP_DIR:-/var/app} && \
   chown -R 1000:1000 ${APP_DIR:-/var/app} && \
   npm install -g npm@latest
