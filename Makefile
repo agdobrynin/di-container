@@ -9,7 +9,7 @@ php85 := php:8.5-cli-alpine
 php_all := $(php81) $(php82) $(php83) $(php84) $(php85)
 
 # run command php for PHP version enabled in `.env`
-docker-run := docker-compose -f docker-compose.yml run -q --rm php
+docker-run := docker-compose -f docker-compose.yml run -q --rm --remove-orphans php
 docker-build := docker-compose build -q
 
 # test command
@@ -104,6 +104,9 @@ install:
 .PHONY: all
 all: fix stat test
 
+.PHONY: review
+review: fix stat test
+
 .PHONY: test-supports-php
 test-supports-php:
 	@$(foreach php, $(php_all),\
@@ -114,3 +117,7 @@ test-supports-php:
  	#build container defined in .env file as PHP_IMAGE
 	@$(docker-build); \
 	$(docker-run) sh -c "$(composer-clean-prepare)";
+
+.PHONY: sh
+sh:
+	$(docker-run) sh

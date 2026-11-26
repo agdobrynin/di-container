@@ -26,7 +26,7 @@
 
 ## Installation
 
-```shell
+```sh
 composer require kaspi/di-container
 ```
 
@@ -195,39 +195,49 @@ Requirements:
 - ext-tokenizer
 
 Clone repository:
-```shell
+```sh
 git clone https://github.com/agdobrynin/di-container.git && cd di-container
 ```
 Install dependencies:
-```shell
+```sh
 composer install
 ```
 
 ### Tests
 
 Run tests without calculating code coverage:
-```shell
+```sh
 composer test
 ```
 
 Running tests with code coverage analysis:
-```shell
+```sh
 composer test-cover
 ```
 
 ### Static code analysis
 
 For static analysis, we use the [PHPStan](https://github.com/phpstan/phpstan) package:
-```shell
+```sh
 composer stat
 ```
 
 ### Code style
 To bring the code into compliance with standards, we use **php-cs-fixer**, which is declared in the composer dev dependency:
 
-```shell
+```sh
 composer fixer
 ``` 
+
+### Run all stages of code verification
+
+- Fix code-style
+- Run stat analyzer
+- Run tests
+
+```sh
+composer review
+```
 
 ### Using a Docker image with PHP 8.1, 8.2, 8.3, 8.4, 8.5
 
@@ -235,47 +245,62 @@ You can specify the image and PHP version in the `.env` file using the `PHP_IMAG
 By default, the container is built using the `php:8.1-cli-alpine` image.
 
 Build docker image:
-```shell
+```sh
 docker-compose build
 ```
 
 Install PHP composer dependencies:
-```shell
-docker-compose run --rm php composer install
-```
-🔔 If `make` is installed on the system:
-```shell
+```sh
 make install
 ```
+<details>
+<summary>Without the `make` command</summary>
+
+```sh
+docker-compose run --rm --remove-orphans php composer install
+```
+</details>
+
 #### Tests in Docker
 
 Running tests without a code coverage report:
-```shell
-docker-compose run --rm php vendor/bin/phpunit --no-coverage
-```
-🔔 If `make` is installed on the system:
-```shell
+```sh
 make test
 ```
 
 Tests with a code coverage report:
-```shell
-docker-compose run --rm php vendor/bin/phpunit
-```
-🔔 If `make` is installed on the system:
-```shell
+```sh
 make test-cover
 ```
 
+<details>
+<summary>Without the `make` command</summary>
+
+Runs tests only:
+
+```sh
+docker-compose run --rm --remove-orphans php vendor/bin/phpunit --no-coverage
+```
+
+Runs tests with coverage report:
+
+```sh
+docker-compose run --rm --remove-orphans php vendor/bin/phpunit
+```
+</details>
+
 #### PHPStan static code analysis
 
-```shell
-docker-compose run --rm php vendor/bin/phpstan
-```
-🔔 If `make` is installed on the system:
-```shell
+```sh
 make stat
 ```
+<details>
+<summary>Without the `make` command</summary>
+
+```sh
+docker-compose run --rm --remove-orphans php vendor/bin/phpstan
+```
+</details>
 
 #### Run all stages of code verification
 
@@ -283,20 +308,27 @@ make stat
 - Run stat analyzer
 - Run tests
 
-```shell
-make all
+```sh
+make review
 ```
 
 ### Running tests for all supported PHP versions via Docker images
 
 Before running the tests, the `vendor` directory and the `composer.lock` file are deleted, dependencies are installed, and only then are the tests executed:
-```shell
+```sh
 make test-supports-php
 ```
 
 ### Switch to interactive mode
 
 You can work within a shell in a Docker container:
-```shell
-docker-compose run --rm php sh
+```sh
+make sh
 ```
+<details>
+<summary>Without the `make` command</summary>
+
+```sh
+docker-compose run --rm --remove-orphans php sh
+```
+</details>
