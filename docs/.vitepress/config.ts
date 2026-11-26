@@ -20,9 +20,10 @@ import search_ru from './search_ru.mjs'
 export default defineVersionedConfig({
   base: '/di-container/',
   lang: 'ru-RU',
-  title: "kaspi/di-container",
-  titleTemplate: "Dependency injection container for PHP",
-  description: "Dependency injection container for PHP",
+  title: 'kaspi/di-container',
+  titleTemplate: 'Dependency injection container for PHP',
+  description: 'Dependency injection container for PHP',
+  lastUpdated: true,
   head: [
     ['link', {rel: 'icon', href: '/di-container/favicon.ico'}],
   ],
@@ -45,63 +46,7 @@ export default defineVersionedConfig({
       })
     },
   },
-  versionsConfig: {
-    current: 'v4.7.x',
-    versionSwitcher: false,
-  },
-  locales: {
-    root: {
-      label: 'Русский',
-      lang: 'ru',
-      link: '/',
-      themeConfig: {
-        docFooter: {
-          prev: 'Предыдущая страница',
-          next: 'Следующая страница'
-        },
-        outline: {
-          label: 'На этой странице',
-        },
-        nav: [
-          { component: 'VersionSwitcher', props: { label: 'Версия', latestLabel: 'последняя' } },
-          { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
-          { text: 'Рецепты', link: '/cookbook/', activeMatch: '/cookbook/' },
-        ],
-        editLink: {
-          text: 'Предложите изменения для этой страницы',
-        },
-        sidebar: {...sidebar_ru_v47X},
-      },
-      // @ts-ignore
-      markdown: {
-        container: {
-          noteLabel: 'Замечание',
-          tipLabel: 'Подсказка',
-          importantLabel: 'Важно',
-          warningLabel: 'Предупреждение'
-        },
-        codeCopyButton: {
-          tooltipText: 'Копировать код',
-          copiedText: 'Скопировано'
-        }
-      }
-    },
-    en: {
-      label: 'English',
-      lang: 'en',
-      link: '/en/',
-      themeConfig: {
-        nav: [
-          { text: 'Manual', link: '/documentation/' },
-          { text: 'Cookbook', link: '/cookbook/' },
-          { component: 'VersionSwitcher' },
-        ],
-        sidebar: {...sidebar_en_v47X},
-      },
-    },
-  },
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
     logo: '/logo_optimize.svg',
     socialLinks: [
       { icon: 'github', link: 'https://github.com/agdobrynin/di-container', ariaLabel: 'Git Hub' },
@@ -143,6 +88,71 @@ export default defineVersionedConfig({
       },
 
       text: 'Suggest changes to this page'
+    },
+    lastUpdated: {
+      formatOptions: {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        forceLocale: true,
+      }
     }
-  }
+  },
+  versionsConfig: {
+    current: 'v4.7.x',
+    versionSwitcher: false,
+  },
+  locales: {
+    root: {
+      label: 'Русский',
+      lang: 'ru',
+      link: '/',
+      themeConfig: {
+        docFooter: {
+          prev: 'Предыдущая страница',
+          next: 'Следующая страница'
+        },
+        outline: {
+          label: 'На этой странице',
+        },
+        nav: [
+          { component: 'VersionSwitcher', props: { label: 'Версия', latestLabel: 'последняя' } },
+          { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
+          { text: 'Рецепты', link: '/cookbook/', activeMatch: '/cookbook/' },
+        ],
+        editLink: {
+          text: 'Предложите изменения для этой страницы',
+        },
+        lastUpdated: {
+          text: 'Обновлено',
+        },
+        sidebar: {...sidebar_ru_v47X},
+      },
+      // @ts-ignore
+      markdown: {
+        container: {
+          noteLabel: 'Замечание',
+          tipLabel: 'Подсказка',
+          importantLabel: 'Важно',
+          warningLabel: 'Предупреждение'
+        },
+        codeCopyButton: {
+          tooltipText: 'Копировать код',
+          copiedText: 'Скопировано'
+        }
+      }
+    },
+    en: {
+      label: 'English',
+      lang: 'en',
+      link: '/en/',
+      themeConfig: {
+        nav: [
+          { text: 'Manual', link: '/documentation/' },
+          { text: 'Cookbook', link: '/cookbook/' },
+          { component: 'VersionSwitcher' },
+        ],
+        sidebar: {...sidebar_en_v47X},
+      },
+    },
+  },
 })

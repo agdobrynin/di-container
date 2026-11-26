@@ -149,3 +149,7 @@ html[lang="ru"] .VPNavBarTranslations .button .text::after {
 html[lang="en"] .VPNavBarTranslations .button .text::after {
   content: "English";
 }
+
+.VPLastUpdated time {
+  margin-left: 6px; /* Adjust to your preferred spacing */
+}
