@@ -549,4 +549,16 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
         self::assertEquals('', $arg[3]->getDefinition());
         self::assertEquals('baz', $arg[3]->getContext());
     }
+
+    public function testTailArgsSuccess(): void
+    {
+        $fn = static fn () => null;
+        $this->bindArguments(diAutowire('qux'));
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
+
+        $args = $ba->build();
+
+        self::assertCount(1, $args);
+        self::assertEquals('qux', $args[0]->getIdentifier());
+    }
 }

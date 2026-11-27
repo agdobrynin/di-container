@@ -530,4 +530,24 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         self::assertEquals('ArrayIterator', $args[0]->getDefinitionIdentifier());
         self::assertEquals('ArrayAccess', $args[1]->getDefinitionIdentifier());
     }
+
+    public function testTailArgs(): void
+    {
+        $fn = static fn (#[Inject] Quux $quux) => $quux;
+
+        $this->bindArguments(
+            diGet('services.foo'),
+            diGet('services.bar'),
+            diGet('services.baz'),
+        );
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
+
+        $args = $ba->build();
+
+        self::assertCount(3, $args);
+        self::assertEquals(Quux::class, $args[0]->getDefinition());
+        self::assertEquals('services.bar', $args[1]->getDefinition());
+        self::assertEquals('services.baz', $args[2]->getDefinition());
+    }
 }
