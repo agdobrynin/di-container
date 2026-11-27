@@ -39,7 +39,6 @@ use ReflectionFunctionAbstract;
 use ReflectionParameter;
 
 use function array_key_exists;
-use function array_push;
 use function array_slice;
 use function count;
 use function is_int;
@@ -146,7 +145,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             $this->pushFromParameterType($args, $param);
         }
 
-        array_push($args, ...$this->getTailArguments());
+        foreach ($this->getTailArguments() as $arg) {
+            $args[] = $arg;
+        }
 
         return $args;
     }
@@ -187,7 +188,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             $this->pushFromParameterType($args, $param);
         }
 
-        array_push($args, ...$this->getTailArguments());
+        foreach ($this->getTailArguments() as $arg) {
+            $args[] = $arg;
+        }
 
         return $args;
     }
@@ -228,7 +231,9 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             $this->pushFromParameterType($args, $param);
         }
 
-        array_push($args, ...$this->getTailArguments());
+        foreach ($this->getTailArguments() as $arg) {
+            $args[] = $arg;
+        }
 
         return $args;
     }
