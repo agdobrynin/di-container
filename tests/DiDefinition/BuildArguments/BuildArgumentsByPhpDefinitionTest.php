@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\DiDefinition\BuildArguments;
 
 use ArrayIterator;
+use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\Inject;
 use Kaspi\DiContainer\Attributes\ParameterRuntime;
 use Kaspi\DiContainer\DiContainerConfig;
@@ -33,6 +34,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use stdClass;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
+use Tests\DiDefinition\BuildArguments\Fixtures\Bat;
 use Tests\DiDefinition\BuildArguments\Fixtures\BatFactory;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
 use Tests\DiDefinition\BuildArguments\Fixtures\BazInterface;
@@ -72,6 +74,8 @@ use function Kaspi\DiContainer\diValue;
 #[CoversFunction('Kaspi\DiContainer\diParameterRuntime')]
 #[UsesClass(SetupArgumentBuilder::class)]
 #[UsesClass(SetupTypeWithArguments::class)]
+#[UsesClass(Autowire::class)]
+#[UsesClass(Inject::class)]
 class BuildArgumentsByPhpDefinitionTest extends TestCase
 {
     use BindArgumentsTrait;
@@ -554,11 +558,36 @@ class BuildArgumentsByPhpDefinitionTest extends TestCase
     {
         $fn = static fn () => null;
         $this->bindArguments(diAutowire('qux'));
-        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
 
         $args = $ba->build();
 
         self::assertCount(1, $args);
         self::assertEquals('qux', $args[0]->getIdentifier());
+    }
+
+    public function testTailArgsAsAttribute(): void
+    {
+        /*
+         * For a container with the configuration $useAttribute = false,
+         * all object will return as-is
+         */
+        $fn = static fn (QuuxInterface $quux) => $quux;
+
+        $this->bindArguments(
+            new Inject('services.foo'),
+            new Autowire(Bat::class),
+            new Inject(Baz::class),
+        );
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, true);
+
+        $args = $ba->build();
+
+        self::assertCount(3, $args);
+
+        self::assertInstanceOf(Inject::class, $args[0]);
+        self::assertInstanceOf(Autowire::class, $args[1]);
+        self::assertInstanceOf(Inject::class, $args[2]);
     }
 }
