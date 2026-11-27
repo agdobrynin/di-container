@@ -44,6 +44,7 @@ use function array_push;
 use function array_slice;
 use function count;
 use function is_int;
+use function is_object;
 use function is_string;
 use function sprintf;
 
@@ -263,7 +264,10 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
         if (false !== $argNameOrIndex) {
             if ($param->isVariadic()) {
-                foreach ($this->capturingVariadicArguments($argNameOrIndex) as $argKey => $definition) {
+                foreach ($this->capturingVariadicArguments($argNameOrIndex) as $argKey => $variadicArgument) {
+                    $paramType = null;
+                    $definition = $this->argumentObjectToDiDefinition($variadicArgument, $param, $paramType);
+
                     $args[$argKey] = $definition;
                     $this->setContainerParameterContext($argKey, $definition, $param);
                 }
@@ -271,8 +275,10 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
                 return true; // Variadic Parameter has last position
             }
 
+            $definition = $this->argumentObjectToDiDefinition($this->bindArguments[$argNameOrIndex], $param);
+
             // @phpstan-ignore parameterByRef.type
-            $args[$param->getPosition()] = $definition = $this->bindArguments[$argNameOrIndex];
+            $args[$param->getPosition()] = $definition;
             $this->setContainerParameterContext($argNameOrIndex, $definition, $param);
 
             return true;
@@ -283,7 +289,10 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
          * it is possible to pass a named argument by any name.
          */
         if ($param->isVariadic()) {
-            foreach ($this->capturingVariadicArguments($param->name) as $argKey => $definition) {
+            foreach ($this->capturingVariadicArguments($param->name) as $argKey => $variadicArgument) {
+                $paramType = null;
+                $definition = $this->argumentObjectToDiDefinition($variadicArgument, $param, $paramType);
+
                 $args[$argKey] = $definition;
                 $this->setContainerParameterContext($argKey, $definition, $param);
             }
@@ -351,7 +360,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
     }
 
     /**
-     * @return Generator<(DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs)>
+     * @return Generator<(DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs|mixed)>
      *
      * @throws AutowireExceptionInterface
      */
@@ -361,28 +370,29 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         $paramType = null;
 
         foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
-            yield match ($attr::class) {
-                Autowire::class => $this->configureAutowire($attr, $param, $paramType),
-                DiFactory::class => $this->configureDiFactory($attr),
-                Inject::class => $this->configureInject($attr, $param, $paramType),
-                InjectByCallable::class => new DiDefinitionCallable($attr->getCallable()),
-                ProxyClosure::class => new DiDefinitionProxyClosure($attr->id),
-                TaggedAs::class => new DiDefinitionTaggedAs(
-                    $attr->name,
-                    $attr->isLazy,
-                    $attr->priorityDefaultMethod,
-                    $attr->useKeys,
-                    $attr->key,
-                    $attr->keyDefaultMethod,
-                    $attr->containerIdExclude,
-                    $attr->selfExclude,
-                ),
-                Parameter::class => (new DiDefinitionParameter($attr->name))
-                    ->setContext('' === $attr->name ? $param->name : null),
-                ParameterRuntime::class => (new DiDefinitionParameterRuntime($attr->name, $attr->message))
-                    ->setContext('' === $attr->name ? $param->name : null),
-            };
+            yield $this->argumentObjectToDiDefinition($attr, $param, $paramType);
         }
+    }
+
+    private function argumentObjectToDiDefinition(mixed $value, ReflectionParameter $param, ?string &$paramType = null): mixed
+    {
+        if (!is_object($value) || !$this->container->getConfig()->isUseAttribute()) {
+            return $value;
+        }
+
+        return match ($value::class) {
+            Autowire::class => $this->configureAutowire($value, $param, $paramType),
+            DiFactory::class => $this->configureDiFactory($value),
+            Inject::class => $this->configureInject($value, $param, $paramType),
+            InjectByCallable::class => new DiDefinitionCallable($value->getCallable()),
+            ProxyClosure::class => new DiDefinitionProxyClosure($value->id),
+            TaggedAs::class => new DiDefinitionTaggedAs($value->name, $value->isLazy, $value->priorityDefaultMethod, $value->useKeys, $value->key, $value->keyDefaultMethod, $value->containerIdExclude, $value->selfExclude),
+            Parameter::class => (new DiDefinitionParameter($value->name))
+                ->setContext('' === $value->name ? $param->name : null),
+            ParameterRuntime::class => (new DiDefinitionParameterRuntime($value->name, $value->message))
+                ->setContext('' === $value->name ? $param->name : null),
+            default => $value,
+        };
     }
 
     /**
