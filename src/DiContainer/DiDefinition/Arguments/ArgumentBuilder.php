@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kaspi\DiContainer\DiDefinition\Arguments;
 
-use Generator;
 use Kaspi\DiContainer\AttributeReader;
 use Kaspi\DiContainer\Attributes\Autowire;
 use Kaspi\DiContainer\Attributes\DiFactory;
@@ -163,8 +162,14 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
         foreach ($this->functionOrMethod->getParameters() as $param) {
             try {
-                if (($definitions = $this->getDefinitionByAttributes($param))->valid()) {
-                    array_push($args, ...$definitions);
+                $attributes = AttributeReader::getAttributeOnParameter($param);
+
+                if ($attributes->valid()) {
+                    /** @var null|class-string $paramType */
+                    $paramType = null;
+                    foreach ($attributes as $attr) {
+                        $args[] = $this->argumentObjectToDiDefinition($attr, $param, $paramType);
+                    }
 
                     continue;
                 }
@@ -202,8 +207,14 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             }
 
             try {
-                if (($definitions = $this->getDefinitionByAttributes($param))->valid()) {
-                    array_push($args, ...$definitions);
+                $attributes = AttributeReader::getAttributeOnParameter($param);
+
+                if ($attributes->valid()) {
+                    /** @var null|class-string $paramType */
+                    $paramType = null;
+                    foreach ($attributes as $attr) {
+                        $args[] = $this->argumentObjectToDiDefinition($attr, $param, $paramType);
+                    }
 
                     continue;
                 }
@@ -357,21 +368,6 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         }
 
         return $tailArgs;
-    }
-
-    /**
-     * @return Generator<(DiDefinitionAutowire|DiDefinitionCallable|DiDefinitionFactory|DiDefinitionGet|DiDefinitionParameter|DiDefinitionParameterRuntime|DiDefinitionProxyClosure|DiDefinitionTaggedAs|mixed)>
-     *
-     * @throws AutowireExceptionInterface
-     */
-    private function getDefinitionByAttributes(ReflectionParameter $param): Generator
-    {
-        /** @var null|class-string $paramType */
-        $paramType = null;
-
-        foreach (AttributeReader::getAttributeOnParameter($param) as $attr) {
-            yield $this->argumentObjectToDiDefinition($attr, $param, $paramType);
-        }
     }
 
     private function argumentObjectToDiDefinition(mixed $value, ReflectionParameter $param, ?string &$paramType = null): mixed
