@@ -13,10 +13,10 @@ import { fileURLToPath, URL } from 'node:url'
 /**
  * Configuration files
  */
-import sidebar_ru_v48X from './sidebar_ru_v4.8.x.mjs'
-import sidebar_en_v48X from './sidebar_en_v4.8.x.mjs'
-import sidebar_ru_v47X from './sidebar_ru_v4.7.x.mjs'
-import sidebar_en_v47X from './sidebar_en_v4.7.x.mjs'
+import sidebar_ru_v48X from './sidebars/v4.8.x/sidebar_ru_v4.8.x.mjs'
+import sidebar_en_v48X from './sidebars/v4.8.x/sidebar_en_v4.8.x.mjs'
+import sidebar_ru_v47X from './sidebars/v4.7.x/sidebar_ru_v4.7.x.mjs'
+import sidebar_en_v47X from './sidebars/v4.7.x/sidebar_en_v4.7.x.mjs'
 import search_ru from './search_ru.mjs'
 
 export default defineVersionedConfig({
@@ -120,7 +120,6 @@ export default defineVersionedConfig({
           label: 'На этой странице',
         },
         nav: [
-          { component: 'VersionSwitcher', props: { label: 'Версия', latestLabel: 'последняя' } },
           { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
           { text: 'Рецепты', link: '/cookbook/', activeMatch: '/cookbook/' },
         ],
