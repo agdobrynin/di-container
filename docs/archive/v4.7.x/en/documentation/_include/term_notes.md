@@ -1,0 +1,9 @@
+[^SetterMethodMutable]: A **mutable setter method** is a method used to change the value of an object's internal property; it modifies the existing object in place and typically returns `void`.
+[^SetterMethodImmutable]: An **immutable setter method** is a method that does not modify the current object, but instead creates and returns a new instance of it with an updated value.
+[^FQCN]: **F**ully **Q**ualified **C**lass **N**ame – the full name of a class or interface, including its namespace.
+[^TypeHints]: **Type hints** – the specification of an expected data type for method parameters, such as the name of a specific class or interface.
+[^ParameterRuntime]: A "runtime" parameter acquires its actual value outside the container; this value is assigned after the container has been built. Such a parameter is intended for the proper configuration of container definitions that depend on it.
+[^Parameter]: A container parameter is a simple scalar type that can be reused to specify how a dependency should be injected.
+[^FactoryPattern]: In some scenarios, it becomes necessary—for the purpose of dependency injection—to employ the "factory" design pattern, delegating the creation of a required object to a dedicated PHP class known as a "factory."
+[^ContainerId]: A container ID is a string name (or a class/interface name) used to register a service or object within a container and to retrieve it via the `get()` method.
+[^CallableType]: The `callable` type represents values ​​or expressions that can be invoked as a function. See the description [in the PHP documentation](https://www.php.net/manual/en/language.types.callable.php).

@@ -1,0 +1,1 @@
+Parameters for the constructor and methods of a PHP factory class can be injected automatically based on the container configuration. For specific scenarios, you can [declare arguments for the factory method](/en/documentation/factories/args.md).

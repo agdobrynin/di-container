@@ -1,0 +1,2 @@
+> [!IMPORTANT]
+> If the identifiers of collection items match, the item with the higher priority is added to the collection, while the other items are excluded. See the section "[Matching collection item identifiers](/en/documentation/tags/using-collecton-key/keys-equals.md)."

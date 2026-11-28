@@ -13,6 +13,8 @@ import { fileURLToPath, URL } from 'node:url'
 /**
  * Configuration files
  */
+import sidebar_ru_v48X from './sidebar_ru_v4.8.x.mjs'
+import sidebar_en_v48X from './sidebar_en_v4.8.x.mjs'
 import sidebar_ru_v47X from './sidebar_ru_v4.7.x.mjs'
 import sidebar_en_v47X from './sidebar_en_v4.7.x.mjs'
 import search_ru from './search_ru.mjs'
@@ -59,6 +61,9 @@ export default defineVersionedConfig({
           root: {
             translations: search_ru
           },
+          'v4.8.x': {
+            translations: search_ru
+          },
           'v4.7.x': {
             translations: search_ru
           },
@@ -98,7 +103,7 @@ export default defineVersionedConfig({
     }
   },
   versionsConfig: {
-    current: 'v4.7.x',
+    current: 'v4.8.x',
     versionSwitcher: false,
   },
   locales: {
@@ -125,7 +130,7 @@ export default defineVersionedConfig({
         lastUpdated: {
           text: 'Обновлено',
         },
-        sidebar: {...sidebar_ru_v47X},
+        sidebar: {...sidebar_ru_v48X ,...sidebar_ru_v47X},
       },
       // @ts-ignore
       markdown: {
@@ -151,7 +156,7 @@ export default defineVersionedConfig({
           { text: 'Cookbook', link: '/cookbook/' },
           { component: 'VersionSwitcher' },
         ],
-        sidebar: {...sidebar_en_v47X},
+        sidebar: {...sidebar_en_v48X, ...sidebar_en_v47X},
       },
     },
   },

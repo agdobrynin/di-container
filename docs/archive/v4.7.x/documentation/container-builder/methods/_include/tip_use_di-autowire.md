@@ -1,0 +1,1 @@
+Для объявления PHP-классов используем [хелпер функцию `diAutowire()`](/documentation/php-definition/di-autowire.md#container-id) которая может представить в конфигурацию идентификатор контейнера.

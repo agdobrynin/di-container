@@ -1,0 +1,27 @@
+---
+aside: false
+title: Метаданные тега
+---
+### Метаданные тега { #title }
+
+Метаданные тега указывается парой ключ-значение:
+- **имя метаданных** – произвольная непустая строка.
+- **значение** – [скалярный тип](https://www.php.net/manual/ru/language.types.type-system.php#language.types.type-system.atomic.scalar), `null` или `array` состоящий из этих типов.
+
+Метаданные тега передаются через параметр `$options` в методе `bindTag()`[^BindTag]
+или в [атрибуте `\Kaspi\DiContainer\Attributes\Tag`](../attribute-definition/tag.md).
+
+<span id="reserved-keys"/>
+
+> [!WARNING]
+> В метаданных зарезервировано имя `priority.method` для **метода-приоритета**.
+> ```php
+> $options = [
+>   'foo' => 'bar',
+>   'baz' => true,
+>   'priority.method' => 'getPriority'// [!code focus]
+> ]
+> ```
+> Подробнее о [приоритете в коллекции](collection-priority/priority-by-method.md).
+
+<!--@include: ../php-definition/_include/bind_notes.md-->
