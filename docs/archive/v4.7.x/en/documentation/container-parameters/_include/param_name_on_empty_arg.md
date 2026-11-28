@@ -1,0 +1,1 @@
+If an empty string is passed to the `$name` parameter, the container will attempt to automatically determine the container parameter name based on the name of the method (function) parameter or the named argument.

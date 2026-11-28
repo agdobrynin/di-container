@@ -1,0 +1,1 @@
+The order of elements in the collection is not defined in this configuration and can be any. Please review the documentation section ["Collection Item Priority"](/en/documentation/tags/collection-priority/index.md).

@@ -1,0 +1,1 @@
+When using [named arguments](https://www.php.net/manual/en/functions.arguments.php#functions.named-arguments) and [variable-length parameter lists](https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list), the rules described in the PHP documentation apply.
