@@ -39,6 +39,7 @@ use ReflectionFunctionAbstract;
 use ReflectionParameter;
 
 use function array_key_exists;
+use function array_push;
 use function array_slice;
 use function class_exists;
 use function count;
@@ -147,9 +148,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
             $this->pushFromParameterType($args, $param);
         }
 
-        foreach ($this->getTailArguments() as $arg) {
-            $args[] = $arg;
-        }
+        array_push($args, ...$this->getTailArguments());
 
         return $args;
     }
@@ -191,7 +190,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         }
 
         foreach ($this->getTailArguments() as $arg) {
-            $args[] = $arg;
+            $args[] = $this->convertArgumentObjectToDiDefinition($arg);
         }
 
         return $args;
@@ -234,7 +233,7 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
         }
 
         foreach ($this->getTailArguments() as $arg) {
-            $args[] = $arg;
+            $args[] = $this->convertArgumentObjectToDiDefinition($arg);
         }
 
         return $args;
@@ -332,10 +331,10 @@ final class ArgumentBuilder implements ArgumentBuilderInterface
 
             foreach ($tailArgs as $key => $value) {
                 if (is_string($key)) {
-                    throw $this->invalidTailArgument(sprintf('Does not accept unknown named parameter $%s.', $key));
+                    throw new ArgumentBuilderException(
+                        sprintf('Cannot build arguments for %s. Does not accept unknown named parameter $%s.', Helper::functionName($this->functionOrMethod), $key)
+                    );
                 }
-                // It is necessary to check whether the trailing arguments were declared via an attribute.
-                $tailArgs[$key] = $this->convertArgumentObjectToDiDefinition($value);
             }
 
             return $tailArgs;
