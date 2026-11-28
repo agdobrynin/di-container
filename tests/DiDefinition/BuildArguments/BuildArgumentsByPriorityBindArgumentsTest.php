@@ -36,6 +36,7 @@ use Kaspi\DiContainer\Traits\BindArgumentsTrait;
 use Kaspi\DiContainer\Traits\FreezeTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -49,6 +50,7 @@ use Tests\DiDefinition\BuildArguments\Fixtures\HeavyDependency;
 use Tests\DiDefinition\BuildArguments\Fixtures\Quux;
 use Tests\DiDefinition\BuildArguments\Fixtures\QuuxInterface;
 
+use function addslashes;
 use function Kaspi\DiContainer\diAutowire;
 use function Kaspi\DiContainer\diGet;
 use function Kaspi\DiContainer\diParameter;
@@ -277,5 +279,53 @@ class BuildArgumentsByPriorityBindArgumentsTest extends TestCase
 
         self::assertInstanceOf(DiDefinitionGet::class, $args[8]);
         self::assertEquals('services.bar', $args[8]->getDefinition());
+    }
+
+    #[TestWith([
+        Bat::class,
+        false,
+    ])]
+    #[TestWith([
+        'foo_id',
+        true,
+    ])]
+    public function testFailConvertAutowireAttribute(string $classFQCN, bool $hasInContainer): void
+    {
+        $this->expectException(ArgumentBuilderExceptionInterface::class);
+        $this->expectExceptionMessage('The $id parameter with value \''.addslashes($classFQCN).'\' for the '.Autowire::class.' attribute must point to a declared container definition.');
+
+        $refFn = new ReflectionFunction(static fn () => null);
+
+        $this->bindArguments(
+            new Autowire(
+                $classFQCN,
+                arguments: [new ParameterRuntime('param.str')]
+            ),
+        );
+
+        $this->mockContainer->method('has')
+            ->with($classFQCN)
+            ->willReturn($hasInContainer)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), $refFn, $this->mockContainer, true);
+
+        $ba->build();
+    }
+
+    public function testFailConvertInjectAttribute(): void
+    {
+        $this->expectException(ArgumentBuilderExceptionInterface::class);
+        $this->expectExceptionMessage('The $id parameter for the '.Inject::class.' attribute must be a non-empty string.');
+
+        $refFn = new ReflectionFunction(static fn () => null);
+
+        $this->bindArguments(
+            new Inject(),
+        );
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), $refFn, $this->mockContainer, true);
+
+        $ba->build();
     }
 }
