@@ -41,6 +41,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionFunction;
 use Tests\DiDefinition\BuildArguments\Fixtures\Bar;
+use Tests\DiDefinition\BuildArguments\Fixtures\Bat;
 use Tests\DiDefinition\BuildArguments\Fixtures\BatFactory;
 use Tests\DiDefinition\BuildArguments\Fixtures\Baz;
 use Tests\DiDefinition\BuildArguments\Fixtures\BazInterface;
@@ -529,5 +530,58 @@ class BuildArgumentsByPhpAttributeTest extends TestCase
         self::assertCount(2, $args);
         self::assertEquals('ArrayIterator', $args[0]->getDefinitionIdentifier());
         self::assertEquals('ArrayAccess', $args[1]->getDefinitionIdentifier());
+    }
+
+    public function testTailArgs(): void
+    {
+        $fn = static fn (#[Inject] Quux $quux) => $quux;
+
+        $this->bindArguments(
+            diGet('services.foo'),
+            diGet('services.bar'),
+            diGet('services.baz'),
+        );
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
+
+        $args = $ba->build();
+
+        self::assertCount(3, $args);
+        self::assertEquals(Quux::class, $args[0]->getDefinition());
+        self::assertEquals('services.bar', $args[1]->getDefinition());
+        self::assertEquals('services.baz', $args[2]->getDefinition());
+    }
+
+    public function testTailArgsAsAttribute(): void
+    {
+        /*
+         * For a container with the configuration $useAttribute = true,
+         * attributes must be converted into a "container definition."
+         */
+        $fn = static fn (#[Inject(Quux::class)] QuuxInterface $quux) => $quux;
+
+        $this->bindArguments(
+            new Inject('services.foo'),
+            new Autowire(Bat::class),
+            new Inject(Baz::class),
+        );
+
+        $this->mockContainer->method('has')
+            ->with(Bat::class)
+            ->willReturn(true)
+        ;
+
+        $ba = new ArgumentBuilder($this->getBindArguments(), new ReflectionFunction($fn), $this->mockContainer, false);
+
+        $args = $ba->build();
+
+        self::assertCount(3, $args);
+        self::assertEquals(Quux::class, $args[0]->getDefinition());
+
+        self::assertInstanceOf(DiDefinitionAutowire::class, $args[1]);
+        self::assertEquals(Bat::class, $args[1]->getDefinition()->getName());
+
+        self::assertInstanceOf(DiDefinitionGet::class, $args[2]);
+        self::assertEquals(Baz::class, $args[2]->getDefinition());
     }
 }
