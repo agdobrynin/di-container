@@ -122,6 +122,7 @@ export default defineVersionedConfig({
         nav: [
           { text: 'Руководство', link: '/documentation/', activeMatch: '/documentation/' },
           { text: 'Рецепты', link: '/cookbook/', activeMatch: '/cookbook/' },
+          { component: 'VersionSwitcher', props: { label: 'Версия', latestLabel: 'последняя' } },
         ],
         editLink: {
           text: 'Предложите изменения для этой страницы',
